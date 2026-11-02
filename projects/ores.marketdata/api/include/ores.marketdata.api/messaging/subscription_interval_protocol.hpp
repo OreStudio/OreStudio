@@ -43,6 +43,9 @@ namespace ores::marketdata::messaging {
 
 struct subscription_interval_key {
     std::string provider_code;
+
+    friend bool operator==(const subscription_interval_key&,
+                           const subscription_interval_key&) = default;
 };
 
 struct subscription_interval_write {
@@ -55,21 +58,33 @@ struct subscription_interval_write {
     bool non_display;
     bool derived;
     std::optional<std::chrono::system_clock::time_point> interval_to;
+
+    friend bool operator==(const subscription_interval_write&,
+                           const subscription_interval_write&) = default;
 };
 
 struct subscription_interval_change {
     subscription_interval_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const subscription_interval_change&,
+                           const subscription_interval_change&) = default;
 };
 
 struct subscription_interval_removal {
     subscription_interval_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const subscription_interval_removal&,
+                           const subscription_interval_removal&) = default;
 };
 
 struct subscription_interval_lookup {
     subscription_interval_key key;
     std::optional<ores::marketdata::domain::subscription_interval> subscription_interval;
+
+    friend bool operator==(const subscription_interval_lookup&,
+                           const subscription_interval_lookup&) = default;
 };
 
 struct subscription_intervals_filter {
@@ -80,6 +95,9 @@ struct subscription_intervals_filter {
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
     std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
+
+    friend bool operator==(const subscription_intervals_filter&,
+                           const subscription_intervals_filter&) = default;
 };
 
 struct subscription_interval_event {
@@ -89,17 +107,26 @@ struct subscription_interval_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const subscription_interval_event&,
+                           const subscription_interval_event&) = default;
 };
 
 struct subscription_interval_version_key {
     subscription_interval_key subscription_interval;
     std::uint32_t version;
+
+    friend bool operator==(const subscription_interval_version_key&,
+                           const subscription_interval_version_key&) = default;
 };
 
 struct subscription_interval_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const subscription_interval_versions_filter&,
+                           const subscription_interval_versions_filter&) = default;
 };
 
 struct list_subscription_intervals_request {
@@ -117,12 +144,18 @@ struct list_subscription_intervals_request {
     ores::utility::domain::order order;
     std::optional<subscription_intervals_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_subscription_intervals_request&,
+                           const list_subscription_intervals_request&) = default;
 };
 
 struct list_subscription_intervals_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription_interval> subscription_intervals;
     std::uint64_t total;
+
+    friend bool operator==(const list_subscription_intervals_response&,
+                           const list_subscription_intervals_response&) = default;
 };
 
 struct get_subscription_interval_request {
@@ -136,11 +169,17 @@ struct get_subscription_interval_request {
      */
     static constexpr bool requires_session = true;
     subscription_interval_key key;
+
+    friend bool operator==(const get_subscription_interval_request&,
+                           const get_subscription_interval_request&) = default;
 };
 
 struct get_subscription_interval_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::subscription_interval> subscription_interval;
+
+    friend bool operator==(const get_subscription_interval_response&,
+                           const get_subscription_interval_response&) = default;
 };
 
 struct get_many_subscription_intervals_request {
@@ -155,11 +194,17 @@ struct get_many_subscription_intervals_request {
      */
     static constexpr bool requires_session = true;
     std::vector<subscription_interval_key> keys;
+
+    friend bool operator==(const get_many_subscription_intervals_request&,
+                           const get_many_subscription_intervals_request&) = default;
 };
 
 struct get_many_subscription_intervals_response {
     ores::utility::domain::result result;
     std::vector<subscription_interval_lookup> entries;
+
+    friend bool operator==(const get_many_subscription_intervals_response&,
+                           const get_many_subscription_intervals_response&) = default;
 };
 
 struct put_subscription_interval_request {
@@ -174,11 +219,17 @@ struct put_subscription_interval_request {
     static constexpr bool requires_session = true;
     subscription_interval_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_subscription_interval_request&,
+                           const put_subscription_interval_request&) = default;
 };
 
 struct put_subscription_interval_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::subscription_interval> subscription_interval;
+
+    friend bool operator==(const put_subscription_interval_response&,
+                           const put_subscription_interval_response&) = default;
 };
 
 struct put_many_subscription_intervals_request {
@@ -194,11 +245,17 @@ struct put_many_subscription_intervals_request {
     static constexpr bool requires_session = true;
     std::vector<subscription_interval_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_subscription_intervals_request&,
+                           const put_many_subscription_intervals_request&) = default;
 };
 
 struct put_many_subscription_intervals_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription_interval> subscription_intervals;
+
+    friend bool operator==(const put_many_subscription_intervals_response&,
+                           const put_many_subscription_intervals_response&) = default;
 };
 
 struct delete_subscription_interval_request {
@@ -213,10 +270,16 @@ struct delete_subscription_interval_request {
     static constexpr bool requires_session = true;
     subscription_interval_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_subscription_interval_request&,
+                           const delete_subscription_interval_request&) = default;
 };
 
 struct delete_subscription_interval_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_subscription_interval_response&,
+                           const delete_subscription_interval_response&) = default;
 };
 
 struct delete_many_subscription_intervals_request {
@@ -232,10 +295,16 @@ struct delete_many_subscription_intervals_request {
     static constexpr bool requires_session = true;
     std::vector<subscription_interval_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_subscription_intervals_request&,
+                           const delete_many_subscription_intervals_request&) = default;
 };
 
 struct delete_many_subscription_intervals_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_subscription_intervals_response&,
+                           const delete_many_subscription_intervals_response&) = default;
 };
 
 struct list_subscription_interval_versions_request {
@@ -254,12 +323,18 @@ struct list_subscription_interval_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<subscription_interval_versions_filter> filter;
+
+    friend bool operator==(const list_subscription_interval_versions_request&,
+                           const list_subscription_interval_versions_request&) = default;
 };
 
 struct list_subscription_interval_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription_interval> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_subscription_interval_versions_response&,
+                           const list_subscription_interval_versions_response&) = default;
 };
 
 struct get_subscription_interval_version_request {
@@ -274,11 +349,17 @@ struct get_subscription_interval_version_request {
      */
     static constexpr bool requires_session = true;
     subscription_interval_version_key key;
+
+    friend bool operator==(const get_subscription_interval_version_request&,
+                           const get_subscription_interval_version_request&) = default;
 };
 
 struct get_subscription_interval_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::subscription_interval> version;
+
+    friend bool operator==(const get_subscription_interval_version_response&,
+                           const get_subscription_interval_version_response&) = default;
 };
 
 /**

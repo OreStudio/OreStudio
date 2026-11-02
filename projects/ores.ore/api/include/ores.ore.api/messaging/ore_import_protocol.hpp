@@ -47,6 +47,8 @@ struct ore_import_item_error {
     std::string source_file;
     std::string item_id;
     std::string message;
+
+    friend bool operator==(const ore_import_item_error&, const ore_import_item_error&) = default;
 };
 
 /**
@@ -69,6 +71,8 @@ struct ore_import_request {
     std::string request_id;
     std::string import_choices_json;
     std::string correlation_id;
+
+    friend bool operator==(const ore_import_request&, const ore_import_request&) = default;
 };
 
 /**
@@ -88,6 +92,8 @@ struct ore_import_response {
      */
     std::string correlation_id;
     std::string workflow_instance_id;
+
+    friend bool operator==(const ore_import_response&, const ore_import_response&) = default;
 };
 
 /**
@@ -111,6 +117,9 @@ struct ore_import_execute_request {
     std::string correlation_id;
     /** The caller's JWT, so the handler can delegate the caller's identity downstream. */
     std::string bearer_token;
+
+    friend bool operator==(const ore_import_execute_request&,
+                           const ore_import_execute_request&) = default;
 };
 
 /**
@@ -132,6 +141,9 @@ struct ore_import_execute_result {
      * because a trade's anchor is immutable.
      */
     std::vector<std::string> saved_trade_ids;
+
+    friend bool operator==(const ore_import_execute_result&,
+                           const ore_import_execute_result&) = default;
 };
 
 /**
@@ -158,6 +170,9 @@ struct ore_import_rollback_request {
     std::vector<std::string> saved_book_names;
     /** The id of each booked trade, whose booking the rollback closes. */
     std::vector<std::string> saved_trade_ids;
+
+    friend bool operator==(const ore_import_rollback_request&,
+                           const ore_import_rollback_request&) = default;
 };
 
 /**

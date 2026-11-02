@@ -58,6 +58,8 @@ struct lei_entity_summary {
      * @brief The country of the entity's legal address.
      */
     std::string country;
+
+    friend bool operator==(const lei_entity_summary&, const lei_entity_summary&) = default;
 };
 
 /**
@@ -85,6 +87,9 @@ struct get_lei_entities_summary_request {
      * @brief How many rows to return.
      */
     int limit = 1000;
+
+    friend bool operator==(const get_lei_entities_summary_request&,
+                           const get_lei_entities_summary_request&) = default;
 };
 
 /**
@@ -103,6 +108,9 @@ struct get_lei_entities_summary_response {
      * @brief The summarised entities.
      */
     std::vector<lei_entity_summary> entities;
+
+    friend bool operator==(const get_lei_entities_summary_response&,
+                           const get_lei_entities_summary_response&) = default;
 };
 
 /**
@@ -135,6 +143,8 @@ struct lei_entity_match {
      * publication walks.
      */
     std::int64_t party_count = 0;
+
+    friend bool operator==(const lei_entity_match&, const lei_entity_match&) = default;
 };
 
 /**
@@ -172,6 +182,9 @@ struct search_lei_entities_request {
      * @brief How many matches to return.
      */
     int limit = 20;
+
+    friend bool operator==(const search_lei_entities_request&,
+                           const search_lei_entities_request&) = default;
 };
 
 /**
@@ -190,6 +203,9 @@ struct search_lei_entities_response {
      * @brief The matches.
      */
     std::vector<lei_entity_match> entities;
+
+    friend bool operator==(const search_lei_entities_response&,
+                           const search_lei_entities_response&) = default;
 };
 
 /**

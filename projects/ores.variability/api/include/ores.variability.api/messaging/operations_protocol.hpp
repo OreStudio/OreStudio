@@ -48,10 +48,16 @@ struct clear_bootstrap_mode_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const clear_bootstrap_mode_request&,
+                           const clear_bootstrap_mode_request&) = default;
 };
 
 struct clear_bootstrap_mode_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const clear_bootstrap_mode_response&,
+                           const clear_bootstrap_mode_response&) = default;
 };
 
 struct complete_system_onboarding_request {
@@ -65,10 +71,16 @@ struct complete_system_onboarding_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const complete_system_onboarding_request&,
+                           const complete_system_onboarding_request&) = default;
 };
 
 struct complete_system_onboarding_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const complete_system_onboarding_response&,
+                           const complete_system_onboarding_response&) = default;
 };
 
 struct complete_party_onboarding_request {
@@ -85,10 +97,16 @@ struct complete_party_onboarding_request {
      * The party being onboarded, which is not the caller's own party.
      */
     boost::uuids::uuid party_id;
+
+    friend bool operator==(const complete_party_onboarding_request&,
+                           const complete_party_onboarding_request&) = default;
 };
 
 struct complete_party_onboarding_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const complete_party_onboarding_response&,
+                           const complete_party_onboarding_response&) = default;
 };
 
 struct get_setting_request {
@@ -110,6 +128,8 @@ struct get_setting_request {
      * by looking it up in a list first.
      */
     std::string name;
+
+    friend bool operator==(const get_setting_request&, const get_setting_request&) = default;
 };
 
 struct get_setting_response {
@@ -125,6 +145,8 @@ struct get_setting_response {
      * @brief The setting's declared type, an empty string when it does not exist.
      */
     std::string data_type;
+
+    friend bool operator==(const get_setting_response&, const get_setting_response&) = default;
 };
 
 /**

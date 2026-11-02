@@ -71,6 +71,8 @@ struct publish_bundle_request {
      * @brief Per-dataset parameters, as JSON.
      */
     std::string params_json;
+
+    friend bool operator==(const publish_bundle_request&, const publish_bundle_request&) = default;
 };
 
 /**
@@ -93,6 +95,9 @@ struct publish_bundle_response {
      * @brief How many datasets were dispatched.
      */
     int datasets_dispatched = 0;
+
+    friend bool operator==(const publish_bundle_response&,
+                           const publish_bundle_response&) = default;
 };
 
 /**

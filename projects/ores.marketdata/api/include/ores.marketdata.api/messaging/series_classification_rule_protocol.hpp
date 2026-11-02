@@ -45,6 +45,9 @@ struct series_classification_rule_key {
     std::string instrument;
     std::string quote;
     std::string key_kind;
+
+    friend bool operator==(const series_classification_rule_key&,
+                           const series_classification_rule_key&) = default;
 };
 
 struct series_classification_rule_write {
@@ -55,21 +58,33 @@ struct series_classification_rule_write {
     std::optional<std::string> asset_class_code;
     std::string series_subclass_code;
     std::string description;
+
+    friend bool operator==(const series_classification_rule_write&,
+                           const series_classification_rule_write&) = default;
 };
 
 struct series_classification_rule_change {
     series_classification_rule_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const series_classification_rule_change&,
+                           const series_classification_rule_change&) = default;
 };
 
 struct series_classification_rule_removal {
     series_classification_rule_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const series_classification_rule_removal&,
+                           const series_classification_rule_removal&) = default;
 };
 
 struct series_classification_rule_lookup {
     series_classification_rule_key key;
     std::optional<ores::marketdata::domain::series_classification_rule> series_classification_rule;
+
+    friend bool operator==(const series_classification_rule_lookup&,
+                           const series_classification_rule_lookup&) = default;
 };
 
 struct series_classification_rule_event {
@@ -79,17 +94,26 @@ struct series_classification_rule_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const series_classification_rule_event&,
+                           const series_classification_rule_event&) = default;
 };
 
 struct series_classification_rule_version_key {
     series_classification_rule_key series_classification_rule;
     std::uint32_t version;
+
+    friend bool operator==(const series_classification_rule_version_key&,
+                           const series_classification_rule_version_key&) = default;
 };
 
 struct series_classification_rule_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const series_classification_rule_versions_filter&,
+                           const series_classification_rule_versions_filter&) = default;
 };
 
 struct list_series_classification_rules_request {
@@ -107,12 +131,18 @@ struct list_series_classification_rules_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_series_classification_rules_request&,
+                           const list_series_classification_rules_request&) = default;
 };
 
 struct list_series_classification_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::series_classification_rule> rules;
     std::uint64_t total;
+
+    friend bool operator==(const list_series_classification_rules_response&,
+                           const list_series_classification_rules_response&) = default;
 };
 
 struct get_series_classification_rule_request {
@@ -127,11 +157,17 @@ struct get_series_classification_rule_request {
      */
     static constexpr bool requires_session = true;
     series_classification_rule_key key;
+
+    friend bool operator==(const get_series_classification_rule_request&,
+                           const get_series_classification_rule_request&) = default;
 };
 
 struct get_series_classification_rule_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::series_classification_rule> series_classification_rule;
+
+    friend bool operator==(const get_series_classification_rule_response&,
+                           const get_series_classification_rule_response&) = default;
 };
 
 struct get_many_series_classification_rules_request {
@@ -146,11 +182,17 @@ struct get_many_series_classification_rules_request {
      */
     static constexpr bool requires_session = true;
     std::vector<series_classification_rule_key> keys;
+
+    friend bool operator==(const get_many_series_classification_rules_request&,
+                           const get_many_series_classification_rules_request&) = default;
 };
 
 struct get_many_series_classification_rules_response {
     ores::utility::domain::result result;
     std::vector<series_classification_rule_lookup> entries;
+
+    friend bool operator==(const get_many_series_classification_rules_response&,
+                           const get_many_series_classification_rules_response&) = default;
 };
 
 struct put_series_classification_rule_request {
@@ -166,11 +208,17 @@ struct put_series_classification_rule_request {
     static constexpr bool requires_session = true;
     series_classification_rule_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_series_classification_rule_request&,
+                           const put_series_classification_rule_request&) = default;
 };
 
 struct put_series_classification_rule_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::series_classification_rule> series_classification_rule;
+
+    friend bool operator==(const put_series_classification_rule_response&,
+                           const put_series_classification_rule_response&) = default;
 };
 
 struct put_many_series_classification_rules_request {
@@ -186,11 +234,17 @@ struct put_many_series_classification_rules_request {
     static constexpr bool requires_session = true;
     std::vector<series_classification_rule_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_series_classification_rules_request&,
+                           const put_many_series_classification_rules_request&) = default;
 };
 
 struct put_many_series_classification_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::series_classification_rule> rules;
+
+    friend bool operator==(const put_many_series_classification_rules_response&,
+                           const put_many_series_classification_rules_response&) = default;
 };
 
 struct delete_series_classification_rule_request {
@@ -206,10 +260,16 @@ struct delete_series_classification_rule_request {
     static constexpr bool requires_session = true;
     series_classification_rule_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_series_classification_rule_request&,
+                           const delete_series_classification_rule_request&) = default;
 };
 
 struct delete_series_classification_rule_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_series_classification_rule_response&,
+                           const delete_series_classification_rule_response&) = default;
 };
 
 struct delete_many_series_classification_rules_request {
@@ -225,10 +285,16 @@ struct delete_many_series_classification_rules_request {
     static constexpr bool requires_session = true;
     std::vector<series_classification_rule_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_series_classification_rules_request&,
+                           const delete_many_series_classification_rules_request&) = default;
 };
 
 struct delete_many_series_classification_rules_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_series_classification_rules_response&,
+                           const delete_many_series_classification_rules_response&) = default;
 };
 
 struct list_series_classification_rule_versions_request {
@@ -247,12 +313,18 @@ struct list_series_classification_rule_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<series_classification_rule_versions_filter> filter;
+
+    friend bool operator==(const list_series_classification_rule_versions_request&,
+                           const list_series_classification_rule_versions_request&) = default;
 };
 
 struct list_series_classification_rule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::series_classification_rule> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_series_classification_rule_versions_response&,
+                           const list_series_classification_rule_versions_response&) = default;
 };
 
 struct get_series_classification_rule_version_request {
@@ -267,11 +339,17 @@ struct get_series_classification_rule_version_request {
      */
     static constexpr bool requires_session = true;
     series_classification_rule_version_key key;
+
+    friend bool operator==(const get_series_classification_rule_version_request&,
+                           const get_series_classification_rule_version_request&) = default;
 };
 
 struct get_series_classification_rule_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::series_classification_rule> version;
+
+    friend bool operator==(const get_series_classification_rule_version_response&,
+                           const get_series_classification_rule_version_response&) = default;
 };
 
 /**

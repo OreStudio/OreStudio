@@ -44,31 +44,44 @@ namespace ores::refdata::messaging {
 struct party_currency_key {
     boost::uuids::uuid party_id;
     std::string currency_iso_code;
+
+    friend bool operator==(const party_currency_key&, const party_currency_key&) = default;
 };
 
 struct party_currency_write {
     boost::uuids::uuid party_id;
     std::string currency_iso_code;
+
+    friend bool operator==(const party_currency_write&, const party_currency_write&) = default;
 };
 
 struct party_currency_change {
     party_currency_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const party_currency_change&, const party_currency_change&) = default;
 };
 
 struct party_currency_removal {
     party_currency_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const party_currency_removal&, const party_currency_removal&) = default;
 };
 
 struct party_currency_lookup {
     party_currency_key key;
     std::optional<ores::refdata::domain::party_currency> party_currency;
+
+    friend bool operator==(const party_currency_lookup&, const party_currency_lookup&) = default;
 };
 
 struct party_currencies_filter {
     std::optional<boost::uuids::uuid> party_id;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+
+    friend bool operator==(const party_currencies_filter&,
+                           const party_currencies_filter&) = default;
 };
 
 struct party_currency_event {
@@ -78,6 +91,8 @@ struct party_currency_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const party_currency_event&, const party_currency_event&) = default;
 };
 
 struct list_party_currencies_request {
@@ -94,12 +109,18 @@ struct list_party_currencies_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_currencies_filter> filter;
+
+    friend bool operator==(const list_party_currencies_request&,
+                           const list_party_currencies_request&) = default;
 };
 
 struct list_party_currencies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_currency> party_currencies;
     std::uint64_t total;
+
+    friend bool operator==(const list_party_currencies_response&,
+                           const list_party_currencies_response&) = default;
 };
 
 struct get_party_currency_request {
@@ -113,11 +134,17 @@ struct get_party_currency_request {
      */
     static constexpr bool requires_session = true;
     party_currency_key key;
+
+    friend bool operator==(const get_party_currency_request&,
+                           const get_party_currency_request&) = default;
 };
 
 struct get_party_currency_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_currency> party_currency;
+
+    friend bool operator==(const get_party_currency_response&,
+                           const get_party_currency_response&) = default;
 };
 
 struct get_many_party_currencies_request {
@@ -131,11 +158,17 @@ struct get_many_party_currencies_request {
      */
     static constexpr bool requires_session = true;
     std::vector<party_currency_key> keys;
+
+    friend bool operator==(const get_many_party_currencies_request&,
+                           const get_many_party_currencies_request&) = default;
 };
 
 struct get_many_party_currencies_response {
     ores::utility::domain::result result;
     std::vector<party_currency_lookup> entries;
+
+    friend bool operator==(const get_many_party_currencies_response&,
+                           const get_many_party_currencies_response&) = default;
 };
 
 struct put_party_currency_request {
@@ -150,11 +183,17 @@ struct put_party_currency_request {
     static constexpr bool requires_session = true;
     party_currency_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_party_currency_request&,
+                           const put_party_currency_request&) = default;
 };
 
 struct put_party_currency_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_currency> party_currency;
+
+    friend bool operator==(const put_party_currency_response&,
+                           const put_party_currency_response&) = default;
 };
 
 struct put_many_party_currencies_request {
@@ -169,11 +208,17 @@ struct put_many_party_currencies_request {
     static constexpr bool requires_session = true;
     std::vector<party_currency_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_party_currencies_request&,
+                           const put_many_party_currencies_request&) = default;
 };
 
 struct put_many_party_currencies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_currency> party_currencies;
+
+    friend bool operator==(const put_many_party_currencies_response&,
+                           const put_many_party_currencies_response&) = default;
 };
 
 struct delete_party_currency_request {
@@ -188,10 +233,16 @@ struct delete_party_currency_request {
     static constexpr bool requires_session = true;
     party_currency_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_party_currency_request&,
+                           const delete_party_currency_request&) = default;
 };
 
 struct delete_party_currency_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_party_currency_response&,
+                           const delete_party_currency_response&) = default;
 };
 
 struct delete_many_party_currencies_request {
@@ -206,10 +257,16 @@ struct delete_many_party_currencies_request {
     static constexpr bool requires_session = true;
     std::vector<party_currency_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_party_currencies_request&,
+                           const delete_many_party_currencies_request&) = default;
 };
 
 struct delete_many_party_currencies_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_party_currencies_response&,
+                           const delete_many_party_currencies_response&) = default;
 };
 
 struct list_by_party_id_party_currencies_request {
@@ -228,12 +285,18 @@ struct list_by_party_id_party_currencies_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_currencies_filter> filter;
+
+    friend bool operator==(const list_by_party_id_party_currencies_request&,
+                           const list_by_party_id_party_currencies_request&) = default;
 };
 
 struct list_by_party_id_party_currencies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_currency> party_currencies;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_party_id_party_currencies_response&,
+                           const list_by_party_id_party_currencies_response&) = default;
 };
 
 /**

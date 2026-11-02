@@ -86,6 +86,8 @@ struct {{name}} {
 {{/comment}}
     {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
 {{/fields}}
+
+    friend bool operator==(const {{name}}&, const {{name}}&) = default;
 };
 
 {{/messages}}
@@ -192,6 +194,8 @@ struct {{name}} {
 {{/comment}}
     {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
 {{/fields}}
+
+    friend bool operator==(const {{name}}&, const {{name}}&) = default;
 };
 
 {{/messages}}
@@ -281,6 +285,8 @@ struct {{name}} {
 {{/comment}}
     {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
 {{/fields}}
+
+    friend bool operator==(const {{name}}&, const {{name}}&) = default;
 };
 
 {{/messages}}
@@ -413,6 +419,8 @@ struct {{name}} {
 {{/comment}}
     {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
 {{/fields}}
+
+    friend bool operator==(const {{name}}&, const {{name}}&) = default;
 };
 
 {{/messages}}

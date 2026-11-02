@@ -44,32 +44,50 @@ namespace ores::refdata::messaging {
 struct currency_pair_convention_calendar_key {
     std::string pair_code;
     std::string calendar_code;
+
+    friend bool operator==(const currency_pair_convention_calendar_key&,
+                           const currency_pair_convention_calendar_key&) = default;
 };
 
 struct currency_pair_convention_calendar_write {
     std::string pair_code;
     std::string calendar_code;
+
+    friend bool operator==(const currency_pair_convention_calendar_write&,
+                           const currency_pair_convention_calendar_write&) = default;
 };
 
 struct currency_pair_convention_calendar_change {
     currency_pair_convention_calendar_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const currency_pair_convention_calendar_change&,
+                           const currency_pair_convention_calendar_change&) = default;
 };
 
 struct currency_pair_convention_calendar_removal {
     currency_pair_convention_calendar_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const currency_pair_convention_calendar_removal&,
+                           const currency_pair_convention_calendar_removal&) = default;
 };
 
 struct currency_pair_convention_calendar_lookup {
     currency_pair_convention_calendar_key key;
     std::optional<ores::refdata::domain::currency_pair_convention_calendar>
         currency_pair_convention_calendar;
+
+    friend bool operator==(const currency_pair_convention_calendar_lookup&,
+                           const currency_pair_convention_calendar_lookup&) = default;
 };
 
 struct currency_pair_convention_calendars_filter {
     std::optional<std::string> pair_code;
     std::optional<std::vector<std::string>> pair_code_one_of;
+
+    friend bool operator==(const currency_pair_convention_calendars_filter&,
+                           const currency_pair_convention_calendars_filter&) = default;
 };
 
 struct currency_pair_convention_calendar_event {
@@ -79,6 +97,9 @@ struct currency_pair_convention_calendar_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const currency_pair_convention_calendar_event&,
+                           const currency_pair_convention_calendar_event&) = default;
 };
 
 struct list_currency_pair_convention_calendars_request {
@@ -96,6 +117,9 @@ struct list_currency_pair_convention_calendars_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<currency_pair_convention_calendars_filter> filter;
+
+    friend bool operator==(const list_currency_pair_convention_calendars_request&,
+                           const list_currency_pair_convention_calendars_request&) = default;
 };
 
 struct list_currency_pair_convention_calendars_response {
@@ -103,6 +127,9 @@ struct list_currency_pair_convention_calendars_response {
     std::vector<ores::refdata::domain::currency_pair_convention_calendar>
         currency_pair_convention_calendars;
     std::uint64_t total;
+
+    friend bool operator==(const list_currency_pair_convention_calendars_response&,
+                           const list_currency_pair_convention_calendars_response&) = default;
 };
 
 struct get_currency_pair_convention_calendar_request {
@@ -117,12 +144,18 @@ struct get_currency_pair_convention_calendar_request {
      */
     static constexpr bool requires_session = true;
     currency_pair_convention_calendar_key key;
+
+    friend bool operator==(const get_currency_pair_convention_calendar_request&,
+                           const get_currency_pair_convention_calendar_request&) = default;
 };
 
 struct get_currency_pair_convention_calendar_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::currency_pair_convention_calendar>
         currency_pair_convention_calendar;
+
+    friend bool operator==(const get_currency_pair_convention_calendar_response&,
+                           const get_currency_pair_convention_calendar_response&) = default;
 };
 
 struct get_many_currency_pair_convention_calendars_request {
@@ -137,11 +170,17 @@ struct get_many_currency_pair_convention_calendars_request {
      */
     static constexpr bool requires_session = true;
     std::vector<currency_pair_convention_calendar_key> keys;
+
+    friend bool operator==(const get_many_currency_pair_convention_calendars_request&,
+                           const get_many_currency_pair_convention_calendars_request&) = default;
 };
 
 struct get_many_currency_pair_convention_calendars_response {
     ores::utility::domain::result result;
     std::vector<currency_pair_convention_calendar_lookup> entries;
+
+    friend bool operator==(const get_many_currency_pair_convention_calendars_response&,
+                           const get_many_currency_pair_convention_calendars_response&) = default;
 };
 
 struct put_currency_pair_convention_calendar_request {
@@ -157,12 +196,18 @@ struct put_currency_pair_convention_calendar_request {
     static constexpr bool requires_session = true;
     currency_pair_convention_calendar_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_currency_pair_convention_calendar_request&,
+                           const put_currency_pair_convention_calendar_request&) = default;
 };
 
 struct put_currency_pair_convention_calendar_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::currency_pair_convention_calendar>
         currency_pair_convention_calendar;
+
+    friend bool operator==(const put_currency_pair_convention_calendar_response&,
+                           const put_currency_pair_convention_calendar_response&) = default;
 };
 
 struct put_many_currency_pair_convention_calendars_request {
@@ -178,12 +223,18 @@ struct put_many_currency_pair_convention_calendars_request {
     static constexpr bool requires_session = true;
     std::vector<currency_pair_convention_calendar_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_currency_pair_convention_calendars_request&,
+                           const put_many_currency_pair_convention_calendars_request&) = default;
 };
 
 struct put_many_currency_pair_convention_calendars_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_pair_convention_calendar>
         currency_pair_convention_calendars;
+
+    friend bool operator==(const put_many_currency_pair_convention_calendars_response&,
+                           const put_many_currency_pair_convention_calendars_response&) = default;
 };
 
 struct delete_currency_pair_convention_calendar_request {
@@ -199,10 +250,16 @@ struct delete_currency_pair_convention_calendar_request {
     static constexpr bool requires_session = true;
     currency_pair_convention_calendar_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_currency_pair_convention_calendar_request&,
+                           const delete_currency_pair_convention_calendar_request&) = default;
 };
 
 struct delete_currency_pair_convention_calendar_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_currency_pair_convention_calendar_response&,
+                           const delete_currency_pair_convention_calendar_response&) = default;
 };
 
 struct delete_many_currency_pair_convention_calendars_request {
@@ -218,10 +275,17 @@ struct delete_many_currency_pair_convention_calendars_request {
     static constexpr bool requires_session = true;
     std::vector<currency_pair_convention_calendar_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_currency_pair_convention_calendars_request&,
+                           const delete_many_currency_pair_convention_calendars_request&) = default;
 };
 
 struct delete_many_currency_pair_convention_calendars_response {
     ores::utility::domain::result result;
+
+    friend bool
+    operator==(const delete_many_currency_pair_convention_calendars_response&,
+               const delete_many_currency_pair_convention_calendars_response&) = default;
 };
 
 struct list_by_pair_code_currency_pair_convention_calendars_request {
@@ -241,6 +305,10 @@ struct list_by_pair_code_currency_pair_convention_calendars_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<currency_pair_convention_calendars_filter> filter;
+
+    friend bool
+    operator==(const list_by_pair_code_currency_pair_convention_calendars_request&,
+               const list_by_pair_code_currency_pair_convention_calendars_request&) = default;
 };
 
 struct list_by_pair_code_currency_pair_convention_calendars_response {
@@ -248,6 +316,10 @@ struct list_by_pair_code_currency_pair_convention_calendars_response {
     std::vector<ores::refdata::domain::currency_pair_convention_calendar>
         currency_pair_convention_calendars;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_pair_code_currency_pair_convention_calendars_response&,
+               const list_by_pair_code_currency_pair_convention_calendars_response&) = default;
 };
 
 /**

@@ -48,6 +48,9 @@ namespace ores::refdata::messaging {
 
 struct commodity_future_convention_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const commodity_future_convention_key&,
+                           const commodity_future_convention_key&) = default;
 };
 
 struct commodity_future_convention_item {
@@ -58,6 +61,9 @@ struct commodity_future_convention_item {
     std::vector<ores::refdata::domain::commodity_future_expiry_anchor> expiry_anchor;
     std::vector<ores::refdata::domain::commodity_future_off_peak_index> off_peak_index;
     std::vector<ores::refdata::domain::commodity_future_option_expiry> option_expiry;
+
+    friend bool operator==(const commodity_future_convention_item&,
+                           const commodity_future_convention_item&) = default;
 };
 
 struct commodity_future_convention_write {
@@ -67,6 +73,9 @@ struct commodity_future_convention_write {
     std::vector<commodity_future_expiry_anchor_change> expiry_anchor;
     std::vector<commodity_future_off_peak_index_change> off_peak_index;
     std::vector<commodity_future_option_expiry_change> option_expiry;
+
+    friend bool operator==(const commodity_future_convention_write&,
+                           const commodity_future_convention_write&) = default;
 };
 
 struct get_commodity_future_convention_request {
@@ -80,11 +89,17 @@ struct get_commodity_future_convention_request {
      */
     static constexpr bool requires_session = true;
     commodity_future_convention_key key;
+
+    friend bool operator==(const get_commodity_future_convention_request&,
+                           const get_commodity_future_convention_request&) = default;
 };
 
 struct get_commodity_future_convention_response {
     ores::utility::domain::result result;
     std::optional<commodity_future_convention_item> item;
+
+    friend bool operator==(const get_commodity_future_convention_response&,
+                           const get_commodity_future_convention_response&) = default;
 };
 
 struct get_many_commodity_future_conventions_request {
@@ -99,11 +114,17 @@ struct get_many_commodity_future_conventions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<commodity_future_convention_key> keys;
+
+    friend bool operator==(const get_many_commodity_future_conventions_request&,
+                           const get_many_commodity_future_conventions_request&) = default;
 };
 
 struct get_many_commodity_future_conventions_response {
     ores::utility::domain::result result;
     std::vector<commodity_future_convention_item> items;
+
+    friend bool operator==(const get_many_commodity_future_conventions_response&,
+                           const get_many_commodity_future_conventions_response&) = default;
 };
 
 struct put_commodity_future_convention_request {
@@ -118,11 +139,17 @@ struct put_commodity_future_convention_request {
     static constexpr bool requires_session = true;
     commodity_future_convention_write item;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_commodity_future_convention_request&,
+                           const put_commodity_future_convention_request&) = default;
 };
 
 struct put_commodity_future_convention_response {
     ores::utility::domain::result result;
     std::optional<commodity_future_convention_item> item;
+
+    friend bool operator==(const put_commodity_future_convention_response&,
+                           const put_commodity_future_convention_response&) = default;
 };
 
 struct put_many_commodity_future_conventions_request {
@@ -138,11 +165,17 @@ struct put_many_commodity_future_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<commodity_future_convention_write> items;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_commodity_future_conventions_request&,
+                           const put_many_commodity_future_conventions_request&) = default;
 };
 
 struct put_many_commodity_future_conventions_response {
     ores::utility::domain::result result;
     std::vector<commodity_future_convention_item> items;
+
+    friend bool operator==(const put_many_commodity_future_conventions_response&,
+                           const put_many_commodity_future_conventions_response&) = default;
 };
 
 }

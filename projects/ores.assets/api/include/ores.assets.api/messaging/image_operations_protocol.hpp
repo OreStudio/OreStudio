@@ -68,6 +68,8 @@ struct upload_image_request {
      * @brief The image bytes, base64-encoded.
      */
     std::string data;
+
+    friend bool operator==(const upload_image_request&, const upload_image_request&) = default;
 };
 
 struct upload_image_response {
@@ -79,6 +81,8 @@ struct upload_image_response {
      * wants them asks the image read by id.
      */
     std::string image_id;
+
+    friend bool operator==(const upload_image_response&, const upload_image_response&) = default;
 };
 
 /**
@@ -97,6 +101,9 @@ struct get_image_upload_policy_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_image_upload_policy_request&,
+                           const get_image_upload_policy_request&) = default;
 };
 
 struct get_image_upload_policy_response {
@@ -117,6 +124,9 @@ struct get_image_upload_policy_response {
      * @brief The smallest height an upload accepts, in pixels.
      */
     int min_height;
+
+    friend bool operator==(const get_image_upload_policy_response&,
+                           const get_image_upload_policy_response&) = default;
 };
 
 /**
@@ -142,6 +152,8 @@ struct ensure_image_request {
      */
     static constexpr bool requires_session = true;
     std::string code;
+
+    friend bool operator==(const ensure_image_request&, const ensure_image_request&) = default;
 };
 
 struct ensure_image_response {
@@ -150,6 +162,8 @@ struct ensure_image_response {
      * @brief The id of the caller tenant's image with the requested code, on success.
      */
     std::string image_id;
+
+    friend bool operator==(const ensure_image_response&, const ensure_image_response&) = default;
 };
 
 /**

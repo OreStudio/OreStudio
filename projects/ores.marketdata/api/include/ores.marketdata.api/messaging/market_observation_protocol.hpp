@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct market_observation_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const market_observation_key&, const market_observation_key&) = default;
 };
 
 struct market_observation_write {
@@ -54,21 +56,33 @@ struct market_observation_write {
     std::string value;
     std::string source;
     boost::uuids::uuid feed_id;
+
+    friend bool operator==(const market_observation_write&,
+                           const market_observation_write&) = default;
 };
 
 struct market_observation_change {
     market_observation_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const market_observation_change&,
+                           const market_observation_change&) = default;
 };
 
 struct market_observation_removal {
     market_observation_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const market_observation_removal&,
+                           const market_observation_removal&) = default;
 };
 
 struct market_observation_lookup {
     market_observation_key key;
     std::optional<ores::marketdata::domain::market_observation> market_observation;
+
+    friend bool operator==(const market_observation_lookup&,
+                           const market_observation_lookup&) = default;
 };
 
 struct market_observations_filter {
@@ -79,6 +93,9 @@ struct market_observations_filter {
     std::optional<std::vector<std::chrono::system_clock::time_point>> observation_datetime_one_of;
     std::optional<std::string> observation_datetime_from;
     std::optional<std::string> observation_datetime_to;
+
+    friend bool operator==(const market_observations_filter&,
+                           const market_observations_filter&) = default;
 };
 
 struct market_observation_event {
@@ -88,6 +105,9 @@ struct market_observation_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const market_observation_event&,
+                           const market_observation_event&) = default;
 };
 
 struct list_market_observations_request {
@@ -105,12 +125,18 @@ struct list_market_observations_request {
     ores::utility::domain::order order;
     std::optional<market_observations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_market_observations_request&,
+                           const list_market_observations_request&) = default;
 };
 
 struct list_market_observations_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_observation> market_observations;
     std::uint64_t total;
+
+    friend bool operator==(const list_market_observations_response&,
+                           const list_market_observations_response&) = default;
 };
 
 struct get_market_observation_request {
@@ -124,11 +150,17 @@ struct get_market_observation_request {
      */
     static constexpr bool requires_session = true;
     market_observation_key key;
+
+    friend bool operator==(const get_market_observation_request&,
+                           const get_market_observation_request&) = default;
 };
 
 struct get_market_observation_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::market_observation> market_observation;
+
+    friend bool operator==(const get_market_observation_response&,
+                           const get_market_observation_response&) = default;
 };
 
 struct get_many_market_observations_request {
@@ -142,11 +174,17 @@ struct get_many_market_observations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<market_observation_key> keys;
+
+    friend bool operator==(const get_many_market_observations_request&,
+                           const get_many_market_observations_request&) = default;
 };
 
 struct get_many_market_observations_response {
     ores::utility::domain::result result;
     std::vector<market_observation_lookup> entries;
+
+    friend bool operator==(const get_many_market_observations_response&,
+                           const get_many_market_observations_response&) = default;
 };
 
 struct put_market_observation_request {
@@ -161,11 +199,17 @@ struct put_market_observation_request {
     static constexpr bool requires_session = true;
     market_observation_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_market_observation_request&,
+                           const put_market_observation_request&) = default;
 };
 
 struct put_market_observation_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::market_observation> market_observation;
+
+    friend bool operator==(const put_market_observation_response&,
+                           const put_market_observation_response&) = default;
 };
 
 struct put_many_market_observations_request {
@@ -180,11 +224,17 @@ struct put_many_market_observations_request {
     static constexpr bool requires_session = true;
     std::vector<market_observation_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_market_observations_request&,
+                           const put_many_market_observations_request&) = default;
 };
 
 struct put_many_market_observations_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_observation> market_observations;
+
+    friend bool operator==(const put_many_market_observations_response&,
+                           const put_many_market_observations_response&) = default;
 };
 
 struct delete_market_observation_request {
@@ -199,10 +249,16 @@ struct delete_market_observation_request {
     static constexpr bool requires_session = true;
     market_observation_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_market_observation_request&,
+                           const delete_market_observation_request&) = default;
 };
 
 struct delete_market_observation_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_market_observation_response&,
+                           const delete_market_observation_response&) = default;
 };
 
 struct delete_many_market_observations_request {
@@ -218,10 +274,16 @@ struct delete_many_market_observations_request {
     static constexpr bool requires_session = true;
     std::vector<market_observation_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_market_observations_request&,
+                           const delete_many_market_observations_request&) = default;
 };
 
 struct delete_many_market_observations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_market_observations_response&,
+                           const delete_many_market_observations_response&) = default;
 };
 
 struct list_by_series_id_market_observations_request {
@@ -241,12 +303,18 @@ struct list_by_series_id_market_observations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<market_observations_filter> filter;
+
+    friend bool operator==(const list_by_series_id_market_observations_request&,
+                           const list_by_series_id_market_observations_request&) = default;
 };
 
 struct list_by_series_id_market_observations_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_observation> market_observations;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_series_id_market_observations_response&,
+                           const list_by_series_id_market_observations_response&) = default;
 };
 
 /**

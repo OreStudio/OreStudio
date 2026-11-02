@@ -73,6 +73,9 @@ struct start_selected_feeds_request {
     std::vector<std::string> feed_ids;
     /** @brief The feeds of the filter a person left out. Used when no feed ids are named. */
     std::vector<std::string> excluded_ids;
+
+    friend bool operator==(const start_selected_feeds_request&,
+                           const start_selected_feeds_request&) = default;
 };
 
 /**
@@ -92,6 +95,9 @@ struct start_selected_feeds_response {
     int skipped = 0;
     /** @brief How many feeds stopped. */
     int stopped = 0;
+
+    friend bool operator==(const start_selected_feeds_response&,
+                           const start_selected_feeds_response&) = default;
 };
 
 /**
@@ -130,6 +136,9 @@ struct stop_selected_feeds_request {
     std::vector<std::string> feed_ids;
     /** @brief The feeds of the filter a person left out. Used when no feed ids are named. */
     std::vector<std::string> excluded_ids;
+
+    friend bool operator==(const stop_selected_feeds_request&,
+                           const stop_selected_feeds_request&) = default;
 };
 
 /**
@@ -149,6 +158,9 @@ struct stop_selected_feeds_response {
     int skipped = 0;
     /** @brief How many feeds stopped. */
     int stopped = 0;
+
+    friend bool operator==(const stop_selected_feeds_response&,
+                           const stop_selected_feeds_response&) = default;
 };
 
 /**

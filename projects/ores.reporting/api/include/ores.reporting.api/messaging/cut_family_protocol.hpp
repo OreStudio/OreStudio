@@ -43,6 +43,8 @@ namespace ores::reporting::messaging {
 
 struct cut_family_key {
     std::string code;
+
+    friend bool operator==(const cut_family_key&, const cut_family_key&) = default;
 };
 
 struct cut_family_write {
@@ -50,25 +52,35 @@ struct cut_family_write {
     std::string name;
     std::string description;
     int display_order;
+
+    friend bool operator==(const cut_family_write&, const cut_family_write&) = default;
 };
 
 struct cut_family_change {
     cut_family_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const cut_family_change&, const cut_family_change&) = default;
 };
 
 struct cut_family_removal {
     cut_family_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const cut_family_removal&, const cut_family_removal&) = default;
 };
 
 struct cut_family_lookup {
     cut_family_key key;
     std::optional<ores::reporting::domain::cut_family> cut_family;
+
+    friend bool operator==(const cut_family_lookup&, const cut_family_lookup&) = default;
 };
 
 struct cut_families_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const cut_families_filter&, const cut_families_filter&) = default;
 };
 
 struct cut_family_event {
@@ -78,17 +90,24 @@ struct cut_family_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const cut_family_event&, const cut_family_event&) = default;
 };
 
 struct cut_family_version_key {
     cut_family_key cut_family;
     std::uint32_t version;
+
+    friend bool operator==(const cut_family_version_key&, const cut_family_version_key&) = default;
 };
 
 struct cut_family_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const cut_family_versions_filter&,
+                           const cut_family_versions_filter&) = default;
 };
 
 struct list_cut_families_request {
@@ -106,12 +125,18 @@ struct list_cut_families_request {
     ores::utility::domain::order order;
     std::optional<cut_families_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_cut_families_request&,
+                           const list_cut_families_request&) = default;
 };
 
 struct list_cut_families_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_family> families;
     std::uint64_t total;
+
+    friend bool operator==(const list_cut_families_response&,
+                           const list_cut_families_response&) = default;
 };
 
 struct get_cut_family_request {
@@ -125,11 +150,16 @@ struct get_cut_family_request {
      */
     static constexpr bool requires_session = true;
     cut_family_key key;
+
+    friend bool operator==(const get_cut_family_request&, const get_cut_family_request&) = default;
 };
 
 struct get_cut_family_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_family> cut_family;
+
+    friend bool operator==(const get_cut_family_response&,
+                           const get_cut_family_response&) = default;
 };
 
 struct get_many_cut_families_request {
@@ -143,11 +173,17 @@ struct get_many_cut_families_request {
      */
     static constexpr bool requires_session = true;
     std::vector<cut_family_key> keys;
+
+    friend bool operator==(const get_many_cut_families_request&,
+                           const get_many_cut_families_request&) = default;
 };
 
 struct get_many_cut_families_response {
     ores::utility::domain::result result;
     std::vector<cut_family_lookup> entries;
+
+    friend bool operator==(const get_many_cut_families_response&,
+                           const get_many_cut_families_response&) = default;
 };
 
 struct put_cut_family_request {
@@ -162,11 +198,16 @@ struct put_cut_family_request {
     static constexpr bool requires_session = true;
     cut_family_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_cut_family_request&, const put_cut_family_request&) = default;
 };
 
 struct put_cut_family_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_family> cut_family;
+
+    friend bool operator==(const put_cut_family_response&,
+                           const put_cut_family_response&) = default;
 };
 
 struct put_many_cut_families_request {
@@ -181,11 +222,17 @@ struct put_many_cut_families_request {
     static constexpr bool requires_session = true;
     std::vector<cut_family_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_cut_families_request&,
+                           const put_many_cut_families_request&) = default;
 };
 
 struct put_many_cut_families_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_family> families;
+
+    friend bool operator==(const put_many_cut_families_response&,
+                           const put_many_cut_families_response&) = default;
 };
 
 struct delete_cut_family_request {
@@ -200,10 +247,16 @@ struct delete_cut_family_request {
     static constexpr bool requires_session = true;
     cut_family_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_cut_family_request&,
+                           const delete_cut_family_request&) = default;
 };
 
 struct delete_cut_family_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_cut_family_response&,
+                           const delete_cut_family_response&) = default;
 };
 
 struct delete_many_cut_families_request {
@@ -218,10 +271,16 @@ struct delete_many_cut_families_request {
     static constexpr bool requires_session = true;
     std::vector<cut_family_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_cut_families_request&,
+                           const delete_many_cut_families_request&) = default;
 };
 
 struct delete_many_cut_families_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_cut_families_response&,
+                           const delete_many_cut_families_response&) = default;
 };
 
 struct list_cut_family_versions_request {
@@ -239,12 +298,18 @@ struct list_cut_family_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cut_family_versions_filter> filter;
+
+    friend bool operator==(const list_cut_family_versions_request&,
+                           const list_cut_family_versions_request&) = default;
 };
 
 struct list_cut_family_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_family> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_cut_family_versions_response&,
+                           const list_cut_family_versions_response&) = default;
 };
 
 struct get_cut_family_version_request {
@@ -258,11 +323,17 @@ struct get_cut_family_version_request {
      */
     static constexpr bool requires_session = true;
     cut_family_version_key key;
+
+    friend bool operator==(const get_cut_family_version_request&,
+                           const get_cut_family_version_request&) = default;
 };
 
 struct get_cut_family_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_family> version;
+
+    friend bool operator==(const get_cut_family_version_response&,
+                           const get_cut_family_version_response&) = default;
 };
 
 /**

@@ -43,6 +43,8 @@ namespace ores::trading::messaging {
 
 struct composite_leg_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const composite_leg_key&, const composite_leg_key&) = default;
 };
 
 struct composite_leg_write {
@@ -51,27 +53,37 @@ struct composite_leg_write {
     boost::uuids::uuid trade_activity_id;
     int leg_sequence;
     std::string constituent_trade_id;
+
+    friend bool operator==(const composite_leg_write&, const composite_leg_write&) = default;
 };
 
 struct composite_leg_change {
     composite_leg_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const composite_leg_change&, const composite_leg_change&) = default;
 };
 
 struct composite_leg_removal {
     composite_leg_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const composite_leg_removal&, const composite_leg_removal&) = default;
 };
 
 struct composite_leg_lookup {
     composite_leg_key key;
     std::optional<ores::trading::domain::composite_leg> composite_leg;
+
+    friend bool operator==(const composite_leg_lookup&, const composite_leg_lookup&) = default;
 };
 
 struct composite_legs_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const composite_legs_filter&, const composite_legs_filter&) = default;
 };
 
 struct composite_leg_event {
@@ -81,17 +93,25 @@ struct composite_leg_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const composite_leg_event&, const composite_leg_event&) = default;
 };
 
 struct composite_leg_version_key {
     composite_leg_key composite_leg;
     std::uint32_t version;
+
+    friend bool operator==(const composite_leg_version_key&,
+                           const composite_leg_version_key&) = default;
 };
 
 struct composite_leg_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const composite_leg_versions_filter&,
+                           const composite_leg_versions_filter&) = default;
 };
 
 struct list_composite_legs_request {
@@ -109,12 +129,18 @@ struct list_composite_legs_request {
     ores::utility::domain::order order;
     std::optional<composite_legs_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_composite_legs_request&,
+                           const list_composite_legs_request&) = default;
 };
 
 struct list_composite_legs_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::composite_leg> composite_legs;
     std::uint64_t total;
+
+    friend bool operator==(const list_composite_legs_response&,
+                           const list_composite_legs_response&) = default;
 };
 
 struct get_composite_leg_request {
@@ -128,11 +154,17 @@ struct get_composite_leg_request {
      */
     static constexpr bool requires_session = true;
     composite_leg_key key;
+
+    friend bool operator==(const get_composite_leg_request&,
+                           const get_composite_leg_request&) = default;
 };
 
 struct get_composite_leg_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::composite_leg> composite_leg;
+
+    friend bool operator==(const get_composite_leg_response&,
+                           const get_composite_leg_response&) = default;
 };
 
 struct get_many_composite_legs_request {
@@ -146,11 +178,17 @@ struct get_many_composite_legs_request {
      */
     static constexpr bool requires_session = true;
     std::vector<composite_leg_key> keys;
+
+    friend bool operator==(const get_many_composite_legs_request&,
+                           const get_many_composite_legs_request&) = default;
 };
 
 struct get_many_composite_legs_response {
     ores::utility::domain::result result;
     std::vector<composite_leg_lookup> entries;
+
+    friend bool operator==(const get_many_composite_legs_response&,
+                           const get_many_composite_legs_response&) = default;
 };
 
 struct put_composite_leg_request {
@@ -165,11 +203,17 @@ struct put_composite_leg_request {
     static constexpr bool requires_session = true;
     composite_leg_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_composite_leg_request&,
+                           const put_composite_leg_request&) = default;
 };
 
 struct put_composite_leg_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::composite_leg> composite_leg;
+
+    friend bool operator==(const put_composite_leg_response&,
+                           const put_composite_leg_response&) = default;
 };
 
 struct put_many_composite_legs_request {
@@ -184,11 +228,17 @@ struct put_many_composite_legs_request {
     static constexpr bool requires_session = true;
     std::vector<composite_leg_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_composite_legs_request&,
+                           const put_many_composite_legs_request&) = default;
 };
 
 struct put_many_composite_legs_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::composite_leg> composite_legs;
+
+    friend bool operator==(const put_many_composite_legs_response&,
+                           const put_many_composite_legs_response&) = default;
 };
 
 struct delete_composite_leg_request {
@@ -203,10 +253,16 @@ struct delete_composite_leg_request {
     static constexpr bool requires_session = true;
     composite_leg_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_composite_leg_request&,
+                           const delete_composite_leg_request&) = default;
 };
 
 struct delete_composite_leg_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_composite_leg_response&,
+                           const delete_composite_leg_response&) = default;
 };
 
 struct delete_many_composite_legs_request {
@@ -221,10 +277,16 @@ struct delete_many_composite_legs_request {
     static constexpr bool requires_session = true;
     std::vector<composite_leg_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_composite_legs_request&,
+                           const delete_many_composite_legs_request&) = default;
 };
 
 struct delete_many_composite_legs_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_composite_legs_response&,
+                           const delete_many_composite_legs_response&) = default;
 };
 
 struct list_by_trade_id_composite_legs_request {
@@ -243,12 +305,18 @@ struct list_by_trade_id_composite_legs_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<composite_legs_filter> filter;
+
+    friend bool operator==(const list_by_trade_id_composite_legs_request&,
+                           const list_by_trade_id_composite_legs_request&) = default;
 };
 
 struct list_by_trade_id_composite_legs_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::composite_leg> composite_legs;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_trade_id_composite_legs_response&,
+                           const list_by_trade_id_composite_legs_response&) = default;
 };
 
 struct list_composite_leg_versions_request {
@@ -266,12 +334,18 @@ struct list_composite_leg_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<composite_leg_versions_filter> filter;
+
+    friend bool operator==(const list_composite_leg_versions_request&,
+                           const list_composite_leg_versions_request&) = default;
 };
 
 struct list_composite_leg_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::composite_leg> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_composite_leg_versions_response&,
+                           const list_composite_leg_versions_response&) = default;
 };
 
 struct get_composite_leg_version_request {
@@ -285,11 +359,17 @@ struct get_composite_leg_version_request {
      */
     static constexpr bool requires_session = true;
     composite_leg_version_key key;
+
+    friend bool operator==(const get_composite_leg_version_request&,
+                           const get_composite_leg_version_request&) = default;
 };
 
 struct get_composite_leg_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::composite_leg> version;
+
+    friend bool operator==(const get_composite_leg_version_response&,
+                           const get_composite_leg_version_response&) = default;
 };
 
 /**

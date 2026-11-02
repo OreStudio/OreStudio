@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct feed_key {
     std::string name;
+
+    friend bool operator==(const feed_key&, const feed_key&) = default;
 };
 
 struct feed_write {
@@ -54,21 +56,29 @@ struct feed_write {
     std::string provider_key;
     bool is_default;
     std::string description;
+
+    friend bool operator==(const feed_write&, const feed_write&) = default;
 };
 
 struct feed_change {
     feed_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const feed_change&, const feed_change&) = default;
 };
 
 struct feed_removal {
     feed_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const feed_removal&, const feed_removal&) = default;
 };
 
 struct feed_lookup {
     feed_key key;
     std::optional<ores::marketdata::domain::feed> feed;
+
+    friend bool operator==(const feed_lookup&, const feed_lookup&) = default;
 };
 
 struct feeds_filter {
@@ -80,6 +90,8 @@ struct feeds_filter {
     std::optional<std::vector<std::string>> session_code_one_of;
     std::optional<std::vector<std::string>> service_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const feeds_filter&, const feeds_filter&) = default;
 };
 
 struct feed_event {
@@ -89,17 +101,23 @@ struct feed_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const feed_event&, const feed_event&) = default;
 };
 
 struct feed_version_key {
     feed_key feed;
     std::uint32_t version;
+
+    friend bool operator==(const feed_version_key&, const feed_version_key&) = default;
 };
 
 struct feed_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const feed_versions_filter&, const feed_versions_filter&) = default;
 };
 
 struct list_feeds_request {
@@ -117,12 +135,16 @@ struct list_feeds_request {
     ores::utility::domain::order order;
     std::optional<feeds_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_feeds_request&, const list_feeds_request&) = default;
 };
 
 struct list_feeds_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed> feeds;
     std::uint64_t total;
+
+    friend bool operator==(const list_feeds_response&, const list_feeds_response&) = default;
 };
 
 struct get_feed_request {
@@ -136,11 +158,15 @@ struct get_feed_request {
      */
     static constexpr bool requires_session = true;
     feed_key key;
+
+    friend bool operator==(const get_feed_request&, const get_feed_request&) = default;
 };
 
 struct get_feed_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::feed> feed;
+
+    friend bool operator==(const get_feed_response&, const get_feed_response&) = default;
 };
 
 struct get_many_feeds_request {
@@ -154,11 +180,16 @@ struct get_many_feeds_request {
      */
     static constexpr bool requires_session = true;
     std::vector<feed_key> keys;
+
+    friend bool operator==(const get_many_feeds_request&, const get_many_feeds_request&) = default;
 };
 
 struct get_many_feeds_response {
     ores::utility::domain::result result;
     std::vector<feed_lookup> entries;
+
+    friend bool operator==(const get_many_feeds_response&,
+                           const get_many_feeds_response&) = default;
 };
 
 struct put_feed_request {
@@ -173,11 +204,15 @@ struct put_feed_request {
     static constexpr bool requires_session = true;
     feed_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_feed_request&, const put_feed_request&) = default;
 };
 
 struct put_feed_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::feed> feed;
+
+    friend bool operator==(const put_feed_response&, const put_feed_response&) = default;
 };
 
 struct put_many_feeds_request {
@@ -192,11 +227,16 @@ struct put_many_feeds_request {
     static constexpr bool requires_session = true;
     std::vector<feed_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_feeds_request&, const put_many_feeds_request&) = default;
 };
 
 struct put_many_feeds_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed> feeds;
+
+    friend bool operator==(const put_many_feeds_response&,
+                           const put_many_feeds_response&) = default;
 };
 
 struct delete_feed_request {
@@ -211,10 +251,14 @@ struct delete_feed_request {
     static constexpr bool requires_session = true;
     feed_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_feed_request&, const delete_feed_request&) = default;
 };
 
 struct delete_feed_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_feed_response&, const delete_feed_response&) = default;
 };
 
 struct delete_many_feeds_request {
@@ -229,10 +273,16 @@ struct delete_many_feeds_request {
     static constexpr bool requires_session = true;
     std::vector<feed_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_feeds_request&,
+                           const delete_many_feeds_request&) = default;
 };
 
 struct delete_many_feeds_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_feeds_response&,
+                           const delete_many_feeds_response&) = default;
 };
 
 struct list_feed_versions_request {
@@ -250,12 +300,18 @@ struct list_feed_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<feed_versions_filter> filter;
+
+    friend bool operator==(const list_feed_versions_request&,
+                           const list_feed_versions_request&) = default;
 };
 
 struct list_feed_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_feed_versions_response&,
+                           const list_feed_versions_response&) = default;
 };
 
 struct get_feed_version_request {
@@ -269,11 +325,17 @@ struct get_feed_version_request {
      */
     static constexpr bool requires_session = true;
     feed_version_key key;
+
+    friend bool operator==(const get_feed_version_request&,
+                           const get_feed_version_request&) = default;
 };
 
 struct get_feed_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::feed> version;
+
+    friend bool operator==(const get_feed_version_response&,
+                           const get_feed_version_response&) = default;
 };
 
 /**

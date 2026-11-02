@@ -99,6 +99,8 @@ struct fx_convention {
     ores::refdata::domain::currency_pair_convention convention;
     int spot_days = 0;
     std::vector<std::string> advance_calendars;
+
+    friend bool operator==(const fx_convention&, const fx_convention&) = default;
 };
 
 /**
@@ -172,6 +174,9 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::curve_segment_extrapolation> segment_extrapolations;
     std::vector<ores::refdata::domain::curve_segment_ibor_fallback> segment_ibor_fallbacks;
     std::vector<ores::refdata::domain::curve_quote> quotes;
+
+    friend bool operator==(const curve_configuration_document&,
+                           const curve_configuration_document&) = default;
 };
 
 /**
@@ -201,6 +206,9 @@ struct save_curve_configuration_document_request {
     std::string reason_code;
     /** The words that go with the reason, empty when the reason needs none. */
     std::string commentary;
+
+    friend bool operator==(const save_curve_configuration_document_request&,
+                           const save_curve_configuration_document_request&) = default;
 };
 
 /**
@@ -210,6 +218,9 @@ struct save_curve_configuration_document_response {
     bool success = false;
     std::string message;
     std::string id;
+
+    friend bool operator==(const save_curve_configuration_document_response&,
+                           const save_curve_configuration_document_response&) = default;
 };
 
 /**
@@ -229,6 +240,9 @@ struct get_curve_configuration_document_request {
     /** When the session acts for no party, as a workflow step's does, the party whose rows to read.
      */
     std::string party_id;
+
+    friend bool operator==(const get_curve_configuration_document_request&,
+                           const get_curve_configuration_document_request&) = default;
 };
 
 /**
@@ -238,6 +252,9 @@ struct get_curve_configuration_document_response {
     bool success = false;
     std::string message;
     curve_configuration_document document;
+
+    friend bool operator==(const get_curve_configuration_document_response&,
+                           const get_curve_configuration_document_response&) = default;
 };
 
 /**
@@ -258,6 +275,9 @@ struct delete_curve_configuration_document_request {
      */
     static constexpr bool requires_session = true;
     std::string configuration_id;
+
+    friend bool operator==(const delete_curve_configuration_document_request&,
+                           const delete_curve_configuration_document_request&) = default;
 };
 
 /**
@@ -266,6 +286,9 @@ struct delete_curve_configuration_document_request {
 struct delete_curve_configuration_document_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const delete_curve_configuration_document_response&,
+                           const delete_curve_configuration_document_response&) = default;
 };
 
 }

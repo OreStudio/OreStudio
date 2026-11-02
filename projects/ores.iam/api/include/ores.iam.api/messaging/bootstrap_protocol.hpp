@@ -46,6 +46,9 @@ struct bootstrap_status_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const bootstrap_status_request&,
+                           const bootstrap_status_request&) = default;
 };
 
 struct bootstrap_status_response {
@@ -72,6 +75,9 @@ struct bootstrap_status_response {
      * came from the build the server is running.
      */
     std::string version;
+
+    friend bool operator==(const bootstrap_status_response&,
+                           const bootstrap_status_response&) = default;
 };
 
 struct create_initial_admin_request {
@@ -87,6 +93,9 @@ struct create_initial_admin_request {
     std::string principal;
     std::string password;
     std::string email;
+
+    friend bool operator==(const create_initial_admin_request&,
+                           const create_initial_admin_request&) = default;
 };
 
 struct create_initial_admin_response {
@@ -95,6 +104,9 @@ struct create_initial_admin_response {
     std::string account_id;
     std::string tenant_name;
     std::string tenant_id;
+
+    friend bool operator==(const create_initial_admin_response&,
+                           const create_initial_admin_response&) = default;
 };
 
 /**

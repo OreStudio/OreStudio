@@ -43,6 +43,9 @@ namespace ores::reporting::messaging {
 
 struct configuration_market_binding_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const configuration_market_binding_key&,
+                           const configuration_market_binding_key&) = default;
 };
 
 struct configuration_market_binding_write {
@@ -51,28 +54,43 @@ struct configuration_market_binding_write {
     std::string role;
     std::string market_configuration_name;
     int position;
+
+    friend bool operator==(const configuration_market_binding_write&,
+                           const configuration_market_binding_write&) = default;
 };
 
 struct configuration_market_binding_change {
     configuration_market_binding_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const configuration_market_binding_change&,
+                           const configuration_market_binding_change&) = default;
 };
 
 struct configuration_market_binding_removal {
     configuration_market_binding_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const configuration_market_binding_removal&,
+                           const configuration_market_binding_removal&) = default;
 };
 
 struct configuration_market_binding_lookup {
     configuration_market_binding_key key;
     std::optional<ores::reporting::domain::configuration_market_binding>
         configuration_market_binding;
+
+    friend bool operator==(const configuration_market_binding_lookup&,
+                           const configuration_market_binding_lookup&) = default;
 };
 
 struct configuration_market_bindings_filter {
     std::optional<boost::uuids::uuid> configuration_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> configuration_id_one_of;
+
+    friend bool operator==(const configuration_market_bindings_filter&,
+                           const configuration_market_bindings_filter&) = default;
 };
 
 struct configuration_market_binding_event {
@@ -82,17 +100,26 @@ struct configuration_market_binding_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const configuration_market_binding_event&,
+                           const configuration_market_binding_event&) = default;
 };
 
 struct configuration_market_binding_version_key {
     configuration_market_binding_key configuration_market_binding;
     std::uint32_t version;
+
+    friend bool operator==(const configuration_market_binding_version_key&,
+                           const configuration_market_binding_version_key&) = default;
 };
 
 struct configuration_market_binding_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const configuration_market_binding_versions_filter&,
+                           const configuration_market_binding_versions_filter&) = default;
 };
 
 struct list_configuration_market_bindings_request {
@@ -111,12 +138,18 @@ struct list_configuration_market_bindings_request {
     ores::utility::domain::order order;
     std::optional<configuration_market_bindings_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_configuration_market_bindings_request&,
+                           const list_configuration_market_bindings_request&) = default;
 };
 
 struct list_configuration_market_bindings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_market_binding> bindings;
     std::uint64_t total;
+
+    friend bool operator==(const list_configuration_market_bindings_response&,
+                           const list_configuration_market_bindings_response&) = default;
 };
 
 struct get_configuration_market_binding_request {
@@ -131,12 +164,18 @@ struct get_configuration_market_binding_request {
      */
     static constexpr bool requires_session = true;
     configuration_market_binding_key key;
+
+    friend bool operator==(const get_configuration_market_binding_request&,
+                           const get_configuration_market_binding_request&) = default;
 };
 
 struct get_configuration_market_binding_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::configuration_market_binding>
         configuration_market_binding;
+
+    friend bool operator==(const get_configuration_market_binding_response&,
+                           const get_configuration_market_binding_response&) = default;
 };
 
 struct get_many_configuration_market_bindings_request {
@@ -151,11 +190,17 @@ struct get_many_configuration_market_bindings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<configuration_market_binding_key> keys;
+
+    friend bool operator==(const get_many_configuration_market_bindings_request&,
+                           const get_many_configuration_market_bindings_request&) = default;
 };
 
 struct get_many_configuration_market_bindings_response {
     ores::utility::domain::result result;
     std::vector<configuration_market_binding_lookup> entries;
+
+    friend bool operator==(const get_many_configuration_market_bindings_response&,
+                           const get_many_configuration_market_bindings_response&) = default;
 };
 
 struct put_configuration_market_binding_request {
@@ -171,12 +216,18 @@ struct put_configuration_market_binding_request {
     static constexpr bool requires_session = true;
     configuration_market_binding_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_configuration_market_binding_request&,
+                           const put_configuration_market_binding_request&) = default;
 };
 
 struct put_configuration_market_binding_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::configuration_market_binding>
         configuration_market_binding;
+
+    friend bool operator==(const put_configuration_market_binding_response&,
+                           const put_configuration_market_binding_response&) = default;
 };
 
 struct put_many_configuration_market_bindings_request {
@@ -192,11 +243,17 @@ struct put_many_configuration_market_bindings_request {
     static constexpr bool requires_session = true;
     std::vector<configuration_market_binding_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_configuration_market_bindings_request&,
+                           const put_many_configuration_market_bindings_request&) = default;
 };
 
 struct put_many_configuration_market_bindings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_market_binding> bindings;
+
+    friend bool operator==(const put_many_configuration_market_bindings_response&,
+                           const put_many_configuration_market_bindings_response&) = default;
 };
 
 struct delete_configuration_market_binding_request {
@@ -212,10 +269,16 @@ struct delete_configuration_market_binding_request {
     static constexpr bool requires_session = true;
     configuration_market_binding_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_configuration_market_binding_request&,
+                           const delete_configuration_market_binding_request&) = default;
 };
 
 struct delete_configuration_market_binding_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_configuration_market_binding_response&,
+                           const delete_configuration_market_binding_response&) = default;
 };
 
 struct delete_many_configuration_market_bindings_request {
@@ -231,10 +294,16 @@ struct delete_many_configuration_market_bindings_request {
     static constexpr bool requires_session = true;
     std::vector<configuration_market_binding_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_configuration_market_bindings_request&,
+                           const delete_many_configuration_market_bindings_request&) = default;
 };
 
 struct delete_many_configuration_market_bindings_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_configuration_market_bindings_response&,
+                           const delete_many_configuration_market_bindings_response&) = default;
 };
 
 struct list_by_configuration_id_configuration_market_bindings_request {
@@ -254,12 +323,20 @@ struct list_by_configuration_id_configuration_market_bindings_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<configuration_market_bindings_filter> filter;
+
+    friend bool
+    operator==(const list_by_configuration_id_configuration_market_bindings_request&,
+               const list_by_configuration_id_configuration_market_bindings_request&) = default;
 };
 
 struct list_by_configuration_id_configuration_market_bindings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_market_binding> bindings;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_configuration_id_configuration_market_bindings_response&,
+               const list_by_configuration_id_configuration_market_bindings_response&) = default;
 };
 
 struct list_configuration_market_binding_versions_request {
@@ -278,12 +355,18 @@ struct list_configuration_market_binding_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<configuration_market_binding_versions_filter> filter;
+
+    friend bool operator==(const list_configuration_market_binding_versions_request&,
+                           const list_configuration_market_binding_versions_request&) = default;
 };
 
 struct list_configuration_market_binding_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_market_binding> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_configuration_market_binding_versions_response&,
+                           const list_configuration_market_binding_versions_response&) = default;
 };
 
 struct get_configuration_market_binding_version_request {
@@ -298,11 +381,17 @@ struct get_configuration_market_binding_version_request {
      */
     static constexpr bool requires_session = true;
     configuration_market_binding_version_key key;
+
+    friend bool operator==(const get_configuration_market_binding_version_request&,
+                           const get_configuration_market_binding_version_request&) = default;
 };
 
 struct get_configuration_market_binding_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::configuration_market_binding> version;
+
+    friend bool operator==(const get_configuration_market_binding_version_response&,
+                           const get_configuration_market_binding_version_response&) = default;
 };
 
 /**

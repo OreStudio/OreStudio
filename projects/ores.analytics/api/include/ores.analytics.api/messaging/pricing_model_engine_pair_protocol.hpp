@@ -43,6 +43,9 @@ namespace ores::analytics::messaging {
 
 struct pricing_model_engine_pair_key {
     std::string code;
+
+    friend bool operator==(const pricing_model_engine_pair_key&,
+                           const pricing_model_engine_pair_key&) = default;
 };
 
 struct pricing_model_engine_pair_write {
@@ -52,25 +55,40 @@ struct pricing_model_engine_pair_write {
     std::string pricing_engine_type_code;
     bool is_usual;
     std::string note;
+
+    friend bool operator==(const pricing_model_engine_pair_write&,
+                           const pricing_model_engine_pair_write&) = default;
 };
 
 struct pricing_model_engine_pair_change {
     pricing_model_engine_pair_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const pricing_model_engine_pair_change&,
+                           const pricing_model_engine_pair_change&) = default;
 };
 
 struct pricing_model_engine_pair_removal {
     pricing_model_engine_pair_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const pricing_model_engine_pair_removal&,
+                           const pricing_model_engine_pair_removal&) = default;
 };
 
 struct pricing_model_engine_pair_lookup {
     pricing_model_engine_pair_key key;
     std::optional<ores::analytics::domain::pricing_model_engine_pair> pricing_model_engine_pair;
+
+    friend bool operator==(const pricing_model_engine_pair_lookup&,
+                           const pricing_model_engine_pair_lookup&) = default;
 };
 
 struct pricing_model_engine_pairs_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const pricing_model_engine_pairs_filter&,
+                           const pricing_model_engine_pairs_filter&) = default;
 };
 
 struct pricing_model_engine_pair_event {
@@ -80,17 +98,26 @@ struct pricing_model_engine_pair_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const pricing_model_engine_pair_event&,
+                           const pricing_model_engine_pair_event&) = default;
 };
 
 struct pricing_model_engine_pair_version_key {
     pricing_model_engine_pair_key pricing_model_engine_pair;
     std::uint32_t version;
+
+    friend bool operator==(const pricing_model_engine_pair_version_key&,
+                           const pricing_model_engine_pair_version_key&) = default;
 };
 
 struct pricing_model_engine_pair_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const pricing_model_engine_pair_versions_filter&,
+                           const pricing_model_engine_pair_versions_filter&) = default;
 };
 
 struct list_pricing_model_engine_pairs_request {
@@ -108,12 +135,18 @@ struct list_pricing_model_engine_pairs_request {
     ores::utility::domain::order order;
     std::optional<pricing_model_engine_pairs_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_pricing_model_engine_pairs_request&,
+                           const list_pricing_model_engine_pairs_request&) = default;
 };
 
 struct list_pricing_model_engine_pairs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_engine_pair> pairs;
     std::uint64_t total;
+
+    friend bool operator==(const list_pricing_model_engine_pairs_response&,
+                           const list_pricing_model_engine_pairs_response&) = default;
 };
 
 struct get_pricing_model_engine_pair_request {
@@ -127,11 +160,17 @@ struct get_pricing_model_engine_pair_request {
      */
     static constexpr bool requires_session = true;
     pricing_model_engine_pair_key key;
+
+    friend bool operator==(const get_pricing_model_engine_pair_request&,
+                           const get_pricing_model_engine_pair_request&) = default;
 };
 
 struct get_pricing_model_engine_pair_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::pricing_model_engine_pair> pricing_model_engine_pair;
+
+    friend bool operator==(const get_pricing_model_engine_pair_response&,
+                           const get_pricing_model_engine_pair_response&) = default;
 };
 
 struct get_many_pricing_model_engine_pairs_request {
@@ -146,11 +185,17 @@ struct get_many_pricing_model_engine_pairs_request {
      */
     static constexpr bool requires_session = true;
     std::vector<pricing_model_engine_pair_key> keys;
+
+    friend bool operator==(const get_many_pricing_model_engine_pairs_request&,
+                           const get_many_pricing_model_engine_pairs_request&) = default;
 };
 
 struct get_many_pricing_model_engine_pairs_response {
     ores::utility::domain::result result;
     std::vector<pricing_model_engine_pair_lookup> entries;
+
+    friend bool operator==(const get_many_pricing_model_engine_pairs_response&,
+                           const get_many_pricing_model_engine_pairs_response&) = default;
 };
 
 struct put_pricing_model_engine_pair_request {
@@ -165,11 +210,17 @@ struct put_pricing_model_engine_pair_request {
     static constexpr bool requires_session = true;
     pricing_model_engine_pair_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_pricing_model_engine_pair_request&,
+                           const put_pricing_model_engine_pair_request&) = default;
 };
 
 struct put_pricing_model_engine_pair_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::pricing_model_engine_pair> pricing_model_engine_pair;
+
+    friend bool operator==(const put_pricing_model_engine_pair_response&,
+                           const put_pricing_model_engine_pair_response&) = default;
 };
 
 struct put_many_pricing_model_engine_pairs_request {
@@ -185,11 +236,17 @@ struct put_many_pricing_model_engine_pairs_request {
     static constexpr bool requires_session = true;
     std::vector<pricing_model_engine_pair_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_pricing_model_engine_pairs_request&,
+                           const put_many_pricing_model_engine_pairs_request&) = default;
 };
 
 struct put_many_pricing_model_engine_pairs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_engine_pair> pairs;
+
+    friend bool operator==(const put_many_pricing_model_engine_pairs_response&,
+                           const put_many_pricing_model_engine_pairs_response&) = default;
 };
 
 struct delete_pricing_model_engine_pair_request {
@@ -205,10 +262,16 @@ struct delete_pricing_model_engine_pair_request {
     static constexpr bool requires_session = true;
     pricing_model_engine_pair_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_pricing_model_engine_pair_request&,
+                           const delete_pricing_model_engine_pair_request&) = default;
 };
 
 struct delete_pricing_model_engine_pair_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_pricing_model_engine_pair_response&,
+                           const delete_pricing_model_engine_pair_response&) = default;
 };
 
 struct delete_many_pricing_model_engine_pairs_request {
@@ -224,10 +287,16 @@ struct delete_many_pricing_model_engine_pairs_request {
     static constexpr bool requires_session = true;
     std::vector<pricing_model_engine_pair_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_pricing_model_engine_pairs_request&,
+                           const delete_many_pricing_model_engine_pairs_request&) = default;
 };
 
 struct delete_many_pricing_model_engine_pairs_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_pricing_model_engine_pairs_response&,
+                           const delete_many_pricing_model_engine_pairs_response&) = default;
 };
 
 struct list_pricing_model_engine_pair_versions_request {
@@ -246,12 +315,18 @@ struct list_pricing_model_engine_pair_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<pricing_model_engine_pair_versions_filter> filter;
+
+    friend bool operator==(const list_pricing_model_engine_pair_versions_request&,
+                           const list_pricing_model_engine_pair_versions_request&) = default;
 };
 
 struct list_pricing_model_engine_pair_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_engine_pair> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_pricing_model_engine_pair_versions_response&,
+                           const list_pricing_model_engine_pair_versions_response&) = default;
 };
 
 struct get_pricing_model_engine_pair_version_request {
@@ -266,11 +341,17 @@ struct get_pricing_model_engine_pair_version_request {
      */
     static constexpr bool requires_session = true;
     pricing_model_engine_pair_version_key key;
+
+    friend bool operator==(const get_pricing_model_engine_pair_version_request&,
+                           const get_pricing_model_engine_pair_version_request&) = default;
 };
 
 struct get_pricing_model_engine_pair_version_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::pricing_model_engine_pair> version;
+
+    friend bool operator==(const get_pricing_model_engine_pair_version_response&,
+                           const get_pricing_model_engine_pair_version_response&) = default;
 };
 
 /**

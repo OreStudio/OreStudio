@@ -43,6 +43,9 @@ namespace ores::analytics::messaging {
 
 struct sensitivity_template_key {
     std::string code;
+
+    friend bool operator==(const sensitivity_template_key&,
+                           const sensitivity_template_key&) = default;
 };
 
 struct sensitivity_template_write {
@@ -50,26 +53,41 @@ struct sensitivity_template_write {
     std::string method_code;
     std::string asset_class_code;
     std::string description;
+
+    friend bool operator==(const sensitivity_template_write&,
+                           const sensitivity_template_write&) = default;
 };
 
 struct sensitivity_template_change {
     sensitivity_template_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const sensitivity_template_change&,
+                           const sensitivity_template_change&) = default;
 };
 
 struct sensitivity_template_removal {
     sensitivity_template_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const sensitivity_template_removal&,
+                           const sensitivity_template_removal&) = default;
 };
 
 struct sensitivity_template_lookup {
     sensitivity_template_key key;
     std::optional<ores::analytics::domain::sensitivity_template> sensitivity_template;
+
+    friend bool operator==(const sensitivity_template_lookup&,
+                           const sensitivity_template_lookup&) = default;
 };
 
 struct sensitivity_templates_filter {
     std::optional<std::vector<std::string>> code_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const sensitivity_templates_filter&,
+                           const sensitivity_templates_filter&) = default;
 };
 
 struct sensitivity_template_event {
@@ -79,17 +97,26 @@ struct sensitivity_template_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const sensitivity_template_event&,
+                           const sensitivity_template_event&) = default;
 };
 
 struct sensitivity_template_version_key {
     sensitivity_template_key sensitivity_template;
     std::uint32_t version;
+
+    friend bool operator==(const sensitivity_template_version_key&,
+                           const sensitivity_template_version_key&) = default;
 };
 
 struct sensitivity_template_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const sensitivity_template_versions_filter&,
+                           const sensitivity_template_versions_filter&) = default;
 };
 
 struct list_sensitivity_templates_request {
@@ -107,12 +134,18 @@ struct list_sensitivity_templates_request {
     ores::utility::domain::order order;
     std::optional<sensitivity_templates_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_sensitivity_templates_request&,
+                           const list_sensitivity_templates_request&) = default;
 };
 
 struct list_sensitivity_templates_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::sensitivity_template> templates;
     std::uint64_t total;
+
+    friend bool operator==(const list_sensitivity_templates_response&,
+                           const list_sensitivity_templates_response&) = default;
 };
 
 struct get_sensitivity_template_request {
@@ -126,11 +159,17 @@ struct get_sensitivity_template_request {
      */
     static constexpr bool requires_session = true;
     sensitivity_template_key key;
+
+    friend bool operator==(const get_sensitivity_template_request&,
+                           const get_sensitivity_template_request&) = default;
 };
 
 struct get_sensitivity_template_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::sensitivity_template> sensitivity_template;
+
+    friend bool operator==(const get_sensitivity_template_response&,
+                           const get_sensitivity_template_response&) = default;
 };
 
 struct get_many_sensitivity_templates_request {
@@ -144,11 +183,17 @@ struct get_many_sensitivity_templates_request {
      */
     static constexpr bool requires_session = true;
     std::vector<sensitivity_template_key> keys;
+
+    friend bool operator==(const get_many_sensitivity_templates_request&,
+                           const get_many_sensitivity_templates_request&) = default;
 };
 
 struct get_many_sensitivity_templates_response {
     ores::utility::domain::result result;
     std::vector<sensitivity_template_lookup> entries;
+
+    friend bool operator==(const get_many_sensitivity_templates_response&,
+                           const get_many_sensitivity_templates_response&) = default;
 };
 
 struct put_sensitivity_template_request {
@@ -163,11 +208,17 @@ struct put_sensitivity_template_request {
     static constexpr bool requires_session = true;
     sensitivity_template_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_sensitivity_template_request&,
+                           const put_sensitivity_template_request&) = default;
 };
 
 struct put_sensitivity_template_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::sensitivity_template> sensitivity_template;
+
+    friend bool operator==(const put_sensitivity_template_response&,
+                           const put_sensitivity_template_response&) = default;
 };
 
 struct put_many_sensitivity_templates_request {
@@ -182,11 +233,17 @@ struct put_many_sensitivity_templates_request {
     static constexpr bool requires_session = true;
     std::vector<sensitivity_template_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_sensitivity_templates_request&,
+                           const put_many_sensitivity_templates_request&) = default;
 };
 
 struct put_many_sensitivity_templates_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::sensitivity_template> templates;
+
+    friend bool operator==(const put_many_sensitivity_templates_response&,
+                           const put_many_sensitivity_templates_response&) = default;
 };
 
 struct delete_sensitivity_template_request {
@@ -201,10 +258,16 @@ struct delete_sensitivity_template_request {
     static constexpr bool requires_session = true;
     sensitivity_template_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_sensitivity_template_request&,
+                           const delete_sensitivity_template_request&) = default;
 };
 
 struct delete_sensitivity_template_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_sensitivity_template_response&,
+                           const delete_sensitivity_template_response&) = default;
 };
 
 struct delete_many_sensitivity_templates_request {
@@ -220,10 +283,16 @@ struct delete_many_sensitivity_templates_request {
     static constexpr bool requires_session = true;
     std::vector<sensitivity_template_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_sensitivity_templates_request&,
+                           const delete_many_sensitivity_templates_request&) = default;
 };
 
 struct delete_many_sensitivity_templates_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_sensitivity_templates_response&,
+                           const delete_many_sensitivity_templates_response&) = default;
 };
 
 struct list_sensitivity_template_versions_request {
@@ -242,12 +311,18 @@ struct list_sensitivity_template_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<sensitivity_template_versions_filter> filter;
+
+    friend bool operator==(const list_sensitivity_template_versions_request&,
+                           const list_sensitivity_template_versions_request&) = default;
 };
 
 struct list_sensitivity_template_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::sensitivity_template> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_sensitivity_template_versions_response&,
+                           const list_sensitivity_template_versions_response&) = default;
 };
 
 struct get_sensitivity_template_version_request {
@@ -262,11 +337,17 @@ struct get_sensitivity_template_version_request {
      */
     static constexpr bool requires_session = true;
     sensitivity_template_version_key key;
+
+    friend bool operator==(const get_sensitivity_template_version_request&,
+                           const get_sensitivity_template_version_request&) = default;
 };
 
 struct get_sensitivity_template_version_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::sensitivity_template> version;
+
+    friend bool operator==(const get_sensitivity_template_version_response&,
+                           const get_sensitivity_template_version_response&) = default;
 };
 
 /**

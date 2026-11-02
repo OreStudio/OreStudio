@@ -43,6 +43,8 @@ namespace ores::reporting::messaging {
 
 struct cut_gap_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const cut_gap_key&, const cut_gap_key&) = default;
 };
 
 struct cut_gap_write {
@@ -51,21 +53,29 @@ struct cut_gap_write {
     std::string part_code;
     std::string item;
     std::string reason;
+
+    friend bool operator==(const cut_gap_write&, const cut_gap_write&) = default;
 };
 
 struct cut_gap_change {
     cut_gap_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const cut_gap_change&, const cut_gap_change&) = default;
 };
 
 struct cut_gap_removal {
     cut_gap_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const cut_gap_removal&, const cut_gap_removal&) = default;
 };
 
 struct cut_gap_lookup {
     cut_gap_key key;
     std::optional<ores::reporting::domain::cut_gap> cut_gap;
+
+    friend bool operator==(const cut_gap_lookup&, const cut_gap_lookup&) = default;
 };
 
 struct cut_gaps_filter {
@@ -74,6 +84,8 @@ struct cut_gaps_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> cut_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+
+    friend bool operator==(const cut_gaps_filter&, const cut_gaps_filter&) = default;
 };
 
 struct cut_gap_event {
@@ -83,17 +95,24 @@ struct cut_gap_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const cut_gap_event&, const cut_gap_event&) = default;
 };
 
 struct cut_gap_version_key {
     cut_gap_key cut_gap;
     std::uint32_t version;
+
+    friend bool operator==(const cut_gap_version_key&, const cut_gap_version_key&) = default;
 };
 
 struct cut_gap_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const cut_gap_versions_filter&,
+                           const cut_gap_versions_filter&) = default;
 };
 
 struct list_cut_gaps_request {
@@ -111,12 +130,16 @@ struct list_cut_gaps_request {
     ores::utility::domain::order order;
     std::optional<cut_gaps_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_cut_gaps_request&, const list_cut_gaps_request&) = default;
 };
 
 struct list_cut_gaps_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_gap> gaps;
     std::uint64_t total;
+
+    friend bool operator==(const list_cut_gaps_response&, const list_cut_gaps_response&) = default;
 };
 
 struct get_cut_gap_request {
@@ -130,11 +153,15 @@ struct get_cut_gap_request {
      */
     static constexpr bool requires_session = true;
     cut_gap_key key;
+
+    friend bool operator==(const get_cut_gap_request&, const get_cut_gap_request&) = default;
 };
 
 struct get_cut_gap_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_gap> cut_gap;
+
+    friend bool operator==(const get_cut_gap_response&, const get_cut_gap_response&) = default;
 };
 
 struct get_many_cut_gaps_request {
@@ -148,11 +175,17 @@ struct get_many_cut_gaps_request {
      */
     static constexpr bool requires_session = true;
     std::vector<cut_gap_key> keys;
+
+    friend bool operator==(const get_many_cut_gaps_request&,
+                           const get_many_cut_gaps_request&) = default;
 };
 
 struct get_many_cut_gaps_response {
     ores::utility::domain::result result;
     std::vector<cut_gap_lookup> entries;
+
+    friend bool operator==(const get_many_cut_gaps_response&,
+                           const get_many_cut_gaps_response&) = default;
 };
 
 struct put_cut_gap_request {
@@ -167,11 +200,15 @@ struct put_cut_gap_request {
     static constexpr bool requires_session = true;
     cut_gap_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_cut_gap_request&, const put_cut_gap_request&) = default;
 };
 
 struct put_cut_gap_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_gap> cut_gap;
+
+    friend bool operator==(const put_cut_gap_response&, const put_cut_gap_response&) = default;
 };
 
 struct put_many_cut_gaps_request {
@@ -186,11 +223,17 @@ struct put_many_cut_gaps_request {
     static constexpr bool requires_session = true;
     std::vector<cut_gap_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_cut_gaps_request&,
+                           const put_many_cut_gaps_request&) = default;
 };
 
 struct put_many_cut_gaps_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_gap> gaps;
+
+    friend bool operator==(const put_many_cut_gaps_response&,
+                           const put_many_cut_gaps_response&) = default;
 };
 
 struct delete_cut_gap_request {
@@ -205,10 +248,15 @@ struct delete_cut_gap_request {
     static constexpr bool requires_session = true;
     cut_gap_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_cut_gap_request&, const delete_cut_gap_request&) = default;
 };
 
 struct delete_cut_gap_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_cut_gap_response&,
+                           const delete_cut_gap_response&) = default;
 };
 
 struct delete_many_cut_gaps_request {
@@ -223,10 +271,16 @@ struct delete_many_cut_gaps_request {
     static constexpr bool requires_session = true;
     std::vector<cut_gap_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_cut_gaps_request&,
+                           const delete_many_cut_gaps_request&) = default;
 };
 
 struct delete_many_cut_gaps_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_cut_gaps_response&,
+                           const delete_many_cut_gaps_response&) = default;
 };
 
 struct list_by_cut_id_cut_gaps_request {
@@ -245,12 +299,18 @@ struct list_by_cut_id_cut_gaps_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cut_gaps_filter> filter;
+
+    friend bool operator==(const list_by_cut_id_cut_gaps_request&,
+                           const list_by_cut_id_cut_gaps_request&) = default;
 };
 
 struct list_by_cut_id_cut_gaps_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_gap> gaps;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_cut_id_cut_gaps_response&,
+                           const list_by_cut_id_cut_gaps_response&) = default;
 };
 
 struct list_cut_gap_versions_request {
@@ -268,12 +328,18 @@ struct list_cut_gap_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cut_gap_versions_filter> filter;
+
+    friend bool operator==(const list_cut_gap_versions_request&,
+                           const list_cut_gap_versions_request&) = default;
 };
 
 struct list_cut_gap_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_gap> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_cut_gap_versions_response&,
+                           const list_cut_gap_versions_response&) = default;
 };
 
 struct get_cut_gap_version_request {
@@ -287,11 +353,17 @@ struct get_cut_gap_version_request {
      */
     static constexpr bool requires_session = true;
     cut_gap_version_key key;
+
+    friend bool operator==(const get_cut_gap_version_request&,
+                           const get_cut_gap_version_request&) = default;
 };
 
 struct get_cut_gap_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_gap> version;
+
+    friend bool operator==(const get_cut_gap_version_response&,
+                           const get_cut_gap_version_response&) = default;
 };
 
 /**

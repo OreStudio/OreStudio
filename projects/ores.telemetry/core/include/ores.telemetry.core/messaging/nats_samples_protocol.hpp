@@ -75,6 +75,8 @@ struct nats_server_sample {
      * @brief Number of slow consumers detected since server start.
      */
     int slow_consumers = 0;
+
+    friend bool operator==(const nats_server_sample&, const nats_server_sample&) = default;
 };
 
 /**
@@ -101,6 +103,8 @@ struct nats_stream_sample {
      * @brief Number of active consumers on this stream.
      */
     int consumer_count = 0;
+
+    friend bool operator==(const nats_stream_sample&, const nats_stream_sample&) = default;
 };
 
 /**
@@ -119,6 +123,9 @@ struct nats_server_samples_query {
      * @brief Maximum number of results to return.
      */
     std::uint32_t limit = 1000;
+
+    friend bool operator==(const nats_server_samples_query&,
+                           const nats_server_samples_query&) = default;
 };
 
 /**
@@ -141,6 +148,9 @@ struct nats_stream_samples_query {
      * @brief Maximum number of results to return.
      */
     std::uint32_t limit = 1000;
+
+    friend bool operator==(const nats_stream_samples_query&,
+                           const nats_stream_samples_query&) = default;
 };
 
 /**
@@ -160,6 +170,9 @@ struct get_nats_server_samples_request {
      * @brief The time range and limit the read applies.
      */
     nats_server_samples_query query;
+
+    friend bool operator==(const get_nats_server_samples_request&,
+                           const get_nats_server_samples_request&) = default;
 };
 
 /**
@@ -178,6 +191,9 @@ struct get_nats_server_samples_response {
      * @brief The server samples the read returned.
      */
     std::vector<nats_server_sample> samples;
+
+    friend bool operator==(const get_nats_server_samples_response&,
+                           const get_nats_server_samples_response&) = default;
 };
 
 /**
@@ -197,6 +213,9 @@ struct get_nats_stream_samples_request {
      * @brief The stream, time range and limit the read applies.
      */
     nats_stream_samples_query query;
+
+    friend bool operator==(const get_nats_stream_samples_request&,
+                           const get_nats_stream_samples_request&) = default;
 };
 
 /**
@@ -215,6 +234,9 @@ struct get_nats_stream_samples_response {
      * @brief The stream samples the read returned.
      */
     std::vector<nats_stream_sample> samples;
+
+    friend bool operator==(const get_nats_stream_samples_response&,
+                           const get_nats_stream_samples_response&) = default;
 };
 
 /**

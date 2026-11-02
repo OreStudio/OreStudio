@@ -54,16 +54,23 @@ struct assign_role_request {
     std::string role_id;
     std::string change_reason_code;
     std::string change_commentary;
+
+    friend bool operator==(const assign_role_request&, const assign_role_request&) = default;
 };
 
 struct assign_role_response {
     bool success = false;
     std::string error_message;
+
+    friend bool operator==(const assign_role_response&, const assign_role_response&) = default;
 };
 
 struct assign_role_by_name_response {
     bool success = false;
     std::string error_message;
+
+    friend bool operator==(const assign_role_by_name_response&,
+                           const assign_role_by_name_response&) = default;
 };
 
 struct assign_role_by_name_request {
@@ -78,6 +85,9 @@ struct assign_role_by_name_request {
     static constexpr bool requires_session = true;
     std::string principal;
     std::string role_name;
+
+    friend bool operator==(const assign_role_by_name_request&,
+                           const assign_role_by_name_request&) = default;
 };
 
 struct revoke_role_request {
@@ -92,16 +102,23 @@ struct revoke_role_request {
     static constexpr bool requires_session = true;
     std::string account_id;
     std::string role_id;
+
+    friend bool operator==(const revoke_role_request&, const revoke_role_request&) = default;
 };
 
 struct revoke_role_response {
     bool success = false;
     std::string error_message;
+
+    friend bool operator==(const revoke_role_response&, const revoke_role_response&) = default;
 };
 
 struct revoke_role_by_name_response {
     bool success = false;
     std::string error_message;
+
+    friend bool operator==(const revoke_role_by_name_response&,
+                           const revoke_role_by_name_response&) = default;
 };
 
 struct revoke_role_by_name_request {
@@ -116,6 +133,9 @@ struct revoke_role_by_name_request {
     static constexpr bool requires_session = true;
     std::string principal;
     std::string role_name;
+
+    friend bool operator==(const revoke_role_by_name_request&,
+                           const revoke_role_by_name_request&) = default;
 };
 
 struct get_account_roles_request {
@@ -129,6 +149,9 @@ struct get_account_roles_request {
      */
     static constexpr bool requires_session = true;
     std::string account_id;
+
+    friend bool operator==(const get_account_roles_request&,
+                           const get_account_roles_request&) = default;
 };
 
 struct get_my_roles_request {
@@ -141,6 +164,8 @@ struct get_my_roles_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_my_roles_request&, const get_my_roles_request&) = default;
 };
 
 /**
@@ -158,6 +183,9 @@ struct permission_resource_row {
     std::vector<std::string> actions;
     std::vector<std::string> held;
     std::vector<std::string> roles;
+
+    friend bool operator==(const permission_resource_row&,
+                           const permission_resource_row&) = default;
 };
 
 /**
@@ -170,6 +198,8 @@ struct permission_resource_row {
 struct permission_area_count {
     std::string component;
     int resources = 0;
+
+    friend bool operator==(const permission_area_count&, const permission_area_count&) = default;
 };
 
 /**
@@ -196,6 +226,9 @@ struct list_account_permissions_request {
     std::string search;
     int offset = 0;
     int limit = 15;
+
+    friend bool operator==(const list_account_permissions_request&,
+                           const list_account_permissions_request&) = default;
 };
 
 /**
@@ -219,6 +252,9 @@ struct list_my_permissions_request {
     std::string search;
     int offset = 0;
     int limit = 15;
+
+    friend bool operator==(const list_my_permissions_request&,
+                           const list_my_permissions_request&) = default;
 };
 
 struct permission_page_response {
@@ -244,6 +280,9 @@ struct permission_page_response {
      * @brief Whether the roles grant everything (=*=).
      */
     bool everything = false;
+
+    friend bool operator==(const permission_page_response&,
+                           const permission_page_response&) = default;
 };
 
 /**
@@ -270,6 +309,9 @@ struct list_role_permissions_page_request {
     bool include_unheld = false;
     int offset = 0;
     int limit = 15;
+
+    friend bool operator==(const list_role_permissions_page_request&,
+                           const list_role_permissions_page_request&) = default;
 };
 
 /**
@@ -290,6 +332,8 @@ struct role_page_row {
     bool requestable = false;
     int permission_count = 0;
     bool everything = false;
+
+    friend bool operator==(const role_page_row&, const role_page_row&) = default;
 };
 
 /**
@@ -317,6 +361,9 @@ struct list_roles_page_request {
     bool include_service = false;
     int offset = 0;
     int limit = 15;
+
+    friend bool operator==(const list_roles_page_request&,
+                           const list_roles_page_request&) = default;
 };
 
 struct role_page_response {
@@ -332,6 +379,8 @@ struct role_page_response {
      * An area no role grants is not offered, so choosing one never shows an empty list.
      */
     std::vector<permission_area_count> areas;
+
+    friend bool operator==(const role_page_response&, const role_page_response&) = default;
 };
 
 /**
@@ -347,6 +396,8 @@ struct role_holder {
     std::string full_name;
     std::string image_id;
     std::string assigned_by;
+
+    friend bool operator==(const role_holder&, const role_holder&) = default;
 };
 
 /**
@@ -369,12 +420,17 @@ struct list_role_holders_request {
     std::string role_id;
     int offset = 0;
     int limit = 15;
+
+    friend bool operator==(const list_role_holders_request&,
+                           const list_role_holders_request&) = default;
 };
 
 struct role_holders_response {
     ores::utility::domain::result result;
     std::vector<role_holder> holders;
     int total_count = 0;
+
+    friend bool operator==(const role_holders_response&, const role_holders_response&) = default;
 };
 
 /**
@@ -393,11 +449,16 @@ struct account_role_access {
     std::chrono::system_clock::time_point assigned_at;
     std::string change_reason_code;
     std::string change_commentary;
+
+    friend bool operator==(const account_role_access&, const account_role_access&) = default;
 };
 
 struct get_account_roles_response {
     ores::utility::domain::result result;
     std::vector<account_role_access> roles;
+
+    friend bool operator==(const get_account_roles_response&,
+                           const get_account_roles_response&) = default;
 };
 
 struct get_role_permissions_request {
@@ -411,11 +472,17 @@ struct get_role_permissions_request {
      */
     static constexpr bool requires_session = true;
     std::string role_id;
+
+    friend bool operator==(const get_role_permissions_request&,
+                           const get_role_permissions_request&) = default;
 };
 
 struct get_role_permissions_response {
     ores::utility::domain::result result;
     std::vector<std::string> permission_codes;
+
+    friend bool operator==(const get_role_permissions_response&,
+                           const get_role_permissions_response&) = default;
 };
 
 /**
@@ -443,6 +510,9 @@ struct put_role_permissions_request {
     std::vector<std::string> permission_codes;
     std::string change_reason_code;
     std::string change_commentary;
+
+    friend bool operator==(const put_role_permissions_request&,
+                           const put_role_permissions_request&) = default;
 };
 
 struct suggest_role_commands_request {
@@ -458,10 +528,16 @@ struct suggest_role_commands_request {
     std::string username;
     std::string tenant_id;
     std::string hostname;
+
+    friend bool operator==(const suggest_role_commands_request&,
+                           const suggest_role_commands_request&) = default;
 };
 
 struct suggest_role_commands_response {
     std::vector<std::string> commands;
+
+    friend bool operator==(const suggest_role_commands_response&,
+                           const suggest_role_commands_response&) = default;
 };
 
 /**

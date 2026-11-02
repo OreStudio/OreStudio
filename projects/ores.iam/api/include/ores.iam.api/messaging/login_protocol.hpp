@@ -42,6 +42,8 @@ struct party_summary {
     std::string name;
     std::string party_category;
     std::string business_center_code;
+
+    friend bool operator==(const party_summary&, const party_summary&) = default;
 };
 
 /**
@@ -63,6 +65,8 @@ struct database_info {
     std::string commit;
     /** @brief When the database was created or recreated. */
     std::string created;
+
+    friend bool operator==(const database_info&, const database_info&) = default;
 };
 
 struct login_request {
@@ -77,6 +81,8 @@ struct login_request {
     static constexpr bool requires_session = false;
     std::string principal;
     std::string password;
+
+    friend bool operator==(const login_request&, const login_request&) = default;
 };
 
 struct login_response {
@@ -165,6 +171,8 @@ struct login_response {
      * all calls from a single login session can be correlated in logs.
      */
     std::string session_id;
+
+    friend bool operator==(const login_response&, const login_response&) = default;
 };
 
 struct logout_request {
@@ -177,11 +185,15 @@ struct logout_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const logout_request&, const logout_request&) = default;
 };
 
 struct logout_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const logout_response&, const logout_response&) = default;
 };
 
 struct public_key_request {
@@ -193,6 +205,8 @@ struct public_key_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const public_key_request&, const public_key_request&) = default;
 };
 
 /**
@@ -211,6 +225,8 @@ struct refresh_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const refresh_request&, const refresh_request&) = default;
 };
 
 /**
@@ -226,6 +242,8 @@ struct refresh_response {
      * Clients re-arm the proactive refresh timer using this value.
      */
     int access_lifetime_s = 1800;
+
+    friend bool operator==(const refresh_response&, const refresh_response&) = default;
 };
 
 /**
@@ -253,6 +271,8 @@ struct service_login_request {
     static constexpr bool requires_session = false;
     std::string username;
     std::string password;
+
+    friend bool operator==(const service_login_request&, const service_login_request&) = default;
 };
 
 struct service_login_response {
@@ -260,6 +280,8 @@ struct service_login_response {
     std::string token;
     std::string message;
     int access_lifetime_s = 1800;
+
+    friend bool operator==(const service_login_response&, const service_login_response&) = default;
 };
 
 /**

@@ -51,6 +51,8 @@ struct provider_terms_choice {
      * @brief The version of the provider the person read, or zero for the latest.
      */
     int provider_version = 0;
+
+    friend bool operator==(const provider_terms_choice&, const provider_terms_choice&) = default;
 };
 
 /**
@@ -77,6 +79,8 @@ struct provider_terms_outcome {
      * @brief When the acceptance was recorded.
      */
     std::optional<std::chrono::system_clock::time_point> accepted_at;
+
+    friend bool operator==(const provider_terms_outcome&, const provider_terms_outcome&) = default;
 };
 
 /**
@@ -100,6 +104,9 @@ struct accept_many_provider_terms_request {
      * @brief The providers whose terms are accepted, each at the version read.
      */
     std::vector<provider_terms_choice> providers;
+
+    friend bool operator==(const accept_many_provider_terms_request&,
+                           const accept_many_provider_terms_request&) = default;
 };
 
 /**
@@ -118,6 +125,9 @@ struct accept_many_provider_terms_response {
      * @brief What became of each provider, in the order they were named.
      */
     std::vector<provider_terms_outcome> outcomes;
+
+    friend bool operator==(const accept_many_provider_terms_response&,
+                           const accept_many_provider_terms_response&) = default;
 };
 
 /**

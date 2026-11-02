@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct demand_interval_key {
     std::string oresmd_uri;
+
+    friend bool operator==(const demand_interval_key&, const demand_interval_key&) = default;
 };
 
 struct demand_interval_write {
@@ -53,21 +55,30 @@ struct demand_interval_write {
     std::chrono::system_clock::time_point interval_from;
     boost::uuids::uuid feed_id;
     std::optional<std::chrono::system_clock::time_point> interval_to;
+
+    friend bool operator==(const demand_interval_write&, const demand_interval_write&) = default;
 };
 
 struct demand_interval_change {
     demand_interval_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const demand_interval_change&, const demand_interval_change&) = default;
 };
 
 struct demand_interval_removal {
     demand_interval_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const demand_interval_removal&,
+                           const demand_interval_removal&) = default;
 };
 
 struct demand_interval_lookup {
     demand_interval_key key;
     std::optional<ores::marketdata::domain::demand_interval> demand_interval;
+
+    friend bool operator==(const demand_interval_lookup&, const demand_interval_lookup&) = default;
 };
 
 struct demand_intervals_filter {
@@ -78,6 +89,9 @@ struct demand_intervals_filter {
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
     std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
+
+    friend bool operator==(const demand_intervals_filter&,
+                           const demand_intervals_filter&) = default;
 };
 
 struct demand_interval_event {
@@ -87,17 +101,25 @@ struct demand_interval_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const demand_interval_event&, const demand_interval_event&) = default;
 };
 
 struct demand_interval_version_key {
     demand_interval_key demand_interval;
     std::uint32_t version;
+
+    friend bool operator==(const demand_interval_version_key&,
+                           const demand_interval_version_key&) = default;
 };
 
 struct demand_interval_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const demand_interval_versions_filter&,
+                           const demand_interval_versions_filter&) = default;
 };
 
 struct list_demand_intervals_request {
@@ -115,12 +137,18 @@ struct list_demand_intervals_request {
     ores::utility::domain::order order;
     std::optional<demand_intervals_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_demand_intervals_request&,
+                           const list_demand_intervals_request&) = default;
 };
 
 struct list_demand_intervals_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::demand_interval> demand_intervals;
     std::uint64_t total;
+
+    friend bool operator==(const list_demand_intervals_response&,
+                           const list_demand_intervals_response&) = default;
 };
 
 struct get_demand_interval_request {
@@ -134,11 +162,17 @@ struct get_demand_interval_request {
      */
     static constexpr bool requires_session = true;
     demand_interval_key key;
+
+    friend bool operator==(const get_demand_interval_request&,
+                           const get_demand_interval_request&) = default;
 };
 
 struct get_demand_interval_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::demand_interval> demand_interval;
+
+    friend bool operator==(const get_demand_interval_response&,
+                           const get_demand_interval_response&) = default;
 };
 
 struct get_many_demand_intervals_request {
@@ -152,11 +186,17 @@ struct get_many_demand_intervals_request {
      */
     static constexpr bool requires_session = true;
     std::vector<demand_interval_key> keys;
+
+    friend bool operator==(const get_many_demand_intervals_request&,
+                           const get_many_demand_intervals_request&) = default;
 };
 
 struct get_many_demand_intervals_response {
     ores::utility::domain::result result;
     std::vector<demand_interval_lookup> entries;
+
+    friend bool operator==(const get_many_demand_intervals_response&,
+                           const get_many_demand_intervals_response&) = default;
 };
 
 struct put_demand_interval_request {
@@ -171,11 +211,17 @@ struct put_demand_interval_request {
     static constexpr bool requires_session = true;
     demand_interval_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_demand_interval_request&,
+                           const put_demand_interval_request&) = default;
 };
 
 struct put_demand_interval_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::demand_interval> demand_interval;
+
+    friend bool operator==(const put_demand_interval_response&,
+                           const put_demand_interval_response&) = default;
 };
 
 struct put_many_demand_intervals_request {
@@ -190,11 +236,17 @@ struct put_many_demand_intervals_request {
     static constexpr bool requires_session = true;
     std::vector<demand_interval_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_demand_intervals_request&,
+                           const put_many_demand_intervals_request&) = default;
 };
 
 struct put_many_demand_intervals_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::demand_interval> demand_intervals;
+
+    friend bool operator==(const put_many_demand_intervals_response&,
+                           const put_many_demand_intervals_response&) = default;
 };
 
 struct delete_demand_interval_request {
@@ -209,10 +261,16 @@ struct delete_demand_interval_request {
     static constexpr bool requires_session = true;
     demand_interval_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_demand_interval_request&,
+                           const delete_demand_interval_request&) = default;
 };
 
 struct delete_demand_interval_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_demand_interval_response&,
+                           const delete_demand_interval_response&) = default;
 };
 
 struct delete_many_demand_intervals_request {
@@ -227,10 +285,16 @@ struct delete_many_demand_intervals_request {
     static constexpr bool requires_session = true;
     std::vector<demand_interval_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_demand_intervals_request&,
+                           const delete_many_demand_intervals_request&) = default;
 };
 
 struct delete_many_demand_intervals_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_demand_intervals_response&,
+                           const delete_many_demand_intervals_response&) = default;
 };
 
 struct list_demand_interval_versions_request {
@@ -248,12 +312,18 @@ struct list_demand_interval_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<demand_interval_versions_filter> filter;
+
+    friend bool operator==(const list_demand_interval_versions_request&,
+                           const list_demand_interval_versions_request&) = default;
 };
 
 struct list_demand_interval_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::demand_interval> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_demand_interval_versions_response&,
+                           const list_demand_interval_versions_response&) = default;
 };
 
 struct get_demand_interval_version_request {
@@ -267,11 +337,17 @@ struct get_demand_interval_version_request {
      */
     static constexpr bool requires_session = true;
     demand_interval_version_key key;
+
+    friend bool operator==(const get_demand_interval_version_request&,
+                           const get_demand_interval_version_request&) = default;
 };
 
 struct get_demand_interval_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::demand_interval> version;
+
+    friend bool operator==(const get_demand_interval_version_response&,
+                           const get_demand_interval_version_response&) = default;
 };
 
 /**

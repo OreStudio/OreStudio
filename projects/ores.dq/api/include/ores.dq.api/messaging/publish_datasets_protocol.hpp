@@ -66,6 +66,9 @@ struct publish_datasets_request {
      * @brief Whether a dataset's dependencies are published with it.
      */
     bool resolve_dependencies = true;
+
+    friend bool operator==(const publish_datasets_request&,
+                           const publish_datasets_request&) = default;
 };
 
 /**
@@ -88,6 +91,9 @@ struct publish_datasets_response {
      * @brief How many datasets were dispatched.
      */
     int datasets_dispatched = 0;
+
+    friend bool operator==(const publish_datasets_response&,
+                           const publish_datasets_response&) = default;
 };
 
 /**

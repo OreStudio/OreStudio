@@ -65,6 +65,9 @@ struct dq_report_definition_template {
      * @brief Where the template sits in the list.
      */
     int display_order = 0;
+
+    friend bool operator==(const dq_report_definition_template&,
+                           const dq_report_definition_template&) = default;
 };
 
 /**
@@ -84,6 +87,9 @@ struct list_dq_report_definition_templates_request {
      * @brief The bundle whose templates are listed.
      */
     std::string bundle_code = "risk_management";
+
+    friend bool operator==(const list_dq_report_definition_templates_request&,
+                           const list_dq_report_definition_templates_request&) = default;
 };
 
 /**
@@ -102,6 +108,9 @@ struct list_dq_report_definition_templates_response {
      * @brief The templates, in display order.
      */
     std::vector<dq_report_definition_template> templates;
+
+    friend bool operator==(const list_dq_report_definition_templates_response&,
+                           const list_dq_report_definition_templates_response&) = default;
 };
 
 /**

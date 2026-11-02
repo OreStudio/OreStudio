@@ -44,6 +44,9 @@ namespace ores::trading::messaging {
 struct flexi_swap_lower_notional_key {
     boost::uuids::uuid trade_id;
     int sequence_number;
+
+    friend bool operator==(const flexi_swap_lower_notional_key&,
+                           const flexi_swap_lower_notional_key&) = default;
 };
 
 struct flexi_swap_lower_notional_write {
@@ -54,26 +57,41 @@ struct flexi_swap_lower_notional_write {
     std::optional<std::string> currency;
     std::optional<std::chrono::year_month_day> start_date;
     ores::utility::decimal::decimal notional;
+
+    friend bool operator==(const flexi_swap_lower_notional_write&,
+                           const flexi_swap_lower_notional_write&) = default;
 };
 
 struct flexi_swap_lower_notional_change {
     flexi_swap_lower_notional_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const flexi_swap_lower_notional_change&,
+                           const flexi_swap_lower_notional_change&) = default;
 };
 
 struct flexi_swap_lower_notional_removal {
     flexi_swap_lower_notional_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const flexi_swap_lower_notional_removal&,
+                           const flexi_swap_lower_notional_removal&) = default;
 };
 
 struct flexi_swap_lower_notional_lookup {
     flexi_swap_lower_notional_key key;
     std::optional<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notional;
+
+    friend bool operator==(const flexi_swap_lower_notional_lookup&,
+                           const flexi_swap_lower_notional_lookup&) = default;
 };
 
 struct flexi_swap_lower_notionals_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const flexi_swap_lower_notionals_filter&,
+                           const flexi_swap_lower_notionals_filter&) = default;
 };
 
 struct flexi_swap_lower_notional_event {
@@ -83,17 +101,26 @@ struct flexi_swap_lower_notional_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const flexi_swap_lower_notional_event&,
+                           const flexi_swap_lower_notional_event&) = default;
 };
 
 struct flexi_swap_lower_notional_version_key {
     flexi_swap_lower_notional_key flexi_swap_lower_notional;
     std::uint32_t version;
+
+    friend bool operator==(const flexi_swap_lower_notional_version_key&,
+                           const flexi_swap_lower_notional_version_key&) = default;
 };
 
 struct flexi_swap_lower_notional_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const flexi_swap_lower_notional_versions_filter&,
+                           const flexi_swap_lower_notional_versions_filter&) = default;
 };
 
 struct list_flexi_swap_lower_notionals_request {
@@ -111,12 +138,18 @@ struct list_flexi_swap_lower_notionals_request {
     ores::utility::domain::order order;
     std::optional<flexi_swap_lower_notionals_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_flexi_swap_lower_notionals_request&,
+                           const list_flexi_swap_lower_notionals_request&) = default;
 };
 
 struct list_flexi_swap_lower_notionals_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notionals;
     std::uint64_t total;
+
+    friend bool operator==(const list_flexi_swap_lower_notionals_response&,
+                           const list_flexi_swap_lower_notionals_response&) = default;
 };
 
 struct get_flexi_swap_lower_notional_request {
@@ -130,11 +163,17 @@ struct get_flexi_swap_lower_notional_request {
      */
     static constexpr bool requires_session = true;
     flexi_swap_lower_notional_key key;
+
+    friend bool operator==(const get_flexi_swap_lower_notional_request&,
+                           const get_flexi_swap_lower_notional_request&) = default;
 };
 
 struct get_flexi_swap_lower_notional_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notional;
+
+    friend bool operator==(const get_flexi_swap_lower_notional_response&,
+                           const get_flexi_swap_lower_notional_response&) = default;
 };
 
 struct get_many_flexi_swap_lower_notionals_request {
@@ -149,11 +188,17 @@ struct get_many_flexi_swap_lower_notionals_request {
      */
     static constexpr bool requires_session = true;
     std::vector<flexi_swap_lower_notional_key> keys;
+
+    friend bool operator==(const get_many_flexi_swap_lower_notionals_request&,
+                           const get_many_flexi_swap_lower_notionals_request&) = default;
 };
 
 struct get_many_flexi_swap_lower_notionals_response {
     ores::utility::domain::result result;
     std::vector<flexi_swap_lower_notional_lookup> entries;
+
+    friend bool operator==(const get_many_flexi_swap_lower_notionals_response&,
+                           const get_many_flexi_swap_lower_notionals_response&) = default;
 };
 
 struct put_flexi_swap_lower_notional_request {
@@ -168,11 +213,17 @@ struct put_flexi_swap_lower_notional_request {
     static constexpr bool requires_session = true;
     flexi_swap_lower_notional_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_flexi_swap_lower_notional_request&,
+                           const put_flexi_swap_lower_notional_request&) = default;
 };
 
 struct put_flexi_swap_lower_notional_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notional;
+
+    friend bool operator==(const put_flexi_swap_lower_notional_response&,
+                           const put_flexi_swap_lower_notional_response&) = default;
 };
 
 struct put_many_flexi_swap_lower_notionals_request {
@@ -188,11 +239,17 @@ struct put_many_flexi_swap_lower_notionals_request {
     static constexpr bool requires_session = true;
     std::vector<flexi_swap_lower_notional_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_flexi_swap_lower_notionals_request&,
+                           const put_many_flexi_swap_lower_notionals_request&) = default;
 };
 
 struct put_many_flexi_swap_lower_notionals_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notionals;
+
+    friend bool operator==(const put_many_flexi_swap_lower_notionals_response&,
+                           const put_many_flexi_swap_lower_notionals_response&) = default;
 };
 
 struct delete_flexi_swap_lower_notional_request {
@@ -207,10 +264,16 @@ struct delete_flexi_swap_lower_notional_request {
     static constexpr bool requires_session = true;
     flexi_swap_lower_notional_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_flexi_swap_lower_notional_request&,
+                           const delete_flexi_swap_lower_notional_request&) = default;
 };
 
 struct delete_flexi_swap_lower_notional_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_flexi_swap_lower_notional_response&,
+                           const delete_flexi_swap_lower_notional_response&) = default;
 };
 
 struct delete_many_flexi_swap_lower_notionals_request {
@@ -226,10 +289,16 @@ struct delete_many_flexi_swap_lower_notionals_request {
     static constexpr bool requires_session = true;
     std::vector<flexi_swap_lower_notional_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_flexi_swap_lower_notionals_request&,
+                           const delete_many_flexi_swap_lower_notionals_request&) = default;
 };
 
 struct delete_many_flexi_swap_lower_notionals_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_flexi_swap_lower_notionals_response&,
+                           const delete_many_flexi_swap_lower_notionals_response&) = default;
 };
 
 struct list_by_trade_id_flexi_swap_lower_notionals_request {
@@ -249,12 +318,18 @@ struct list_by_trade_id_flexi_swap_lower_notionals_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<flexi_swap_lower_notionals_filter> filter;
+
+    friend bool operator==(const list_by_trade_id_flexi_swap_lower_notionals_request&,
+                           const list_by_trade_id_flexi_swap_lower_notionals_request&) = default;
 };
 
 struct list_by_trade_id_flexi_swap_lower_notionals_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notionals;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_trade_id_flexi_swap_lower_notionals_response&,
+                           const list_by_trade_id_flexi_swap_lower_notionals_response&) = default;
 };
 
 struct list_flexi_swap_lower_notional_versions_request {
@@ -273,12 +348,18 @@ struct list_flexi_swap_lower_notional_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<flexi_swap_lower_notional_versions_filter> filter;
+
+    friend bool operator==(const list_flexi_swap_lower_notional_versions_request&,
+                           const list_flexi_swap_lower_notional_versions_request&) = default;
 };
 
 struct list_flexi_swap_lower_notional_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::flexi_swap_lower_notional> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_flexi_swap_lower_notional_versions_response&,
+                           const list_flexi_swap_lower_notional_versions_response&) = default;
 };
 
 struct get_flexi_swap_lower_notional_version_request {
@@ -293,11 +374,17 @@ struct get_flexi_swap_lower_notional_version_request {
      */
     static constexpr bool requires_session = true;
     flexi_swap_lower_notional_version_key key;
+
+    friend bool operator==(const get_flexi_swap_lower_notional_version_request&,
+                           const get_flexi_swap_lower_notional_version_request&) = default;
 };
 
 struct get_flexi_swap_lower_notional_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::flexi_swap_lower_notional> version;
+
+    friend bool operator==(const get_flexi_swap_lower_notional_version_response&,
+                           const get_flexi_swap_lower_notional_version_response&) = default;
 };
 
 /**

@@ -43,15 +43,21 @@ namespace ores::marketdata::messaging {
 
 struct supplier_key {
     std::string code;
+
+    friend bool operator==(const supplier_key&, const supplier_key&) = default;
 };
 
 struct supplier_lookup {
     supplier_key key;
     std::optional<ores::marketdata::domain::supplier> supplier;
+
+    friend bool operator==(const supplier_lookup&, const supplier_lookup&) = default;
 };
 
 struct suppliers_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const suppliers_filter&, const suppliers_filter&) = default;
 };
 
 struct supplier_event {
@@ -61,17 +67,24 @@ struct supplier_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const supplier_event&, const supplier_event&) = default;
 };
 
 struct supplier_version_key {
     supplier_key supplier;
     std::uint32_t version;
+
+    friend bool operator==(const supplier_version_key&, const supplier_version_key&) = default;
 };
 
 struct supplier_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const supplier_versions_filter&,
+                           const supplier_versions_filter&) = default;
 };
 
 struct list_suppliers_request {
@@ -89,12 +102,17 @@ struct list_suppliers_request {
     ores::utility::domain::order order;
     std::optional<suppliers_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_suppliers_request&, const list_suppliers_request&) = default;
 };
 
 struct list_suppliers_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::supplier> suppliers;
     std::uint64_t total;
+
+    friend bool operator==(const list_suppliers_response&,
+                           const list_suppliers_response&) = default;
 };
 
 struct get_supplier_request {
@@ -108,11 +126,15 @@ struct get_supplier_request {
      */
     static constexpr bool requires_session = true;
     supplier_key key;
+
+    friend bool operator==(const get_supplier_request&, const get_supplier_request&) = default;
 };
 
 struct get_supplier_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::supplier> supplier;
+
+    friend bool operator==(const get_supplier_response&, const get_supplier_response&) = default;
 };
 
 struct get_many_suppliers_request {
@@ -126,11 +148,17 @@ struct get_many_suppliers_request {
      */
     static constexpr bool requires_session = true;
     std::vector<supplier_key> keys;
+
+    friend bool operator==(const get_many_suppliers_request&,
+                           const get_many_suppliers_request&) = default;
 };
 
 struct get_many_suppliers_response {
     ores::utility::domain::result result;
     std::vector<supplier_lookup> entries;
+
+    friend bool operator==(const get_many_suppliers_response&,
+                           const get_many_suppliers_response&) = default;
 };
 
 struct list_supplier_versions_request {
@@ -148,12 +176,18 @@ struct list_supplier_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<supplier_versions_filter> filter;
+
+    friend bool operator==(const list_supplier_versions_request&,
+                           const list_supplier_versions_request&) = default;
 };
 
 struct list_supplier_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::supplier> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_supplier_versions_response&,
+                           const list_supplier_versions_response&) = default;
 };
 
 struct get_supplier_version_request {
@@ -167,11 +201,17 @@ struct get_supplier_version_request {
      */
     static constexpr bool requires_session = true;
     supplier_version_key key;
+
+    friend bool operator==(const get_supplier_version_request&,
+                           const get_supplier_version_request&) = default;
 };
 
 struct get_supplier_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::supplier> version;
+
+    friend bool operator==(const get_supplier_version_response&,
+                           const get_supplier_version_response&) = default;
 };
 
 /**

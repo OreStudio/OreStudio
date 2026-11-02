@@ -43,6 +43,9 @@ namespace ores::reporting::messaging {
 
 struct ore_parameter_value_set_catalogue_key {
     std::string code;
+
+    friend bool operator==(const ore_parameter_value_set_catalogue_key&,
+                           const ore_parameter_value_set_catalogue_key&) = default;
 };
 
 struct ore_parameter_value_set_catalogue_write {
@@ -51,26 +54,41 @@ struct ore_parameter_value_set_catalogue_write {
     std::string relation;
     std::string description;
     bool is_active;
+
+    friend bool operator==(const ore_parameter_value_set_catalogue_write&,
+                           const ore_parameter_value_set_catalogue_write&) = default;
 };
 
 struct ore_parameter_value_set_catalogue_change {
     ore_parameter_value_set_catalogue_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const ore_parameter_value_set_catalogue_change&,
+                           const ore_parameter_value_set_catalogue_change&) = default;
 };
 
 struct ore_parameter_value_set_catalogue_removal {
     ore_parameter_value_set_catalogue_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const ore_parameter_value_set_catalogue_removal&,
+                           const ore_parameter_value_set_catalogue_removal&) = default;
 };
 
 struct ore_parameter_value_set_catalogue_lookup {
     ore_parameter_value_set_catalogue_key key;
     std::optional<ores::reporting::domain::ore_parameter_value_set_catalogue>
         ore_parameter_value_set_catalogue;
+
+    friend bool operator==(const ore_parameter_value_set_catalogue_lookup&,
+                           const ore_parameter_value_set_catalogue_lookup&) = default;
 };
 
 struct ore_parameter_value_set_catalogues_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const ore_parameter_value_set_catalogues_filter&,
+                           const ore_parameter_value_set_catalogues_filter&) = default;
 };
 
 struct ore_parameter_value_set_catalogue_event {
@@ -80,17 +98,26 @@ struct ore_parameter_value_set_catalogue_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const ore_parameter_value_set_catalogue_event&,
+                           const ore_parameter_value_set_catalogue_event&) = default;
 };
 
 struct ore_parameter_value_set_catalogue_version_key {
     ore_parameter_value_set_catalogue_key ore_parameter_value_set_catalogue;
     std::uint32_t version;
+
+    friend bool operator==(const ore_parameter_value_set_catalogue_version_key&,
+                           const ore_parameter_value_set_catalogue_version_key&) = default;
 };
 
 struct ore_parameter_value_set_catalogue_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const ore_parameter_value_set_catalogue_versions_filter&,
+                           const ore_parameter_value_set_catalogue_versions_filter&) = default;
 };
 
 struct list_ore_parameter_value_set_catalogues_request {
@@ -109,12 +136,18 @@ struct list_ore_parameter_value_set_catalogues_request {
     ores::utility::domain::order order;
     std::optional<ore_parameter_value_set_catalogues_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_ore_parameter_value_set_catalogues_request&,
+                           const list_ore_parameter_value_set_catalogues_request&) = default;
 };
 
 struct list_ore_parameter_value_set_catalogues_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_catalogue> catalogues;
     std::uint64_t total;
+
+    friend bool operator==(const list_ore_parameter_value_set_catalogues_response&,
+                           const list_ore_parameter_value_set_catalogues_response&) = default;
 };
 
 struct get_ore_parameter_value_set_catalogue_request {
@@ -129,12 +162,18 @@ struct get_ore_parameter_value_set_catalogue_request {
      */
     static constexpr bool requires_session = true;
     ore_parameter_value_set_catalogue_key key;
+
+    friend bool operator==(const get_ore_parameter_value_set_catalogue_request&,
+                           const get_ore_parameter_value_set_catalogue_request&) = default;
 };
 
 struct get_ore_parameter_value_set_catalogue_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_parameter_value_set_catalogue>
         ore_parameter_value_set_catalogue;
+
+    friend bool operator==(const get_ore_parameter_value_set_catalogue_response&,
+                           const get_ore_parameter_value_set_catalogue_response&) = default;
 };
 
 struct get_many_ore_parameter_value_set_catalogues_request {
@@ -149,11 +188,17 @@ struct get_many_ore_parameter_value_set_catalogues_request {
      */
     static constexpr bool requires_session = true;
     std::vector<ore_parameter_value_set_catalogue_key> keys;
+
+    friend bool operator==(const get_many_ore_parameter_value_set_catalogues_request&,
+                           const get_many_ore_parameter_value_set_catalogues_request&) = default;
 };
 
 struct get_many_ore_parameter_value_set_catalogues_response {
     ores::utility::domain::result result;
     std::vector<ore_parameter_value_set_catalogue_lookup> entries;
+
+    friend bool operator==(const get_many_ore_parameter_value_set_catalogues_response&,
+                           const get_many_ore_parameter_value_set_catalogues_response&) = default;
 };
 
 struct put_ore_parameter_value_set_catalogue_request {
@@ -169,12 +214,18 @@ struct put_ore_parameter_value_set_catalogue_request {
     static constexpr bool requires_session = true;
     ore_parameter_value_set_catalogue_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_ore_parameter_value_set_catalogue_request&,
+                           const put_ore_parameter_value_set_catalogue_request&) = default;
 };
 
 struct put_ore_parameter_value_set_catalogue_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_parameter_value_set_catalogue>
         ore_parameter_value_set_catalogue;
+
+    friend bool operator==(const put_ore_parameter_value_set_catalogue_response&,
+                           const put_ore_parameter_value_set_catalogue_response&) = default;
 };
 
 struct put_many_ore_parameter_value_set_catalogues_request {
@@ -190,11 +241,17 @@ struct put_many_ore_parameter_value_set_catalogues_request {
     static constexpr bool requires_session = true;
     std::vector<ore_parameter_value_set_catalogue_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_ore_parameter_value_set_catalogues_request&,
+                           const put_many_ore_parameter_value_set_catalogues_request&) = default;
 };
 
 struct put_many_ore_parameter_value_set_catalogues_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_catalogue> catalogues;
+
+    friend bool operator==(const put_many_ore_parameter_value_set_catalogues_response&,
+                           const put_many_ore_parameter_value_set_catalogues_response&) = default;
 };
 
 struct delete_ore_parameter_value_set_catalogue_request {
@@ -210,10 +267,16 @@ struct delete_ore_parameter_value_set_catalogue_request {
     static constexpr bool requires_session = true;
     ore_parameter_value_set_catalogue_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_ore_parameter_value_set_catalogue_request&,
+                           const delete_ore_parameter_value_set_catalogue_request&) = default;
 };
 
 struct delete_ore_parameter_value_set_catalogue_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_ore_parameter_value_set_catalogue_response&,
+                           const delete_ore_parameter_value_set_catalogue_response&) = default;
 };
 
 struct delete_many_ore_parameter_value_set_catalogues_request {
@@ -229,10 +292,17 @@ struct delete_many_ore_parameter_value_set_catalogues_request {
     static constexpr bool requires_session = true;
     std::vector<ore_parameter_value_set_catalogue_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_ore_parameter_value_set_catalogues_request&,
+                           const delete_many_ore_parameter_value_set_catalogues_request&) = default;
 };
 
 struct delete_many_ore_parameter_value_set_catalogues_response {
     ores::utility::domain::result result;
+
+    friend bool
+    operator==(const delete_many_ore_parameter_value_set_catalogues_response&,
+               const delete_many_ore_parameter_value_set_catalogues_response&) = default;
 };
 
 struct list_ore_parameter_value_set_catalogue_versions_request {
@@ -251,12 +321,20 @@ struct list_ore_parameter_value_set_catalogue_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<ore_parameter_value_set_catalogue_versions_filter> filter;
+
+    friend bool
+    operator==(const list_ore_parameter_value_set_catalogue_versions_request&,
+               const list_ore_parameter_value_set_catalogue_versions_request&) = default;
 };
 
 struct list_ore_parameter_value_set_catalogue_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_catalogue> versions;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_ore_parameter_value_set_catalogue_versions_response&,
+               const list_ore_parameter_value_set_catalogue_versions_response&) = default;
 };
 
 struct get_ore_parameter_value_set_catalogue_version_request {
@@ -271,11 +349,17 @@ struct get_ore_parameter_value_set_catalogue_version_request {
      */
     static constexpr bool requires_session = true;
     ore_parameter_value_set_catalogue_version_key key;
+
+    friend bool operator==(const get_ore_parameter_value_set_catalogue_version_request&,
+                           const get_ore_parameter_value_set_catalogue_version_request&) = default;
 };
 
 struct get_ore_parameter_value_set_catalogue_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_parameter_value_set_catalogue> version;
+
+    friend bool operator==(const get_ore_parameter_value_set_catalogue_version_response&,
+                           const get_ore_parameter_value_set_catalogue_version_response&) = default;
 };
 
 /**

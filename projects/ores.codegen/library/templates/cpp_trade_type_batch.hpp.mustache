@@ -33,6 +33,8 @@ struct instrument_batch {
      */
     std::vector<{{cpp_type}}> {{name}};
 {{/batch}}
+
+    friend bool operator==(const instrument_batch&, const instrument_batch&) = default;
 };
 
 /**

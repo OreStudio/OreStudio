@@ -43,6 +43,8 @@ namespace ores::dq::messaging {
 
 struct coding_scheme_key {
     std::string code;
+
+    friend bool operator==(const coding_scheme_key&, const coding_scheme_key&) = default;
 };
 
 struct coding_scheme_write {
@@ -53,25 +55,35 @@ struct coding_scheme_write {
     std::string domain_name;
     std::string uri;
     std::string description;
+
+    friend bool operator==(const coding_scheme_write&, const coding_scheme_write&) = default;
 };
 
 struct coding_scheme_change {
     coding_scheme_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const coding_scheme_change&, const coding_scheme_change&) = default;
 };
 
 struct coding_scheme_removal {
     coding_scheme_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const coding_scheme_removal&, const coding_scheme_removal&) = default;
 };
 
 struct coding_scheme_lookup {
     coding_scheme_key key;
     std::optional<ores::dq::domain::coding_scheme> coding_scheme;
+
+    friend bool operator==(const coding_scheme_lookup&, const coding_scheme_lookup&) = default;
 };
 
 struct coding_schemes_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const coding_schemes_filter&, const coding_schemes_filter&) = default;
 };
 
 struct coding_scheme_event {
@@ -81,17 +93,25 @@ struct coding_scheme_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const coding_scheme_event&, const coding_scheme_event&) = default;
 };
 
 struct coding_scheme_version_key {
     coding_scheme_key coding_scheme;
     std::uint32_t version;
+
+    friend bool operator==(const coding_scheme_version_key&,
+                           const coding_scheme_version_key&) = default;
 };
 
 struct coding_scheme_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const coding_scheme_versions_filter&,
+                           const coding_scheme_versions_filter&) = default;
 };
 
 struct list_coding_schemes_request {
@@ -109,12 +129,18 @@ struct list_coding_schemes_request {
     ores::utility::domain::order order;
     std::optional<coding_schemes_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_coding_schemes_request&,
+                           const list_coding_schemes_request&) = default;
 };
 
 struct list_coding_schemes_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::coding_scheme> schemes;
     std::uint64_t total;
+
+    friend bool operator==(const list_coding_schemes_response&,
+                           const list_coding_schemes_response&) = default;
 };
 
 struct get_coding_scheme_request {
@@ -128,11 +154,17 @@ struct get_coding_scheme_request {
      */
     static constexpr bool requires_session = true;
     coding_scheme_key key;
+
+    friend bool operator==(const get_coding_scheme_request&,
+                           const get_coding_scheme_request&) = default;
 };
 
 struct get_coding_scheme_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::coding_scheme> coding_scheme;
+
+    friend bool operator==(const get_coding_scheme_response&,
+                           const get_coding_scheme_response&) = default;
 };
 
 struct get_many_coding_schemes_request {
@@ -146,11 +178,17 @@ struct get_many_coding_schemes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<coding_scheme_key> keys;
+
+    friend bool operator==(const get_many_coding_schemes_request&,
+                           const get_many_coding_schemes_request&) = default;
 };
 
 struct get_many_coding_schemes_response {
     ores::utility::domain::result result;
     std::vector<coding_scheme_lookup> entries;
+
+    friend bool operator==(const get_many_coding_schemes_response&,
+                           const get_many_coding_schemes_response&) = default;
 };
 
 struct put_coding_scheme_request {
@@ -165,11 +203,17 @@ struct put_coding_scheme_request {
     static constexpr bool requires_session = true;
     coding_scheme_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_coding_scheme_request&,
+                           const put_coding_scheme_request&) = default;
 };
 
 struct put_coding_scheme_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::coding_scheme> coding_scheme;
+
+    friend bool operator==(const put_coding_scheme_response&,
+                           const put_coding_scheme_response&) = default;
 };
 
 struct put_many_coding_schemes_request {
@@ -184,11 +228,17 @@ struct put_many_coding_schemes_request {
     static constexpr bool requires_session = true;
     std::vector<coding_scheme_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_coding_schemes_request&,
+                           const put_many_coding_schemes_request&) = default;
 };
 
 struct put_many_coding_schemes_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::coding_scheme> schemes;
+
+    friend bool operator==(const put_many_coding_schemes_response&,
+                           const put_many_coding_schemes_response&) = default;
 };
 
 struct delete_coding_scheme_request {
@@ -203,10 +253,16 @@ struct delete_coding_scheme_request {
     static constexpr bool requires_session = true;
     coding_scheme_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_coding_scheme_request&,
+                           const delete_coding_scheme_request&) = default;
 };
 
 struct delete_coding_scheme_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_coding_scheme_response&,
+                           const delete_coding_scheme_response&) = default;
 };
 
 struct delete_many_coding_schemes_request {
@@ -221,10 +277,16 @@ struct delete_many_coding_schemes_request {
     static constexpr bool requires_session = true;
     std::vector<coding_scheme_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_coding_schemes_request&,
+                           const delete_many_coding_schemes_request&) = default;
 };
 
 struct delete_many_coding_schemes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_coding_schemes_response&,
+                           const delete_many_coding_schemes_response&) = default;
 };
 
 struct list_coding_scheme_versions_request {
@@ -242,12 +304,18 @@ struct list_coding_scheme_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<coding_scheme_versions_filter> filter;
+
+    friend bool operator==(const list_coding_scheme_versions_request&,
+                           const list_coding_scheme_versions_request&) = default;
 };
 
 struct list_coding_scheme_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::coding_scheme> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_coding_scheme_versions_response&,
+                           const list_coding_scheme_versions_response&) = default;
 };
 
 struct get_coding_scheme_version_request {
@@ -261,11 +329,17 @@ struct get_coding_scheme_version_request {
      */
     static constexpr bool requires_session = true;
     coding_scheme_version_key key;
+
+    friend bool operator==(const get_coding_scheme_version_request&,
+                           const get_coding_scheme_version_request&) = default;
 };
 
 struct get_coding_scheme_version_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::coding_scheme> version;
+
+    friend bool operator==(const get_coding_scheme_version_response&,
+                           const get_coding_scheme_version_response&) = default;
 };
 
 /**

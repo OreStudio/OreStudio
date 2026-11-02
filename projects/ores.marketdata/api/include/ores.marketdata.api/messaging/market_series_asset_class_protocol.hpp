@@ -44,31 +44,49 @@ namespace ores::marketdata::messaging {
 struct market_series_asset_class_key {
     boost::uuids::uuid market_series_id;
     std::string asset_class_code;
+
+    friend bool operator==(const market_series_asset_class_key&,
+                           const market_series_asset_class_key&) = default;
 };
 
 struct market_series_asset_class_write {
     boost::uuids::uuid market_series_id;
     std::string asset_class_code;
+
+    friend bool operator==(const market_series_asset_class_write&,
+                           const market_series_asset_class_write&) = default;
 };
 
 struct market_series_asset_class_change {
     market_series_asset_class_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const market_series_asset_class_change&,
+                           const market_series_asset_class_change&) = default;
 };
 
 struct market_series_asset_class_removal {
     market_series_asset_class_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const market_series_asset_class_removal&,
+                           const market_series_asset_class_removal&) = default;
 };
 
 struct market_series_asset_class_lookup {
     market_series_asset_class_key key;
     std::optional<ores::marketdata::domain::market_series_asset_class> market_series_asset_class;
+
+    friend bool operator==(const market_series_asset_class_lookup&,
+                           const market_series_asset_class_lookup&) = default;
 };
 
 struct market_series_asset_classes_filter {
     std::optional<boost::uuids::uuid> market_series_id;
     std::optional<std::vector<boost::uuids::uuid>> market_series_id_one_of;
+
+    friend bool operator==(const market_series_asset_classes_filter&,
+                           const market_series_asset_classes_filter&) = default;
 };
 
 struct list_market_series_asset_classes_request {
@@ -86,12 +104,18 @@ struct list_market_series_asset_classes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<market_series_asset_classes_filter> filter;
+
+    friend bool operator==(const list_market_series_asset_classes_request&,
+                           const list_market_series_asset_classes_request&) = default;
 };
 
 struct list_market_series_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_series_asset_class> market_series_asset_classes;
     std::uint64_t total;
+
+    friend bool operator==(const list_market_series_asset_classes_response&,
+                           const list_market_series_asset_classes_response&) = default;
 };
 
 struct get_market_series_asset_class_request {
@@ -106,11 +130,17 @@ struct get_market_series_asset_class_request {
      */
     static constexpr bool requires_session = true;
     market_series_asset_class_key key;
+
+    friend bool operator==(const get_market_series_asset_class_request&,
+                           const get_market_series_asset_class_request&) = default;
 };
 
 struct get_market_series_asset_class_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::market_series_asset_class> market_series_asset_class;
+
+    friend bool operator==(const get_market_series_asset_class_response&,
+                           const get_market_series_asset_class_response&) = default;
 };
 
 struct get_many_market_series_asset_classes_request {
@@ -125,11 +155,17 @@ struct get_many_market_series_asset_classes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<market_series_asset_class_key> keys;
+
+    friend bool operator==(const get_many_market_series_asset_classes_request&,
+                           const get_many_market_series_asset_classes_request&) = default;
 };
 
 struct get_many_market_series_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<market_series_asset_class_lookup> entries;
+
+    friend bool operator==(const get_many_market_series_asset_classes_response&,
+                           const get_many_market_series_asset_classes_response&) = default;
 };
 
 struct put_market_series_asset_class_request {
@@ -145,11 +181,17 @@ struct put_market_series_asset_class_request {
     static constexpr bool requires_session = true;
     market_series_asset_class_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_market_series_asset_class_request&,
+                           const put_market_series_asset_class_request&) = default;
 };
 
 struct put_market_series_asset_class_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::market_series_asset_class> market_series_asset_class;
+
+    friend bool operator==(const put_market_series_asset_class_response&,
+                           const put_market_series_asset_class_response&) = default;
 };
 
 struct put_many_market_series_asset_classes_request {
@@ -165,11 +207,17 @@ struct put_many_market_series_asset_classes_request {
     static constexpr bool requires_session = true;
     std::vector<market_series_asset_class_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_market_series_asset_classes_request&,
+                           const put_many_market_series_asset_classes_request&) = default;
 };
 
 struct put_many_market_series_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_series_asset_class> market_series_asset_classes;
+
+    friend bool operator==(const put_many_market_series_asset_classes_response&,
+                           const put_many_market_series_asset_classes_response&) = default;
 };
 
 struct delete_market_series_asset_class_request {
@@ -185,10 +233,16 @@ struct delete_market_series_asset_class_request {
     static constexpr bool requires_session = true;
     market_series_asset_class_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_market_series_asset_class_request&,
+                           const delete_market_series_asset_class_request&) = default;
 };
 
 struct delete_market_series_asset_class_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_market_series_asset_class_response&,
+                           const delete_market_series_asset_class_response&) = default;
 };
 
 struct delete_many_market_series_asset_classes_request {
@@ -204,10 +258,16 @@ struct delete_many_market_series_asset_classes_request {
     static constexpr bool requires_session = true;
     std::vector<market_series_asset_class_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_market_series_asset_classes_request&,
+                           const delete_many_market_series_asset_classes_request&) = default;
 };
 
 struct delete_many_market_series_asset_classes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_market_series_asset_classes_response&,
+                           const delete_many_market_series_asset_classes_response&) = default;
 };
 
 struct list_by_market_series_id_market_series_asset_classes_request {
@@ -227,12 +287,20 @@ struct list_by_market_series_id_market_series_asset_classes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<market_series_asset_classes_filter> filter;
+
+    friend bool
+    operator==(const list_by_market_series_id_market_series_asset_classes_request&,
+               const list_by_market_series_id_market_series_asset_classes_request&) = default;
 };
 
 struct list_by_market_series_id_market_series_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_series_asset_class> market_series_asset_classes;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_market_series_id_market_series_asset_classes_response&,
+               const list_by_market_series_id_market_series_asset_classes_response&) = default;
 };
 
 /**

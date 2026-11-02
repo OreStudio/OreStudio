@@ -55,6 +55,9 @@ struct registration_policy_request {
      * @c no_registration_destination rather than naming the system tenant.
      */
     std::string hostname;
+
+    friend bool operator==(const registration_policy_request&,
+                           const registration_policy_request&) = default;
 };
 
 struct registration_policy_response {
@@ -113,6 +116,9 @@ struct registration_policy_response {
      * pending and waits for an administrator to finish setting it up.
      */
     bool usable_now = false;
+
+    friend bool operator==(const registration_policy_response&,
+                           const registration_policy_response&) = default;
 };
 
 /**

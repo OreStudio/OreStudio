@@ -46,6 +46,9 @@ struct publish_trading_account_types_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_trading_account_types_from_dq_request&,
+                           const publish_trading_account_types_from_dq_request&) = default;
 };
 
 /**
@@ -64,6 +67,9 @@ struct publish_asset_classes_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_asset_classes_from_dq_request&,
+                           const publish_asset_classes_from_dq_request&) = default;
 };
 
 /**
@@ -83,6 +89,9 @@ struct publish_asset_measures_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_asset_measures_from_dq_request&,
+                           const publish_asset_measures_from_dq_request&) = default;
 };
 
 /**
@@ -102,6 +111,9 @@ struct publish_benchmark_rates_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_benchmark_rates_from_dq_request&,
+                           const publish_benchmark_rates_from_dq_request&) = default;
 };
 
 /**
@@ -120,6 +132,9 @@ struct publish_books_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_books_from_dq_request&,
+                           const publish_books_from_dq_request&) = default;
 };
 
 /**
@@ -139,6 +154,9 @@ struct publish_business_centres_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_business_centres_from_dq_request&,
+                           const publish_business_centres_from_dq_request&) = default;
 };
 
 /**
@@ -158,6 +176,9 @@ struct publish_business_processes_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_business_processes_from_dq_request&,
+                           const publish_business_processes_from_dq_request&) = default;
 };
 
 /**
@@ -177,6 +198,9 @@ struct publish_business_units_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_business_units_from_dq_request&,
+                           const publish_business_units_from_dq_request&) = default;
 };
 
 /**
@@ -196,6 +220,9 @@ struct publish_calendar_events_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_calendar_events_from_dq_request&,
+                           const publish_calendar_events_from_dq_request&) = default;
 };
 
 /**
@@ -215,6 +242,9 @@ struct publish_calendar_types_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_calendar_types_from_dq_request&,
+                           const publish_calendar_types_from_dq_request&) = default;
 };
 
 /**
@@ -233,6 +263,9 @@ struct publish_calendars_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_calendars_from_dq_request&,
+                           const publish_calendars_from_dq_request&) = default;
 };
 
 /**
@@ -252,6 +285,9 @@ struct publish_cashflow_types_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_cashflow_types_from_dq_request&,
+                           const publish_cashflow_types_from_dq_request&) = default;
 };
 
 /**
@@ -270,6 +306,9 @@ struct publish_commodities_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_commodities_from_dq_request&,
+                           const publish_commodities_from_dq_request&) = default;
 };
 
 /**
@@ -285,6 +324,9 @@ struct publish_legal_entities_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_legal_entities_from_dq_request&,
+                           const publish_legal_entities_from_dq_request&) = default;
 };
 
 /**
@@ -305,6 +347,9 @@ struct publish_equity_underlyings_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_equity_underlyings_from_dq_request&,
+                           const publish_equity_underlyings_from_dq_request&) = default;
 };
 
 /**
@@ -323,6 +368,9 @@ struct publish_conventions_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_conventions_from_dq_request&,
+                           const publish_conventions_from_dq_request&) = default;
 };
 
 /**
@@ -342,6 +390,9 @@ struct publish_counterparty_aliases_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_counterparty_aliases_from_dq_request&,
+                           const publish_counterparty_aliases_from_dq_request&) = default;
 };
 
 /**
@@ -360,6 +411,9 @@ struct publish_countries_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_countries_from_dq_request&,
+                           const publish_countries_from_dq_request&) = default;
 };
 
 /**
@@ -379,6 +433,9 @@ struct publish_crm_topology_bundles_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_crm_topology_bundles_from_dq_request&,
+                           const publish_crm_topology_bundles_from_dq_request&) = default;
 };
 
 /**
@@ -397,6 +454,9 @@ struct publish_csas_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_csas_from_dq_request&,
+                           const publish_csas_from_dq_request&) = default;
 };
 
 /**
@@ -415,6 +475,9 @@ struct publish_currencies_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_currencies_from_dq_request&,
+                           const publish_currencies_from_dq_request&) = default;
 };
 
 /**
@@ -434,6 +497,9 @@ struct publish_curve_configuration_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_curve_configuration_from_dq_request&,
+                           const publish_curve_configuration_from_dq_request&) = default;
 };
 
 /**
@@ -453,6 +519,9 @@ struct publish_currency_groups_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_currency_groups_from_dq_request&,
+                           const publish_currency_groups_from_dq_request&) = default;
 };
 
 /**
@@ -472,6 +541,9 @@ struct publish_currency_currency_groups_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_currency_currency_groups_from_dq_request&,
+                           const publish_currency_currency_groups_from_dq_request&) = default;
 };
 
 /**
@@ -491,6 +563,9 @@ struct publish_currency_pairs_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_currency_pairs_from_dq_request&,
+                           const publish_currency_pairs_from_dq_request&) = default;
 };
 
 /**
@@ -510,6 +585,9 @@ struct publish_currency_pair_conventions_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_currency_pair_conventions_from_dq_request&,
+                           const publish_currency_pair_conventions_from_dq_request&) = default;
 };
 
 /**
@@ -529,6 +607,9 @@ struct publish_currency_calendars_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_currency_calendars_from_dq_request&,
+                           const publish_currency_calendars_from_dq_request&) = default;
 };
 
 /**
@@ -548,6 +629,9 @@ struct publish_currency_countries_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_currency_countries_from_dq_request&,
+                           const publish_currency_countries_from_dq_request&) = default;
 };
 
 /**
@@ -567,6 +651,10 @@ struct publish_currency_pair_convention_calendars_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool
+    operator==(const publish_currency_pair_convention_calendars_from_dq_request&,
+               const publish_currency_pair_convention_calendars_from_dq_request&) = default;
 };
 
 /**
@@ -586,6 +674,9 @@ struct publish_entity_classifications_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_entity_classifications_from_dq_request&,
+                           const publish_entity_classifications_from_dq_request&) = default;
 };
 
 /**
@@ -605,6 +696,9 @@ struct publish_lei_counterparties_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_lei_counterparties_from_dq_request&,
+                           const publish_lei_counterparties_from_dq_request&) = default;
 };
 
 /**
@@ -623,6 +717,9 @@ struct publish_lei_parties_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_lei_parties_from_dq_request&,
+                           const publish_lei_parties_from_dq_request&) = default;
 };
 
 /**
@@ -642,6 +739,9 @@ struct publish_local_jurisdictions_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_local_jurisdictions_from_dq_request&,
+                           const publish_local_jurisdictions_from_dq_request&) = default;
 };
 
 /**
@@ -661,6 +761,9 @@ struct publish_sandbox_portfolios_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_sandbox_portfolios_from_dq_request&,
+                           const publish_sandbox_portfolios_from_dq_request&) = default;
 };
 
 /**
@@ -680,6 +783,9 @@ struct publish_netting_agreements_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_netting_agreements_from_dq_request&,
+                           const publish_netting_agreements_from_dq_request&) = default;
 };
 
 /**
@@ -699,6 +805,9 @@ struct publish_netting_set_aliases_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_netting_set_aliases_from_dq_request&,
+                           const publish_netting_set_aliases_from_dq_request&) = default;
 };
 
 /**
@@ -717,6 +826,9 @@ struct publish_netting_sets_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_netting_sets_from_dq_request&,
+                           const publish_netting_sets_from_dq_request&) = default;
 };
 
 /**
@@ -736,6 +848,9 @@ struct publish_party_contact_informations_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_party_contact_informations_from_dq_request&,
+                           const publish_party_contact_informations_from_dq_request&) = default;
 };
 
 /**
@@ -755,6 +870,9 @@ struct publish_party_counterparties_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_party_counterparties_from_dq_request&,
+                           const publish_party_counterparties_from_dq_request&) = default;
 };
 
 /**
@@ -774,6 +892,9 @@ struct publish_party_countries_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_party_countries_from_dq_request&,
+                           const publish_party_countries_from_dq_request&) = default;
 };
 
 /**
@@ -793,6 +914,9 @@ struct publish_party_currencies_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_party_currencies_from_dq_request&,
+                           const publish_party_currencies_from_dq_request&) = default;
 };
 
 /**
@@ -812,6 +936,9 @@ struct publish_party_relationships_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_party_relationships_from_dq_request&,
+                           const publish_party_relationships_from_dq_request&) = default;
 };
 
 /**
@@ -830,6 +957,9 @@ struct publish_party_roles_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_party_roles_from_dq_request&,
+                           const publish_party_roles_from_dq_request&) = default;
 };
 
 /**
@@ -849,6 +979,9 @@ struct publish_payment_frequencies_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_payment_frequencies_from_dq_request&,
+                           const publish_payment_frequencies_from_dq_request&) = default;
 };
 
 /**
@@ -867,6 +1000,9 @@ struct publish_person_roles_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_person_roles_from_dq_request&,
+                           const publish_person_roles_from_dq_request&) = default;
 };
 
 /**
@@ -885,6 +1021,9 @@ struct publish_portfolios_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_portfolios_from_dq_request&,
+                           const publish_portfolios_from_dq_request&) = default;
 };
 
 /**
@@ -904,6 +1043,9 @@ struct publish_regulatory_corporate_sectors_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_regulatory_corporate_sectors_from_dq_request&,
+                           const publish_regulatory_corporate_sectors_from_dq_request&) = default;
 };
 
 /**
@@ -923,6 +1065,9 @@ struct publish_reporting_regimes_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_reporting_regimes_from_dq_request&,
+                           const publish_reporting_regimes_from_dq_request&) = default;
 };
 
 /**
@@ -942,6 +1087,9 @@ struct publish_supervisory_bodies_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_supervisory_bodies_from_dq_request&,
+                           const publish_supervisory_bodies_from_dq_request&) = default;
 };
 
 /**
@@ -961,6 +1109,9 @@ struct publish_tenor_schedules_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_tenor_schedules_from_dq_request&,
+                           const publish_tenor_schedules_from_dq_request&) = default;
 };
 
 }

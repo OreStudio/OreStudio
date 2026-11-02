@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct calendar_exception_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const calendar_exception_key&, const calendar_exception_key&) = default;
 };
 
 struct calendar_exception_write {
@@ -51,27 +53,42 @@ struct calendar_exception_write {
     std::chrono::year_month_day exception_date;
     bool is_business_day;
     std::optional<std::string> description;
+
+    friend bool operator==(const calendar_exception_write&,
+                           const calendar_exception_write&) = default;
 };
 
 struct calendar_exception_change {
     calendar_exception_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const calendar_exception_change&,
+                           const calendar_exception_change&) = default;
 };
 
 struct calendar_exception_removal {
     calendar_exception_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const calendar_exception_removal&,
+                           const calendar_exception_removal&) = default;
 };
 
 struct calendar_exception_lookup {
     calendar_exception_key key;
     std::optional<ores::refdata::domain::calendar_exception> calendar_exception;
+
+    friend bool operator==(const calendar_exception_lookup&,
+                           const calendar_exception_lookup&) = default;
 };
 
 struct calendar_exceptions_filter {
     std::optional<std::string> calendar_code;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> calendar_code_one_of;
+
+    friend bool operator==(const calendar_exceptions_filter&,
+                           const calendar_exceptions_filter&) = default;
 };
 
 struct calendar_exception_event {
@@ -81,17 +98,26 @@ struct calendar_exception_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const calendar_exception_event&,
+                           const calendar_exception_event&) = default;
 };
 
 struct calendar_exception_version_key {
     calendar_exception_key calendar_exception;
     std::uint32_t version;
+
+    friend bool operator==(const calendar_exception_version_key&,
+                           const calendar_exception_version_key&) = default;
 };
 
 struct calendar_exception_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const calendar_exception_versions_filter&,
+                           const calendar_exception_versions_filter&) = default;
 };
 
 struct list_calendar_exceptions_request {
@@ -109,12 +135,18 @@ struct list_calendar_exceptions_request {
     ores::utility::domain::order order;
     std::optional<calendar_exceptions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_calendar_exceptions_request&,
+                           const list_calendar_exceptions_request&) = default;
 };
 
 struct list_calendar_exceptions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_exception> calendar_exceptions;
     std::uint64_t total;
+
+    friend bool operator==(const list_calendar_exceptions_response&,
+                           const list_calendar_exceptions_response&) = default;
 };
 
 struct get_calendar_exception_request {
@@ -128,11 +160,17 @@ struct get_calendar_exception_request {
      */
     static constexpr bool requires_session = true;
     calendar_exception_key key;
+
+    friend bool operator==(const get_calendar_exception_request&,
+                           const get_calendar_exception_request&) = default;
 };
 
 struct get_calendar_exception_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::calendar_exception> calendar_exception;
+
+    friend bool operator==(const get_calendar_exception_response&,
+                           const get_calendar_exception_response&) = default;
 };
 
 struct get_many_calendar_exceptions_request {
@@ -146,11 +184,17 @@ struct get_many_calendar_exceptions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<calendar_exception_key> keys;
+
+    friend bool operator==(const get_many_calendar_exceptions_request&,
+                           const get_many_calendar_exceptions_request&) = default;
 };
 
 struct get_many_calendar_exceptions_response {
     ores::utility::domain::result result;
     std::vector<calendar_exception_lookup> entries;
+
+    friend bool operator==(const get_many_calendar_exceptions_response&,
+                           const get_many_calendar_exceptions_response&) = default;
 };
 
 struct put_calendar_exception_request {
@@ -165,11 +209,17 @@ struct put_calendar_exception_request {
     static constexpr bool requires_session = true;
     calendar_exception_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_calendar_exception_request&,
+                           const put_calendar_exception_request&) = default;
 };
 
 struct put_calendar_exception_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::calendar_exception> calendar_exception;
+
+    friend bool operator==(const put_calendar_exception_response&,
+                           const put_calendar_exception_response&) = default;
 };
 
 struct put_many_calendar_exceptions_request {
@@ -184,11 +234,17 @@ struct put_many_calendar_exceptions_request {
     static constexpr bool requires_session = true;
     std::vector<calendar_exception_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_calendar_exceptions_request&,
+                           const put_many_calendar_exceptions_request&) = default;
 };
 
 struct put_many_calendar_exceptions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_exception> calendar_exceptions;
+
+    friend bool operator==(const put_many_calendar_exceptions_response&,
+                           const put_many_calendar_exceptions_response&) = default;
 };
 
 struct delete_calendar_exception_request {
@@ -203,10 +259,16 @@ struct delete_calendar_exception_request {
     static constexpr bool requires_session = true;
     calendar_exception_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_calendar_exception_request&,
+                           const delete_calendar_exception_request&) = default;
 };
 
 struct delete_calendar_exception_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_calendar_exception_response&,
+                           const delete_calendar_exception_response&) = default;
 };
 
 struct delete_many_calendar_exceptions_request {
@@ -221,10 +283,16 @@ struct delete_many_calendar_exceptions_request {
     static constexpr bool requires_session = true;
     std::vector<calendar_exception_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_calendar_exceptions_request&,
+                           const delete_many_calendar_exceptions_request&) = default;
 };
 
 struct delete_many_calendar_exceptions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_calendar_exceptions_response&,
+                           const delete_many_calendar_exceptions_response&) = default;
 };
 
 struct list_by_calendar_code_calendar_exceptions_request {
@@ -244,12 +312,18 @@ struct list_by_calendar_code_calendar_exceptions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<calendar_exceptions_filter> filter;
+
+    friend bool operator==(const list_by_calendar_code_calendar_exceptions_request&,
+                           const list_by_calendar_code_calendar_exceptions_request&) = default;
 };
 
 struct list_by_calendar_code_calendar_exceptions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_exception> calendar_exceptions;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_calendar_code_calendar_exceptions_response&,
+                           const list_by_calendar_code_calendar_exceptions_response&) = default;
 };
 
 struct list_calendar_exception_versions_request {
@@ -267,12 +341,18 @@ struct list_calendar_exception_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<calendar_exception_versions_filter> filter;
+
+    friend bool operator==(const list_calendar_exception_versions_request&,
+                           const list_calendar_exception_versions_request&) = default;
 };
 
 struct list_calendar_exception_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_exception> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_calendar_exception_versions_response&,
+                           const list_calendar_exception_versions_response&) = default;
 };
 
 struct get_calendar_exception_version_request {
@@ -286,11 +366,17 @@ struct get_calendar_exception_version_request {
      */
     static constexpr bool requires_session = true;
     calendar_exception_version_key key;
+
+    friend bool operator==(const get_calendar_exception_version_request&,
+                           const get_calendar_exception_version_request&) = default;
 };
 
 struct get_calendar_exception_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::calendar_exception> version;
+
+    friend bool operator==(const get_calendar_exception_version_response&,
+                           const get_calendar_exception_version_response&) = default;
 };
 
 /**

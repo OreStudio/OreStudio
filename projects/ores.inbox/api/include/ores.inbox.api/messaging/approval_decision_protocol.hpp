@@ -43,6 +43,8 @@ namespace ores::inbox::messaging {
 
 struct approval_decision_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const approval_decision_key&, const approval_decision_key&) = default;
 };
 
 struct approval_decision_write {
@@ -54,27 +56,42 @@ struct approval_decision_write {
     std::chrono::system_clock::time_point decided_at;
     std::optional<std::string> hold_reason_code;
     std::string comment;
+
+    friend bool operator==(const approval_decision_write&,
+                           const approval_decision_write&) = default;
 };
 
 struct approval_decision_change {
     approval_decision_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const approval_decision_change&,
+                           const approval_decision_change&) = default;
 };
 
 struct approval_decision_removal {
     approval_decision_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const approval_decision_removal&,
+                           const approval_decision_removal&) = default;
 };
 
 struct approval_decision_lookup {
     approval_decision_key key;
     std::optional<ores::inbox::domain::approval_decision> approval_decision;
+
+    friend bool operator==(const approval_decision_lookup&,
+                           const approval_decision_lookup&) = default;
 };
 
 struct approval_decisions_filter {
     std::optional<boost::uuids::uuid> request_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
+
+    friend bool operator==(const approval_decisions_filter&,
+                           const approval_decisions_filter&) = default;
 };
 
 struct approval_decision_event {
@@ -84,17 +101,26 @@ struct approval_decision_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const approval_decision_event&,
+                           const approval_decision_event&) = default;
 };
 
 struct approval_decision_version_key {
     approval_decision_key approval_decision;
     std::uint32_t version;
+
+    friend bool operator==(const approval_decision_version_key&,
+                           const approval_decision_version_key&) = default;
 };
 
 struct approval_decision_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const approval_decision_versions_filter&,
+                           const approval_decision_versions_filter&) = default;
 };
 
 struct list_approval_decisions_request {
@@ -112,12 +138,18 @@ struct list_approval_decisions_request {
     ores::utility::domain::order order;
     std::optional<approval_decisions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_approval_decisions_request&,
+                           const list_approval_decisions_request&) = default;
 };
 
 struct list_approval_decisions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_decision> decisions;
     std::uint64_t total;
+
+    friend bool operator==(const list_approval_decisions_response&,
+                           const list_approval_decisions_response&) = default;
 };
 
 struct get_approval_decision_request {
@@ -131,11 +163,17 @@ struct get_approval_decision_request {
      */
     static constexpr bool requires_session = true;
     approval_decision_key key;
+
+    friend bool operator==(const get_approval_decision_request&,
+                           const get_approval_decision_request&) = default;
 };
 
 struct get_approval_decision_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::approval_decision> approval_decision;
+
+    friend bool operator==(const get_approval_decision_response&,
+                           const get_approval_decision_response&) = default;
 };
 
 struct get_many_approval_decisions_request {
@@ -149,11 +187,17 @@ struct get_many_approval_decisions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<approval_decision_key> keys;
+
+    friend bool operator==(const get_many_approval_decisions_request&,
+                           const get_many_approval_decisions_request&) = default;
 };
 
 struct get_many_approval_decisions_response {
     ores::utility::domain::result result;
     std::vector<approval_decision_lookup> entries;
+
+    friend bool operator==(const get_many_approval_decisions_response&,
+                           const get_many_approval_decisions_response&) = default;
 };
 
 struct put_approval_decision_request {
@@ -168,11 +212,17 @@ struct put_approval_decision_request {
     static constexpr bool requires_session = true;
     approval_decision_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_approval_decision_request&,
+                           const put_approval_decision_request&) = default;
 };
 
 struct put_approval_decision_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::approval_decision> approval_decision;
+
+    friend bool operator==(const put_approval_decision_response&,
+                           const put_approval_decision_response&) = default;
 };
 
 struct put_many_approval_decisions_request {
@@ -187,11 +237,17 @@ struct put_many_approval_decisions_request {
     static constexpr bool requires_session = true;
     std::vector<approval_decision_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_approval_decisions_request&,
+                           const put_many_approval_decisions_request&) = default;
 };
 
 struct put_many_approval_decisions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_decision> decisions;
+
+    friend bool operator==(const put_many_approval_decisions_response&,
+                           const put_many_approval_decisions_response&) = default;
 };
 
 struct delete_approval_decision_request {
@@ -206,10 +262,16 @@ struct delete_approval_decision_request {
     static constexpr bool requires_session = true;
     approval_decision_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_approval_decision_request&,
+                           const delete_approval_decision_request&) = default;
 };
 
 struct delete_approval_decision_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_approval_decision_response&,
+                           const delete_approval_decision_response&) = default;
 };
 
 struct delete_many_approval_decisions_request {
@@ -224,10 +286,16 @@ struct delete_many_approval_decisions_request {
     static constexpr bool requires_session = true;
     std::vector<approval_decision_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_approval_decisions_request&,
+                           const delete_many_approval_decisions_request&) = default;
 };
 
 struct delete_many_approval_decisions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_approval_decisions_response&,
+                           const delete_many_approval_decisions_response&) = default;
 };
 
 struct list_by_request_id_approval_decisions_request {
@@ -247,12 +315,18 @@ struct list_by_request_id_approval_decisions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<approval_decisions_filter> filter;
+
+    friend bool operator==(const list_by_request_id_approval_decisions_request&,
+                           const list_by_request_id_approval_decisions_request&) = default;
 };
 
 struct list_by_request_id_approval_decisions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_decision> decisions;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_request_id_approval_decisions_response&,
+                           const list_by_request_id_approval_decisions_response&) = default;
 };
 
 struct list_approval_decision_versions_request {
@@ -270,12 +344,18 @@ struct list_approval_decision_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<approval_decision_versions_filter> filter;
+
+    friend bool operator==(const list_approval_decision_versions_request&,
+                           const list_approval_decision_versions_request&) = default;
 };
 
 struct list_approval_decision_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_decision> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_approval_decision_versions_response&,
+                           const list_approval_decision_versions_response&) = default;
 };
 
 struct get_approval_decision_version_request {
@@ -289,11 +369,17 @@ struct get_approval_decision_version_request {
      */
     static constexpr bool requires_session = true;
     approval_decision_version_key key;
+
+    friend bool operator==(const get_approval_decision_version_request&,
+                           const get_approval_decision_version_request&) = default;
 };
 
 struct get_approval_decision_version_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::approval_decision> version;
+
+    friend bool operator==(const get_approval_decision_version_response&,
+                           const get_approval_decision_version_response&) = default;
 };
 
 /**

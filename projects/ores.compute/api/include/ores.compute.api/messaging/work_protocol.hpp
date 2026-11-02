@@ -109,6 +109,8 @@ struct work_assignment_event {
      * a node that serves many tenants reaches only the job it was handed.
      */
     std::string storage_token;
+
+    friend bool operator==(const work_assignment_event&, const work_assignment_event&) = default;
 };
 
 /**
@@ -148,6 +150,8 @@ struct heartbeat_message {
      * named here and its lease runs out.
      */
     std::string result_id = "";
+
+    friend bool operator==(const heartbeat_message&, const heartbeat_message&) = default;
 };
 
 /**
@@ -164,6 +168,8 @@ struct reap_work_message {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const reap_work_message&, const reap_work_message&) = default;
 };
 
 /**
@@ -195,6 +201,8 @@ struct claim_work_request {
      * package for it.
      */
     std::string platform;
+
+    friend bool operator==(const claim_work_request&, const claim_work_request&) = default;
 };
 
 /**
@@ -281,6 +289,8 @@ struct claim_work_response {
      * @brief The number of the attempt this claim starts, 1 for the first.
      */
     int attempt = 0;
+
+    friend bool operator==(const claim_work_response&, const claim_work_response&) = default;
 };
 
 /**
@@ -304,6 +314,8 @@ struct work_available_event {
      * @brief The number of results the sender queued, for a log line. A node does not act on it.
      */
     int queued = 0;
+
+    friend bool operator==(const work_available_event&, const work_available_event&) = default;
 };
 
 /**
@@ -359,6 +371,8 @@ struct submit_result_request {
      * not measure the time. The service stores nothing for -1, and a screen reads it as unknown.
      */
     std::int64_t duration_ms = -1;
+
+    friend bool operator==(const submit_result_request&, const submit_result_request&) = default;
 };
 
 /**
@@ -373,6 +387,8 @@ struct submit_result_response {
      * @brief Why it was not, when it was not.
      */
     std::string message;
+
+    friend bool operator==(const submit_result_response&, const submit_result_response&) = default;
 };
 
 /**

@@ -44,6 +44,9 @@ namespace ores::trading::messaging {
 struct bond_issue_conversion_target_key {
     boost::uuids::uuid issue_id;
     int sequence_number;
+
+    friend bool operator==(const bond_issue_conversion_target_key&,
+                           const bond_issue_conversion_target_key&) = default;
 };
 
 struct bond_issue_conversion_target_write {
@@ -51,21 +54,33 @@ struct bond_issue_conversion_target_write {
     int sequence_number;
     std::string underlying_id;
     double conversion_ratio;
+
+    friend bool operator==(const bond_issue_conversion_target_write&,
+                           const bond_issue_conversion_target_write&) = default;
 };
 
 struct bond_issue_conversion_target_change {
     bond_issue_conversion_target_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const bond_issue_conversion_target_change&,
+                           const bond_issue_conversion_target_change&) = default;
 };
 
 struct bond_issue_conversion_target_removal {
     bond_issue_conversion_target_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const bond_issue_conversion_target_removal&,
+                           const bond_issue_conversion_target_removal&) = default;
 };
 
 struct bond_issue_conversion_target_lookup {
     bond_issue_conversion_target_key key;
     std::optional<ores::trading::domain::bond_issue_conversion_target> bond_issue_conversion_target;
+
+    friend bool operator==(const bond_issue_conversion_target_lookup&,
+                           const bond_issue_conversion_target_lookup&) = default;
 };
 
 struct bond_issue_conversion_target_event {
@@ -75,17 +90,26 @@ struct bond_issue_conversion_target_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const bond_issue_conversion_target_event&,
+                           const bond_issue_conversion_target_event&) = default;
 };
 
 struct bond_issue_conversion_target_version_key {
     bond_issue_conversion_target_key bond_issue_conversion_target;
     std::uint32_t version;
+
+    friend bool operator==(const bond_issue_conversion_target_version_key&,
+                           const bond_issue_conversion_target_version_key&) = default;
 };
 
 struct bond_issue_conversion_target_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const bond_issue_conversion_target_versions_filter&,
+                           const bond_issue_conversion_target_versions_filter&) = default;
 };
 
 struct list_bond_issue_conversion_targets_request {
@@ -103,12 +127,18 @@ struct list_bond_issue_conversion_targets_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_bond_issue_conversion_targets_request&,
+                           const list_bond_issue_conversion_targets_request&) = default;
 };
 
 struct list_bond_issue_conversion_targets_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_conversion_target> conversion_targets;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_issue_conversion_targets_response&,
+                           const list_bond_issue_conversion_targets_response&) = default;
 };
 
 struct get_bond_issue_conversion_target_request {
@@ -122,11 +152,17 @@ struct get_bond_issue_conversion_target_request {
      */
     static constexpr bool requires_session = true;
     bond_issue_conversion_target_key key;
+
+    friend bool operator==(const get_bond_issue_conversion_target_request&,
+                           const get_bond_issue_conversion_target_request&) = default;
 };
 
 struct get_bond_issue_conversion_target_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_issue_conversion_target> bond_issue_conversion_target;
+
+    friend bool operator==(const get_bond_issue_conversion_target_response&,
+                           const get_bond_issue_conversion_target_response&) = default;
 };
 
 struct get_many_bond_issue_conversion_targets_request {
@@ -141,11 +177,17 @@ struct get_many_bond_issue_conversion_targets_request {
      */
     static constexpr bool requires_session = true;
     std::vector<bond_issue_conversion_target_key> keys;
+
+    friend bool operator==(const get_many_bond_issue_conversion_targets_request&,
+                           const get_many_bond_issue_conversion_targets_request&) = default;
 };
 
 struct get_many_bond_issue_conversion_targets_response {
     ores::utility::domain::result result;
     std::vector<bond_issue_conversion_target_lookup> entries;
+
+    friend bool operator==(const get_many_bond_issue_conversion_targets_response&,
+                           const get_many_bond_issue_conversion_targets_response&) = default;
 };
 
 struct put_bond_issue_conversion_target_request {
@@ -160,11 +202,17 @@ struct put_bond_issue_conversion_target_request {
     static constexpr bool requires_session = true;
     bond_issue_conversion_target_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_bond_issue_conversion_target_request&,
+                           const put_bond_issue_conversion_target_request&) = default;
 };
 
 struct put_bond_issue_conversion_target_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_issue_conversion_target> bond_issue_conversion_target;
+
+    friend bool operator==(const put_bond_issue_conversion_target_response&,
+                           const put_bond_issue_conversion_target_response&) = default;
 };
 
 struct put_many_bond_issue_conversion_targets_request {
@@ -180,11 +228,17 @@ struct put_many_bond_issue_conversion_targets_request {
     static constexpr bool requires_session = true;
     std::vector<bond_issue_conversion_target_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_bond_issue_conversion_targets_request&,
+                           const put_many_bond_issue_conversion_targets_request&) = default;
 };
 
 struct put_many_bond_issue_conversion_targets_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_conversion_target> conversion_targets;
+
+    friend bool operator==(const put_many_bond_issue_conversion_targets_response&,
+                           const put_many_bond_issue_conversion_targets_response&) = default;
 };
 
 struct delete_bond_issue_conversion_target_request {
@@ -200,10 +254,16 @@ struct delete_bond_issue_conversion_target_request {
     static constexpr bool requires_session = true;
     bond_issue_conversion_target_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_bond_issue_conversion_target_request&,
+                           const delete_bond_issue_conversion_target_request&) = default;
 };
 
 struct delete_bond_issue_conversion_target_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_bond_issue_conversion_target_response&,
+                           const delete_bond_issue_conversion_target_response&) = default;
 };
 
 struct delete_many_bond_issue_conversion_targets_request {
@@ -219,10 +279,16 @@ struct delete_many_bond_issue_conversion_targets_request {
     static constexpr bool requires_session = true;
     std::vector<bond_issue_conversion_target_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_bond_issue_conversion_targets_request&,
+                           const delete_many_bond_issue_conversion_targets_request&) = default;
 };
 
 struct delete_many_bond_issue_conversion_targets_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_bond_issue_conversion_targets_response&,
+                           const delete_many_bond_issue_conversion_targets_response&) = default;
 };
 
 struct list_bond_issue_conversion_target_versions_request {
@@ -241,12 +307,18 @@ struct list_bond_issue_conversion_target_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<bond_issue_conversion_target_versions_filter> filter;
+
+    friend bool operator==(const list_bond_issue_conversion_target_versions_request&,
+                           const list_bond_issue_conversion_target_versions_request&) = default;
 };
 
 struct list_bond_issue_conversion_target_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_conversion_target> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_issue_conversion_target_versions_response&,
+                           const list_bond_issue_conversion_target_versions_response&) = default;
 };
 
 struct get_bond_issue_conversion_target_version_request {
@@ -261,11 +333,17 @@ struct get_bond_issue_conversion_target_version_request {
      */
     static constexpr bool requires_session = true;
     bond_issue_conversion_target_version_key key;
+
+    friend bool operator==(const get_bond_issue_conversion_target_version_request&,
+                           const get_bond_issue_conversion_target_version_request&) = default;
 };
 
 struct get_bond_issue_conversion_target_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_issue_conversion_target> version;
+
+    friend bool operator==(const get_bond_issue_conversion_target_version_response&,
+                           const get_bond_issue_conversion_target_version_response&) = default;
 };
 
 /**

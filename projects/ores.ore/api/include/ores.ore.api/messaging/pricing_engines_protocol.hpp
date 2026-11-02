@@ -52,6 +52,9 @@ struct pricing_engines_export_problem {
      */
     std::string code;
     std::string message;
+
+    friend bool operator==(const pricing_engines_export_problem&,
+                           const pricing_engines_export_problem&) = default;
 };
 
 /**
@@ -72,6 +75,9 @@ struct export_pricing_engines_request {
      */
     static constexpr bool requires_session = true;
     std::string configuration_id;
+
+    friend bool operator==(const export_pricing_engines_request&,
+                           const export_pricing_engines_request&) = default;
 };
 
 /**
@@ -83,6 +89,9 @@ struct export_pricing_engines_response {
     std::uint32_t count = 0;
     std::vector<ores::ore::messaging::ore_document> files;
     std::vector<pricing_engines_export_problem> problems;
+
+    friend bool operator==(const export_pricing_engines_response&,
+                           const export_pricing_engines_response&) = default;
 };
 
 /**
@@ -98,6 +107,9 @@ struct pricing_engines_import_product {
     std::string engine;
     /** How many settings this product carries, of both scopes. */
     std::uint32_t parameters = 0;
+
+    friend bool operator==(const pricing_engines_import_product&,
+                           const pricing_engines_import_product&) = default;
 };
 
 /**
@@ -120,6 +132,9 @@ struct pricing_engines_import_row {
     /** The setting's name, empty for a product. */
     std::string name;
     std::string what;
+
+    friend bool operator==(const pricing_engines_import_row&,
+                           const pricing_engines_import_row&) = default;
 };
 
 /**
@@ -132,6 +147,9 @@ struct pricing_engines_import_issue {
     std::string kind;
     std::string subject;
     std::string detail;
+
+    friend bool operator==(const pricing_engines_import_issue&,
+                           const pricing_engines_import_issue&) = default;
 };
 
 /**
@@ -155,6 +173,9 @@ struct preview_pricing_engines_import_request {
     std::string content;
     /** The reporting configuration to compare against, or empty for none. */
     std::string target_configuration_id;
+
+    friend bool operator==(const preview_pricing_engines_import_request&,
+                           const preview_pricing_engines_import_request&) = default;
 };
 
 /**
@@ -180,6 +201,9 @@ struct preview_pricing_engines_import_response {
     std::uint32_t removed = 0;
     std::vector<pricing_engines_import_row> rows;
     std::vector<pricing_engines_import_issue> issues;
+
+    friend bool operator==(const preview_pricing_engines_import_response&,
+                           const preview_pricing_engines_import_response&) = default;
 };
 
 /**
@@ -213,6 +237,9 @@ struct import_pricing_engines_request {
     std::vector<std::string> removals_kept;
     std::string reason_code;
     std::string commentary;
+
+    friend bool operator==(const import_pricing_engines_request&,
+                           const import_pricing_engines_request&) = default;
 };
 
 /**
@@ -221,6 +248,9 @@ struct import_pricing_engines_request {
 struct pricing_engines_import_error {
     std::string key;
     std::string message;
+
+    friend bool operator==(const pricing_engines_import_error&,
+                           const pricing_engines_import_error&) = default;
 };
 
 /**
@@ -237,6 +267,9 @@ struct import_pricing_engines_response {
     std::uint32_t deleted = 0;
     std::uint32_t kept = 0;
     std::vector<pricing_engines_import_error> errors;
+
+    friend bool operator==(const import_pricing_engines_response&,
+                           const import_pricing_engines_response&) = default;
 };
 
 /**

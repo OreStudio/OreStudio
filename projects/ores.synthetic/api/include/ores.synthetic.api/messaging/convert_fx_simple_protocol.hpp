@@ -78,6 +78,9 @@ struct convert_fx_simple_request {
     /** @brief Minutes to come half way back to the long-run price; read by Ornstein-Uhlenbeck only.
      */
     double half_life_minutes = 0.0;
+
+    friend bool operator==(const convert_fx_simple_request&,
+                           const convert_fx_simple_request&) = default;
 };
 
 /**
@@ -102,6 +105,9 @@ struct convert_fx_simple_response {
     std::vector<double> gmm_stdevs;
     /** @brief The mixture's weights, κ first under the Ornstein-Uhlenbeck engine. */
     std::vector<double> gmm_weights;
+
+    friend bool operator==(const convert_fx_simple_response&,
+                           const convert_fx_simple_response&) = default;
 };
 
 /**

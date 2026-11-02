@@ -52,6 +52,9 @@ struct publish_pricing_engines_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_pricing_engines_from_dq_request&,
+                           const publish_pricing_engines_from_dq_request&) = default;
 };
 
 /**
@@ -70,6 +73,9 @@ struct publish_todays_market_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_todays_market_from_dq_request&,
+                           const publish_todays_market_from_dq_request&) = default;
 };
 
 /**

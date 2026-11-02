@@ -43,6 +43,9 @@ namespace ores::reporting::messaging {
 
 struct engine_settings_group_setting_key {
     std::string code;
+
+    friend bool operator==(const engine_settings_group_setting_key&,
+                           const engine_settings_group_setting_key&) = default;
 };
 
 struct engine_settings_group_setting_write {
@@ -52,26 +55,41 @@ struct engine_settings_group_setting_write {
     std::string ore_name;
     bool changes_numbers;
     int position;
+
+    friend bool operator==(const engine_settings_group_setting_write&,
+                           const engine_settings_group_setting_write&) = default;
 };
 
 struct engine_settings_group_setting_change {
     engine_settings_group_setting_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const engine_settings_group_setting_change&,
+                           const engine_settings_group_setting_change&) = default;
 };
 
 struct engine_settings_group_setting_removal {
     engine_settings_group_setting_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const engine_settings_group_setting_removal&,
+                           const engine_settings_group_setting_removal&) = default;
 };
 
 struct engine_settings_group_setting_lookup {
     engine_settings_group_setting_key key;
     std::optional<ores::reporting::domain::engine_settings_group_setting>
         engine_settings_group_setting;
+
+    friend bool operator==(const engine_settings_group_setting_lookup&,
+                           const engine_settings_group_setting_lookup&) = default;
 };
 
 struct engine_settings_group_settings_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const engine_settings_group_settings_filter&,
+                           const engine_settings_group_settings_filter&) = default;
 };
 
 struct engine_settings_group_setting_event {
@@ -81,17 +99,26 @@ struct engine_settings_group_setting_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const engine_settings_group_setting_event&,
+                           const engine_settings_group_setting_event&) = default;
 };
 
 struct engine_settings_group_setting_version_key {
     engine_settings_group_setting_key engine_settings_group_setting;
     std::uint32_t version;
+
+    friend bool operator==(const engine_settings_group_setting_version_key&,
+                           const engine_settings_group_setting_version_key&) = default;
 };
 
 struct engine_settings_group_setting_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const engine_settings_group_setting_versions_filter&,
+                           const engine_settings_group_setting_versions_filter&) = default;
 };
 
 struct list_engine_settings_group_settings_request {
@@ -110,12 +137,18 @@ struct list_engine_settings_group_settings_request {
     ores::utility::domain::order order;
     std::optional<engine_settings_group_settings_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_engine_settings_group_settings_request&,
+                           const list_engine_settings_group_settings_request&) = default;
 };
 
 struct list_engine_settings_group_settings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings_group_setting> settings;
     std::uint64_t total;
+
+    friend bool operator==(const list_engine_settings_group_settings_response&,
+                           const list_engine_settings_group_settings_response&) = default;
 };
 
 struct get_engine_settings_group_setting_request {
@@ -130,12 +163,18 @@ struct get_engine_settings_group_setting_request {
      */
     static constexpr bool requires_session = true;
     engine_settings_group_setting_key key;
+
+    friend bool operator==(const get_engine_settings_group_setting_request&,
+                           const get_engine_settings_group_setting_request&) = default;
 };
 
 struct get_engine_settings_group_setting_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::engine_settings_group_setting>
         engine_settings_group_setting;
+
+    friend bool operator==(const get_engine_settings_group_setting_response&,
+                           const get_engine_settings_group_setting_response&) = default;
 };
 
 struct get_many_engine_settings_group_settings_request {
@@ -150,11 +189,17 @@ struct get_many_engine_settings_group_settings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<engine_settings_group_setting_key> keys;
+
+    friend bool operator==(const get_many_engine_settings_group_settings_request&,
+                           const get_many_engine_settings_group_settings_request&) = default;
 };
 
 struct get_many_engine_settings_group_settings_response {
     ores::utility::domain::result result;
     std::vector<engine_settings_group_setting_lookup> entries;
+
+    friend bool operator==(const get_many_engine_settings_group_settings_response&,
+                           const get_many_engine_settings_group_settings_response&) = default;
 };
 
 struct put_engine_settings_group_setting_request {
@@ -170,12 +215,18 @@ struct put_engine_settings_group_setting_request {
     static constexpr bool requires_session = true;
     engine_settings_group_setting_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_engine_settings_group_setting_request&,
+                           const put_engine_settings_group_setting_request&) = default;
 };
 
 struct put_engine_settings_group_setting_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::engine_settings_group_setting>
         engine_settings_group_setting;
+
+    friend bool operator==(const put_engine_settings_group_setting_response&,
+                           const put_engine_settings_group_setting_response&) = default;
 };
 
 struct put_many_engine_settings_group_settings_request {
@@ -191,11 +242,17 @@ struct put_many_engine_settings_group_settings_request {
     static constexpr bool requires_session = true;
     std::vector<engine_settings_group_setting_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_engine_settings_group_settings_request&,
+                           const put_many_engine_settings_group_settings_request&) = default;
 };
 
 struct put_many_engine_settings_group_settings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings_group_setting> settings;
+
+    friend bool operator==(const put_many_engine_settings_group_settings_response&,
+                           const put_many_engine_settings_group_settings_response&) = default;
 };
 
 struct delete_engine_settings_group_setting_request {
@@ -211,10 +268,16 @@ struct delete_engine_settings_group_setting_request {
     static constexpr bool requires_session = true;
     engine_settings_group_setting_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_engine_settings_group_setting_request&,
+                           const delete_engine_settings_group_setting_request&) = default;
 };
 
 struct delete_engine_settings_group_setting_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_engine_settings_group_setting_response&,
+                           const delete_engine_settings_group_setting_response&) = default;
 };
 
 struct delete_many_engine_settings_group_settings_request {
@@ -230,10 +293,16 @@ struct delete_many_engine_settings_group_settings_request {
     static constexpr bool requires_session = true;
     std::vector<engine_settings_group_setting_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_engine_settings_group_settings_request&,
+                           const delete_many_engine_settings_group_settings_request&) = default;
 };
 
 struct delete_many_engine_settings_group_settings_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_engine_settings_group_settings_response&,
+                           const delete_many_engine_settings_group_settings_response&) = default;
 };
 
 struct list_engine_settings_group_setting_versions_request {
@@ -252,12 +321,18 @@ struct list_engine_settings_group_setting_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<engine_settings_group_setting_versions_filter> filter;
+
+    friend bool operator==(const list_engine_settings_group_setting_versions_request&,
+                           const list_engine_settings_group_setting_versions_request&) = default;
 };
 
 struct list_engine_settings_group_setting_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings_group_setting> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_engine_settings_group_setting_versions_response&,
+                           const list_engine_settings_group_setting_versions_response&) = default;
 };
 
 struct get_engine_settings_group_setting_version_request {
@@ -272,11 +347,17 @@ struct get_engine_settings_group_setting_version_request {
      */
     static constexpr bool requires_session = true;
     engine_settings_group_setting_version_key key;
+
+    friend bool operator==(const get_engine_settings_group_setting_version_request&,
+                           const get_engine_settings_group_setting_version_request&) = default;
 };
 
 struct get_engine_settings_group_setting_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::engine_settings_group_setting> version;
+
+    friend bool operator==(const get_engine_settings_group_setting_version_response&,
+                           const get_engine_settings_group_setting_version_response&) = default;
 };
 
 /**

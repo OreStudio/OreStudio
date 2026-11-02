@@ -44,6 +44,9 @@ namespace ores::refdata::messaging {
 struct tenor_convention_resolution_key {
     std::string convention_code;
     std::string tenor_code;
+
+    friend bool operator==(const tenor_convention_resolution_key&,
+                           const tenor_convention_resolution_key&) = default;
 };
 
 struct tenor_convention_resolution_write {
@@ -54,26 +57,41 @@ struct tenor_convention_resolution_write {
     std::optional<int> offset_multiplier;
     std::optional<std::string> schedule_code;
     std::optional<int> schedule_step_count;
+
+    friend bool operator==(const tenor_convention_resolution_write&,
+                           const tenor_convention_resolution_write&) = default;
 };
 
 struct tenor_convention_resolution_change {
     tenor_convention_resolution_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tenor_convention_resolution_change&,
+                           const tenor_convention_resolution_change&) = default;
 };
 
 struct tenor_convention_resolution_removal {
     tenor_convention_resolution_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tenor_convention_resolution_removal&,
+                           const tenor_convention_resolution_removal&) = default;
 };
 
 struct tenor_convention_resolution_lookup {
     tenor_convention_resolution_key key;
     std::optional<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolution;
+
+    friend bool operator==(const tenor_convention_resolution_lookup&,
+                           const tenor_convention_resolution_lookup&) = default;
 };
 
 struct tenor_convention_resolutions_filter {
     std::optional<std::string> convention_code;
     std::optional<std::vector<std::string>> convention_code_one_of;
+
+    friend bool operator==(const tenor_convention_resolutions_filter&,
+                           const tenor_convention_resolutions_filter&) = default;
 };
 
 struct tenor_convention_resolution_event {
@@ -83,6 +101,9 @@ struct tenor_convention_resolution_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tenor_convention_resolution_event&,
+                           const tenor_convention_resolution_event&) = default;
 };
 
 struct list_tenor_convention_resolutions_request {
@@ -99,12 +120,18 @@ struct list_tenor_convention_resolutions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_convention_resolutions_filter> filter;
+
+    friend bool operator==(const list_tenor_convention_resolutions_request&,
+                           const list_tenor_convention_resolutions_request&) = default;
 };
 
 struct list_tenor_convention_resolutions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolutions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_convention_resolutions_response&,
+                           const list_tenor_convention_resolutions_response&) = default;
 };
 
 struct get_tenor_convention_resolution_request {
@@ -118,11 +145,17 @@ struct get_tenor_convention_resolution_request {
      */
     static constexpr bool requires_session = true;
     tenor_convention_resolution_key key;
+
+    friend bool operator==(const get_tenor_convention_resolution_request&,
+                           const get_tenor_convention_resolution_request&) = default;
 };
 
 struct get_tenor_convention_resolution_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolution;
+
+    friend bool operator==(const get_tenor_convention_resolution_response&,
+                           const get_tenor_convention_resolution_response&) = default;
 };
 
 struct get_many_tenor_convention_resolutions_request {
@@ -137,11 +170,17 @@ struct get_many_tenor_convention_resolutions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tenor_convention_resolution_key> keys;
+
+    friend bool operator==(const get_many_tenor_convention_resolutions_request&,
+                           const get_many_tenor_convention_resolutions_request&) = default;
 };
 
 struct get_many_tenor_convention_resolutions_response {
     ores::utility::domain::result result;
     std::vector<tenor_convention_resolution_lookup> entries;
+
+    friend bool operator==(const get_many_tenor_convention_resolutions_response&,
+                           const get_many_tenor_convention_resolutions_response&) = default;
 };
 
 struct put_tenor_convention_resolution_request {
@@ -156,11 +195,17 @@ struct put_tenor_convention_resolution_request {
     static constexpr bool requires_session = true;
     tenor_convention_resolution_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tenor_convention_resolution_request&,
+                           const put_tenor_convention_resolution_request&) = default;
 };
 
 struct put_tenor_convention_resolution_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolution;
+
+    friend bool operator==(const put_tenor_convention_resolution_response&,
+                           const put_tenor_convention_resolution_response&) = default;
 };
 
 struct put_many_tenor_convention_resolutions_request {
@@ -176,11 +221,17 @@ struct put_many_tenor_convention_resolutions_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_convention_resolution_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tenor_convention_resolutions_request&,
+                           const put_many_tenor_convention_resolutions_request&) = default;
 };
 
 struct put_many_tenor_convention_resolutions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolutions;
+
+    friend bool operator==(const put_many_tenor_convention_resolutions_response&,
+                           const put_many_tenor_convention_resolutions_response&) = default;
 };
 
 struct delete_tenor_convention_resolution_request {
@@ -196,10 +247,16 @@ struct delete_tenor_convention_resolution_request {
     static constexpr bool requires_session = true;
     tenor_convention_resolution_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tenor_convention_resolution_request&,
+                           const delete_tenor_convention_resolution_request&) = default;
 };
 
 struct delete_tenor_convention_resolution_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tenor_convention_resolution_response&,
+                           const delete_tenor_convention_resolution_response&) = default;
 };
 
 struct delete_many_tenor_convention_resolutions_request {
@@ -215,10 +272,16 @@ struct delete_many_tenor_convention_resolutions_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_convention_resolution_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tenor_convention_resolutions_request&,
+                           const delete_many_tenor_convention_resolutions_request&) = default;
 };
 
 struct delete_many_tenor_convention_resolutions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tenor_convention_resolutions_response&,
+                           const delete_many_tenor_convention_resolutions_response&) = default;
 };
 
 struct list_by_convention_code_tenor_convention_resolutions_request {
@@ -238,12 +301,20 @@ struct list_by_convention_code_tenor_convention_resolutions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_convention_resolutions_filter> filter;
+
+    friend bool
+    operator==(const list_by_convention_code_tenor_convention_resolutions_request&,
+               const list_by_convention_code_tenor_convention_resolutions_request&) = default;
 };
 
 struct list_by_convention_code_tenor_convention_resolutions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolutions;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_convention_code_tenor_convention_resolutions_response&,
+               const list_by_convention_code_tenor_convention_resolutions_response&) = default;
 };
 
 /**

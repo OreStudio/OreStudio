@@ -43,17 +43,23 @@ namespace ores::iam::messaging {
 
 struct run_grant_key {
     std::string resource;
+
+    friend bool operator==(const run_grant_key&, const run_grant_key&) = default;
 };
 
 struct run_grant_lookup {
     run_grant_key key;
     std::optional<ores::iam::domain::run_grant> run_grant;
+
+    friend bool operator==(const run_grant_lookup&, const run_grant_lookup&) = default;
 };
 
 struct run_grants_filter {
     std::optional<boost::uuids::uuid> grantor_account_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> grantor_account_id_one_of;
+
+    friend bool operator==(const run_grants_filter&, const run_grants_filter&) = default;
 };
 
 struct run_grant_event {
@@ -63,17 +69,24 @@ struct run_grant_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const run_grant_event&, const run_grant_event&) = default;
 };
 
 struct run_grant_version_key {
     run_grant_key run_grant;
     std::uint32_t version;
+
+    friend bool operator==(const run_grant_version_key&, const run_grant_version_key&) = default;
 };
 
 struct run_grant_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const run_grant_versions_filter&,
+                           const run_grant_versions_filter&) = default;
 };
 
 struct list_run_grants_request {
@@ -91,12 +104,18 @@ struct list_run_grants_request {
     ores::utility::domain::order order;
     std::optional<run_grants_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_run_grants_request&,
+                           const list_run_grants_request&) = default;
 };
 
 struct list_run_grants_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::run_grant> grants;
     std::uint64_t total;
+
+    friend bool operator==(const list_run_grants_response&,
+                           const list_run_grants_response&) = default;
 };
 
 struct get_run_grant_request {
@@ -110,11 +129,15 @@ struct get_run_grant_request {
      */
     static constexpr bool requires_session = true;
     run_grant_key key;
+
+    friend bool operator==(const get_run_grant_request&, const get_run_grant_request&) = default;
 };
 
 struct get_run_grant_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::run_grant> run_grant;
+
+    friend bool operator==(const get_run_grant_response&, const get_run_grant_response&) = default;
 };
 
 struct get_many_run_grants_request {
@@ -128,11 +151,17 @@ struct get_many_run_grants_request {
      */
     static constexpr bool requires_session = true;
     std::vector<run_grant_key> keys;
+
+    friend bool operator==(const get_many_run_grants_request&,
+                           const get_many_run_grants_request&) = default;
 };
 
 struct get_many_run_grants_response {
     ores::utility::domain::result result;
     std::vector<run_grant_lookup> entries;
+
+    friend bool operator==(const get_many_run_grants_response&,
+                           const get_many_run_grants_response&) = default;
 };
 
 struct list_by_grantor_account_id_run_grants_request {
@@ -151,12 +180,18 @@ struct list_by_grantor_account_id_run_grants_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<run_grants_filter> filter;
+
+    friend bool operator==(const list_by_grantor_account_id_run_grants_request&,
+                           const list_by_grantor_account_id_run_grants_request&) = default;
 };
 
 struct list_by_grantor_account_id_run_grants_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::run_grant> grants;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_grantor_account_id_run_grants_response&,
+                           const list_by_grantor_account_id_run_grants_response&) = default;
 };
 
 struct list_run_grant_versions_request {
@@ -174,12 +209,18 @@ struct list_run_grant_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<run_grant_versions_filter> filter;
+
+    friend bool operator==(const list_run_grant_versions_request&,
+                           const list_run_grant_versions_request&) = default;
 };
 
 struct list_run_grant_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::run_grant> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_run_grant_versions_response&,
+                           const list_run_grant_versions_response&) = default;
 };
 
 struct get_run_grant_version_request {
@@ -193,11 +234,17 @@ struct get_run_grant_version_request {
      */
     static constexpr bool requires_session = true;
     run_grant_version_key key;
+
+    friend bool operator==(const get_run_grant_version_request&,
+                           const get_run_grant_version_request&) = default;
 };
 
 struct get_run_grant_version_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::run_grant> version;
+
+    friend bool operator==(const get_run_grant_version_response&,
+                           const get_run_grant_version_response&) = default;
 };
 
 /**

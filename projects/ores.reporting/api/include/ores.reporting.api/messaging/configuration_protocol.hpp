@@ -43,6 +43,8 @@ namespace ores::reporting::messaging {
 
 struct configuration_key {
     std::string name;
+
+    friend bool operator==(const configuration_key&, const configuration_key&) = default;
 };
 
 struct configuration_write {
@@ -50,27 +52,37 @@ struct configuration_write {
     std::string name;
     std::string configuration_type_code;
     std::string owning_component;
+
+    friend bool operator==(const configuration_write&, const configuration_write&) = default;
 };
 
 struct configuration_change {
     configuration_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const configuration_change&, const configuration_change&) = default;
 };
 
 struct configuration_removal {
     configuration_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const configuration_removal&, const configuration_removal&) = default;
 };
 
 struct configuration_lookup {
     configuration_key key;
     std::optional<ores::reporting::domain::configuration> configuration;
+
+    friend bool operator==(const configuration_lookup&, const configuration_lookup&) = default;
 };
 
 struct configurations_filter {
     std::optional<std::string> configuration_type_code;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> configuration_type_code_one_of;
+
+    friend bool operator==(const configurations_filter&, const configurations_filter&) = default;
 };
 
 struct configuration_event {
@@ -80,17 +92,25 @@ struct configuration_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const configuration_event&, const configuration_event&) = default;
 };
 
 struct configuration_version_key {
     configuration_key configuration;
     std::uint32_t version;
+
+    friend bool operator==(const configuration_version_key&,
+                           const configuration_version_key&) = default;
 };
 
 struct configuration_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const configuration_versions_filter&,
+                           const configuration_versions_filter&) = default;
 };
 
 struct list_configurations_request {
@@ -108,12 +128,18 @@ struct list_configurations_request {
     ores::utility::domain::order order;
     std::optional<configurations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_configurations_request&,
+                           const list_configurations_request&) = default;
 };
 
 struct list_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration> configurations;
     std::uint64_t total;
+
+    friend bool operator==(const list_configurations_response&,
+                           const list_configurations_response&) = default;
 };
 
 struct get_configuration_request {
@@ -127,11 +153,17 @@ struct get_configuration_request {
      */
     static constexpr bool requires_session = true;
     configuration_key key;
+
+    friend bool operator==(const get_configuration_request&,
+                           const get_configuration_request&) = default;
 };
 
 struct get_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::configuration> configuration;
+
+    friend bool operator==(const get_configuration_response&,
+                           const get_configuration_response&) = default;
 };
 
 struct get_many_configurations_request {
@@ -145,11 +177,17 @@ struct get_many_configurations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<configuration_key> keys;
+
+    friend bool operator==(const get_many_configurations_request&,
+                           const get_many_configurations_request&) = default;
 };
 
 struct get_many_configurations_response {
     ores::utility::domain::result result;
     std::vector<configuration_lookup> entries;
+
+    friend bool operator==(const get_many_configurations_response&,
+                           const get_many_configurations_response&) = default;
 };
 
 struct put_configuration_request {
@@ -164,11 +202,17 @@ struct put_configuration_request {
     static constexpr bool requires_session = true;
     configuration_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_configuration_request&,
+                           const put_configuration_request&) = default;
 };
 
 struct put_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::configuration> configuration;
+
+    friend bool operator==(const put_configuration_response&,
+                           const put_configuration_response&) = default;
 };
 
 struct put_many_configurations_request {
@@ -183,11 +227,17 @@ struct put_many_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<configuration_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_configurations_request&,
+                           const put_many_configurations_request&) = default;
 };
 
 struct put_many_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration> configurations;
+
+    friend bool operator==(const put_many_configurations_response&,
+                           const put_many_configurations_response&) = default;
 };
 
 struct delete_configuration_request {
@@ -202,10 +252,16 @@ struct delete_configuration_request {
     static constexpr bool requires_session = true;
     configuration_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_configuration_request&,
+                           const delete_configuration_request&) = default;
 };
 
 struct delete_configuration_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_configuration_response&,
+                           const delete_configuration_response&) = default;
 };
 
 struct delete_many_configurations_request {
@@ -220,10 +276,16 @@ struct delete_many_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<configuration_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_configurations_request&,
+                           const delete_many_configurations_request&) = default;
 };
 
 struct delete_many_configurations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_configurations_response&,
+                           const delete_many_configurations_response&) = default;
 };
 
 struct list_by_configuration_type_code_configurations_request {
@@ -243,12 +305,19 @@ struct list_by_configuration_type_code_configurations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<configurations_filter> filter;
+
+    friend bool operator==(const list_by_configuration_type_code_configurations_request&,
+                           const list_by_configuration_type_code_configurations_request&) = default;
 };
 
 struct list_by_configuration_type_code_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration> configurations;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_configuration_type_code_configurations_response&,
+               const list_by_configuration_type_code_configurations_response&) = default;
 };
 
 struct list_configuration_versions_request {
@@ -266,12 +335,18 @@ struct list_configuration_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<configuration_versions_filter> filter;
+
+    friend bool operator==(const list_configuration_versions_request&,
+                           const list_configuration_versions_request&) = default;
 };
 
 struct list_configuration_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_configuration_versions_response&,
+                           const list_configuration_versions_response&) = default;
 };
 
 struct get_configuration_version_request {
@@ -285,11 +360,17 @@ struct get_configuration_version_request {
      */
     static constexpr bool requires_session = true;
     configuration_version_key key;
+
+    friend bool operator==(const get_configuration_version_request&,
+                           const get_configuration_version_request&) = default;
 };
 
 struct get_configuration_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::configuration> version;
+
+    friend bool operator==(const get_configuration_version_response&,
+                           const get_configuration_version_response&) = default;
 };
 
 /**

@@ -52,6 +52,9 @@ struct publish_images_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_images_from_dq_request&,
+                           const publish_images_from_dq_request&) = default;
 };
 
 /**

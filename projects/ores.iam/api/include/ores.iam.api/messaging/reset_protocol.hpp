@@ -52,11 +52,15 @@ struct reset_tenant_command {
      */
     static constexpr bool requires_session = true;
     std::string tenant_code;
+
+    friend bool operator==(const reset_tenant_command&, const reset_tenant_command&) = default;
 };
 
 struct reset_tenant_result {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const reset_tenant_result&, const reset_tenant_result&) = default;
 };
 
 // Reset the entire system to pre-bootstrap state.
@@ -74,11 +78,15 @@ struct reset_system_command {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const reset_system_command&, const reset_system_command&) = default;
 };
 
 struct reset_system_result {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const reset_system_result&, const reset_system_result&) = default;
 };
 
 /**

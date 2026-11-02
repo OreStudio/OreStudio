@@ -46,6 +46,8 @@ struct swap_leg_rate_key {
     int leg_number;
     std::string rate_role;
     int sequence_number;
+
+    friend bool operator==(const swap_leg_rate_key&, const swap_leg_rate_key&) = default;
 };
 
 struct swap_leg_rate_write {
@@ -56,26 +58,36 @@ struct swap_leg_rate_write {
     boost::uuids::uuid trade_activity_id;
     std::optional<std::chrono::year_month_day> start_date;
     ores::utility::decimal::decimal value;
+
+    friend bool operator==(const swap_leg_rate_write&, const swap_leg_rate_write&) = default;
 };
 
 struct swap_leg_rate_change {
     swap_leg_rate_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const swap_leg_rate_change&, const swap_leg_rate_change&) = default;
 };
 
 struct swap_leg_rate_removal {
     swap_leg_rate_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const swap_leg_rate_removal&, const swap_leg_rate_removal&) = default;
 };
 
 struct swap_leg_rate_lookup {
     swap_leg_rate_key key;
     std::optional<ores::trading::domain::swap_leg_rate> swap_leg_rate;
+
+    friend bool operator==(const swap_leg_rate_lookup&, const swap_leg_rate_lookup&) = default;
 };
 
 struct swap_leg_rates_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const swap_leg_rates_filter&, const swap_leg_rates_filter&) = default;
 };
 
 struct swap_leg_rate_event {
@@ -85,17 +97,25 @@ struct swap_leg_rate_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const swap_leg_rate_event&, const swap_leg_rate_event&) = default;
 };
 
 struct swap_leg_rate_version_key {
     swap_leg_rate_key swap_leg_rate;
     std::uint32_t version;
+
+    friend bool operator==(const swap_leg_rate_version_key&,
+                           const swap_leg_rate_version_key&) = default;
 };
 
 struct swap_leg_rate_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const swap_leg_rate_versions_filter&,
+                           const swap_leg_rate_versions_filter&) = default;
 };
 
 struct list_swap_leg_rates_request {
@@ -113,12 +133,18 @@ struct list_swap_leg_rates_request {
     ores::utility::domain::order order;
     std::optional<swap_leg_rates_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_swap_leg_rates_request&,
+                           const list_swap_leg_rates_request&) = default;
 };
 
 struct list_swap_leg_rates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg_rate> swap_leg_rates;
     std::uint64_t total;
+
+    friend bool operator==(const list_swap_leg_rates_response&,
+                           const list_swap_leg_rates_response&) = default;
 };
 
 struct get_swap_leg_rate_request {
@@ -132,11 +158,17 @@ struct get_swap_leg_rate_request {
      */
     static constexpr bool requires_session = true;
     swap_leg_rate_key key;
+
+    friend bool operator==(const get_swap_leg_rate_request&,
+                           const get_swap_leg_rate_request&) = default;
 };
 
 struct get_swap_leg_rate_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::swap_leg_rate> swap_leg_rate;
+
+    friend bool operator==(const get_swap_leg_rate_response&,
+                           const get_swap_leg_rate_response&) = default;
 };
 
 struct get_many_swap_leg_rates_request {
@@ -150,11 +182,17 @@ struct get_many_swap_leg_rates_request {
      */
     static constexpr bool requires_session = true;
     std::vector<swap_leg_rate_key> keys;
+
+    friend bool operator==(const get_many_swap_leg_rates_request&,
+                           const get_many_swap_leg_rates_request&) = default;
 };
 
 struct get_many_swap_leg_rates_response {
     ores::utility::domain::result result;
     std::vector<swap_leg_rate_lookup> entries;
+
+    friend bool operator==(const get_many_swap_leg_rates_response&,
+                           const get_many_swap_leg_rates_response&) = default;
 };
 
 struct put_swap_leg_rate_request {
@@ -169,11 +207,17 @@ struct put_swap_leg_rate_request {
     static constexpr bool requires_session = true;
     swap_leg_rate_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_swap_leg_rate_request&,
+                           const put_swap_leg_rate_request&) = default;
 };
 
 struct put_swap_leg_rate_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::swap_leg_rate> swap_leg_rate;
+
+    friend bool operator==(const put_swap_leg_rate_response&,
+                           const put_swap_leg_rate_response&) = default;
 };
 
 struct put_many_swap_leg_rates_request {
@@ -188,11 +232,17 @@ struct put_many_swap_leg_rates_request {
     static constexpr bool requires_session = true;
     std::vector<swap_leg_rate_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_swap_leg_rates_request&,
+                           const put_many_swap_leg_rates_request&) = default;
 };
 
 struct put_many_swap_leg_rates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg_rate> swap_leg_rates;
+
+    friend bool operator==(const put_many_swap_leg_rates_response&,
+                           const put_many_swap_leg_rates_response&) = default;
 };
 
 struct delete_swap_leg_rate_request {
@@ -207,10 +257,16 @@ struct delete_swap_leg_rate_request {
     static constexpr bool requires_session = true;
     swap_leg_rate_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_swap_leg_rate_request&,
+                           const delete_swap_leg_rate_request&) = default;
 };
 
 struct delete_swap_leg_rate_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_swap_leg_rate_response&,
+                           const delete_swap_leg_rate_response&) = default;
 };
 
 struct delete_many_swap_leg_rates_request {
@@ -225,10 +281,16 @@ struct delete_many_swap_leg_rates_request {
     static constexpr bool requires_session = true;
     std::vector<swap_leg_rate_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_swap_leg_rates_request&,
+                           const delete_many_swap_leg_rates_request&) = default;
 };
 
 struct delete_many_swap_leg_rates_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_swap_leg_rates_response&,
+                           const delete_many_swap_leg_rates_response&) = default;
 };
 
 struct list_by_trade_id_swap_leg_rates_request {
@@ -247,12 +309,18 @@ struct list_by_trade_id_swap_leg_rates_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<swap_leg_rates_filter> filter;
+
+    friend bool operator==(const list_by_trade_id_swap_leg_rates_request&,
+                           const list_by_trade_id_swap_leg_rates_request&) = default;
 };
 
 struct list_by_trade_id_swap_leg_rates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg_rate> swap_leg_rates;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_trade_id_swap_leg_rates_response&,
+                           const list_by_trade_id_swap_leg_rates_response&) = default;
 };
 
 struct list_swap_leg_rate_versions_request {
@@ -270,12 +338,18 @@ struct list_swap_leg_rate_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<swap_leg_rate_versions_filter> filter;
+
+    friend bool operator==(const list_swap_leg_rate_versions_request&,
+                           const list_swap_leg_rate_versions_request&) = default;
 };
 
 struct list_swap_leg_rate_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg_rate> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_swap_leg_rate_versions_response&,
+                           const list_swap_leg_rate_versions_response&) = default;
 };
 
 struct get_swap_leg_rate_version_request {
@@ -289,11 +363,17 @@ struct get_swap_leg_rate_version_request {
      */
     static constexpr bool requires_session = true;
     swap_leg_rate_version_key key;
+
+    friend bool operator==(const get_swap_leg_rate_version_request&,
+                           const get_swap_leg_rate_version_request&) = default;
 };
 
 struct get_swap_leg_rate_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::swap_leg_rate> version;
+
+    friend bool operator==(const get_swap_leg_rate_version_response&,
+                           const get_swap_leg_rate_version_response&) = default;
 };
 
 /**

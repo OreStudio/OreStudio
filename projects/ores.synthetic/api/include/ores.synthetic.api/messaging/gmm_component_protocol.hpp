@@ -43,6 +43,8 @@ namespace ores::synthetic::messaging {
 
 struct gmm_component_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const gmm_component_key&, const gmm_component_key&) = default;
 };
 
 struct gmm_component_write {
@@ -53,27 +55,37 @@ struct gmm_component_write {
     double mean;
     double stdev;
     double weight;
+
+    friend bool operator==(const gmm_component_write&, const gmm_component_write&) = default;
 };
 
 struct gmm_component_change {
     gmm_component_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const gmm_component_change&, const gmm_component_change&) = default;
 };
 
 struct gmm_component_removal {
     gmm_component_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const gmm_component_removal&, const gmm_component_removal&) = default;
 };
 
 struct gmm_component_lookup {
     gmm_component_key key;
     std::optional<ores::synthetic::domain::gmm_component> gmm_component;
+
+    friend bool operator==(const gmm_component_lookup&, const gmm_component_lookup&) = default;
 };
 
 struct gmm_components_filter {
     std::optional<boost::uuids::uuid> fx_spot_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> fx_spot_config_id_one_of;
+
+    friend bool operator==(const gmm_components_filter&, const gmm_components_filter&) = default;
 };
 
 struct gmm_component_event {
@@ -83,17 +95,25 @@ struct gmm_component_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const gmm_component_event&, const gmm_component_event&) = default;
 };
 
 struct gmm_component_version_key {
     gmm_component_key gmm_component;
     std::uint32_t version;
+
+    friend bool operator==(const gmm_component_version_key&,
+                           const gmm_component_version_key&) = default;
 };
 
 struct gmm_component_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const gmm_component_versions_filter&,
+                           const gmm_component_versions_filter&) = default;
 };
 
 struct list_gmm_components_request {
@@ -111,12 +131,18 @@ struct list_gmm_components_request {
     ores::utility::domain::order order;
     std::optional<gmm_components_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_gmm_components_request&,
+                           const list_gmm_components_request&) = default;
 };
 
 struct list_gmm_components_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::gmm_component> gmm_components;
     std::uint64_t total;
+
+    friend bool operator==(const list_gmm_components_response&,
+                           const list_gmm_components_response&) = default;
 };
 
 struct get_gmm_component_request {
@@ -130,11 +156,17 @@ struct get_gmm_component_request {
      */
     static constexpr bool requires_session = true;
     gmm_component_key key;
+
+    friend bool operator==(const get_gmm_component_request&,
+                           const get_gmm_component_request&) = default;
 };
 
 struct get_gmm_component_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::gmm_component> gmm_component;
+
+    friend bool operator==(const get_gmm_component_response&,
+                           const get_gmm_component_response&) = default;
 };
 
 struct get_many_gmm_components_request {
@@ -148,11 +180,17 @@ struct get_many_gmm_components_request {
      */
     static constexpr bool requires_session = true;
     std::vector<gmm_component_key> keys;
+
+    friend bool operator==(const get_many_gmm_components_request&,
+                           const get_many_gmm_components_request&) = default;
 };
 
 struct get_many_gmm_components_response {
     ores::utility::domain::result result;
     std::vector<gmm_component_lookup> entries;
+
+    friend bool operator==(const get_many_gmm_components_response&,
+                           const get_many_gmm_components_response&) = default;
 };
 
 struct put_gmm_component_request {
@@ -167,11 +205,17 @@ struct put_gmm_component_request {
     static constexpr bool requires_session = true;
     gmm_component_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_gmm_component_request&,
+                           const put_gmm_component_request&) = default;
 };
 
 struct put_gmm_component_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::gmm_component> gmm_component;
+
+    friend bool operator==(const put_gmm_component_response&,
+                           const put_gmm_component_response&) = default;
 };
 
 struct put_many_gmm_components_request {
@@ -186,11 +230,17 @@ struct put_many_gmm_components_request {
     static constexpr bool requires_session = true;
     std::vector<gmm_component_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_gmm_components_request&,
+                           const put_many_gmm_components_request&) = default;
 };
 
 struct put_many_gmm_components_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::gmm_component> gmm_components;
+
+    friend bool operator==(const put_many_gmm_components_response&,
+                           const put_many_gmm_components_response&) = default;
 };
 
 struct delete_gmm_component_request {
@@ -205,10 +255,16 @@ struct delete_gmm_component_request {
     static constexpr bool requires_session = true;
     gmm_component_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_gmm_component_request&,
+                           const delete_gmm_component_request&) = default;
 };
 
 struct delete_gmm_component_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_gmm_component_response&,
+                           const delete_gmm_component_response&) = default;
 };
 
 struct delete_many_gmm_components_request {
@@ -223,10 +279,16 @@ struct delete_many_gmm_components_request {
     static constexpr bool requires_session = true;
     std::vector<gmm_component_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_gmm_components_request&,
+                           const delete_many_gmm_components_request&) = default;
 };
 
 struct delete_many_gmm_components_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_gmm_components_response&,
+                           const delete_many_gmm_components_response&) = default;
 };
 
 struct list_gmm_component_versions_request {
@@ -244,12 +306,18 @@ struct list_gmm_component_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<gmm_component_versions_filter> filter;
+
+    friend bool operator==(const list_gmm_component_versions_request&,
+                           const list_gmm_component_versions_request&) = default;
 };
 
 struct list_gmm_component_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::gmm_component> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_gmm_component_versions_response&,
+                           const list_gmm_component_versions_response&) = default;
 };
 
 struct get_gmm_component_version_request {
@@ -263,11 +331,17 @@ struct get_gmm_component_version_request {
      */
     static constexpr bool requires_session = true;
     gmm_component_version_key key;
+
+    friend bool operator==(const get_gmm_component_version_request&,
+                           const get_gmm_component_version_request&) = default;
 };
 
 struct get_gmm_component_version_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::gmm_component> version;
+
+    friend bool operator==(const get_gmm_component_version_response&,
+                           const get_gmm_component_version_response&) = default;
 };
 
 /**

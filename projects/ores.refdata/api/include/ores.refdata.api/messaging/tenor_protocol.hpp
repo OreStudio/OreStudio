@@ -46,6 +46,8 @@ namespace ores::refdata::messaging {
 
 struct tenor_key {
     std::string code;
+
+    friend bool operator==(const tenor_key&, const tenor_key&) = default;
 };
 
 struct tenor_write {
@@ -56,25 +58,35 @@ struct tenor_write {
     std::string kind;
     std::string unit;
     std::optional<int> multiplier;
+
+    friend bool operator==(const tenor_write&, const tenor_write&) = default;
 };
 
 struct tenor_change {
     tenor_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tenor_change&, const tenor_change&) = default;
 };
 
 struct tenor_removal {
     tenor_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tenor_removal&, const tenor_removal&) = default;
 };
 
 struct tenor_lookup {
     tenor_key key;
     std::optional<ores::refdata::domain::tenor> tenor;
+
+    friend bool operator==(const tenor_lookup&, const tenor_lookup&) = default;
 };
 
 struct tenors_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const tenors_filter&, const tenors_filter&) = default;
 };
 
 struct tenor_event {
@@ -84,17 +96,23 @@ struct tenor_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tenor_event&, const tenor_event&) = default;
 };
 
 struct tenor_version_key {
     tenor_key tenor;
     std::uint32_t version;
+
+    friend bool operator==(const tenor_version_key&, const tenor_version_key&) = default;
 };
 
 struct tenor_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const tenor_versions_filter&, const tenor_versions_filter&) = default;
 };
 
 struct list_tenors_request {
@@ -112,12 +130,16 @@ struct list_tenors_request {
     ores::utility::domain::order order;
     std::optional<tenors_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_tenors_request&, const list_tenors_request&) = default;
 };
 
 struct list_tenors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor> tenors;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenors_response&, const list_tenors_response&) = default;
 };
 
 struct get_tenor_request {
@@ -131,11 +153,15 @@ struct get_tenor_request {
      */
     static constexpr bool requires_session = true;
     tenor_key key;
+
+    friend bool operator==(const get_tenor_request&, const get_tenor_request&) = default;
 };
 
 struct get_tenor_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor> tenor;
+
+    friend bool operator==(const get_tenor_response&, const get_tenor_response&) = default;
 };
 
 struct get_many_tenors_request {
@@ -149,11 +175,17 @@ struct get_many_tenors_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tenor_key> keys;
+
+    friend bool operator==(const get_many_tenors_request&,
+                           const get_many_tenors_request&) = default;
 };
 
 struct get_many_tenors_response {
     ores::utility::domain::result result;
     std::vector<tenor_lookup> entries;
+
+    friend bool operator==(const get_many_tenors_response&,
+                           const get_many_tenors_response&) = default;
 };
 
 struct put_tenor_request {
@@ -168,11 +200,15 @@ struct put_tenor_request {
     static constexpr bool requires_session = true;
     tenor_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tenor_request&, const put_tenor_request&) = default;
 };
 
 struct put_tenor_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor> tenor;
+
+    friend bool operator==(const put_tenor_response&, const put_tenor_response&) = default;
 };
 
 struct put_many_tenors_request {
@@ -187,11 +223,17 @@ struct put_many_tenors_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tenors_request&,
+                           const put_many_tenors_request&) = default;
 };
 
 struct put_many_tenors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor> tenors;
+
+    friend bool operator==(const put_many_tenors_response&,
+                           const put_many_tenors_response&) = default;
 };
 
 struct delete_tenor_request {
@@ -206,10 +248,14 @@ struct delete_tenor_request {
     static constexpr bool requires_session = true;
     tenor_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tenor_request&, const delete_tenor_request&) = default;
 };
 
 struct delete_tenor_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tenor_response&, const delete_tenor_response&) = default;
 };
 
 struct delete_many_tenors_request {
@@ -224,10 +270,16 @@ struct delete_many_tenors_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tenors_request&,
+                           const delete_many_tenors_request&) = default;
 };
 
 struct delete_many_tenors_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tenors_response&,
+                           const delete_many_tenors_response&) = default;
 };
 
 struct list_tenor_versions_request {
@@ -245,12 +297,18 @@ struct list_tenor_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_versions_filter> filter;
+
+    friend bool operator==(const list_tenor_versions_request&,
+                           const list_tenor_versions_request&) = default;
 };
 
 struct list_tenor_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_versions_response&,
+                           const list_tenor_versions_response&) = default;
 };
 
 struct get_tenor_version_request {
@@ -264,11 +322,17 @@ struct get_tenor_version_request {
      */
     static constexpr bool requires_session = true;
     tenor_version_key key;
+
+    friend bool operator==(const get_tenor_version_request&,
+                           const get_tenor_version_request&) = default;
 };
 
 struct get_tenor_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor> version;
+
+    friend bool operator==(const get_tenor_version_response&,
+                           const get_tenor_version_response&) = default;
 };
 
 struct resolve_tenor_request {
@@ -286,6 +350,8 @@ struct resolve_tenor_request {
     std::string calendar_code;
     std::chrono::year_month_day horizon;
     std::optional<std::chrono::year_month_day> spot;
+
+    friend bool operator==(const resolve_tenor_request&, const resolve_tenor_request&) = default;
 };
 
 struct resolve_tenor_response {
@@ -295,6 +361,8 @@ struct resolve_tenor_response {
     std::chrono::year_month_day adjusted_date;
     std::string roll_rule;
     std::string calendar;
+
+    friend bool operator==(const resolve_tenor_response&, const resolve_tenor_response&) = default;
 };
 
 struct preview_tenor_resolution_request {
@@ -313,6 +381,9 @@ struct preview_tenor_resolution_request {
     std::string calendar_code;
     std::chrono::year_month_day horizon;
     std::optional<std::chrono::year_month_day> spot;
+
+    friend bool operator==(const preview_tenor_resolution_request&,
+                           const preview_tenor_resolution_request&) = default;
 };
 
 /**
@@ -329,6 +400,9 @@ struct convention_tenor_resolution {
     std::chrono::year_month_day anchor_date;
     std::chrono::year_month_day date_before_roll;
     std::chrono::year_month_day adjusted_date;
+
+    friend bool operator==(const convention_tenor_resolution&,
+                           const convention_tenor_resolution&) = default;
 };
 
 struct resolve_convention_request {
@@ -345,6 +419,9 @@ struct resolve_convention_request {
     std::string calendar_code;
     std::chrono::year_month_day horizon;
     std::optional<std::chrono::year_month_day> spot;
+
+    friend bool operator==(const resolve_convention_request&,
+                           const resolve_convention_request&) = default;
 };
 
 struct resolve_convention_response {
@@ -352,6 +429,9 @@ struct resolve_convention_response {
     std::string roll_rule;
     std::string calendar;
     std::vector<convention_tenor_resolution> tenors;
+
+    friend bool operator==(const resolve_convention_response&,
+                           const resolve_convention_response&) = default;
 };
 
 /**

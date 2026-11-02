@@ -62,6 +62,8 @@ struct start_feed_request {
      */
     static constexpr bool requires_session = true;
     std::string config_id;
+
+    friend bool operator==(const start_feed_request&, const start_feed_request&) = default;
 };
 
 /**
@@ -70,6 +72,8 @@ struct start_feed_request {
 struct start_feed_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const start_feed_response&, const start_feed_response&) = default;
 };
 
 /**
@@ -95,6 +99,8 @@ struct stop_feed_request {
     std::string config_id;
     /** @brief Used only if config_id is empty; empty too stops every feed. */
     std::string source_name;
+
+    friend bool operator==(const stop_feed_request&, const stop_feed_request&) = default;
 };
 
 /**
@@ -103,6 +109,8 @@ struct stop_feed_request {
 struct stop_feed_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const stop_feed_response&, const stop_feed_response&) = default;
 };
 
 /**
@@ -115,6 +123,8 @@ struct provider_dispersion {
     std::string item;
     /** @brief The distance from the level the feed took, in basis points of that level. */
     double basis_points = 0.0;
+
+    friend bool operator==(const provider_dispersion&, const provider_dispersion&) = default;
 };
 
 /**
@@ -162,6 +172,8 @@ struct feed_start {
     std::optional<int> jumps;
     /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
     std::vector<provider_dispersion> dispersion;
+
+    friend bool operator==(const feed_start&, const feed_start&) = default;
 };
 
 /**
@@ -175,6 +187,8 @@ struct running_feed {
     std::string source_name;
     /** @brief Where the run's starting value came from; absent when the kind has no such start. */
     std::optional<feed_start> start;
+
+    friend bool operator==(const running_feed&, const running_feed&) = default;
 };
 
 /**
@@ -190,6 +204,8 @@ struct list_feeds_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const list_feeds_request&, const list_feeds_request&) = default;
 };
 
 /**
@@ -200,6 +216,8 @@ struct list_feeds_response {
     bool success = false;
     /** @brief The feeds that run, in source name order. */
     std::vector<running_feed> running_feeds;
+
+    friend bool operator==(const list_feeds_response&, const list_feeds_response&) = default;
 };
 
 /**
@@ -216,6 +234,9 @@ struct calibration_policy_summary {
     std::string fallback_code;
     /** @brief The accepted providers, first preferred. Empty means every provider, by code. */
     std::vector<std::string> provider_order;
+
+    friend bool operator==(const calibration_policy_summary&,
+                           const calibration_policy_summary&) = default;
 };
 
 /**
@@ -234,6 +255,8 @@ struct candidate_outcome {
     std::string state;
     /** @brief Why the candidate was chosen, skipped or not reached. */
     std::string reason;
+
+    friend bool operator==(const candidate_outcome&, const candidate_outcome&) = default;
 };
 
 /**
@@ -268,6 +291,8 @@ struct calibrated_feed {
     std::string outcome;
     /** @brief The words of the outcome: the change written, or why nothing was written. */
     std::string outcome_message;
+
+    friend bool operator==(const calibrated_feed&, const calibrated_feed&) = default;
 };
 
 /**
@@ -293,6 +318,8 @@ struct calibrate_request {
     std::string config_id;
     /** @brief True to write the calibration; false only reports what it would be. */
     bool apply = false;
+
+    friend bool operator==(const calibrate_request&, const calibrate_request&) = default;
 };
 
 /**
@@ -305,6 +332,8 @@ struct calibrate_response {
     calibration_policy_summary policy;
     /** @brief Every feed of the class, in source name order. */
     std::vector<calibrated_feed> feeds;
+
+    friend bool operator==(const calibrate_response&, const calibrate_response&) = default;
 };
 
 /**

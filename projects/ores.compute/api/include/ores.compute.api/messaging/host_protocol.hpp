@@ -43,6 +43,8 @@ namespace ores::compute::messaging {
 
 struct host_key {
     std::string external_id;
+
+    friend bool operator==(const host_key&, const host_key&) = default;
 };
 
 struct host_write {
@@ -54,25 +56,35 @@ struct host_write {
     std::string gpu_type;
     std::string display_name;
     double credit_total;
+
+    friend bool operator==(const host_write&, const host_write&) = default;
 };
 
 struct host_change {
     host_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const host_change&, const host_change&) = default;
 };
 
 struct host_removal {
     host_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const host_removal&, const host_removal&) = default;
 };
 
 struct host_lookup {
     host_key key;
     std::optional<ores::compute::domain::host> host;
+
+    friend bool operator==(const host_lookup&, const host_lookup&) = default;
 };
 
 struct hosts_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const hosts_filter&, const hosts_filter&) = default;
 };
 
 struct host_event {
@@ -82,17 +94,23 @@ struct host_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const host_event&, const host_event&) = default;
 };
 
 struct host_version_key {
     host_key host;
     std::uint32_t version;
+
+    friend bool operator==(const host_version_key&, const host_version_key&) = default;
 };
 
 struct host_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const host_versions_filter&, const host_versions_filter&) = default;
 };
 
 struct list_hosts_request {
@@ -110,12 +128,16 @@ struct list_hosts_request {
     ores::utility::domain::order order;
     std::optional<hosts_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_hosts_request&, const list_hosts_request&) = default;
 };
 
 struct list_hosts_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::host> hosts;
     std::uint64_t total;
+
+    friend bool operator==(const list_hosts_response&, const list_hosts_response&) = default;
 };
 
 struct get_host_request {
@@ -129,11 +151,15 @@ struct get_host_request {
      */
     static constexpr bool requires_session = true;
     host_key key;
+
+    friend bool operator==(const get_host_request&, const get_host_request&) = default;
 };
 
 struct get_host_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::host> host;
+
+    friend bool operator==(const get_host_response&, const get_host_response&) = default;
 };
 
 struct get_many_hosts_request {
@@ -147,11 +173,16 @@ struct get_many_hosts_request {
      */
     static constexpr bool requires_session = true;
     std::vector<host_key> keys;
+
+    friend bool operator==(const get_many_hosts_request&, const get_many_hosts_request&) = default;
 };
 
 struct get_many_hosts_response {
     ores::utility::domain::result result;
     std::vector<host_lookup> entries;
+
+    friend bool operator==(const get_many_hosts_response&,
+                           const get_many_hosts_response&) = default;
 };
 
 struct put_host_request {
@@ -166,11 +197,15 @@ struct put_host_request {
     static constexpr bool requires_session = true;
     host_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_host_request&, const put_host_request&) = default;
 };
 
 struct put_host_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::host> host;
+
+    friend bool operator==(const put_host_response&, const put_host_response&) = default;
 };
 
 struct put_many_hosts_request {
@@ -185,11 +220,16 @@ struct put_many_hosts_request {
     static constexpr bool requires_session = true;
     std::vector<host_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_hosts_request&, const put_many_hosts_request&) = default;
 };
 
 struct put_many_hosts_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::host> hosts;
+
+    friend bool operator==(const put_many_hosts_response&,
+                           const put_many_hosts_response&) = default;
 };
 
 struct delete_host_request {
@@ -204,10 +244,14 @@ struct delete_host_request {
     static constexpr bool requires_session = true;
     host_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_host_request&, const delete_host_request&) = default;
 };
 
 struct delete_host_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_host_response&, const delete_host_response&) = default;
 };
 
 struct delete_many_hosts_request {
@@ -222,10 +266,16 @@ struct delete_many_hosts_request {
     static constexpr bool requires_session = true;
     std::vector<host_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_hosts_request&,
+                           const delete_many_hosts_request&) = default;
 };
 
 struct delete_many_hosts_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_hosts_response&,
+                           const delete_many_hosts_response&) = default;
 };
 
 struct list_host_versions_request {
@@ -243,12 +293,18 @@ struct list_host_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<host_versions_filter> filter;
+
+    friend bool operator==(const list_host_versions_request&,
+                           const list_host_versions_request&) = default;
 };
 
 struct list_host_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::host> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_host_versions_response&,
+                           const list_host_versions_response&) = default;
 };
 
 struct get_host_version_request {
@@ -262,11 +318,17 @@ struct get_host_version_request {
      */
     static constexpr bool requires_session = true;
     host_version_key key;
+
+    friend bool operator==(const get_host_version_request&,
+                           const get_host_version_request&) = default;
 };
 
 struct get_host_version_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::host> version;
+
+    friend bool operator==(const get_host_version_response&,
+                           const get_host_version_response&) = default;
 };
 
 /**

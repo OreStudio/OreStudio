@@ -53,6 +53,8 @@ struct session_view {
     std::string party_id;
     std::vector<std::string> visible_party_ids;
     std::string username;
+
+    friend bool operator==(const session_view&, const session_view&) = default;
 };
 
 struct get_active_sessions_request {
@@ -65,12 +67,18 @@ struct get_active_sessions_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_active_sessions_request&,
+                           const get_active_sessions_request&) = default;
 };
 
 struct get_active_sessions_response {
     std::vector<ores::iam::domain::session> sessions;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const get_active_sessions_response&,
+                           const get_active_sessions_response&) = default;
 };
 
 /**
@@ -93,11 +101,15 @@ struct end_session_request {
      */
     static constexpr bool requires_session = true;
     boost::uuids::uuid session_id;
+
+    friend bool operator==(const end_session_request&, const end_session_request&) = default;
 };
 
 struct end_session_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const end_session_response&, const end_session_response&) = default;
 };
 
 /**

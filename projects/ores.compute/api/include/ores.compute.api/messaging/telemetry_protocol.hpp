@@ -54,6 +54,8 @@ struct get_grid_stats_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_grid_stats_request&, const get_grid_stats_request&) = default;
 };
 
 /**
@@ -100,6 +102,8 @@ struct node_stats_summary {
      * @brief Seconds since the node last heartbeated.
      */
     int seconds_since_hb = 0;
+
+    friend bool operator==(const node_stats_summary&, const node_stats_summary&) = default;
 };
 
 /**
@@ -177,6 +181,9 @@ struct get_grid_stats_response {
      * @brief Per-node summaries from the most recent node samples.
      */
     std::vector<node_stats_summary> node_summaries;
+
+    friend bool operator==(const get_grid_stats_response&,
+                           const get_grid_stats_response&) = default;
 };
 
 /**
@@ -209,6 +216,9 @@ struct get_grid_series_request {
      * @brief Width of a bucket in seconds.
      */
     int bucket_seconds = 60;
+
+    friend bool operator==(const get_grid_series_request&,
+                           const get_grid_series_request&) = default;
 };
 
 /**
@@ -299,6 +309,9 @@ struct get_grid_series_response {
      * @brief Results that ended with no reply, a total that only grows, per bucket.
      */
     std::vector<int> outcomes_no_reply;
+
+    friend bool operator==(const get_grid_series_response&,
+                           const get_grid_series_response&) = default;
 };
 
 /**
@@ -332,6 +345,9 @@ struct get_node_series_request {
      * @brief Width of a bucket in seconds.
      */
     int bucket_seconds = 60;
+
+    friend bool operator==(const get_node_series_request&,
+                           const get_node_series_request&) = default;
 };
 
 /**
@@ -347,6 +363,8 @@ struct node_series_node {
      * did.
      */
     std::string machine;
+
+    friend bool operator==(const node_series_node&, const node_series_node&) = default;
 };
 
 /**
@@ -419,6 +437,9 @@ struct get_node_series_response {
      * @brief Bytes uploaded in the cell, summed over its samples.
      */
     std::vector<std::int64_t> output_bytes_uploaded;
+
+    friend bool operator==(const get_node_series_response&,
+                           const get_node_series_response&) = default;
 };
 
 /**
@@ -485,6 +506,8 @@ struct node_sample_message {
      * @brief Seconds since this node last heartbeated.
      */
     int seconds_since_hb = 0;
+
+    friend bool operator==(const node_sample_message&, const node_sample_message&) = default;
 };
 
 /**
@@ -505,6 +528,8 @@ struct get_grid_usage_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_grid_usage_request&, const get_grid_usage_request&) = default;
 };
 
 /**
@@ -573,6 +598,9 @@ struct get_grid_usage_response {
      * nothing rewrites a result that is still unsent.
      */
     std::vector<std::int64_t> oldest_unsent_seconds;
+
+    friend bool operator==(const get_grid_usage_response&,
+                           const get_grid_usage_response&) = default;
 };
 
 /**

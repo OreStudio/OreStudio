@@ -53,6 +53,9 @@ struct publish_market_data_observations_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_market_data_observations_from_dq_request&,
+                           const publish_market_data_observations_from_dq_request&) = default;
 };
 
 /**
@@ -71,6 +74,9 @@ struct publish_adapters_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_adapters_from_dq_request&,
+                           const publish_adapters_from_dq_request&) = default;
 };
 
 /**
@@ -89,6 +95,9 @@ struct publish_suppliers_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_suppliers_from_dq_request&,
+                           const publish_suppliers_from_dq_request&) = default;
 };
 
 /**

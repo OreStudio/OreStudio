@@ -43,6 +43,8 @@ namespace ores::reporting::messaging {
 
 struct report_metric_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const report_metric_key&, const report_metric_key&) = default;
 };
 
 struct report_metric_write {
@@ -63,21 +65,29 @@ struct report_metric_write {
     std::string factor;
     std::string qualifiers;
     double value;
+
+    friend bool operator==(const report_metric_write&, const report_metric_write&) = default;
 };
 
 struct report_metric_change {
     report_metric_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const report_metric_change&, const report_metric_change&) = default;
 };
 
 struct report_metric_removal {
     report_metric_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const report_metric_removal&, const report_metric_removal&) = default;
 };
 
 struct report_metric_lookup {
     report_metric_key key;
     std::optional<ores::reporting::domain::report_metric> report_metric;
+
+    friend bool operator==(const report_metric_lookup&, const report_metric_lookup&) = default;
 };
 
 struct report_metrics_filter {
@@ -90,6 +100,8 @@ struct report_metrics_filter {
     std::optional<std::vector<std::string>> measure_one_of;
     std::optional<std::vector<std::string>> family_one_of;
     std::optional<std::vector<std::string>> subject_id_one_of;
+
+    friend bool operator==(const report_metrics_filter&, const report_metrics_filter&) = default;
 };
 
 struct report_metric_event {
@@ -99,6 +111,8 @@ struct report_metric_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const report_metric_event&, const report_metric_event&) = default;
 };
 
 struct list_report_metrics_request {
@@ -116,12 +130,18 @@ struct list_report_metrics_request {
     ores::utility::domain::order order;
     std::optional<report_metrics_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_report_metrics_request&,
+                           const list_report_metrics_request&) = default;
 };
 
 struct list_report_metrics_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_metric> metrics;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_metrics_response&,
+                           const list_report_metrics_response&) = default;
 };
 
 struct get_report_metric_request {
@@ -135,11 +155,17 @@ struct get_report_metric_request {
      */
     static constexpr bool requires_session = true;
     report_metric_key key;
+
+    friend bool operator==(const get_report_metric_request&,
+                           const get_report_metric_request&) = default;
 };
 
 struct get_report_metric_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_metric> report_metric;
+
+    friend bool operator==(const get_report_metric_response&,
+                           const get_report_metric_response&) = default;
 };
 
 struct get_many_report_metrics_request {
@@ -153,11 +179,17 @@ struct get_many_report_metrics_request {
      */
     static constexpr bool requires_session = true;
     std::vector<report_metric_key> keys;
+
+    friend bool operator==(const get_many_report_metrics_request&,
+                           const get_many_report_metrics_request&) = default;
 };
 
 struct get_many_report_metrics_response {
     ores::utility::domain::result result;
     std::vector<report_metric_lookup> entries;
+
+    friend bool operator==(const get_many_report_metrics_response&,
+                           const get_many_report_metrics_response&) = default;
 };
 
 struct put_report_metric_request {
@@ -172,11 +204,17 @@ struct put_report_metric_request {
     static constexpr bool requires_session = true;
     report_metric_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_report_metric_request&,
+                           const put_report_metric_request&) = default;
 };
 
 struct put_report_metric_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_metric> report_metric;
+
+    friend bool operator==(const put_report_metric_response&,
+                           const put_report_metric_response&) = default;
 };
 
 struct put_many_report_metrics_request {
@@ -191,11 +229,17 @@ struct put_many_report_metrics_request {
     static constexpr bool requires_session = true;
     std::vector<report_metric_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_report_metrics_request&,
+                           const put_many_report_metrics_request&) = default;
 };
 
 struct put_many_report_metrics_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_metric> metrics;
+
+    friend bool operator==(const put_many_report_metrics_response&,
+                           const put_many_report_metrics_response&) = default;
 };
 
 struct delete_report_metric_request {
@@ -210,10 +254,16 @@ struct delete_report_metric_request {
     static constexpr bool requires_session = true;
     report_metric_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_report_metric_request&,
+                           const delete_report_metric_request&) = default;
 };
 
 struct delete_report_metric_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_report_metric_response&,
+                           const delete_report_metric_response&) = default;
 };
 
 struct delete_many_report_metrics_request {
@@ -228,10 +278,16 @@ struct delete_many_report_metrics_request {
     static constexpr bool requires_session = true;
     std::vector<report_metric_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_report_metrics_request&,
+                           const delete_many_report_metrics_request&) = default;
 };
 
 struct delete_many_report_metrics_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_report_metrics_response&,
+                           const delete_many_report_metrics_response&) = default;
 };
 
 /**

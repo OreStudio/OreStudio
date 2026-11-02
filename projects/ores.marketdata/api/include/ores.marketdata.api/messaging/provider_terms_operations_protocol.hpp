@@ -69,6 +69,9 @@ struct accept_provider_terms_request {
      * what a person at the shell does after reading the provider.
      */
     int provider_version = 0;
+
+    friend bool operator==(const accept_provider_terms_request&,
+                           const accept_provider_terms_request&) = default;
 };
 
 struct accept_provider_terms_response {
@@ -88,6 +91,9 @@ struct accept_provider_terms_response {
      * @brief When the acceptance was recorded.
      */
     std::optional<std::chrono::system_clock::time_point> accepted_at;
+
+    friend bool operator==(const accept_provider_terms_response&,
+                           const accept_provider_terms_response&) = default;
 };
 
 /**
@@ -111,6 +117,9 @@ struct withdraw_provider_terms_request {
      * @brief The provider whose acceptance is withdrawn.
      */
     std::string provider_code;
+
+    friend bool operator==(const withdraw_provider_terms_request&,
+                           const withdraw_provider_terms_request&) = default;
 };
 
 struct withdraw_provider_terms_response {
@@ -122,6 +131,9 @@ struct withdraw_provider_terms_response {
      * @brief Why it was not, or what was recorded.
      */
     std::string message;
+
+    friend bool operator==(const withdraw_provider_terms_response&,
+                           const withdraw_provider_terms_response&) = default;
 };
 
 /**

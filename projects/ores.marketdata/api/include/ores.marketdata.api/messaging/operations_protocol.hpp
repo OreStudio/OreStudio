@@ -54,6 +54,8 @@ namespace ores::marketdata::messaging {
 struct series_identity_field {
     std::string name;
     std::string text;
+
+    friend bool operator==(const series_identity_field&, const series_identity_field&) = default;
 };
 
 /**
@@ -94,6 +96,9 @@ struct resolve_series_identity_request {
      * state is left unconstrained, so the read narrows by what it is given.
      */
     std::vector<series_identity_field> fields;
+
+    friend bool operator==(const resolve_series_identity_request&,
+                           const resolve_series_identity_request&) = default;
 };
 
 /**
@@ -106,6 +111,9 @@ struct resolve_series_identity_response {
     std::vector<ores::marketdata::domain::market_series> series;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const resolve_series_identity_response&,
+                           const resolve_series_identity_response&) = default;
 };
 
 /**
@@ -121,6 +129,8 @@ struct oresmd_field_spec {
     bool may_be_none = false;
     std::string kind;
     std::vector<std::string> codes;
+
+    friend bool operator==(const oresmd_field_spec&, const oresmd_field_spec&) = default;
 };
 
 /**
@@ -136,12 +146,16 @@ struct oresmd_instrument {
     std::string asset;
     std::string subject;
     std::vector<oresmd_field_spec> fields;
+
+    friend bool operator==(const oresmd_instrument&, const oresmd_instrument&) = default;
 };
 
 /** @brief One field of an index family, which a fixing URI writes in the row's order. */
 struct oresmd_index_field {
     std::string name;
     bool optional = false;
+
+    friend bool operator==(const oresmd_index_field&, const oresmd_index_field&) = default;
 };
 
 /**
@@ -155,6 +169,8 @@ struct oresmd_index_family {
     std::string asset;
     std::string subject;
     std::vector<oresmd_index_field> fields;
+
+    friend bool operator==(const oresmd_index_family&, const oresmd_index_family&) = default;
 };
 
 /**
@@ -173,6 +189,9 @@ struct describe_oresmd_schema_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const describe_oresmd_schema_request&,
+                           const describe_oresmd_schema_request&) = default;
 };
 
 /**
@@ -189,6 +208,9 @@ struct describe_oresmd_schema_response {
     std::vector<oresmd_index_family> indexes;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const describe_oresmd_schema_response&,
+                           const describe_oresmd_schema_response&) = default;
 };
 
 /**
@@ -200,6 +222,8 @@ struct describe_oresmd_schema_response {
 struct oresmd_uri_field {
     std::string name;
     std::string text;
+
+    friend bool operator==(const oresmd_uri_field&, const oresmd_uri_field&) = default;
 };
 
 /**
@@ -220,6 +244,9 @@ struct parse_oresmd_uri_request {
      */
     static constexpr bool requires_session = true;
     std::string uri;
+
+    friend bool operator==(const parse_oresmd_uri_request&,
+                           const parse_oresmd_uri_request&) = default;
 };
 
 /**
@@ -240,6 +267,9 @@ struct parse_oresmd_uri_response {
     std::vector<oresmd_uri_field> fields;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const parse_oresmd_uri_response&,
+                           const parse_oresmd_uri_response&) = default;
 };
 
 /**
@@ -264,6 +294,9 @@ struct compose_oresmd_uri_request {
     std::string quote;
     std::string subject;
     std::vector<oresmd_uri_field> fields;
+
+    friend bool operator==(const compose_oresmd_uri_request&,
+                           const compose_oresmd_uri_request&) = default;
 };
 
 /**
@@ -275,6 +308,9 @@ struct compose_oresmd_uri_response {
     std::string uri;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const compose_oresmd_uri_response&,
+                           const compose_oresmd_uri_response&) = default;
 };
 
 /**
@@ -294,6 +330,9 @@ struct list_series_identities_request {
      */
     static constexpr bool requires_session = true;
     std::string party_id;
+
+    friend bool operator==(const list_series_identities_request&,
+                           const list_series_identities_request&) = default;
 };
 
 /**
@@ -307,6 +346,8 @@ struct listed_series {
     resolve_series_identity_request identity;
     /** The declared coordinate fields in order. Empty when no shape is declared. */
     std::vector<std::string> axes;
+
+    friend bool operator==(const listed_series&, const listed_series&) = default;
 };
 
 /**
@@ -320,6 +361,9 @@ struct list_series_identities_response {
     bool truncated = false;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const list_series_identities_response&,
+                           const list_series_identities_response&) = default;
 };
 
 struct crm_rate_item {
@@ -345,6 +389,8 @@ struct crm_rate_item {
      * "unavailable".
      */
     std::optional<double> delta_pct;
+
+    friend bool operator==(const crm_rate_item&, const crm_rate_item&) = default;
 };
 
 /**
@@ -373,12 +419,16 @@ struct get_crm_rate_request {
     std::string crm_name;
     std::string base_currency_code;
     std::string quote_currency_code;
+
+    friend bool operator==(const get_crm_rate_request&, const get_crm_rate_request&) = default;
 };
 
 struct get_crm_rate_response {
     bool success = true;
     std::string message;
     crm_rate_item rate;
+
+    friend bool operator==(const get_crm_rate_response&, const get_crm_rate_response&) = default;
 };
 
 /**
@@ -411,12 +461,16 @@ struct get_crm_rates_request {
      * served instead of a synthesised reciprocal.
      */
     bool reciprocal = false;
+
+    friend bool operator==(const get_crm_rates_request&, const get_crm_rates_request&) = default;
 };
 
 struct get_crm_rates_response {
     bool success = true;
     std::string message;
     std::vector<crm_rate_item> rates;
+
+    friend bool operator==(const get_crm_rates_response&, const get_crm_rates_response&) = default;
 };
 
 /**
@@ -438,11 +492,17 @@ struct republish_curve_request {
     static constexpr bool requires_session = true;
     std::string bootstrap_config_id;
     std::chrono::system_clock::time_point as_of;
+
+    friend bool operator==(const republish_curve_request&,
+                           const republish_curve_request&) = default;
 };
 
 struct republish_curve_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const republish_curve_response&,
+                           const republish_curve_response&) = default;
 };
 
 /**
@@ -466,6 +526,8 @@ struct compute_curve_request {
     static constexpr bool requires_session = true;
     std::string bootstrap_config_id;
     std::chrono::system_clock::time_point as_of;
+
+    friend bool operator==(const compute_curve_request&, const compute_curve_request&) = default;
 };
 
 /**
@@ -477,12 +539,16 @@ struct computed_curve_point {
     std::string point_id;
     std::chrono::year_month_day date = {};
     double discount_factor = 0.0;
+
+    friend bool operator==(const computed_curve_point&, const computed_curve_point&) = default;
 };
 
 struct compute_curve_response {
     bool success = false;
     std::string message;
     std::vector<computed_curve_point> points;
+
+    friend bool operator==(const compute_curve_response&, const compute_curve_response&) = default;
 };
 
 /**
@@ -499,6 +565,8 @@ struct series_slice_instant {
      * shorter object, which is the mistake the aligned shape exists to prevent.
      */
     std::vector<std::string> values;
+
+    friend bool operator==(const series_slice_instant&, const series_slice_instant&) = default;
 };
 
 /**
@@ -539,6 +607,9 @@ struct get_series_slice_request {
     std::chrono::system_clock::time_point from_instant;
     /** The last market instant of the range, inclusive. */
     std::chrono::system_clock::time_point to_instant;
+
+    friend bool operator==(const get_series_slice_request&,
+                           const get_series_slice_request&) = default;
 };
 
 /**
@@ -574,6 +645,9 @@ struct get_series_slice_response {
     std::vector<std::string> coordinates;
     /** Oldest first, one entry per distinct market instant in the range. */
     std::vector<series_slice_instant> instants;
+
+    friend bool operator==(const get_series_slice_response&,
+                           const get_series_slice_response&) = default;
 };
 
 /**
@@ -595,6 +669,8 @@ struct evolution_node {
      * object does not have: that node is not in the response at all.
      */
     std::string status;
+
+    friend bool operator==(const evolution_node&, const evolution_node&) = default;
 };
 
 /**
@@ -609,6 +685,8 @@ struct evolution_instant {
      * value for it at this instant.
      */
     std::vector<std::string> values;
+
+    friend bool operator==(const evolution_instant&, const evolution_instant&) = default;
 };
 
 /**
@@ -644,6 +722,9 @@ struct get_series_evolution_request {
      * instants states the range and leaves this empty.
      */
     std::vector<std::chrono::system_clock::time_point> instants;
+
+    friend bool operator==(const get_series_evolution_request&,
+                           const get_series_evolution_request&) = default;
 };
 
 /**
@@ -675,6 +756,9 @@ struct get_series_evolution_response {
     std::vector<evolution_node> nodes;
     /** Oldest first, one entry per distinct market instant read. */
     std::vector<evolution_instant> instants;
+
+    friend bool operator==(const get_series_evolution_response&,
+                           const get_series_evolution_response&) = default;
 };
 
 /**
@@ -703,6 +787,8 @@ struct point_provenance {
     /** The as-of of the upstream data the derivation read. The epoch unless the point is derived.
      */
     std::chrono::system_clock::time_point source_as_of;
+
+    friend bool operator==(const point_provenance&, const point_provenance&) = default;
 };
 
 /**
@@ -733,6 +819,9 @@ struct get_curve_snapshot_request {
      * same generation the values come from, not the row as it stood at the instant.
      */
     bool include_provenance = false;
+
+    friend bool operator==(const get_curve_snapshot_request&,
+                           const get_curve_snapshot_request&) = default;
 };
 
 /**
@@ -841,6 +930,9 @@ struct get_curve_snapshot_response {
      * use stands on and can read its decisions, its reason and its state.
      */
     std::string approval_request_id;
+
+    friend bool operator==(const get_curve_snapshot_response&,
+                           const get_curve_snapshot_response&) = default;
 };
 
 /**
@@ -898,6 +990,9 @@ struct import_market_data_request {
      * repeats treated as a hard failure.
      */
     bool duplicates_are_errors = false;
+
+    friend bool operator==(const import_market_data_request&,
+                           const import_market_data_request&) = default;
 };
 
 struct import_market_data_response {
@@ -922,6 +1017,9 @@ struct import_market_data_response {
      * fixings) was not persisted.
      */
     std::vector<std::string> errors;
+
+    friend bool operator==(const import_market_data_response&,
+                           const import_market_data_response&) = default;
 };
 
 /**
@@ -934,6 +1032,8 @@ struct feed_kind_counts {
     int started = 0;
     int already_running = 0;
     int skipped = 0;
+
+    friend bool operator==(const feed_kind_counts&, const feed_kind_counts&) = default;
 };
 
 /**
@@ -958,6 +1058,9 @@ struct start_feeds_under_folder_request {
      */
     static constexpr bool requires_session = true;
     std::string folder_id;
+
+    friend bool operator==(const start_feeds_under_folder_request&,
+                           const start_feeds_under_folder_request&) = default;
 };
 
 struct start_feeds_under_folder_response {
@@ -970,6 +1073,9 @@ struct start_feeds_under_folder_response {
      * every kind and are the summary clients print. Both are always populated.
      */
     std::map<std::string, feed_kind_counts> by_kind;
+
+    friend bool operator==(const start_feeds_under_folder_response&,
+                           const start_feeds_under_folder_response&) = default;
 };
 
 /**
@@ -987,6 +1093,9 @@ struct stop_feeds_under_folder_request {
      */
     static constexpr bool requires_session = true;
     std::string folder_id;
+
+    friend bool operator==(const stop_feeds_under_folder_request&,
+                           const stop_feeds_under_folder_request&) = default;
 };
 
 struct stop_feeds_under_folder_response {
@@ -994,6 +1103,9 @@ struct stop_feeds_under_folder_response {
     std::string message;
     int stopped = 0;
     std::map<std::string, int> stopped_by_kind;
+
+    friend bool operator==(const stop_feeds_under_folder_response&,
+                           const stop_feeds_under_folder_response&) = default;
 };
 
 /**
@@ -1044,6 +1156,9 @@ struct export_market_data_to_storage_request {
      * these datums.
      */
     std::optional<int> max_age_days;
+
+    friend bool operator==(const export_market_data_to_storage_request&,
+                           const export_market_data_to_storage_request&) = default;
 };
 
 struct export_market_data_to_storage_response {
@@ -1064,6 +1179,9 @@ struct export_market_data_to_storage_response {
      * than the limit.
      */
     int stale_count = 0;
+
+    friend bool operator==(const export_market_data_to_storage_response&,
+                           const export_market_data_to_storage_response&) = default;
 };
 
 /**
@@ -1089,6 +1207,9 @@ struct backfill_series_identity_request {
      * can see.
      */
     std::string party_id;
+
+    friend bool operator==(const backfill_series_identity_request&,
+                           const backfill_series_identity_request&) = default;
 };
 
 struct backfill_series_identity_response {
@@ -1114,6 +1235,9 @@ struct backfill_series_identity_response {
      * what says how many identities the database could not state.
      */
     int unreadable_count = 0;
+
+    friend bool operator==(const backfill_series_identity_response&,
+                           const backfill_series_identity_response&) = default;
 };
 
 /**
@@ -1143,11 +1267,17 @@ struct key_manual_point_request {
     std::string change_reason_code;
     /** The free-text reason for the correction. */
     std::string change_commentary;
+
+    friend bool operator==(const key_manual_point_request&,
+                           const key_manual_point_request&) = default;
 };
 
 struct key_manual_point_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const key_manual_point_response&,
+                           const key_manual_point_response&) = default;
 };
 
 /**
@@ -1170,11 +1300,17 @@ struct clear_manual_point_request {
     resolve_series_identity_request identity;
     /** The node: one coordinate per declared axis, in the shape's order. */
     std::vector<std::string> coordinates;
+
+    friend bool operator==(const clear_manual_point_request&,
+                           const clear_manual_point_request&) = default;
 };
 
 struct clear_manual_point_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const clear_manual_point_response&,
+                           const clear_manual_point_response&) = default;
 };
 
 /**
@@ -1212,6 +1348,9 @@ struct export_market_data_request {
      * these datums.
      */
     std::optional<int> max_age_days;
+
+    friend bool operator==(const export_market_data_request&,
+                           const export_market_data_request&) = default;
 };
 
 /**
@@ -1246,6 +1385,9 @@ struct export_market_data_response {
      * than the limit.
      */
     int stale_count = 0;
+
+    friend bool operator==(const export_market_data_response&,
+                           const export_market_data_response&) = default;
 };
 
 /**
@@ -1273,6 +1415,8 @@ struct market_tick {
     std::chrono::system_clock::time_point observation_time;
     /** The producer, unique within a tenant; its routes name the consumers. */
     std::string source;
+
+    friend bool operator==(const market_tick&, const market_tick&) = default;
 };
 
 /**
@@ -1296,6 +1440,9 @@ struct get_series_ticks_request {
     std::chrono::system_clock::time_point from_instant;
     std::optional<std::chrono::system_clock::time_point> to_instant;
     std::vector<std::string> coordinates;
+
+    friend bool operator==(const get_series_ticks_request&,
+                           const get_series_ticks_request&) = default;
 };
 
 /**
@@ -1313,6 +1460,9 @@ struct get_series_ticks_response {
     std::vector<std::int64_t> gaps_us;
     std::vector<int> coordinate_indexes;
     std::vector<double> values;
+
+    friend bool operator==(const get_series_ticks_response&,
+                           const get_series_ticks_response&) = default;
 };
 
 /**
@@ -1346,6 +1496,9 @@ struct store_market_state_request {
     std::string storage_token;
     std::vector<std::string> manifest_uris;
     std::vector<std::string> skipped_families;
+
+    friend bool operator==(const store_market_state_request&,
+                           const store_market_state_request&) = default;
 };
 
 struct store_market_state_response {
@@ -1355,6 +1508,9 @@ struct store_market_state_response {
     std::int64_t rows = 0;
     std::vector<std::string> left_alone;
     std::vector<std::string> refusals;
+
+    friend bool operator==(const store_market_state_response&,
+                           const store_market_state_response&) = default;
 };
 
 /**

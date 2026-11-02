@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct tenor_basis_two_swap_convention_key {
     std::string id;
+
+    friend bool operator==(const tenor_basis_two_swap_convention_key&,
+                           const tenor_basis_two_swap_convention_key&) = default;
 };
 
 struct tenor_basis_two_swap_convention_write {
@@ -58,26 +61,41 @@ struct tenor_basis_two_swap_convention_write {
     std::string short_index;
     std::optional<bool> long_minus_short;
     std::optional<std::string> oresmd_uri;
+
+    friend bool operator==(const tenor_basis_two_swap_convention_write&,
+                           const tenor_basis_two_swap_convention_write&) = default;
 };
 
 struct tenor_basis_two_swap_convention_change {
     tenor_basis_two_swap_convention_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tenor_basis_two_swap_convention_change&,
+                           const tenor_basis_two_swap_convention_change&) = default;
 };
 
 struct tenor_basis_two_swap_convention_removal {
     tenor_basis_two_swap_convention_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tenor_basis_two_swap_convention_removal&,
+                           const tenor_basis_two_swap_convention_removal&) = default;
 };
 
 struct tenor_basis_two_swap_convention_lookup {
     tenor_basis_two_swap_convention_key key;
     std::optional<ores::refdata::domain::tenor_basis_two_swap_convention>
         tenor_basis_two_swap_convention;
+
+    friend bool operator==(const tenor_basis_two_swap_convention_lookup&,
+                           const tenor_basis_two_swap_convention_lookup&) = default;
 };
 
 struct tenor_basis_two_swap_conventions_filter {
     std::optional<std::vector<std::string>> id_one_of;
+
+    friend bool operator==(const tenor_basis_two_swap_conventions_filter&,
+                           const tenor_basis_two_swap_conventions_filter&) = default;
 };
 
 struct tenor_basis_two_swap_convention_event {
@@ -87,17 +105,26 @@ struct tenor_basis_two_swap_convention_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tenor_basis_two_swap_convention_event&,
+                           const tenor_basis_two_swap_convention_event&) = default;
 };
 
 struct tenor_basis_two_swap_convention_version_key {
     tenor_basis_two_swap_convention_key tenor_basis_two_swap_convention;
     std::uint32_t version;
+
+    friend bool operator==(const tenor_basis_two_swap_convention_version_key&,
+                           const tenor_basis_two_swap_convention_version_key&) = default;
 };
 
 struct tenor_basis_two_swap_convention_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const tenor_basis_two_swap_convention_versions_filter&,
+                           const tenor_basis_two_swap_convention_versions_filter&) = default;
 };
 
 struct list_tenor_basis_two_swap_conventions_request {
@@ -116,6 +143,9 @@ struct list_tenor_basis_two_swap_conventions_request {
     ores::utility::domain::order order;
     std::optional<tenor_basis_two_swap_conventions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_tenor_basis_two_swap_conventions_request&,
+                           const list_tenor_basis_two_swap_conventions_request&) = default;
 };
 
 struct list_tenor_basis_two_swap_conventions_response {
@@ -123,6 +153,9 @@ struct list_tenor_basis_two_swap_conventions_response {
     std::vector<ores::refdata::domain::tenor_basis_two_swap_convention>
         tenor_basis_two_swap_conventions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_basis_two_swap_conventions_response&,
+                           const list_tenor_basis_two_swap_conventions_response&) = default;
 };
 
 struct get_tenor_basis_two_swap_convention_request {
@@ -137,12 +170,18 @@ struct get_tenor_basis_two_swap_convention_request {
      */
     static constexpr bool requires_session = true;
     tenor_basis_two_swap_convention_key key;
+
+    friend bool operator==(const get_tenor_basis_two_swap_convention_request&,
+                           const get_tenor_basis_two_swap_convention_request&) = default;
 };
 
 struct get_tenor_basis_two_swap_convention_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_basis_two_swap_convention>
         tenor_basis_two_swap_convention;
+
+    friend bool operator==(const get_tenor_basis_two_swap_convention_response&,
+                           const get_tenor_basis_two_swap_convention_response&) = default;
 };
 
 struct get_many_tenor_basis_two_swap_conventions_request {
@@ -157,11 +196,17 @@ struct get_many_tenor_basis_two_swap_conventions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_two_swap_convention_key> keys;
+
+    friend bool operator==(const get_many_tenor_basis_two_swap_conventions_request&,
+                           const get_many_tenor_basis_two_swap_conventions_request&) = default;
 };
 
 struct get_many_tenor_basis_two_swap_conventions_response {
     ores::utility::domain::result result;
     std::vector<tenor_basis_two_swap_convention_lookup> entries;
+
+    friend bool operator==(const get_many_tenor_basis_two_swap_conventions_response&,
+                           const get_many_tenor_basis_two_swap_conventions_response&) = default;
 };
 
 struct put_tenor_basis_two_swap_convention_request {
@@ -177,12 +222,18 @@ struct put_tenor_basis_two_swap_convention_request {
     static constexpr bool requires_session = true;
     tenor_basis_two_swap_convention_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tenor_basis_two_swap_convention_request&,
+                           const put_tenor_basis_two_swap_convention_request&) = default;
 };
 
 struct put_tenor_basis_two_swap_convention_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_basis_two_swap_convention>
         tenor_basis_two_swap_convention;
+
+    friend bool operator==(const put_tenor_basis_two_swap_convention_response&,
+                           const put_tenor_basis_two_swap_convention_response&) = default;
 };
 
 struct put_many_tenor_basis_two_swap_conventions_request {
@@ -198,12 +249,18 @@ struct put_many_tenor_basis_two_swap_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_two_swap_convention_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tenor_basis_two_swap_conventions_request&,
+                           const put_many_tenor_basis_two_swap_conventions_request&) = default;
 };
 
 struct put_many_tenor_basis_two_swap_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_two_swap_convention>
         tenor_basis_two_swap_conventions;
+
+    friend bool operator==(const put_many_tenor_basis_two_swap_conventions_response&,
+                           const put_many_tenor_basis_two_swap_conventions_response&) = default;
 };
 
 struct delete_tenor_basis_two_swap_convention_request {
@@ -219,10 +276,16 @@ struct delete_tenor_basis_two_swap_convention_request {
     static constexpr bool requires_session = true;
     tenor_basis_two_swap_convention_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tenor_basis_two_swap_convention_request&,
+                           const delete_tenor_basis_two_swap_convention_request&) = default;
 };
 
 struct delete_tenor_basis_two_swap_convention_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tenor_basis_two_swap_convention_response&,
+                           const delete_tenor_basis_two_swap_convention_response&) = default;
 };
 
 struct delete_many_tenor_basis_two_swap_conventions_request {
@@ -238,10 +301,16 @@ struct delete_many_tenor_basis_two_swap_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_two_swap_convention_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tenor_basis_two_swap_conventions_request&,
+                           const delete_many_tenor_basis_two_swap_conventions_request&) = default;
 };
 
 struct delete_many_tenor_basis_two_swap_conventions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tenor_basis_two_swap_conventions_response&,
+                           const delete_many_tenor_basis_two_swap_conventions_response&) = default;
 };
 
 struct list_tenor_basis_two_swap_convention_versions_request {
@@ -260,12 +329,18 @@ struct list_tenor_basis_two_swap_convention_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_basis_two_swap_convention_versions_filter> filter;
+
+    friend bool operator==(const list_tenor_basis_two_swap_convention_versions_request&,
+                           const list_tenor_basis_two_swap_convention_versions_request&) = default;
 };
 
 struct list_tenor_basis_two_swap_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_two_swap_convention> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_basis_two_swap_convention_versions_response&,
+                           const list_tenor_basis_two_swap_convention_versions_response&) = default;
 };
 
 struct get_tenor_basis_two_swap_convention_version_request {
@@ -280,11 +355,17 @@ struct get_tenor_basis_two_swap_convention_version_request {
      */
     static constexpr bool requires_session = true;
     tenor_basis_two_swap_convention_version_key key;
+
+    friend bool operator==(const get_tenor_basis_two_swap_convention_version_request&,
+                           const get_tenor_basis_two_swap_convention_version_request&) = default;
 };
 
 struct get_tenor_basis_two_swap_convention_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_basis_two_swap_convention> version;
+
+    friend bool operator==(const get_tenor_basis_two_swap_convention_version_response&,
+                           const get_tenor_basis_two_swap_convention_version_response&) = default;
 };
 
 /**

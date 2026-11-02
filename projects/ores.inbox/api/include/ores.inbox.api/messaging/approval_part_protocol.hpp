@@ -43,6 +43,8 @@ namespace ores::inbox::messaging {
 
 struct approval_part_key {
     std::string code;
+
+    friend bool operator==(const approval_part_key&, const approval_part_key&) = default;
 };
 
 struct approval_part_write {
@@ -52,25 +54,35 @@ struct approval_part_write {
     std::string decide_permission_code;
     int answer_order;
     int display_order;
+
+    friend bool operator==(const approval_part_write&, const approval_part_write&) = default;
 };
 
 struct approval_part_change {
     approval_part_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const approval_part_change&, const approval_part_change&) = default;
 };
 
 struct approval_part_removal {
     approval_part_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const approval_part_removal&, const approval_part_removal&) = default;
 };
 
 struct approval_part_lookup {
     approval_part_key key;
     std::optional<ores::inbox::domain::approval_part> approval_part;
+
+    friend bool operator==(const approval_part_lookup&, const approval_part_lookup&) = default;
 };
 
 struct approval_parts_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const approval_parts_filter&, const approval_parts_filter&) = default;
 };
 
 struct approval_part_event {
@@ -80,17 +92,25 @@ struct approval_part_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const approval_part_event&, const approval_part_event&) = default;
 };
 
 struct approval_part_version_key {
     approval_part_key approval_part;
     std::uint32_t version;
+
+    friend bool operator==(const approval_part_version_key&,
+                           const approval_part_version_key&) = default;
 };
 
 struct approval_part_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const approval_part_versions_filter&,
+                           const approval_part_versions_filter&) = default;
 };
 
 struct list_approval_parts_request {
@@ -108,12 +128,18 @@ struct list_approval_parts_request {
     ores::utility::domain::order order;
     std::optional<approval_parts_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_approval_parts_request&,
+                           const list_approval_parts_request&) = default;
 };
 
 struct list_approval_parts_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_part> parts;
     std::uint64_t total;
+
+    friend bool operator==(const list_approval_parts_response&,
+                           const list_approval_parts_response&) = default;
 };
 
 struct get_approval_part_request {
@@ -127,11 +153,17 @@ struct get_approval_part_request {
      */
     static constexpr bool requires_session = true;
     approval_part_key key;
+
+    friend bool operator==(const get_approval_part_request&,
+                           const get_approval_part_request&) = default;
 };
 
 struct get_approval_part_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::approval_part> approval_part;
+
+    friend bool operator==(const get_approval_part_response&,
+                           const get_approval_part_response&) = default;
 };
 
 struct get_many_approval_parts_request {
@@ -145,11 +177,17 @@ struct get_many_approval_parts_request {
      */
     static constexpr bool requires_session = true;
     std::vector<approval_part_key> keys;
+
+    friend bool operator==(const get_many_approval_parts_request&,
+                           const get_many_approval_parts_request&) = default;
 };
 
 struct get_many_approval_parts_response {
     ores::utility::domain::result result;
     std::vector<approval_part_lookup> entries;
+
+    friend bool operator==(const get_many_approval_parts_response&,
+                           const get_many_approval_parts_response&) = default;
 };
 
 struct put_approval_part_request {
@@ -164,11 +202,17 @@ struct put_approval_part_request {
     static constexpr bool requires_session = true;
     approval_part_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_approval_part_request&,
+                           const put_approval_part_request&) = default;
 };
 
 struct put_approval_part_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::approval_part> approval_part;
+
+    friend bool operator==(const put_approval_part_response&,
+                           const put_approval_part_response&) = default;
 };
 
 struct put_many_approval_parts_request {
@@ -183,11 +227,17 @@ struct put_many_approval_parts_request {
     static constexpr bool requires_session = true;
     std::vector<approval_part_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_approval_parts_request&,
+                           const put_many_approval_parts_request&) = default;
 };
 
 struct put_many_approval_parts_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_part> parts;
+
+    friend bool operator==(const put_many_approval_parts_response&,
+                           const put_many_approval_parts_response&) = default;
 };
 
 struct delete_approval_part_request {
@@ -202,10 +252,16 @@ struct delete_approval_part_request {
     static constexpr bool requires_session = true;
     approval_part_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_approval_part_request&,
+                           const delete_approval_part_request&) = default;
 };
 
 struct delete_approval_part_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_approval_part_response&,
+                           const delete_approval_part_response&) = default;
 };
 
 struct delete_many_approval_parts_request {
@@ -220,10 +276,16 @@ struct delete_many_approval_parts_request {
     static constexpr bool requires_session = true;
     std::vector<approval_part_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_approval_parts_request&,
+                           const delete_many_approval_parts_request&) = default;
 };
 
 struct delete_many_approval_parts_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_approval_parts_response&,
+                           const delete_many_approval_parts_response&) = default;
 };
 
 struct list_approval_part_versions_request {
@@ -241,12 +303,18 @@ struct list_approval_part_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<approval_part_versions_filter> filter;
+
+    friend bool operator==(const list_approval_part_versions_request&,
+                           const list_approval_part_versions_request&) = default;
 };
 
 struct list_approval_part_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_part> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_approval_part_versions_response&,
+                           const list_approval_part_versions_response&) = default;
 };
 
 struct get_approval_part_version_request {
@@ -260,11 +328,17 @@ struct get_approval_part_version_request {
      */
     static constexpr bool requires_session = true;
     approval_part_version_key key;
+
+    friend bool operator==(const get_approval_part_version_request&,
+                           const get_approval_part_version_request&) = default;
 };
 
 struct get_approval_part_version_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::approval_part> version;
+
+    friend bool operator==(const get_approval_part_version_response&,
+                           const get_approval_part_version_response&) = default;
 };
 
 /**

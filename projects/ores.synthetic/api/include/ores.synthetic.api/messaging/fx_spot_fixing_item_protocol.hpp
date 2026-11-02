@@ -43,6 +43,9 @@ namespace ores::synthetic::messaging {
 
 struct fx_spot_fixing_item_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const fx_spot_fixing_item_key&,
+                           const fx_spot_fixing_item_key&) = default;
 };
 
 struct fx_spot_fixing_item_write {
@@ -53,27 +56,42 @@ struct fx_spot_fixing_item_write {
     std::string provider_code;
     std::string policy;
     int window_days;
+
+    friend bool operator==(const fx_spot_fixing_item_write&,
+                           const fx_spot_fixing_item_write&) = default;
 };
 
 struct fx_spot_fixing_item_change {
     fx_spot_fixing_item_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const fx_spot_fixing_item_change&,
+                           const fx_spot_fixing_item_change&) = default;
 };
 
 struct fx_spot_fixing_item_removal {
     fx_spot_fixing_item_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const fx_spot_fixing_item_removal&,
+                           const fx_spot_fixing_item_removal&) = default;
 };
 
 struct fx_spot_fixing_item_lookup {
     fx_spot_fixing_item_key key;
     std::optional<ores::synthetic::domain::fx_spot_fixing_item> fx_spot_fixing_item;
+
+    friend bool operator==(const fx_spot_fixing_item_lookup&,
+                           const fx_spot_fixing_item_lookup&) = default;
 };
 
 struct fx_spot_fixing_items_filter {
     std::optional<boost::uuids::uuid> fx_spot_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> fx_spot_config_id_one_of;
+
+    friend bool operator==(const fx_spot_fixing_items_filter&,
+                           const fx_spot_fixing_items_filter&) = default;
 };
 
 struct fx_spot_fixing_item_event {
@@ -83,17 +101,26 @@ struct fx_spot_fixing_item_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const fx_spot_fixing_item_event&,
+                           const fx_spot_fixing_item_event&) = default;
 };
 
 struct fx_spot_fixing_item_version_key {
     fx_spot_fixing_item_key fx_spot_fixing_item;
     std::uint32_t version;
+
+    friend bool operator==(const fx_spot_fixing_item_version_key&,
+                           const fx_spot_fixing_item_version_key&) = default;
 };
 
 struct fx_spot_fixing_item_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const fx_spot_fixing_item_versions_filter&,
+                           const fx_spot_fixing_item_versions_filter&) = default;
 };
 
 struct list_fx_spot_fixing_items_request {
@@ -111,12 +138,18 @@ struct list_fx_spot_fixing_items_request {
     ores::utility::domain::order order;
     std::optional<fx_spot_fixing_items_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_fx_spot_fixing_items_request&,
+                           const list_fx_spot_fixing_items_request&) = default;
 };
 
 struct list_fx_spot_fixing_items_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::fx_spot_fixing_item> fx_spot_fixing_items;
     std::uint64_t total;
+
+    friend bool operator==(const list_fx_spot_fixing_items_response&,
+                           const list_fx_spot_fixing_items_response&) = default;
 };
 
 struct get_fx_spot_fixing_item_request {
@@ -130,11 +163,17 @@ struct get_fx_spot_fixing_item_request {
      */
     static constexpr bool requires_session = true;
     fx_spot_fixing_item_key key;
+
+    friend bool operator==(const get_fx_spot_fixing_item_request&,
+                           const get_fx_spot_fixing_item_request&) = default;
 };
 
 struct get_fx_spot_fixing_item_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::fx_spot_fixing_item> fx_spot_fixing_item;
+
+    friend bool operator==(const get_fx_spot_fixing_item_response&,
+                           const get_fx_spot_fixing_item_response&) = default;
 };
 
 struct get_many_fx_spot_fixing_items_request {
@@ -148,11 +187,17 @@ struct get_many_fx_spot_fixing_items_request {
      */
     static constexpr bool requires_session = true;
     std::vector<fx_spot_fixing_item_key> keys;
+
+    friend bool operator==(const get_many_fx_spot_fixing_items_request&,
+                           const get_many_fx_spot_fixing_items_request&) = default;
 };
 
 struct get_many_fx_spot_fixing_items_response {
     ores::utility::domain::result result;
     std::vector<fx_spot_fixing_item_lookup> entries;
+
+    friend bool operator==(const get_many_fx_spot_fixing_items_response&,
+                           const get_many_fx_spot_fixing_items_response&) = default;
 };
 
 struct put_fx_spot_fixing_item_request {
@@ -167,11 +212,17 @@ struct put_fx_spot_fixing_item_request {
     static constexpr bool requires_session = true;
     fx_spot_fixing_item_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_fx_spot_fixing_item_request&,
+                           const put_fx_spot_fixing_item_request&) = default;
 };
 
 struct put_fx_spot_fixing_item_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::fx_spot_fixing_item> fx_spot_fixing_item;
+
+    friend bool operator==(const put_fx_spot_fixing_item_response&,
+                           const put_fx_spot_fixing_item_response&) = default;
 };
 
 struct put_many_fx_spot_fixing_items_request {
@@ -186,11 +237,17 @@ struct put_many_fx_spot_fixing_items_request {
     static constexpr bool requires_session = true;
     std::vector<fx_spot_fixing_item_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_fx_spot_fixing_items_request&,
+                           const put_many_fx_spot_fixing_items_request&) = default;
 };
 
 struct put_many_fx_spot_fixing_items_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::fx_spot_fixing_item> fx_spot_fixing_items;
+
+    friend bool operator==(const put_many_fx_spot_fixing_items_response&,
+                           const put_many_fx_spot_fixing_items_response&) = default;
 };
 
 struct delete_fx_spot_fixing_item_request {
@@ -205,10 +262,16 @@ struct delete_fx_spot_fixing_item_request {
     static constexpr bool requires_session = true;
     fx_spot_fixing_item_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_fx_spot_fixing_item_request&,
+                           const delete_fx_spot_fixing_item_request&) = default;
 };
 
 struct delete_fx_spot_fixing_item_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_fx_spot_fixing_item_response&,
+                           const delete_fx_spot_fixing_item_response&) = default;
 };
 
 struct delete_many_fx_spot_fixing_items_request {
@@ -224,10 +287,16 @@ struct delete_many_fx_spot_fixing_items_request {
     static constexpr bool requires_session = true;
     std::vector<fx_spot_fixing_item_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_fx_spot_fixing_items_request&,
+                           const delete_many_fx_spot_fixing_items_request&) = default;
 };
 
 struct delete_many_fx_spot_fixing_items_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_fx_spot_fixing_items_response&,
+                           const delete_many_fx_spot_fixing_items_response&) = default;
 };
 
 struct list_fx_spot_fixing_item_versions_request {
@@ -246,12 +315,18 @@ struct list_fx_spot_fixing_item_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<fx_spot_fixing_item_versions_filter> filter;
+
+    friend bool operator==(const list_fx_spot_fixing_item_versions_request&,
+                           const list_fx_spot_fixing_item_versions_request&) = default;
 };
 
 struct list_fx_spot_fixing_item_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::fx_spot_fixing_item> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_fx_spot_fixing_item_versions_response&,
+                           const list_fx_spot_fixing_item_versions_response&) = default;
 };
 
 struct get_fx_spot_fixing_item_version_request {
@@ -266,11 +341,17 @@ struct get_fx_spot_fixing_item_version_request {
      */
     static constexpr bool requires_session = true;
     fx_spot_fixing_item_version_key key;
+
+    friend bool operator==(const get_fx_spot_fixing_item_version_request&,
+                           const get_fx_spot_fixing_item_version_request&) = default;
 };
 
 struct get_fx_spot_fixing_item_version_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::fx_spot_fixing_item> version;
+
+    friend bool operator==(const get_fx_spot_fixing_item_version_response&,
+                           const get_fx_spot_fixing_item_version_response&) = default;
 };
 
 /**

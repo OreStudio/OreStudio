@@ -43,11 +43,17 @@ namespace ores::reporting::messaging {
 
 struct cut_approval_detail_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const cut_approval_detail_key&,
+                           const cut_approval_detail_key&) = default;
 };
 
 struct cut_approval_detail_lookup {
     cut_approval_detail_key key;
     std::optional<ores::reporting::domain::cut_approval_detail> cut_approval_detail;
+
+    friend bool operator==(const cut_approval_detail_lookup&,
+                           const cut_approval_detail_lookup&) = default;
 };
 
 struct cut_approval_details_filter {
@@ -58,6 +64,9 @@ struct cut_approval_details_filter {
     std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> cut_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+
+    friend bool operator==(const cut_approval_details_filter&,
+                           const cut_approval_details_filter&) = default;
 };
 
 struct cut_approval_detail_event {
@@ -67,17 +76,26 @@ struct cut_approval_detail_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const cut_approval_detail_event&,
+                           const cut_approval_detail_event&) = default;
 };
 
 struct cut_approval_detail_version_key {
     cut_approval_detail_key cut_approval_detail;
     std::uint32_t version;
+
+    friend bool operator==(const cut_approval_detail_version_key&,
+                           const cut_approval_detail_version_key&) = default;
 };
 
 struct cut_approval_detail_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const cut_approval_detail_versions_filter&,
+                           const cut_approval_detail_versions_filter&) = default;
 };
 
 struct list_cut_approval_details_request {
@@ -95,12 +113,18 @@ struct list_cut_approval_details_request {
     ores::utility::domain::order order;
     std::optional<cut_approval_details_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_cut_approval_details_request&,
+                           const list_cut_approval_details_request&) = default;
 };
 
 struct list_cut_approval_details_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_approval_detail> details;
     std::uint64_t total;
+
+    friend bool operator==(const list_cut_approval_details_response&,
+                           const list_cut_approval_details_response&) = default;
 };
 
 struct get_cut_approval_detail_request {
@@ -114,11 +138,17 @@ struct get_cut_approval_detail_request {
      */
     static constexpr bool requires_session = true;
     cut_approval_detail_key key;
+
+    friend bool operator==(const get_cut_approval_detail_request&,
+                           const get_cut_approval_detail_request&) = default;
 };
 
 struct get_cut_approval_detail_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_approval_detail> cut_approval_detail;
+
+    friend bool operator==(const get_cut_approval_detail_response&,
+                           const get_cut_approval_detail_response&) = default;
 };
 
 struct get_many_cut_approval_details_request {
@@ -132,11 +162,17 @@ struct get_many_cut_approval_details_request {
      */
     static constexpr bool requires_session = true;
     std::vector<cut_approval_detail_key> keys;
+
+    friend bool operator==(const get_many_cut_approval_details_request&,
+                           const get_many_cut_approval_details_request&) = default;
 };
 
 struct get_many_cut_approval_details_response {
     ores::utility::domain::result result;
     std::vector<cut_approval_detail_lookup> entries;
+
+    friend bool operator==(const get_many_cut_approval_details_response&,
+                           const get_many_cut_approval_details_response&) = default;
 };
 
 struct list_by_request_id_cut_approval_details_request {
@@ -156,12 +192,18 @@ struct list_by_request_id_cut_approval_details_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cut_approval_details_filter> filter;
+
+    friend bool operator==(const list_by_request_id_cut_approval_details_request&,
+                           const list_by_request_id_cut_approval_details_request&) = default;
 };
 
 struct list_by_request_id_cut_approval_details_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_approval_detail> details;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_request_id_cut_approval_details_response&,
+                           const list_by_request_id_cut_approval_details_response&) = default;
 };
 
 struct list_by_cut_id_cut_approval_details_request {
@@ -181,12 +223,18 @@ struct list_by_cut_id_cut_approval_details_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cut_approval_details_filter> filter;
+
+    friend bool operator==(const list_by_cut_id_cut_approval_details_request&,
+                           const list_by_cut_id_cut_approval_details_request&) = default;
 };
 
 struct list_by_cut_id_cut_approval_details_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_approval_detail> details;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_cut_id_cut_approval_details_response&,
+                           const list_by_cut_id_cut_approval_details_response&) = default;
 };
 
 struct list_cut_approval_detail_versions_request {
@@ -205,12 +253,18 @@ struct list_cut_approval_detail_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cut_approval_detail_versions_filter> filter;
+
+    friend bool operator==(const list_cut_approval_detail_versions_request&,
+                           const list_cut_approval_detail_versions_request&) = default;
 };
 
 struct list_cut_approval_detail_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_approval_detail> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_cut_approval_detail_versions_response&,
+                           const list_cut_approval_detail_versions_response&) = default;
 };
 
 struct get_cut_approval_detail_version_request {
@@ -225,11 +279,17 @@ struct get_cut_approval_detail_version_request {
      */
     static constexpr bool requires_session = true;
     cut_approval_detail_version_key key;
+
+    friend bool operator==(const get_cut_approval_detail_version_request&,
+                           const get_cut_approval_detail_version_request&) = default;
 };
 
 struct get_cut_approval_detail_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_approval_detail> version;
+
+    friend bool operator==(const get_cut_approval_detail_version_response&,
+                           const get_cut_approval_detail_version_response&) = default;
 };
 
 /**

@@ -58,6 +58,8 @@ struct signup_request {
      * system tenant by omission, which is the defect the survey found.
      */
     std::string hostname;
+
+    friend bool operator==(const signup_request&, const signup_request&) = default;
 };
 
 struct signup_response {
@@ -95,6 +97,8 @@ struct signup_response {
      * answer with are collected on the Entry journeys page.
      */
     std::string error_code;
+
+    friend bool operator==(const signup_response&, const signup_response&) = default;
 };
 
 /**

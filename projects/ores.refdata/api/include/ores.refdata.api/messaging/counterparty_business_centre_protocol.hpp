@@ -44,31 +44,49 @@ namespace ores::refdata::messaging {
 struct counterparty_business_centre_key {
     boost::uuids::uuid counterparty_id;
     std::string business_centre_code;
+
+    friend bool operator==(const counterparty_business_centre_key&,
+                           const counterparty_business_centre_key&) = default;
 };
 
 struct counterparty_business_centre_write {
     boost::uuids::uuid counterparty_id;
     std::string business_centre_code;
+
+    friend bool operator==(const counterparty_business_centre_write&,
+                           const counterparty_business_centre_write&) = default;
 };
 
 struct counterparty_business_centre_change {
     counterparty_business_centre_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const counterparty_business_centre_change&,
+                           const counterparty_business_centre_change&) = default;
 };
 
 struct counterparty_business_centre_removal {
     counterparty_business_centre_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const counterparty_business_centre_removal&,
+                           const counterparty_business_centre_removal&) = default;
 };
 
 struct counterparty_business_centre_lookup {
     counterparty_business_centre_key key;
     std::optional<ores::refdata::domain::counterparty_business_centre> counterparty_business_centre;
+
+    friend bool operator==(const counterparty_business_centre_lookup&,
+                           const counterparty_business_centre_lookup&) = default;
 };
 
 struct counterparty_business_centres_filter {
     std::optional<boost::uuids::uuid> counterparty_id;
     std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
+
+    friend bool operator==(const counterparty_business_centres_filter&,
+                           const counterparty_business_centres_filter&) = default;
 };
 
 struct counterparty_business_centre_event {
@@ -78,6 +96,9 @@ struct counterparty_business_centre_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const counterparty_business_centre_event&,
+                           const counterparty_business_centre_event&) = default;
 };
 
 struct list_counterparty_business_centres_request {
@@ -95,12 +116,18 @@ struct list_counterparty_business_centres_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<counterparty_business_centres_filter> filter;
+
+    friend bool operator==(const list_counterparty_business_centres_request&,
+                           const list_counterparty_business_centres_request&) = default;
 };
 
 struct list_counterparty_business_centres_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_business_centre> counterparty_business_centres;
     std::uint64_t total;
+
+    friend bool operator==(const list_counterparty_business_centres_response&,
+                           const list_counterparty_business_centres_response&) = default;
 };
 
 struct get_counterparty_business_centre_request {
@@ -114,11 +141,17 @@ struct get_counterparty_business_centre_request {
      */
     static constexpr bool requires_session = true;
     counterparty_business_centre_key key;
+
+    friend bool operator==(const get_counterparty_business_centre_request&,
+                           const get_counterparty_business_centre_request&) = default;
 };
 
 struct get_counterparty_business_centre_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::counterparty_business_centre> counterparty_business_centre;
+
+    friend bool operator==(const get_counterparty_business_centre_response&,
+                           const get_counterparty_business_centre_response&) = default;
 };
 
 struct get_many_counterparty_business_centres_request {
@@ -133,11 +166,17 @@ struct get_many_counterparty_business_centres_request {
      */
     static constexpr bool requires_session = true;
     std::vector<counterparty_business_centre_key> keys;
+
+    friend bool operator==(const get_many_counterparty_business_centres_request&,
+                           const get_many_counterparty_business_centres_request&) = default;
 };
 
 struct get_many_counterparty_business_centres_response {
     ores::utility::domain::result result;
     std::vector<counterparty_business_centre_lookup> entries;
+
+    friend bool operator==(const get_many_counterparty_business_centres_response&,
+                           const get_many_counterparty_business_centres_response&) = default;
 };
 
 struct put_counterparty_business_centre_request {
@@ -152,11 +191,17 @@ struct put_counterparty_business_centre_request {
     static constexpr bool requires_session = true;
     counterparty_business_centre_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_counterparty_business_centre_request&,
+                           const put_counterparty_business_centre_request&) = default;
 };
 
 struct put_counterparty_business_centre_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::counterparty_business_centre> counterparty_business_centre;
+
+    friend bool operator==(const put_counterparty_business_centre_response&,
+                           const put_counterparty_business_centre_response&) = default;
 };
 
 struct put_many_counterparty_business_centres_request {
@@ -172,11 +217,17 @@ struct put_many_counterparty_business_centres_request {
     static constexpr bool requires_session = true;
     std::vector<counterparty_business_centre_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_counterparty_business_centres_request&,
+                           const put_many_counterparty_business_centres_request&) = default;
 };
 
 struct put_many_counterparty_business_centres_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_business_centre> counterparty_business_centres;
+
+    friend bool operator==(const put_many_counterparty_business_centres_response&,
+                           const put_many_counterparty_business_centres_response&) = default;
 };
 
 struct delete_counterparty_business_centre_request {
@@ -192,10 +243,16 @@ struct delete_counterparty_business_centre_request {
     static constexpr bool requires_session = true;
     counterparty_business_centre_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_counterparty_business_centre_request&,
+                           const delete_counterparty_business_centre_request&) = default;
 };
 
 struct delete_counterparty_business_centre_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_counterparty_business_centre_response&,
+                           const delete_counterparty_business_centre_response&) = default;
 };
 
 struct delete_many_counterparty_business_centres_request {
@@ -211,10 +268,16 @@ struct delete_many_counterparty_business_centres_request {
     static constexpr bool requires_session = true;
     std::vector<counterparty_business_centre_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_counterparty_business_centres_request&,
+                           const delete_many_counterparty_business_centres_request&) = default;
 };
 
 struct delete_many_counterparty_business_centres_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_counterparty_business_centres_response&,
+                           const delete_many_counterparty_business_centres_response&) = default;
 };
 
 struct list_by_counterparty_id_counterparty_business_centres_request {
@@ -234,12 +297,20 @@ struct list_by_counterparty_id_counterparty_business_centres_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<counterparty_business_centres_filter> filter;
+
+    friend bool
+    operator==(const list_by_counterparty_id_counterparty_business_centres_request&,
+               const list_by_counterparty_id_counterparty_business_centres_request&) = default;
 };
 
 struct list_by_counterparty_id_counterparty_business_centres_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_business_centre> counterparty_business_centres;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_counterparty_id_counterparty_business_centres_response&,
+               const list_by_counterparty_id_counterparty_business_centres_response&) = default;
 };
 
 /**

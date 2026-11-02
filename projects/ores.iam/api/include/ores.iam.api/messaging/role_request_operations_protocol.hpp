@@ -66,6 +66,8 @@ struct ask_for_roles_request {
      * @brief Why the person asks, in their words.
      */
     std::string reason;
+
+    friend bool operator==(const ask_for_roles_request&, const ask_for_roles_request&) = default;
 };
 
 struct ask_for_roles_response {
@@ -74,6 +76,8 @@ struct ask_for_roles_response {
      * @brief The approval request raised, when the outcome is ok.
      */
     std::string request_id;
+
+    friend bool operator==(const ask_for_roles_response&, const ask_for_roles_response&) = default;
 };
 
 /**
@@ -97,6 +101,9 @@ struct get_request_roles_request {
      * @brief The approval request to read the roles of, as a UUID string.
      */
     std::string request_id;
+
+    friend bool operator==(const get_request_roles_request&,
+                           const get_request_roles_request&) = default;
 };
 
 /**
@@ -124,11 +131,16 @@ struct requested_role {
      * @brief Who applied it, or empty until somebody has.
      */
     std::string applied_by;
+
+    friend bool operator==(const requested_role&, const requested_role&) = default;
 };
 
 struct get_request_roles_response {
     ores::utility::domain::result result;
     std::vector<requested_role> roles;
+
+    friend bool operator==(const get_request_roles_response&,
+                           const get_request_roles_response&) = default;
 };
 
 /**

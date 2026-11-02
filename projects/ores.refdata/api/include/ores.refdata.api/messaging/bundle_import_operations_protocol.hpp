@@ -42,6 +42,9 @@ struct bundle_import_family_outcome {
     int sequence = 0;
     bool applied = false;
     std::string message;
+
+    friend bool operator==(const bundle_import_family_outcome&,
+                           const bundle_import_family_outcome&) = default;
 };
 
 /**
@@ -68,6 +71,9 @@ struct begin_bundle_import_request {
      * Refused when set: the service states the state, never the caller.
      */
     std::optional<std::string> state;
+
+    friend bool operator==(const begin_bundle_import_request&,
+                           const begin_bundle_import_request&) = default;
 };
 
 /**
@@ -77,6 +83,9 @@ struct begin_bundle_import_response {
     bool success = false;
     std::string message;
     ores::refdata::domain::bundle_import import_row;
+
+    friend bool operator==(const begin_bundle_import_response&,
+                           const begin_bundle_import_response&) = default;
 };
 
 /**
@@ -99,6 +108,9 @@ struct stage_bundle_family_request {
     int sequence = 0;
     std::string payload;
     std::optional<std::string> checksum;
+
+    friend bool operator==(const stage_bundle_family_request&,
+                           const stage_bundle_family_request&) = default;
 };
 
 /**
@@ -107,6 +119,9 @@ struct stage_bundle_family_request {
 struct stage_bundle_family_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const stage_bundle_family_response&,
+                           const stage_bundle_family_response&) = default;
 };
 
 /**
@@ -123,6 +138,9 @@ struct commit_bundle_import_request {
      */
     static constexpr bool requires_session = true;
     boost::uuids::uuid import_id;
+
+    friend bool operator==(const commit_bundle_import_request&,
+                           const commit_bundle_import_request&) = default;
 };
 
 /**
@@ -137,6 +155,9 @@ struct commit_bundle_import_response {
     std::vector<std::string> world_kept;
     std::vector<std::string> fx_skipped;
     std::vector<bundle_import_family_outcome> families;
+
+    friend bool operator==(const commit_bundle_import_response&,
+                           const commit_bundle_import_response&) = default;
 };
 
 }

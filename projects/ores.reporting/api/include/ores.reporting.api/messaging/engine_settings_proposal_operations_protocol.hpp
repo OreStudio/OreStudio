@@ -52,6 +52,9 @@ struct engine_settings_value_change {
     std::string before;
     std::string after;
     bool changed = false;
+
+    friend bool operator==(const engine_settings_value_change&,
+                           const engine_settings_value_change&) = default;
 };
 
 /**
@@ -66,6 +69,9 @@ struct engine_settings_change_line {
     int base_version = 0;
     bool applied = false;
     std::vector<engine_settings_value_change> fields;
+
+    friend bool operator==(const engine_settings_change_line&,
+                           const engine_settings_change_line&) = default;
 };
 
 /**
@@ -78,6 +84,8 @@ struct engine_settings_change_line {
 struct engine_settings_value {
     std::string setting_code;
     std::string text_value = "";
+
+    friend bool operator==(const engine_settings_value&, const engine_settings_value&) = default;
 };
 
 /**
@@ -123,6 +131,9 @@ struct raise_engine_settings_change_request {
      * @brief Why the person asks, in their words.
      */
     std::string reason;
+
+    friend bool operator==(const raise_engine_settings_change_request&,
+                           const raise_engine_settings_change_request&) = default;
 };
 
 struct raise_engine_settings_change_response {
@@ -131,6 +142,9 @@ struct raise_engine_settings_change_response {
      * @brief The request the proposal was raised as, empty when none was.
      */
     std::string request_id;
+
+    friend bool operator==(const raise_engine_settings_change_response&,
+                           const raise_engine_settings_change_response&) = default;
 };
 
 /**
@@ -152,6 +166,9 @@ struct get_engine_settings_changes_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const get_engine_settings_changes_request&,
+                           const get_engine_settings_changes_request&) = default;
 };
 
 struct get_engine_settings_changes_response {
@@ -160,6 +177,9 @@ struct get_engine_settings_changes_response {
      * @brief The proposed groups, in the order the proposal holds them.
      */
     std::vector<engine_settings_change_line> changes;
+
+    friend bool operator==(const get_engine_settings_changes_response&,
+                           const get_engine_settings_changes_response&) = default;
 };
 
 /**
@@ -180,6 +200,9 @@ struct recheck_engine_settings_changes_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const recheck_engine_settings_changes_request&,
+                           const recheck_engine_settings_changes_request&) = default;
 };
 
 struct recheck_engine_settings_changes_response {
@@ -191,6 +214,9 @@ struct recheck_engine_settings_changes_response {
      */
     std::vector<std::string> refusals;
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const recheck_engine_settings_changes_response&,
+                           const recheck_engine_settings_changes_response&) = default;
 };
 
 /**

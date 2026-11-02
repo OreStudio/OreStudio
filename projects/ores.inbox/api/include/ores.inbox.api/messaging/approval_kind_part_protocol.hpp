@@ -44,31 +44,48 @@ namespace ores::inbox::messaging {
 struct approval_kind_part_key {
     std::string kind_code;
     std::string part_code;
+
+    friend bool operator==(const approval_kind_part_key&, const approval_kind_part_key&) = default;
 };
 
 struct approval_kind_part_write {
     std::string kind_code;
     std::string part_code;
+
+    friend bool operator==(const approval_kind_part_write&,
+                           const approval_kind_part_write&) = default;
 };
 
 struct approval_kind_part_change {
     approval_kind_part_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const approval_kind_part_change&,
+                           const approval_kind_part_change&) = default;
 };
 
 struct approval_kind_part_removal {
     approval_kind_part_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const approval_kind_part_removal&,
+                           const approval_kind_part_removal&) = default;
 };
 
 struct approval_kind_part_lookup {
     approval_kind_part_key key;
     std::optional<ores::inbox::domain::approval_kind_part> approval_kind_part;
+
+    friend bool operator==(const approval_kind_part_lookup&,
+                           const approval_kind_part_lookup&) = default;
 };
 
 struct approval_kind_parts_filter {
     std::optional<std::string> kind_code;
     std::optional<std::vector<std::string>> kind_code_one_of;
+
+    friend bool operator==(const approval_kind_parts_filter&,
+                           const approval_kind_parts_filter&) = default;
 };
 
 struct list_approval_kind_parts_request {
@@ -85,12 +102,18 @@ struct list_approval_kind_parts_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<approval_kind_parts_filter> filter;
+
+    friend bool operator==(const list_approval_kind_parts_request&,
+                           const list_approval_kind_parts_request&) = default;
 };
 
 struct list_approval_kind_parts_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_kind_part> approval_kind_parts;
     std::uint64_t total;
+
+    friend bool operator==(const list_approval_kind_parts_response&,
+                           const list_approval_kind_parts_response&) = default;
 };
 
 struct get_approval_kind_part_request {
@@ -104,11 +127,17 @@ struct get_approval_kind_part_request {
      */
     static constexpr bool requires_session = true;
     approval_kind_part_key key;
+
+    friend bool operator==(const get_approval_kind_part_request&,
+                           const get_approval_kind_part_request&) = default;
 };
 
 struct get_approval_kind_part_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::approval_kind_part> approval_kind_part;
+
+    friend bool operator==(const get_approval_kind_part_response&,
+                           const get_approval_kind_part_response&) = default;
 };
 
 struct get_many_approval_kind_parts_request {
@@ -122,11 +151,17 @@ struct get_many_approval_kind_parts_request {
      */
     static constexpr bool requires_session = true;
     std::vector<approval_kind_part_key> keys;
+
+    friend bool operator==(const get_many_approval_kind_parts_request&,
+                           const get_many_approval_kind_parts_request&) = default;
 };
 
 struct get_many_approval_kind_parts_response {
     ores::utility::domain::result result;
     std::vector<approval_kind_part_lookup> entries;
+
+    friend bool operator==(const get_many_approval_kind_parts_response&,
+                           const get_many_approval_kind_parts_response&) = default;
 };
 
 struct put_approval_kind_part_request {
@@ -141,11 +176,17 @@ struct put_approval_kind_part_request {
     static constexpr bool requires_session = true;
     approval_kind_part_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_approval_kind_part_request&,
+                           const put_approval_kind_part_request&) = default;
 };
 
 struct put_approval_kind_part_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::approval_kind_part> approval_kind_part;
+
+    friend bool operator==(const put_approval_kind_part_response&,
+                           const put_approval_kind_part_response&) = default;
 };
 
 struct put_many_approval_kind_parts_request {
@@ -160,11 +201,17 @@ struct put_many_approval_kind_parts_request {
     static constexpr bool requires_session = true;
     std::vector<approval_kind_part_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_approval_kind_parts_request&,
+                           const put_many_approval_kind_parts_request&) = default;
 };
 
 struct put_many_approval_kind_parts_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_kind_part> approval_kind_parts;
+
+    friend bool operator==(const put_many_approval_kind_parts_response&,
+                           const put_many_approval_kind_parts_response&) = default;
 };
 
 struct delete_approval_kind_part_request {
@@ -179,10 +226,16 @@ struct delete_approval_kind_part_request {
     static constexpr bool requires_session = true;
     approval_kind_part_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_approval_kind_part_request&,
+                           const delete_approval_kind_part_request&) = default;
 };
 
 struct delete_approval_kind_part_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_approval_kind_part_response&,
+                           const delete_approval_kind_part_response&) = default;
 };
 
 struct delete_many_approval_kind_parts_request {
@@ -197,10 +250,16 @@ struct delete_many_approval_kind_parts_request {
     static constexpr bool requires_session = true;
     std::vector<approval_kind_part_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_approval_kind_parts_request&,
+                           const delete_many_approval_kind_parts_request&) = default;
 };
 
 struct delete_many_approval_kind_parts_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_approval_kind_parts_response&,
+                           const delete_many_approval_kind_parts_response&) = default;
 };
 
 struct list_by_kind_code_approval_kind_parts_request {
@@ -220,12 +279,18 @@ struct list_by_kind_code_approval_kind_parts_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<approval_kind_parts_filter> filter;
+
+    friend bool operator==(const list_by_kind_code_approval_kind_parts_request&,
+                           const list_by_kind_code_approval_kind_parts_request&) = default;
 };
 
 struct list_by_kind_code_approval_kind_parts_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_kind_part> approval_kind_parts;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_kind_code_approval_kind_parts_response&,
+                           const list_by_kind_code_approval_kind_parts_response&) = default;
 };
 
 /**

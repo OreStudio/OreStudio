@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct subscription_key {
     std::string provider_code;
+
+    friend bool operator==(const subscription_key&, const subscription_key&) = default;
 };
 
 struct subscription_write {
@@ -52,21 +54,29 @@ struct subscription_write {
     bool display;
     bool non_display;
     bool derived;
+
+    friend bool operator==(const subscription_write&, const subscription_write&) = default;
 };
 
 struct subscription_change {
     subscription_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const subscription_change&, const subscription_change&) = default;
 };
 
 struct subscription_removal {
     subscription_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const subscription_removal&, const subscription_removal&) = default;
 };
 
 struct subscription_lookup {
     subscription_key key;
     std::optional<ores::marketdata::domain::subscription> subscription;
+
+    friend bool operator==(const subscription_lookup&, const subscription_lookup&) = default;
 };
 
 struct subscriptions_filter {
@@ -75,6 +85,8 @@ struct subscriptions_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
+
+    friend bool operator==(const subscriptions_filter&, const subscriptions_filter&) = default;
 };
 
 struct subscription_event {
@@ -84,17 +96,25 @@ struct subscription_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const subscription_event&, const subscription_event&) = default;
 };
 
 struct subscription_version_key {
     subscription_key subscription;
     std::uint32_t version;
+
+    friend bool operator==(const subscription_version_key&,
+                           const subscription_version_key&) = default;
 };
 
 struct subscription_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const subscription_versions_filter&,
+                           const subscription_versions_filter&) = default;
 };
 
 struct list_subscriptions_request {
@@ -112,12 +132,18 @@ struct list_subscriptions_request {
     ores::utility::domain::order order;
     std::optional<subscriptions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_subscriptions_request&,
+                           const list_subscriptions_request&) = default;
 };
 
 struct list_subscriptions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription> subscriptions;
     std::uint64_t total;
+
+    friend bool operator==(const list_subscriptions_response&,
+                           const list_subscriptions_response&) = default;
 };
 
 struct get_subscription_request {
@@ -131,11 +157,17 @@ struct get_subscription_request {
      */
     static constexpr bool requires_session = true;
     subscription_key key;
+
+    friend bool operator==(const get_subscription_request&,
+                           const get_subscription_request&) = default;
 };
 
 struct get_subscription_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::subscription> subscription;
+
+    friend bool operator==(const get_subscription_response&,
+                           const get_subscription_response&) = default;
 };
 
 struct get_many_subscriptions_request {
@@ -149,11 +181,17 @@ struct get_many_subscriptions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<subscription_key> keys;
+
+    friend bool operator==(const get_many_subscriptions_request&,
+                           const get_many_subscriptions_request&) = default;
 };
 
 struct get_many_subscriptions_response {
     ores::utility::domain::result result;
     std::vector<subscription_lookup> entries;
+
+    friend bool operator==(const get_many_subscriptions_response&,
+                           const get_many_subscriptions_response&) = default;
 };
 
 struct put_subscription_request {
@@ -168,11 +206,17 @@ struct put_subscription_request {
     static constexpr bool requires_session = true;
     subscription_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_subscription_request&,
+                           const put_subscription_request&) = default;
 };
 
 struct put_subscription_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::subscription> subscription;
+
+    friend bool operator==(const put_subscription_response&,
+                           const put_subscription_response&) = default;
 };
 
 struct put_many_subscriptions_request {
@@ -187,11 +231,17 @@ struct put_many_subscriptions_request {
     static constexpr bool requires_session = true;
     std::vector<subscription_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_subscriptions_request&,
+                           const put_many_subscriptions_request&) = default;
 };
 
 struct put_many_subscriptions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription> subscriptions;
+
+    friend bool operator==(const put_many_subscriptions_response&,
+                           const put_many_subscriptions_response&) = default;
 };
 
 struct delete_subscription_request {
@@ -206,10 +256,16 @@ struct delete_subscription_request {
     static constexpr bool requires_session = true;
     subscription_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_subscription_request&,
+                           const delete_subscription_request&) = default;
 };
 
 struct delete_subscription_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_subscription_response&,
+                           const delete_subscription_response&) = default;
 };
 
 struct delete_many_subscriptions_request {
@@ -224,10 +280,16 @@ struct delete_many_subscriptions_request {
     static constexpr bool requires_session = true;
     std::vector<subscription_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_subscriptions_request&,
+                           const delete_many_subscriptions_request&) = default;
 };
 
 struct delete_many_subscriptions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_subscriptions_response&,
+                           const delete_many_subscriptions_response&) = default;
 };
 
 struct list_subscription_versions_request {
@@ -245,12 +307,18 @@ struct list_subscription_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<subscription_versions_filter> filter;
+
+    friend bool operator==(const list_subscription_versions_request&,
+                           const list_subscription_versions_request&) = default;
 };
 
 struct list_subscription_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_subscription_versions_response&,
+                           const list_subscription_versions_response&) = default;
 };
 
 struct get_subscription_version_request {
@@ -264,11 +332,17 @@ struct get_subscription_version_request {
      */
     static constexpr bool requires_session = true;
     subscription_version_key key;
+
+    friend bool operator==(const get_subscription_version_request&,
+                           const get_subscription_version_request&) = default;
 };
 
 struct get_subscription_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::subscription> version;
+
+    friend bool operator==(const get_subscription_version_response&,
+                           const get_subscription_version_response&) = default;
 };
 
 /**

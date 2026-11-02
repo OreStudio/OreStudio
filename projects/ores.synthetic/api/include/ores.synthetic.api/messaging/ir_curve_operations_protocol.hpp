@@ -51,6 +51,8 @@ namespace ores::synthetic::messaging {
 struct parameter_spec {
     std::string parameter_name;
     double parameter_value = 0.0;
+
+    friend bool operator==(const parameter_spec&, const parameter_spec&) = default;
 };
 
 /**
@@ -83,6 +85,9 @@ struct simulate_ir_curve_paths_request {
     int num_paths = 5;
     /** @brief Base RNG seed; path i uses seed + i. Change to reseed. */
     std::uint32_t seed = 1;
+
+    friend bool operator==(const simulate_ir_curve_paths_request&,
+                           const simulate_ir_curve_paths_request&) = default;
 };
 
 /**
@@ -93,6 +98,9 @@ struct simulate_ir_curve_paths_response {
     std::string message;
     /** @brief num_paths series, each of num_ticks short-rate values. */
     std::vector<std::vector<double>> paths;
+
+    friend bool operator==(const simulate_ir_curve_paths_response&,
+                           const simulate_ir_curve_paths_response&) = default;
 };
 
 /**
@@ -107,6 +115,9 @@ struct preview_ir_curve_template_row {
     std::string start_tenor_code;
     std::string end_tenor_code;
     std::string instrument_code;
+
+    friend bool operator==(const preview_ir_curve_template_row&,
+                           const preview_ir_curve_template_row&) = default;
 };
 
 /**
@@ -144,6 +155,9 @@ struct preview_ir_curve_shape_request {
     std::string fixed_leg_payment_frequency_code = "Annual";
     /** @brief The template rows to price, in the order the editor shows them. */
     std::vector<preview_ir_curve_template_row> entries;
+
+    friend bool operator==(const preview_ir_curve_shape_request&,
+                           const preview_ir_curve_shape_request&) = default;
 };
 
 /**
@@ -154,6 +168,9 @@ struct preview_ir_curve_shape_point {
     std::string start_tenor_code;
     std::string end_tenor_code;
     double rate = 0.0;
+
+    friend bool operator==(const preview_ir_curve_shape_point&,
+                           const preview_ir_curve_shape_point&) = default;
 };
 
 /**
@@ -164,6 +181,9 @@ struct preview_ir_curve_shape_response {
     std::string message;
     /** @brief One point per request entry, sorted by sequence_index. */
     std::vector<preview_ir_curve_shape_point> points;
+
+    friend bool operator==(const preview_ir_curve_shape_response&,
+                           const preview_ir_curve_shape_response&) = default;
 };
 
 /**

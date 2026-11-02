@@ -43,15 +43,21 @@ namespace ores::marketdata::messaging {
 
 struct adapter_key {
     std::string code;
+
+    friend bool operator==(const adapter_key&, const adapter_key&) = default;
 };
 
 struct adapter_lookup {
     adapter_key key;
     std::optional<ores::marketdata::domain::adapter> adapter;
+
+    friend bool operator==(const adapter_lookup&, const adapter_lookup&) = default;
 };
 
 struct adapters_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const adapters_filter&, const adapters_filter&) = default;
 };
 
 struct adapter_event {
@@ -61,17 +67,24 @@ struct adapter_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const adapter_event&, const adapter_event&) = default;
 };
 
 struct adapter_version_key {
     adapter_key adapter;
     std::uint32_t version;
+
+    friend bool operator==(const adapter_version_key&, const adapter_version_key&) = default;
 };
 
 struct adapter_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const adapter_versions_filter&,
+                           const adapter_versions_filter&) = default;
 };
 
 struct list_adapters_request {
@@ -89,12 +102,16 @@ struct list_adapters_request {
     ores::utility::domain::order order;
     std::optional<adapters_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_adapters_request&, const list_adapters_request&) = default;
 };
 
 struct list_adapters_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::adapter> adapters;
     std::uint64_t total;
+
+    friend bool operator==(const list_adapters_response&, const list_adapters_response&) = default;
 };
 
 struct get_adapter_request {
@@ -108,11 +125,15 @@ struct get_adapter_request {
      */
     static constexpr bool requires_session = true;
     adapter_key key;
+
+    friend bool operator==(const get_adapter_request&, const get_adapter_request&) = default;
 };
 
 struct get_adapter_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::adapter> adapter;
+
+    friend bool operator==(const get_adapter_response&, const get_adapter_response&) = default;
 };
 
 struct get_many_adapters_request {
@@ -126,11 +147,17 @@ struct get_many_adapters_request {
      */
     static constexpr bool requires_session = true;
     std::vector<adapter_key> keys;
+
+    friend bool operator==(const get_many_adapters_request&,
+                           const get_many_adapters_request&) = default;
 };
 
 struct get_many_adapters_response {
     ores::utility::domain::result result;
     std::vector<adapter_lookup> entries;
+
+    friend bool operator==(const get_many_adapters_response&,
+                           const get_many_adapters_response&) = default;
 };
 
 struct list_adapter_versions_request {
@@ -148,12 +175,18 @@ struct list_adapter_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<adapter_versions_filter> filter;
+
+    friend bool operator==(const list_adapter_versions_request&,
+                           const list_adapter_versions_request&) = default;
 };
 
 struct list_adapter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::adapter> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_adapter_versions_response&,
+                           const list_adapter_versions_response&) = default;
 };
 
 struct get_adapter_version_request {
@@ -167,11 +200,17 @@ struct get_adapter_version_request {
      */
     static constexpr bool requires_session = true;
     adapter_version_key key;
+
+    friend bool operator==(const get_adapter_version_request&,
+                           const get_adapter_version_request&) = default;
 };
 
 struct get_adapter_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::adapter> version;
+
+    friend bool operator==(const get_adapter_version_response&,
+                           const get_adapter_version_response&) = default;
 };
 
 /**

@@ -43,6 +43,9 @@ namespace ores::analytics::messaging {
 
 struct todays_market_configuration_key {
     std::string configuration_id;
+
+    friend bool operator==(const todays_market_configuration_key&,
+                           const todays_market_configuration_key&) = default;
 };
 
 struct todays_market_configuration_write {
@@ -50,27 +53,42 @@ struct todays_market_configuration_write {
     boost::uuids::uuid todays_market_config_id;
     std::string configuration_id;
     int position;
+
+    friend bool operator==(const todays_market_configuration_write&,
+                           const todays_market_configuration_write&) = default;
 };
 
 struct todays_market_configuration_change {
     todays_market_configuration_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const todays_market_configuration_change&,
+                           const todays_market_configuration_change&) = default;
 };
 
 struct todays_market_configuration_removal {
     todays_market_configuration_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const todays_market_configuration_removal&,
+                           const todays_market_configuration_removal&) = default;
 };
 
 struct todays_market_configuration_lookup {
     todays_market_configuration_key key;
     std::optional<ores::analytics::domain::todays_market_configuration> todays_market_configuration;
+
+    friend bool operator==(const todays_market_configuration_lookup&,
+                           const todays_market_configuration_lookup&) = default;
 };
 
 struct todays_market_configurations_filter {
     std::optional<boost::uuids::uuid> todays_market_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> todays_market_config_id_one_of;
+
+    friend bool operator==(const todays_market_configurations_filter&,
+                           const todays_market_configurations_filter&) = default;
 };
 
 struct todays_market_configuration_event {
@@ -80,17 +98,26 @@ struct todays_market_configuration_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const todays_market_configuration_event&,
+                           const todays_market_configuration_event&) = default;
 };
 
 struct todays_market_configuration_version_key {
     todays_market_configuration_key todays_market_configuration;
     std::uint32_t version;
+
+    friend bool operator==(const todays_market_configuration_version_key&,
+                           const todays_market_configuration_version_key&) = default;
 };
 
 struct todays_market_configuration_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const todays_market_configuration_versions_filter&,
+                           const todays_market_configuration_versions_filter&) = default;
 };
 
 struct list_todays_market_configurations_request {
@@ -109,12 +136,18 @@ struct list_todays_market_configurations_request {
     ores::utility::domain::order order;
     std::optional<todays_market_configurations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_todays_market_configurations_request&,
+                           const list_todays_market_configurations_request&) = default;
 };
 
 struct list_todays_market_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_configuration> configurations;
     std::uint64_t total;
+
+    friend bool operator==(const list_todays_market_configurations_response&,
+                           const list_todays_market_configurations_response&) = default;
 };
 
 struct get_todays_market_configuration_request {
@@ -129,11 +162,17 @@ struct get_todays_market_configuration_request {
      */
     static constexpr bool requires_session = true;
     todays_market_configuration_key key;
+
+    friend bool operator==(const get_todays_market_configuration_request&,
+                           const get_todays_market_configuration_request&) = default;
 };
 
 struct get_todays_market_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::todays_market_configuration> todays_market_configuration;
+
+    friend bool operator==(const get_todays_market_configuration_response&,
+                           const get_todays_market_configuration_response&) = default;
 };
 
 struct get_many_todays_market_configurations_request {
@@ -148,11 +187,17 @@ struct get_many_todays_market_configurations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<todays_market_configuration_key> keys;
+
+    friend bool operator==(const get_many_todays_market_configurations_request&,
+                           const get_many_todays_market_configurations_request&) = default;
 };
 
 struct get_many_todays_market_configurations_response {
     ores::utility::domain::result result;
     std::vector<todays_market_configuration_lookup> entries;
+
+    friend bool operator==(const get_many_todays_market_configurations_response&,
+                           const get_many_todays_market_configurations_response&) = default;
 };
 
 struct put_todays_market_configuration_request {
@@ -168,11 +213,17 @@ struct put_todays_market_configuration_request {
     static constexpr bool requires_session = true;
     todays_market_configuration_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_todays_market_configuration_request&,
+                           const put_todays_market_configuration_request&) = default;
 };
 
 struct put_todays_market_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::todays_market_configuration> todays_market_configuration;
+
+    friend bool operator==(const put_todays_market_configuration_response&,
+                           const put_todays_market_configuration_response&) = default;
 };
 
 struct put_many_todays_market_configurations_request {
@@ -188,11 +239,17 @@ struct put_many_todays_market_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<todays_market_configuration_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_todays_market_configurations_request&,
+                           const put_many_todays_market_configurations_request&) = default;
 };
 
 struct put_many_todays_market_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_configuration> configurations;
+
+    friend bool operator==(const put_many_todays_market_configurations_response&,
+                           const put_many_todays_market_configurations_response&) = default;
 };
 
 struct delete_todays_market_configuration_request {
@@ -208,10 +265,16 @@ struct delete_todays_market_configuration_request {
     static constexpr bool requires_session = true;
     todays_market_configuration_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_todays_market_configuration_request&,
+                           const delete_todays_market_configuration_request&) = default;
 };
 
 struct delete_todays_market_configuration_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_todays_market_configuration_response&,
+                           const delete_todays_market_configuration_response&) = default;
 };
 
 struct delete_many_todays_market_configurations_request {
@@ -227,10 +290,16 @@ struct delete_many_todays_market_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<todays_market_configuration_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_todays_market_configurations_request&,
+                           const delete_many_todays_market_configurations_request&) = default;
 };
 
 struct delete_many_todays_market_configurations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_todays_market_configurations_response&,
+                           const delete_many_todays_market_configurations_response&) = default;
 };
 
 struct list_by_todays_market_config_id_todays_market_configurations_request {
@@ -251,12 +320,20 @@ struct list_by_todays_market_config_id_todays_market_configurations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<todays_market_configurations_filter> filter;
+
+    friend bool operator==(
+        const list_by_todays_market_config_id_todays_market_configurations_request&,
+        const list_by_todays_market_config_id_todays_market_configurations_request&) = default;
 };
 
 struct list_by_todays_market_config_id_todays_market_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_configuration> configurations;
     std::uint64_t total;
+
+    friend bool operator==(
+        const list_by_todays_market_config_id_todays_market_configurations_response&,
+        const list_by_todays_market_config_id_todays_market_configurations_response&) = default;
 };
 
 struct list_todays_market_configuration_versions_request {
@@ -275,12 +352,18 @@ struct list_todays_market_configuration_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<todays_market_configuration_versions_filter> filter;
+
+    friend bool operator==(const list_todays_market_configuration_versions_request&,
+                           const list_todays_market_configuration_versions_request&) = default;
 };
 
 struct list_todays_market_configuration_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_configuration> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_todays_market_configuration_versions_response&,
+                           const list_todays_market_configuration_versions_response&) = default;
 };
 
 struct get_todays_market_configuration_version_request {
@@ -295,11 +378,17 @@ struct get_todays_market_configuration_version_request {
      */
     static constexpr bool requires_session = true;
     todays_market_configuration_version_key key;
+
+    friend bool operator==(const get_todays_market_configuration_version_request&,
+                           const get_todays_market_configuration_version_request&) = default;
 };
 
 struct get_todays_market_configuration_version_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::todays_market_configuration> version;
+
+    friend bool operator==(const get_todays_market_configuration_version_response&,
+                           const get_todays_market_configuration_version_response&) = default;
 };
 
 /**

@@ -43,6 +43,8 @@ namespace ores::dq::messaging {
 
 struct methodology_key {
     std::string name;
+
+    friend bool operator==(const methodology_key&, const methodology_key&) = default;
 };
 
 struct methodology_write {
@@ -51,25 +53,35 @@ struct methodology_write {
     std::string description;
     std::string logic_reference;
     std::string implementation_details;
+
+    friend bool operator==(const methodology_write&, const methodology_write&) = default;
 };
 
 struct methodology_change {
     methodology_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const methodology_change&, const methodology_change&) = default;
 };
 
 struct methodology_removal {
     methodology_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const methodology_removal&, const methodology_removal&) = default;
 };
 
 struct methodology_lookup {
     methodology_key key;
     std::optional<ores::dq::domain::methodology> methodology;
+
+    friend bool operator==(const methodology_lookup&, const methodology_lookup&) = default;
 };
 
 struct methodologies_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const methodologies_filter&, const methodologies_filter&) = default;
 };
 
 struct methodology_event {
@@ -79,17 +91,25 @@ struct methodology_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const methodology_event&, const methodology_event&) = default;
 };
 
 struct methodology_version_key {
     methodology_key methodology;
     std::uint32_t version;
+
+    friend bool operator==(const methodology_version_key&,
+                           const methodology_version_key&) = default;
 };
 
 struct methodology_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const methodology_versions_filter&,
+                           const methodology_versions_filter&) = default;
 };
 
 struct list_methodologies_request {
@@ -107,12 +127,18 @@ struct list_methodologies_request {
     ores::utility::domain::order order;
     std::optional<methodologies_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_methodologies_request&,
+                           const list_methodologies_request&) = default;
 };
 
 struct list_methodologies_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::methodology> methodologies;
     std::uint64_t total;
+
+    friend bool operator==(const list_methodologies_response&,
+                           const list_methodologies_response&) = default;
 };
 
 struct get_methodology_request {
@@ -126,11 +152,17 @@ struct get_methodology_request {
      */
     static constexpr bool requires_session = true;
     methodology_key key;
+
+    friend bool operator==(const get_methodology_request&,
+                           const get_methodology_request&) = default;
 };
 
 struct get_methodology_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::methodology> methodology;
+
+    friend bool operator==(const get_methodology_response&,
+                           const get_methodology_response&) = default;
 };
 
 struct get_many_methodologies_request {
@@ -144,11 +176,17 @@ struct get_many_methodologies_request {
      */
     static constexpr bool requires_session = true;
     std::vector<methodology_key> keys;
+
+    friend bool operator==(const get_many_methodologies_request&,
+                           const get_many_methodologies_request&) = default;
 };
 
 struct get_many_methodologies_response {
     ores::utility::domain::result result;
     std::vector<methodology_lookup> entries;
+
+    friend bool operator==(const get_many_methodologies_response&,
+                           const get_many_methodologies_response&) = default;
 };
 
 struct put_methodology_request {
@@ -163,11 +201,17 @@ struct put_methodology_request {
     static constexpr bool requires_session = true;
     methodology_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_methodology_request&,
+                           const put_methodology_request&) = default;
 };
 
 struct put_methodology_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::methodology> methodology;
+
+    friend bool operator==(const put_methodology_response&,
+                           const put_methodology_response&) = default;
 };
 
 struct put_many_methodologies_request {
@@ -182,11 +226,17 @@ struct put_many_methodologies_request {
     static constexpr bool requires_session = true;
     std::vector<methodology_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_methodologies_request&,
+                           const put_many_methodologies_request&) = default;
 };
 
 struct put_many_methodologies_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::methodology> methodologies;
+
+    friend bool operator==(const put_many_methodologies_response&,
+                           const put_many_methodologies_response&) = default;
 };
 
 struct delete_methodology_request {
@@ -201,10 +251,16 @@ struct delete_methodology_request {
     static constexpr bool requires_session = true;
     methodology_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_methodology_request&,
+                           const delete_methodology_request&) = default;
 };
 
 struct delete_methodology_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_methodology_response&,
+                           const delete_methodology_response&) = default;
 };
 
 struct delete_many_methodologies_request {
@@ -219,10 +275,16 @@ struct delete_many_methodologies_request {
     static constexpr bool requires_session = true;
     std::vector<methodology_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_methodologies_request&,
+                           const delete_many_methodologies_request&) = default;
 };
 
 struct delete_many_methodologies_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_methodologies_response&,
+                           const delete_many_methodologies_response&) = default;
 };
 
 struct list_methodology_versions_request {
@@ -240,12 +302,18 @@ struct list_methodology_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<methodology_versions_filter> filter;
+
+    friend bool operator==(const list_methodology_versions_request&,
+                           const list_methodology_versions_request&) = default;
 };
 
 struct list_methodology_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::methodology> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_methodology_versions_response&,
+                           const list_methodology_versions_response&) = default;
 };
 
 struct get_methodology_version_request {
@@ -259,11 +327,17 @@ struct get_methodology_version_request {
      */
     static constexpr bool requires_session = true;
     methodology_version_key key;
+
+    friend bool operator==(const get_methodology_version_request&,
+                           const get_methodology_version_request&) = default;
 };
 
 struct get_methodology_version_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::methodology> version;
+
+    friend bool operator==(const get_methodology_version_response&,
+                           const get_methodology_version_response&) = default;
 };
 
 /**

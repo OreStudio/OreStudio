@@ -43,6 +43,9 @@ namespace ores::reporting::messaging {
 
 struct report_configuration_key {
     std::string configuration_type_code;
+
+    friend bool operator==(const report_configuration_key&,
+                           const report_configuration_key&) = default;
 };
 
 struct report_configuration_write {
@@ -50,21 +53,33 @@ struct report_configuration_write {
     boost::uuids::uuid report_definition_id;
     std::string configuration_type_code;
     boost::uuids::uuid configuration_id;
+
+    friend bool operator==(const report_configuration_write&,
+                           const report_configuration_write&) = default;
 };
 
 struct report_configuration_change {
     report_configuration_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const report_configuration_change&,
+                           const report_configuration_change&) = default;
 };
 
 struct report_configuration_removal {
     report_configuration_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const report_configuration_removal&,
+                           const report_configuration_removal&) = default;
 };
 
 struct report_configuration_lookup {
     report_configuration_key key;
     std::optional<ores::reporting::domain::report_configuration> report_configuration;
+
+    friend bool operator==(const report_configuration_lookup&,
+                           const report_configuration_lookup&) = default;
 };
 
 struct report_configurations_filter {
@@ -75,6 +90,9 @@ struct report_configurations_filter {
     std::optional<std::vector<boost::uuids::uuid>> report_definition_id_one_of;
     std::optional<std::vector<std::string>> configuration_type_code_one_of;
     std::optional<std::vector<boost::uuids::uuid>> configuration_id_one_of;
+
+    friend bool operator==(const report_configurations_filter&,
+                           const report_configurations_filter&) = default;
 };
 
 struct report_configuration_event {
@@ -84,17 +102,26 @@ struct report_configuration_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const report_configuration_event&,
+                           const report_configuration_event&) = default;
 };
 
 struct report_configuration_version_key {
     report_configuration_key report_configuration;
     std::uint32_t version;
+
+    friend bool operator==(const report_configuration_version_key&,
+                           const report_configuration_version_key&) = default;
 };
 
 struct report_configuration_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const report_configuration_versions_filter&,
+                           const report_configuration_versions_filter&) = default;
 };
 
 struct list_report_configurations_request {
@@ -112,12 +139,18 @@ struct list_report_configurations_request {
     ores::utility::domain::order order;
     std::optional<report_configurations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_report_configurations_request&,
+                           const list_report_configurations_request&) = default;
 };
 
 struct list_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_configurations_response&,
+                           const list_report_configurations_response&) = default;
 };
 
 struct get_report_configuration_request {
@@ -131,11 +164,17 @@ struct get_report_configuration_request {
      */
     static constexpr bool requires_session = true;
     report_configuration_key key;
+
+    friend bool operator==(const get_report_configuration_request&,
+                           const get_report_configuration_request&) = default;
 };
 
 struct get_report_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_configuration> report_configuration;
+
+    friend bool operator==(const get_report_configuration_response&,
+                           const get_report_configuration_response&) = default;
 };
 
 struct get_many_report_configurations_request {
@@ -149,11 +188,17 @@ struct get_many_report_configurations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<report_configuration_key> keys;
+
+    friend bool operator==(const get_many_report_configurations_request&,
+                           const get_many_report_configurations_request&) = default;
 };
 
 struct get_many_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<report_configuration_lookup> entries;
+
+    friend bool operator==(const get_many_report_configurations_response&,
+                           const get_many_report_configurations_response&) = default;
 };
 
 struct put_report_configuration_request {
@@ -168,11 +213,17 @@ struct put_report_configuration_request {
     static constexpr bool requires_session = true;
     report_configuration_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_report_configuration_request&,
+                           const put_report_configuration_request&) = default;
 };
 
 struct put_report_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_configuration> report_configuration;
+
+    friend bool operator==(const put_report_configuration_response&,
+                           const put_report_configuration_response&) = default;
 };
 
 struct put_many_report_configurations_request {
@@ -187,11 +238,17 @@ struct put_many_report_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<report_configuration_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_report_configurations_request&,
+                           const put_many_report_configurations_request&) = default;
 };
 
 struct put_many_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
+
+    friend bool operator==(const put_many_report_configurations_response&,
+                           const put_many_report_configurations_response&) = default;
 };
 
 struct delete_report_configuration_request {
@@ -206,10 +263,16 @@ struct delete_report_configuration_request {
     static constexpr bool requires_session = true;
     report_configuration_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_report_configuration_request&,
+                           const delete_report_configuration_request&) = default;
 };
 
 struct delete_report_configuration_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_report_configuration_response&,
+                           const delete_report_configuration_response&) = default;
 };
 
 struct delete_many_report_configurations_request {
@@ -225,10 +288,16 @@ struct delete_many_report_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<report_configuration_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_report_configurations_request&,
+                           const delete_many_report_configurations_request&) = default;
 };
 
 struct delete_many_report_configurations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_report_configurations_response&,
+                           const delete_many_report_configurations_response&) = default;
 };
 
 struct list_by_report_definition_id_report_configurations_request {
@@ -248,12 +317,20 @@ struct list_by_report_definition_id_report_configurations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_configurations_filter> filter;
+
+    friend bool
+    operator==(const list_by_report_definition_id_report_configurations_request&,
+               const list_by_report_definition_id_report_configurations_request&) = default;
 };
 
 struct list_by_report_definition_id_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_report_definition_id_report_configurations_response&,
+               const list_by_report_definition_id_report_configurations_response&) = default;
 };
 
 struct list_by_configuration_type_code_report_configurations_request {
@@ -273,12 +350,20 @@ struct list_by_configuration_type_code_report_configurations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_configurations_filter> filter;
+
+    friend bool
+    operator==(const list_by_configuration_type_code_report_configurations_request&,
+               const list_by_configuration_type_code_report_configurations_request&) = default;
 };
 
 struct list_by_configuration_type_code_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_configuration_type_code_report_configurations_response&,
+               const list_by_configuration_type_code_report_configurations_response&) = default;
 };
 
 struct list_by_configuration_id_report_configurations_request {
@@ -298,12 +383,19 @@ struct list_by_configuration_id_report_configurations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_configurations_filter> filter;
+
+    friend bool operator==(const list_by_configuration_id_report_configurations_request&,
+                           const list_by_configuration_id_report_configurations_request&) = default;
 };
 
 struct list_by_configuration_id_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_configuration_id_report_configurations_response&,
+               const list_by_configuration_id_report_configurations_response&) = default;
 };
 
 struct list_report_configuration_versions_request {
@@ -322,12 +414,18 @@ struct list_report_configuration_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_configuration_versions_filter> filter;
+
+    friend bool operator==(const list_report_configuration_versions_request&,
+                           const list_report_configuration_versions_request&) = default;
 };
 
 struct list_report_configuration_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_configuration_versions_response&,
+                           const list_report_configuration_versions_response&) = default;
 };
 
 struct get_report_configuration_version_request {
@@ -342,11 +440,17 @@ struct get_report_configuration_version_request {
      */
     static constexpr bool requires_session = true;
     report_configuration_version_key key;
+
+    friend bool operator==(const get_report_configuration_version_request&,
+                           const get_report_configuration_version_request&) = default;
 };
 
 struct get_report_configuration_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_configuration> version;
+
+    friend bool operator==(const get_report_configuration_version_response&,
+                           const get_report_configuration_version_response&) = default;
 };
 
 /**

@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct session_key {
     std::string code;
+
+    friend bool operator==(const session_key&, const session_key&) = default;
 };
 
 struct session_write {
@@ -56,21 +58,29 @@ struct session_write {
     std::string settings;
     bool enabled;
     std::string description;
+
+    friend bool operator==(const session_write&, const session_write&) = default;
 };
 
 struct session_change {
     session_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const session_change&, const session_change&) = default;
 };
 
 struct session_removal {
     session_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const session_removal&, const session_removal&) = default;
 };
 
 struct session_lookup {
     session_key key;
     std::optional<ores::marketdata::domain::session> session;
+
+    friend bool operator==(const session_lookup&, const session_lookup&) = default;
 };
 
 struct sessions_filter {
@@ -82,6 +92,8 @@ struct sessions_filter {
     std::optional<std::vector<std::string>> adapter_code_one_of;
     std::optional<std::vector<std::string>> environment_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const sessions_filter&, const sessions_filter&) = default;
 };
 
 struct session_event {
@@ -91,17 +103,24 @@ struct session_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const session_event&, const session_event&) = default;
 };
 
 struct session_version_key {
     session_key session;
     std::uint32_t version;
+
+    friend bool operator==(const session_version_key&, const session_version_key&) = default;
 };
 
 struct session_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const session_versions_filter&,
+                           const session_versions_filter&) = default;
 };
 
 struct list_sessions_request {
@@ -119,12 +138,16 @@ struct list_sessions_request {
     ores::utility::domain::order order;
     std::optional<sessions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_sessions_request&, const list_sessions_request&) = default;
 };
 
 struct list_sessions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::session> sessions;
     std::uint64_t total;
+
+    friend bool operator==(const list_sessions_response&, const list_sessions_response&) = default;
 };
 
 struct get_session_request {
@@ -138,11 +161,15 @@ struct get_session_request {
      */
     static constexpr bool requires_session = true;
     session_key key;
+
+    friend bool operator==(const get_session_request&, const get_session_request&) = default;
 };
 
 struct get_session_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::session> session;
+
+    friend bool operator==(const get_session_response&, const get_session_response&) = default;
 };
 
 struct get_many_sessions_request {
@@ -156,11 +183,17 @@ struct get_many_sessions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<session_key> keys;
+
+    friend bool operator==(const get_many_sessions_request&,
+                           const get_many_sessions_request&) = default;
 };
 
 struct get_many_sessions_response {
     ores::utility::domain::result result;
     std::vector<session_lookup> entries;
+
+    friend bool operator==(const get_many_sessions_response&,
+                           const get_many_sessions_response&) = default;
 };
 
 struct put_session_request {
@@ -175,11 +208,15 @@ struct put_session_request {
     static constexpr bool requires_session = true;
     session_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_session_request&, const put_session_request&) = default;
 };
 
 struct put_session_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::session> session;
+
+    friend bool operator==(const put_session_response&, const put_session_response&) = default;
 };
 
 struct put_many_sessions_request {
@@ -194,11 +231,17 @@ struct put_many_sessions_request {
     static constexpr bool requires_session = true;
     std::vector<session_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_sessions_request&,
+                           const put_many_sessions_request&) = default;
 };
 
 struct put_many_sessions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::session> sessions;
+
+    friend bool operator==(const put_many_sessions_response&,
+                           const put_many_sessions_response&) = default;
 };
 
 struct delete_session_request {
@@ -213,10 +256,15 @@ struct delete_session_request {
     static constexpr bool requires_session = true;
     session_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_session_request&, const delete_session_request&) = default;
 };
 
 struct delete_session_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_session_response&,
+                           const delete_session_response&) = default;
 };
 
 struct delete_many_sessions_request {
@@ -231,10 +279,16 @@ struct delete_many_sessions_request {
     static constexpr bool requires_session = true;
     std::vector<session_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_sessions_request&,
+                           const delete_many_sessions_request&) = default;
 };
 
 struct delete_many_sessions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_sessions_response&,
+                           const delete_many_sessions_response&) = default;
 };
 
 struct list_session_versions_request {
@@ -252,12 +306,18 @@ struct list_session_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<session_versions_filter> filter;
+
+    friend bool operator==(const list_session_versions_request&,
+                           const list_session_versions_request&) = default;
 };
 
 struct list_session_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::session> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_session_versions_response&,
+                           const list_session_versions_response&) = default;
 };
 
 struct get_session_version_request {
@@ -271,11 +331,17 @@ struct get_session_version_request {
      */
     static constexpr bool requires_session = true;
     session_version_key key;
+
+    friend bool operator==(const get_session_version_request&,
+                           const get_session_version_request&) = default;
 };
 
 struct get_session_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::session> version;
+
+    friend bool operator==(const get_session_version_response&,
+                           const get_session_version_response&) = default;
 };
 
 /**

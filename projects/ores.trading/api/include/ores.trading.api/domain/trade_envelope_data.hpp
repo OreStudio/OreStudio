@@ -40,6 +40,8 @@ namespace ores::trading::domain {
 struct trade_envelope_field final {
     std::string name;
     std::string value;
+
+    friend bool operator==(const trade_envelope_field&, const trade_envelope_field&) = default;
 };
 
 /**
@@ -66,6 +68,8 @@ struct trade_envelope_data final {
     std::optional<std::string> netting_set_id;
     std::optional<std::vector<std::string>> portfolio_ids;
     std::optional<std::vector<trade_envelope_field>> additional_fields;
+
+    friend bool operator==(const trade_envelope_data&, const trade_envelope_data&) = default;
 };
 
 [[nodiscard]] constexpr auto wire_fields(const trade_envelope_field&) {

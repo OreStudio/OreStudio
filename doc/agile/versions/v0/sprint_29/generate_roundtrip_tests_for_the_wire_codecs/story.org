@@ -41,7 +41,7 @@ Every type the wire codec writes, from 621 opted-in models, has a generated test
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:3CB90542-F66A-4FC0-9052-784A07C7B203][Scaffold story: Generate roundtrip tests for the wire codecs]] | DONE | 2026-11-02 | 2026-11-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:99B5C1BC-70D3-4566-AFE2-69399D39BFE3][Give every generated protocol message a defaulted equality]] | BACKLOG | | | Generate a defaulted operator== on every protocol message, so a roundtrip test can require the value it read to equal the value it wrote. |
+| [[id:99B5C1BC-70D3-4566-AFE2-69399D39BFE3][Give every generated protocol message a defaulted equality]] | STARTED | 2026-11-02 | | Generate a defaulted operator== on every protocol message, so a roundtrip test can require the value it read to equal the value it wrote. |
 | [[id:50C06629-9008-4E1E-B511-38E59C66B30B][State a sample value for every wire member type]] | BACKLOG | | | A codegen table maps each wire member type to a non-default sample expression, resolves nested modelled types, and refuses a type it cannot sample. |
 | [[id:61A1685A-01D4-4E8A-8CA9-509B51446700][Generate the roundtrip test for entities, junctions and field groups]] | BACKLOG | | | Add the ores.cpp.wire-codec.roundtrip_tests archetype and emit it for domain entities, junctions and field groups, piloted on one component. |
 | [[id:A7C7CC03-52C0-429E-9ACC-836A130556A0][Generate the roundtrip test for protocol messages]] | BACKLOG | | | Extend the roundtrip archetype to the messages of entities, junctions, operations and families. |

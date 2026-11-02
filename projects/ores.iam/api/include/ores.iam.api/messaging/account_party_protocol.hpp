@@ -44,31 +44,43 @@ namespace ores::iam::messaging {
 struct account_party_key {
     boost::uuids::uuid account_id;
     boost::uuids::uuid party_id;
+
+    friend bool operator==(const account_party_key&, const account_party_key&) = default;
 };
 
 struct account_party_write {
     boost::uuids::uuid account_id;
     boost::uuids::uuid party_id;
+
+    friend bool operator==(const account_party_write&, const account_party_write&) = default;
 };
 
 struct account_party_change {
     account_party_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const account_party_change&, const account_party_change&) = default;
 };
 
 struct account_party_removal {
     account_party_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const account_party_removal&, const account_party_removal&) = default;
 };
 
 struct account_party_lookup {
     account_party_key key;
     std::optional<ores::iam::domain::account_party> account_party;
+
+    friend bool operator==(const account_party_lookup&, const account_party_lookup&) = default;
 };
 
 struct account_parties_filter {
     std::optional<boost::uuids::uuid> account_id;
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+
+    friend bool operator==(const account_parties_filter&, const account_parties_filter&) = default;
 };
 
 struct account_party_event {
@@ -78,6 +90,8 @@ struct account_party_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const account_party_event&, const account_party_event&) = default;
 };
 
 struct list_account_parties_request {
@@ -94,12 +108,18 @@ struct list_account_parties_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_parties_filter> filter;
+
+    friend bool operator==(const list_account_parties_request&,
+                           const list_account_parties_request&) = default;
 };
 
 struct list_account_parties_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_party> account_parties;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_parties_response&,
+                           const list_account_parties_response&) = default;
 };
 
 struct get_account_party_request {
@@ -113,11 +133,17 @@ struct get_account_party_request {
      */
     static constexpr bool requires_session = true;
     account_party_key key;
+
+    friend bool operator==(const get_account_party_request&,
+                           const get_account_party_request&) = default;
 };
 
 struct get_account_party_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_party> account_party;
+
+    friend bool operator==(const get_account_party_response&,
+                           const get_account_party_response&) = default;
 };
 
 struct get_many_account_parties_request {
@@ -131,11 +157,17 @@ struct get_many_account_parties_request {
      */
     static constexpr bool requires_session = true;
     std::vector<account_party_key> keys;
+
+    friend bool operator==(const get_many_account_parties_request&,
+                           const get_many_account_parties_request&) = default;
 };
 
 struct get_many_account_parties_response {
     ores::utility::domain::result result;
     std::vector<account_party_lookup> entries;
+
+    friend bool operator==(const get_many_account_parties_response&,
+                           const get_many_account_parties_response&) = default;
 };
 
 struct put_account_party_request {
@@ -150,11 +182,17 @@ struct put_account_party_request {
     static constexpr bool requires_session = true;
     account_party_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_account_party_request&,
+                           const put_account_party_request&) = default;
 };
 
 struct put_account_party_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_party> account_party;
+
+    friend bool operator==(const put_account_party_response&,
+                           const put_account_party_response&) = default;
 };
 
 struct put_many_account_parties_request {
@@ -169,11 +207,17 @@ struct put_many_account_parties_request {
     static constexpr bool requires_session = true;
     std::vector<account_party_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_account_parties_request&,
+                           const put_many_account_parties_request&) = default;
 };
 
 struct put_many_account_parties_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_party> account_parties;
+
+    friend bool operator==(const put_many_account_parties_response&,
+                           const put_many_account_parties_response&) = default;
 };
 
 struct delete_account_party_request {
@@ -188,10 +232,16 @@ struct delete_account_party_request {
     static constexpr bool requires_session = true;
     account_party_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_account_party_request&,
+                           const delete_account_party_request&) = default;
 };
 
 struct delete_account_party_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_account_party_response&,
+                           const delete_account_party_response&) = default;
 };
 
 struct delete_many_account_parties_request {
@@ -206,10 +256,16 @@ struct delete_many_account_parties_request {
     static constexpr bool requires_session = true;
     std::vector<account_party_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_account_parties_request&,
+                           const delete_many_account_parties_request&) = default;
 };
 
 struct delete_many_account_parties_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_account_parties_response&,
+                           const delete_many_account_parties_response&) = default;
 };
 
 struct list_by_account_id_account_parties_request {
@@ -228,12 +284,18 @@ struct list_by_account_id_account_parties_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_parties_filter> filter;
+
+    friend bool operator==(const list_by_account_id_account_parties_request&,
+                           const list_by_account_id_account_parties_request&) = default;
 };
 
 struct list_by_account_id_account_parties_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_party> account_parties;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_account_id_account_parties_response&,
+                           const list_by_account_id_account_parties_response&) = default;
 };
 
 /**

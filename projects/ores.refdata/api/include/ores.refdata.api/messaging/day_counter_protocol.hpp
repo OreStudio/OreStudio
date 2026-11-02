@@ -43,30 +43,42 @@ namespace ores::refdata::messaging {
 
 struct day_counter_key {
     std::string code;
+
+    friend bool operator==(const day_counter_key&, const day_counter_key&) = default;
 };
 
 struct day_counter_write {
     std::string code;
     std::string description;
+
+    friend bool operator==(const day_counter_write&, const day_counter_write&) = default;
 };
 
 struct day_counter_change {
     day_counter_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const day_counter_change&, const day_counter_change&) = default;
 };
 
 struct day_counter_removal {
     day_counter_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const day_counter_removal&, const day_counter_removal&) = default;
 };
 
 struct day_counter_lookup {
     day_counter_key key;
     std::optional<ores::refdata::domain::day_counter> day_counter;
+
+    friend bool operator==(const day_counter_lookup&, const day_counter_lookup&) = default;
 };
 
 struct day_counters_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const day_counters_filter&, const day_counters_filter&) = default;
 };
 
 struct day_counter_event {
@@ -76,17 +88,25 @@ struct day_counter_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const day_counter_event&, const day_counter_event&) = default;
 };
 
 struct day_counter_version_key {
     day_counter_key day_counter;
     std::uint32_t version;
+
+    friend bool operator==(const day_counter_version_key&,
+                           const day_counter_version_key&) = default;
 };
 
 struct day_counter_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const day_counter_versions_filter&,
+                           const day_counter_versions_filter&) = default;
 };
 
 struct list_day_counters_request {
@@ -104,12 +124,18 @@ struct list_day_counters_request {
     ores::utility::domain::order order;
     std::optional<day_counters_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_day_counters_request&,
+                           const list_day_counters_request&) = default;
 };
 
 struct list_day_counters_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::day_counter> day_counters;
     std::uint64_t total;
+
+    friend bool operator==(const list_day_counters_response&,
+                           const list_day_counters_response&) = default;
 };
 
 struct get_day_counter_request {
@@ -123,11 +149,17 @@ struct get_day_counter_request {
      */
     static constexpr bool requires_session = true;
     day_counter_key key;
+
+    friend bool operator==(const get_day_counter_request&,
+                           const get_day_counter_request&) = default;
 };
 
 struct get_day_counter_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::day_counter> day_counter;
+
+    friend bool operator==(const get_day_counter_response&,
+                           const get_day_counter_response&) = default;
 };
 
 struct get_many_day_counters_request {
@@ -141,11 +173,17 @@ struct get_many_day_counters_request {
      */
     static constexpr bool requires_session = true;
     std::vector<day_counter_key> keys;
+
+    friend bool operator==(const get_many_day_counters_request&,
+                           const get_many_day_counters_request&) = default;
 };
 
 struct get_many_day_counters_response {
     ores::utility::domain::result result;
     std::vector<day_counter_lookup> entries;
+
+    friend bool operator==(const get_many_day_counters_response&,
+                           const get_many_day_counters_response&) = default;
 };
 
 struct put_day_counter_request {
@@ -160,11 +198,17 @@ struct put_day_counter_request {
     static constexpr bool requires_session = true;
     day_counter_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_day_counter_request&,
+                           const put_day_counter_request&) = default;
 };
 
 struct put_day_counter_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::day_counter> day_counter;
+
+    friend bool operator==(const put_day_counter_response&,
+                           const put_day_counter_response&) = default;
 };
 
 struct put_many_day_counters_request {
@@ -179,11 +223,17 @@ struct put_many_day_counters_request {
     static constexpr bool requires_session = true;
     std::vector<day_counter_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_day_counters_request&,
+                           const put_many_day_counters_request&) = default;
 };
 
 struct put_many_day_counters_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::day_counter> day_counters;
+
+    friend bool operator==(const put_many_day_counters_response&,
+                           const put_many_day_counters_response&) = default;
 };
 
 struct delete_day_counter_request {
@@ -198,10 +248,16 @@ struct delete_day_counter_request {
     static constexpr bool requires_session = true;
     day_counter_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_day_counter_request&,
+                           const delete_day_counter_request&) = default;
 };
 
 struct delete_day_counter_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_day_counter_response&,
+                           const delete_day_counter_response&) = default;
 };
 
 struct delete_many_day_counters_request {
@@ -216,10 +272,16 @@ struct delete_many_day_counters_request {
     static constexpr bool requires_session = true;
     std::vector<day_counter_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_day_counters_request&,
+                           const delete_many_day_counters_request&) = default;
 };
 
 struct delete_many_day_counters_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_day_counters_response&,
+                           const delete_many_day_counters_response&) = default;
 };
 
 struct list_day_counter_versions_request {
@@ -237,12 +299,18 @@ struct list_day_counter_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<day_counter_versions_filter> filter;
+
+    friend bool operator==(const list_day_counter_versions_request&,
+                           const list_day_counter_versions_request&) = default;
 };
 
 struct list_day_counter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::day_counter> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_day_counter_versions_response&,
+                           const list_day_counter_versions_response&) = default;
 };
 
 struct get_day_counter_version_request {
@@ -256,11 +324,17 @@ struct get_day_counter_version_request {
      */
     static constexpr bool requires_session = true;
     day_counter_version_key key;
+
+    friend bool operator==(const get_day_counter_version_request&,
+                           const get_day_counter_version_request&) = default;
 };
 
 struct get_day_counter_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::day_counter> version;
+
+    friend bool operator==(const get_day_counter_version_response&,
+                           const get_day_counter_version_response&) = default;
 };
 
 /**

@@ -62,11 +62,17 @@ struct trigger_report_instance_request {
     std::string covered_date = "";
     std::string scope_code = "";
     std::string business_centre_code = "";
+
+    friend bool operator==(const trigger_report_instance_request&,
+                           const trigger_report_instance_request&) = default;
 };
 
 struct trigger_report_instance_response {
     ores::utility::domain::result result;
     std::string report_instance_id;
+
+    friend bool operator==(const trigger_report_instance_response&,
+                           const trigger_report_instance_response&) = default;
 };
 
 /**
@@ -88,6 +94,8 @@ struct get_run_health_request {
     static constexpr bool requires_session = true;
     /** @brief The run to state the health of. */
     boost::uuids::uuid report_instance_id;
+
+    friend bool operator==(const get_run_health_request&, const get_run_health_request&) = default;
 };
 
 struct get_run_health_response {
@@ -108,6 +116,9 @@ struct get_run_health_response {
      * ask about.
      */
     std::string health;
+
+    friend bool operator==(const get_run_health_response&,
+                           const get_run_health_response&) = default;
 };
 
 /**
@@ -145,10 +156,16 @@ struct record_run_pricing_request {
      * Empty when the run priced at the date it asked for.
      */
     std::string price_note;
+
+    friend bool operator==(const record_run_pricing_request&,
+                           const record_run_pricing_request&) = default;
 };
 
 struct record_run_pricing_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const record_run_pricing_response&,
+                           const record_run_pricing_response&) = default;
 };
 
 struct schedule_report_definitions_request {
@@ -162,6 +179,9 @@ struct schedule_report_definitions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> ids;
+
+    friend bool operator==(const schedule_report_definitions_request&,
+                           const schedule_report_definitions_request&) = default;
 };
 
 struct schedule_report_definitions_response {
@@ -169,6 +189,9 @@ struct schedule_report_definitions_response {
     std::string message;
     int scheduled_count = 0;
     std::vector<std::string> failed_ids;
+
+    friend bool operator==(const schedule_report_definitions_response&,
+                           const schedule_report_definitions_response&) = default;
 };
 
 struct unschedule_report_definitions_request {
@@ -183,6 +206,9 @@ struct unschedule_report_definitions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> ids;
+
+    friend bool operator==(const unschedule_report_definitions_request&,
+                           const unschedule_report_definitions_request&) = default;
 };
 
 struct unschedule_report_definitions_response {
@@ -190,6 +216,9 @@ struct unschedule_report_definitions_response {
     std::string message;
     int unscheduled_count = 0;
     std::vector<std::string> failed_ids;
+
+    friend bool operator==(const unschedule_report_definitions_response&,
+                           const unschedule_report_definitions_response&) = default;
 };
 
 /**
@@ -211,6 +240,9 @@ struct publish_report_definitions_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_report_definitions_from_dq_request&,
+                           const publish_report_definitions_from_dq_request&) = default;
 };
 
 /**
@@ -230,6 +262,9 @@ struct publish_risk_report_configs_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_risk_report_configs_from_dq_request&,
+                           const publish_risk_report_configs_from_dq_request&) = default;
 };
 
 /**
@@ -249,6 +284,9 @@ struct publish_engine_settings_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_engine_settings_from_dq_request&,
+                           const publish_engine_settings_from_dq_request&) = default;
 };
 
 /**
@@ -268,6 +306,9 @@ struct publish_ore_parameter_value_domains_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_ore_parameter_value_domains_from_dq_request&,
+                           const publish_ore_parameter_value_domains_from_dq_request&) = default;
 };
 
 /**
@@ -286,6 +327,9 @@ struct publish_ore_parameters_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_ore_parameters_from_dq_request&,
+                           const publish_ore_parameters_from_dq_request&) = default;
 };
 
 struct gather_trades_request {
@@ -302,6 +346,8 @@ struct gather_trades_request {
     std::string definition_id;
     std::string tenant_id;
     std::string correlation_id;
+
+    friend bool operator==(const gather_trades_request&, const gather_trades_request&) = default;
 };
 
 struct gather_trades_result {
@@ -319,6 +365,8 @@ struct gather_trades_result {
      * state.
      */
     std::string trade_versions;
+
+    friend bool operator==(const gather_trades_result&, const gather_trades_result&) = default;
 };
 
 struct gather_market_data_request {
@@ -335,6 +383,9 @@ struct gather_market_data_request {
     std::string definition_id;
     std::string tenant_id;
     std::string correlation_id;
+
+    friend bool operator==(const gather_market_data_request&,
+                           const gather_market_data_request&) = default;
 };
 
 struct gather_market_data_result {
@@ -350,6 +401,9 @@ struct gather_market_data_result {
      * the packaging step fetches it from.
      */
     std::string fixings_storage_key;
+
+    friend bool operator==(const gather_market_data_result&,
+                           const gather_market_data_result&) = default;
 };
 
 struct assemble_bundle_request {
@@ -386,12 +440,17 @@ struct assemble_bundle_request {
      */
     std::string trade_versions = "";
     int series_count = 0;
+
+    friend bool operator==(const assemble_bundle_request&,
+                           const assemble_bundle_request&) = default;
 };
 
 struct assemble_bundle_result {
     bool success = false;
     std::string message;
     std::string bundle_id;
+
+    friend bool operator==(const assemble_bundle_result&, const assemble_bundle_result&) = default;
 };
 
 struct prepare_ore_package_request {
@@ -418,12 +477,18 @@ struct prepare_ore_package_request {
      * the engine reads it.
      */
     std::string fixings_storage_key;
+
+    friend bool operator==(const prepare_ore_package_request&,
+                           const prepare_ore_package_request&) = default;
 };
 
 struct prepare_ore_package_result {
     bool success = false;
     std::string message;
     std::vector<std::string> tarball_uris;
+
+    friend bool operator==(const prepare_ore_package_result&,
+                           const prepare_ore_package_result&) = default;
 };
 
 struct submit_compute_request {
@@ -442,12 +507,16 @@ struct submit_compute_request {
     std::string run_grant_id;
     std::string correlation_id;
     std::vector<std::string> tarball_uris;
+
+    friend bool operator==(const submit_compute_request&, const submit_compute_request&) = default;
 };
 
 struct submit_compute_result {
     bool success = false;
     std::string message;
     std::string batch_id;
+
+    friend bool operator==(const submit_compute_result&, const submit_compute_result&) = default;
 };
 
 struct collect_compute_results_request {
@@ -464,11 +533,17 @@ struct collect_compute_results_request {
     std::string tenant_id;
     std::string correlation_id;
     std::string batch_id;
+
+    friend bool operator==(const collect_compute_results_request&,
+                           const collect_compute_results_request&) = default;
 };
 
 struct collect_compute_results_result {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const collect_compute_results_result&,
+                           const collect_compute_results_result&) = default;
 };
 
 struct post_process_results_request {
@@ -486,12 +561,18 @@ struct post_process_results_request {
     std::string correlation_id;
     std::string batch_id;
     std::string skipped_families;
+
+    friend bool operator==(const post_process_results_request&,
+                           const post_process_results_request&) = default;
 };
 
 struct post_process_results_result {
     bool success = false;
     std::string message;
     int rows_loaded = 0;
+
+    friend bool operator==(const post_process_results_result&,
+                           const post_process_results_result&) = default;
 };
 
 struct finalise_report_request {
@@ -507,11 +588,16 @@ struct finalise_report_request {
     std::string report_instance_id;
     std::string tenant_id;
     std::string correlation_id;
+
+    friend bool operator==(const finalise_report_request&,
+                           const finalise_report_request&) = default;
 };
 
 struct finalise_report_result {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const finalise_report_result&, const finalise_report_result&) = default;
 };
 
 struct fail_report_request {
@@ -528,11 +614,15 @@ struct fail_report_request {
     std::string tenant_id;
     std::string correlation_id;
     std::string error_message;
+
+    friend bool operator==(const fail_report_request&, const fail_report_request&) = default;
 };
 
 struct fail_report_result {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const fail_report_result&, const fail_report_result&) = default;
 };
 
 struct report_execution_request {
@@ -547,6 +637,9 @@ struct report_execution_request {
     std::string post_processing;
     std::optional<std::string> skipped_families;
     std::optional<std::string> kind;
+
+    friend bool operator==(const report_execution_request&,
+                           const report_execution_request&) = default;
 };
 
 struct resolve_prepared_input_request {
@@ -563,6 +656,9 @@ struct resolve_prepared_input_request {
     std::string tenant_id;
     std::string correlation_id;
     std::string prepared_input_key;
+
+    friend bool operator==(const resolve_prepared_input_request&,
+                           const resolve_prepared_input_request&) = default;
 };
 
 struct ignore_compute_results_request {
@@ -579,11 +675,16 @@ struct ignore_compute_results_request {
     std::string tenant_id;
     std::string correlation_id;
     std::string batch_id;
+
+    friend bool operator==(const ignore_compute_results_request&,
+                           const ignore_compute_results_request&) = default;
 };
 
 struct definition_next_fire {
     boost::uuids::uuid definition_id;
     std::optional<std::string> next_fire_at;
+
+    friend bool operator==(const definition_next_fire&, const definition_next_fire&) = default;
 };
 
 struct get_next_fire_request {
@@ -597,11 +698,15 @@ struct get_next_fire_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> definition_ids;
+
+    friend bool operator==(const get_next_fire_request&, const get_next_fire_request&) = default;
 };
 
 struct get_next_fire_response {
     ores::utility::domain::result result;
     std::vector<definition_next_fire> schedules;
+
+    friend bool operator==(const get_next_fire_response&, const get_next_fire_response&) = default;
 };
 
 struct resolve_cut_request {
@@ -624,6 +729,8 @@ struct resolve_cut_request {
     std::string reference_data_version = "";
     std::string engine_version = "";
     std::string code_version = "";
+
+    friend bool operator==(const resolve_cut_request&, const resolve_cut_request&) = default;
 };
 
 struct resolve_cut_response {
@@ -635,6 +742,8 @@ struct resolve_cut_response {
     std::string cut_state;
     bool output_is_indicative = false;
     std::string refusal;
+
+    friend bool operator==(const resolve_cut_response&, const resolve_cut_response&) = default;
 };
 
 struct list_cut_rows_request {
@@ -653,6 +762,8 @@ struct list_cut_rows_request {
     std::string state = "";
     std::uint32_t offset = 0;
     std::uint32_t limit = 0;
+
+    friend bool operator==(const list_cut_rows_request&, const list_cut_rows_request&) = default;
 };
 
 struct cut_row {
@@ -675,12 +786,16 @@ struct cut_row {
     int take_ordinal = 0;
     int run_count = 0;
     std::string superseded_by_id = "";
+
+    friend bool operator==(const cut_row&, const cut_row&) = default;
 };
 
 struct list_cut_rows_response {
     ores::utility::domain::result result;
     std::vector<cut_row> rows;
     int total = 0;
+
+    friend bool operator==(const list_cut_rows_response&, const list_cut_rows_response&) = default;
 };
 
 struct get_cut_record_request {
@@ -694,6 +809,8 @@ struct get_cut_record_request {
      */
     static constexpr bool requires_session = true;
     boost::uuids::uuid cut_id;
+
+    friend bool operator==(const get_cut_record_request&, const get_cut_record_request&) = default;
 };
 
 struct get_cut_record_response {
@@ -706,6 +823,9 @@ struct get_cut_record_response {
     std::vector<ores::reporting::domain::cut_gap> gaps;
     int run_count = 0;
     std::optional<ores::reporting::domain::cut_approval_detail> detail;
+
+    friend bool operator==(const get_cut_record_response&,
+                           const get_cut_record_response&) = default;
 };
 
 struct take_cut_request {
@@ -726,6 +846,8 @@ struct take_cut_request {
     std::string cut_time_code = "";
     std::string reason;
     bool preview = false;
+
+    friend bool operator==(const take_cut_request&, const take_cut_request&) = default;
 };
 
 struct cut_body_part {
@@ -737,6 +859,8 @@ struct cut_body_part {
     std::string reason = "";
     std::string remedy = "";
     std::string snapshot_note = "";
+
+    friend bool operator==(const cut_body_part&, const cut_body_part&) = default;
 };
 
 struct take_cut_response {
@@ -759,6 +883,8 @@ struct take_cut_response {
     std::string reference_data_version = "";
     std::string engine_version = "";
     std::string code_version = "";
+
+    friend bool operator==(const take_cut_response&, const take_cut_response&) = default;
 };
 
 /**

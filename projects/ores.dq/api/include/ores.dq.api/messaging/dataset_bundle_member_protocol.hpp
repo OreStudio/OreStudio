@@ -44,6 +44,9 @@ namespace ores::dq::messaging {
 struct dataset_bundle_member_key {
     std::string bundle_code;
     std::string dataset_code;
+
+    friend bool operator==(const dataset_bundle_member_key&,
+                           const dataset_bundle_member_key&) = default;
 };
 
 struct dataset_bundle_member_write {
@@ -51,26 +54,41 @@ struct dataset_bundle_member_write {
     std::string dataset_code;
     int display_order;
     bool optional;
+
+    friend bool operator==(const dataset_bundle_member_write&,
+                           const dataset_bundle_member_write&) = default;
 };
 
 struct dataset_bundle_member_change {
     dataset_bundle_member_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const dataset_bundle_member_change&,
+                           const dataset_bundle_member_change&) = default;
 };
 
 struct dataset_bundle_member_removal {
     dataset_bundle_member_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const dataset_bundle_member_removal&,
+                           const dataset_bundle_member_removal&) = default;
 };
 
 struct dataset_bundle_member_lookup {
     dataset_bundle_member_key key;
     std::optional<ores::dq::domain::dataset_bundle_member> dataset_bundle_member;
+
+    friend bool operator==(const dataset_bundle_member_lookup&,
+                           const dataset_bundle_member_lookup&) = default;
 };
 
 struct dataset_bundle_members_filter {
     std::optional<std::string> bundle_code;
     std::optional<std::vector<std::string>> bundle_code_one_of;
+
+    friend bool operator==(const dataset_bundle_members_filter&,
+                           const dataset_bundle_members_filter&) = default;
 };
 
 struct dataset_bundle_member_event {
@@ -80,6 +98,9 @@ struct dataset_bundle_member_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const dataset_bundle_member_event&,
+                           const dataset_bundle_member_event&) = default;
 };
 
 struct list_dataset_bundle_members_request {
@@ -96,12 +117,18 @@ struct list_dataset_bundle_members_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<dataset_bundle_members_filter> filter;
+
+    friend bool operator==(const list_dataset_bundle_members_request&,
+                           const list_dataset_bundle_members_request&) = default;
 };
 
 struct list_dataset_bundle_members_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset_bundle_member> dataset_bundle_members;
     std::uint64_t total;
+
+    friend bool operator==(const list_dataset_bundle_members_response&,
+                           const list_dataset_bundle_members_response&) = default;
 };
 
 struct get_dataset_bundle_member_request {
@@ -115,11 +142,17 @@ struct get_dataset_bundle_member_request {
      */
     static constexpr bool requires_session = true;
     dataset_bundle_member_key key;
+
+    friend bool operator==(const get_dataset_bundle_member_request&,
+                           const get_dataset_bundle_member_request&) = default;
 };
 
 struct get_dataset_bundle_member_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::dataset_bundle_member> dataset_bundle_member;
+
+    friend bool operator==(const get_dataset_bundle_member_response&,
+                           const get_dataset_bundle_member_response&) = default;
 };
 
 struct get_many_dataset_bundle_members_request {
@@ -133,11 +166,17 @@ struct get_many_dataset_bundle_members_request {
      */
     static constexpr bool requires_session = true;
     std::vector<dataset_bundle_member_key> keys;
+
+    friend bool operator==(const get_many_dataset_bundle_members_request&,
+                           const get_many_dataset_bundle_members_request&) = default;
 };
 
 struct get_many_dataset_bundle_members_response {
     ores::utility::domain::result result;
     std::vector<dataset_bundle_member_lookup> entries;
+
+    friend bool operator==(const get_many_dataset_bundle_members_response&,
+                           const get_many_dataset_bundle_members_response&) = default;
 };
 
 struct put_dataset_bundle_member_request {
@@ -152,11 +191,17 @@ struct put_dataset_bundle_member_request {
     static constexpr bool requires_session = true;
     dataset_bundle_member_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_dataset_bundle_member_request&,
+                           const put_dataset_bundle_member_request&) = default;
 };
 
 struct put_dataset_bundle_member_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::dataset_bundle_member> dataset_bundle_member;
+
+    friend bool operator==(const put_dataset_bundle_member_response&,
+                           const put_dataset_bundle_member_response&) = default;
 };
 
 struct put_many_dataset_bundle_members_request {
@@ -171,11 +216,17 @@ struct put_many_dataset_bundle_members_request {
     static constexpr bool requires_session = true;
     std::vector<dataset_bundle_member_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_dataset_bundle_members_request&,
+                           const put_many_dataset_bundle_members_request&) = default;
 };
 
 struct put_many_dataset_bundle_members_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset_bundle_member> dataset_bundle_members;
+
+    friend bool operator==(const put_many_dataset_bundle_members_response&,
+                           const put_many_dataset_bundle_members_response&) = default;
 };
 
 struct delete_dataset_bundle_member_request {
@@ -190,10 +241,16 @@ struct delete_dataset_bundle_member_request {
     static constexpr bool requires_session = true;
     dataset_bundle_member_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_dataset_bundle_member_request&,
+                           const delete_dataset_bundle_member_request&) = default;
 };
 
 struct delete_dataset_bundle_member_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_dataset_bundle_member_response&,
+                           const delete_dataset_bundle_member_response&) = default;
 };
 
 struct delete_many_dataset_bundle_members_request {
@@ -208,10 +265,16 @@ struct delete_many_dataset_bundle_members_request {
     static constexpr bool requires_session = true;
     std::vector<dataset_bundle_member_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_dataset_bundle_members_request&,
+                           const delete_many_dataset_bundle_members_request&) = default;
 };
 
 struct delete_many_dataset_bundle_members_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_dataset_bundle_members_response&,
+                           const delete_many_dataset_bundle_members_response&) = default;
 };
 
 struct list_by_bundle_code_dataset_bundle_members_request {
@@ -231,12 +294,18 @@ struct list_by_bundle_code_dataset_bundle_members_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<dataset_bundle_members_filter> filter;
+
+    friend bool operator==(const list_by_bundle_code_dataset_bundle_members_request&,
+                           const list_by_bundle_code_dataset_bundle_members_request&) = default;
 };
 
 struct list_by_bundle_code_dataset_bundle_members_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset_bundle_member> dataset_bundle_members;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_bundle_code_dataset_bundle_members_response&,
+                           const list_by_bundle_code_dataset_bundle_members_response&) = default;
 };
 
 /**

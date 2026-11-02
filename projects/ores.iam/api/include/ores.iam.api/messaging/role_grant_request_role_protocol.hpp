@@ -44,32 +44,50 @@ namespace ores::iam::messaging {
 struct role_grant_request_role_key {
     boost::uuids::uuid request_id;
     boost::uuids::uuid role_id;
+
+    friend bool operator==(const role_grant_request_role_key&,
+                           const role_grant_request_role_key&) = default;
 };
 
 struct role_grant_request_role_write {
     boost::uuids::uuid request_id;
     boost::uuids::uuid role_id;
     std::optional<std::chrono::system_clock::time_point> applied_at;
+
+    friend bool operator==(const role_grant_request_role_write&,
+                           const role_grant_request_role_write&) = default;
 };
 
 struct role_grant_request_role_change {
     role_grant_request_role_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const role_grant_request_role_change&,
+                           const role_grant_request_role_change&) = default;
 };
 
 struct role_grant_request_role_removal {
     role_grant_request_role_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const role_grant_request_role_removal&,
+                           const role_grant_request_role_removal&) = default;
 };
 
 struct role_grant_request_role_lookup {
     role_grant_request_role_key key;
     std::optional<ores::iam::domain::role_grant_request_role> role_grant_request_role;
+
+    friend bool operator==(const role_grant_request_role_lookup&,
+                           const role_grant_request_role_lookup&) = default;
 };
 
 struct role_grant_request_roles_filter {
     std::optional<boost::uuids::uuid> request_id;
     std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
+
+    friend bool operator==(const role_grant_request_roles_filter&,
+                           const role_grant_request_roles_filter&) = default;
 };
 
 struct role_grant_request_role_event {
@@ -79,6 +97,9 @@ struct role_grant_request_role_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const role_grant_request_role_event&,
+                           const role_grant_request_role_event&) = default;
 };
 
 struct list_role_grant_request_roles_request {
@@ -95,12 +116,18 @@ struct list_role_grant_request_roles_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<role_grant_request_roles_filter> filter;
+
+    friend bool operator==(const list_role_grant_request_roles_request&,
+                           const list_role_grant_request_roles_request&) = default;
 };
 
 struct list_role_grant_request_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_grant_request_role> role_grant_request_roles;
     std::uint64_t total;
+
+    friend bool operator==(const list_role_grant_request_roles_response&,
+                           const list_role_grant_request_roles_response&) = default;
 };
 
 struct get_role_grant_request_role_request {
@@ -114,11 +141,17 @@ struct get_role_grant_request_role_request {
      */
     static constexpr bool requires_session = true;
     role_grant_request_role_key key;
+
+    friend bool operator==(const get_role_grant_request_role_request&,
+                           const get_role_grant_request_role_request&) = default;
 };
 
 struct get_role_grant_request_role_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::role_grant_request_role> role_grant_request_role;
+
+    friend bool operator==(const get_role_grant_request_role_response&,
+                           const get_role_grant_request_role_response&) = default;
 };
 
 struct get_many_role_grant_request_roles_request {
@@ -132,11 +165,17 @@ struct get_many_role_grant_request_roles_request {
      */
     static constexpr bool requires_session = true;
     std::vector<role_grant_request_role_key> keys;
+
+    friend bool operator==(const get_many_role_grant_request_roles_request&,
+                           const get_many_role_grant_request_roles_request&) = default;
 };
 
 struct get_many_role_grant_request_roles_response {
     ores::utility::domain::result result;
     std::vector<role_grant_request_role_lookup> entries;
+
+    friend bool operator==(const get_many_role_grant_request_roles_response&,
+                           const get_many_role_grant_request_roles_response&) = default;
 };
 
 struct put_role_grant_request_role_request {
@@ -151,11 +190,17 @@ struct put_role_grant_request_role_request {
     static constexpr bool requires_session = true;
     role_grant_request_role_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_role_grant_request_role_request&,
+                           const put_role_grant_request_role_request&) = default;
 };
 
 struct put_role_grant_request_role_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::role_grant_request_role> role_grant_request_role;
+
+    friend bool operator==(const put_role_grant_request_role_response&,
+                           const put_role_grant_request_role_response&) = default;
 };
 
 struct put_many_role_grant_request_roles_request {
@@ -170,11 +215,17 @@ struct put_many_role_grant_request_roles_request {
     static constexpr bool requires_session = true;
     std::vector<role_grant_request_role_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_role_grant_request_roles_request&,
+                           const put_many_role_grant_request_roles_request&) = default;
 };
 
 struct put_many_role_grant_request_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_grant_request_role> role_grant_request_roles;
+
+    friend bool operator==(const put_many_role_grant_request_roles_response&,
+                           const put_many_role_grant_request_roles_response&) = default;
 };
 
 struct delete_role_grant_request_role_request {
@@ -189,10 +240,16 @@ struct delete_role_grant_request_role_request {
     static constexpr bool requires_session = true;
     role_grant_request_role_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_role_grant_request_role_request&,
+                           const delete_role_grant_request_role_request&) = default;
 };
 
 struct delete_role_grant_request_role_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_role_grant_request_role_response&,
+                           const delete_role_grant_request_role_response&) = default;
 };
 
 struct delete_many_role_grant_request_roles_request {
@@ -207,10 +264,16 @@ struct delete_many_role_grant_request_roles_request {
     static constexpr bool requires_session = true;
     std::vector<role_grant_request_role_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_role_grant_request_roles_request&,
+                           const delete_many_role_grant_request_roles_request&) = default;
 };
 
 struct delete_many_role_grant_request_roles_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_role_grant_request_roles_response&,
+                           const delete_many_role_grant_request_roles_response&) = default;
 };
 
 struct list_by_request_id_role_grant_request_roles_request {
@@ -230,12 +293,18 @@ struct list_by_request_id_role_grant_request_roles_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<role_grant_request_roles_filter> filter;
+
+    friend bool operator==(const list_by_request_id_role_grant_request_roles_request&,
+                           const list_by_request_id_role_grant_request_roles_request&) = default;
 };
 
 struct list_by_request_id_role_grant_request_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_grant_request_role> role_grant_request_roles;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_request_id_role_grant_request_roles_response&,
+                           const list_by_request_id_role_grant_request_roles_response&) = default;
 };
 
 /**

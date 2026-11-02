@@ -49,6 +49,8 @@ struct bill_line_view {
     std::int64_t quantity = 0;
     std::int64_t charge_micros = 0;
     std::int64_t total_micros = 0;
+
+    friend bool operator==(const bill_line_view&, const bill_line_view&) = default;
 };
 
 /**
@@ -64,6 +66,8 @@ struct source_bill_view {
     bool shadow = false;
     std::vector<bill_line_view> lines;
     std::int64_t total_micros = 0;
+
+    friend bool operator==(const source_bill_view&, const source_bill_view&) = default;
 };
 
 /**
@@ -76,6 +80,8 @@ struct party_charge_view {
     std::string driver;
     std::string licence_right;
     std::int64_t total_micros = 0;
+
+    friend bool operator==(const party_charge_view&, const party_charge_view&) = default;
 };
 
 /**
@@ -96,6 +102,8 @@ struct compute_bill_request {
     std::chrono::system_clock::time_point period_from;
     std::chrono::system_clock::time_point period_to;
     std::string source_name;
+
+    friend bool operator==(const compute_bill_request&, const compute_bill_request&) = default;
 };
 
 /**
@@ -107,6 +115,8 @@ struct compute_bill_response {
     std::int64_t unallocated_micros = 0;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const compute_bill_response&, const compute_bill_response&) = default;
 };
 
 /**

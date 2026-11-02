@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct commodity_future_contract_terms_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const commodity_future_contract_terms_key&,
+                           const commodity_future_contract_terms_key&) = default;
 };
 
 struct commodity_future_contract_terms_write {
@@ -66,28 +69,43 @@ struct commodity_future_contract_terms_write {
     std::optional<std::string> balance_of_the_month_pricing_calendar;
     std::optional<std::string> prohibited_expiries;
     std::optional<std::string> future_continuation_mappings;
+
+    friend bool operator==(const commodity_future_contract_terms_write&,
+                           const commodity_future_contract_terms_write&) = default;
 };
 
 struct commodity_future_contract_terms_change {
     commodity_future_contract_terms_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const commodity_future_contract_terms_change&,
+                           const commodity_future_contract_terms_change&) = default;
 };
 
 struct commodity_future_contract_terms_removal {
     commodity_future_contract_terms_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const commodity_future_contract_terms_removal&,
+                           const commodity_future_contract_terms_removal&) = default;
 };
 
 struct commodity_future_contract_terms_lookup {
     commodity_future_contract_terms_key key;
     std::optional<ores::refdata::domain::commodity_future_contract_terms>
         commodity_future_contract_terms;
+
+    friend bool operator==(const commodity_future_contract_terms_lookup&,
+                           const commodity_future_contract_terms_lookup&) = default;
 };
 
 struct commodity_future_contract_terms_filter {
     std::optional<boost::uuids::uuid> convention_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> convention_id_one_of;
+
+    friend bool operator==(const commodity_future_contract_terms_filter&,
+                           const commodity_future_contract_terms_filter&) = default;
 };
 
 struct commodity_future_contract_terms_event {
@@ -97,17 +115,26 @@ struct commodity_future_contract_terms_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const commodity_future_contract_terms_event&,
+                           const commodity_future_contract_terms_event&) = default;
 };
 
 struct commodity_future_contract_terms_version_key {
     commodity_future_contract_terms_key commodity_future_contract_terms;
     std::uint32_t version;
+
+    friend bool operator==(const commodity_future_contract_terms_version_key&,
+                           const commodity_future_contract_terms_version_key&) = default;
 };
 
 struct commodity_future_contract_terms_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const commodity_future_contract_terms_versions_filter&,
+                           const commodity_future_contract_terms_versions_filter&) = default;
 };
 
 struct list_commodity_future_contract_terms_request {
@@ -126,6 +153,9 @@ struct list_commodity_future_contract_terms_request {
     ores::utility::domain::order order;
     std::optional<commodity_future_contract_terms_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_commodity_future_contract_terms_request&,
+                           const list_commodity_future_contract_terms_request&) = default;
 };
 
 struct list_commodity_future_contract_terms_response {
@@ -133,6 +163,9 @@ struct list_commodity_future_contract_terms_response {
     std::vector<ores::refdata::domain::commodity_future_contract_terms>
         commodity_future_contract_terms;
     std::uint64_t total;
+
+    friend bool operator==(const list_commodity_future_contract_terms_response&,
+                           const list_commodity_future_contract_terms_response&) = default;
 };
 
 struct get_commodity_future_contract_terms_request {
@@ -147,12 +180,18 @@ struct get_commodity_future_contract_terms_request {
      */
     static constexpr bool requires_session = true;
     commodity_future_contract_terms_key key;
+
+    friend bool operator==(const get_commodity_future_contract_terms_request&,
+                           const get_commodity_future_contract_terms_request&) = default;
 };
 
 struct get_commodity_future_contract_terms_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::commodity_future_contract_terms>
         commodity_future_contract_terms;
+
+    friend bool operator==(const get_commodity_future_contract_terms_response&,
+                           const get_commodity_future_contract_terms_response&) = default;
 };
 
 struct get_many_commodity_future_contract_terms_request {
@@ -167,11 +206,17 @@ struct get_many_commodity_future_contract_terms_request {
      */
     static constexpr bool requires_session = true;
     std::vector<commodity_future_contract_terms_key> keys;
+
+    friend bool operator==(const get_many_commodity_future_contract_terms_request&,
+                           const get_many_commodity_future_contract_terms_request&) = default;
 };
 
 struct get_many_commodity_future_contract_terms_response {
     ores::utility::domain::result result;
     std::vector<commodity_future_contract_terms_lookup> entries;
+
+    friend bool operator==(const get_many_commodity_future_contract_terms_response&,
+                           const get_many_commodity_future_contract_terms_response&) = default;
 };
 
 struct put_commodity_future_contract_terms_request {
@@ -187,12 +232,18 @@ struct put_commodity_future_contract_terms_request {
     static constexpr bool requires_session = true;
     commodity_future_contract_terms_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_commodity_future_contract_terms_request&,
+                           const put_commodity_future_contract_terms_request&) = default;
 };
 
 struct put_commodity_future_contract_terms_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::commodity_future_contract_terms>
         commodity_future_contract_terms;
+
+    friend bool operator==(const put_commodity_future_contract_terms_response&,
+                           const put_commodity_future_contract_terms_response&) = default;
 };
 
 struct put_many_commodity_future_contract_terms_request {
@@ -208,12 +259,18 @@ struct put_many_commodity_future_contract_terms_request {
     static constexpr bool requires_session = true;
     std::vector<commodity_future_contract_terms_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_commodity_future_contract_terms_request&,
+                           const put_many_commodity_future_contract_terms_request&) = default;
 };
 
 struct put_many_commodity_future_contract_terms_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_future_contract_terms>
         commodity_future_contract_terms;
+
+    friend bool operator==(const put_many_commodity_future_contract_terms_response&,
+                           const put_many_commodity_future_contract_terms_response&) = default;
 };
 
 struct delete_commodity_future_contract_terms_request {
@@ -229,10 +286,16 @@ struct delete_commodity_future_contract_terms_request {
     static constexpr bool requires_session = true;
     commodity_future_contract_terms_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_commodity_future_contract_terms_request&,
+                           const delete_commodity_future_contract_terms_request&) = default;
 };
 
 struct delete_commodity_future_contract_terms_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_commodity_future_contract_terms_response&,
+                           const delete_commodity_future_contract_terms_response&) = default;
 };
 
 struct delete_many_commodity_future_contract_terms_request {
@@ -248,10 +311,16 @@ struct delete_many_commodity_future_contract_terms_request {
     static constexpr bool requires_session = true;
     std::vector<commodity_future_contract_terms_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_commodity_future_contract_terms_request&,
+                           const delete_many_commodity_future_contract_terms_request&) = default;
 };
 
 struct delete_many_commodity_future_contract_terms_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_commodity_future_contract_terms_response&,
+                           const delete_many_commodity_future_contract_terms_response&) = default;
 };
 
 struct list_by_convention_id_commodity_future_contract_terms_request {
@@ -271,6 +340,10 @@ struct list_by_convention_id_commodity_future_contract_terms_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<commodity_future_contract_terms_filter> filter;
+
+    friend bool
+    operator==(const list_by_convention_id_commodity_future_contract_terms_request&,
+               const list_by_convention_id_commodity_future_contract_terms_request&) = default;
 };
 
 struct list_by_convention_id_commodity_future_contract_terms_response {
@@ -278,6 +351,10 @@ struct list_by_convention_id_commodity_future_contract_terms_response {
     std::vector<ores::refdata::domain::commodity_future_contract_terms>
         commodity_future_contract_terms;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_convention_id_commodity_future_contract_terms_response&,
+               const list_by_convention_id_commodity_future_contract_terms_response&) = default;
 };
 
 struct list_commodity_future_contract_terms_versions_request {
@@ -296,12 +373,18 @@ struct list_commodity_future_contract_terms_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<commodity_future_contract_terms_versions_filter> filter;
+
+    friend bool operator==(const list_commodity_future_contract_terms_versions_request&,
+                           const list_commodity_future_contract_terms_versions_request&) = default;
 };
 
 struct list_commodity_future_contract_terms_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_future_contract_terms> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_commodity_future_contract_terms_versions_response&,
+                           const list_commodity_future_contract_terms_versions_response&) = default;
 };
 
 struct get_commodity_future_contract_terms_version_request {
@@ -316,11 +399,17 @@ struct get_commodity_future_contract_terms_version_request {
      */
     static constexpr bool requires_session = true;
     commodity_future_contract_terms_version_key key;
+
+    friend bool operator==(const get_commodity_future_contract_terms_version_request&,
+                           const get_commodity_future_contract_terms_version_request&) = default;
 };
 
 struct get_commodity_future_contract_terms_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::commodity_future_contract_terms> version;
+
+    friend bool operator==(const get_commodity_future_contract_terms_version_response&,
+                           const get_commodity_future_contract_terms_version_response&) = default;
 };
 
 /**

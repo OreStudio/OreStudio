@@ -115,6 +115,9 @@ struct provision_tenant_command {
      * default is refused, and so is a required parameter whose value is empty.
      */
     std::vector<std::string> parameters;
+
+    friend bool operator==(const provision_tenant_command&,
+                           const provision_tenant_command&) = default;
 };
 
 /**
@@ -141,6 +144,9 @@ struct provision_tenant_command_response {
      * @brief Id of the administrator account it created.
      */
     std::string account_id;
+
+    friend bool operator==(const provision_tenant_command_response&,
+                           const provision_tenant_command_response&) = default;
 };
 
 /**
@@ -200,6 +206,9 @@ struct provision_party_command {
      * described by hand.
      */
     std::string lei;
+
+    friend bool operator==(const provision_party_command&,
+                           const provision_party_command&) = default;
 };
 
 struct provision_party_command_response {
@@ -215,6 +224,9 @@ struct provision_party_command_response {
      * @brief Id of the party the request resolved.
      */
     std::string party_id;
+
+    friend bool operator==(const provision_party_command_response&,
+                           const provision_party_command_response&) = default;
 };
 
 /**

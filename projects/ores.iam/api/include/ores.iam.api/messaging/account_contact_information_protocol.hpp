@@ -43,6 +43,9 @@ namespace ores::iam::messaging {
 
 struct account_contact_information_key {
     std::string email;
+
+    friend bool operator==(const account_contact_information_key&,
+                           const account_contact_information_key&) = default;
 };
 
 struct account_contact_information_write {
@@ -57,27 +60,42 @@ struct account_contact_information_write {
     std::string phone;
     std::string email;
     std::string web_page;
+
+    friend bool operator==(const account_contact_information_write&,
+                           const account_contact_information_write&) = default;
 };
 
 struct account_contact_information_change {
     account_contact_information_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const account_contact_information_change&,
+                           const account_contact_information_change&) = default;
 };
 
 struct account_contact_information_removal {
     account_contact_information_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const account_contact_information_removal&,
+                           const account_contact_information_removal&) = default;
 };
 
 struct account_contact_information_lookup {
     account_contact_information_key key;
     std::optional<ores::iam::domain::account_contact_information> account_contact_information;
+
+    friend bool operator==(const account_contact_information_lookup&,
+                           const account_contact_information_lookup&) = default;
 };
 
 struct account_contact_informations_filter {
     std::optional<boost::uuids::uuid> account_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+
+    friend bool operator==(const account_contact_informations_filter&,
+                           const account_contact_informations_filter&) = default;
 };
 
 struct account_contact_information_event {
@@ -87,17 +105,26 @@ struct account_contact_information_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const account_contact_information_event&,
+                           const account_contact_information_event&) = default;
 };
 
 struct account_contact_information_version_key {
     account_contact_information_key account_contact_information;
     std::uint32_t version;
+
+    friend bool operator==(const account_contact_information_version_key&,
+                           const account_contact_information_version_key&) = default;
 };
 
 struct account_contact_information_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const account_contact_information_versions_filter&,
+                           const account_contact_information_versions_filter&) = default;
 };
 
 struct list_account_contact_informations_request {
@@ -115,12 +142,18 @@ struct list_account_contact_informations_request {
     ores::utility::domain::order order;
     std::optional<account_contact_informations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_account_contact_informations_request&,
+                           const list_account_contact_informations_request&) = default;
 };
 
 struct list_account_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_contact_information> account_contact_informations;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_contact_informations_response&,
+                           const list_account_contact_informations_response&) = default;
 };
 
 struct get_account_contact_information_request {
@@ -134,11 +167,17 @@ struct get_account_contact_information_request {
      */
     static constexpr bool requires_session = true;
     account_contact_information_key key;
+
+    friend bool operator==(const get_account_contact_information_request&,
+                           const get_account_contact_information_request&) = default;
 };
 
 struct get_account_contact_information_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_contact_information> account_contact_information;
+
+    friend bool operator==(const get_account_contact_information_response&,
+                           const get_account_contact_information_response&) = default;
 };
 
 struct get_many_account_contact_informations_request {
@@ -152,11 +191,17 @@ struct get_many_account_contact_informations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<account_contact_information_key> keys;
+
+    friend bool operator==(const get_many_account_contact_informations_request&,
+                           const get_many_account_contact_informations_request&) = default;
 };
 
 struct get_many_account_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<account_contact_information_lookup> entries;
+
+    friend bool operator==(const get_many_account_contact_informations_response&,
+                           const get_many_account_contact_informations_response&) = default;
 };
 
 struct put_account_contact_information_request {
@@ -171,11 +216,17 @@ struct put_account_contact_information_request {
     static constexpr bool requires_session = true;
     account_contact_information_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_account_contact_information_request&,
+                           const put_account_contact_information_request&) = default;
 };
 
 struct put_account_contact_information_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_contact_information> account_contact_information;
+
+    friend bool operator==(const put_account_contact_information_response&,
+                           const put_account_contact_information_response&) = default;
 };
 
 struct put_many_account_contact_informations_request {
@@ -190,11 +241,17 @@ struct put_many_account_contact_informations_request {
     static constexpr bool requires_session = true;
     std::vector<account_contact_information_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_account_contact_informations_request&,
+                           const put_many_account_contact_informations_request&) = default;
 };
 
 struct put_many_account_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_contact_information> account_contact_informations;
+
+    friend bool operator==(const put_many_account_contact_informations_response&,
+                           const put_many_account_contact_informations_response&) = default;
 };
 
 struct delete_account_contact_information_request {
@@ -209,10 +266,16 @@ struct delete_account_contact_information_request {
     static constexpr bool requires_session = true;
     account_contact_information_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_account_contact_information_request&,
+                           const delete_account_contact_information_request&) = default;
 };
 
 struct delete_account_contact_information_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_account_contact_information_response&,
+                           const delete_account_contact_information_response&) = default;
 };
 
 struct delete_many_account_contact_informations_request {
@@ -228,10 +291,16 @@ struct delete_many_account_contact_informations_request {
     static constexpr bool requires_session = true;
     std::vector<account_contact_information_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_account_contact_informations_request&,
+                           const delete_many_account_contact_informations_request&) = default;
 };
 
 struct delete_many_account_contact_informations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_account_contact_informations_response&,
+                           const delete_many_account_contact_informations_response&) = default;
 };
 
 struct list_by_account_id_account_contact_informations_request {
@@ -251,12 +320,20 @@ struct list_by_account_id_account_contact_informations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_contact_informations_filter> filter;
+
+    friend bool
+    operator==(const list_by_account_id_account_contact_informations_request&,
+               const list_by_account_id_account_contact_informations_request&) = default;
 };
 
 struct list_by_account_id_account_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_contact_information> account_contact_informations;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_account_id_account_contact_informations_response&,
+               const list_by_account_id_account_contact_informations_response&) = default;
 };
 
 struct list_account_contact_information_versions_request {
@@ -275,12 +352,18 @@ struct list_account_contact_information_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_contact_information_versions_filter> filter;
+
+    friend bool operator==(const list_account_contact_information_versions_request&,
+                           const list_account_contact_information_versions_request&) = default;
 };
 
 struct list_account_contact_information_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_contact_information> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_contact_information_versions_response&,
+                           const list_account_contact_information_versions_response&) = default;
 };
 
 struct get_account_contact_information_version_request {
@@ -295,11 +378,17 @@ struct get_account_contact_information_version_request {
      */
     static constexpr bool requires_session = true;
     account_contact_information_version_key key;
+
+    friend bool operator==(const get_account_contact_information_version_request&,
+                           const get_account_contact_information_version_request&) = default;
 };
 
 struct get_account_contact_information_version_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_contact_information> version;
+
+    friend bool operator==(const get_account_contact_information_version_response&,
+                           const get_account_contact_information_version_response&) = default;
 };
 
 /**
@@ -321,6 +410,9 @@ struct publish_account_contact_informations_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_account_contact_informations_from_dq_request&,
+                           const publish_account_contact_informations_from_dq_request&) = default;
 };
 
 /**

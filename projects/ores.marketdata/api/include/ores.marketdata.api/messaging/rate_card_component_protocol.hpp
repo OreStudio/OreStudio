@@ -43,6 +43,9 @@ namespace ores::marketdata::messaging {
 
 struct rate_card_component_key {
     std::string driver;
+
+    friend bool operator==(const rate_card_component_key&,
+                           const rate_card_component_key&) = default;
 };
 
 struct rate_card_component_write {
@@ -54,21 +57,33 @@ struct rate_card_component_write {
     std::string currency;
     std::int64_t charge_micros;
     std::optional<std::chrono::system_clock::time_point> effective_to;
+
+    friend bool operator==(const rate_card_component_write&,
+                           const rate_card_component_write&) = default;
 };
 
 struct rate_card_component_change {
     rate_card_component_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const rate_card_component_change&,
+                           const rate_card_component_change&) = default;
 };
 
 struct rate_card_component_removal {
     rate_card_component_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const rate_card_component_removal&,
+                           const rate_card_component_removal&) = default;
 };
 
 struct rate_card_component_lookup {
     rate_card_component_key key;
     std::optional<ores::marketdata::domain::rate_card_component> rate_card_component;
+
+    friend bool operator==(const rate_card_component_lookup&,
+                           const rate_card_component_lookup&) = default;
 };
 
 struct rate_card_components_filter {
@@ -77,6 +92,9 @@ struct rate_card_components_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
     std::optional<std::vector<std::string>> driver_one_of;
+
+    friend bool operator==(const rate_card_components_filter&,
+                           const rate_card_components_filter&) = default;
 };
 
 struct rate_card_component_event {
@@ -86,17 +104,26 @@ struct rate_card_component_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const rate_card_component_event&,
+                           const rate_card_component_event&) = default;
 };
 
 struct rate_card_component_version_key {
     rate_card_component_key rate_card_component;
     std::uint32_t version;
+
+    friend bool operator==(const rate_card_component_version_key&,
+                           const rate_card_component_version_key&) = default;
 };
 
 struct rate_card_component_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const rate_card_component_versions_filter&,
+                           const rate_card_component_versions_filter&) = default;
 };
 
 struct list_rate_card_components_request {
@@ -114,12 +141,18 @@ struct list_rate_card_components_request {
     ores::utility::domain::order order;
     std::optional<rate_card_components_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_rate_card_components_request&,
+                           const list_rate_card_components_request&) = default;
 };
 
 struct list_rate_card_components_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::rate_card_component> rate_card_components;
     std::uint64_t total;
+
+    friend bool operator==(const list_rate_card_components_response&,
+                           const list_rate_card_components_response&) = default;
 };
 
 struct get_rate_card_component_request {
@@ -133,11 +166,17 @@ struct get_rate_card_component_request {
      */
     static constexpr bool requires_session = true;
     rate_card_component_key key;
+
+    friend bool operator==(const get_rate_card_component_request&,
+                           const get_rate_card_component_request&) = default;
 };
 
 struct get_rate_card_component_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::rate_card_component> rate_card_component;
+
+    friend bool operator==(const get_rate_card_component_response&,
+                           const get_rate_card_component_response&) = default;
 };
 
 struct get_many_rate_card_components_request {
@@ -151,11 +190,17 @@ struct get_many_rate_card_components_request {
      */
     static constexpr bool requires_session = true;
     std::vector<rate_card_component_key> keys;
+
+    friend bool operator==(const get_many_rate_card_components_request&,
+                           const get_many_rate_card_components_request&) = default;
 };
 
 struct get_many_rate_card_components_response {
     ores::utility::domain::result result;
     std::vector<rate_card_component_lookup> entries;
+
+    friend bool operator==(const get_many_rate_card_components_response&,
+                           const get_many_rate_card_components_response&) = default;
 };
 
 struct put_rate_card_component_request {
@@ -170,11 +215,17 @@ struct put_rate_card_component_request {
     static constexpr bool requires_session = true;
     rate_card_component_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_rate_card_component_request&,
+                           const put_rate_card_component_request&) = default;
 };
 
 struct put_rate_card_component_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::rate_card_component> rate_card_component;
+
+    friend bool operator==(const put_rate_card_component_response&,
+                           const put_rate_card_component_response&) = default;
 };
 
 struct put_many_rate_card_components_request {
@@ -189,11 +240,17 @@ struct put_many_rate_card_components_request {
     static constexpr bool requires_session = true;
     std::vector<rate_card_component_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_rate_card_components_request&,
+                           const put_many_rate_card_components_request&) = default;
 };
 
 struct put_many_rate_card_components_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::rate_card_component> rate_card_components;
+
+    friend bool operator==(const put_many_rate_card_components_response&,
+                           const put_many_rate_card_components_response&) = default;
 };
 
 struct delete_rate_card_component_request {
@@ -208,10 +265,16 @@ struct delete_rate_card_component_request {
     static constexpr bool requires_session = true;
     rate_card_component_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_rate_card_component_request&,
+                           const delete_rate_card_component_request&) = default;
 };
 
 struct delete_rate_card_component_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_rate_card_component_response&,
+                           const delete_rate_card_component_response&) = default;
 };
 
 struct delete_many_rate_card_components_request {
@@ -227,10 +290,16 @@ struct delete_many_rate_card_components_request {
     static constexpr bool requires_session = true;
     std::vector<rate_card_component_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_rate_card_components_request&,
+                           const delete_many_rate_card_components_request&) = default;
 };
 
 struct delete_many_rate_card_components_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_rate_card_components_response&,
+                           const delete_many_rate_card_components_response&) = default;
 };
 
 struct list_rate_card_component_versions_request {
@@ -249,12 +318,18 @@ struct list_rate_card_component_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<rate_card_component_versions_filter> filter;
+
+    friend bool operator==(const list_rate_card_component_versions_request&,
+                           const list_rate_card_component_versions_request&) = default;
 };
 
 struct list_rate_card_component_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::rate_card_component> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_rate_card_component_versions_response&,
+                           const list_rate_card_component_versions_response&) = default;
 };
 
 struct get_rate_card_component_version_request {
@@ -269,11 +344,17 @@ struct get_rate_card_component_version_request {
      */
     static constexpr bool requires_session = true;
     rate_card_component_version_key key;
+
+    friend bool operator==(const get_rate_card_component_version_request&,
+                           const get_rate_card_component_version_request&) = default;
 };
 
 struct get_rate_card_component_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::rate_card_component> version;
+
+    friend bool operator==(const get_rate_card_component_version_response&,
+                           const get_rate_card_component_version_response&) = default;
 };
 
 /**

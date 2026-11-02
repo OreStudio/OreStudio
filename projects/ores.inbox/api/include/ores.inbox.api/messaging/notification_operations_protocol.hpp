@@ -44,6 +44,9 @@ namespace ores::inbox::messaging {
 struct notification_argument_value {
     std::string name;
     std::string value;
+
+    friend bool operator==(const notification_argument_value&,
+                           const notification_argument_value&) = default;
 };
 
 /**
@@ -74,6 +77,8 @@ struct inbox_notification {
      * @brief When the recipient read it, or empty while it is unread.
      */
     std::optional<std::chrono::system_clock::time_point> read_at;
+
+    friend bool operator==(const inbox_notification&, const inbox_notification&) = default;
 };
 
 /**
@@ -106,6 +111,9 @@ struct raise_notification_request {
      * @brief The permission whose holders are told, or empty for none.
      */
     std::string audience_permission_code;
+
+    friend bool operator==(const raise_notification_request&,
+                           const raise_notification_request&) = default;
 };
 
 struct raise_notification_response {
@@ -115,6 +123,9 @@ struct raise_notification_response {
      * @brief How many people the notification reached.
      */
     int recipient_count = 0;
+
+    friend bool operator==(const raise_notification_response&,
+                           const raise_notification_response&) = default;
 };
 
 /**
@@ -134,12 +145,18 @@ struct list_my_notifications_request {
     bool unread_only = false;
     int offset = 0;
     int limit = 50;
+
+    friend bool operator==(const list_my_notifications_request&,
+                           const list_my_notifications_request&) = default;
 };
 
 struct list_my_notifications_response {
     ores::utility::domain::result result;
     std::vector<inbox_notification> notifications;
     int total = 0;
+
+    friend bool operator==(const list_my_notifications_response&,
+                           const list_my_notifications_response&) = default;
 };
 
 /**
@@ -156,11 +173,17 @@ struct count_unread_notifications_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const count_unread_notifications_request&,
+                           const count_unread_notifications_request&) = default;
 };
 
 struct count_unread_notifications_response {
     ores::utility::domain::result result;
     int unread = 0;
+
+    friend bool operator==(const count_unread_notifications_response&,
+                           const count_unread_notifications_response&) = default;
 };
 
 /**
@@ -180,11 +203,17 @@ struct mark_notifications_read_request {
      * @brief The notifications to mark, or empty for every unread one.
      */
     std::vector<std::string> notification_ids;
+
+    friend bool operator==(const mark_notifications_read_request&,
+                           const mark_notifications_read_request&) = default;
 };
 
 struct mark_notifications_read_response {
     ores::utility::domain::result result;
     int marked = 0;
+
+    friend bool operator==(const mark_notifications_read_response&,
+                           const mark_notifications_read_response&) = default;
 };
 
 /**
@@ -205,11 +234,17 @@ struct clear_notifications_request {
      * @brief The notifications to clear, or empty for every read one.
      */
     std::vector<std::string> notification_ids;
+
+    friend bool operator==(const clear_notifications_request&,
+                           const clear_notifications_request&) = default;
 };
 
 struct clear_notifications_response {
     ores::utility::domain::result result;
     int cleared = 0;
+
+    friend bool operator==(const clear_notifications_response&,
+                           const clear_notifications_response&) = default;
 };
 
 /**

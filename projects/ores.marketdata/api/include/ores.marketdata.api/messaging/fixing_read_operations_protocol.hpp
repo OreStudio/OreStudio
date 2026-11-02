@@ -79,6 +79,8 @@ struct get_fixing_request {
      * @brief The last date the fixing may fall on.
      */
     std::chrono::year_month_day on_or_before;
+
+    friend bool operator==(const get_fixing_request&, const get_fixing_request&) = default;
 };
 
 struct get_fixing_response {
@@ -116,6 +118,8 @@ struct get_fixing_response {
      * @brief When the service stored the fixing.
      */
     std::optional<std::chrono::system_clock::time_point> received_at;
+
+    friend bool operator==(const get_fixing_response&, const get_fixing_response&) = default;
 };
 
 /**
@@ -161,6 +165,9 @@ struct get_fixing_window_request {
      * @brief How many calendar days the window spans, ending on the last date.
      */
     int days = 0;
+
+    friend bool operator==(const get_fixing_window_request&,
+                           const get_fixing_window_request&) = default;
 };
 
 struct get_fixing_window_response {
@@ -205,6 +212,9 @@ struct get_fixing_window_response {
      * @brief When the service stored each fixing.
      */
     std::vector<std::chrono::system_clock::time_point> received_at;
+
+    friend bool operator==(const get_fixing_window_response&,
+                           const get_fixing_window_response&) = default;
 };
 
 /**

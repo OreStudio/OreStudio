@@ -46,6 +46,8 @@ namespace ores::ore::messaging {
 struct run_input_file {
     std::string name;
     std::string content;
+
+    friend bool operator==(const run_input_file&, const run_input_file&) = default;
 };
 
 /**
@@ -55,6 +57,8 @@ struct run_input_file {
 struct saved_document {
     std::string configuration_type_code;
     std::string configuration_id;
+
+    friend bool operator==(const saved_document&, const saved_document&) = default;
 };
 
 /**
@@ -77,6 +81,9 @@ struct import_run_configuration_request {
     /** Prefixes each configuration the import creates, as name/file. */
     std::string name;
     std::vector<run_input_file> files;
+
+    friend bool operator==(const import_run_configuration_request&,
+                           const import_run_configuration_request&) = default;
 };
 
 /**
@@ -87,6 +94,9 @@ struct import_run_configuration_response {
     std::string message;
     std::string correlation_id;
     std::string workflow_instance_id;
+
+    friend bool operator==(const import_run_configuration_response&,
+                           const import_run_configuration_response&) = default;
 };
 
 /**
@@ -109,6 +119,9 @@ struct run_configuration_import_execute_request {
     std::string correlation_id;
     /** The caller's JWT, which the step delegates to the owners. */
     std::string bearer_token;
+
+    friend bool operator==(const run_configuration_import_execute_request&,
+                           const run_configuration_import_execute_request&) = default;
 };
 
 /**
@@ -134,6 +147,9 @@ struct run_configuration_import_execute_result {
     bool run_document_saved = false;
     /** The documents the owners stored, which the undo deletes. */
     std::vector<saved_document> saved_documents;
+
+    friend bool operator==(const run_configuration_import_execute_result&,
+                           const run_configuration_import_execute_result&) = default;
 };
 
 /**
@@ -159,6 +175,9 @@ struct run_configuration_import_rollback_request {
     bool run_document_saved = false;
     /** The documents the owners stored, which the undo deletes. */
     std::vector<saved_document> saved_documents;
+
+    friend bool operator==(const run_configuration_import_rollback_request&,
+                           const run_configuration_import_rollback_request&) = default;
 };
 
 /**
@@ -175,6 +194,9 @@ struct export_run_configuration_request {
      */
     static constexpr bool requires_session = true;
     std::string report_definition_id;
+
+    friend bool operator==(const export_run_configuration_request&,
+                           const export_run_configuration_request&) = default;
 };
 
 /**
@@ -184,6 +206,9 @@ struct export_run_configuration_response {
     bool success = false;
     std::string message;
     std::vector<run_input_file> files;
+
+    friend bool operator==(const export_run_configuration_response&,
+                           const export_run_configuration_response&) = default;
 };
 
 /**

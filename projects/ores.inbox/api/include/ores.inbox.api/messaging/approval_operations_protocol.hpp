@@ -73,6 +73,9 @@ struct raise_approval_request_request {
      * answer order the parts give.
      */
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const raise_approval_request_request&,
+                           const raise_approval_request_request&) = default;
 };
 
 struct raise_approval_request_response {
@@ -81,6 +84,9 @@ struct raise_approval_request_response {
      * @brief The request as raised, when the outcome is ok.
      */
     ores::inbox::domain::approval_request request;
+
+    friend bool operator==(const raise_approval_request_response&,
+                           const raise_approval_request_response&) = default;
 };
 
 /**
@@ -104,11 +110,17 @@ struct withdraw_approval_request_request {
      */
     int version = 0;
     std::string comment;
+
+    friend bool operator==(const withdraw_approval_request_request&,
+                           const withdraw_approval_request_request&) = default;
 };
 
 struct withdraw_approval_request_response {
     ores::utility::domain::result result;
     ores::inbox::domain::approval_request request;
+
+    friend bool operator==(const withdraw_approval_request_response&,
+                           const withdraw_approval_request_response&) = default;
 };
 
 /**
@@ -155,6 +167,9 @@ struct decide_approval_request_request {
      * Empty on every decision that is not a hold.
      */
     std::string hold_reason_code = "";
+
+    friend bool operator==(const decide_approval_request_request&,
+                           const decide_approval_request_request&) = default;
 };
 
 struct decide_approval_request_response {
@@ -163,6 +178,9 @@ struct decide_approval_request_response {
      * @brief The request after the decision, when the outcome is ok.
      */
     ores::inbox::domain::approval_request request;
+
+    friend bool operator==(const decide_approval_request_response&,
+                           const decide_approval_request_response&) = default;
 };
 
 /**
@@ -193,6 +211,9 @@ struct list_approval_queue_request {
     static constexpr bool requires_session = true;
     int offset = 0;
     int limit = 100;
+
+    friend bool operator==(const list_approval_queue_request&,
+                           const list_approval_queue_request&) = default;
 };
 
 struct list_approval_queue_response {
@@ -208,6 +229,9 @@ struct list_approval_queue_response {
      * and not paged: nobody acts on them.
      */
     std::vector<ores::inbox::domain::approval_request> answered;
+
+    friend bool operator==(const list_approval_queue_response&,
+                           const list_approval_queue_response&) = default;
 };
 
 /**
@@ -225,12 +249,18 @@ struct list_my_approval_requests_request {
     static constexpr bool requires_session = true;
     int offset = 0;
     int limit = 100;
+
+    friend bool operator==(const list_my_approval_requests_request&,
+                           const list_my_approval_requests_request&) = default;
 };
 
 struct list_my_approval_requests_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request> requests;
     int total = 0;
+
+    friend bool operator==(const list_my_approval_requests_response&,
+                           const list_my_approval_requests_response&) = default;
 };
 
 /**
@@ -258,6 +288,8 @@ struct get_approval_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const get_approval_request&, const get_approval_request&) = default;
 };
 
 struct get_approval_response {
@@ -270,6 +302,8 @@ struct get_approval_response {
      * tell a stranger that a request exists.
      */
     std::optional<ores::inbox::domain::approval_request> request;
+
+    friend bool operator==(const get_approval_response&, const get_approval_response&) = default;
 };
 
 /**
@@ -296,6 +330,9 @@ struct expire_overdue_approvals_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const expire_overdue_approvals_request&,
+                           const expire_overdue_approvals_request&) = default;
 };
 
 struct expire_overdue_approvals_response {
@@ -304,6 +341,9 @@ struct expire_overdue_approvals_response {
      * @brief The requests that closed, as UUID strings, oldest deadline first.
      */
     std::vector<std::string> expired;
+
+    friend bool operator==(const expire_overdue_approvals_response&,
+                           const expire_overdue_approvals_response&) = default;
 };
 
 /**
@@ -337,6 +377,9 @@ struct remind_expiring_approvals_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const remind_expiring_approvals_request&,
+                           const remind_expiring_approvals_request&) = default;
 };
 
 struct remind_expiring_approvals_response {
@@ -346,6 +389,9 @@ struct remind_expiring_approvals_response {
      * first.
      */
     std::vector<std::string> reminded;
+
+    friend bool operator==(const remind_expiring_approvals_response&,
+                           const remind_expiring_approvals_response&) = default;
 };
 
 /**
@@ -378,6 +424,9 @@ struct retry_stalled_applies_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const retry_stalled_applies_request&,
+                           const retry_stalled_applies_request&) = default;
 };
 
 struct retry_stalled_applies_response {
@@ -391,6 +440,9 @@ struct retry_stalled_applies_response {
      * UUID strings.
      */
     std::vector<std::string> gave_up;
+
+    friend bool operator==(const retry_stalled_applies_response&,
+                           const retry_stalled_applies_response&) = default;
 };
 
 /**
@@ -403,6 +455,8 @@ struct retry_stalled_applies_response {
 struct approval_request_field {
     std::string name;
     std::string value;
+
+    friend bool operator==(const approval_request_field&, const approval_request_field&) = default;
 };
 
 /**
@@ -428,6 +482,9 @@ struct approval_request_version {
     std::string change_reason_code;
     std::string change_commentary;
     std::vector<approval_request_field> fields;
+
+    friend bool operator==(const approval_request_version&,
+                           const approval_request_version&) = default;
 };
 
 /**
@@ -454,11 +511,17 @@ struct get_approval_history_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const get_approval_history_request&,
+                           const get_approval_history_request&) = default;
 };
 
 struct get_approval_history_response {
     ores::utility::domain::result result;
     std::vector<approval_request_version> versions;
+
+    friend bool operator==(const get_approval_history_response&,
+                           const get_approval_history_response&) = default;
 };
 
 /**
@@ -484,6 +547,8 @@ struct approval_part_progress {
     std::string decided_by;
     std::optional<std::chrono::system_clock::time_point> decided_at;
     std::string comment;
+
+    friend bool operator==(const approval_part_progress&, const approval_part_progress&) = default;
 };
 
 /**
@@ -506,6 +571,9 @@ struct get_approval_parts_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const get_approval_parts_request&,
+                           const get_approval_parts_request&) = default;
 };
 
 struct get_approval_parts_response {
@@ -515,6 +583,9 @@ struct get_approval_parts_response {
      * no parts.
      */
     std::vector<approval_part_progress> parts;
+
+    friend bool operator==(const get_approval_parts_response&,
+                           const get_approval_parts_response&) = default;
 };
 
 /**

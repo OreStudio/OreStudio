@@ -28,6 +28,7 @@
 #include "ores.reporting.api/domain/engine_settings_codec.hpp"
 #include "ores.reporting.api/domain/engine_settings_execution_codec.hpp"
 #include "ores.reporting.api/domain/engine_settings_fixings_codec.hpp"
+#include "ores.reporting.api/domain/report_configuration_codec.hpp"
 #include "ores.reporting.api/domain/risk_report_config_codec.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"

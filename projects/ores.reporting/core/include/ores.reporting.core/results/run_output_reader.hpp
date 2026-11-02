@@ -23,6 +23,7 @@
 #include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.reporting.api/domain/report_cashflow.hpp"
 #include "ores.reporting.api/domain/report_metric.hpp"
+#include "ores.reporting.api/domain/report_text_value.hpp"
 #include "ores.reporting.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -95,6 +96,10 @@ struct run_output_outcome {
      * @brief The figures of the families that state a payment.
      */
     std::vector<domain::report_cashflow> cashflows;
+    /**
+     * @brief The values the families that state text rather than figures stated.
+     */
+    std::vector<domain::report_text_value> text_values;
     /**
      * @brief The reasons the output could not be read whole.
      */

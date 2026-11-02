@@ -40,6 +40,7 @@ set(files
     "results_metric_reader_tests.cpp"
     "results_output_catalogue_tests.cpp"
     "results_output_manifest_tests.cpp"
+    "results_text_value_reader_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
     "xml_binding_tests.cpp"
     "xml_calendaradjustment_roundtrip_tests.cpp"

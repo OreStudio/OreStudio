@@ -105,6 +105,7 @@
 #include "ores.reporting.core/messaging/report_instance_kind_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
 #include "ores.reporting.core/messaging/report_metric_registrar.hpp"
+#include "ores.reporting.core/messaging/report_text_value_registrar.hpp"
 #include "ores.reporting.core/messaging/report_run_health_handler.hpp"
 #include "ores.reporting.core/messaging/report_run_pricing_handler.hpp"
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
@@ -772,6 +773,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_report_metric_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_report_cashflow_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_report_text_value_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_run_result_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));

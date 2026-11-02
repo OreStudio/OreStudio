@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :reporting:ore:results:model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/store-the-text-valued-outputs
+#+pr: 4380
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
@@ -26,11 +26,11 @@ Every output ORE writes is rows a user can query, including the ones whose value
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-02                               |
 
 * Acceptance
@@ -42,9 +42,18 @@ Every output ORE writes is rows a user can query, including the ones whose value
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Six outputs state a name and a text rather than a figure: additional_results,
+marketObjects, riskFactors, swap_indices, underlying_indices and the calibrated
+model. One reader serves them from a table of the headings each states its
+subject, name, type and value under, and one reporting table holds them, keyed
+like every other run row by result, file and line. The calibrated model is the
+whole body after its heading, because the engine writes the XML unquoted.
+counterparties, netting_sets and trade_types, the other portfolio details,
+state a count and read as metrics. A run whose output states only text values
+completes, which resolves the capture that a report pricing nothing fails.
+
+The calibrated model is stored as its XML, one row. Parsing it into the
+project's model configuration is a model-import concern, not a run result.
 
 * Measurements
 
@@ -58,7 +67,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Catalogue families | 81; text-valued 6, metrics 68 | =python3 projects/ores.ore/scripts/generate_output_catalogue.py= | 09b627dda4 |
+| ore, reporting api, reporting core, marketdata suites | 485, 72, 247 and 365 cases pass | the four test binaries | 09b627dda4 |
+| Audit Trail Summary run, portfolio details | completed (failed before); counterparties 71, netting_sets 2, trade_types 4, pricingstats 219, runtimes 5 figures; marketObjects 6, riskFactors 8, underlying_indices 2 text values | instance 020b60b0, SQL | 09b627dda4 |
 
 * Notes
 
@@ -77,12 +88,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4380][#4380]] | [ore,reporting,codegen] Store the outputs that state text |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Local review: spelling check over the changed files | | Clean | |
+| 2 | A calibration with no model under its heading is accepted | text_value_reader.cpp | Accepted | Refused: the engine writes the model only when it calibrated one. Tested. |
+| 3 | A quoted value holding a newline would split | text_value_reader.cpp | Declined | ORE writes these values unquoted, as the samples show. |
+| 4 | A malformed double drops only its row | text_value_reader.cpp | Dismissed | Any refusal refuses the whole run in post_process_results, so no row is lost silently. |
+| 5 | Misaligned format arguments | report_execution_handler.cpp | Accepted | clang-format applied. |
+| 6 | Test a model spanning lines with commas and quotes | results_text_value_reader_tests.cpp | Accepted | Added. |
 |   |                 |      |          |       |
 
 * Result
+
+The outputs that state text rather than figures are read and stored in
+=ores_reporting_report_text_values_tbl=: additional results, the portfolio
+details lists and the calibrated model as its XML. The other portfolio details
+lists state counts and are stored as metrics. A portfolio details run, which
+failed for stating no figure, now completes and stores what it found; the capture
+that recorded the failure is removed. The generator's out-of-scope list no longer
+names these outputs. Building it exposed a codegen defect, a codec header missing
+for a member named domain::x, which is fixed with a test.

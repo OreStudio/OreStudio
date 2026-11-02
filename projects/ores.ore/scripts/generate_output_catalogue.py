@@ -110,12 +110,14 @@ RISK_FACTOR_FAMILIES = {"scenariostatistics", "stress_scenarios", "scenariodump"
 # The families the suite corpus holds no sample of, read from the notebook
 # examples instead. Only these are read from there, because the notebooks also
 # hold copies of families the suites already state.
-NOTEBOOK_FAMILIES = {"marketdata", "fixings", "dividends", "runtimes", "scenariodump"}
+NOTEBOOK_FAMILIES = {"marketdata", "fixings", "dividends", "runtimes", "scenariodump",
+                     "additional_results"}
 NOTEBOOKS = os.path.join("ORE-Python", "Notebooks")
 
 # The families only the legacy examples hold a sample of. Only these are read
 # from there, because the legacy examples repeat the suites with older headers.
-LEGACY_FAMILIES = {"timeaveragedexposure"}
+LEGACY_FAMILIES = {"timeaveragedexposure", "marketObjects", "riskFactors", "counterparties",
+                   "netting_sets", "swap_indices", "trade_types", "underlying_indices"}
 LEGACY = "Legacy"
 
 # The samples ORE did not ship: files a run here wrote, and files we wrote from
@@ -152,10 +154,6 @@ OUT_OF_SCOPE = {
     "xva_sensitivity_jacobi_inverse.csv": "the xvaSensitivity analytic writes its jacobi to jacobi_inverse.csv at v1.8.17.0",
     "pca.csv": "a stem: the analytic writes pca_<currency>.csv, the pca family",
     "meanReversion.csv": "a stem: the analytic writes meanReversion_<currency>.csv, the mean-reversion family",
-    "additional_results.csv": "text-valued; read into rows by Store the text-valued outputs",
-    "marketObjects.csv": "a list with no figures; read into rows by Store the text-valued outputs",
-    "riskFactors.csv": "a list with no figures; read into rows by Store the text-valued outputs",
-    "calibration.csv": "one XML document of the calibrated model; read by Store the text-valued outputs",
 }
 
 # The kinds a sample cannot show, because every sample of the column is empty.
@@ -187,6 +185,13 @@ FAMILY_KEYS = {
     "jacobi": ["ParFactor", "RawFactor"],
     "jacobi_inverse": ["RawFactor(z)", "ParFactor(c)"],
     "runtimes": ["Key"],
+    "additional_results": ["TradeId", "ResultId"],
+    "counterparties": ["Counterparty"],
+    "netting_sets": ["NettingSets"],
+    "trade_types": ["TradeTypes"],
+    "marketObjects": ["MarketObjectType"],
+    "riskFactors": ["RiskFactorType"],
+    "underlying_indices": ["AssetType"],
 }
 
 # A family whose name a parameter states is the family of that name.
@@ -330,7 +335,7 @@ def rows(families, seed):
         # one configuration. A key is required by definition, so a name that
         # only some variants state is not a key.
         required = {name for name, _ in columns if all(name in h for h in headers)}
-        keys = [k for k in KEYS + FAMILY_KEYS.get(family, []) if k in required]
+        keys = [k for k in dict.fromkeys(KEYS + FAMILY_KEYS.get(family, [])) if k in required]
 
         named = []
         qualifiers = []

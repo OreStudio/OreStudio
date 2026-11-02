@@ -21,6 +21,7 @@
 #include "ores.ore.core/results/cashflow_reader.hpp"
 #include "ores.ore.core/results/metric_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
+#include "ores.ore.core/results/text_value_reader.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/json.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -131,6 +132,31 @@ run_output_outcome read_run_outputs(const std::vector<output_file>& files, const
                                             .value = row.value,
                                             .source = family->code});
             }
+            outcome.files_read.push_back(file.name);
+            continue;
+        }
+
+        if (ores::ore::results::is_text_value_family(*family)) {
+            auto read = ores::ore::results::read_text_values(file.body, *family);
+            for (const auto& refusal : read.refusals)
+                outcome.refusals.push_back(file.name + ": " + refusal);
+            for (auto& row : read.rows)
+                outcome.text_values.push_back(
+                    domain::report_text_value{.id = boost::uuids::random_generator()(),
+                                              .party_id = run.party_id,
+                                              .report_instance_id = run.report_instance_id,
+                                              .result_id = run.result_id,
+                                              .source = file.name,
+                                              .line = row.line,
+                                              .as_of = run.priced_at,
+                                              .report_definition_id = run.report_definition_id,
+                                              .family = family->code,
+                                              .subject_type = std::move(row.subject_type),
+                                              .subject_id = std::move(row.subject),
+                                              .name = std::move(row.name),
+                                              .value_type = std::move(row.value_type),
+                                              .value = std::move(row.value),
+                                              .figure = row.figure});
             outcome.files_read.push_back(file.name);
             continue;
         }

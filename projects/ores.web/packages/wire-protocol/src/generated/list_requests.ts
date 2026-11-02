@@ -4564,6 +4564,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         ],
         rows: ['metrics'],
     },
+    'reporting.v1.report_text_values.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'family',
+            'subject_id',
+            'name',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'family_one_of',
+            'subject_id_one_of',
+            'name_one_of',
+        ],
+        rows: ['values'],
+    },
     'reporting.v1.report_trigger_types.list': {
         asOf: true,
         filter: ['code_one_of'],

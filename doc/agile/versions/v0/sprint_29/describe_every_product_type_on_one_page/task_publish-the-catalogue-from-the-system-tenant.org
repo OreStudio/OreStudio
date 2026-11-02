@@ -97,6 +97,30 @@ the rows the query asked for. Both are stated, and the suite proves the read.
 Provisioning a tenant end to end runs and generates its trades, so the trade
 check reads the one catalogue while the writes land in the tenant.
 
+** 2026-11-02 — the review found the cleanup did nothing
+
+The cleanup script deleted no rows. Each of the three tables carries an
+=on delete ... do instead= rule that turns a delete into an update of
+=valid_to=, so the delete closed nothing, and the guard the generator now adds
+to that rule compares against a session tenant the populate scripts never set.
+The copies stayed, and the suite passed because it ran on a database recreated
+from scratch, where no copy had been made. The script now disables the rule
+around the delete, the way the tenant purger removes a tenant's rows, and it was
+run against a database that did hold copies: 5 product type rows and 4 family
+rows deleted, none left, and a second run deleting none.
+
+The write-half test asserted the text of the policy rather than its behaviour.
+It now updates a shared row from a tenant session and expects the refusal, and
+deletes one and expects the system row to stay open, which also covers the rule
+guard. The counts a tenant reads are compared against what the system session
+read in the same run, so the suite does not break when the catalogue grows.
+
+A tenant cannot override a catalogue row: it reads the system's, and a save
+would be a write of a row it does not own. The catalogue is read-only to a
+tenant, and a screen that offers an edit for a shared row is offering a write the
+database refuses. That is stated here rather than left to be discovered, and the
+screens that draw it are a later task.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -118,6 +142,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The cleanup deletes nothing: the delete rule turns a delete into an update, and the guard compares against an unset session tenant | =trading_product_type_copies_cleanup.sql= | Fixed | The rule is disabled around the delete, as =ores_iam_purge_tenant_fn= does. Verified on a database holding copies: 5 and 4 rows deleted, a second run deleting none. |
+| 2 | The write-half test asserts the policy text, not its behaviour; the counts are literals | =trading_product_type_catalogue_visibility_test.sql= | Fixed | A tenant session now updates a shared row and expects the refusal, deletes one and expects it open, and compares its counts against the system session's. |
+| 3 | =static const std::string sys= is repeated in every read of each repository | =product_type_repository.cpp= (+2) | Declined | It is generated from the shared repository template. Hoisting it belongs to a codegen task and would rewrite every system-tenant-visible repository, which is not this task's subject. |
+| 4 | A tenant sees the system row, so a save would be refused; say so | task, notes | Recorded | The catalogue is read-only to a tenant; the note states it and the screens come later. |
+| 5 | The provisioner comment still opens a block that now covers fewer tables | =iam_tenant_provisioner_create.sql= | Fixed | The comment names the catalogue as the exception. |
 
 * Result

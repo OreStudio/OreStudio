@@ -27,17 +27,33 @@
  * policy, so a tenant that held a copy would read both it and the system's and
  * see every type twice.
  *
- * The script is idempotent: it deletes rows no tenant may write any more, and a
- * second run finds none.
+ * Each table closes a row instead of deleting it: an =on delete ... do instead=
+ * rule turns the delete into an update of =valid_to=. A copy that was only
+ * closed would stay in the table and still be read by the next session, so the
+ * rule is disabled around the delete, the way the tenant purger removes a
+ * tenant's rows. The script is idempotent: it deletes rows no tenant may write
+ * any more, and a second run finds none.
  */
 
 \echo '--- Remove the per-tenant product type catalogues ---'
 
+alter table ores_trading_product_type_asset_classes_tbl
+    disable rule ores_trading_product_type_asset_classes_delete_rule;
 delete from ores_trading_product_type_asset_classes_tbl
 where tenant_id <> ores_utility_system_tenant_id_fn();
+alter table ores_trading_product_type_asset_classes_tbl
+    enable rule ores_trading_product_type_asset_classes_delete_rule;
 
+alter table ores_trading_product_types_tbl
+    disable rule ores_trading_product_types_delete_rule;
 delete from ores_trading_product_types_tbl
 where tenant_id <> ores_utility_system_tenant_id_fn();
+alter table ores_trading_product_types_tbl
+    enable rule ores_trading_product_types_delete_rule;
 
+alter table ores_refdata_product_family_codes_tbl
+    disable rule ores_refdata_product_family_codes_delete_rule;
 delete from ores_refdata_product_family_codes_tbl
 where tenant_id <> ores_utility_system_tenant_id_fn();
+alter table ores_refdata_product_family_codes_tbl
+    enable rule ores_refdata_product_family_codes_delete_rule;

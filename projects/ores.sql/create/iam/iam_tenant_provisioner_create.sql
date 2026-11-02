@@ -284,10 +284,11 @@ begin
 
     /*
      * The trading code lists a booked trade is read against: the scheme its
-     * identifier is stated in, the kinds of link two trades can
-     * have, the activities that move it, and the structures it can be a leg of.
-     * Without them a tenant answers an empty list to every picker while the
-     * writes still accept the codes.
+     * identifier is stated in, the kinds of link two trades can have, the
+     * activities that move it, and the structures it can be a leg of. Without
+     * them a tenant answers an empty list to every picker while the writes still
+     * accept the codes. The product type catalogue is not among them: it is one
+     * copy in the system tenant, which every tenant reads.
      */
     -- Trade ID types
     insert into ores_trading_trade_id_types_tbl (

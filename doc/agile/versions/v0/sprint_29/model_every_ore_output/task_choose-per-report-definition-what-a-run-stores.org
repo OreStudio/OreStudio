@@ -101,6 +101,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Local review: spelling check over the changed files | | Clean | |
+| 2 | No migration for the new column | reporting_report_definitions_create.sql | Dismissed | The schema is created from the create scripts and the database recreated; there is no migration path in this project. |
+| 3 | A picker built from the catalogue in the web form | ReportPage.tsx | Declined | The server refuses an unknown code at trigger with a message naming it; a picker is a separate UI change. |
+| 4 | A test that the trigger refuses a definition with a bad code | report_instance_trigger_handler.hpp | Declined | No trigger handler test exists to extend and one needs the messaging harness; family_selection_of's refusal is tested. |
+| 5 | left_alone holds both unmodelled and skipped files | market_state_handler.cpp | Declined | No client reads the two apart; the handler logs each skipped file by name. |
+| 6 | A handler-level test of the marketdata skip | market_state_handler.cpp | Declined | It needs NATS and object storage; the reader test proves the skip. |
+| 7 | Run compass check | PR | Declined | The operator asked for a full build, database recreate and tests instead. |
 |   |                 |      |          |       |
 
 * Result

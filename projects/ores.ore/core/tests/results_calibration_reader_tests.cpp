@@ -81,6 +81,20 @@ TEST_CASE("a calibration double that is not a figure is refused by line", calibr
     CHECK(outcome.rows.empty());
 }
 
+TEST_CASE("a calibration double the engine left empty has no figure and is not refused",
+          calibration_tags) {
+    const auto* family = family_named("todaysmarketcalibration");
+    REQUIRE(family != nullptr);
+
+    const auto outcome =
+        read_calibration(heading + "yieldCurve,USD1D,time,,,,double,\n", *family);
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.rows.size() == 1);
+    CHECK(outcome.rows.front().value.empty());
+    CHECK_FALSE(outcome.rows.front().figure.has_value());
+}
+
 TEST_CASE("a calibration value that names no market object is refused", calibration_tags) {
     const auto* family = family_named("todaysmarketcalibration");
     REQUIRE(family != nullptr);

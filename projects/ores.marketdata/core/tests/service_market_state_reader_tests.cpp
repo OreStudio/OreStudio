@@ -156,6 +156,21 @@ TEST_CASE("a scenario line whose date is not a date stops the run's state", mark
     CHECK(outcome.refusals.front().find("line 2") != std::string::npos);
 }
 
+TEST_CASE("a scenario file refused part way leaves no rows and names no family",
+          market_state_tags) {
+    const auto outcome = read_market_state(
+        {market_state_file{.name = "stress_scenarios.csv",
+                           .body = "#Date,Scenario,Numeraire\n"
+                                   "2026-10-31,BASE,1.0\n"
+                                   "soon,UP,1.0\n"}},
+        the_run());
+
+    REQUIRE(outcome.refusals.size() == 1);
+    CHECK(outcome.refusals.front().find("line 3") != std::string::npos);
+    CHECK(outcome.scenario_values.empty());
+    CHECK(outcome.families.empty());
+}
+
 TEST_CASE("each result of a run keeps its own file of the same name", market_state_tags) {
     const auto first = boost::uuids::random_generator()();
     const auto second = boost::uuids::random_generator()();

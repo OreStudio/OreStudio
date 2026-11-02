@@ -26,11 +26,11 @@ One row per product type exists in the database, and every tenant reads it. A te
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -149,3 +149,28 @@ via its "Verifies task" field.
 | 5 | The provisioner comment still opens a block that now covers fewer tables | =iam_tenant_provisioner_create.sql= | Fixed | The comment names the catalogue as the exception. |
 
 * Result
+
+One catalogue exists, and every tenant reads it.
+
+=ores_trading_product_types_tbl=, =ores_trading_product_type_asset_classes_tbl=
+and =ores_refdata_product_family_codes_tbl= carry the own-or-system-tenant
+policy: a session reads its own rows and the system tenant's, and writes stay
+its own. The generated repositories read both, which is the half that makes the
+policy reachable. The delete rules state the own-tenant limit themselves,
+because a rule runs with the owner's rights and row-level security does not bind
+it.
+
+The provisioner no longer copies the catalogue into a tenant. A script that runs
+with the seed deletes the copies an existing database holds; it disables the
+soft-delete rule around the delete, because the rule would only have closed the
+rows, and a closed copy is still a copy the next session reads.
+
+Gates at =7eb7691dd5=: 47 local checks, 98 C++ suites, and 77 pgTAP suites on a
+database recreated from the commit. Provisioning a tenant from scratch reads the
+one catalogue: afterwards the database holds 121 product types with no copy under
+any tenant, no market copy and no family copy, and the tenant session reads 121
+types and 8 families.
+
+A tenant cannot override a catalogue row. It reads the system's, and a save would
+be a write of a row it does not own, so the catalogue is read-only to a tenant.
+The screens that draw it come later, and they must not offer the edit.

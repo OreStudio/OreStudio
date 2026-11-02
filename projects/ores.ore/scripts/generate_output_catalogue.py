@@ -102,12 +102,25 @@ NUMERIC_QUALIFIERS = {
     "ShiftSize_1", "ShiftSize_2", "MaturityTime", "DateIndex", "Depth", "TimeStep",
 }
 
-# The columns that identify a row rather than measure it. A key is text
-# whatever its values look like.
 # The families whose figures are the risk factors the run simulated. Their
 # columns come from the configuration even where the corpus holds one sample.
 RISK_FACTOR_FAMILIES = {"scenariostatistics", "stress_scenarios"}
 
+# The families the suite corpus holds no sample of, read from the notebook
+# examples instead. Only these are read from there, because the notebooks also
+# hold copies of families the suites already state.
+NOTEBOOK_FAMILIES = {"marketdata", "fixings", "dividends"}
+NOTEBOOKS = os.path.join("ORE-Python", "Notebooks")
+
+# The kinds a sample cannot show, because every sample of the column is empty.
+KIND_OVERRIDES = {
+    ("dividends", "dividendExDate"): "date",
+    ("dividends", "dividendRate"): "decimal",
+    ("dividends", "dividendPaymentDate"): "date",
+}
+
+# The columns that identify a row rather than measure it. A key is text
+# whatever its values look like.
 KEYS = [
     "TradeId", "TradeID", "NettingSet", "NettingSetId", "NettingSetID",
     "Portfolio", "PortfolioId", "PortfolioID", "Date", "Time", "Tenor",
@@ -116,6 +129,14 @@ KEYS = [
     "MarketObjectType", "MarketObjectId", "PrincipalComponent", "Sample",
     "PLDate1", "PLDate2",
 ]
+
+# The keys of one family only, because another family states the same name as
+# a column of its own: a cashflow states the fixing date of its coupon.
+FAMILY_KEYS = {
+    "marketdata": ["datumDate", "datumId"],
+    "fixings": ["fixingDate", "fixingId"],
+    "dividends": ["dividendExDate", "equityId"],
+}
 
 # A family whose name a parameter states is the family of that name.
 PREFIXES = [
@@ -197,10 +218,18 @@ def read_family(path):
     return fields, values
 
 
+def expected_dirs():
+    """Each suite's expected output, then each notebook's."""
+    for suite in sorted(os.listdir(EXAMPLES)):
+        yield os.path.join(EXAMPLES, suite, "ExpectedOutput"), None
+    notebooks = os.path.join(EXAMPLES, NOTEBOOKS)
+    for notebook in sorted(os.listdir(notebooks)):
+        yield os.path.join(notebooks, notebook, "ExpectedOutput"), NOTEBOOK_FAMILIES
+
+
 def collect():
     families = {}
-    for suite in sorted(os.listdir(EXAMPLES)):
-        expected = os.path.join(EXAMPLES, suite, "ExpectedOutput")
+    for expected, only in expected_dirs():
         if not os.path.isdir(expected):
             continue
         for dirpath, dirs, files in os.walk(expected):
@@ -210,6 +239,8 @@ def collect():
                     continue
                 path = os.path.join(dirpath, name)
                 family, pattern = family_of(name)
+                if only is not None and family not in only:
+                    continue
                 entry = families.setdefault(family, {
                     "family": family, "pattern": pattern, "headers": [],
                     "values": {}, "sample": os.path.relpath(path, ROOT)})
@@ -236,13 +267,14 @@ def rows(families, seed):
         # one configuration. A key is required by definition, so a name that
         # only some variants state is not a key.
         required = {name for name, _ in columns if all(name in h for h in headers)}
-        keys = [k for k in KEYS if k in required]
+        keys = [k for k in KEYS + FAMILY_KEYS.get(family, []) if k in required]
 
         named = []
         qualifiers = []
         measures = []
         for name, _ in columns:
-            kind = kind_of(entry["values"].get(name, []), name in keys)
+            kind = KIND_OVERRIDES.get((family, name)) or \
+                kind_of(entry["values"].get(name, []), name in keys)
             named.append((name, kind))
             if name in keys:
                 continue

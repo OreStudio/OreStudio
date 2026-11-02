@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-ores-iam-codecs-off-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 6 of 7, one component. ores.iam encodes and decodes without reflect-cpp. St
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,17 @@ Step 6 of 7, one component. ores.iam encodes and decodes without reflect-cpp. St
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Opt the 42 iam models into the wire codec and regenerate.
+- Stop wrapping a wire-hidden column in =rfl::Skip= where the model has its own
+  codec: the codec already leaves the column out, so the credential's secrets
+  become plain members and its header names no reflector.
+- Give security's =storage_grant= wire fields, because an iam message holds it.
+- Move the auth, account, account party, seed profile parameter and dq publish
+  sites onto the codec.
+- Leave the tenant provisioning path on reflect-cpp: its step arguments are
+  untyped JSON keyed by kind, which is a design question, not a codec move.
+- Prove every domain type, every operation message and the credential's
+  hidden secrets against reflect-cpp.
 
 * Measurements
 
@@ -58,9 +66,55 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Iam suites | api 137 cases, core 316, service 13, shell iam 466, http iam 35 and security 68 pass; client has no cases | the =ores.iam.*.tests=, =ores.shell.iam.tests= and =ores.http.iam.tests= binaries | 88a92d2bf3 plus this branch |
+| Codec cases | 3 cases, 819 assertions pass | =ores.iam.api.tests "[codec]"= | 88a92d2bf3 plus this branch |
+| Codegen suite | 1807 pass before the no_wire test, 3 more after | =pytest projects/ores.codegen/tests= | 88a92d2bf3 plus this branch |
+| Component drift (iam), format, CMake lists, unique type names | all clean | =check_component_drift.py --component iam-cpp=, and the check scripts | 88a92d2bf3 plus this branch |
+| reflect-cpp left in iam sources, outside tests | 3 files, all on the provisioning path | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.iam= | 88a92d2bf3 plus this branch |
 
 * Notes
+
+** The provisioning step arguments are untyped
+
+A seed profile states each step as a =step_kind= and an =arguments_json=
+=jsonb= column, written in =iam_seed_profiles_populate.sql=. The provisioning
+command carries the string on the wire, and =provision_step_arguments.hpp=
+reads it as =rfl::Generic=, picking members out by name, or for trade
+generation with reflect-cpp's =DefaultIfMissing=. Each kind has its own shape,
+and nothing checks it until the step runs. Replacing the generic read is a
+design choice, so this task leaves =provision_step_arguments.hpp=,
+=tenant_provisioning_handler.hpp= and =provision_tenant_workflow.hpp= on
+reflect-cpp and raises it.
+
+** Wire-hidden columns no longer need rfl::Skip
+
+The class template wrapped every =:no_wire:= column in =rfl::Skip=, which is how
+the reflector kept the credential's secrets out of a response. The generated
+codec leaves those columns out of its field list, so a model with its own codec
+now keeps the plain type; a model still on the reflector keeps the wrapper.
+=test_no_wire_member_type.py= pins both, and a codec case checks that no secret
+reaches either encoding.
+
+** Security's storage grant
+
+=storage_grant= in =jwt_claims.hpp= is held by the storage capability messages,
+so it states its wire fields beside the struct. The header now names the codec,
+so =ores.security= links =ores.utility= publicly, in its hand-written CMake file
+and in its model.
+
+** Writing a message that holds another type
+
+=json::write= builds the encoder in the caller's unit, so it needs the wire
+fields of every nested type. The account party and account handlers write
+responses that hold an account party and a result, so they call the generated
+=wire_traits<T>::write_json= instead, as ore's package handler does. The
+capture =let-json-write-reach-a-generated-codec= owns making =json::write= find
+the generated codec by itself.
+
+** A unity collision from main
+
+=check_unity_collisions.py= reports =the_run= in two marketdata test files that
+arrived with #4364. This branch does not touch them.
 
 * Test Scenarios
 
@@ -86,3 +140,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ores.iam encodes and decodes without reflect-cpp, apart from the tenant
+provisioning path, whose untyped step arguments wait on a design decision. Its
+42 models use the generated codec, the credential's secrets are plain members
+the codec keeps off the wire, and security's storage grant states its fields.
+The bytes match reflect-cpp's.

@@ -139,42 +139,23 @@ void curve_segment_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <curve_definition_id> <segment_type> <position> <conventions> <pillar_choice> "
-        "<priority> <min_distance> <projection_curve> <discount_curve> <spot_rate> "
-        "<projection_curve_domestic> <projection_curve_foreign> <projection_curve_pay> "
-        "<projection_curve_receive> <projection_curve_long> <projection_curve_short> "
-        "<reference_curve> <reference_curve_2> <weight_1> <weight_2> <ibor_index> <rfr_curve> "
-        "<rfr_index> <spread> <base_curve> <base_curve_currency> <numerator_curve> "
-        "<numerator_curve_currency> <denominator_curve> <denominator_curve_currency> "
-        "<extrapolate_flat> <reason> <commentary>");
+        "add <curve_definition_id> <segment_type> <position> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <curve_definition_id> <segment_type> <position> <conventions> <pillar_choice> "
-        "<priority> <min_distance> <projection_curve> <discount_curve> <spot_rate> "
-        "<projection_curve_domestic> <projection_curve_foreign> <projection_curve_pay> "
-        "<projection_curve_receive> <projection_curve_long> <projection_curve_short> "
-        "<reference_curve> <reference_curve_2> <weight_1> <weight_2> <ibor_index> <rfr_curve> "
-        "<rfr_index> <spread> <base_curve> <base_curve_currency> <numerator_curve> "
-        "<numerator_curve_currency> <denominator_curve> <denominator_curve_currency> "
-        "<extrapolate_flat> <reason> <commentary> [--version <n>]");
+        "set <id> <curve_definition_id> <segment_type> <position> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <curve_definition_id> <segment_type> <position> <conventions> "
-        "<pillar_choice> <priority> <min_distance> <projection_curve> <discount_curve> <spot_rate> "
-        "<projection_curve_domestic> <projection_curve_foreign> <projection_curve_pay> "
-        "<projection_curve_receive> <projection_curve_long> <projection_curve_short> "
-        "<reference_curve> <reference_curve_2> <weight_1> <weight_2> <ibor_index> <rfr_curve> "
-        "<rfr_index> <spread> <base_curve> <base_curve_currency> <numerator_curve> "
-        "<numerator_curve_currency> <denominator_curve> <denominator_curve_currency> "
-        "<extrapolate_flat> <reason> <commentary>");
+        "put-many --count <n> <id> <curve_definition_id> <segment_type> <position> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -375,8 +356,8 @@ void curve_segment_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 31 + 2) {
-            fail(out) << "Expected " << (31 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -388,70 +369,6 @@ void curve_segment_commands::process_add(std::ostream& out,
             req.change.write.segment_type, parsed->positionals[next++], "segment_type");
         curve_segment_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
-        curve_segment_read_token(
-            req.change.write.conventions, parsed->positionals[next++], "conventions");
-        curve_segment_read_token(
-            req.change.write.pillar_choice, parsed->positionals[next++], "pillar_choice");
-        curve_segment_read_token(
-            req.change.write.priority, parsed->positionals[next++], "priority");
-        curve_segment_read_token(
-            req.change.write.min_distance, parsed->positionals[next++], "min_distance");
-        curve_segment_read_token(
-            req.change.write.projection_curve, parsed->positionals[next++], "projection_curve");
-        curve_segment_read_token(
-            req.change.write.discount_curve, parsed->positionals[next++], "discount_curve");
-        curve_segment_read_token(
-            req.change.write.spot_rate, parsed->positionals[next++], "spot_rate");
-        curve_segment_read_token(req.change.write.projection_curve_domestic,
-                                 parsed->positionals[next++],
-                                 "projection_curve_domestic");
-        curve_segment_read_token(req.change.write.projection_curve_foreign,
-                                 parsed->positionals[next++],
-                                 "projection_curve_foreign");
-        curve_segment_read_token(req.change.write.projection_curve_pay,
-                                 parsed->positionals[next++],
-                                 "projection_curve_pay");
-        curve_segment_read_token(req.change.write.projection_curve_receive,
-                                 parsed->positionals[next++],
-                                 "projection_curve_receive");
-        curve_segment_read_token(req.change.write.projection_curve_long,
-                                 parsed->positionals[next++],
-                                 "projection_curve_long");
-        curve_segment_read_token(req.change.write.projection_curve_short,
-                                 parsed->positionals[next++],
-                                 "projection_curve_short");
-        curve_segment_read_token(
-            req.change.write.reference_curve, parsed->positionals[next++], "reference_curve");
-        curve_segment_read_token(
-            req.change.write.reference_curve_2, parsed->positionals[next++], "reference_curve_2");
-        curve_segment_read_token(
-            req.change.write.weight_1, parsed->positionals[next++], "weight_1");
-        curve_segment_read_token(
-            req.change.write.weight_2, parsed->positionals[next++], "weight_2");
-        curve_segment_read_token(
-            req.change.write.ibor_index, parsed->positionals[next++], "ibor_index");
-        curve_segment_read_token(
-            req.change.write.rfr_curve, parsed->positionals[next++], "rfr_curve");
-        curve_segment_read_token(
-            req.change.write.rfr_index, parsed->positionals[next++], "rfr_index");
-        curve_segment_read_token(req.change.write.spread, parsed->positionals[next++], "spread");
-        curve_segment_read_token(
-            req.change.write.base_curve, parsed->positionals[next++], "base_curve");
-        curve_segment_read_token(req.change.write.base_curve_currency,
-                                 parsed->positionals[next++],
-                                 "base_curve_currency");
-        curve_segment_read_token(
-            req.change.write.numerator_curve, parsed->positionals[next++], "numerator_curve");
-        curve_segment_read_token(req.change.write.numerator_curve_currency,
-                                 parsed->positionals[next++],
-                                 "numerator_curve_currency");
-        curve_segment_read_token(
-            req.change.write.denominator_curve, parsed->positionals[next++], "denominator_curve");
-        curve_segment_read_token(req.change.write.denominator_curve_currency,
-                                 parsed->positionals[next++],
-                                 "denominator_curve_currency");
-        curve_segment_read_token(
-            req.change.write.extrapolate_flat, parsed->positionals[next++], "extrapolate_flat");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -496,8 +413,8 @@ void curve_segment_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 32 + 2) {
-            fail(out) << "Expected " << (32 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -509,70 +426,6 @@ void curve_segment_commands::process_set(std::ostream& out,
             req.change.write.segment_type, parsed->positionals[next++], "segment_type");
         curve_segment_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
-        curve_segment_read_token(
-            req.change.write.conventions, parsed->positionals[next++], "conventions");
-        curve_segment_read_token(
-            req.change.write.pillar_choice, parsed->positionals[next++], "pillar_choice");
-        curve_segment_read_token(
-            req.change.write.priority, parsed->positionals[next++], "priority");
-        curve_segment_read_token(
-            req.change.write.min_distance, parsed->positionals[next++], "min_distance");
-        curve_segment_read_token(
-            req.change.write.projection_curve, parsed->positionals[next++], "projection_curve");
-        curve_segment_read_token(
-            req.change.write.discount_curve, parsed->positionals[next++], "discount_curve");
-        curve_segment_read_token(
-            req.change.write.spot_rate, parsed->positionals[next++], "spot_rate");
-        curve_segment_read_token(req.change.write.projection_curve_domestic,
-                                 parsed->positionals[next++],
-                                 "projection_curve_domestic");
-        curve_segment_read_token(req.change.write.projection_curve_foreign,
-                                 parsed->positionals[next++],
-                                 "projection_curve_foreign");
-        curve_segment_read_token(req.change.write.projection_curve_pay,
-                                 parsed->positionals[next++],
-                                 "projection_curve_pay");
-        curve_segment_read_token(req.change.write.projection_curve_receive,
-                                 parsed->positionals[next++],
-                                 "projection_curve_receive");
-        curve_segment_read_token(req.change.write.projection_curve_long,
-                                 parsed->positionals[next++],
-                                 "projection_curve_long");
-        curve_segment_read_token(req.change.write.projection_curve_short,
-                                 parsed->positionals[next++],
-                                 "projection_curve_short");
-        curve_segment_read_token(
-            req.change.write.reference_curve, parsed->positionals[next++], "reference_curve");
-        curve_segment_read_token(
-            req.change.write.reference_curve_2, parsed->positionals[next++], "reference_curve_2");
-        curve_segment_read_token(
-            req.change.write.weight_1, parsed->positionals[next++], "weight_1");
-        curve_segment_read_token(
-            req.change.write.weight_2, parsed->positionals[next++], "weight_2");
-        curve_segment_read_token(
-            req.change.write.ibor_index, parsed->positionals[next++], "ibor_index");
-        curve_segment_read_token(
-            req.change.write.rfr_curve, parsed->positionals[next++], "rfr_curve");
-        curve_segment_read_token(
-            req.change.write.rfr_index, parsed->positionals[next++], "rfr_index");
-        curve_segment_read_token(req.change.write.spread, parsed->positionals[next++], "spread");
-        curve_segment_read_token(
-            req.change.write.base_curve, parsed->positionals[next++], "base_curve");
-        curve_segment_read_token(req.change.write.base_curve_currency,
-                                 parsed->positionals[next++],
-                                 "base_curve_currency");
-        curve_segment_read_token(
-            req.change.write.numerator_curve, parsed->positionals[next++], "numerator_curve");
-        curve_segment_read_token(req.change.write.numerator_curve_currency,
-                                 parsed->positionals[next++],
-                                 "numerator_curve_currency");
-        curve_segment_read_token(
-            req.change.write.denominator_curve, parsed->positionals[next++], "denominator_curve");
-        curve_segment_read_token(req.change.write.denominator_curve_currency,
-                                 parsed->positionals[next++],
-                                 "denominator_curve_currency");
-        curve_segment_read_token(
-            req.change.write.extrapolate_flat, parsed->positionals[next++], "extrapolate_flat");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -629,8 +482,8 @@ void curve_segment_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 32 + 2) {
-            fail(out) << "Expected " << (change_count * 32 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 4 + 2) {
+            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -644,70 +497,6 @@ void curve_segment_commands::process_put_many(std::ostream& out,
                 change.write.segment_type, parsed->positionals[next++], "segment_type");
             curve_segment_read_token(
                 change.write.position, parsed->positionals[next++], "position");
-            curve_segment_read_token(
-                change.write.conventions, parsed->positionals[next++], "conventions");
-            curve_segment_read_token(
-                change.write.pillar_choice, parsed->positionals[next++], "pillar_choice");
-            curve_segment_read_token(
-                change.write.priority, parsed->positionals[next++], "priority");
-            curve_segment_read_token(
-                change.write.min_distance, parsed->positionals[next++], "min_distance");
-            curve_segment_read_token(
-                change.write.projection_curve, parsed->positionals[next++], "projection_curve");
-            curve_segment_read_token(
-                change.write.discount_curve, parsed->positionals[next++], "discount_curve");
-            curve_segment_read_token(
-                change.write.spot_rate, parsed->positionals[next++], "spot_rate");
-            curve_segment_read_token(change.write.projection_curve_domestic,
-                                     parsed->positionals[next++],
-                                     "projection_curve_domestic");
-            curve_segment_read_token(change.write.projection_curve_foreign,
-                                     parsed->positionals[next++],
-                                     "projection_curve_foreign");
-            curve_segment_read_token(change.write.projection_curve_pay,
-                                     parsed->positionals[next++],
-                                     "projection_curve_pay");
-            curve_segment_read_token(change.write.projection_curve_receive,
-                                     parsed->positionals[next++],
-                                     "projection_curve_receive");
-            curve_segment_read_token(change.write.projection_curve_long,
-                                     parsed->positionals[next++],
-                                     "projection_curve_long");
-            curve_segment_read_token(change.write.projection_curve_short,
-                                     parsed->positionals[next++],
-                                     "projection_curve_short");
-            curve_segment_read_token(
-                change.write.reference_curve, parsed->positionals[next++], "reference_curve");
-            curve_segment_read_token(
-                change.write.reference_curve_2, parsed->positionals[next++], "reference_curve_2");
-            curve_segment_read_token(
-                change.write.weight_1, parsed->positionals[next++], "weight_1");
-            curve_segment_read_token(
-                change.write.weight_2, parsed->positionals[next++], "weight_2");
-            curve_segment_read_token(
-                change.write.ibor_index, parsed->positionals[next++], "ibor_index");
-            curve_segment_read_token(
-                change.write.rfr_curve, parsed->positionals[next++], "rfr_curve");
-            curve_segment_read_token(
-                change.write.rfr_index, parsed->positionals[next++], "rfr_index");
-            curve_segment_read_token(change.write.spread, parsed->positionals[next++], "spread");
-            curve_segment_read_token(
-                change.write.base_curve, parsed->positionals[next++], "base_curve");
-            curve_segment_read_token(change.write.base_curve_currency,
-                                     parsed->positionals[next++],
-                                     "base_curve_currency");
-            curve_segment_read_token(
-                change.write.numerator_curve, parsed->positionals[next++], "numerator_curve");
-            curve_segment_read_token(change.write.numerator_curve_currency,
-                                     parsed->positionals[next++],
-                                     "numerator_curve_currency");
-            curve_segment_read_token(
-                change.write.denominator_curve, parsed->positionals[next++], "denominator_curve");
-            curve_segment_read_token(change.write.denominator_curve_currency,
-                                     parsed->positionals[next++],
-                                     "denominator_curve_currency");
-            curve_segment_read_token(
-                change.write.extrapolate_flat, parsed->positionals[next++], "extrapolate_flat");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -104,9 +104,10 @@ std::string("EUR-OIS-CONVENTIONS")
 * Insert trigger
 ** Validations
 
-| column               | validation_function                           |
-|----------------------+-----------------------------------------------|
-| conventions          | ores_refdata_validate_convention_id_fn        |
+| column           | validation_function                               |
+|------------------+---------------------------------------------------|
+| curve_segment_id | ores_refdata_validate_curve_segment_convention_fn |
+| conventions      | ores_refdata_validate_convention_id_fn            |
 
 * SQL
 

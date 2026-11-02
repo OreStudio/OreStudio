@@ -50,34 +50,6 @@ struct curve_segment_write {
     boost::uuids::uuid curve_definition_id;
     std::string segment_type;
     int position;
-    std::optional<std::string> conventions;
-    std::optional<std::string> pillar_choice;
-    std::optional<int> priority;
-    std::optional<int> min_distance;
-    std::optional<std::string> projection_curve;
-    std::optional<std::string> discount_curve;
-    std::optional<std::string> spot_rate;
-    std::optional<std::string> projection_curve_domestic;
-    std::optional<std::string> projection_curve_foreign;
-    std::optional<std::string> projection_curve_pay;
-    std::optional<std::string> projection_curve_receive;
-    std::optional<std::string> projection_curve_long;
-    std::optional<std::string> projection_curve_short;
-    std::optional<std::string> reference_curve;
-    std::optional<std::string> reference_curve_2;
-    std::optional<double> weight_1;
-    std::optional<double> weight_2;
-    std::optional<std::string> ibor_index;
-    std::optional<std::string> rfr_curve;
-    std::optional<std::string> rfr_index;
-    std::optional<ores::utility::decimal::decimal> spread;
-    std::optional<std::string> base_curve;
-    std::optional<std::string> base_curve_currency;
-    std::optional<std::string> numerator_curve;
-    std::optional<std::string> numerator_curve_currency;
-    std::optional<std::string> denominator_curve;
-    std::optional<std::string> denominator_curve_currency;
-    std::optional<bool> extrapolate_flat;
 };
 
 struct curve_segment_change {
@@ -334,40 +306,6 @@ inline constexpr std::string_view deleted = "refdata.v1.curve_segments_events.de
         utility::codec::field{"curve_definition_id", &curve_segment_write::curve_definition_id},
         utility::codec::field{"segment_type", &curve_segment_write::segment_type},
         utility::codec::field{"position", &curve_segment_write::position},
-        utility::codec::field{"conventions", &curve_segment_write::conventions},
-        utility::codec::field{"pillar_choice", &curve_segment_write::pillar_choice},
-        utility::codec::field{"priority", &curve_segment_write::priority},
-        utility::codec::field{"min_distance", &curve_segment_write::min_distance},
-        utility::codec::field{"projection_curve", &curve_segment_write::projection_curve},
-        utility::codec::field{"discount_curve", &curve_segment_write::discount_curve},
-        utility::codec::field{"spot_rate", &curve_segment_write::spot_rate},
-        utility::codec::field{"projection_curve_domestic",
-                              &curve_segment_write::projection_curve_domestic},
-        utility::codec::field{"projection_curve_foreign",
-                              &curve_segment_write::projection_curve_foreign},
-        utility::codec::field{"projection_curve_pay", &curve_segment_write::projection_curve_pay},
-        utility::codec::field{"projection_curve_receive",
-                              &curve_segment_write::projection_curve_receive},
-        utility::codec::field{"projection_curve_long", &curve_segment_write::projection_curve_long},
-        utility::codec::field{"projection_curve_short",
-                              &curve_segment_write::projection_curve_short},
-        utility::codec::field{"reference_curve", &curve_segment_write::reference_curve},
-        utility::codec::field{"reference_curve_2", &curve_segment_write::reference_curve_2},
-        utility::codec::field{"weight_1", &curve_segment_write::weight_1},
-        utility::codec::field{"weight_2", &curve_segment_write::weight_2},
-        utility::codec::field{"ibor_index", &curve_segment_write::ibor_index},
-        utility::codec::field{"rfr_curve", &curve_segment_write::rfr_curve},
-        utility::codec::field{"rfr_index", &curve_segment_write::rfr_index},
-        utility::codec::field{"spread", &curve_segment_write::spread},
-        utility::codec::field{"base_curve", &curve_segment_write::base_curve},
-        utility::codec::field{"base_curve_currency", &curve_segment_write::base_curve_currency},
-        utility::codec::field{"numerator_curve", &curve_segment_write::numerator_curve},
-        utility::codec::field{"numerator_curve_currency",
-                              &curve_segment_write::numerator_curve_currency},
-        utility::codec::field{"denominator_curve", &curve_segment_write::denominator_curve},
-        utility::codec::field{"denominator_curve_currency",
-                              &curve_segment_write::denominator_curve_currency},
-        utility::codec::field{"extrapolate_flat", &curve_segment_write::extrapolate_flat},
     };
 }
 

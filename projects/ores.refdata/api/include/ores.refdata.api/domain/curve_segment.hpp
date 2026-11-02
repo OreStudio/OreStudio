@@ -25,7 +25,6 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CURVE_SEGMENT_HPP
 #define ORES_REFDATA_API_DOMAIN_CURVE_SEGMENT_HPP
 
-#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -45,16 +44,17 @@ namespace ores::refdata::domain {
  * the type and refers to curve_segment_type, and a type written under the wrong
  * element cannot be stored.
  *
- * The twelve segment elements share a skeleton and differ in a few settings
- * each: projection curves for simple and tenor basis segments, a discount curve
- * and a spot rate for cross currency ones, a reference curve for zero spread
- * ones. Each setting is its own typed column, null where the segment's element
- * has no such setting. The lists a segment holds are child rows: its quotes in
- * curve_quote, and the index curves and default curves of the bond and default
- * based segments in curve_segment_curve.
- *
- * The convention a segment names may be any of ORE's convention kinds, which are
- * one table each, so a function that looks in all of them checks the reference.
+ * The twelve segment elements share a skeleton and differ in their settings, so
+ * the row holds only what every element has: its definition, its type and its
+ * place. Each component of settings an element states is a part of its own,
+ * joined to the segment by its id, and present only for the elements that state
+ * it: the convention in curve_segment_convention, the pillar rules in
+ * curve_segment_pillar_rule, a simple segment's projection curve in
+ * curve_segment_projection, a cross currency segment's terms in
+ * curve_segment_cross_currency_terms, and six more, one per component. The
+ * lists a segment holds are child rows too: its quotes in curve_quote, and the
+ * index curves and default curves of the bond and default based segments in
+ * curve_segment_curve.
  */
 struct curve_segment final {
     /**
@@ -94,147 +94,6 @@ struct curve_segment final {
      * one list per element, so that is the order the export restores.
      */
     int position = 0;
-
-    /**
-     * @brief The convention the segment's instruments are priced with, by its id.
-     */
-    std::optional<std::string> conventions;
-
-    /**
-     * @brief Which date of each instrument becomes the curve's pillar.
-     */
-    std::optional<std::string> pillar_choice;
-
-    /**
-     * @brief The segment's priority when two segments' pillars are too close.
-     */
-    std::optional<int> priority;
-
-    /**
-     * @brief The least number of days between this segment's pillars and the next's.
-     */
-    std::optional<int> min_distance;
-
-    /**
-     * @brief The curve the segment's floating index is projected on.
-     */
-    std::optional<std::string> projection_curve;
-
-    /**
-     * @brief The curve a cross currency segment discounts its other currency on.
-     */
-    std::optional<std::string> discount_curve;
-
-    /**
-     * @brief The FX spot quote a cross currency segment converts with.
-     */
-    std::optional<std::string> spot_rate;
-
-    /**
-     * @brief The projection curve of a cross currency segment's domestic leg.
-     */
-    std::optional<std::string> projection_curve_domestic;
-
-    /**
-     * @brief The projection curve of a cross currency segment's foreign leg.
-     */
-    std::optional<std::string> projection_curve_foreign;
-
-    /**
-     * @brief The projection curve of a tenor basis segment's pay leg.
-     */
-    std::optional<std::string> projection_curve_pay;
-
-    /**
-     * @brief The projection curve of a tenor basis segment's receive leg.
-     */
-    std::optional<std::string> projection_curve_receive;
-
-    /**
-     * @brief The projection curve of a tenor basis segment's longer tenor.
-     */
-    std::optional<std::string> projection_curve_long;
-
-    /**
-     * @brief The projection curve of a tenor basis segment's shorter tenor.
-     */
-    std::optional<std::string> projection_curve_short;
-
-    /**
-     * @brief The curve a zero spread, bond yield shifted or yield plus default segment is built
-     * over, and the first curve of a weighted average.
-     */
-    std::optional<std::string> reference_curve;
-
-    /**
-     * @brief The second curve of a weighted average segment.
-     */
-    std::optional<std::string> reference_curve_2;
-
-    /**
-     * @brief The weight of a weighted average segment's first curve.
-     */
-    std::optional<double> weight_1;
-
-    /**
-     * @brief The weight of a weighted average segment's second curve.
-     */
-    std::optional<double> weight_2;
-
-    /**
-     * @brief The Ibor index an Ibor fallback segment builds.
-     */
-    std::optional<std::string> ibor_index;
-
-    /**
-     * @brief The risk free curve an Ibor fallback segment falls back to.
-     */
-    std::optional<std::string> rfr_curve;
-
-    /**
-     * @brief The risk free index an Ibor fallback segment falls back to.
-     */
-    std::optional<std::string> rfr_index;
-
-    /**
-     * @brief The spread an Ibor fallback segment adds to the risk free rate.
-     */
-    std::optional<ores::utility::decimal::decimal> spread;
-
-    /**
-     * @brief The base curve of a discount ratio segment.
-     */
-    std::optional<std::string> base_curve;
-
-    /**
-     * @brief The currency of a discount ratio segment's base curve.
-     */
-    std::optional<std::string> base_curve_currency;
-
-    /**
-     * @brief The numerator curve of a discount ratio segment.
-     */
-    std::optional<std::string> numerator_curve;
-
-    /**
-     * @brief The currency of a discount ratio segment's numerator curve.
-     */
-    std::optional<std::string> numerator_curve_currency;
-
-    /**
-     * @brief The denominator curve of a discount ratio segment.
-     */
-    std::optional<std::string> denominator_curve;
-
-    /**
-     * @brief The currency of a discount ratio segment's denominator curve.
-     */
-    std::optional<std::string> denominator_curve_currency;
-
-    /**
-     * @brief Whether a fitted bond or bond yield shifted segment extrapolates flat.
-     */
-    std::optional<bool> extrapolate_flat;
 
     /**
      * @brief Username of the person who last modified this curve segment.

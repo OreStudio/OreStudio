@@ -45,7 +45,17 @@ import type { CurveQuote } from '../domain/curve_quote.js';
 import type { CurveReportConfiguration } from '../domain/curve_report_configuration.js';
 import type { CurveSecurityConfig } from '../domain/curve_security_config.js';
 import type { CurveSegment } from '../domain/curve_segment.js';
+import type { CurveSegmentConvention } from '../domain/curve_segment_convention.js';
+import type { CurveSegmentCrossCurrencyTerms } from '../domain/curve_segment_cross_currency_terms.js';
 import type { CurveSegmentCurve } from '../domain/curve_segment_curve.js';
+import type { CurveSegmentDiscountRatio } from '../domain/curve_segment_discount_ratio.js';
+import type { CurveSegmentExtrapolation } from '../domain/curve_segment_extrapolation.js';
+import type { CurveSegmentIborFallback } from '../domain/curve_segment_ibor_fallback.js';
+import type { CurveSegmentPillarRule } from '../domain/curve_segment_pillar_rule.js';
+import type { CurveSegmentProjection } from '../domain/curve_segment_projection.js';
+import type { CurveSegmentReference } from '../domain/curve_segment_reference.js';
+import type { CurveSegmentTenorBasisCurves } from '../domain/curve_segment_tenor_basis_curves.js';
+import type { CurveSegmentWeightedAverage } from '../domain/curve_segment_weighted_average.js';
 import type { CurveVolatilityConfig } from '../domain/curve_volatility_config.js';
 import type { CurveVolatilityConstant } from '../domain/curve_volatility_constant.js';
 import type { CurveVolatilityCurve } from '../domain/curve_volatility_curve.js';
@@ -137,6 +147,16 @@ export interface CurveConfigurationDocument {
     bootstrap_configs: CurveBootstrapConfig[];
     segments: CurveSegment[];
     segment_curves: CurveSegmentCurve[];
+    segment_conventions: CurveSegmentConvention[];
+    segment_pillar_rules: CurveSegmentPillarRule[];
+    segment_projections: CurveSegmentProjection[];
+    segment_tenor_basis_curves: CurveSegmentTenorBasisCurves[];
+    segment_cross_currency_terms: CurveSegmentCrossCurrencyTerms[];
+    segment_references: CurveSegmentReference[];
+    segment_weighted_averages: CurveSegmentWeightedAverage[];
+    segment_discount_ratios: CurveSegmentDiscountRatio[];
+    segment_extrapolations: CurveSegmentExtrapolation[];
+    segment_ibor_fallbacks: CurveSegmentIborFallback[];
     quotes: CurveQuote[];
 }
 

@@ -155,6 +155,16 @@ std::nullopt
 :error_message: Invalid rfr_index: %. No active floating index type found with this code.
 :END:
 
+* Insert trigger
+** Validations
+
+The segment's element must be one that has this part. The function is written
+by the section generator from the projection's =import_segments=.
+
+| column           | validation_function                                  |
+|------------------+------------------------------------------------------|
+| curve_segment_id | ores_refdata_validate_curve_segment_ibor_fallback_fn |
+
 * SQL
 
 ** Flags

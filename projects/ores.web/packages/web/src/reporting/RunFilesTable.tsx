@@ -29,7 +29,7 @@ import { ReadFailure } from '../operations/GridJobs.js';
 import { localSource, RecordTable, type ListColumn } from '../refdata/RecordList.js';
 import type { Translator } from '../i18n/translate.js';
 import { TreeRail } from '../ui/TreeRail.js';
-import { gridJobPath } from '../shell/paths.js';
+import { gridJobPath, reportRunFilePath } from '../shell/paths.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import { formatBytes } from './shared.js';
 
@@ -109,10 +109,11 @@ export function RunFilesTable({ runId }: { readonly runId: string }): ReactNode 
                         key: `run-files-${runId}`,
                         rows: shown,
                         revision: `${chosen}:${shown.length}`,
-                        searchOf: (row) => `${row.name} ${row.family}`,
+                        searchOf: (row) => `${row.name} ${row.ore_file_name ?? ''}`,
                     })}
                     plural={t(`${field}.plural`)}
                     keyOf={(row) => row.id}
+                    pathOf={(row) => reportRunFilePath(runId, row.id)}
                     columns={columnsOf(t, runId)}
                 />
             </div>
@@ -152,12 +153,12 @@ function columnsOf(t: Translator['t'], runId: string): readonly ListColumn<Repor
             cell: (row) => t(`${field}.kinds.${row.kind}`),
         },
         {
-            id: 'family',
-            header: t(`${field}.family`),
+            id: 'oreFile',
+            header: t(`${field}.oreFile`),
             cell: (row) =>
-                row.direction === 'input' || row.kind === 'archive'
-                    ? '—'
-                    : row.family || t(`${field}.noFamily`),
+                row.ore_file_name ?? (
+                    <span className="text-ink-faint">{t(`${field}.notCatalogued`)}</span>
+                ),
         },
         {
             id: 'size',

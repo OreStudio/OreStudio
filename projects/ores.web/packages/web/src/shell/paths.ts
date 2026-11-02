@@ -213,6 +213,11 @@ export function reportRunPath(reportInstanceId: string): string {
     return `/reporting/runs/${encodeURIComponent(reportInstanceId)}`;
 }
 
+/** The page of one file a run read or wrote, by its id in the run's list of files. */
+export function reportRunFilePath(reportInstanceId: string, fileId: string): string {
+    return `${reportRunPath(reportInstanceId)}/files/${encodeURIComponent(fileId)}`;
+}
+
 export function reportPath(id: string): string {
     return `${PATHS.reports}/${encodeURIComponent(id)}`;
 }

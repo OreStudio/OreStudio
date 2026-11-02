@@ -38,13 +38,24 @@ import { z } from 'zod';
 import {
     readResult,
     readWorkunitsOfBatch,
+    oreFileViewSchema,
+    reportRunFileInfoViewSchema,
     reportRunFileNodeViewSchema,
     reportRunFileViewSchema,
+    type OreFileView,
+    type ReportRunFileInfoView,
     type ReportRunFileNodeView,
     type ReportRunFileView,
     type ReportRunFilesView,
 } from '@ores/wire-protocol';
+import { subjects as categorySubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_category_protocol';
+import type { ListOreFileCategoriesResponse } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_category_protocol';
+import { subjects as oreFileSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_protocol';
+import type { ListOreFilesResponse } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_protocol';
+import { subjects as fileTypeSubjects } from '@ores/wire-protocol/generated/reporting/protocol/file_type_protocol';
+import type { ListByOreFileCodeFileTypesResponse } from '@ores/wire-protocol/generated/reporting/protocol/file_type_protocol';
 import { invalidRequest, notFound } from './errors.js';
+import { readAll, text } from './refdata-calls.js';
 import { dispositionFor, downloadName, fetchStored } from './grid-downloads.js';
 import { readBatchId, readRun } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';
@@ -55,10 +66,18 @@ const runParamsSchema = z.object({
 
 const fileParamsSchema = runParamsSchema.extend({ file: z.string().min(1).max(1024) });
 
+const nullableText = (value: unknown): string | null => {
+    const stated = text(value);
+    return stated === '' ? null : stated;
+};
+
 const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
 /** The manifest every accepted result leaves beside its files. */
 const manifestKeyOf = (resultId: string): string => `compute/output/${resultId}/manifest.json.gz`;
+
+/** What a file states before it is matched to the ORE file it is. */
+const UNIDENTIFIED = { ore_file_code: null, ore_file_name: null, category_code: null } as const;
 
 /** The most workunits a run's file list reads; a report run has a handful. */
 const WORKUNIT_LIMIT = 100;
@@ -159,6 +178,7 @@ async function inputsOf(
             sha256: null,
             job: workunitId,
             node: `input:${workunitId}`,
+            ...UNIDENTIFIED,
         }),
         source: { from: 'object', uri, gzip: false },
     });
@@ -184,6 +204,7 @@ async function inputsOf(
                 sha256: null,
                 job: workunitId,
                 node: `input:${workunitId}`,
+                ...UNIDENTIFIED,
             }),
             source: { from: 'entry', uri, entry: entry.name } as const,
         })),
@@ -209,6 +230,7 @@ async function outputsOf(
             sha256: null,
             job: workunitId,
             node: `output:${resultId}`,
+            ...UNIDENTIFIED,
         }),
         source: { from: 'object', uri, gzip: false },
     };
@@ -233,6 +255,7 @@ async function outputsOf(
                 sha256: file.sha256 === '' ? null : file.sha256,
                 job: workunitId,
                 node: `output:${resultId}`,
+                ...UNIDENTIFIED,
             }),
             source: { from: 'object', uri: file.key, gzip: true } as const,
         })),
@@ -264,6 +287,82 @@ function counted(
     return nodes.map((node) =>
         reportRunFileNodeViewSchema.parse({ ...node, count: counts.get(node.id) ?? 0 }),
     );
+}
+
+/** The ORE files, each with its category and the expression its names match. */
+interface Catalogue {
+    readonly files: readonly (OreFileView & { readonly pattern: RegExp })[];
+}
+
+/**
+ * The ORE files and their categories, as the reporting catalogue holds them. A
+ * read that fails leaves every file unidentified rather than failing the page.
+ */
+async function readCatalogue(session: LiveSession, log: FastifyBaseLogger): Promise<Catalogue> {
+    try {
+        const [files, categories] = await Promise.all([
+            readAll<ListOreFilesResponse>(
+                session,
+                oreFileSubjects.list_ore_files_request,
+                'files',
+                {
+                    filter: null,
+                    as_of: null,
+                },
+            ),
+            readAll<ListOreFileCategoriesResponse>(
+                session,
+                categorySubjects.list_ore_file_categories_request,
+                'categories',
+                { filter: null, as_of: null },
+            ),
+        ]);
+        const categoryOf = new Map(
+            categories.map((category) => [text(category['code']), category]),
+        );
+        return {
+            files: files.map((file) => {
+                const category = categoryOf.get(text(file['category_code']));
+                const view = oreFileViewSchema.parse({
+                    code: text(file['code']),
+                    name: text(file['name']),
+                    category_code: text(file['category_code']),
+                    category_name: text(category?.['name']),
+                    category_description: text(category?.['description']),
+                    configuration_type_code: nullableText(file['configuration_type_code']),
+                    guide_section: nullableText(file['guide_section']),
+                    origin: text(file['origin']),
+                    format: text(file['format']),
+                    xsd_file: nullableText(file['xsd_file']),
+                    typical_filename: text(file['typical_filename']),
+                    filename_regex: text(file['filename_regex']),
+                    description: text(file['description']),
+                });
+                return { ...view, pattern: new RegExp(view.filename_regex) };
+            }),
+        };
+    } catch (error) {
+        log.warn({ err: error }, 'The ORE file catalogue could not be read');
+        return { files: [] };
+    }
+}
+
+/** The ORE file a name is: the one whose expression matches the file's own name. */
+function oreFileOf(name: string, catalogue: Catalogue): OreFileView | null {
+    const base = name.slice(name.lastIndexOf('/') + 1);
+    const found = catalogue.files.find((file) => file.pattern.test(base));
+    if (found === undefined) {
+        return null;
+    }
+    const { pattern: _pattern, ...view } = found;
+    return view;
+}
+
+function identified(name: string, catalogue: Catalogue) {
+    const file = oreFileOf(name, catalogue);
+    return file === null
+        ? UNIDENTIFIED
+        : { ore_file_code: file.code, ore_file_name: file.name, category_code: file.category_code };
 }
 
 /**
@@ -326,10 +425,14 @@ async function filesOfRun(
             return { nodes, inputs, outputs };
         }),
     );
+    const catalogue = await readCatalogue(session, log);
     const files = [
         ...groups.flatMap((group) => group.inputs),
         ...groups.flatMap((group) => group.outputs),
-    ];
+    ].map((file) => ({
+        ...file,
+        view: { ...file.view, ...identified(file.view.name, catalogue) },
+    }));
     const nodes: TreeNode[] = [
         root,
         { id: batchNode, parent: '', kind: 'batch', ref: batchId },
@@ -356,6 +459,44 @@ export function registerReportRunFileRoutes(
         const { tree, files } = await filesOfRun(session, id, request.log);
         return { tree: [...tree], files: files.map((file) => file.view) };
     });
+
+    server.get(
+        '/api/reporting/runs/:id/files/:file/info',
+        async (request): Promise<ReportRunFileInfoView> => {
+            const session = requireSession(request);
+            const { id, file } = paramsOf(fileParamsSchema, request);
+            const found = (await filesOfRun(session, id, request.log)).files.find(
+                (candidate) => candidate.view.id === file,
+            );
+            if (found === undefined) {
+                throw notFound('This run has no such file.');
+            }
+            const oreFile = oreFileOf(found.view.name, await readCatalogue(session, request.log));
+            const parameters =
+                oreFile === null
+                    ? []
+                    : await readAll<ListByOreFileCodeFileTypesResponse>(
+                          session,
+                          fileTypeSubjects.list_by_ore_file_code_file_types_request,
+                          'types',
+                          { ore_file_code: oreFile.code, scope: 'direct', filter: null },
+                      );
+            return reportRunFileInfoViewSchema.parse({
+                file: found.view,
+                ore_file: oreFile,
+                parameters: parameters.map((type) => ({
+                    code: text(type['code']),
+                    analytic_type_code: nullableText(type['analytic_type_code']),
+                    ore_parameter: text(type['ore_parameter']),
+                    direction: text(type['direction']),
+                    kind: text(type['kind']),
+                    name_pattern: text(type['name_pattern']),
+                    is_default: type['is_default'] === true,
+                    description: text(type['description']),
+                })),
+            });
+        },
+    );
 
     server.get('/api/reporting/runs/:id/files/:file', async (request, reply) => {
         const session = requireSession(request);

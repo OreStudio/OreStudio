@@ -281,6 +281,9 @@ export type {
 export {
     reportRunDetailViewSchema,
     reportRunErrorViewSchema,
+    oreFileParameterViewSchema,
+    oreFileViewSchema,
+    reportRunFileInfoViewSchema,
     reportRunFileNodeViewSchema,
     reportRunFileViewSchema,
     reportRunFilesViewSchema,
@@ -289,6 +292,9 @@ export {
 export type {
     ReportRunDetailView,
     ReportRunErrorView,
+    OreFileParameterView,
+    OreFileView,
+    ReportRunFileInfoView,
     ReportRunFileNodeView,
     ReportRunFileView,
     ReportRunFilesView,

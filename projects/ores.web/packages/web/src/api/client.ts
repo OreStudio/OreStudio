@@ -114,6 +114,7 @@ import {
     appVersionPageViewSchema,
     reportRunDetailViewSchema,
     reportRunErrorViewSchema,
+    reportRunFileInfoViewSchema,
     reportRunFilesViewSchema,
     reportRunRowViewSchema,
     batchPageSchema,
@@ -153,6 +154,7 @@ import {
     type AppVersionPageView,
     type ReportRunDetailView,
     type ReportRunErrorView,
+    type ReportRunFileInfoView,
     type ReportRunFilesView,
     type ReportRunRowView,
     type BatchPage,
@@ -3781,6 +3783,16 @@ export const api = {
     async reportRunFiles(id: string): Promise<ReportRunFilesView> {
         return reportRunFilesViewSchema.parse(
             await request(`/api/reporting/runs/${encodeURIComponent(id)}/files`, { method: 'GET' }),
+        );
+    },
+
+    /** One file of a run, with the ORE file it is and the parameters that name it. */
+    async reportRunFileInfo(runId: string, fileId: string): Promise<ReportRunFileInfoView> {
+        return reportRunFileInfoViewSchema.parse(
+            await request(
+                `/api/reporting/runs/${encodeURIComponent(runId)}/files/${encodeURIComponent(fileId)}/info`,
+                { method: 'GET' },
+            ),
         );
     },
 

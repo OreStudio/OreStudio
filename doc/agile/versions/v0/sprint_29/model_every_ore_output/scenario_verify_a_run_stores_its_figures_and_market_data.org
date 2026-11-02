@@ -110,9 +110,9 @@ rows, and an unknown family name is refused.
   ./compass.sh sql -- -c "with latest as (select i.id from ores_reporting_report_instances_tbl i join ores_reporting_report_definitions_tbl d on d.id = i.definition_id and d.valid_to > now() join ores_refdata_parties_tbl p on p.id = d.party_id and p.valid_to > now() where d.name = 'Group Consolidated Exposure' and p.short_code = 'ACMCOR' order by i.valid_from desc limit 1) select source, family, count(*) as figures, min(line), max(line) from ores_reporting_report_metrics_tbl where report_instance_id = (select id from latest) group by 1, 2 order by 1;"
   #+end_src
 - Pass: four rows.
-  - =npv.csv=, family =npv=: 36 figures, lines 2 to 10.
-  - =saccr.csv=, family =saccr=: 2 figures, line 2.
-  - =pricingstats.csv=, family =pricingstats=: about 219 figures.
+  - =npv.csv=, family =npv_report=: 36 figures, lines 2 to 10.
+  - =saccr.csv=, family =saccr_report=: 2 figures, line 2.
+  - =pricingstats.csv=, family =pricing_stats=: about 219 figures.
   - =runtimes.csv=, family =runtimes=: a few figures.
 
 *** Result
@@ -127,7 +127,7 @@ rows, and an unknown family name is refused.
   #+begin_src sh
   ./compass.sh sql -- -c "with latest as (select i.id from ores_reporting_report_instances_tbl i join ores_reporting_report_definitions_tbl d on d.id = i.definition_id and d.valid_to > now() join ores_refdata_parties_tbl p on p.id = d.party_id and p.valid_to > now() where d.name = 'Group Consolidated Exposure' and p.short_code = 'ACMCOR' order by i.valid_from desc limit 1) select source, family, datum_id, value, line from ores_marketdata_market_input_values_tbl where report_instance_id = (select id from latest) order by line;"
   #+end_src
-- Pass: two rows from =marketdata.csv=, family =marketdata=: =FX/RATE/EUR/USD=
+- Pass: two rows from =marketdata.csv=, family =market_data_report=: =FX/RATE/EUR/USD=
   on line 2 and =FX/RATE/GBP/USD= on line 3, each with a value near 1.17 and
   1.36.
 
@@ -140,9 +140,9 @@ rows, and an unknown family name is refused.
 ** Set the report to skip SA-CCR
 
 - Go back to Reporting > Reports > Group Consolidated Exposure (ACMCOR).
-- Edit the report and set "Families not stored" to =saccr=.
+- Edit the report and set "Families not stored" to =saccr_report=.
 - Save it with any change reason the form offers.
-- Pass: after the save, the page shows =saccr= in "Families not stored".
+- Pass: after the save, the page shows =saccr_report= in "Families not stored".
 
 *** Result
 
@@ -165,10 +165,10 @@ rows, and an unknown family name is refused.
 
 ** Refuse an unknown family name
 
-- Edit the report again and set "Families not stored" to =sacr=, a misspelling.
+- Edit the report again and set "Families not stored" to =sacr_report=, a misspelling.
 - Save, then press Run.
 - Pass: the run does not start, and the message says the report skips a family
-  that does not exist, naming =sacr=. A run that starts and completes is a
+  that does not exist, naming =sacr_report=. A run that starts and completes is a
   failure of this step.
 
 *** Result

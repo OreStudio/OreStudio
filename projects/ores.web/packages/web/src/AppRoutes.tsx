@@ -142,6 +142,7 @@ import { SensitivityTemplatesPage } from './sensitivityTemplates/SensitivityTemp
 import { SensitivityTemplatePage } from './sensitivityTemplates/SensitivityTemplatePage.js';
 import { ReportPage } from './reporting/ReportPage.js';
 import { ReportRunPage, ReportRunRedirect } from './reporting/ReportRunPage.js';
+import { RunFilePage } from './reporting/RunFilePage.js';
 import { ReportingPage } from './reporting/ReportingPage.js';
 import { ReportsPage } from './reporting/ReportsPage.js';
 import { CutsPage } from './reporting/cuts/CutsPage.js';
@@ -1017,6 +1018,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <ReportRunPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/reporting/runs/:id/files/:file"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <RunFilePage />
                     ),
                     'workspace',
                 )}

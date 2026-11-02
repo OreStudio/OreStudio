@@ -126,6 +126,23 @@ const STORED: Readonly<Record<string, Buffer>> = {
     [`/api/v1/storage/ores/${NPV_KEY}`]: gzipSync(NPV),
 };
 
+const oreFile = (code: string, name: string, category: string, regex: string) => ({
+    tenant_id: TENANT,
+    code,
+    name,
+    category_code: category,
+    configuration_type_code: null,
+    guide_section: null,
+    origin: category === 'master_input' ? 'supplied' : 'produced',
+    format: 'csv',
+    xsd_file: null,
+    typical_filename: name,
+    filename_regex: regex,
+    description: `What ${name} holds.`,
+    display_order: 1,
+    recorded_at: '2026-11-02 00:00:00.000000Z',
+});
+
 const ANSWERS: Readonly<Record<string, unknown>> = {
     'reporting.v1.report_instances.list': {
         result: OK,
@@ -158,6 +175,54 @@ const ANSWERS: Readonly<Record<string, unknown>> = {
                 input_uri: INPUT,
                 canonical_result_id: RESULT,
                 recorded_at: '2026-10-23 07:00:01.000000Z',
+            },
+        ],
+        total: 1,
+    },
+    'reporting.v1.ore_files.list': {
+        result: OK,
+        files: [
+            oreFile('master_input', 'Analytics', 'master_input', '^ore\\.xml$'),
+            oreFile('npv_report', 'NPV Report', 'valuation_report', '^npv\\.csv$'),
+        ],
+        total: 2,
+    },
+    'reporting.v1.ore_file_categories.list': {
+        result: OK,
+        categories: [
+            {
+                tenant_id: TENANT,
+                code: 'master_input',
+                name: 'Master Input',
+                origin: 'supplied',
+                description: 'The one file a run starts with.',
+                display_order: 1,
+            },
+            {
+                tenant_id: TENANT,
+                code: 'valuation_report',
+                name: 'Valuation Reports',
+                origin: 'produced',
+                description: 'The value of each trade.',
+                display_order: 2,
+            },
+        ],
+        total: 2,
+    },
+    'reporting.v1.file_types.list_by_ore_file_code': {
+        result: OK,
+        types: [
+            {
+                tenant_id: TENANT,
+                code: 'npv.outputFileName',
+                analytic_type_code: 'npv',
+                ore_parameter: 'outputFileName',
+                direction: 'output',
+                kind: 'output_file',
+                ore_file_code: 'npv_report',
+                name_pattern: 'npv.csv',
+                is_default: true,
+                description: 'The NPV report of the npv analytic.',
             },
         ],
         total: 1,
@@ -357,6 +422,68 @@ describe('GET /api/reporting/runs/:id/files', () => {
             tree: [{ id: '', parent: '', kind: 'run', ref: RUN, count: 0 }],
             files: [],
         });
+    });
+});
+
+describe('the ORE file of each run file', () => {
+    it('names each file by the ORE file its name is, and leaves a name none matches unnamed', async () => {
+        const response = await get(`/api/reporting/runs/${RUN}/files`);
+        const files = response.json<{
+            files: {
+                name: string;
+                ore_file_code: string | null;
+                ore_file_name: string | null;
+                category_code: string | null;
+            }[];
+        }>().files;
+        const of = (name: string) => files.find((file) => file.name === name);
+
+        expect(of('Input/ore.xml')).toMatchObject({
+            ore_file_code: 'master_input',
+            ore_file_name: 'Analytics',
+            category_code: 'master_input',
+        });
+        expect(of('npv.csv')).toMatchObject({
+            ore_file_code: 'npv_report',
+            category_code: 'valuation_report',
+        });
+        expect(of('log.txt')).toMatchObject({
+            ore_file_code: null,
+            ore_file_name: null,
+            category_code: null,
+        });
+    });
+
+    it('states the ORE file, its category and the parameters that name it', async () => {
+        const id = encodeURIComponent(`output:${RESULT}:npv.csv`);
+        const response = await get(`/api/reporting/runs/${RUN}/files/${id}/info`);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            file: { name: 'npv.csv', family: 'npv' },
+            ore_file: {
+                code: 'npv_report',
+                name: 'NPV Report',
+                category_name: 'Valuation Reports',
+                description: 'What NPV Report holds.',
+            },
+            parameters: [
+                {
+                    code: 'npv.outputFileName',
+                    analytic_type_code: 'npv',
+                    direction: 'output',
+                    is_default: true,
+                },
+            ],
+        });
+    });
+
+    it('serves a file no ORE file recognises, saying so', async () => {
+        const id = encodeURIComponent(`output:${RESULT}:log.txt`);
+        const response = await get(`/api/reporting/runs/${RUN}/files/${id}/info`);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ ore_file: null, parameters: [] });
     });
 });
 

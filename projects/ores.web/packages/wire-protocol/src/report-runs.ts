@@ -107,7 +107,9 @@ export type ReportRunErrorView = z.infer<typeof reportRunErrorViewSchema>;
  * when no family covers the file. `bytes` and `sha256` are what the record
  * states, null when it states nothing. `job` is the workunit the file belongs
  * to, null for a file of the whole run. `node` is the place in the run's file
- * tree the file hangs under.
+ * tree the file hangs under. `ore_file_code` and `ore_file_name` say which ORE
+ * file it is, and `category_code` its category; all three are null for a name no
+ * ORE file recognises.
  */
 export const reportRunFileViewSchema = z.object({
     id: z.string(),
@@ -119,6 +121,9 @@ export const reportRunFileViewSchema = z.object({
     sha256: z.string().nullable(),
     job: z.string().nullable(),
     node: z.string(),
+    ore_file_code: z.string().nullable(),
+    ore_file_name: z.string().nullable(),
+    category_code: z.string().nullable(),
 });
 export type ReportRunFileView = z.infer<typeof reportRunFileViewSchema>;
 
@@ -145,3 +150,46 @@ export const reportRunFilesViewSchema = z.object({
     files: z.array(reportRunFileViewSchema),
 });
 export type ReportRunFilesView = z.infer<typeof reportRunFilesViewSchema>;
+
+/** The ORE file a run's file is, as the reporting catalogue describes it. */
+export const oreFileViewSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    category_code: z.string(),
+    category_name: z.string(),
+    category_description: z.string(),
+    configuration_type_code: z.string().nullable(),
+    guide_section: z.string().nullable(),
+    origin: z.string(),
+    format: z.string(),
+    xsd_file: z.string().nullable(),
+    typical_filename: z.string(),
+    filename_regex: z.string(),
+    description: z.string(),
+});
+export type OreFileView = z.infer<typeof oreFileViewSchema>;
+
+/** One parameter of a run document that names the file, with what it is for. */
+export const oreFileParameterViewSchema = z.object({
+    code: z.string(),
+    analytic_type_code: z.string().nullable(),
+    ore_parameter: z.string(),
+    direction: z.string(),
+    kind: z.string(),
+    name_pattern: z.string(),
+    is_default: z.boolean(),
+    description: z.string(),
+});
+export type OreFileParameterView = z.infer<typeof oreFileParameterViewSchema>;
+
+/**
+ * One file of a run with everything a person needs to understand it: the file
+ * as the run holds it, the ORE file it is, and the parameters that can name it.
+ * `ore_file` is null for a name no ORE file recognises.
+ */
+export const reportRunFileInfoViewSchema = z.object({
+    file: reportRunFileViewSchema,
+    ore_file: oreFileViewSchema.nullable(),
+    parameters: z.array(oreFileParameterViewSchema),
+});
+export type ReportRunFileInfoView = z.infer<typeof reportRunFileInfoViewSchema>;

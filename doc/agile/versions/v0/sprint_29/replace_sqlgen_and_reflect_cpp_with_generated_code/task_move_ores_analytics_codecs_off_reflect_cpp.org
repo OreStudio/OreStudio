@@ -60,7 +60,7 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Analytics suites | api 2 cases, core 85, quant 526 and shell analytics 483 pass; service has no cases | the =ores.analytics.*.tests= and =ores.shell.analytics.tests= binaries | d5e6f769a4 plus this branch |
-| Codec cases | 2 cases, 220 assertions pass | =ores.analytics.api.tests "[codec]"= | d5e6f769a4 plus this branch |
+| Codec cases | 3 cases, 230 assertions pass | =ores.analytics.api.tests "[codec]"= | d5e6f769a4 plus this branch |
 | Component drift (analytics), format, CMake lists, unique type names | all clean | =check_component_drift.py --component analytics-cpp=, and the check scripts | d5e6f769a4 plus this branch |
 | reflect-cpp left in analytics sources, outside tests | none | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.analytics= | d5e6f769a4 plus this branch |
 
@@ -87,7 +87,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Operation messages compared only at defaults | =codec_wire_bytes_tests.cpp= | Accepted | Filled pricing engines and today's market documents; 3 cases, 230 assertions pass. |
+| 2 | Test the malformed-command path | =publish_from_dq_handler.cpp= | No change | dq's tests own the command; the codec's refusal is tested in scheduler. |
+| 3 | Confirm the exception type | | No change | The codec throws std::exception subclasses. |
+| 4 | Watch CI | | No change | |
 
 * Result
 

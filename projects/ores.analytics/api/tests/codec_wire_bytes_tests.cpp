@@ -196,3 +196,24 @@ TEST_CASE("every analytics operation message's default has reflect-cpp's bytes",
         ores::analytics::messaging::publish_pricing_engines_from_dq_request,
         ores::analytics::messaging::publish_todays_market_from_dq_request>();
 }
+
+TEST_CASE("filled configuration documents have reflect-cpp's bytes", codec_tags) {
+    namespace g = ores::analytics::generators;
+    ores::utility::generation::generation_context ctx(20261105);
+
+    ores::analytics::messaging::pricing_engines_document engines;
+    engines.config = g::generate_synthetic_pricing_model_config(ctx);
+    engines.products = {g::generate_synthetic_pricing_model_product(ctx),
+                        g::generate_synthetic_pricing_model_product(ctx)};
+    engines.parameters = {g::generate_synthetic_pricing_model_product_parameter(ctx)};
+    same_bytes_as_reflect_cpp(engines);
+
+    ores::analytics::messaging::todays_market_document market;
+    market.config = g::generate_synthetic_todays_market_config(ctx);
+    market.collections = {g::generate_synthetic_todays_market_collection(ctx)};
+    market.entries = {g::generate_synthetic_todays_market_entry(ctx),
+                      g::generate_synthetic_todays_market_entry(ctx)};
+    market.configurations = {g::generate_synthetic_todays_market_configuration(ctx)};
+    market.bindings = {g::generate_synthetic_todays_market_configuration_binding(ctx)};
+    same_bytes_as_reflect_cpp(market);
+}

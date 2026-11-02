@@ -138,11 +138,14 @@ select is(
     'every output file is an output');
 
 select results_eq(
-    $$select t.code, t.ore_file_code, f.format, f.xsd_file
+    $$select t.code, t.ore_file_code, f.format, x.typical_filename
         from t_live t
         join ores_reporting_ore_files_tbl f
           on f.tenant_id = t.tenant_id and f.code = t.ore_file_code
          and f.valid_to = ores_utility_infinity_timestamp_fn()
+        left join ores_reporting_ore_files_tbl x
+          on x.tenant_id = f.tenant_id and x.code = f.schema_ore_file_code
+         and x.valid_to = ores_utility_infinity_timestamp_fn()
        where t.code in ('setup.conventionsFile', 'xva.csaFile', 'xva.collateralBalancesFile',
                         'setup.fixingDataFile', 'xva.cubeFile', 'npv.outputFileName')
        order by t.code$$,
@@ -152,7 +155,7 @@ select results_eq(
              ('xva.collateralBalancesFile', 'collateral_balances', 'xml', 'collateralbalance.xsd'),
              ('xva.csaFile', 'netting_set_definitions', 'xml', 'nettingsetdefinitions.xsd'),
              ('xva.cubeFile', 'npv_cube', 'csv_gz', null)$$,
-    'each file type names the ORE file it is, which states the format and the XSD');
+    'each file type names the ORE file it is, which states the format and names the schema');
 
 select results_eq(
     $$select code, ore_file_code from t_live

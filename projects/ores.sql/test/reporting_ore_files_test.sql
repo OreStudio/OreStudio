@@ -121,7 +121,7 @@ select is(
       where v.valid_to = ores_utility_infinity_timestamp_fn()
         and (v.bytes <> octet_length(v.content) or v.sha256 <> encode(sha256(convert_to(v.content, 'UTF8')), 'hex'))),
     0::bigint,
-    'the size and the digest of every stored content are the content's own');
+    'the size and the digest of every stored content are those of the content');
 
 select ok(
     (select content like '%<xs:include schemaLocation="instruments.xsd"/>%'

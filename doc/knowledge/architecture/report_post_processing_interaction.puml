@@ -6,25 +6,30 @@ participant "ores.ore" as ore
 participant "Reporting service" as reporting
 participant "Market data service" as marketdata
 database "Result tables" as results
-database "Market state table" as state
+database "Market state tables" as state
 
 == The engine prices, and the node leaves its output behind ==
 node -> node : run the engine
 node -> store : upload the output archive
-note right of node : the whole output directory, as the run's audit blob
+note right of node : the whole output directory, the run's audit copy
+node -> store : upload each file, compressed, and a manifest
+note right of node : the manifest names each file, its size and its digest
 
 == Post-processing reads it ==
-wf -> reporting : post_process_results(run)
-reporting -> store : fetch each result's output archive
-store --> reporting : the archive
-reporting -> reporting : unpack it, and list the files
-reporting -> ore : read_metrics, read_cashflows, by family
-ore --> reporting : the run's figures
-reporting -> results : one bulk insert for each family, in one transaction
-reporting -> marketdata : store_market_state(run, archive locations, run token)
-marketdata -> store : fetch the archive
-marketdata -> ore : read_metrics, read_calibration, by family
-ore --> marketdata : the scenario and calibration values
+wf -> reporting : post_process_results(run, skipped families)
+reporting -> store : fetch each result's manifest
+loop each result file the run stores, one at a time
+  reporting -> store : fetch the file
+  store --> reporting : its text, checked against its digest
+  reporting -> ore : read it, by family, a block at a time
+  ore --> reporting : a block of rows
+  reporting -> results : insert the block
+end
+reporting -> results : commit the run's rows, once
+reporting -> marketdata : store_market_state(manifests, run token, skipped families)
+marketdata -> store : fetch each market-state file
+marketdata -> ore : read_metrics, read_calibration, read_market_inputs
+ore --> marketdata : scenario, calibration and input values
 marketdata -> state : one row for each value
 reporting --> wf : the run's result summary
 

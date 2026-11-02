@@ -8,7 +8,7 @@
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
 #+branch: feature/publish-the-catalogue-from-the-system-tenant
-#+pr:
+#+pr: 4399
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4399][#4399]] | [sql] Publish the product type catalogue from the system tenant |
 
 * Review
 

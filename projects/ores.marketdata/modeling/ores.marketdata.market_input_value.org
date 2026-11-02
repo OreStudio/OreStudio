@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 30257C6C-E6E1-4077-8D4C-B48366A7C216
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.market_input_value
 #+description: Codegen entity model for the marketdata =market_input_values= table. One value of the market a run read: a quote, a fixing or a dividend.

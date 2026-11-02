@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5B1E0B49-6C0C-4F0E-9A47-3E0F0B3C6D21
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.marketdata.adapter

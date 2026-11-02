@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2035EA76-7320-455A-B9B2-B7AB4DEB3640
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.billing_operations
 #+description: Codegen operation model for the bills of the market data sources: the request for the bill of a period and the views of the source bill and the party charges.

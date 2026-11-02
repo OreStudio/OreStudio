@@ -26,11 +26,17 @@
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_SCENARIO_VALUE_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/market_scenario_value.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
@@ -239,7 +245,645 @@ inline constexpr std::string_view created = "marketdata.v1.market_scenario_value
 inline constexpr std::string_view updated = "marketdata.v1.market_scenario_values_events.updated";
 inline constexpr std::string_view deleted = "marketdata.v1.market_scenario_values_events.deleted";
 }
+/**
+ * @brief The members of market_scenario_value_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_scenario_value_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &market_scenario_value_key::id},
+    };
+}
+
+/**
+ * @brief The members of market_scenario_value_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_scenario_value_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &market_scenario_value_write::id},
+        utility::codec::field{"party_id", &market_scenario_value_write::party_id},
+        utility::codec::field{"report_instance_id",
+                              &market_scenario_value_write::report_instance_id},
+        utility::codec::field{"result_id", &market_scenario_value_write::result_id},
+        utility::codec::field{"source", &market_scenario_value_write::source},
+        utility::codec::field{"line", &market_scenario_value_write::line},
+        utility::codec::field{"as_of", &market_scenario_value_write::as_of},
+        utility::codec::field{"factor", &market_scenario_value_write::factor},
+        utility::codec::field{"report_definition_id",
+                              &market_scenario_value_write::report_definition_id},
+        utility::codec::field{"family", &market_scenario_value_write::family},
+        utility::codec::field{"scenario", &market_scenario_value_write::scenario},
+        utility::codec::field{"value", &market_scenario_value_write::value},
+    };
+}
+
+/**
+ * @brief The members of market_scenario_value_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_scenario_value_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &market_scenario_value_change::write},
+        utility::codec::field{"precondition", &market_scenario_value_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of market_scenario_value_removal, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_scenario_value_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &market_scenario_value_removal::key},
+        utility::codec::field{"precondition", &market_scenario_value_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of market_scenario_value_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_scenario_value_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &market_scenario_value_lookup::key},
+        utility::codec::field{"market_scenario_value",
+                              &market_scenario_value_lookup::market_scenario_value},
+    };
+}
+
+/**
+ * @brief The members of market_scenario_values_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_scenario_values_filter&) {
+    return std::tuple{
+        utility::codec::field{"report_instance_id",
+                              &market_scenario_values_filter::report_instance_id},
+        utility::codec::field{"factor", &market_scenario_values_filter::factor},
+        utility::codec::field{"family", &market_scenario_values_filter::family},
+        utility::codec::field{"scenario", &market_scenario_values_filter::scenario},
+        utility::codec::field{"id_one_of", &market_scenario_values_filter::id_one_of},
+        utility::codec::field{"report_instance_id_one_of",
+                              &market_scenario_values_filter::report_instance_id_one_of},
+        utility::codec::field{"factor_one_of", &market_scenario_values_filter::factor_one_of},
+        utility::codec::field{"family_one_of", &market_scenario_values_filter::family_one_of},
+        utility::codec::field{"scenario_one_of", &market_scenario_values_filter::scenario_one_of},
+    };
+}
+
+/**
+ * @brief The members of market_scenario_value_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_scenario_value_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &market_scenario_value_event::event_id},
+        utility::codec::field{"key", &market_scenario_value_event::key},
+        utility::codec::field{"action", &market_scenario_value_event::action},
+        utility::codec::field{"version", &market_scenario_value_event::version},
+        utility::codec::field{"occurred_at", &market_scenario_value_event::occurred_at},
+        utility::codec::field{"correlation_id", &market_scenario_value_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of list_market_scenario_values_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_market_scenario_values_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_market_scenario_values_request::offset},
+        utility::codec::field{"limit", &list_market_scenario_values_request::limit},
+        utility::codec::field{"order", &list_market_scenario_values_request::order},
+        utility::codec::field{"filter", &list_market_scenario_values_request::filter},
+        utility::codec::field{"as_of", &list_market_scenario_values_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_market_scenario_values_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_market_scenario_values_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_market_scenario_values_response::result},
+        utility::codec::field{"values", &list_market_scenario_values_response::values},
+        utility::codec::field{"total", &list_market_scenario_values_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_market_scenario_value_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_scenario_value_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_market_scenario_value_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_market_scenario_value_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_scenario_value_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_market_scenario_value_response::result},
+        utility::codec::field{"market_scenario_value",
+                              &get_market_scenario_value_response::market_scenario_value},
+    };
+}
+
+/**
+ * @brief The members of get_many_market_scenario_values_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_market_scenario_values_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_market_scenario_values_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_market_scenario_values_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_market_scenario_values_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_market_scenario_values_response::result},
+        utility::codec::field{"entries", &get_many_market_scenario_values_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_market_scenario_value_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_market_scenario_value_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_market_scenario_value_request::change},
+        utility::codec::field{"intent", &put_market_scenario_value_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_market_scenario_value_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_market_scenario_value_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_market_scenario_value_response::result},
+        utility::codec::field{"market_scenario_value",
+                              &put_market_scenario_value_response::market_scenario_value},
+    };
+}
+
+/**
+ * @brief The members of put_many_market_scenario_values_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_market_scenario_values_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_market_scenario_values_request::changes},
+        utility::codec::field{"intent", &put_many_market_scenario_values_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_market_scenario_values_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_market_scenario_values_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_market_scenario_values_response::result},
+        utility::codec::field{"values", &put_many_market_scenario_values_response::values},
+    };
+}
+
+/**
+ * @brief The members of delete_market_scenario_value_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_market_scenario_value_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_market_scenario_value_request::removal},
+        utility::codec::field{"intent", &delete_market_scenario_value_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_market_scenario_value_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_market_scenario_value_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_market_scenario_value_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_market_scenario_values_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_market_scenario_values_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_market_scenario_values_request::removals},
+        utility::codec::field{"intent", &delete_many_market_scenario_values_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_market_scenario_values_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_market_scenario_values_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_market_scenario_values_response::result},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_scenario_value_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::market_scenario_value_key& v);
+    static ores::marketdata::messaging::market_scenario_value_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_scenario_value_key& v);
+    static ores::marketdata::messaging::market_scenario_value_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_scenario_value_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::market_scenario_value_write& v);
+    static ores::marketdata::messaging::market_scenario_value_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_scenario_value_write& v);
+    static ores::marketdata::messaging::market_scenario_value_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_scenario_value_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::market_scenario_value_change& v);
+    static ores::marketdata::messaging::market_scenario_value_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_scenario_value_change& v);
+    static ores::marketdata::messaging::market_scenario_value_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_scenario_value_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::market_scenario_value_removal& v);
+    static ores::marketdata::messaging::market_scenario_value_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_scenario_value_removal& v);
+    static ores::marketdata::messaging::market_scenario_value_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_scenario_value_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::market_scenario_value_lookup& v);
+    static ores::marketdata::messaging::market_scenario_value_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_scenario_value_lookup& v);
+    static ores::marketdata::messaging::market_scenario_value_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_scenario_values_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::market_scenario_values_filter& v);
+    static ores::marketdata::messaging::market_scenario_values_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_scenario_values_filter& v);
+    static ores::marketdata::messaging::market_scenario_values_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_scenario_value_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::market_scenario_value_event& v);
+    static ores::marketdata::messaging::market_scenario_value_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_scenario_value_event& v);
+    static ores::marketdata::messaging::market_scenario_value_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_market_scenario_values_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_market_scenario_values_request& v);
+    static ores::marketdata::messaging::list_market_scenario_values_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_market_scenario_values_request& v);
+    static ores::marketdata::messaging::list_market_scenario_values_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_market_scenario_values_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_market_scenario_values_response& v);
+    static ores::marketdata::messaging::list_market_scenario_values_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_market_scenario_values_response& v);
+    static ores::marketdata::messaging::list_market_scenario_values_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_market_scenario_value_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_market_scenario_value_request& v);
+    static ores::marketdata::messaging::get_market_scenario_value_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_market_scenario_value_request& v);
+    static ores::marketdata::messaging::get_market_scenario_value_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_market_scenario_value_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_market_scenario_value_response& v);
+    static ores::marketdata::messaging::get_market_scenario_value_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_market_scenario_value_response& v);
+    static ores::marketdata::messaging::get_market_scenario_value_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_market_scenario_values_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_market_scenario_values_request& v);
+    static ores::marketdata::messaging::get_many_market_scenario_values_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_market_scenario_values_request& v);
+    static ores::marketdata::messaging::get_many_market_scenario_values_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_market_scenario_values_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_market_scenario_values_response& v);
+    static ores::marketdata::messaging::get_many_market_scenario_values_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_market_scenario_values_response& v);
+    static ores::marketdata::messaging::get_many_market_scenario_values_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_market_scenario_value_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_market_scenario_value_request& v);
+    static ores::marketdata::messaging::put_market_scenario_value_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_market_scenario_value_request& v);
+    static ores::marketdata::messaging::put_market_scenario_value_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_market_scenario_value_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_market_scenario_value_response& v);
+    static ores::marketdata::messaging::put_market_scenario_value_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_market_scenario_value_response& v);
+    static ores::marketdata::messaging::put_market_scenario_value_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_many_market_scenario_values_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_many_market_scenario_values_request& v);
+    static ores::marketdata::messaging::put_many_market_scenario_values_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_many_market_scenario_values_request& v);
+    static ores::marketdata::messaging::put_many_market_scenario_values_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_many_market_scenario_values_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_many_market_scenario_values_response& v);
+    static ores::marketdata::messaging::put_many_market_scenario_values_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_many_market_scenario_values_response& v);
+    static ores::marketdata::messaging::put_many_market_scenario_values_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_market_scenario_value_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_market_scenario_value_request& v);
+    static ores::marketdata::messaging::delete_market_scenario_value_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_market_scenario_value_request& v);
+    static ores::marketdata::messaging::delete_market_scenario_value_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_market_scenario_value_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_market_scenario_value_response& v);
+    static ores::marketdata::messaging::delete_market_scenario_value_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_market_scenario_value_response& v);
+    static ores::marketdata::messaging::delete_market_scenario_value_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_many_market_scenario_values_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_many_market_scenario_values_request& v);
+    static ores::marketdata::messaging::delete_many_market_scenario_values_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_many_market_scenario_values_request& v);
+    static ores::marketdata::messaging::delete_many_market_scenario_values_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_many_market_scenario_values_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_many_market_scenario_values_response& v);
+    static ores::marketdata::messaging::delete_many_market_scenario_values_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::delete_many_market_scenario_values_response& v);
+    static ores::marketdata::messaging::delete_many_market_scenario_values_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

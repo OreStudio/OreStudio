@@ -26,11 +26,17 @@
 #define ORES_MARKETDATA_API_MESSAGING_CURVE_PUBLISH_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/curve_publish.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
@@ -212,7 +218,533 @@ inline constexpr std::string_view created = "marketdata.v1.curve_publishes_event
 inline constexpr std::string_view updated = "marketdata.v1.curve_publishes_events.updated";
 inline constexpr std::string_view deleted = "marketdata.v1.curve_publishes_events.deleted";
 }
+/**
+ * @brief The members of curve_publish_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_publish_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &curve_publish_key::id},
+    };
+}
+
+/**
+ * @brief The members of curve_publish_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_publish_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &curve_publish_lookup::key},
+        utility::codec::field{"curve_publish", &curve_publish_lookup::curve_publish},
+    };
+}
+
+/**
+ * @brief The members of curve_publishes_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_publishes_filter&) {
+    return std::tuple{
+        utility::codec::field{"request_id", &curve_publishes_filter::request_id},
+        utility::codec::field{"party_id", &curve_publishes_filter::party_id},
+        utility::codec::field{"bootstrap_config_id", &curve_publishes_filter::bootstrap_config_id},
+        utility::codec::field{"id_one_of", &curve_publishes_filter::id_one_of},
+        utility::codec::field{"request_id_one_of", &curve_publishes_filter::request_id_one_of},
+        utility::codec::field{"party_id_one_of", &curve_publishes_filter::party_id_one_of},
+        utility::codec::field{"bootstrap_config_id_one_of",
+                              &curve_publishes_filter::bootstrap_config_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of curve_publish_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_publish_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &curve_publish_event::event_id},
+        utility::codec::field{"key", &curve_publish_event::key},
+        utility::codec::field{"action", &curve_publish_event::action},
+        utility::codec::field{"version", &curve_publish_event::version},
+        utility::codec::field{"occurred_at", &curve_publish_event::occurred_at},
+        utility::codec::field{"correlation_id", &curve_publish_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of curve_publish_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_publish_version_key&) {
+    return std::tuple{
+        utility::codec::field{"curve_publish", &curve_publish_version_key::curve_publish},
+        utility::codec::field{"version", &curve_publish_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of curve_publish_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_publish_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &curve_publish_versions_filter::version},
+        utility::codec::field{"from_version", &curve_publish_versions_filter::from_version},
+        utility::codec::field{"to_version", &curve_publish_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_curve_publishes_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_publishes_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_curve_publishes_request::offset},
+        utility::codec::field{"limit", &list_curve_publishes_request::limit},
+        utility::codec::field{"order", &list_curve_publishes_request::order},
+        utility::codec::field{"filter", &list_curve_publishes_request::filter},
+        utility::codec::field{"as_of", &list_curve_publishes_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_curve_publishes_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_publishes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_curve_publishes_response::result},
+        utility::codec::field{"curve_publishes", &list_curve_publishes_response::curve_publishes},
+        utility::codec::field{"total", &list_curve_publishes_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_curve_publish_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_publish_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_curve_publish_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_curve_publish_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_publish_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_curve_publish_response::result},
+        utility::codec::field{"curve_publish", &get_curve_publish_response::curve_publish},
+    };
+}
+
+/**
+ * @brief The members of get_many_curve_publishes_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_curve_publishes_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_curve_publishes_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_curve_publishes_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_curve_publishes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_curve_publishes_response::result},
+        utility::codec::field{"entries", &get_many_curve_publishes_response::entries},
+    };
+}
+
+/**
+ * @brief The members of list_by_request_id_curve_publishes_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_request_id_curve_publishes_request&) {
+    return std::tuple{
+        utility::codec::field{"request_id",
+                              &list_by_request_id_curve_publishes_request::request_id},
+        utility::codec::field{"scope", &list_by_request_id_curve_publishes_request::scope},
+        utility::codec::field{"offset", &list_by_request_id_curve_publishes_request::offset},
+        utility::codec::field{"limit", &list_by_request_id_curve_publishes_request::limit},
+        utility::codec::field{"order", &list_by_request_id_curve_publishes_request::order},
+        utility::codec::field{"filter", &list_by_request_id_curve_publishes_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_request_id_curve_publishes_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_request_id_curve_publishes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_request_id_curve_publishes_response::result},
+        utility::codec::field{"curve_publishes",
+                              &list_by_request_id_curve_publishes_response::curve_publishes},
+        utility::codec::field{"total", &list_by_request_id_curve_publishes_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_curve_publish_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_publish_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_curve_publish_versions_request::key},
+        utility::codec::field{"offset", &list_curve_publish_versions_request::offset},
+        utility::codec::field{"limit", &list_curve_publish_versions_request::limit},
+        utility::codec::field{"order", &list_curve_publish_versions_request::order},
+        utility::codec::field{"filter", &list_curve_publish_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_curve_publish_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_publish_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_curve_publish_versions_response::result},
+        utility::codec::field{"versions", &list_curve_publish_versions_response::versions},
+        utility::codec::field{"total", &list_curve_publish_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_curve_publish_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_publish_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_curve_publish_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_curve_publish_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_publish_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_curve_publish_version_response::result},
+        utility::codec::field{"version", &get_curve_publish_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::curve_publish_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_publish_key& v);
+    static ores::marketdata::messaging::curve_publish_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::curve_publish_key& v);
+    static ores::marketdata::messaging::curve_publish_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::curve_publish_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_publish_lookup& v);
+    static ores::marketdata::messaging::curve_publish_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::curve_publish_lookup& v);
+    static ores::marketdata::messaging::curve_publish_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::curve_publishes_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_publishes_filter& v);
+    static ores::marketdata::messaging::curve_publishes_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::curve_publishes_filter& v);
+    static ores::marketdata::messaging::curve_publishes_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::curve_publish_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_publish_event& v);
+    static ores::marketdata::messaging::curve_publish_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::curve_publish_event& v);
+    static ores::marketdata::messaging::curve_publish_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::curve_publish_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_publish_version_key& v);
+    static ores::marketdata::messaging::curve_publish_version_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::curve_publish_version_key& v);
+    static ores::marketdata::messaging::curve_publish_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::curve_publish_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::curve_publish_versions_filter& v);
+    static ores::marketdata::messaging::curve_publish_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::curve_publish_versions_filter& v);
+    static ores::marketdata::messaging::curve_publish_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_curve_publishes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_curve_publishes_request& v);
+    static ores::marketdata::messaging::list_curve_publishes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_curve_publishes_request& v);
+    static ores::marketdata::messaging::list_curve_publishes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_curve_publishes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_curve_publishes_response& v);
+    static ores::marketdata::messaging::list_curve_publishes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_curve_publishes_response& v);
+    static ores::marketdata::messaging::list_curve_publishes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_curve_publish_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_curve_publish_request& v);
+    static ores::marketdata::messaging::get_curve_publish_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_curve_publish_request& v);
+    static ores::marketdata::messaging::get_curve_publish_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_curve_publish_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_curve_publish_response& v);
+    static ores::marketdata::messaging::get_curve_publish_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_curve_publish_response& v);
+    static ores::marketdata::messaging::get_curve_publish_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_curve_publishes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_curve_publishes_request& v);
+    static ores::marketdata::messaging::get_many_curve_publishes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_curve_publishes_request& v);
+    static ores::marketdata::messaging::get_many_curve_publishes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_curve_publishes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_curve_publishes_response& v);
+    static ores::marketdata::messaging::get_many_curve_publishes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_curve_publishes_response& v);
+    static ores::marketdata::messaging::get_many_curve_publishes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_by_request_id_curve_publishes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_by_request_id_curve_publishes_request& v);
+    static ores::marketdata::messaging::list_by_request_id_curve_publishes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_by_request_id_curve_publishes_request& v);
+    static ores::marketdata::messaging::list_by_request_id_curve_publishes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_by_request_id_curve_publishes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_by_request_id_curve_publishes_response& v);
+    static ores::marketdata::messaging::list_by_request_id_curve_publishes_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::list_by_request_id_curve_publishes_response& v);
+    static ores::marketdata::messaging::list_by_request_id_curve_publishes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_curve_publish_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_curve_publish_versions_request& v);
+    static ores::marketdata::messaging::list_curve_publish_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_curve_publish_versions_request& v);
+    static ores::marketdata::messaging::list_curve_publish_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_curve_publish_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_curve_publish_versions_response& v);
+    static ores::marketdata::messaging::list_curve_publish_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_curve_publish_versions_response& v);
+    static ores::marketdata::messaging::list_curve_publish_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_curve_publish_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_curve_publish_version_request& v);
+    static ores::marketdata::messaging::get_curve_publish_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_curve_publish_version_request& v);
+    static ores::marketdata::messaging::get_curve_publish_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_curve_publish_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_curve_publish_version_response& v);
+    static ores::marketdata::messaging::get_curve_publish_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_curve_publish_version_response& v);
+    static ores::marketdata::messaging::get_curve_publish_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

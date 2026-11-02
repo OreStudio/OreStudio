@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.curve_publish
 #+description: Codegen entity model for the marketdata curve_publishes table; the subject a marketdata.curve_publish approval request names, the publisher and time the apply records on it, and the facts that end a set.

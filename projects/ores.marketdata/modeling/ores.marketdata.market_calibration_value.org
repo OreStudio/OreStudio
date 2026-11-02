@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D28F4FDA-E206-48CF-A59F-87936FFDA4FA
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.market_calibration_value
 #+description: Codegen entity model for the marketdata =market_calibration_values= table. One value the engine stated about a market object a run calibrated.

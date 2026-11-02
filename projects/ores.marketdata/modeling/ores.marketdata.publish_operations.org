@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B6C0E2A4-5D71-4F38-8A9C-1E4B7D6F0C35
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.publish_operations
 #+description: Codegen operation model for the workflow steps that publish the market data catalogue and observations from a DQ dataset.

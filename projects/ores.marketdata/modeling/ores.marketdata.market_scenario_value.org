@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 4299B277-F907-4EDB-8E4C-12EEB0C9D4C5
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.market_scenario_value
 #+description: Codegen entity model for the marketdata =market_scenario_values= table. One value a scenario a run generated states for one risk factor at one date.

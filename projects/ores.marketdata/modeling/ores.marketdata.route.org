@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: A1A78FC2-713E-430F-8079-ED4626B5FF1A
+:ores.cpp.wire-codec.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.marketdata.route

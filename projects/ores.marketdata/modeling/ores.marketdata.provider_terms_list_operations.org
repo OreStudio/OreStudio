@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D11C0127-09DE-4419-A179-BA2792E98C97
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.provider_terms_list_operations
 #+description: Codegen operation model for accepting the terms of several providers in one request, each as the single accept would.

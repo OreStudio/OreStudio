@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7C1F3B52-9D84-4E6A-B1C7-5A2E8D0F4B93
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.tick
 #+description: Codegen entity model for the marketdata ticks table; one append-only hypertable for the ticks of one retention class.

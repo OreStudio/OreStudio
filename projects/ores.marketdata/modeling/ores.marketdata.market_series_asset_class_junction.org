@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8E9E03CE-9B64-4A1C-B201-A96AE159B4CE
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.market_series_asset_class
 #+description: Codegen junction model for market_series_asset_classes.

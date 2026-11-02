@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 78CCF7BC-7D0A-437C-9E4B-395DB3CB03E9
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.series_classification_rule
 #+description: The taxonomy rule for one oresmd identity -- a datum keyed by instrument and quote, or an index keyed by family -- and the asset classes and series subclass it maps onto.

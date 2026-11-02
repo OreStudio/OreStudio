@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 76a0467e-3dd0-4516-924b-5c16a10b9bf7
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.operations
 #+description: Codegen operation model for the marketdata component's domain operations: the subjects that are not entity verbs and so do not belong in the common resource grammar.

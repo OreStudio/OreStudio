@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9A498098-9038-4930-9074-67F84BAFB19E
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.notification_argument
 #+description: Codegen junction model for notification_arguments: the values a notification's message names, one row each.

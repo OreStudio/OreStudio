@@ -26,11 +26,17 @@
 #define ORES_INBOX_API_MESSAGING_APPROVAL_KIND_PART_PROTOCOL_HPP
 
 #include "ores.inbox.api/domain/approval_kind_part.hpp"
+#include "ores.inbox.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::inbox::messaging {
@@ -222,6 +228,621 @@ struct list_by_kind_code_approval_kind_parts_response {
     std::uint64_t total;
 };
 
+/**
+ * @brief The members of approval_kind_part_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const approval_kind_part_key&) {
+    return std::tuple{
+        utility::codec::field{"kind_code", &approval_kind_part_key::kind_code},
+        utility::codec::field{"part_code", &approval_kind_part_key::part_code},
+    };
 }
+
+/**
+ * @brief The members of approval_kind_part_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const approval_kind_part_write&) {
+    return std::tuple{
+        utility::codec::field{"kind_code", &approval_kind_part_write::kind_code},
+        utility::codec::field{"part_code", &approval_kind_part_write::part_code},
+    };
+}
+
+/**
+ * @brief The members of approval_kind_part_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const approval_kind_part_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &approval_kind_part_change::write},
+        utility::codec::field{"precondition", &approval_kind_part_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of approval_kind_part_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const approval_kind_part_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &approval_kind_part_removal::key},
+        utility::codec::field{"precondition", &approval_kind_part_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of approval_kind_part_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const approval_kind_part_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &approval_kind_part_lookup::key},
+        utility::codec::field{"approval_kind_part", &approval_kind_part_lookup::approval_kind_part},
+    };
+}
+
+/**
+ * @brief The members of approval_kind_parts_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const approval_kind_parts_filter&) {
+    return std::tuple{
+        utility::codec::field{"kind_code", &approval_kind_parts_filter::kind_code},
+        utility::codec::field{"kind_code_one_of", &approval_kind_parts_filter::kind_code_one_of},
+    };
+}
+
+/**
+ * @brief The members of list_approval_kind_parts_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_approval_kind_parts_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_approval_kind_parts_request::offset},
+        utility::codec::field{"limit", &list_approval_kind_parts_request::limit},
+        utility::codec::field{"order", &list_approval_kind_parts_request::order},
+        utility::codec::field{"filter", &list_approval_kind_parts_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_approval_kind_parts_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_approval_kind_parts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_approval_kind_parts_response::result},
+        utility::codec::field{"approval_kind_parts",
+                              &list_approval_kind_parts_response::approval_kind_parts},
+        utility::codec::field{"total", &list_approval_kind_parts_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_approval_kind_part_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_approval_kind_part_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_approval_kind_part_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_approval_kind_part_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_approval_kind_part_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_approval_kind_part_response::result},
+        utility::codec::field{"approval_kind_part",
+                              &get_approval_kind_part_response::approval_kind_part},
+    };
+}
+
+/**
+ * @brief The members of get_many_approval_kind_parts_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_approval_kind_parts_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_approval_kind_parts_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_approval_kind_parts_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_approval_kind_parts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_approval_kind_parts_response::result},
+        utility::codec::field{"entries", &get_many_approval_kind_parts_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_approval_kind_part_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_approval_kind_part_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_approval_kind_part_request::change},
+        utility::codec::field{"intent", &put_approval_kind_part_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_approval_kind_part_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_approval_kind_part_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_approval_kind_part_response::result},
+        utility::codec::field{"approval_kind_part",
+                              &put_approval_kind_part_response::approval_kind_part},
+    };
+}
+
+/**
+ * @brief The members of put_many_approval_kind_parts_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_approval_kind_parts_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_approval_kind_parts_request::changes},
+        utility::codec::field{"intent", &put_many_approval_kind_parts_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_approval_kind_parts_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_approval_kind_parts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_approval_kind_parts_response::result},
+        utility::codec::field{"approval_kind_parts",
+                              &put_many_approval_kind_parts_response::approval_kind_parts},
+    };
+}
+
+/**
+ * @brief The members of delete_approval_kind_part_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_approval_kind_part_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_approval_kind_part_request::removal},
+        utility::codec::field{"intent", &delete_approval_kind_part_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_approval_kind_part_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_approval_kind_part_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_approval_kind_part_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_approval_kind_parts_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_approval_kind_parts_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_approval_kind_parts_request::removals},
+        utility::codec::field{"intent", &delete_many_approval_kind_parts_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_approval_kind_parts_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_approval_kind_parts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_approval_kind_parts_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_kind_code_approval_kind_parts_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_kind_code_approval_kind_parts_request&) {
+    return std::tuple{
+        utility::codec::field{"kind_code",
+                              &list_by_kind_code_approval_kind_parts_request::kind_code},
+        utility::codec::field{"scope", &list_by_kind_code_approval_kind_parts_request::scope},
+        utility::codec::field{"offset", &list_by_kind_code_approval_kind_parts_request::offset},
+        utility::codec::field{"limit", &list_by_kind_code_approval_kind_parts_request::limit},
+        utility::codec::field{"order", &list_by_kind_code_approval_kind_parts_request::order},
+        utility::codec::field{"filter", &list_by_kind_code_approval_kind_parts_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_kind_code_approval_kind_parts_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_kind_code_approval_kind_parts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_kind_code_approval_kind_parts_response::result},
+        utility::codec::field{"approval_kind_parts",
+                              &list_by_kind_code_approval_kind_parts_response::approval_kind_parts},
+        utility::codec::field{"total", &list_by_kind_code_approval_kind_parts_response::total},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::approval_kind_part_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::approval_kind_part_key& v);
+    static ores::inbox::messaging::approval_kind_part_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::approval_kind_part_key& v);
+    static ores::inbox::messaging::approval_kind_part_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::approval_kind_part_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::approval_kind_part_write& v);
+    static ores::inbox::messaging::approval_kind_part_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::approval_kind_part_write& v);
+    static ores::inbox::messaging::approval_kind_part_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::approval_kind_part_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::approval_kind_part_change& v);
+    static ores::inbox::messaging::approval_kind_part_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::approval_kind_part_change& v);
+    static ores::inbox::messaging::approval_kind_part_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::approval_kind_part_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::approval_kind_part_removal& v);
+    static ores::inbox::messaging::approval_kind_part_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::approval_kind_part_removal& v);
+    static ores::inbox::messaging::approval_kind_part_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::approval_kind_part_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::approval_kind_part_lookup& v);
+    static ores::inbox::messaging::approval_kind_part_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::approval_kind_part_lookup& v);
+    static ores::inbox::messaging::approval_kind_part_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::approval_kind_parts_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::approval_kind_parts_filter& v);
+    static ores::inbox::messaging::approval_kind_parts_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::approval_kind_parts_filter& v);
+    static ores::inbox::messaging::approval_kind_parts_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::list_approval_kind_parts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_approval_kind_parts_request& v);
+    static ores::inbox::messaging::list_approval_kind_parts_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_approval_kind_parts_request& v);
+    static ores::inbox::messaging::list_approval_kind_parts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_approval_kind_parts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_approval_kind_parts_response& v);
+    static ores::inbox::messaging::list_approval_kind_parts_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_approval_kind_parts_response& v);
+    static ores::inbox::messaging::list_approval_kind_parts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approval_kind_part_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approval_kind_part_request& v);
+    static ores::inbox::messaging::get_approval_kind_part_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_approval_kind_part_request& v);
+    static ores::inbox::messaging::get_approval_kind_part_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approval_kind_part_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approval_kind_part_response& v);
+    static ores::inbox::messaging::get_approval_kind_part_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_approval_kind_part_response& v);
+    static ores::inbox::messaging::get_approval_kind_part_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_many_approval_kind_parts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_many_approval_kind_parts_request& v);
+    static ores::inbox::messaging::get_many_approval_kind_parts_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_many_approval_kind_parts_request& v);
+    static ores::inbox::messaging::get_many_approval_kind_parts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_many_approval_kind_parts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_many_approval_kind_parts_response& v);
+    static ores::inbox::messaging::get_many_approval_kind_parts_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_many_approval_kind_parts_response& v);
+    static ores::inbox::messaging::get_many_approval_kind_parts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::put_approval_kind_part_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::put_approval_kind_part_request& v);
+    static ores::inbox::messaging::put_approval_kind_part_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_approval_kind_part_request& v);
+    static ores::inbox::messaging::put_approval_kind_part_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::put_approval_kind_part_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::put_approval_kind_part_response& v);
+    static ores::inbox::messaging::put_approval_kind_part_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_approval_kind_part_response& v);
+    static ores::inbox::messaging::put_approval_kind_part_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::put_many_approval_kind_parts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::put_many_approval_kind_parts_request& v);
+    static ores::inbox::messaging::put_many_approval_kind_parts_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_many_approval_kind_parts_request& v);
+    static ores::inbox::messaging::put_many_approval_kind_parts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::put_many_approval_kind_parts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::put_many_approval_kind_parts_response& v);
+    static ores::inbox::messaging::put_many_approval_kind_parts_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_many_approval_kind_parts_response& v);
+    static ores::inbox::messaging::put_many_approval_kind_parts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_approval_kind_part_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_approval_kind_part_request& v);
+    static ores::inbox::messaging::delete_approval_kind_part_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_approval_kind_part_request& v);
+    static ores::inbox::messaging::delete_approval_kind_part_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_approval_kind_part_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_approval_kind_part_response& v);
+    static ores::inbox::messaging::delete_approval_kind_part_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_approval_kind_part_response& v);
+    static ores::inbox::messaging::delete_approval_kind_part_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_many_approval_kind_parts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_many_approval_kind_parts_request& v);
+    static ores::inbox::messaging::delete_many_approval_kind_parts_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_many_approval_kind_parts_request& v);
+    static ores::inbox::messaging::delete_many_approval_kind_parts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_many_approval_kind_parts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_many_approval_kind_parts_response& v);
+    static ores::inbox::messaging::delete_many_approval_kind_parts_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_many_approval_kind_parts_response& v);
+    static ores::inbox::messaging::delete_many_approval_kind_parts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_by_kind_code_approval_kind_parts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_by_kind_code_approval_kind_parts_request& v);
+    static ores::inbox::messaging::list_by_kind_code_approval_kind_parts_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_by_kind_code_approval_kind_parts_request& v);
+    static ores::inbox::messaging::list_by_kind_code_approval_kind_parts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_by_kind_code_approval_kind_parts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_by_kind_code_approval_kind_parts_response& v);
+    static ores::inbox::messaging::list_by_kind_code_approval_kind_parts_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_by_kind_code_approval_kind_parts_response& v);
+    static ores::inbox::messaging::list_by_kind_code_approval_kind_parts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -26,11 +26,11 @@ The three remaining convention kinds are on the family's shape: a central conven
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | The fix float (PR #4351) and basis (PR #4359) kinds are merged. The commodity future kind is split into a central row, its contract terms and four optional parts. |
+| Now          | Nothing. |
 | Waiting on   | The review of the commodity future PR. |
-| Next         | Merge the commodity future PR. |
+| Next         | Nothing. |
 | Last touched | 2026-11-02                             |
 
 * Acceptance

@@ -54,6 +54,7 @@
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
@@ -64,7 +65,6 @@
 #include <algorithm>
 #include <chrono>
 #include <memory>
-#include <rfl/json.hpp>
 #include <stdexcept>
 
 namespace ores::iam::messaging {
@@ -1011,7 +1011,8 @@ public:
                 throw std::runtime_error("No RSA private key configured for JWT signing. "
                                          "Run generate_keys.sh in publish/bin/ to generate "
                                          "the key, then restart the IAM service.");
-            const auto json = std::string("{\"public_key\":") + rfl::json::write(pub_key) + "}";
+            const auto json =
+                std::string("{\"public_key\":") + ores::utility::codec::json::write(pub_key) + "}";
             nats_.publish(msg.reply_subject, ores::nats::as_bytes(json));
             BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {

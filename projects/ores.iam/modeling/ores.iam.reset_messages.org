@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
 :ID: 37671A0B-2043-439C-B4FF-1C9805EBD1DB
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.reset_messages
 #+description: Codegen operation model for the reset protocol, rendered to C++ and TypeScript from one source.

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 16DCD9A8-0854-4237-AAAC-2E6129EB79D4
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.role_grant_request
 #+description: Codegen entity model for the iam =role_grant_request= table: the IAM detail of an iam.role_grant approval request.

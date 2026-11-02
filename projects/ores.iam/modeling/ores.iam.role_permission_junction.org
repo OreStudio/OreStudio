@@ -3,6 +3,7 @@
 :ores.cpp.nats-sub-registrar.enabled: nil
 :ores.cpp.service.enabled: nil
 :ID: 084B7C54-2EE8-4F22-A015-2A5ED8BC9C6F
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.role_permission
 #+description: Codegen junction model for role_permissions. Renders the generic junction protocol itself.

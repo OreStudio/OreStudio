@@ -44,6 +44,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <boost/uuid/nil_generator.hpp>
@@ -277,12 +278,13 @@ public:
                     << "Workflow step completed: " << msg.subject;
                 const auto resp = save_account_response{
                     .success = true, .account_id = boost::uuids::to_string(acct.id)};
-                publish_step_completion(nats_,
-                                        step_id,
-                                        inst_id,
-                                        ores::workflow::messaging::step_outcome::completed,
-                                        rfl::json::write(resp),
-                                        "");
+                publish_step_completion(
+                    nats_,
+                    step_id,
+                    inst_id,
+                    ores::workflow::messaging::step_outcome::completed,
+                    ores::utility::codec::wire_traits<save_account_response>::write_json(resp),
+                    "");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_handler_lg(), error)
                     << "Workflow step failed: " << msg.subject << " — " << e.what();

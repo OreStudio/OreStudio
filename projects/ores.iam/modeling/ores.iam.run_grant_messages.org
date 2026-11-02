@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6EDF3257-4D73-40AA-B55D-4C3B343F0E8C
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.run_grant_messages
 #+description: Codegen operation model for creating and revoking run grants, the only writes the run grant table accepts.

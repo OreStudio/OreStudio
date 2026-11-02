@@ -25,7 +25,14 @@
 #ifndef ORES_IAM_API_MESSAGING_TENANT_SESSION_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_TENANT_SESSION_PROTOCOL_HPP
 
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::iam::messaging {
 
@@ -105,6 +112,112 @@ struct leave_tenant_response {
     std::string message;
 };
 
+/**
+ * @brief The members of enter_tenant_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const enter_tenant_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"tenant_id", &enter_tenant_request::tenant_id},
+    };
 }
+
+/**
+ * @brief The members of enter_tenant_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const enter_tenant_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &enter_tenant_response::success},
+        ::ores::utility::codec::field{"message", &enter_tenant_response::message},
+        ::ores::utility::codec::field{"token", &enter_tenant_response::token},
+        ::ores::utility::codec::field{"tenant_id", &enter_tenant_response::tenant_id},
+        ::ores::utility::codec::field{"tenant_code", &enter_tenant_response::tenant_code},
+        ::ores::utility::codec::field{"tenant_name", &enter_tenant_response::tenant_name},
+        ::ores::utility::codec::field{"party_id", &enter_tenant_response::party_id},
+        ::ores::utility::codec::field{"party_name", &enter_tenant_response::party_name},
+        ::ores::utility::codec::field{"access_lifetime_s",
+                                      &enter_tenant_response::access_lifetime_s},
+    };
+}
+
+/**
+ * @brief The members of leave_tenant_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const leave_tenant_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of leave_tenant_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const leave_tenant_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &leave_tenant_response::success},
+        ::ores::utility::codec::field{"message", &leave_tenant_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::enter_tenant_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::enter_tenant_request& v);
+    static ores::iam::messaging::enter_tenant_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::enter_tenant_request& v);
+    static ores::iam::messaging::enter_tenant_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::enter_tenant_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::enter_tenant_response& v);
+    static ores::iam::messaging::enter_tenant_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::enter_tenant_response& v);
+    static ores::iam::messaging::enter_tenant_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::leave_tenant_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::leave_tenant_request& v);
+    static ores::iam::messaging::leave_tenant_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::leave_tenant_request& v);
+    static ores::iam::messaging::leave_tenant_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::leave_tenant_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::leave_tenant_response& v);
+    static ores::iam::messaging::leave_tenant_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::leave_tenant_response& v);
+    static ores::iam::messaging::leave_tenant_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -21,11 +21,10 @@
 #define ORES_IAM_SERVICE_SEED_PROFILE_PARAMETER_CHECK_HPP
 
 #include "ores.iam.api/domain/seed_profile_parameter.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
 #include <cctype>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 #include <utility>
 #include <vector>
@@ -86,7 +85,7 @@ namespace detail {
 read_choices(const std::string& choices_json) {
     if (choices_json.empty())
         return std::vector<std::string>{};
-    auto parsed = rfl::json::read<std::vector<std::string>>(choices_json);
+    auto parsed = ores::utility::codec::json::try_read<std::vector<std::string>>(choices_json);
     if (!parsed)
         return std::nullopt;
     return *parsed;

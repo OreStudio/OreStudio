@@ -26,10 +26,17 @@
 #define ORES_IAM_API_MESSAGING_ROLE_REQUEST_OPERATIONS_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -124,6 +131,135 @@ struct get_request_roles_response {
     std::vector<requested_role> roles;
 };
 
+/**
+ * @brief The members of ask_for_roles_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ask_for_roles_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"role_ids", &ask_for_roles_request::role_ids},
+        ::ores::utility::codec::field{"reason", &ask_for_roles_request::reason},
+    };
 }
+
+/**
+ * @brief The members of ask_for_roles_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ask_for_roles_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &ask_for_roles_response::result},
+        ::ores::utility::codec::field{"request_id", &ask_for_roles_response::request_id},
+    };
+}
+
+/**
+ * @brief The members of get_request_roles_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_request_roles_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &get_request_roles_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of requested_role, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const requested_role&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"role", &requested_role::role},
+        ::ores::utility::codec::field{"asked_at", &requested_role::asked_at},
+        ::ores::utility::codec::field{"applied_at", &requested_role::applied_at},
+        ::ores::utility::codec::field{"applied_by", &requested_role::applied_by},
+    };
+}
+
+/**
+ * @brief The members of get_request_roles_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_request_roles_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_request_roles_response::result},
+        ::ores::utility::codec::field{"roles", &get_request_roles_response::roles},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::ask_for_roles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::ask_for_roles_request& v);
+    static ores::iam::messaging::ask_for_roles_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::ask_for_roles_request& v);
+    static ores::iam::messaging::ask_for_roles_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::ask_for_roles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::ask_for_roles_response& v);
+    static ores::iam::messaging::ask_for_roles_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::ask_for_roles_response& v);
+    static ores::iam::messaging::ask_for_roles_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_request_roles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_request_roles_request& v);
+    static ores::iam::messaging::get_request_roles_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_request_roles_request& v);
+    static ores::iam::messaging::get_request_roles_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::requested_role> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::requested_role& v);
+    static ores::iam::messaging::requested_role read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::requested_role& v);
+    static ores::iam::messaging::requested_role read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_request_roles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_request_roles_response& v);
+    static ores::iam::messaging::get_request_roles_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_request_roles_response& v);
+    static ores::iam::messaging::get_request_roles_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

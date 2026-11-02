@@ -3,6 +3,7 @@
 :ores.cpp.nats-sub-registrar.enabled: nil
 :ores.cpp.service.enabled: nil
 :ID: 95D828DE-1635-40B2-97B0-E14C89B91A34
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.account_role
 #+description: Codegen junction model for account_roles. Renders the generic junction protocol itself.

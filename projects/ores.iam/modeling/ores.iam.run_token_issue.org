@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: AE009E37-918F-417F-9182-0027F115D929
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.run_token_issue
 #+description: Codegen entity model for the iam run_token_issues hypertable, one row per run grant exchange that reached the log.

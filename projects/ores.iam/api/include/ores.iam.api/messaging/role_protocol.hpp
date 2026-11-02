@@ -26,11 +26,17 @@
 #define ORES_IAM_API_MESSAGING_ROLE_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -273,7 +279,678 @@ inline constexpr std::string_view created = "iam.v1.roles_events.created";
 inline constexpr std::string_view updated = "iam.v1.roles_events.updated";
 inline constexpr std::string_view deleted = "iam.v1.roles_events.deleted";
 }
+/**
+ * @brief The members of role_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const role_key&) {
+    return std::tuple{
+        utility::codec::field{"name", &role_key::name},
+    };
+}
+
+/**
+ * @brief The members of role_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const role_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &role_write::id},
+        utility::codec::field{"name", &role_write::name},
+        utility::codec::field{"description", &role_write::description},
+        utility::codec::field{"is_registration_default", &role_write::is_registration_default},
+        utility::codec::field{"is_requestable", &role_write::is_requestable},
+    };
+}
+
+/**
+ * @brief The members of role_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const role_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &role_change::write},
+        utility::codec::field{"precondition", &role_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of role_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const role_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &role_removal::key},
+        utility::codec::field{"precondition", &role_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of role_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const role_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &role_lookup::key},
+        utility::codec::field{"role", &role_lookup::role},
+    };
+}
+
+/**
+ * @brief The members of roles_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const roles_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &roles_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of role_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const role_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &role_event::event_id},
+        utility::codec::field{"key", &role_event::key},
+        utility::codec::field{"action", &role_event::action},
+        utility::codec::field{"version", &role_event::version},
+        utility::codec::field{"occurred_at", &role_event::occurred_at},
+        utility::codec::field{"correlation_id", &role_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of role_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const role_version_key&) {
+    return std::tuple{
+        utility::codec::field{"role", &role_version_key::role},
+        utility::codec::field{"version", &role_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of role_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const role_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &role_versions_filter::version},
+        utility::codec::field{"from_version", &role_versions_filter::from_version},
+        utility::codec::field{"to_version", &role_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_roles_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_roles_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_roles_request::offset},
+        utility::codec::field{"limit", &list_roles_request::limit},
+        utility::codec::field{"order", &list_roles_request::order},
+        utility::codec::field{"filter", &list_roles_request::filter},
+        utility::codec::field{"as_of", &list_roles_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_roles_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_roles_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_roles_response::result},
+        utility::codec::field{"roles", &list_roles_response::roles},
+        utility::codec::field{"total", &list_roles_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_role_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_role_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_role_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_role_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_role_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_role_response::result},
+        utility::codec::field{"role", &get_role_response::role},
+    };
+}
+
+/**
+ * @brief The members of get_many_roles_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_roles_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_roles_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_roles_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_roles_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_roles_response::result},
+        utility::codec::field{"entries", &get_many_roles_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_role_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_role_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_role_request::change},
+        utility::codec::field{"intent", &put_role_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_role_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_role_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_role_response::result},
+        utility::codec::field{"role", &put_role_response::role},
+    };
+}
+
+/**
+ * @brief The members of put_many_roles_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_roles_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_roles_request::changes},
+        utility::codec::field{"intent", &put_many_roles_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_roles_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_roles_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_roles_response::result},
+        utility::codec::field{"roles", &put_many_roles_response::roles},
+    };
+}
+
+/**
+ * @brief The members of delete_role_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_role_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_role_request::removal},
+        utility::codec::field{"intent", &delete_role_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_role_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_role_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_role_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_roles_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_roles_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_roles_request::removals},
+        utility::codec::field{"intent", &delete_many_roles_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_roles_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_roles_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_roles_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_role_versions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_role_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_role_versions_request::key},
+        utility::codec::field{"offset", &list_role_versions_request::offset},
+        utility::codec::field{"limit", &list_role_versions_request::limit},
+        utility::codec::field{"order", &list_role_versions_request::order},
+        utility::codec::field{"filter", &list_role_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_role_versions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_role_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_role_versions_response::result},
+        utility::codec::field{"versions", &list_role_versions_response::versions},
+        utility::codec::field{"total", &list_role_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_role_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_role_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_role_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_role_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_role_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_role_version_response::result},
+        utility::codec::field{"version", &get_role_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::role_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::role_key& v);
+    static ores::iam::messaging::role_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::role_key& v);
+    static ores::iam::messaging::role_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::role_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::role_write& v);
+    static ores::iam::messaging::role_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::role_write& v);
+    static ores::iam::messaging::role_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::role_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::role_change& v);
+    static ores::iam::messaging::role_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::role_change& v);
+    static ores::iam::messaging::role_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::role_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::role_removal& v);
+    static ores::iam::messaging::role_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::role_removal& v);
+    static ores::iam::messaging::role_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::role_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::role_lookup& v);
+    static ores::iam::messaging::role_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::role_lookup& v);
+    static ores::iam::messaging::role_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::roles_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::roles_filter& v);
+    static ores::iam::messaging::roles_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::roles_filter& v);
+    static ores::iam::messaging::roles_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::role_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::role_event& v);
+    static ores::iam::messaging::role_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::role_event& v);
+    static ores::iam::messaging::role_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::role_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::role_version_key& v);
+    static ores::iam::messaging::role_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::role_version_key& v);
+    static ores::iam::messaging::role_version_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::role_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::role_versions_filter& v);
+    static ores::iam::messaging::role_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::role_versions_filter& v);
+    static ores::iam::messaging::role_versions_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_roles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_roles_request& v);
+    static ores::iam::messaging::list_roles_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_roles_request& v);
+    static ores::iam::messaging::list_roles_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_roles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_roles_response& v);
+    static ores::iam::messaging::list_roles_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_roles_response& v);
+    static ores::iam::messaging::list_roles_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_role_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_role_request& v);
+    static ores::iam::messaging::get_role_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_role_request& v);
+    static ores::iam::messaging::get_role_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_role_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_role_response& v);
+    static ores::iam::messaging::get_role_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_role_response& v);
+    static ores::iam::messaging::get_role_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_roles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_many_roles_request& v);
+    static ores::iam::messaging::get_many_roles_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_many_roles_request& v);
+    static ores::iam::messaging::get_many_roles_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_roles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_many_roles_response& v);
+    static ores::iam::messaging::get_many_roles_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_many_roles_response& v);
+    static ores::iam::messaging::get_many_roles_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_role_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_role_request& v);
+    static ores::iam::messaging::put_role_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_role_request& v);
+    static ores::iam::messaging::put_role_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_role_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_role_response& v);
+    static ores::iam::messaging::put_role_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_role_response& v);
+    static ores::iam::messaging::put_role_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_many_roles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_many_roles_request& v);
+    static ores::iam::messaging::put_many_roles_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_many_roles_request& v);
+    static ores::iam::messaging::put_many_roles_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_many_roles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_many_roles_response& v);
+    static ores::iam::messaging::put_many_roles_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_many_roles_response& v);
+    static ores::iam::messaging::put_many_roles_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_role_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_role_request& v);
+    static ores::iam::messaging::delete_role_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::delete_role_request& v);
+    static ores::iam::messaging::delete_role_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_role_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_role_response& v);
+    static ores::iam::messaging::delete_role_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::delete_role_response& v);
+    static ores::iam::messaging::delete_role_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_many_roles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_many_roles_request& v);
+    static ores::iam::messaging::delete_many_roles_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::delete_many_roles_request& v);
+    static ores::iam::messaging::delete_many_roles_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_many_roles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_many_roles_response& v);
+    static ores::iam::messaging::delete_many_roles_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::delete_many_roles_response& v);
+    static ores::iam::messaging::delete_many_roles_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_role_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_role_versions_request& v);
+    static ores::iam::messaging::list_role_versions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_role_versions_request& v);
+    static ores::iam::messaging::list_role_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_role_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_role_versions_response& v);
+    static ores::iam::messaging::list_role_versions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_role_versions_response& v);
+    static ores::iam::messaging::list_role_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_role_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_role_version_request& v);
+    static ores::iam::messaging::get_role_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_role_version_request& v);
+    static ores::iam::messaging::get_role_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_role_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_role_version_response& v);
+    static ores::iam::messaging::get_role_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_role_version_response& v);
+    static ores::iam::messaging::get_role_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

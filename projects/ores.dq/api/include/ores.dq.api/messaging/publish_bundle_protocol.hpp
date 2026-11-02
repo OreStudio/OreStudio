@@ -25,9 +25,15 @@
 #ifndef ORES_DQ_API_MESSAGING_PUBLISH_BUNDLE_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_PUBLISH_BUNDLE_PROTOCOL_HPP
 
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -89,6 +95,66 @@ struct publish_bundle_response {
     int datasets_dispatched = 0;
 };
 
+/**
+ * @brief The members of publish_bundle_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_bundle_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"bundle_code", &publish_bundle_request::bundle_code},
+        ::ores::utility::codec::field{"mode", &publish_bundle_request::mode},
+        ::ores::utility::codec::field{"published_by", &publish_bundle_request::published_by},
+        ::ores::utility::codec::field{"atomic", &publish_bundle_request::atomic},
+        ::ores::utility::codec::field{"params_json", &publish_bundle_request::params_json},
+    };
 }
+
+/**
+ * @brief The members of publish_bundle_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_bundle_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &publish_bundle_response::success},
+        ::ores::utility::codec::field{"error_message", &publish_bundle_response::error_message},
+        ::ores::utility::codec::field{"instance_id", &publish_bundle_response::instance_id},
+        ::ores::utility::codec::field{"datasets_dispatched",
+                                      &publish_bundle_response::datasets_dispatched},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_bundle_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::publish_bundle_request& v);
+    static ores::dq::messaging::publish_bundle_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::publish_bundle_request& v);
+    static ores::dq::messaging::publish_bundle_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_bundle_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::publish_bundle_response& v);
+    static ores::dq::messaging::publish_bundle_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::publish_bundle_response& v);
+    static ores::dq::messaging::publish_bundle_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

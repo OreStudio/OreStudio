@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 1166DC86-77A8-4E93-A3D9-E35E40550A01
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.dq.publish_bundle
 #+description: Codegen operation model for the dq bundle publish verb, rendered to C++ and TypeScript from one source.

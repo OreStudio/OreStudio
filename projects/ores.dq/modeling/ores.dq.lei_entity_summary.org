@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8E3EF28A-A3B9-40CD-AFD6-36C526895885
+:ores.cpp.wire-codec.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.dq.lei_entity_summary

@@ -148,7 +148,6 @@ the test seeds a Simple segment rather than the kind the generator names.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
 #include <string>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>

@@ -276,6 +276,9 @@ via its "Verifies task" field.
 | 15 | Basis live check: =check_shell_recipes.py= hard-codes the debug preset's shell | codegen | Decline here | Captured as [[id:9AE00373-65AF-4864-8D7B-3F6AB99876C4][Take the shell binary from the preset in the shell recipe check]]; the 33 recipes were replayed with the release shell. |
 | 16 | Basis review: the three composite publishers repeat one shape | =refdata_publish_from_dq_create.sql= | Decline here | Each names its own part tables and columns; generating them is codegen work for when commodity future adds the fourth. |
 | 17 | Misspell: =LOAD_PROFILE_1_EXPLICT= again | =refdata_conventions_seed_populate.sql= | Decline | As row 6. |
+| 18 | Commodity future tests: the curve test wrote flat commodity future rows, and the central table refuses a row with no party | =curve_configuration_database_roundtrip_tests.cpp= | Accept | The fixture writes each future's central row and contract terms as the system party; fixed in 6d50def26e and fe2f96477a. |
+| 19 | Commodity future review: the family put checks no part count, so a future with no contract terms is accepted and the export refuses it | generated family service | Decline here | Every composite kind has the gap, and the Parts table states no cardinality; captured as [[id:B8D97A88-7B39-4CBF-A0D9-F44727CC8FE8][State each family part's cardinality and refuse a family write that breaks it]]. |
+| 20 | Misspell: =LOAD_PROFILE_1_EXPLICT= again | =refdata_conventions_seed_populate.sql= | Decline | As row 6. |
 
 * Result
 

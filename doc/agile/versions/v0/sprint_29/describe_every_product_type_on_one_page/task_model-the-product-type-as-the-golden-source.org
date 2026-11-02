@@ -26,11 +26,11 @@ One entity holds everything the system states about a product type, and every ar
 
 | Field        | Value                                                                                |
 |--------------+--------------------------------------------------------------------------------------|
-| State        | STARTED                                                                              |
+| State        | DONE                                                                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                                                                     |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                                                             |
-| Next         | Begin implementation.                                                                |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                                                                           |
 
 * Acceptance
@@ -195,3 +195,28 @@ via its "Verifies task" field.
 | 10 | The draft reason permissions ride in this branch | =iam_permissions_populate.sql= | Kept | =draft_reason= arrived from main without any permission or shell unit, so the branch that regenerated the tree had to supply them or leave the tree red. It is fallout, not scope. |
 
 * Result
+
+The product type is one table and one copy. =ores_trading_product_types_tbl=
+holds the 121 codes with the name a desk uses, the source and its reference, the
+family, the construction method, the routing table, the display order and the
+knowledge note. =ores_refdata_product_family_codes_tbl= holds the eight contract
+shapes. =ores_trading_product_type_asset_classes_tbl= holds the markets, with
+one home row for each type that names a market and no row for the types whose
+market is decided per trade. The =product_type_t= enum is gone, and the trade
+type entity with it; every reader, mapper, repository, service, protocol, shell
+command and web screen joins the catalogue instead of restating it.
+
+The catalogue seeds from one declaration: 121 types, 92 with a family, 115 built
+natively, and 121 market rows of which 115 are home rows, so six types carry a
+second market and six carry none. A tenant is provisioned with the same
+catalogue. Every role that reads a product type reads its markets.
+
+Gates at =c8d26095e4=, after the second merge of main: 57 local checks, 98 C++
+suites, =pgtap=, and a database that recreates from the commit with the counts
+above. The tree builds.
+
+Two things are left deliberately. The descriptions and sources are empty,
+because sourcing them is the authoring task. The junction states a home-market
+index the generator never emits, because the junction loader ignores a model's
+=* SQL ** Indexes= section; the invariant holds in the seed and is written on the
+Product Type page, not enforced by the schema.

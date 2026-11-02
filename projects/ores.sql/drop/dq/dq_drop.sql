@@ -248,6 +248,7 @@
 \ir ./dq_default_curve_configurations_artefact_drop.sql
 \ir ./dq_inflation_curve_configs_artefact_drop.sql
 \ir ./dq_inflation_seasonality_factors_artefact_drop.sql
+\ir ./dq_inflation_seasonalities_artefact_drop.sql
 \ir ./dq_curve_security_configs_artefact_drop.sql
 \ir ./dq_intraday_power_curve_configs_artefact_drop.sql
 \ir ./dq_fx_volatility_configs_artefact_drop.sql
@@ -258,6 +259,7 @@
 \ir ./dq_cds_volatility_terms_artefact_drop.sql
 \ir ./dq_curve_volatility_configs_artefact_drop.sql
 \ir ./dq_inflation_cap_floor_volatility_configs_artefact_drop.sql
+\ir ./dq_swaption_volatility_smiles_artefact_drop.sql
 \ir ./dq_swaption_volatility_configs_artefact_drop.sql
 \ir ./dq_cap_floor_volatility_configs_artefact_drop.sql
 \ir ./dq_curve_parametric_smiles_artefact_drop.sql

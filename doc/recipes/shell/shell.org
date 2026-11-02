@@ -2035,3 +2035,47 @@ tangled into the runnable script library
 * Curve Segment Weighted Averages
 
 - [[id:B7E91FFF-6BC3-5A38-9618-57AE50E6E214][How do I run the curve_segment_weighted_averages commands from the shell?]]
+
+* Commodity Curve Bases
+
+- [[id:8DB098AD-CDB0-5E15-A797-EDDCA22CD83D][How do I run the commodity_curve_bases commands from the shell?]]
+
+* Commodity Curve Cross Currencies
+
+- [[id:FD3B5A40-9FD3-55E2-A4D6-D27D60F5CC56][How do I run the commodity_curve_cross_currencies commands from the shell?]]
+
+* Commodity Curve Directs
+
+- [[id:3F39021F-FD4D-5069-AF06-376D4FCE8732][How do I run the commodity_curve_directs commands from the shell?]]
+
+* Commodity Curve Interpolations
+
+- [[id:A0F817F9-CEB5-5662-ACC1-A258F7B3A620][How do I run the commodity_curve_interpolations commands from the shell?]]
+
+* Default Curve Benchmarks
+
+- [[id:39053E85-2DE2-5BE6-9674-E7F854E62F87][How do I run the default_curve_benchmarks commands from the shell?]]
+
+* Default Curve Cds Terms
+
+- [[id:1378FB25-6A5F-510E-952C-37C110D1A8A1][How do I run the default_curve_cds_terms commands from the shell?]]
+
+* Default Curve Market Terms
+
+- [[id:856E7C12-D11F-52D3-876F-E49DF53BF3B0][How do I run the default_curve_market_terms commands from the shell?]]
+
+* Default Curve Transition Matrices
+
+- [[id:3DD09B83-11D1-5606-AA03-4A192EDC4903][How do I run the default_curve_transition_matrices commands from the shell?]]
+
+* Default Curve Yield Reinterpretations
+
+- [[id:E7EC122B-4E52-5FC5-BA1D-E8BCDB553B8A][How do I run the default_curve_yield_reinterpretations commands from the shell?]]
+
+* Inflation Seasonalities
+
+- [[id:3C018BAF-C008-5612-999B-6A1765B5FA4B][How do I run the inflation_seasonalities commands from the shell?]]
+
+* Swaption Volatility Smiles
+
+- [[id:B27DFD9C-A19B-5A0E-B6A8-1546E5279B93][How do I run the swaption_volatility_smiles commands from the shell?]]

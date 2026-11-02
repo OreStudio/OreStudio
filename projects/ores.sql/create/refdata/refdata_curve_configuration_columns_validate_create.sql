@@ -194,6 +194,11 @@ begin
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
+        'ores_refdata_curve_values_trg', 'ores_refdata_swaption_volatility_smiles_tbl', 'swaption_volatility_smile');
+
+    execute format(
+        'create or replace trigger %I before insert or update on %I '
+        'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
         'ores_refdata_curve_values_trg', 'ores_refdata_yield_curve_configs_tbl', 'yield_curve_config');
 
     execute format(

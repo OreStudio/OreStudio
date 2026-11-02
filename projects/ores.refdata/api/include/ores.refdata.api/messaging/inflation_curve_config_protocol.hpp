@@ -62,9 +62,6 @@ struct inflation_curve_config_write {
     std::string frequency;
     std::optional<std::string> base_rate;
     std::optional<double> tolerance;
-    bool has_seasonality;
-    std::optional<std::string> seasonality_base_date;
-    std::optional<std::string> seasonality_frequency;
     std::optional<std::string> use_last_fixing_date;
     std::optional<std::string> interpolation_variable;
     std::optional<std::string> interpolation_method;
@@ -416,11 +413,6 @@ inline constexpr std::string_view deleted = "refdata.v1.inflation_curve_configs_
         utility::codec::field{"frequency", &inflation_curve_config_write::frequency},
         utility::codec::field{"base_rate", &inflation_curve_config_write::base_rate},
         utility::codec::field{"tolerance", &inflation_curve_config_write::tolerance},
-        utility::codec::field{"has_seasonality", &inflation_curve_config_write::has_seasonality},
-        utility::codec::field{"seasonality_base_date",
-                              &inflation_curve_config_write::seasonality_base_date},
-        utility::codec::field{"seasonality_frequency",
-                              &inflation_curve_config_write::seasonality_frequency},
         utility::codec::field{"use_last_fixing_date",
                               &inflation_curve_config_write::use_last_fixing_date},
         utility::codec::field{"interpolation_variable",

@@ -87,10 +87,12 @@
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_strikes.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
+#include "ores.refdata.api/domain/inflation_seasonality.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
 #include "ores.refdata.api/domain/swaption_proxy_config.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
+#include "ores.refdata.api/domain/swaption_volatility_smile.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
 #include <string>
@@ -160,6 +162,7 @@ struct curve_configuration_document {
         inflation_volatility_strikes;
     std::vector<ores::refdata::domain::swaption_volatility_config> swaption_volatilities;
     std::vector<ores::refdata::domain::swaption_proxy_config> swaption_proxy_configs;
+    std::vector<ores::refdata::domain::swaption_volatility_smile> swaption_volatility_smiles;
     std::vector<ores::refdata::domain::cap_floor_volatility_config> cap_floor_volatilities;
     std::vector<ores::refdata::domain::cap_floor_proxy_config> cap_floor_proxy_configs;
     std::vector<ores::refdata::domain::curve_parametric_smile> parametric_smiles;
@@ -178,6 +181,7 @@ struct curve_configuration_document {
         default_curve_transition_matrices;
     std::vector<ores::refdata::domain::default_curve_yield_reinterpretation>
         default_curve_yield_reinterpretations;
+    std::vector<ores::refdata::domain::inflation_seasonality> inflation_seasonalities;
     std::vector<ores::refdata::domain::inflation_seasonality_factor> seasonality_factors;
     std::vector<ores::refdata::domain::curve_security_config> securities;
     std::vector<ores::refdata::domain::intraday_power_curve_config> intraday_power_curves;

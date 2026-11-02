@@ -46,9 +46,6 @@ export interface InflationCurveConfigWrite {
     frequency: string;
     base_rate: string | null;
     tolerance: number | null;
-    has_seasonality: boolean;
-    seasonality_base_date: string | null;
-    seasonality_frequency: string | null;
     use_last_fixing_date: string | null;
     interpolation_variable: string | null;
     interpolation_method: string | null;

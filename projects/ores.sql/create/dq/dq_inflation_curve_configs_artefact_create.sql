@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- The settings of one InflationCurve entry of a curveconfig.xml, one row per curve_definition in the InflationCurves section: the nominal curve it is built over, whether it is zero coupon or year on year, its lag and frequency, and its seasonality. The quotes it is built from are rows of curve_quote, and the seasonality factors rows of inflation_seasonality_factor. The schema also allows a list of segments, each a convention and quotes. No corpus document writes one, and the mapper refuses an entry that does rather than lose it. - Artefact Table
+-- The settings of one InflationCurve entry of a curveconfig.xml, one row per curve_definition in the InflationCurves section: the nominal curve it is built over, whether it is zero coupon or year on year, its lag and frequency, and its interpolation. The quotes it is built from are rows of curve_quote. Its seasonality is a row of inflation_seasonality, present only when the curve states one, and the seasonality factors are rows of inflation_seasonality_factor. The schema also allows a list of segments, each a convention and quotes. No corpus document writes one, and the mapper refuses an entry that does rather than lose it. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_inflation_curve_configs_artefact_tbl" (
@@ -45,9 +45,6 @@ create table if not exists "ores_dq_inflation_curve_configs_artefact_tbl" (
     "frequency" text not null,
     "base_rate" text null,
     "tolerance" double precision null,
-    "has_seasonality" boolean not null,
-    "seasonality_base_date" text null,
-    "seasonality_frequency" text null,
     "use_last_fixing_date" text null,
     "interpolation_variable" text null,
     "interpolation_method" text null

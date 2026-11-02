@@ -65,9 +65,6 @@ struct swaption_volatility_config_write {
     std::optional<std::string> swap_tenors;
     std::optional<std::string> short_swap_index_base;
     std::optional<std::string> swap_index_base;
-    std::optional<std::string> smile_option_tenors;
-    std::optional<std::string> smile_swap_tenors;
-    std::optional<std::string> smile_spreads;
     std::optional<std::string> quote_tag;
 
     friend bool operator==(const swaption_volatility_config_write&,
@@ -427,11 +424,6 @@ inline constexpr std::string_view deleted = "refdata.v1.swaption_volatility_conf
                               &swaption_volatility_config_write::short_swap_index_base},
         utility::codec::field{"swap_index_base",
                               &swaption_volatility_config_write::swap_index_base},
-        utility::codec::field{"smile_option_tenors",
-                              &swaption_volatility_config_write::smile_option_tenors},
-        utility::codec::field{"smile_swap_tenors",
-                              &swaption_volatility_config_write::smile_swap_tenors},
-        utility::codec::field{"smile_spreads", &swaption_volatility_config_write::smile_spreads},
         utility::codec::field{"quote_tag", &swaption_volatility_config_write::quote_tag},
     };
 }

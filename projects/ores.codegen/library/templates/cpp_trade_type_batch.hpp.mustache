@@ -31,11 +31,6 @@ struct instrument_batch {
     /**
      * @brief The {{cpp_type}} rows, keyed by trade id.
      */
-    /*
-     * The type is stated in full: a child whose array takes its own name, such as
-     * =bond_trs=, would otherwise be read as the member being declared, which GCC
-     * refuses with -Wchanges-meaning.
-     */
     std::vector<ores::trading::domain::{{cpp_type}}> {{name}};
 {{/batch}}
 

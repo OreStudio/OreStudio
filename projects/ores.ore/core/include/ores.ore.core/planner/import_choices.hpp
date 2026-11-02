@@ -223,7 +223,13 @@ struct ores::utility::codec::text_form<ores::ore::planner::currency_import_mode>
     static constexpr std::string_view wire_name = "a currency import mode";
 
     static std::string to_text(const mode& v) {
-        return v == mode::all ? "all" : "missing_only";
+        switch (v) {
+            case mode::all:
+                return "all";
+            case mode::missing_only:
+                return "missing_only";
+        }
+        throw std::invalid_argument("Not " + std::string(wire_name));
     }
 
     static mode from_text(std::string_view text) {
@@ -241,7 +247,13 @@ struct ores::utility::codec::text_form<ores::ore::planner::reimport_mode> {
     static constexpr std::string_view wire_name = "a reimport mode";
 
     static std::string to_text(const mode& v) {
-        return v == mode::add_trades_only ? "add_trades_only" : "create_new_versions";
+        switch (v) {
+            case mode::add_trades_only:
+                return "add_trades_only";
+            case mode::create_new_versions:
+                return "create_new_versions";
+        }
+        throw std::invalid_argument("Not " + std::string(wire_name));
     }
 
     static mode from_text(std::string_view text) {

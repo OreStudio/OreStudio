@@ -127,7 +127,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Use try_read for the import choices | =ore_import_execute_handler.cpp= | Declined | try_read drops the reason the step failure reports. |
+| 2 | rfl include left in the package handler | =report_package_handler.cpp= | No change | The reporting package messages still use it until reporting moves. |
+| 3 | Duplicate and unused CMake links | =ores.ore.api/src/CMakeLists.txt= | Declined | Generated from the api template; harmless. |
+| 4 | Enum text forms miss a third enumerator | =import_choices.hpp= | Accepted | Exhaustive switches, so -Wswitch fails the build. |
+| 5 | Strictness and silent empty rollbacks | both workflows | Answered; captured | The struct codec has reflect-cpp's tolerance. The empty rollback predates the PR: capture =a-compensation-that-cannot-read-its-step-rolls-back-nothing=. |
+| 6 | Docs consistent | agile files | No change | |
 
 * Result
 

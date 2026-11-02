@@ -2706,6 +2706,26 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.curve_segment_conventions.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_conventions'],
+    },
+    'refdata.v1.curve_segment_conventions_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_segment_cross_currency_terms.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_cross_currency_terms'],
+    },
+    'refdata.v1.curve_segment_cross_currency_terms_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.curve_segment_curves.list': {
         asOf: true,
         filter: ['id_one_of'],
@@ -2716,12 +2736,92 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.curve_segment_discount_ratios.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_discount_ratios'],
+    },
+    'refdata.v1.curve_segment_discount_ratios_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_segment_extrapolations.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_extrapolations'],
+    },
+    'refdata.v1.curve_segment_extrapolations_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_segment_ibor_fallbacks.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_ibor_fallbacks'],
+    },
+    'refdata.v1.curve_segment_ibor_fallbacks_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_segment_pillar_rules.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_pillar_rules'],
+    },
+    'refdata.v1.curve_segment_pillar_rules_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_segment_projections.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_projections'],
+    },
+    'refdata.v1.curve_segment_projections_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_segment_references.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_references'],
+    },
+    'refdata.v1.curve_segment_references_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_segment_tenor_basis_curves.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_tenor_basis_curves'],
+    },
+    'refdata.v1.curve_segment_tenor_basis_curves_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.curve_segment_types.list': {
         asOf: true,
         filter: ['code_one_of'],
         rows: ['segment_types'],
     },
     'refdata.v1.curve_segment_types_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_segment_weighted_averages.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['segment_weighted_averages'],
+    },
+    'refdata.v1.curve_segment_weighted_averages_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

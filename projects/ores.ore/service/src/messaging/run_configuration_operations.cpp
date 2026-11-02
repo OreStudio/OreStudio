@@ -28,6 +28,7 @@
 #include "ores.ore.core/domain/todays_market_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/run_document_files.hpp"
+#include "ores.ore.service/messaging/family_row_party.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
@@ -106,12 +107,6 @@ typename Req::response_type run_configuration_operations_call(nats_client& owner
     return *resp;
 }
 
-const rfl::Generic* member_of(const rfl::Generic::Object& object, std::string_view key) {
-    const auto it =
-        std::ranges::find_if(object, [key](const auto& entry) { return entry.first == key; });
-    return it == object.end() ? nullptr : &it->second;
-}
-
 const std::vector<rfl::Generic>* array_of(const rfl::Generic& value) {
     return std::get_if<std::vector<rfl::Generic>>(&value.get());
 }
@@ -121,17 +116,6 @@ const std::vector<rfl::Generic>* first_array_of(const rfl::Generic::Object& obje
         if (const auto* array = array_of(value))
             return array;
     return nullptr;
-}
-
-std::string string_member(const rfl::Generic& value, std::string_view key) {
-    const auto* object = std::get_if<rfl::Generic::Object>(&value.get());
-    if (object == nullptr)
-        return {};
-    const auto* member = member_of(*object, key);
-    if (member == nullptr)
-        return {};
-    const auto* text = std::get_if<std::string>(&member->get());
-    return text == nullptr ? std::string{} : *text;
 }
 
 // Sends a request the registry names at runtime and returns the decoded
@@ -185,7 +169,7 @@ std::vector<rfl::Generic> read_family(nats_client& owners,
         if (array == nullptr)
             break;
         for (const auto& row : *array)
-            if (!family.party_scoped || string_member(row, "party_id") == party_id)
+            if (!family.party_scoped || party_of_family_row(row) == party_id)
                 rows.push_back(row);
         if (array->size() < page)
             break;
@@ -238,7 +222,6 @@ domain::conventions_package read_conventions(nats_client& owners, const std::str
     // FX conventions have no store, as they have none on the write path.
     return package;
 }
-
 
 boost::uuids::uuid parse_id(const std::string& text) {
     return boost::uuids::string_generator()(text);

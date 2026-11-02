@@ -1355,12 +1355,23 @@ def diff_ref(base: str) -> str:
     return git("merge-base", base, "HEAD").strip() or base
 
 
+def claimed(untracked: list[str]) -> list[str]:
+    """The untracked paths a rule claims.
+
+    An untracked file is not part of the branch until it is added. One that a
+    rule claims, such as a new source file, is likely to be added, so it is
+    checked. One that no rule claims is scratch output, and it must not make
+    the whole change unknown.
+    """
+    return [path for path in untracked if "unknown" not in classify([path])[0]]
+
+
 def changed_paths(ref: str) -> list[str]:
-    """Every path this branch touches, committed or not, tracked or not."""
+    """Every path this branch touches, committed or not, and the untracked paths a rule claims."""
     tracked = git("diff", "--name-only", ref).splitlines()
     untracked = git("ls-files", "--others", "--exclude-standard").splitlines()
     seen: list[str] = []
-    for path in [*tracked, *untracked]:
+    for path in [*tracked, *claimed(untracked)]:
         path = path.strip()
         if path and path not in seen:
             seen.append(path)

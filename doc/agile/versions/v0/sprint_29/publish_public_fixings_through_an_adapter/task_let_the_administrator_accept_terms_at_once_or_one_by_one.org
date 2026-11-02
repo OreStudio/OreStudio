@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/let-the-administrator-accept-terms-at-once-or-one-by-one
-#+pr: 4367
+#+pr: 4390
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
@@ -95,6 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4390][#4390]] | [agile] Close the public fixings story and fix the gate scope |
 | [[https://github.com/OreStudio/OreStudio/pull/4367][#4367]] | [web] Accept the public terms at once or one by one, and fix the screens a new system reaches |
 
 * Review
@@ -106,6 +107,10 @@ via its "Verifies task" field.
 | 3 | The party names' query key is shared by both modes | subscriptions.ts | Decline | Sign-out and a session ending remove every query, so no names carry over; the web tests have no DOM for a renderHook test |
 | 4 | "Continues at once" is not shown to hold | PublicSourcesStep.tsx | Accept | 0ea414a5fa: it did not hold; Continue now goes on when every source is decided, with a test |
 | 5 | onReady must not loop renders | FirstRunJourney.tsx | No change | The effect watches the changes' content and onSourcesReady is stable |
+| 6 | PR #4390: an unclaimed untracked file is skipped until added | local_checks.py | No change | The docstring states it: such a file is scratch, and once added it is tracked and the run-everything fallback applies |
+| 7 | PR #4390: test changed_paths with git mocked | test_local_checks.py | Decline | changed_paths only joins git output with claimed, which the new test covers; a git mock tests the mock |
+| 8 | PR #4390: confirm the codec template change is on main | codec .cpp files | No change | The drift check renders from main's templates, and it passes after the regeneration |
+| 9 | PR #4390: confirm build and ctest are green | - | Accept | The full gate result is posted on the PR before the merge |
 
 * Result
 

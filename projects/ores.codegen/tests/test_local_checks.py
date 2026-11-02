@@ -102,6 +102,11 @@ def test_a_path_nobody_classified_asks_for_everything():
     assert len(checks) == len(local_checks.CATALOGUE)
 
 
+def test_an_untracked_scratch_file_does_not_ask_for_everything():
+    untracked = ["build/tmp/chrome9-a/Default/Preferences", "projects/ores.x/src/new.cpp"]
+    assert local_checks.claimed(untracked) == ["projects/ores.x/src/new.cpp"]
+
+
 def test_no_change_selects_nothing():
     assert select([]) == set()
 

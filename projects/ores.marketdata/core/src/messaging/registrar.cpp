@@ -54,6 +54,7 @@
 #include "ores.marketdata.core/messaging/market_series_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_state_handler.hpp"
 #include "ores.marketdata.core/messaging/market_calibration_value_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_input_value_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_scenario_value_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_registrar.hpp"
@@ -124,6 +125,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_observation_handlers(nats, ctx, verifier));
     fold(register_market_scenario_value_handlers(nats, ctx, verifier));
     fold(register_market_calibration_value_handlers(nats, ctx, verifier));
+    fold(register_market_input_value_handlers(nats, ctx, verifier));
     fold(register_provider_handlers(nats, ctx, verifier));
     fold(register_adapter_handlers(nats, ctx, verifier));
     fold(register_supplier_handlers(nats, ctx, verifier));

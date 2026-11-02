@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.core/service/market_state_reader.hpp"
 #include "ores.ore.core/results/calibration_reader.hpp"
+#include "ores.ore.core/results/market_input_reader.hpp"
 #include "ores.ore.core/results/metric_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -129,6 +130,48 @@ bool read_calibrations(const market_state_file& file,
     return true;
 }
 
+bool read_inputs(const market_state_file& file,
+                 const ores::ore::results::output_family& family,
+                 const market_state_run& run,
+                 market_state_outcome& outcome) {
+    auto read = ores::ore::results::read_market_inputs(file.body, family);
+    for (const auto& refusal : read.refusals)
+        outcome.refusals.push_back(file.name + ": " + refusal);
+    if (!read.refusals.empty())
+        return false;
+
+    std::vector<domain::market_input_value> values;
+    values.reserve(read.rows.size());
+    for (auto& row : read.rows) {
+        const auto as_of = instant_of(row.as_of, run.as_of);
+        std::optional<std::chrono::system_clock::time_point> payment;
+        if (!row.payment_date.empty())
+            payment = instant_of(row.payment_date, run.as_of);
+        if (!as_of || (!row.payment_date.empty() && !payment)) {
+            outcome.refusals.push_back(std::format(
+                "{}: line {} states a date that is not a date.", file.name, row.line));
+            return false;
+        }
+        values.push_back(
+            domain::market_input_value{.id = boost::uuids::random_generator()(),
+                                       .party_id = run.party_id,
+                                       .report_instance_id = run.report_instance_id,
+                                       .result_id = file.result_id,
+                                       .source = file.name,
+                                       .line = row.line,
+                                       .as_of = *as_of,
+                                       .report_definition_id = run.report_definition_id,
+                                       .family = family.code,
+                                       .datum_id = std::move(row.datum_id),
+                                       .value = row.value,
+                                       .payment_date = payment});
+    }
+    outcome.input_values.insert(outcome.input_values.end(),
+                                std::make_move_iterator(values.begin()),
+                                std::make_move_iterator(values.end()));
+    return true;
+}
+
 }
 
 market_state_outcome read_market_state(const std::vector<market_state_file>& files,
@@ -155,9 +198,13 @@ market_state_outcome read_market_state(const std::vector<market_state_file>& fil
             continue;
         }
 
-        const auto read = ores::ore::results::is_calibration_family(*family) ?
-                              read_calibrations(file, *family, run, outcome) :
-                              read_scenarios(file, *family, run, outcome);
+        bool read = false;
+        if (ores::ore::results::is_calibration_family(*family))
+            read = read_calibrations(file, *family, run, outcome);
+        else if (ores::ore::results::is_market_input_family(*family))
+            read = read_inputs(file, *family, run, outcome);
+        else
+            read = read_scenarios(file, *family, run, outcome);
         if (read)
             outcome.families.push_back(family->code);
     }

@@ -21,8 +21,8 @@
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
+#include <optional>
 #include <span>
 #include <utility>
 

@@ -25,10 +25,17 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_BILLING_OPERATION_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_BILLING_OPERATION_PROTOCOL_HPP
 
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
@@ -102,6 +109,151 @@ struct compute_bill_response {
     std::string message;
 };
 
+/**
+ * @brief The members of bill_line_view, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bill_line_view&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"driver", &bill_line_view::driver},
+        ::ores::utility::codec::field{"licence_right", &bill_line_view::licence_right},
+        ::ores::utility::codec::field{"quantity", &bill_line_view::quantity},
+        ::ores::utility::codec::field{"charge_micros", &bill_line_view::charge_micros},
+        ::ores::utility::codec::field{"total_micros", &bill_line_view::total_micros},
+    };
 }
+
+/**
+ * @brief The members of source_bill_view, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const source_bill_view&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"feed_id", &source_bill_view::feed_id},
+        ::ores::utility::codec::field{"source_name", &source_bill_view::source_name},
+        ::ores::utility::codec::field{"currency", &source_bill_view::currency},
+        ::ores::utility::codec::field{"shadow", &source_bill_view::shadow},
+        ::ores::utility::codec::field{"lines", &source_bill_view::lines},
+        ::ores::utility::codec::field{"total_micros", &source_bill_view::total_micros},
+    };
+}
+
+/**
+ * @brief The members of party_charge_view, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const party_charge_view&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"tenant_id", &party_charge_view::tenant_id},
+        ::ores::utility::codec::field{"party_id", &party_charge_view::party_id},
+        ::ores::utility::codec::field{"feed_id", &party_charge_view::feed_id},
+        ::ores::utility::codec::field{"driver", &party_charge_view::driver},
+        ::ores::utility::codec::field{"licence_right", &party_charge_view::licence_right},
+        ::ores::utility::codec::field{"total_micros", &party_charge_view::total_micros},
+    };
+}
+
+/**
+ * @brief The members of compute_bill_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const compute_bill_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"period_from", &compute_bill_request::period_from},
+        ::ores::utility::codec::field{"period_to", &compute_bill_request::period_to},
+        ::ores::utility::codec::field{"source_name", &compute_bill_request::source_name},
+    };
+}
+
+/**
+ * @brief The members of compute_bill_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const compute_bill_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"source_bills", &compute_bill_response::source_bills},
+        ::ores::utility::codec::field{"party_charges", &compute_bill_response::party_charges},
+        ::ores::utility::codec::field{"unallocated_micros",
+                                      &compute_bill_response::unallocated_micros},
+        ::ores::utility::codec::field{"success", &compute_bill_response::success},
+        ::ores::utility::codec::field{"message", &compute_bill_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::bill_line_view> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::bill_line_view& v);
+    static ores::marketdata::messaging::bill_line_view read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::bill_line_view& v);
+    static ores::marketdata::messaging::bill_line_view
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::source_bill_view> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::source_bill_view& v);
+    static ores::marketdata::messaging::source_bill_view read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::source_bill_view& v);
+    static ores::marketdata::messaging::source_bill_view
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::party_charge_view> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::party_charge_view& v);
+    static ores::marketdata::messaging::party_charge_view read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::party_charge_view& v);
+    static ores::marketdata::messaging::party_charge_view
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::compute_bill_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::compute_bill_request& v);
+    static ores::marketdata::messaging::compute_bill_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::compute_bill_request& v);
+    static ores::marketdata::messaging::compute_bill_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::compute_bill_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::compute_bill_response& v);
+    static ores::marketdata::messaging::compute_bill_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::compute_bill_response& v);
+    static ores::marketdata::messaging::compute_bill_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

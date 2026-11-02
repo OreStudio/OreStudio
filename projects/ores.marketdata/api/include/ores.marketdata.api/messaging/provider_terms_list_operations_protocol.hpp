@@ -25,9 +25,16 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_PROVIDER_TERMS_LIST_OPERATIONS_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_PROVIDER_TERMS_LIST_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
@@ -113,6 +120,121 @@ struct accept_many_provider_terms_response {
     std::vector<provider_terms_outcome> outcomes;
 };
 
+/**
+ * @brief The members of provider_terms_choice, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const provider_terms_choice&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"provider_code", &provider_terms_choice::provider_code},
+        ::ores::utility::codec::field{"provider_version", &provider_terms_choice::provider_version},
+    };
 }
+
+/**
+ * @brief The members of provider_terms_outcome, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const provider_terms_outcome&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"provider_code", &provider_terms_outcome::provider_code},
+        ::ores::utility::codec::field{"success", &provider_terms_outcome::success},
+        ::ores::utility::codec::field{"message", &provider_terms_outcome::message},
+        ::ores::utility::codec::field{"accepted_by", &provider_terms_outcome::accepted_by},
+        ::ores::utility::codec::field{"accepted_at", &provider_terms_outcome::accepted_at},
+    };
+}
+
+/**
+ * @brief The members of accept_many_provider_terms_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const accept_many_provider_terms_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"providers", &accept_many_provider_terms_request::providers},
+    };
+}
+
+/**
+ * @brief The members of accept_many_provider_terms_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const accept_many_provider_terms_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &accept_many_provider_terms_response::success},
+        ::ores::utility::codec::field{"message", &accept_many_provider_terms_response::message},
+        ::ores::utility::codec::field{"outcomes", &accept_many_provider_terms_response::outcomes},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::provider_terms_choice> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::provider_terms_choice& v);
+    static ores::marketdata::messaging::provider_terms_choice read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::provider_terms_choice& v);
+    static ores::marketdata::messaging::provider_terms_choice
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::provider_terms_outcome> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::provider_terms_outcome& v);
+    static ores::marketdata::messaging::provider_terms_outcome read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::provider_terms_outcome& v);
+    static ores::marketdata::messaging::provider_terms_outcome
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::accept_many_provider_terms_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::accept_many_provider_terms_request& v);
+    static ores::marketdata::messaging::accept_many_provider_terms_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::accept_many_provider_terms_request& v);
+    static ores::marketdata::messaging::accept_many_provider_terms_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::accept_many_provider_terms_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::accept_many_provider_terms_response& v);
+    static ores::marketdata::messaging::accept_many_provider_terms_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::accept_many_provider_terms_response& v);
+    static ores::marketdata::messaging::accept_many_provider_terms_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -32,7 +32,6 @@
 #include "ores.marketdata.service/app/live_tenants.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <tuple>
 

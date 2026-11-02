@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6C880AA6-B79E-4F57-9E7A-75C3203D4D93
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.series_axis_value
 #+description: Codegen entity model for the ordered values of a composite market series' axes, one row per value an axis holds.

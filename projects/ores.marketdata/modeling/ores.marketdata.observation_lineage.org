@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B900C531-535D-48CA-97E7-02CCE556A70B
+:ores.cpp.wire-codec.enabled: true
 :ores.cpp.eventing-integration-test.enabled: true
 :END:
 #+title: ores.marketdata.observation_lineage

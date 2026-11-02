@@ -30,6 +30,7 @@
 #include "ores.trading.api/messaging/blotter_protocol.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -131,6 +132,69 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(blotter_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_blotter_rail_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.blotter.page.
+     */
+    void get_blotter_page(ores::nats::message msg) {
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::has_permission;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+
+        BOOST_LOG_SEV(blotter_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_summaries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<get_blotter_page_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(blotter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        /*
+         * A limit of zero would ask the store for no rows and answer as though
+         * the book ended, so the page states a size of its own.
+         */
+        constexpr std::uint32_t default_limit = 100;
+        constexpr std::uint32_t largest_limit = 1000;
+        const auto asked = req->limit == 0 ? default_limit : std::min(req->limit, largest_limit);
+
+        get_blotter_page_response response;
+        try {
+            repository::trade_summary_repository summaries;
+            const auto rows = summaries.read_blotter_page(
+                req_ctx, asked, req->order, req->after, req->filter);
+            response.rows = rows;
+            /*
+             * A short page is the last one, but a full page that happens to end
+             * the book is not: the caller is told where the next page starts
+             * only when one may exist, and the store answers the rest.
+             */
+            if (rows.size() == asked)
+                response.next =
+                    repository::trade_summary_repository::blotter_page_key(rows.back(),
+                                                                           req->order.field);
+            response.result.outcome = ores::utility::domain::outcome::ok;
+            BOOST_LOG_SEV(blotter_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(blotter_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_blotter_page_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();

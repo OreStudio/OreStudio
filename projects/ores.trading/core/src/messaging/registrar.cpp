@@ -245,6 +245,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             get_blotter_rail_request::nats_subject, queue_group, [bh](ores::nats::message msg) {
                 bh->get_blotter_rail(std::move(msg));
             }));
+        subs.push_back(nats.queue_subscribe(
+            get_blotter_page_request::nats_subject, queue_group, [bh](ores::nats::message msg) {
+                bh->get_blotter_page(std::move(msg));
+            }));
     }
     append(register_trade_authorisation_request_handlers(nats, ctx, verifier));
     append(register_trade_booking_handlers(nats, ctx, verifier));

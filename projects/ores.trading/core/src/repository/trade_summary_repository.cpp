@@ -648,4 +648,96 @@ std::vector<std::pair<std::string, std::uint64_t>> trade_summary_repository::cou
     return counts;
 }
 
+namespace {
+
+/** The separator between a key's sort value and its row id, which no value holds. */
+constexpr char blotter_key_separator = '\x1f';
+
+/**
+ * The column a page is ordered by, and whether it descends.
+ *
+ * An empty field states the default order, which the stated direction reverses,
+ * as the list does. A field the list cannot sort by is refused here too, so the
+ * page and the list cannot disagree about what an order means.
+ */
+std::pair<std::string, bool> blotter_sort(trade_summary_repository& repo,
+                                          const ores::utility::domain::order& order) {
+    if (order.field.empty())
+        return {"trade_date", !order.descending};
+    if (!repo.is_sortable(order.field))
+        throw std::invalid_argument("A blotter page cannot be ordered by " + order.field + ".");
+    return {order.field, order.descending};
+}
+
+}
+
+std::string trade_summary_repository::blotter_page_key(const domain::trade_summary& row,
+                                                       const std::string& field) {
+    std::string value;
+    if (field == "trade_date" || field.empty()) {
+        value = row.trade_date ? ores::platform::time::datetime::to_iso8601_date(*row.trade_date) :
+                                 std::string{};
+    } else if (field == "status") {
+        value = row.status.value_or(std::string{});
+    } else if (field == "authorisation_status") {
+        value = row.authorisation_status;
+    } else if (field == "instrument_type") {
+        value = row.instrument_type;
+    } else if (field == "row_kind") {
+        value = row.row_kind;
+    } else {
+        throw std::invalid_argument("A blotter page cannot be ordered by " + field + ".");
+    }
+    return value + blotter_key_separator + boost::uuids::to_string(row.id);
+}
+
+std::vector<domain::trade_summary> trade_summary_repository::read_blotter_page(
+    context ctx,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::string& after,
+    const std::optional<messaging::trade_summaries_filter>& filter) {
+    namespace qb = ores::database::query_builder;
+
+    trade_summary_repository self;
+    const auto [field, descending] = blotter_sort(self, order);
+
+    /*
+     * The key is the sort column and the row id, both as text: a date spelled
+     * ISO, a uuid spelled canonically, and either compared the way the order
+     * places them. A row that states no value for the column sorts as the empty
+     * string, which is where =nulls last= would put it.
+     */
+    const auto sort_expression = "coalesce(" + field + "::text, '')";
+    const auto id_expression = "id::text";
+
+    auto where = qb::condition{"tenant_id = ?",
+                               {ores::database::pq::text_param(ctx.tenant_id().to_string())}};
+    if (const auto condition = trade_summary_filter_condition(filter))
+        where = std::move(where) && std::move(*condition);
+
+    if (!after.empty()) {
+        const auto at = after.find(blotter_key_separator);
+        if (at == std::string::npos)
+            throw std::invalid_argument("The blotter page key is not a key this service wrote.");
+        const auto value = after.substr(0, at);
+        const auto id = after.substr(at + 1);
+        where = std::move(where) && qb::condition{"(" + sort_expression + ", " + id_expression +
+                                                      ") " + (descending ? "<" : ">") + " (?, ?)",
+                                                  {ores::database::pq::text_param(value),
+                                                   ores::database::pq::text_param(id)}};
+    }
+
+    auto sorting = qb::order{{sort_expression, descending}, {id_expression, descending}};
+    auto statement =
+        qb::detail::select_sql<trade_summary_entity>(where, sorting, limit, std::nullopt);
+    /*
+     * The statement's text varies with the key and the filter, so it runs
+     * unnamed rather than as a prepared statement.
+     */
+    statement.variadic = true;
+    const auto rows = qb::detail::select<trade_summary_entity>(ctx, statement);
+    return trade_summary_mapper::map(rows);
+}
+
 }

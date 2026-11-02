@@ -44,6 +44,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -223,4 +224,48 @@ TEST_CASE("a_blotter_rail_refuses_a_dimension_it_does_not_have", "[blotter][rail
     repository::trade_summary_repository summaries;
     CHECK_THROWS_AS(summaries.count_blotter_rail(f.ctx, "colour", std::nullopt),
                     std::invalid_argument);
+}
+
+TEST_CASE("a_blotter_page_states_the_rows_it_was_asked_for_then_the_rest", "[blotter][page]") {
+    fixture f;
+    f.book(5, f.root_book_id);
+
+    repository::trade_summary_repository summaries;
+
+    std::vector<std::string> seen;
+    std::string after;
+    for (int page = 0; page < 3; ++page) {
+        const auto rows = summaries.read_blotter_page(f.ctx, 2, {}, after, std::nullopt);
+        for (const auto& row : rows)
+            seen.push_back(boost::uuids::to_string(row.id));
+        if (!rows.empty())
+            after = repository::trade_summary_repository::blotter_page_key(rows.back(), "");
+    }
+
+    /*
+     * Five rows in pages of two: two, two, one. Every row is stated once and
+     * none is stated twice, which is what a key is for: an offset would repeat
+     * or skip a row when the order places another row before it between reads.
+     */
+    CHECK(seen.size() == 5);
+    const auto distinct = std::set<std::string>(seen.begin(), seen.end());
+    CHECK(distinct.size() == 5);
+}
+
+TEST_CASE("a_blotter_page_starts_after_the_key_it_is_given", "[blotter][page]") {
+    fixture f;
+    f.book(4, f.root_book_id);
+
+    repository::trade_summary_repository summaries;
+    const auto first = summaries.read_blotter_page(f.ctx, 2, {}, std::string{}, std::nullopt);
+    REQUIRE(first.size() == 2);
+
+    const auto key = repository::trade_summary_repository::blotter_page_key(first.back(), "");
+    const auto second = summaries.read_blotter_page(f.ctx, 2, {}, key, std::nullopt);
+
+    REQUIRE(second.size() == 2);
+    for (const auto& row : second) {
+        CHECK(row.id != first[0].id);
+        CHECK(row.id != first[1].id);
+    }
 }

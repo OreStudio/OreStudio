@@ -21,15 +21,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.scheduler.core/service/action_payloads.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -44,33 +43,6 @@ auto& nats_publish_action_handler_lg() {
     static auto instance = make_logger("ores.scheduler.service.nats_publish_action_handler");
     return instance;
 }
-
-// Fields read from job_definition.action_payload.
-struct nats_publish_payload {
-    std::string subject;
-    std::optional<std::string> report_definition_id;
-    std::optional<std::string> tenant_id;
-};
-
-// The body published to the subject on each firing, in the field order
-// reporting's trigger_report_instance_request declares. The codec is positional,
-// so a field the receiver declares and this does not send fails the whole
-// decode rather than that field alone, and the run the firing asked for is never
-// admitted. Nothing here states that order: the guard is a reporting test that
-// decodes the bytes this handler publishes as the production request type, so a
-// field added to the contract breaks it.
-struct nats_trigger_body {
-    boost::uuids::uuid report_definition_id;
-    boost::uuids::uuid tenant_id;
-    std::int64_t job_instance_id = 0;
-    std::string kind;
-    // The run's cut inputs. A schedule states none of them: the covered date,
-    // the scope and the rates centre belong to whoever asks for the run, so a
-    // scheduled run records no resolved cut until the run itself states them.
-    std::string covered_date;
-    std::string scope_code;
-    std::string business_centre_code;
-};
 
 boost::uuids::uuid parse_uuid(const std::string& value, const std::string& what) {
     try {
@@ -88,16 +60,6 @@ boost::uuids::uuid parse_uuid(const std::string& value, const std::string& what)
 // The subject and the response type are the action_payload's business, so this
 // reads the common result and not the response. An answer it cannot read counts
 // as a refusal: a firing nobody can account for is what the job record is for.
-struct reply_result {
-    ores::utility::domain::outcome outcome = ores::utility::domain::outcome::ok;
-    std::string code;
-    std::string message;
-};
-
-struct reply_body {
-    reply_result result;
-};
-
 std::string refusal_in_reply(const std::vector<std::byte>& body) {
     if (body.empty())
         return "it answered with no body";
@@ -124,15 +86,18 @@ nats_publish_action_handler::execute(const action_context& ctx) {
     BOOST_LOG_SEV(nats_publish_action_handler_lg(), debug)
         << "Executing NATS publish action for job: " << ctx.job.job_name;
     try {
-        auto parsed = rfl::json::read<nats_publish_payload>(ctx.job.action_payload);
-        if (!parsed) {
-            const auto msg = "Failed to parse action_payload for job '" + ctx.job.job_name +
-                             "': " + parsed.error().what();
+        nats_publish_payload parsed;
+        try {
+            parsed =
+                utility::codec::object::read_json<nats_publish_payload>(ctx.job.action_payload);
+        } catch (const std::exception& e) {
+            const auto msg =
+                "Failed to parse action_payload for job '" + ctx.job.job_name + "': " + e.what();
             BOOST_LOG_SEV(nats_publish_action_handler_lg(), error) << msg;
             co_return std::unexpected(msg);
         }
 
-        const auto& subject = parsed->subject;
+        const auto& subject = parsed.subject;
         if (subject.empty()) {
             const auto msg =
                 std::string("action_payload missing subject for job '") + ctx.job.job_name + "'";
@@ -143,7 +108,7 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         // A job that names no report definition is a notification nothing
         // answers: it states a subject and nothing this handler can place in a
         // report request, so it stays fire-and-forget and reads no identifiers.
-        if (!parsed->report_definition_id) {
+        if (!parsed.report_definition_id) {
             nats_.publish(subject, {});
             BOOST_LOG_SEV(nats_publish_action_handler_lg(), info)
                 << "NATS publish action succeeded for job: " << ctx.job.job_name
@@ -153,8 +118,8 @@ nats_publish_action_handler::execute(const action_context& ctx) {
 
         const nats_trigger_body body{
             .report_definition_id =
-                parse_uuid(*parsed->report_definition_id, "report_definition_id"),
-            .tenant_id = parse_uuid(parsed->tenant_id.value_or(""), "tenant_id"),
+                parse_uuid(*parsed.report_definition_id, "report_definition_id"),
+            .tenant_id = parse_uuid(parsed.tenant_id.value_or(""), "tenant_id"),
             .job_instance_id = ctx.inst_id,
             .kind = "production",
             .covered_date = "",

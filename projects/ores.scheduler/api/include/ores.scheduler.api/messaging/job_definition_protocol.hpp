@@ -26,11 +26,17 @@
 #define ORES_SCHEDULER_API_MESSAGING_JOB_DEFINITION_PROTOCOL_HPP
 
 #include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::scheduler::messaging {
@@ -276,7 +282,768 @@ inline constexpr std::string_view created = "scheduler.v1.job_definitions_events
 inline constexpr std::string_view updated = "scheduler.v1.job_definitions_events.updated";
 inline constexpr std::string_view deleted = "scheduler.v1.job_definitions_events.deleted";
 }
+/**
+ * @brief The members of job_definition_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_definition_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &job_definition_key::id},
+    };
+}
+
+/**
+ * @brief The members of job_definition_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_definition_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &job_definition_write::id},
+        utility::codec::field{"job_name", &job_definition_write::job_name},
+        utility::codec::field{"description", &job_definition_write::description},
+        utility::codec::field{"command", &job_definition_write::command},
+        utility::codec::field{"schedule_expression", &job_definition_write::schedule_expression},
+        utility::codec::field{"action_type", &job_definition_write::action_type},
+        utility::codec::field{"action_payload", &job_definition_write::action_payload},
+        utility::codec::field{"is_active", &job_definition_write::is_active},
+    };
+}
+
+/**
+ * @brief The members of job_definition_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_definition_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &job_definition_change::write},
+        utility::codec::field{"precondition", &job_definition_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of job_definition_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_definition_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &job_definition_removal::key},
+        utility::codec::field{"precondition", &job_definition_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of job_definition_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_definition_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &job_definition_lookup::key},
+        utility::codec::field{"job_definition", &job_definition_lookup::job_definition},
+    };
+}
+
+/**
+ * @brief The members of job_definitions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_definitions_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &job_definitions_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of job_definition_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_definition_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &job_definition_event::event_id},
+        utility::codec::field{"key", &job_definition_event::key},
+        utility::codec::field{"action", &job_definition_event::action},
+        utility::codec::field{"version", &job_definition_event::version},
+        utility::codec::field{"occurred_at", &job_definition_event::occurred_at},
+        utility::codec::field{"correlation_id", &job_definition_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of job_definition_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_definition_version_key&) {
+    return std::tuple{
+        utility::codec::field{"job_definition", &job_definition_version_key::job_definition},
+        utility::codec::field{"version", &job_definition_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of job_definition_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_definition_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &job_definition_versions_filter::version},
+        utility::codec::field{"from_version", &job_definition_versions_filter::from_version},
+        utility::codec::field{"to_version", &job_definition_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_job_definitions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_job_definitions_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_job_definitions_request::offset},
+        utility::codec::field{"limit", &list_job_definitions_request::limit},
+        utility::codec::field{"order", &list_job_definitions_request::order},
+        utility::codec::field{"filter", &list_job_definitions_request::filter},
+        utility::codec::field{"as_of", &list_job_definitions_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_job_definitions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_job_definitions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_job_definitions_response::result},
+        utility::codec::field{"definitions", &list_job_definitions_response::definitions},
+        utility::codec::field{"total", &list_job_definitions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_job_definition_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_job_definition_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_job_definition_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_job_definition_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_job_definition_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_job_definition_response::result},
+        utility::codec::field{"job_definition", &get_job_definition_response::job_definition},
+    };
+}
+
+/**
+ * @brief The members of get_many_job_definitions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_job_definitions_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_job_definitions_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_job_definitions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_job_definitions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_job_definitions_response::result},
+        utility::codec::field{"entries", &get_many_job_definitions_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_job_definition_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_job_definition_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_job_definition_request::change},
+        utility::codec::field{"intent", &put_job_definition_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_job_definition_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_job_definition_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_job_definition_response::result},
+        utility::codec::field{"job_definition", &put_job_definition_response::job_definition},
+    };
+}
+
+/**
+ * @brief The members of put_many_job_definitions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_job_definitions_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_job_definitions_request::changes},
+        utility::codec::field{"intent", &put_many_job_definitions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_job_definitions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_job_definitions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_job_definitions_response::result},
+        utility::codec::field{"definitions", &put_many_job_definitions_response::definitions},
+    };
+}
+
+/**
+ * @brief The members of delete_job_definition_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_job_definition_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_job_definition_request::removal},
+        utility::codec::field{"intent", &delete_job_definition_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_job_definition_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_job_definition_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_job_definition_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_job_definitions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_job_definitions_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_job_definitions_request::removals},
+        utility::codec::field{"intent", &delete_many_job_definitions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_job_definitions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_job_definitions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_job_definitions_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_job_definition_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_job_definition_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_job_definition_versions_request::key},
+        utility::codec::field{"offset", &list_job_definition_versions_request::offset},
+        utility::codec::field{"limit", &list_job_definition_versions_request::limit},
+        utility::codec::field{"order", &list_job_definition_versions_request::order},
+        utility::codec::field{"filter", &list_job_definition_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_job_definition_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_job_definition_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_job_definition_versions_response::result},
+        utility::codec::field{"versions", &list_job_definition_versions_response::versions},
+        utility::codec::field{"total", &list_job_definition_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_job_definition_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_job_definition_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_job_definition_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_job_definition_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_job_definition_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_job_definition_version_response::result},
+        utility::codec::field{"version", &get_job_definition_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::job_definition_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_definition_key& v);
+    static ores::scheduler::messaging::job_definition_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::job_definition_key& v);
+    static ores::scheduler::messaging::job_definition_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::job_definition_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_definition_write& v);
+    static ores::scheduler::messaging::job_definition_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::job_definition_write& v);
+    static ores::scheduler::messaging::job_definition_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::job_definition_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_definition_change& v);
+    static ores::scheduler::messaging::job_definition_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::job_definition_change& v);
+    static ores::scheduler::messaging::job_definition_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::job_definition_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_definition_removal& v);
+    static ores::scheduler::messaging::job_definition_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::job_definition_removal& v);
+    static ores::scheduler::messaging::job_definition_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::job_definition_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_definition_lookup& v);
+    static ores::scheduler::messaging::job_definition_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::job_definition_lookup& v);
+    static ores::scheduler::messaging::job_definition_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::job_definitions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_definitions_filter& v);
+    static ores::scheduler::messaging::job_definitions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::job_definitions_filter& v);
+    static ores::scheduler::messaging::job_definitions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::job_definition_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_definition_event& v);
+    static ores::scheduler::messaging::job_definition_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::job_definition_event& v);
+    static ores::scheduler::messaging::job_definition_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::job_definition_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_definition_version_key& v);
+    static ores::scheduler::messaging::job_definition_version_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::job_definition_version_key& v);
+    static ores::scheduler::messaging::job_definition_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::job_definition_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::job_definition_versions_filter& v);
+    static ores::scheduler::messaging::job_definition_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::job_definition_versions_filter& v);
+    static ores::scheduler::messaging::job_definition_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::list_job_definitions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::list_job_definitions_request& v);
+    static ores::scheduler::messaging::list_job_definitions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::list_job_definitions_request& v);
+    static ores::scheduler::messaging::list_job_definitions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::list_job_definitions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::list_job_definitions_response& v);
+    static ores::scheduler::messaging::list_job_definitions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::list_job_definitions_response& v);
+    static ores::scheduler::messaging::list_job_definitions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_job_definition_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::get_job_definition_request& v);
+    static ores::scheduler::messaging::get_job_definition_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_job_definition_request& v);
+    static ores::scheduler::messaging::get_job_definition_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_job_definition_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::get_job_definition_response& v);
+    static ores::scheduler::messaging::get_job_definition_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_job_definition_response& v);
+    static ores::scheduler::messaging::get_job_definition_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_many_job_definitions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::get_many_job_definitions_request& v);
+    static ores::scheduler::messaging::get_many_job_definitions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_many_job_definitions_request& v);
+    static ores::scheduler::messaging::get_many_job_definitions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_many_job_definitions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::get_many_job_definitions_response& v);
+    static ores::scheduler::messaging::get_many_job_definitions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_many_job_definitions_response& v);
+    static ores::scheduler::messaging::get_many_job_definitions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::put_job_definition_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::put_job_definition_request& v);
+    static ores::scheduler::messaging::put_job_definition_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::put_job_definition_request& v);
+    static ores::scheduler::messaging::put_job_definition_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::put_job_definition_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::put_job_definition_response& v);
+    static ores::scheduler::messaging::put_job_definition_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::put_job_definition_response& v);
+    static ores::scheduler::messaging::put_job_definition_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::put_many_job_definitions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::put_many_job_definitions_request& v);
+    static ores::scheduler::messaging::put_many_job_definitions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::put_many_job_definitions_request& v);
+    static ores::scheduler::messaging::put_many_job_definitions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::put_many_job_definitions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::put_many_job_definitions_response& v);
+    static ores::scheduler::messaging::put_many_job_definitions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::put_many_job_definitions_response& v);
+    static ores::scheduler::messaging::put_many_job_definitions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::delete_job_definition_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::delete_job_definition_request& v);
+    static ores::scheduler::messaging::delete_job_definition_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::delete_job_definition_request& v);
+    static ores::scheduler::messaging::delete_job_definition_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::delete_job_definition_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::delete_job_definition_response& v);
+    static ores::scheduler::messaging::delete_job_definition_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::delete_job_definition_response& v);
+    static ores::scheduler::messaging::delete_job_definition_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::delete_many_job_definitions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::delete_many_job_definitions_request& v);
+    static ores::scheduler::messaging::delete_many_job_definitions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::delete_many_job_definitions_request& v);
+    static ores::scheduler::messaging::delete_many_job_definitions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::delete_many_job_definitions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::delete_many_job_definitions_response& v);
+    static ores::scheduler::messaging::delete_many_job_definitions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::delete_many_job_definitions_response& v);
+    static ores::scheduler::messaging::delete_many_job_definitions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::list_job_definition_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::list_job_definition_versions_request& v);
+    static ores::scheduler::messaging::list_job_definition_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::list_job_definition_versions_request& v);
+    static ores::scheduler::messaging::list_job_definition_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::list_job_definition_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::list_job_definition_versions_response& v);
+    static ores::scheduler::messaging::list_job_definition_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::list_job_definition_versions_response& v);
+    static ores::scheduler::messaging::list_job_definition_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_job_definition_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::get_job_definition_version_request& v);
+    static ores::scheduler::messaging::get_job_definition_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_job_definition_version_request& v);
+    static ores::scheduler::messaging::get_job_definition_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_job_definition_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::get_job_definition_version_response& v);
+    static ores::scheduler::messaging::get_job_definition_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_job_definition_version_response& v);
+    static ores::scheduler::messaging::get_job_definition_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

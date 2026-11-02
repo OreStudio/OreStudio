@@ -1,0 +1,66 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_UTILITY_CODEC_SHAPED_WIRE_TRAITS_HPP
+#define ORES_UTILITY_CODEC_SHAPED_WIRE_TRAITS_HPP
+
+#include "ores.utility/codec/struct_codec.hpp"
+#include <span>
+#include <string>
+#include <string_view>
+
+namespace ores::utility::codec {
+
+/**
+ * @brief The wire traits of a hand-written type that states its own shape
+ * through =wire_fields=.
+ *
+ * A generated type gets its traits from its codec header. A hand-written type
+ * that crosses the wire opts in with one line, so a carrier encodes it through
+ * the codec rather than the reflect-cpp fallback:
+ *
+ * @code
+ * template <>
+ * struct ores::utility::codec::wire_traits<my_type> : shaped_wire_traits<my_type> {};
+ * @endcode
+ */
+template <typename T>
+struct shaped_wire_traits {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const T& v) {
+        return object::write_json(v);
+    }
+
+    static T read_json(std::string_view text) {
+        return object::read_json<T>(text);
+    }
+
+    static std::string write_msgpack(const T& v) {
+        return object::write_msgpack(v);
+    }
+
+    static T read_msgpack(std::span<const std::byte> data) {
+        return object::read_msgpack<T>(data);
+    }
+};
+
+}
+
+#endif

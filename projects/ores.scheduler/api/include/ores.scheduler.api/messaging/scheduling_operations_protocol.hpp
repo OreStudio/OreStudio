@@ -25,10 +25,16 @@
 #ifndef ORES_SCHEDULER_API_MESSAGING_SCHEDULING_OPERATIONS_PROTOCOL_HPP
 #define ORES_SCHEDULER_API_MESSAGING_SCHEDULING_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.scheduler.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::scheduler::messaging {
@@ -174,6 +180,193 @@ struct get_scheduler_status_response {
     int total_active = 0;
 };
 
+/**
+ * @brief The members of get_job_instances_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_job_instances_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"offset", &get_job_instances_request::offset},
+        ::ores::utility::codec::field{"limit", &get_job_instances_request::limit},
+    };
 }
+
+/**
+ * @brief The members of job_instance_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_instance_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id", &job_instance_summary::id},
+        ::ores::utility::codec::field{"job_definition_id",
+                                      &job_instance_summary::job_definition_id},
+        ::ores::utility::codec::field{"job_name", &job_instance_summary::job_name},
+        ::ores::utility::codec::field{"action_type", &job_instance_summary::action_type},
+        ::ores::utility::codec::field{"status", &job_instance_summary::status},
+        ::ores::utility::codec::field{"triggered_at", &job_instance_summary::triggered_at},
+        ::ores::utility::codec::field{"started_at", &job_instance_summary::started_at},
+        ::ores::utility::codec::field{"completed_at", &job_instance_summary::completed_at},
+        ::ores::utility::codec::field{"duration_ms", &job_instance_summary::duration_ms},
+        ::ores::utility::codec::field{"error_message", &job_instance_summary::error_message},
+    };
+}
+
+/**
+ * @brief The members of get_job_instances_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_job_instances_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_job_instances_response::success},
+        ::ores::utility::codec::field{"message", &get_job_instances_response::message},
+        ::ores::utility::codec::field{"instances", &get_job_instances_response::instances},
+        ::ores::utility::codec::field{"total_available_count",
+                                      &get_job_instances_response::total_available_count},
+    };
+}
+
+/**
+ * @brief The members of get_scheduler_status_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_scheduler_status_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of job_schedule_status, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const job_schedule_status&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"job_definition_id", &job_schedule_status::job_definition_id},
+        ::ores::utility::codec::field{"job_name", &job_schedule_status::job_name},
+        ::ores::utility::codec::field{"description", &job_schedule_status::description},
+        ::ores::utility::codec::field{"schedule_expression",
+                                      &job_schedule_status::schedule_expression},
+        ::ores::utility::codec::field{"is_active", &job_schedule_status::is_active},
+        ::ores::utility::codec::field{"last_run_at", &job_schedule_status::last_run_at},
+        ::ores::utility::codec::field{"last_run_status", &job_schedule_status::last_run_status},
+        ::ores::utility::codec::field{"next_fire_at", &job_schedule_status::next_fire_at},
+        ::ores::utility::codec::field{"running_count", &job_schedule_status::running_count},
+    };
+}
+
+/**
+ * @brief The members of get_scheduler_status_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_scheduler_status_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_scheduler_status_response::success},
+        ::ores::utility::codec::field{"message", &get_scheduler_status_response::message},
+        ::ores::utility::codec::field{"jobs", &get_scheduler_status_response::jobs},
+        ::ores::utility::codec::field{"total_running",
+                                      &get_scheduler_status_response::total_running},
+        ::ores::utility::codec::field{"total_active", &get_scheduler_status_response::total_active},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_job_instances_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::get_job_instances_request& v);
+    static ores::scheduler::messaging::get_job_instances_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_job_instances_request& v);
+    static ores::scheduler::messaging::get_job_instances_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::job_instance_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_instance_summary& v);
+    static ores::scheduler::messaging::job_instance_summary read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::job_instance_summary& v);
+    static ores::scheduler::messaging::job_instance_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_job_instances_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::get_job_instances_response& v);
+    static ores::scheduler::messaging::get_job_instances_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_job_instances_response& v);
+    static ores::scheduler::messaging::get_job_instances_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_scheduler_status_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::get_scheduler_status_request& v);
+    static ores::scheduler::messaging::get_scheduler_status_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_scheduler_status_request& v);
+    static ores::scheduler::messaging::get_scheduler_status_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::job_schedule_status> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::job_schedule_status& v);
+    static ores::scheduler::messaging::job_schedule_status read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::job_schedule_status& v);
+    static ores::scheduler::messaging::job_schedule_status
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::get_scheduler_status_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::get_scheduler_status_response& v);
+    static ores::scheduler::messaging::get_scheduler_status_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::get_scheduler_status_response& v);
+    static ores::scheduler::messaging::get_scheduler_status_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

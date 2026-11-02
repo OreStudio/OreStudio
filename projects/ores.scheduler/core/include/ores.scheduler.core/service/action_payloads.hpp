@@ -64,13 +64,13 @@ struct nats_publish_payload {
 }
 static_assert(utility::codec::names_every_member<nats_publish_payload>());
 
-// The body published to the subject on each firing, in the field order
-// reporting's trigger_report_instance_request declares. The codec is positional,
-// so a field the receiver declares and this does not send fails the whole
-// decode rather than that field alone, and the run the firing asked for is never
-// admitted. Nothing here states that order: the guard is a reporting test that
-// decodes the bytes this handler publishes as the production request type, so a
-// field added to the contract breaks it.
+// The body published to the subject on each firing. It must name every member
+// that reporting's trigger_report_instance_request requires: the receiver reads
+// members by name, and one it requires and does not find fails the whole decode,
+// so the run the firing asked for is never admitted. Nothing here states that
+// contract: the guard is a reporting test that decodes the bytes this handler
+// publishes as the production request type, so a member added to the contract
+// breaks it.
 struct nats_trigger_body {
     boost::uuids::uuid report_definition_id;
     boost::uuids::uuid tenant_id;

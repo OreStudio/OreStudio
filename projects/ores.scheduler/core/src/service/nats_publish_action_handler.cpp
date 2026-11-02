@@ -53,7 +53,6 @@ boost::uuids::uuid parse_uuid(const std::string& value, const std::string& what)
     }
 }
 
-
 // Why the answering operation refused the request, or empty when it did not.
 //
 // Every operation answers with a result naming an outcome, and a refusal of the
@@ -87,7 +86,7 @@ nats_publish_action_handler::execute(const action_context& ctx) {
     BOOST_LOG_SEV(nats_publish_action_handler_lg(), debug)
         << "Executing NATS publish action for job: " << ctx.job.job_name;
     try {
-        std::optional<nats_publish_payload> parsed;
+        nats_publish_payload parsed;
         try {
             parsed =
                 utility::codec::object::read_json<nats_publish_payload>(ctx.job.action_payload);
@@ -98,7 +97,7 @@ nats_publish_action_handler::execute(const action_context& ctx) {
             co_return std::unexpected(msg);
         }
 
-        const auto& subject = parsed->subject;
+        const auto& subject = parsed.subject;
         if (subject.empty()) {
             const auto msg =
                 std::string("action_payload missing subject for job '") + ctx.job.job_name + "'";
@@ -109,7 +108,7 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         // A job that names no report definition is a notification nothing
         // answers: it states a subject and nothing this handler can place in a
         // report request, so it stays fire-and-forget and reads no identifiers.
-        if (!parsed->report_definition_id) {
+        if (!parsed.report_definition_id) {
             nats_.publish(subject, {});
             BOOST_LOG_SEV(nats_publish_action_handler_lg(), info)
                 << "NATS publish action succeeded for job: " << ctx.job.job_name
@@ -119,8 +118,8 @@ nats_publish_action_handler::execute(const action_context& ctx) {
 
         const nats_trigger_body body{
             .report_definition_id =
-                parse_uuid(*parsed->report_definition_id, "report_definition_id"),
-            .tenant_id = parse_uuid(parsed->tenant_id.value_or(""), "tenant_id"),
+                parse_uuid(*parsed.report_definition_id, "report_definition_id"),
+            .tenant_id = parse_uuid(parsed.tenant_id.value_or(""), "tenant_id"),
             .job_instance_id = ctx.inst_id,
             .kind = "production",
             .covered_date = "",

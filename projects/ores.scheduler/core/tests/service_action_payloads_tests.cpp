@@ -31,6 +31,7 @@
 #include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -45,6 +46,18 @@ std::string their_msgpack(const T& v) {
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
+
+struct wider_result {
+    ores::utility::domain::outcome outcome;
+    std::string code;
+    std::string message;
+    std::vector<std::string> fields;
+};
+
+struct wider_reply {
+    std::string run_id;
+    wider_result result;
+};
 
 /**
  * @brief The codec writes the bytes reflect-cpp wrote, in both formats, and
@@ -105,6 +118,17 @@ TEST_CASE("an answer's result reads among the members it does not name", tags) {
     CHECK(reply.result.outcome == ores::utility::domain::outcome::failed);
     CHECK(reply.result.code == "c");
     CHECK(reply.result.message == "m");
+}
+
+TEST_CASE("an answer's result reads among unnamed members in MessagePack", tags) {
+    const wider_reply wider{"x", {ores::utility::domain::outcome::failed, "c", "m", {"f"}}};
+    const auto bytes = their_msgpack(wider);
+    const ores::nats::wire_codec nats_codec(ores::nats::wire_format::msgpack);
+    const auto reply = nats_codec.decode<reply_body>(bytes_of(bytes));
+    REQUIRE(reply);
+    CHECK(reply->result.outcome == ores::utility::domain::outcome::failed);
+    CHECK(reply->result.code == "c");
+    CHECK(reply->result.message == "m");
 }
 
 TEST_CASE("the NATS carrier sends the trigger body through the codec", tags) {

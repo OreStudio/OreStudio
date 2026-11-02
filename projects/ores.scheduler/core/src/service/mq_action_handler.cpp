@@ -38,7 +38,6 @@ auto& lg() {
     return instance;
 }
 
-
 } // anonymous namespace
 
 boost::asio::awaitable<std::expected<void, std::string>>

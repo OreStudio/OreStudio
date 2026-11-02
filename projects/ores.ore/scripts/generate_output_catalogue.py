@@ -488,9 +488,14 @@ def page(catalogue):
     """The output formats page: every family, rendered from the catalogue."""
     from output_family_docs import FAMILY_DOCS
 
-    missing = sorted(r["family"] for r in catalogue if r["family"] not in FAMILY_DOCS)
+    families = {r["family"] for r in catalogue}
+    missing = sorted(families - set(FAMILY_DOCS))
     if missing:
         raise SystemExit("the output formats page states nothing for: " + ", ".join(missing))
+    stale = sorted(set(FAMILY_DOCS) - families)
+    if stale:
+        raise SystemExit("output_family_docs.py describes families the catalogue no longer "
+                         "has: " + ", ".join(stale))
 
     def cell(text):
         return (text or "").replace("|", "\\vert{}")
@@ -543,7 +548,7 @@ def page(catalogue):
         "|------+-----|",
     ]
     for name, why in sorted(OUT_OF_SCOPE.items()):
-        out.append(f"| ={name}= | {cell(why)} |")
+        out.append(f"| ={cell(name)}= | {cell(why)} |")
     out += ["", "** Families", ""]
     for r in catalogue:
         meaning, units = FAMILY_DOCS[r["family"]]
@@ -553,16 +558,18 @@ def page(catalogue):
         out.append("")
         out.append("| Field | Value |")
         out.append("|-------+-------|")
-        out.append(f"| File | ={r['pattern']}= |")
+        out.append(f"| File | ={cell(r['pattern'])}= |")
         if r["aliases"]:
-            out.append("| Other names | " + ", ".join(f"={a}=" for a in r["aliases"].split(",")) + " |")
-        out.append(f"| Parameter | {('=' + r['parameter'] + '=') if r['parameter'] else 'none; the engine names it'} |")
+            out.append("| Other names | " +
+                       ", ".join(f"={cell(a)}=" for a in r["aliases"].split(",")) + " |")
+        parameter = f"={cell(r['parameter'])}=" if r["parameter"] else "none; the engine names it"
+        out.append(f"| Parameter | {parameter} |")
         out.append(f"| Analytics | {cell(r['analytic'].replace(',', ', ')) or 'none stated'} |")
         out.append(f"| Key | {cell(r['keys'].replace(',', ', ')) or 'none: one row for each line'} |")
         out.append(f"| Measures | {'open: the run decides them' if r['open'] == '1' else 'closed'} |")
         out.append(f"| Units | {cell(units)} |")
         out.append(f"| Header variants | {r['variants']} |")
-        sample = f"={r['sample']}=" + (" (synthetic)" if r["synthetic"] == "1" else "")
+        sample = f"={cell(r['sample'])}=" + (" (synthetic)" if r["synthetic"] == "1" else "")
         out.append(f"| Sample | {sample} |")
         out.append("")
         keys = set(r["keys"].split(",")) if r["keys"] else set()
@@ -573,7 +580,7 @@ def page(catalogue):
         for name, kind in r["columns"]:
             role = ("key" if name in keys else "qualifier" if name in qualifiers
                     else "measure" if name in measures else "")
-            out.append(f"| {cell(name)} | {kind} | {role} |")
+            out.append(f"| {cell(name)} | {cell(kind)} | {role} |")
         out.append("")
     out += [
         "* See also",

@@ -1320,7 +1320,7 @@ The standardised approach CVA capital charge of each netting set.
 
 *** sacva_sensitivities
 
-The SA-CVA sensitivities of each netting set to each risk factor.
+The SA-CVA sensitivities of each netting set to each risk factor, before netting and before any risk weight.
 
 | Field | Value |
 |-------+-------|
@@ -1797,7 +1797,7 @@ The standardised market risk charge terms of each trade.
 
 *** stress
 
-The value of each trade in each stress scenario and the change from the base.
+The value of each trade in each stress scenario and the change from the base, as the stress analytic writes it when the run names its file stress.csv, as the intraday power example does; the same report as stresstest.
 
 | Field | Value |
 |-------+-------|
@@ -2689,7 +2689,7 @@ The stressed market: the value of each risk factor in each stress scenario.
 
 *** stresstest
 
-The value of each trade in each stress scenario and the change from the base.
+The value of each trade in each stress scenario and the change from the base, under the stress analytic's usual file name.
 
 | Field | Value |
 |-------+-------|

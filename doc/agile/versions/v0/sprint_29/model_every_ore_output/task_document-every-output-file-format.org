@@ -90,6 +90,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Local review: spelling check over the changed files | | Clean | |
+| 2 | A description whose family left the catalogue is not caught | generate_output_catalogue.py | Accepted | The generator refuses it, as it refuses a family with none. |
+| 3 | Not every table cell is escaped | generate_output_catalogue.py | Accepted | Every interpolated value goes through the escape. |
+| 4 | The page's dates are fixed | generate_output_catalogue.py | Declined | Deliberate: a date that moved would make --check fail every day. |
+| 5 | Some units are broad | output_family_docs.py | Declined | ORE's XVA reports are in base currency; where a writer leaves the unit to the configuration the entry says so. |
+| 6 | stress and stresstest, and the SA-CVA sensitivity families, read alike | output_family_docs.py | Accepted | Each now says what sets it apart: stress is the same report under a configured name. |
+| 7 | The page is long | | No change | 3200 lines of generated org is in line with the docs build. |
+| 8 | Run compass check | PR | Declined | The operator asked for builds and tests instead. |
 |   |                 |      |          |       |
 
 * Result

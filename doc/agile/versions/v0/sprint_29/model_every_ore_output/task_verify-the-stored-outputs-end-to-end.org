@@ -102,7 +102,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| C++ tests | 65 suites, 13,643 test cases, none failed | =./compass.sh build rat= | 949443f621 |
+| SQL tests | 77 files, 725 tests, six full runs passed | =projects/ores.sql/test/run_tests.sh=, six times | 16460d6ef3 |
+| BFF tests | 91 files, 1,244 tests passed | =npx vitest run= in =projects/ores.web/packages/bff= | 949443f621 |
+| Web tests | 195 files, 2,423 tests passed | =npx vitest run= in =projects/ores.web/packages/web= | 949443f621 |
+| BFF requests checked against their generated type | 94 calls, none missing a member; 20 not resolvable | a TypeScript compiler script over =callAuthenticated= calls | a0c66ba4f2 |
+| ORE files and file types | 148 ORE files in 14 categories; 164 file types, each naming one ORE file | =python3 projects/ores.sql/utility/generate_file_types_populate.py --check= | 949443f621 |
+| Files of a run identified | 25 of 25, run 66a4f745 | =GET /api/reporting/runs/<id>/files= | 949443f621 |
+| Portfolio against the downloaded schema | validates | =xmllint --noout --schema input.xsd portfolio.xml= | 949443f621 |
 
 * Notes
 

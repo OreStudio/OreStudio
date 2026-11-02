@@ -4981,7 +4981,6 @@ const pt: SourceCatalogue = {
                     '{updated} atualizados · {unchanged} sem alteração · {kept} mantiveram um nível · {failed} falharam',
                 restart: 'Reiniciar {count} fluxo(s) a correr para aplicar',
                 restarted: 'Os fluxos a correr reiniciaram com a nova calibração.',
-                close: 'Fechar',
             },
             feed: {
                 title: 'Fluxo',

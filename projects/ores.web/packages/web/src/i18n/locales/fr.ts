@@ -5020,7 +5020,6 @@ const fr: SourceCatalogue = {
                     '{updated} mis à jour · {unchanged} inchangés · {kept} ont gardé un niveau · {failed} en échec',
                 restart: 'Redémarrer {count} flux en cours pour appliquer',
                 restarted: 'Les flux en cours ont redémarré avec la nouvelle calibration.',
-                close: 'Fermer',
             },
             feed: {
                 title: 'Flux',

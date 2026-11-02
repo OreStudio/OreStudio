@@ -280,15 +280,7 @@ export function CalibrationPage(): ReactNode {
                 (run.steps === undefined ? (
                     <p className="text-sm text-ink-muted">{t('marketdata.calibration.run.none')}</p>
                 ) : (
-                    <CalibrationRun
-                        assetClass={assetClass}
-                        steps={run.steps}
-                        active={run.active}
-                        onClose={() => {
-                            run.close();
-                            setSearch({}, { replace: true });
-                        }}
-                    />
+                    <CalibrationRun assetClass={assetClass} steps={run.steps} active={run.active} />
                 ))}
             {tab === 'feeds' && (
                 <>

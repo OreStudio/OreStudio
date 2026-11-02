@@ -4946,7 +4946,6 @@ export const en: SourceCatalogue = {
                     '{updated} updated · {unchanged} unchanged · {kept} kept a level · {failed} failed',
                 restart: 'Restart {count} running feed(s) to apply',
                 restarted: 'The running feeds restarted with the new calibration.',
-                close: 'Close',
             },
             feed: {
                 title: 'Feed',

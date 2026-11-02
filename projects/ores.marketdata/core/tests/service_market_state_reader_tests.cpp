@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "market_state_run_fixture.hpp"
 #include "ores.marketdata.core/service/market_state_reader.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <algorithm>
@@ -30,17 +31,10 @@ namespace {
 const std::string market_state_tags("[marketdata][market_state_reader]");
 
 using ores::marketdata::service::market_state_file;
-using ores::marketdata::service::market_state_run;
 using ores::marketdata::service::read_market_state;
+using ores::marketdata::tests::a_market_state_run;
 
 const auto priced_at = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31};
-
-market_state_run the_run() {
-    return market_state_run{.party_id = boost::uuids::random_generator()(),
-                            .report_instance_id = boost::uuids::random_generator()(),
-                            .report_definition_id = boost::uuids::random_generator()(),
-                            .as_of = priced_at};
-}
 
 std::string two_date_scenario_file() {
     return "#Date,Scenario,Numeraire,DiscountCurve/USD/0,DiscountCurve/USD/1\n"
@@ -53,7 +47,7 @@ std::string two_date_scenario_file() {
 
 TEST_CASE("a scenario file is stored as one value for each factor of each line",
           market_state_tags) {
-    const auto run = the_run();
+    const auto run = a_market_state_run(priced_at);
     const auto result = boost::uuids::random_generator()();
     const auto outcome = read_market_state({market_state_file{.result_id = result,
                                                               .name = "stress_scenarios.csv",
@@ -91,7 +85,7 @@ TEST_CASE("a scenario file is stored as one value for each factor of each line",
 
 TEST_CASE("a calibration is stored as one value for each line, text kept as text",
           market_state_tags) {
-    const auto run = the_run();
+    const auto run = a_market_state_run(priced_at);
     const auto outcome = read_market_state(
         {market_state_file{
             .name = "todaysmarketcalibration.csv",
@@ -124,7 +118,7 @@ TEST_CASE("a calibration is stored as one value for each line, text kept as text
 
 TEST_CASE("a market-state family the definition skips stores no rows and is named",
           market_state_tags) {
-    auto run = the_run();
+    auto run = a_market_state_run(priced_at);
     run.families = ores::ore::results::family_selection_of("stress_scenarios");
     const auto outcome = read_market_state(
         {market_state_file{.name = "stress_scenarios.csv", .body = two_date_scenario_file()},
@@ -144,7 +138,7 @@ TEST_CASE("a market-state family the definition skips stores no rows and is name
 
 TEST_CASE("the quotes, fixings and dividends a run read are one value for each line",
           market_state_tags) {
-    const auto run = the_run();
+    const auto run = a_market_state_run(priced_at);
     const auto outcome = read_market_state(
         {market_state_file{.name = "marketdata.csv",
                            .body = "#datumDate,datumId,datumValue\n"
@@ -180,7 +174,7 @@ TEST_CASE("a run's results are left alone rather than stored as market state", m
         {market_state_file{.name = "npv.csv", .body = "#TradeId,NPV\nT1,1.0\n"},
          market_state_file{.name = "netcube.csv", .body = "#Id,NettingSet\n"},
          market_state_file{.name = "something-else.txt", .body = "not a table\n"}},
-        the_run());
+        a_market_state_run(priced_at));
 
     CHECK(outcome.refusals.empty());
     CHECK(outcome.scenario_values.empty());
@@ -191,8 +185,9 @@ TEST_CASE("a run's results are left alone rather than stored as market state", m
 }
 
 TEST_CASE("a market-state file with no heading stops the run's state", market_state_tags) {
-    const auto outcome = read_market_state(
-        {market_state_file{.name = "stress_scenarios.csv", .body = ""}}, the_run());
+    const auto outcome =
+        read_market_state({market_state_file{.name = "stress_scenarios.csv", .body = ""}},
+                          a_market_state_run(priced_at));
 
     REQUIRE_FALSE(outcome.refusals.empty());
     CHECK(outcome.refusals.front().find("stress_scenarios") != std::string::npos);
@@ -203,7 +198,7 @@ TEST_CASE("a scenario line whose date is not a date stops the run's state", mark
     const auto outcome =
         read_market_state({market_state_file{.name = "stress_scenarios.csv",
                                              .body = "#Date,Scenario,Numeraire\nsoon,BASE,1.0\n"}},
-                          the_run());
+                          a_market_state_run(priced_at));
 
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.refusals.front().find("line 2") != std::string::npos);
@@ -215,7 +210,7 @@ TEST_CASE("a scenario file refused part way leaves no rows and names no family",
                                                               .body = "#Date,Scenario,Numeraire\n"
                                                                       "2026-10-31,BASE,1.0\n"
                                                                       "soon,UP,1.0\n"}},
-                                           the_run());
+                                           a_market_state_run(priced_at));
 
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.refusals.front().find("line 3") != std::string::npos);
@@ -232,7 +227,7 @@ TEST_CASE("each result of a run keeps its own file of the same name", market_sta
                                             market_state_file{.result_id = second,
                                                               .name = "stress_scenarios.csv",
                                                               .body = two_date_scenario_file()}},
-                                           the_run());
+                                           a_market_state_run(priced_at));
 
     REQUIRE(outcome.refusals.empty());
     REQUIRE(outcome.scenario_values.size() == 18);
@@ -250,7 +245,7 @@ TEST_CASE("a result that states the same file twice is refused", market_state_ta
                                             market_state_file{.result_id = result,
                                                               .name = "stress_scenarios.csv",
                                                               .body = two_date_scenario_file()}},
-                                           the_run());
+                                           a_market_state_run(priced_at));
 
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.refusals.front().find("twice") != std::string::npos);

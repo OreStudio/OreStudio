@@ -21,7 +21,7 @@
 #include "ores.reporting.core/repository/report_metric_repository.hpp"
 #include "ores.reporting.core/results/run_output_reader.hpp"
 #include "ores.testing/database_helper.hpp"
-#include <boost/uuid/uuid_generators.hpp>
+#include "run_stamp_fixture.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstdlib>
@@ -39,7 +39,7 @@ using ores::reporting::results::read_run_output;
 using ores::reporting::results::read_run_outputs;
 using ores::reporting::results::run_output_outcome;
 using ores::reporting::results::run_output_sinks;
-using ores::reporting::results::run_stamp;
+using ores::reporting::tests::a_run_stamp;
 
 std::size_t rows_wanted() {
     const auto* text = std::getenv("ORES_BENCH_ROWS");
@@ -68,14 +68,6 @@ long peak_mib() {
     return usage.ru_maxrss / 1024;
 }
 
-run_stamp the_run() {
-    return run_stamp{.party_id = boost::uuids::random_generator()(),
-                     .report_instance_id = boost::uuids::random_generator()(),
-                     .report_definition_id = boost::uuids::random_generator()(),
-                     .result_id = boost::uuids::random_generator()(),
-                     .priced_at = std::chrono::sys_days{std::chrono::year{2026} / 11 / 2}};
-}
-
 }
 
 TEST_CASE("load a large cube whole: read every row, then insert", benchmark_tags) {
@@ -86,7 +78,8 @@ TEST_CASE("load a large cube whole: read every row, then insert", benchmark_tags
 
     const auto start = std::chrono::steady_clock::now();
     auto outcome =
-        read_run_outputs({output_file{.name = "rawcube.csv", .body = std::move(body)}}, the_run());
+        read_run_outputs({output_file{.name = "rawcube.csv", .body = std::move(body)}},
+                         a_run_stamp(std::chrono::sys_days{std::chrono::year{2026} / 11 / 2}));
     REQUIRE(outcome.refusals.empty());
     report_metric_repository{}.insert(h.context(), outcome.metrics);
     const auto seconds =
@@ -115,12 +108,13 @@ TEST_CASE("load a large cube in blocks: read a block, insert it, read the next",
                 ++blocks;
             },
         .cashflows = [](auto&) {},
-        .text_values =
-            [](auto&) {
-            }};
+        .text_values = [](auto&) {}};
     run_output_outcome outcome;
-    read_run_output(
-        output_file{.name = "rawcube.csv", .body = body}, the_run(), 10000, sinks, outcome);
+    read_run_output(output_file{.name = "rawcube.csv", .body = body},
+                    a_run_stamp(std::chrono::sys_days{std::chrono::year{2026} / 11 / 2}),
+                    10000,
+                    sinks,
+                    outcome);
     REQUIRE(outcome.refusals.empty());
     uow.commit();
     const auto seconds =

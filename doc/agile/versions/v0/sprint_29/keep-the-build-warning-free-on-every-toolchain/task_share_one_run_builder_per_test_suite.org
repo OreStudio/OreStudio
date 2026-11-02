@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 4565EA21-C3B4-46F0-9BE4-E0F2D84D6829
+:END:
+#+title: Task: Share one run builder per test suite
+#+description: Two reporting tests and two marketdata tests each defined their own file-local run builder, which the unity build refuses; one marketdata copy had been renamed rather than shared.
+#+type: task
+#+level: s1
+#+filetags: :keep-the-build-warning-free-on-every-toolchain:sprint_29:v0:
+#+owner: marco
+#+branch: fix/share-one-run-builder-per-test-suite
+#+pr: 4389
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DBC8953-25FC-403A-A8C3-94BA54F33786][Hotfix: Keep the build warning-free on every toolchain]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each component's test suite builds a run from one definition, so the unity build has no duplicate name to refuse and no copy is renamed to dodge it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4DBC8953-25FC-403A-A8C3-94BA54F33786][Hotfix: Keep the build warning-free on every toolchain]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- The reporting tests build a run stamp through one fixture.
+- The marketdata tests build a market state run through one fixture.
+- No test keeps a renamed copy, and the unity collision check passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Copies of a run builder in the reporting and marketdata core tests | 4 before (two per suite, one renamed to a_stored_run); 2 after, one fixture per suite | =grep -rn= for the helper names over both tests directories | 754bf3e0c8 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4389][#4389]] | [reporting,marketdata] Share one run builder per test suite |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Should the builders live in ores.testing | run_stamp_fixture.hpp, market_state_run_fixture.hpp | Declined | The types live in reporting.core and marketdata.core, which ores.testing does not link; each builder is used only by its own component's tests, so its fixture sits beside them. |
+| 2 | The benchmark's file-level date constant collided with the reader test's | benchmark_run_output_load_tests.cpp | Accepted | The benchmark asserts nothing about the date, so it passes the date at its two calls rather than naming a second file-level constant. |
+| 3 | PR #4389 review: double blank lines where the old helpers were | four test files | Accepted | Collapsed. |
+| 4 | PR #4389 review: one file-local priced_at in the benchmark instead of two date literals | benchmark_run_output_load_tests.cpp | Declined | The unity build merges the anonymous namespaces of the target's sources, so a second file-level priced_at collides with the reader test's; that collision is what row 2 removed. |
+| 5 | PR #4389 review: the fixture usings sit outside their using blocks | four test files | Accepted | Each sits last in its file's block. |
+| 6 | PR #4389 review: an unrelated reformat in the benchmark | benchmark_run_output_load_tests.cpp | Declined | clang-format wrote it, and the format check requires a changed file to be formatted whole. |
+
+* Result
+
+Each suite builds a run from one definition. The reporting tests call
+=a_run_stamp(priced_at)= from =run_stamp_fixture.hpp=, and the marketdata
+tests call =a_market_state_run(as_of)= from =market_state_run_fixture.hpp=;
+each copy differed only in its date, which is now the parameter. The
+marketdata copy an earlier fix renamed to =a_stored_run= is gone. The
+fixtures stay in their components' tests rather than in =ores.testing=,
+because the types they build live in the two components' cores, which the
+shared testing library does not link. The gate passes 20 of 20, the unity
+collision check among them.
+
+The duplicates reached main because the PR that added the second reporting
+copy, #4381, merged without the local gate ("compass check not run, per the
+operator").

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "market_state_run_fixture.hpp"
 #include "ores.marketdata.core/repository/market_calibration_value_repository.hpp"
 #include "ores.marketdata.core/repository/market_input_value_repository.hpp"
 #include "ores.marketdata.core/repository/market_scenario_value_repository.hpp"
@@ -36,22 +37,17 @@ using ores::marketdata::repository::market_calibration_value_repository;
 using ores::marketdata::repository::market_input_value_repository;
 using ores::marketdata::repository::market_scenario_value_repository;
 using ores::marketdata::service::market_state_file;
-using ores::marketdata::service::market_state_run;
 using ores::marketdata::service::read_market_state;
+using ores::marketdata::tests::a_market_state_run;
 using ores::testing::database_helper;
 
-market_state_run a_stored_run() {
-    return market_state_run{.party_id = boost::uuids::random_generator()(),
-                            .report_instance_id = boost::uuids::random_generator()(),
-                            .report_definition_id = boost::uuids::random_generator()(),
-                            .as_of = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31}};
-}
+const auto as_of = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31};
 
 }
 
 TEST_CASE("every value a scenario file states for one date is stored", value_tags) {
     database_helper h;
-    const auto run = a_stored_run();
+    const auto run = a_market_state_run(as_of);
 
     // Three scenarios on one date state the same factors, so only the line tells
     // one value of a factor from another.
@@ -85,7 +81,7 @@ TEST_CASE("every value a scenario file states for one date is stored", value_tag
 
 TEST_CASE("a calibration reads back with its text and its figure", value_tags) {
     database_helper h;
-    const auto run = a_stored_run();
+    const auto run = a_market_state_run(as_of);
 
     const auto outcome = read_market_state(
         {market_state_file{
@@ -120,7 +116,7 @@ TEST_CASE("a calibration reads back with its text and its figure", value_tags) {
 
 TEST_CASE("two quotes of one datum on one date from two lines are both stored", value_tags) {
     database_helper h;
-    const auto run = a_stored_run();
+    const auto run = a_market_state_run(as_of);
 
     const auto outcome =
         read_market_state({market_state_file{.result_id = boost::uuids::random_generator()(),

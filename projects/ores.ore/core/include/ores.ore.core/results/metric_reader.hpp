@@ -78,9 +78,13 @@ struct metric {
      */
     double value = 0.0;
     /**
-     * @brief The file the metric came from.
+     * @brief The family the metric came from.
      */
     std::string source;
+    /**
+     * @brief The line of the file that states the figure, counting the heading as line one.
+     */
+    int line = 0;
 };
 
 /**

@@ -39,18 +39,20 @@ create table if not exists "ores_reporting_report_metrics_tbl" (
     "tenant_id" uuid not null,
     "party_id" uuid not null,
     "report_instance_id" uuid not null,
+    "result_id" uuid not null,
+    "as_of" timestamp with time zone not null,
+    "measure" text not null,
+    "source" text not null,
+    "line" integer not null,
+    "report_definition_id" uuid not null,
     "family" text not null,
     "subject_type" text not null,
     "subject_id" text not null,
-    "as_of" timestamp with time zone not null,
-    "measure" text not null,
-    "report_definition_id" uuid not null,
     "currency" text not null,
     "scenario" text null,
     "factor" text null,
     "qualifiers" text null,
     "value" double precision not null,
-    "source" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (id, as_of),
@@ -59,8 +61,8 @@ create table if not exists "ores_reporting_report_metrics_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists report_metrics_party_id_report_instance_id_family_subject_type_subject_id_as_of_measure_uniq_idx
-on "ores_reporting_report_metrics_tbl" (tenant_id, party_id, report_instance_id, family, subject_type, subject_id, as_of, measure)
+create unique index if not exists report_metrics_party_id_report_instance_id_result_id_as_of_measure_source_line_uniq_idx
+on "ores_reporting_report_metrics_tbl" (tenant_id, party_id, report_instance_id, result_id, as_of, measure, source, line)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 
@@ -75,12 +77,11 @@ begin
     where tenant_id = new.tenant_id
       and party_id = new.party_id
       and report_instance_id = new.report_instance_id
+      and result_id = new.result_id
+      and source = new.source
+      and line = new.line
       and as_of = new.as_of
-      and family = new.family
-      and subject_type = new.subject_type
-      and subject_id = new.subject_id
       and measure = new.measure
-      and currency = new.currency
       and valid_to = ores_utility_infinity_timestamp_fn()
       and valid_from < current_timestamp;
 
@@ -102,12 +103,11 @@ begin
     where tenant_id = old.tenant_id
       and party_id = old.party_id
       and report_instance_id = old.report_instance_id
+      and result_id = old.result_id
+      and source = old.source
+      and line = old.line
       and as_of = old.as_of
-      and family = old.family
-      and subject_type = old.subject_type
-      and subject_id = old.subject_id
       and measure = old.measure
-      and currency = old.currency
       and valid_to = ores_utility_infinity_timestamp_fn();
     return null;
 end;

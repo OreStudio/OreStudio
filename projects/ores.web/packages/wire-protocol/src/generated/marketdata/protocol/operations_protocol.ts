@@ -1122,8 +1122,8 @@ export interface StoreMarketStateRequest {
 export interface StoreMarketStateResponse {
     result: Result;
     families: string[];
-    payloads: number;
-    payload_bytes: number;
+    files: number;
+    rows: number;
     left_alone: string[];
     refusals: string[];
 }

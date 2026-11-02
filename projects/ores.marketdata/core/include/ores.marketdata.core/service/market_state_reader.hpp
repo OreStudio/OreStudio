@@ -20,7 +20,8 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_MARKET_STATE_READER_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_MARKET_STATE_READER_HPP
 
-#include "ores.marketdata.api/domain/market_state_payload.hpp"
+#include "ores.marketdata.api/domain/market_calibration_value.hpp"
+#include "ores.marketdata.api/domain/market_scenario_value.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -51,7 +52,7 @@ struct market_state_file {
 };
 
 /**
- * @brief The run a payload belongs to, as every row of it is stamped.
+ * @brief The run a market state belongs to, as every row of it is stamped.
  */
 struct market_state_run {
     /**
@@ -81,9 +82,17 @@ struct market_state_run {
  */
 struct market_state_outcome {
     /**
-     * @brief The payload rows to store, one for each market-state file.
+     * @brief The values the scenario files state, one for each factor of each line.
      */
-    std::vector<domain::market_state_payload> payloads;
+    std::vector<domain::market_scenario_value> scenario_values;
+    /**
+     * @brief The values the calibration file states, one for each line.
+     */
+    std::vector<domain::market_calibration_value> calibration_values;
+    /**
+     * @brief The families of the market-state files read, in the order they were read.
+     */
+    std::vector<std::string> families;
     /**
      * @brief The files that are not market state, so the caller can account for
      * them.
@@ -96,12 +105,12 @@ struct market_state_outcome {
 };
 
 /**
- * @brief Reads every market-state file of a run's output.
+ * @brief Reads every market-state file of a run's output into rows.
  *
- * The catalogue says which families state market state and which columns are
- * their keys, so this indexes a cube without knowing its shape: the payload is
- * the file as the engine wrote it, compressed, and the index beside it is the
- * headings, the row count and the distinct values of each key.
+ * The catalogue says which families state market state. A scenario file states
+ * a date and a scenario on each line and one column for each risk factor, so it
+ * is read by the metric reader and each figure becomes one value. The
+ * calibration file states one value on each line, which may be text.
  *
  * @param files  the files the run wrote.
  * @param run    the run every row is stamped with.

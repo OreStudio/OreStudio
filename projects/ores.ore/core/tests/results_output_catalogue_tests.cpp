@@ -200,11 +200,18 @@ TEST_CASE("npv states its figures as measures and its context as qualifiers", ca
 }
 
 TEST_CASE("a configuration-driven family says its measures are open", catalogue_tags) {
-    for (const auto& code : {"curves", "var", "dim_regression"}) {
+    for (const auto& code :
+         {"curves", "var", "dim_regression", "stress_scenarios", "scenariostatistics"}) {
         const auto* family = family_named(code);
         REQUIRE(family != nullptr);
         INFO("the family is " << code);
         CHECK(family->measures_open);
+
+        // The run decides which figures an open family states, so no figure is
+        // one every run must state.
+        for (const auto& measure : family->measure_columns)
+            CHECK(std::ranges::find(family->required_columns, measure) ==
+                  family->required_columns.end());
     }
 
     for (const auto& code : {"npv", "exposure-trade", "flows"}) {
@@ -216,13 +223,8 @@ TEST_CASE("a configuration-driven family says its measures are open", catalogue_
 }
 
 TEST_CASE("every market-state family is a family of the catalogue", catalogue_tags) {
-    const std::vector<std::string> expected = {"netcube",
-                                               "rawcube",
-                                               "scenario",
-                                               "scenario_fullSurface",
-                                               "scenariostatistics",
-                                               "stress_scenarios",
-                                               "todaysmarketcalibration"};
+    const std::vector<std::string> expected = {
+        "scenariostatistics", "stress_scenarios", "todaysmarketcalibration"};
 
     std::vector<std::string> stated;
     for (const auto& family : output_families())

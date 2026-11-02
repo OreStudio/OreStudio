@@ -23,10 +23,10 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Fanning a run's output out at the node (task B). The market state is no longer kept as a blob: every family is parsed into rows. |
+| Now           | The market state is parsed into timeseries tables; every family a run writes is rows. |
 | Waiting on    | Nothing.                               |
-| Next          | Finish task B, then parse the market state into timeseries tables. |
-| Last touched  | 2026-11-01                               |
+| Next          | Choose per report definition what a run stores. |
+| Last touched  | 2026-11-02                               |
 
 * Acceptance
 
@@ -58,7 +58,7 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 | [[id:1D326204-29A2-4467-8DC7-779BD0C3CFAB][Keep the market state in the object store]] | ABANDONED | | | A cube is tens to hundreds of megabytes. Held as base64 text in a row it adds a third on top of gzip and puts the payload in the database, which is the wrong place for grid throughput. The row keeps the index and a storage key; the compressed file lives in the object store and is fetched only when a reader needs the values. |
 | [[id:DA5EBB3A-E221-4DC0-BFA1-6B2CDEF15DBB][Document how a report run is processed]] | BACKLOG | | | One page states the flow of a run end to end and what post-processing does with its output: the phases the workflow invokes, what each hands the next, how the archive becomes rows in the two stores, which component owns which format, and why the shapes are what they are. The existing pipeline page predates the implementation and says only that post-processing records rows. |
 | [[id:9CC7AFA7-3755-40D1-AC2C-A2F2E9D3ED5B][Land the market inputs in the market data store]] | BACKLOG | | | A run states the market it read in marketdata.csv, fixings.csv and dividends.csv, and the catalogue names none of them, so no reader serves them and the store keeps nothing. Catalogue the three from the writers, read them with the declaration-driven reader, and land them in the shapes ores.marketdata already holds: market observations for the quotes and market fixings for the fixings and dividends. Also decide whether todaysmarketcalibration_cashflows is a run result or market state, and record the decision in the story. |
-| [[id:40A46EF1-C11A-4652-A490-4B0D454E24FB][Parse the market state into timeseries tables]] | BACKLOG | | | Every market-state file a run writes is parsed into rows in a hypertable, so a user can query what the computation did. The NPV cubes are values of trades, so they are run results and go to ores.reporting. The simulated factor values, the stress shifts and the calibrated market go to ores.marketdata. The payload table and its index are removed, and scenario.csv moves to the run results, because it holds sensitivity figures. |
+| [[id:40A46EF1-C11A-4652-A490-4B0D454E24FB][Parse the market state into timeseries tables]] | DONE | 2026-11-01 | 2026-11-02 | Every market-state file a run writes is parsed into rows in a hypertable, so a user can query what the computation did. The NPV cubes are values of trades, so they are run results and go to ores.reporting. The simulated factor values, the stress shifts and the calibrated market go to ores.marketdata. The payload table and its index are removed, and scenario.csv moves to the run results, because it holds sensitivity figures. |
 | [[id:E10EB70F-4B61-43AA-97A4-440991BB8FD5][Choose per report definition what a run stores]] | BACKLOG | | | A report definition states which output families its runs store as rows. The default stores every family, so we can see that the parsers work. When we trust them, a definition can turn off the large intermediate families, such as the NPV cubes and the scenario dumps. The raw files stay in the object store, so a run that did not store a family can be parsed later. |
 
 * Decisions
@@ -161,6 +161,21 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
   does not run. At this commit the corpus is 473 files under 192 file names,
   which group into 66 family shapes by name, and the widest file states 789
   columns. The count is a grouping of the corpus, not a list ORE publishes.
+
+** 2026-11-02 A figure is keyed by where the engine stated it
+
+Every row of a run's figures and of its market state is keyed by the compute
+result, the file and the line, with the date and the heading. A sensitivity, a
+cube or a scenario file states many rows with the same subject, date and heading,
+so nothing in the figure itself tells them apart, and the old key refused the
+second row. The family, subject and currency stay as columns to query by.
+
+** 2026-11-02 A family whose figures the run decides requires none of them
+
+The catalogue generator required every column all samples share, which made a
+scenario family require the sample's curves and refuse any other run. A family
+whose measures are open requires no measure column, and the scenario families
+are open because their columns are the factors the run simulated.
 
 * Out of scope
 

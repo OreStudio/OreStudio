@@ -47,6 +47,10 @@ struct run_stamp {
      */
     boost::uuids::uuid report_definition_id;
     /**
+     * @brief The compute result whose output the files are.
+     */
+    boost::uuids::uuid result_id;
+    /**
      * @brief The date the run priced at, used where the file states no date.
      */
     std::chrono::system_clock::time_point priced_at;

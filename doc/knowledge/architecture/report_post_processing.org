@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:reporting:postprocessing:results:
 #+created: 2026-09-27
-#+updated: 2026-10-31
+#+updated: 2026-11-02
 
 * Summary
 
@@ -56,7 +56,7 @@ say which shape its row is. One rule decides, and it is stated once in =ores.ore
 |------------+---------------+--------------|
 | keys, qualifiers and figures | a metric family | =ores_reporting_report_metrics_tbl= |
 | a payment with a leg and a number | a cashflow family | =ores_reporting_report_cashflows_tbl= |
-| the market state of the run, one column for each curve and tenor | a market state | the market data store |
+| the scenarios or the calibration of the market the run built | a market state | the market data store |
 | anything else | no family | left alone, and named in the log |
 
 A file no family covers is counted and logged rather than refused: a run may write
@@ -75,8 +75,9 @@ for each family:
   state each figure three times; the reader turns =Amount_Base=, =Amount_Scen= and
   =Amount_Diff= into one figure named =Amount= with the part beside it, so a
   comparison needs no knowledge of the suffix.
-- =index_payload= reads a market-state file without reading its figures: the
-  headings, the row count and the distinct values of each key.
+- =read_calibration= reads the calibration of the market the run built, one value
+  for each line. A value is a number as often as it is text, and the line says
+  which, so the text is kept and the number beside it when there is one.
 
 ** The stores
 
@@ -95,10 +96,18 @@ for each family:
 
 Both are written once per run and never edited; a correction is a new run.
 
-The market data store writes the state.
-=ores_marketdata_market_state_payloads_tbl= keeps the file the engine wrote,
-compressed, with an index beside it: a row for each value would be millions of rows
-for one run, and a read that wants one factor would unpack all of them.
+The market data store writes the state, with the same readers.
+
+- A scenario value is one risk factor's value under one scenario at one date. The
+  scenario files state a column for each factor, so =read_metrics= reads them and
+  each figure becomes one row of =ores_marketdata_market_scenario_values_tbl=.
+- A calibration value is one line of the calibration file, in
+  =ores_marketdata_market_calibration_values_tbl=.
+
+Every row of the run's figures and of its state is keyed by where the engine
+stated it: the compute result, the file, the line and the heading. A sensitivity
+or a scenario file states many rows with the same subject, date and heading, so
+nothing else tells them apart.
 
 ** Why the store is shaped this way
 

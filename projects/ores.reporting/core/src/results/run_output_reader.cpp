@@ -150,18 +150,20 @@ run_output_outcome read_run_outputs(const std::vector<output_file>& files, const
                 domain::report_metric{.id = boost::uuids::random_generator()(),
                                       .party_id = run.party_id,
                                       .report_instance_id = run.report_instance_id,
+                                      .result_id = run.result_id,
+                                      .as_of = as_of,
+                                      .measure = one.measure,
+                                      .source = file.name,
+                                      .line = one.line,
+                                      .report_definition_id = run.report_definition_id,
                                       .family = family->code,
                                       .subject_type = one.subject_type,
                                       .subject_id = one.subject,
-                                      .as_of = as_of,
-                                      .measure = one.measure,
-                                      .report_definition_id = run.report_definition_id,
                                       .currency = one.currency,
                                       .scenario = one.scenario,
                                       .factor = one.factor,
                                       .qualifiers = qualifiers_json(one.qualifiers),
-                                      .value = one.value,
-                                      .source = family->code});
+                                      .value = one.value});
         }
         outcome.files_read.push_back(file.name);
     }

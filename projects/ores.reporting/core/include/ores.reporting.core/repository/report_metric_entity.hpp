@@ -56,27 +56,28 @@ struct report_metric_entity {
 
     boost::uuids::uuid report_instance_id;
 
-
-    std::string family;
-
-
-    std::string subject_type;
-
-
-    std::string subject_id;
+    boost::uuids::uuid result_id;
 
     db_timestamp as_of;
 
 
     std::string measure;
 
+
+    std::string source;
+
+
+    int line = 0;
+
     boost::uuids::uuid report_definition_id;
+    std::string family;
+    std::string subject_type;
+    std::string subject_id;
     std::string currency;
     std::optional<std::string> scenario;
     std::optional<std::string> factor;
     std::optional<std::string> qualifiers;
     double value;
-    std::string source;
     db_timestamp valid_from = db_timestamp::max();
     db_timestamp valid_to = db_timestamp::max();
 
@@ -90,17 +91,19 @@ struct report_metric_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("report_instance_id", &e::report_instance_id) |
+               query_builder::bind("result_id", &e::result_id) |
+               query_builder::bind("as_of", &e::as_of) |
+               query_builder::bind("measure", &e::measure) |
+               query_builder::bind("source", &e::source) | query_builder::bind("line", &e::line) |
+               query_builder::bind("report_definition_id", &e::report_definition_id) |
                query_builder::bind("family", &e::family) |
                query_builder::bind("subject_type", &e::subject_type) |
                query_builder::bind("subject_id", &e::subject_id) |
-               query_builder::bind("as_of", &e::as_of) |
-               query_builder::bind("measure", &e::measure) |
-               query_builder::bind("report_definition_id", &e::report_definition_id) |
                query_builder::bind("currency", &e::currency) |
                query_builder::bind("scenario", &e::scenario) |
                query_builder::bind("factor", &e::factor) |
                query_builder::bind("qualifiers", &e::qualifiers) |
-               query_builder::bind("value", &e::value) | query_builder::bind("source", &e::source) |
+               query_builder::bind("value", &e::value) |
                query_builder::bind("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }

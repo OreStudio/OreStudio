@@ -23,9 +23,9 @@ ore --> reporting : the run's figures
 reporting -> results : one bulk insert for each family, in one transaction
 reporting -> marketdata : store_market_state(run, archive locations, run token)
 marketdata -> store : fetch the archive
-marketdata -> ore : index_payload, by family
-ore --> marketdata : the headings, the row count, the key values
-marketdata -> state : one row for each market-state file
+marketdata -> ore : read_metrics, read_calibration, by family
+ore --> marketdata : the scenario and calibration values
+marketdata -> state : one row for each value
 reporting --> wf : the run's result summary
 
 == What a screen reads ==

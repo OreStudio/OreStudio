@@ -1445,17 +1445,19 @@ package "reporting" #E0F7FA {
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
+        * measure : text
+        * source : text
+        * line : integer
+        * report_definition_id : uuid <<FK>>
         * family : text
         * subject_type : text
         * subject_id : text <<FK>>
-        * measure : text
-        * report_definition_id : uuid <<FK>>
         * currency : text
           scenario : text
           factor : text
           qualifiers : text
         * value : double
-        * source : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }

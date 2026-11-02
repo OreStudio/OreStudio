@@ -104,6 +104,10 @@ NUMERIC_QUALIFIERS = {
 
 # The columns that identify a row rather than measure it. A key is text
 # whatever its values look like.
+# The families whose figures are the risk factors the run simulated. Their
+# columns come from the configuration even where the corpus holds one sample.
+RISK_FACTOR_FAMILIES = {"scenariostatistics", "stress_scenarios"}
+
 KEYS = [
     "TradeId", "TradeID", "NettingSet", "NettingSetId", "NettingSetID",
     "Portfolio", "PortfolioId", "PortfolioID", "Date", "Time", "Tenor",
@@ -255,7 +259,13 @@ def rows(families, seed):
              and n not in NUMERIC_QUALIFIERS}
             for h in headers
         ]
-        is_open = len({tuple(sorted(m)) for m in measure_sets}) > 1
+        is_open = len({tuple(sorted(m)) for m in measure_sets}) > 1 \
+            or family in RISK_FACTOR_FAMILIES
+
+        # A configuration-driven family states the figures the run asked for, so
+        # no sample can say which of them every run states.
+        if is_open:
+            required -= set(measures)
 
         matches = seed.get(entry["pattern"], [])
         parameter = matches[0][0] if matches else ""

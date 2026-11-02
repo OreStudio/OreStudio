@@ -50,7 +50,7 @@ output_manifest_file file_named(const std::string& name) {
 TEST_CASE("a manifest reads back as it was written", manifest_tags) {
     const output_manifest written{
         .result_id = "r",
-        .files = {file_named("netcube.csv"), file_named("npv.csv"), file_named("notes.txt")}};
+        .files = {file_named("stress_scenarios.csv"), file_named("npv.csv"), file_named("notes.txt")}};
 
     const auto read = manifest_from_json(to_json(written));
 
@@ -67,8 +67,11 @@ TEST_CASE("a manifest reads back as it was written", manifest_tags) {
 }
 
 TEST_CASE("a file is state, a result, or neither, as its family says", manifest_tags) {
-    CHECK(is_market_state_file(file_named("netcube.csv")));
-    CHECK_FALSE(is_result_file(file_named("netcube.csv")));
+    CHECK(is_market_state_file(file_named("stress_scenarios.csv")));
+    CHECK_FALSE(is_result_file(file_named("stress_scenarios.csv")));
+
+    CHECK(is_result_file(file_named("netcube.csv")));
+    CHECK(is_result_file(file_named("scenario.csv")));
 
     CHECK(is_result_file(file_named("npv.csv")));
     CHECK_FALSE(is_market_state_file(file_named("npv.csv")));

@@ -43,18 +43,20 @@ struct report_metric_write {
     boost::uuids::uuid id;
     boost::uuids::uuid party_id;
     boost::uuids::uuid report_instance_id;
+    boost::uuids::uuid result_id;
+    std::chrono::system_clock::time_point as_of;
+    std::string measure;
+    std::string source;
+    int line;
+    boost::uuids::uuid report_definition_id;
     std::string family;
     std::string subject_type;
     std::string subject_id;
-    std::chrono::system_clock::time_point as_of;
-    std::string measure;
-    boost::uuids::uuid report_definition_id;
     std::string currency;
     std::string scenario;
     std::string factor;
     std::string qualifiers;
     double value;
-    std::string source;
 };
 
 struct report_metric_change {
@@ -74,14 +76,14 @@ struct report_metric_lookup {
 
 struct report_metrics_filter {
     std::optional<boost::uuids::uuid> report_instance_id;
+    std::optional<std::string> measure;
     std::optional<std::string> family;
     std::optional<std::string> subject_id;
-    std::optional<std::string> measure;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> report_instance_id_one_of;
+    std::optional<std::vector<std::string>> measure_one_of;
     std::optional<std::vector<std::string>> family_one_of;
     std::optional<std::vector<std::string>> subject_id_one_of;
-    std::optional<std::vector<std::string>> measure_one_of;
 };
 
 struct report_metric_event {

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 1E563104-6F89-4858-9395-D869A7E817A6
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.app_version
 #+description: Codegen entity model for the compute =app_version= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

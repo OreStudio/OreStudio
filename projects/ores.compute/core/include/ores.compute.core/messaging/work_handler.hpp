@@ -39,7 +39,6 @@
 #include <chrono>
 #include <cstdint>
 #include <map>
-#include <rfl/json.hpp>
 #include <stdexcept>
 
 namespace ores::compute::messaging {

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 05BA3A23-3596-4881-BFB6-D4E3438FD9AC
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.telemetry
 #+description: Codegen operation model for the compute telemetry protocol, rendered to C++ and TypeScript from one source.

@@ -25,9 +25,15 @@
 #ifndef ORES_COMPUTE_API_MESSAGING_TELEMETRY_PROTOCOL_HPP
 #define ORES_COMPUTE_API_MESSAGING_TELEMETRY_PROTOCOL_HPP
 
+#include "ores.compute.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::compute::messaging {
@@ -569,6 +575,381 @@ struct get_grid_usage_response {
     std::vector<std::int64_t> oldest_unsent_seconds;
 };
 
+/**
+ * @brief The members of get_grid_stats_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_grid_stats_request&) {
+    return std::tuple{};
 }
+
+/**
+ * @brief The members of node_stats_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const node_stats_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"host_id", &node_stats_summary::host_id},
+        ::ores::utility::codec::field{"machine", &node_stats_summary::machine},
+        ::ores::utility::codec::field{"tasks_completed", &node_stats_summary::tasks_completed},
+        ::ores::utility::codec::field{"tasks_failed", &node_stats_summary::tasks_failed},
+        ::ores::utility::codec::field{"tasks_since_last", &node_stats_summary::tasks_since_last},
+        ::ores::utility::codec::field{"avg_task_duration_ms",
+                                      &node_stats_summary::avg_task_duration_ms},
+        ::ores::utility::codec::field{"max_task_duration_ms",
+                                      &node_stats_summary::max_task_duration_ms},
+        ::ores::utility::codec::field{"input_bytes_fetched",
+                                      &node_stats_summary::input_bytes_fetched},
+        ::ores::utility::codec::field{"output_bytes_uploaded",
+                                      &node_stats_summary::output_bytes_uploaded},
+        ::ores::utility::codec::field{"seconds_since_hb", &node_stats_summary::seconds_since_hb},
+    };
+}
+
+/**
+ * @brief The members of get_grid_stats_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_grid_stats_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_grid_stats_response::success},
+        ::ores::utility::codec::field{"message", &get_grid_stats_response::message},
+        ::ores::utility::codec::field{"total_hosts", &get_grid_stats_response::total_hosts},
+        ::ores::utility::codec::field{"online_hosts", &get_grid_stats_response::online_hosts},
+        ::ores::utility::codec::field{"idle_hosts", &get_grid_stats_response::idle_hosts},
+        ::ores::utility::codec::field{"results_inactive",
+                                      &get_grid_stats_response::results_inactive},
+        ::ores::utility::codec::field{"results_unsent", &get_grid_stats_response::results_unsent},
+        ::ores::utility::codec::field{"results_in_progress",
+                                      &get_grid_stats_response::results_in_progress},
+        ::ores::utility::codec::field{"results_done", &get_grid_stats_response::results_done},
+        ::ores::utility::codec::field{"total_workunits", &get_grid_stats_response::total_workunits},
+        ::ores::utility::codec::field{"total_batches", &get_grid_stats_response::total_batches},
+        ::ores::utility::codec::field{"active_batches", &get_grid_stats_response::active_batches},
+        ::ores::utility::codec::field{"outcomes_success",
+                                      &get_grid_stats_response::outcomes_success},
+        ::ores::utility::codec::field{"outcomes_client_error",
+                                      &get_grid_stats_response::outcomes_client_error},
+        ::ores::utility::codec::field{"outcomes_no_reply",
+                                      &get_grid_stats_response::outcomes_no_reply},
+        ::ores::utility::codec::field{"sampled_at", &get_grid_stats_response::sampled_at},
+        ::ores::utility::codec::field{"node_summaries", &get_grid_stats_response::node_summaries},
+    };
+}
+
+/**
+ * @brief The members of get_grid_series_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_grid_series_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"start_time", &get_grid_series_request::start_time},
+        ::ores::utility::codec::field{"end_time", &get_grid_series_request::end_time},
+        ::ores::utility::codec::field{"bucket_seconds", &get_grid_series_request::bucket_seconds},
+    };
+}
+
+/**
+ * @brief The members of get_grid_series_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_grid_series_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_grid_series_response::success},
+        ::ores::utility::codec::field{"message", &get_grid_series_response::message},
+        ::ores::utility::codec::field{"start_time", &get_grid_series_response::start_time},
+        ::ores::utility::codec::field{"bucket_seconds", &get_grid_series_response::bucket_seconds},
+        ::ores::utility::codec::field{"bucket_count", &get_grid_series_response::bucket_count},
+        ::ores::utility::codec::field{"samples", &get_grid_series_response::samples},
+        ::ores::utility::codec::field{"total_hosts", &get_grid_series_response::total_hosts},
+        ::ores::utility::codec::field{"online_hosts", &get_grid_series_response::online_hosts},
+        ::ores::utility::codec::field{"idle_hosts", &get_grid_series_response::idle_hosts},
+        ::ores::utility::codec::field{"results_inactive",
+                                      &get_grid_series_response::results_inactive},
+        ::ores::utility::codec::field{"results_unsent", &get_grid_series_response::results_unsent},
+        ::ores::utility::codec::field{"results_in_progress",
+                                      &get_grid_series_response::results_in_progress},
+        ::ores::utility::codec::field{"results_done", &get_grid_series_response::results_done},
+        ::ores::utility::codec::field{"total_workunits",
+                                      &get_grid_series_response::total_workunits},
+        ::ores::utility::codec::field{"total_batches", &get_grid_series_response::total_batches},
+        ::ores::utility::codec::field{"active_batches", &get_grid_series_response::active_batches},
+        ::ores::utility::codec::field{"outcomes_success",
+                                      &get_grid_series_response::outcomes_success},
+        ::ores::utility::codec::field{"outcomes_client_error",
+                                      &get_grid_series_response::outcomes_client_error},
+        ::ores::utility::codec::field{"outcomes_no_reply",
+                                      &get_grid_series_response::outcomes_no_reply},
+    };
+}
+
+/**
+ * @brief The members of get_node_series_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_node_series_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"start_time", &get_node_series_request::start_time},
+        ::ores::utility::codec::field{"end_time", &get_node_series_request::end_time},
+        ::ores::utility::codec::field{"bucket_seconds", &get_node_series_request::bucket_seconds},
+    };
+}
+
+/**
+ * @brief The members of node_series_node, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const node_series_node&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"host_id", &node_series_node::host_id},
+        ::ores::utility::codec::field{"machine", &node_series_node::machine},
+    };
+}
+
+/**
+ * @brief The members of get_node_series_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_node_series_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_node_series_response::success},
+        ::ores::utility::codec::field{"message", &get_node_series_response::message},
+        ::ores::utility::codec::field{"start_time", &get_node_series_response::start_time},
+        ::ores::utility::codec::field{"bucket_seconds", &get_node_series_response::bucket_seconds},
+        ::ores::utility::codec::field{"bucket_count", &get_node_series_response::bucket_count},
+        ::ores::utility::codec::field{"nodes", &get_node_series_response::nodes},
+        ::ores::utility::codec::field{"samples", &get_node_series_response::samples},
+        ::ores::utility::codec::field{"tasks_completed",
+                                      &get_node_series_response::tasks_completed},
+        ::ores::utility::codec::field{"tasks_failed", &get_node_series_response::tasks_failed},
+        ::ores::utility::codec::field{"tasks_since_last",
+                                      &get_node_series_response::tasks_since_last},
+        ::ores::utility::codec::field{"avg_task_duration_ms",
+                                      &get_node_series_response::avg_task_duration_ms},
+        ::ores::utility::codec::field{"max_task_duration_ms",
+                                      &get_node_series_response::max_task_duration_ms},
+        ::ores::utility::codec::field{"input_bytes_fetched",
+                                      &get_node_series_response::input_bytes_fetched},
+        ::ores::utility::codec::field{"output_bytes_uploaded",
+                                      &get_node_series_response::output_bytes_uploaded},
+    };
+}
+
+/**
+ * @brief The members of node_sample_message, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const node_sample_message&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"tenant_id", &node_sample_message::tenant_id},
+        ::ores::utility::codec::field{"host_id", &node_sample_message::host_id},
+        ::ores::utility::codec::field{"machine", &node_sample_message::machine},
+        ::ores::utility::codec::field{"sampled_at", &node_sample_message::sampled_at},
+        ::ores::utility::codec::field{"tasks_completed", &node_sample_message::tasks_completed},
+        ::ores::utility::codec::field{"tasks_failed", &node_sample_message::tasks_failed},
+        ::ores::utility::codec::field{"tasks_since_last", &node_sample_message::tasks_since_last},
+        ::ores::utility::codec::field{"avg_task_duration_ms",
+                                      &node_sample_message::avg_task_duration_ms},
+        ::ores::utility::codec::field{"max_task_duration_ms",
+                                      &node_sample_message::max_task_duration_ms},
+        ::ores::utility::codec::field{"input_bytes_fetched",
+                                      &node_sample_message::input_bytes_fetched},
+        ::ores::utility::codec::field{"output_bytes_uploaded",
+                                      &node_sample_message::output_bytes_uploaded},
+        ::ores::utility::codec::field{"seconds_since_hb", &node_sample_message::seconds_since_hb},
+    };
+}
+
+/**
+ * @brief The members of get_grid_usage_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_grid_usage_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of get_grid_usage_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_grid_usage_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_grid_usage_response::success},
+        ::ores::utility::codec::field{"message", &get_grid_usage_response::message},
+        ::ores::utility::codec::field{"group_kind", &get_grid_usage_response::group_kind},
+        ::ores::utility::codec::field{"keys", &get_grid_usage_response::keys},
+        ::ores::utility::codec::field{"batches", &get_grid_usage_response::batches},
+        ::ores::utility::codec::field{"workunits", &get_grid_usage_response::workunits},
+        ::ores::utility::codec::field{"results", &get_grid_usage_response::results},
+        ::ores::utility::codec::field{"results_unsent", &get_grid_usage_response::results_unsent},
+        ::ores::utility::codec::field{"results_in_progress",
+                                      &get_grid_usage_response::results_in_progress},
+        ::ores::utility::codec::field{"results_done", &get_grid_usage_response::results_done},
+        ::ores::utility::codec::field{"outcomes_success",
+                                      &get_grid_usage_response::outcomes_success},
+        ::ores::utility::codec::field{"outcomes_failed", &get_grid_usage_response::outcomes_failed},
+        ::ores::utility::codec::field{"oldest_unsent_seconds",
+                                      &get_grid_usage_response::oldest_unsent_seconds},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_grid_stats_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_grid_stats_request& v);
+    static ores::compute::messaging::get_grid_stats_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_grid_stats_request& v);
+    static ores::compute::messaging::get_grid_stats_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::node_stats_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::node_stats_summary& v);
+    static ores::compute::messaging::node_stats_summary read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::node_stats_summary& v);
+    static ores::compute::messaging::node_stats_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_grid_stats_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_grid_stats_response& v);
+    static ores::compute::messaging::get_grid_stats_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_grid_stats_response& v);
+    static ores::compute::messaging::get_grid_stats_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_grid_series_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_grid_series_request& v);
+    static ores::compute::messaging::get_grid_series_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_grid_series_request& v);
+    static ores::compute::messaging::get_grid_series_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_grid_series_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_grid_series_response& v);
+    static ores::compute::messaging::get_grid_series_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_grid_series_response& v);
+    static ores::compute::messaging::get_grid_series_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_node_series_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_node_series_request& v);
+    static ores::compute::messaging::get_node_series_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_node_series_request& v);
+    static ores::compute::messaging::get_node_series_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::node_series_node> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::node_series_node& v);
+    static ores::compute::messaging::node_series_node read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::node_series_node& v);
+    static ores::compute::messaging::node_series_node read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_node_series_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_node_series_response& v);
+    static ores::compute::messaging::get_node_series_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_node_series_response& v);
+    static ores::compute::messaging::get_node_series_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::node_sample_message> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::node_sample_message& v);
+    static ores::compute::messaging::node_sample_message read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::node_sample_message& v);
+    static ores::compute::messaging::node_sample_message
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_grid_usage_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_grid_usage_request& v);
+    static ores::compute::messaging::get_grid_usage_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_grid_usage_request& v);
+    static ores::compute::messaging::get_grid_usage_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_grid_usage_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_grid_usage_response& v);
+    static ores::compute::messaging::get_grid_usage_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_grid_usage_response& v);
+    static ores::compute::messaging::get_grid_usage_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

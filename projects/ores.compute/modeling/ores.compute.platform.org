@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 256097D3-ED41-40C3-99DC-C61C6B13E80A
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.platform
 #+description: Codegen entity model for the compute =platforms= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

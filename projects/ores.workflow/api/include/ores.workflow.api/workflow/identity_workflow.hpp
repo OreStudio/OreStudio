@@ -77,11 +77,6 @@ struct identity_step_request {
     }
 };
 
-/**
- * @brief The identity workflow's request: the steps to run, in order.
- *
- * Serialised as request_json in start_workflow_message.
- */
 [[nodiscard]] constexpr auto wire_fields(const identity_step_request&) {
     return std::tuple{
         utility::codec::field{"name", &identity_step_request::name},
@@ -91,6 +86,11 @@ struct identity_step_request {
 }
 static_assert(utility::codec::names_every_member<identity_step_request>());
 
+/**
+ * @brief The identity workflow's request: the steps to run, in order.
+ *
+ * Serialised as request_json in start_workflow_message.
+ */
 struct identity_workflow_request {
     std::vector<identity_step_request> steps;
 };

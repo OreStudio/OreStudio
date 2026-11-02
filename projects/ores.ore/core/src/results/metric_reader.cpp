@@ -20,7 +20,10 @@
 #include "ores.ore.core/results/metric_reader.hpp"
 #include "output_csv.hpp"
 #include <algorithm>
+#include <iterator>
+#include <limits>
 #include <string>
+#include <vector>
 
 namespace ores::ore::results {
 namespace {
@@ -91,14 +94,23 @@ std::vector<std::size_t> subject_order(const output_family& family) {
 
 }
 
-metric_read_outcome read_metrics(std::string_view csv, const output_family& family) {
+std::vector<std::string> read_metrics_in_blocks(std::string_view csv,
+                                               const output_family& family,
+                                               std::size_t block_size,
+                                               const metric_block_sink& sink) {
     metric_read_outcome outcome;
+    const auto hand_over = [&] {
+        if (outcome.metrics.empty())
+            return;
+        sink(outcome.metrics);
+        outcome.metrics.clear();
+    };
 
     if (csv.substr(0, 3) == "\xEF\xBB\xBF")
         csv.remove_prefix(3);
     if (csv.empty()) {
         outcome.refusals.push_back(family.code + " is empty.");
-        return outcome;
+        return std::move(outcome.refusals);
     }
 
     const auto first_break = csv.find('\n');
@@ -114,7 +126,7 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
         if (std::ranges::find(headings, required) == headings.end()) {
             outcome.refusals.push_back(family.code + " states no " + required +
                                        " column; it states: " + joined(headings) + ".");
-            return outcome;
+            return std::move(outcome.refusals);
         }
     }
 
@@ -133,7 +145,7 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
         if (!family.measures_open) {
             outcome.refusals.push_back(family.code + " states no " + heading +
                                        " column, and its measures are closed.");
-            return outcome;
+            return std::move(outcome.refusals);
         }
         measures.push_back(heading);
     }
@@ -239,9 +251,23 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
                     metric.currency = currency;
             }
             outcome.metrics.push_back(std::move(metric));
+            if (outcome.metrics.size() >= block_size)
+                hand_over();
         }
     }
 
+    hand_over();
+    return std::move(outcome.refusals);
+}
+
+metric_read_outcome read_metrics(std::string_view csv, const output_family& family) {
+    metric_read_outcome outcome;
+    outcome.refusals = read_metrics_in_blocks(
+        csv, family, std::numeric_limits<std::size_t>::max(), [&](std::vector<metric>& block) {
+            outcome.metrics.insert(outcome.metrics.end(),
+                                   std::make_move_iterator(block.begin()),
+                                   std::make_move_iterator(block.end()));
+        });
     return outcome;
 }
 

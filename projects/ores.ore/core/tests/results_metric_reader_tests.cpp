@@ -259,3 +259,33 @@ TEST_CASE("every metric family's checked-in sample reads", metric_tags) {
     }
     CHECK(read > 50);
 }
+
+TEST_CASE("a family read in blocks hands over what it reads whole, a block at a time",
+          metric_tags) {
+    const auto* family = family_named("rawcube");
+    REQUIRE(family != nullptr);
+    const auto csv = sample_text(family->sample_file);
+
+    const auto whole = read_metrics(csv, *family);
+    REQUIRE(whole.refusals.empty());
+    REQUIRE(whole.metrics.size() > 5);
+
+    std::vector<std::size_t> sizes;
+    std::vector<metric> handed;
+    const auto refusals = ores::ore::results::read_metrics_in_blocks(
+        csv, *family, 5, [&](std::vector<metric>& block) {
+            sizes.push_back(block.size());
+            handed.insert(handed.end(), block.begin(), block.end());
+        });
+
+    CHECK(refusals.empty());
+    REQUIRE(handed.size() == whole.metrics.size());
+    for (std::size_t i = 0; i + 1 < sizes.size(); ++i)
+        CHECK(sizes[i] == 5);
+    CHECK(sizes.back() <= 5);
+    for (std::size_t i = 0; i < handed.size(); ++i) {
+        CHECK(handed[i].line == whole.metrics[i].line);
+        CHECK(handed[i].measure == whole.metrics[i].measure);
+        CHECK(handed[i].value == whole.metrics[i].value);
+    }
+}

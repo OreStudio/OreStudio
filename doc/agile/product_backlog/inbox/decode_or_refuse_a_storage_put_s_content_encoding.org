@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 7AC39ED7-865F-43DD-A4BC-635A8607FB4F
+:END:
+#+title: Decode or refuse a storage put's content encoding
+#+description: The storage put handler stores the content as sent and ignores content_encoding, so a base64 put stores the base64 text and reports its length.
+#+type: capture
+#+level: cross
+#+filetags: :storage:correctness:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=objects_handler::put= in =ores.storage.core= stores =req->content= as sent and
+never reads =content_encoding=. The model says the field is empty for raw bytes,
+or names the encoding the caller applied. The handler must decode a known
+encoding, such as =base64=, before it stores the bytes, and refuse an unknown
+one with a bad request. =size_bytes= must then report the decoded length.
+
+* Why
+
+Observed on 2026-11-02 in brave_hopper, while proving the storage codec move:
+=objects put-objects scratch codec/smoke.txt aGVsbG8gY29kZWM= base64= replied
+=size_bytes: 16=, the length of the base64 text, not of the 11 decoded bytes.
+A caller that sends base64 because NATS carries text gets the text back, not
+its object. The behaviour is on main and does not come from the codec move.
+
+* References
+
+- =projects/ores.storage/core/src/messaging/objects_handler.cpp= :: =put=
+- =projects/ores.storage/modeling/ores.storage.objects.org= :: =content_encoding=
+
+* See also
+
+- [[id:FB94E9A6-5286-464B-A944-8E5668FAB16F][Task: Compile ores.storage.api and generate its codecs]]

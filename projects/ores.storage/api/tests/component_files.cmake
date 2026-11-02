@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec_wire_bytes_tests.cpp"
     "main.cpp"
     "object_keys_tests.cpp"
     "storage_paths_tests.cpp"

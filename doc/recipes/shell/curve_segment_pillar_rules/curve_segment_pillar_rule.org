@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 28B1F088-D688-5869-8FA0-81ABE2F93DA5
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_segment_pillar_rules commands from the shell?
+#+description: Every command the curve_segment_pillar_rules submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_segment_pillar_rules:
+
+This file documents the curve_segment_pillar_rules resource at the shell, one section per command. Every command is a subcommand of =curve_segment_pillar_rules=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7FE125DD-A3A5-5390-86E7-09C689A415FC
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules.list=.
+
+#+name: curve_segment_pillar_rules-list
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-list.ores :exports none
+curve_segment_pillar_rules list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A7EE04AA-12E2-5F48-AB98-517963CA33ED
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules.get=.
+
+#+name: curve_segment_pillar_rules-get
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-get.ores :exports none
+curve_segment_pillar_rules get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D0908F98-B2D1-581C-9596-72C145F6C141
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules.get_many=.
+
+#+name: curve_segment_pillar_rules-get-many
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-get-many.ores :exports none
+curve_segment_pillar_rules get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: CE182A10-1FE1-5D80-9DBA-BBAA07C058F9
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules add <curve_segment_id> <pillar_choice> <priority> <min_distance> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules.put=.
+
+#+name: curve_segment_pillar_rules-add
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-add.ores :exports none
+curve_segment_pillar_rules add 00000000-0000-0000-0000-000000000000 - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 356889A5-BED1-5338-A994-C2194E4183E3
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules set <id> <curve_segment_id> <pillar_choice> <priority> <min_distance> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules.put=.
+
+#+name: curve_segment_pillar_rules-set
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-set.ores :exports none
+curve_segment_pillar_rules set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 211B3FAE-8089-5897-9E0A-F60BA928F67C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules put-many --count <n> <id> <curve_segment_id> <pillar_choice> <priority> <min_distance> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules.put_many=.
+
+#+name: curve_segment_pillar_rules-put-many
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-put-many.ores :exports none
+curve_segment_pillar_rules put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 0CFC42F5-C124-5900-80A5-54B45E843EDB
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules.delete=.
+
+#+name: curve_segment_pillar_rules-delete
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-delete.ores :exports none
+curve_segment_pillar_rules delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: C607B186-294B-54D0-847D-79444E0D7AE0
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules.delete_many=.
+
+#+name: curve_segment_pillar_rules-delete-many
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-delete-many.ores :exports none
+curve_segment_pillar_rules delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: DA04B011-5886-57EE-B221-F9A2AD3360A1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules_versions.list=.
+
+#+name: curve_segment_pillar_rules-versions
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-versions.ores :exports none
+curve_segment_pillar_rules versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: BBAC1815-C084-57CE-8949-757043CC284D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_pillar_rules version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_pillar_rules_versions.get=.
+
+#+name: curve_segment_pillar_rules-version
+#+begin_src ores-shell :tangle curve_segment_pillar_rules-version.ores :exports none
+curve_segment_pillar_rules version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

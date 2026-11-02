@@ -47,6 +47,7 @@ import argparse
 import os
 import re
 import sys
+import textwrap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
@@ -58,6 +59,9 @@ OUT = os.path.join(
     ROOT, "projects", "ores.web", "packages", "bff", "src",
     "curve-sections.generated.ts")
 
+SQL_OUT = os.path.join(
+    ROOT, "projects", "ores.sql", "create", "refdata",
+    "refdata_curve_segment_parts_validate_fn_create.sql")
 SCHEMA_NAME = "curveconfig.xsd"
 ROOT_ELEMENT = "CurveConfiguration"
 
@@ -226,6 +230,7 @@ def collection_rules(text):
     """
     segment = definition_body(text, "segment")
     quotes = definition_body(text, "import_quotes")
+    keep = definition_body(text, "keep")
     if segment is None:
         return [], ["the projection has no import_context::segment"]
     if quotes is None:
@@ -244,7 +249,9 @@ def collection_rules(text):
     kind = re.search(r"\b" + row.group(2) + r"\.(\w+)\s*=\s*type;", segment)
     quote_parent = re.search(
         r"\b" + quote_row.group(2) + r"\.(\w+)\s*=\s*segment_id;", quotes)
+    part_parent = re.search(r"\bp\.(\w+)\s*=\s*segment_id;", keep or "")
     for what, found in (("the segment's key to its entry", parent),
+                        ("the part's key to its segment", part_parent),
                         ("the segment's kind column", kind),
                         ("the quote's key to its segment", quote_parent)):
         if found is None:
@@ -257,6 +264,7 @@ def collection_rules(text):
         "parentKey": parent.group(1),
         "kindColumn": kind.group(1),
         "quoteParent": quote_parent.group(1),
+        "partParent": part_parent.group(1),
     }], []
 
 
@@ -279,49 +287,88 @@ def kind_leaf(expression, reader):
 KIND_LOOP = re.compile(
     r'for \(const auto& (\w+) : v\.children\("(\w+)"\)\) \{(.*?)\n    \}', re.S)
 
-# One statement of a kind's loop: a column assigned from the reader, or the call
-# that adds the settings every kind shares.
-KIND_STATEMENT = re.compile(
-    r'\b(\w+)\.(\w+)\s*=\s*([^;]+);|\bcommon_settings\((\w+), (\w+)\);')
+# The table that names the document vector each segment part fills.
+PART_VECTOR = re.compile(
+    r"struct segment_part<refdata::domain::(\w+)> \{\s*"
+    r"static constexpr auto vector\s*=\s*&\w+::(\w+);")
+
+# A call to one of the readers that fill a segment's parts, and the reader it
+# hands on.
+PART_CALL = re.compile(r"\b(import_\w+)\(ctx, \w+, (\w+)[,)]")
+
+
+def part_vectors(text):
+    """The document vector of every segment part, by the part's entity."""
+    return dict(PART_VECTOR.findall(text))
+
+
+def part_reader(text, name):
+    """The reader parameter of one part reader, and its body."""
+    signature = re.search(r"^void " + name + r"\(([^)]*)\)\s*\{", text, re.M)
+    if signature is None:
+        return None, None
+    reader = re.search(r"const record_reader& (\w+)", signature.group(1))
+    return (reader.group(1) if reader else None), definition_body(text, name)
+
+
+def part_leaves(text, name, vectors, problems):
+    """The parts one reader fills, and the leaves it reads into them.
+
+    A reader declares the part it fills and assigns its columns from the reader
+    it is handed. A reader may hand its reader on to another, as the optional
+    convention does to the convention, so the calls are followed.
+    """
+    reader, body = part_reader(text, name)
+    if body is None:
+        problems.append(f"the projection has no part reader {name}")
+        return [], []
+    parts, leaves = [], []
+    for entity, variable in re.findall(r"refdata::domain::(\w+) (\w+);", body):
+        if entity not in vectors:
+            problems.append(f"the part {entity} that {name} fills has no vector")
+            continue
+        parts.append(entity)
+        for assigned, column, expression in rows_of(body):
+            ore = kind_leaf(expression, reader) if assigned == variable else None
+            if ore is not None:
+                leaves.append({"column": column, "ore": ore, "entity": entity,
+                               "vector": vectors[entity]})
+    for called, _ in PART_CALL.findall(body):
+        more_parts, more_leaves = part_leaves(text, called, vectors, problems)
+        parts += more_parts
+        leaves += more_leaves
+    return parts, leaves
 
 
 def kind_leaves(text):
-    """The leaves each segment kind reads, in the order the projection reads them.
+    """The parts each segment kind fills and the leaves it reads, in order.
 
-    A segment row carries a column for every kind, and what a kind reads is the
-    projection's dispatch: =Simple= reads =Conventions= and =ProjectionCurve=,
-    =Direct= reads =Conventions= alone. The screen must not offer a leaf that
-    belongs to another kind, so the per-kind leaves are read from here rather than
-    taken from the row's columns.
+    The segment row holds what every kind shares, and each kind's settings are
+    parts of the segment: what a kind reads is the projection's dispatch, a loop
+    per element that calls one reader per part the element has. =Simple= reads
+    its convention, its pillar rules and its projection curve; =Direct= reads
+    its convention and its pillar rules. The screen must not offer a leaf that
+    belongs to another kind, and the database must not hold a part the kind does
+    not have, so both are read from here.
     """
     body = definition_body(text, "import_segments")
-    common = definition_body(text, "common_settings")
     if body is None:
         return [], ["the projection has no import_segments"]
-    if common is None:
-        return [], ["the projection has no common_settings"]
-    shared = []
-    for _, column, expression in rows_of(common):
-        reader, element = read_element(expression)
-        if reader == "v" and element is not None:
-            shared.append({"column": column, "ore": element})
+    vectors = part_vectors(text)
+    if not vectors:
+        return [], ["the projection names no segment part vectors"]
     kinds = []
     problems = []
     for loop in KIND_LOOP.finditer(body):
-        reader, element, inner = loop.group(1, 2, 3)
-        leaves = []
-        for statement in KIND_STATEMENT.finditer(inner):
-            if statement.group(4) is not None:
-                leaves.extend(dict(leaf) for leaf in shared)
-                continue
-            variable, column, expression = statement.group(1, 2, 3)
-            ore = kind_leaf(expression, reader)
-            if ore is None:
-                continue
-            leaves.append({"column": column, "ore": ore})
+        element, inner = loop.group(2, 3)
+        parts, leaves = [], []
+        for called, _ in PART_CALL.findall(inner):
+            more_parts, more_leaves = part_leaves(text, called, vectors, problems)
+            parts += more_parts
+            leaves += more_leaves
         if not leaves:
             problems.append(f"the projection reads no leaves for the kind {element}")
-        kinds.append({"kind": element, "leaves": leaves})
+        kinds.append({"kind": element, "parts": parts, "leaves": leaves})
     if not kinds:
         problems.append("the projection reads no segment kinds")
     return kinds, problems
@@ -547,10 +594,18 @@ export interface CurveCollectionKind {
     readonly leaves: readonly CurveCollectionLeaf[];
 }
 
-/** One leaf of a kind: the column that holds it and the ORE element it is. */
+/**
+ * One leaf of a kind: the ORE element it is, and the part of the row that holds
+ * it. A row's kinds share no settings column, so each leaf is in a part of the
+ * row, joined to it by the collection's part key.
+ */
 export interface CurveCollectionLeaf {
     readonly column: string;
     readonly ore: string;
+    /** The part table that holds the leaf. */
+    readonly entity: string;
+    /** The document vector that carries the part's rows. */
+    readonly vector: string;
 }
 
 /** A child element an entry holds rows of, and the columns that place its leaves. */
@@ -567,6 +622,8 @@ export interface CurveCollection {
     readonly kindColumn: string;
     /** The column a quote of one row joins back to, or empty for no quotes. */
     readonly quoteParent: string;
+    /** The column a part of one row joins back to. */
+    readonly partParent: string;
     /** The kinds a row may state, and the leaves each kind reads. */
     readonly kinds: readonly CurveCollectionKind[];
 }
@@ -644,6 +701,8 @@ def render_kind_leaves(leaves):
         "                            {\n"
         f"                                column: {quote(leaf['column'])},\n"
         f"                                ore: {quote(leaf['ore'])},\n"
+        f"                                entity: {quote(leaf['entity'])},\n"
+        f"                                vector: {quote(leaf['vector'])},\n"
         "                            }," for leaf in leaves)
 
 
@@ -667,6 +726,7 @@ def render_collections(collections):
             f"                parentKey: {quote(collection['parentKey'])},\n"
             f"                kindColumn: {quote(collection['kindColumn'])},\n"
             f"                quoteParent: {quote(collection['quoteParent'])},\n"
+            f"                partParent: {quote(collection['partParent'])},\n"
             f"                kinds: [\n{render_kinds(collection['kinds'])}\n"
             "                ],\n"
             "            },")
@@ -699,6 +759,105 @@ export function curveSectionOf(section: string): CurveSectionWiring | undefined 
 """
 
 
+SQL_LICENCE = """\
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+"""
+
+
+def part_kinds(kinds):
+    """The kinds that have each part, by the part's entity, in first-seen order."""
+    by_part = {}
+    for kind in kinds:
+        for part in kind["parts"]:
+            seen = by_part.setdefault(part, [])
+            if kind["kind"] not in seen:
+                seen.append(kind["kind"])
+    return by_part
+
+
+def render_sql(kinds):
+    """The functions that refuse a segment part its segment's kind does not have."""
+    lines = [SQL_LICENCE, """
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ *
+ * Generated by projects/ores.sql/utility/generate_curve_section_parameters.py
+ * from the curve configuration projection. To modify, change the projection's
+ * import_segments and run the generator.
+ *
+ * A curve segment's settings are parts of the segment, and each segment
+ * element has only some of them. The projection's import_segments is the one
+ * statement of which element fills which part, so these functions are written
+ * from it. Each part's insert trigger calls its function on the segment the
+ * row names.
+ */
+
+create or replace function ores_refdata_validate_curve_segment_part_fn(
+    p_tenant_id uuid,
+    p_segment_id uuid,
+    p_part text,
+    p_kinds text[]
+) returns uuid as $$
+declare
+    v_kind text;
+begin
+    select t.segment_kind into v_kind
+    from ores_refdata_curve_segments_tbl s
+    join ores_refdata_curve_segment_types_tbl t
+      on t.tenant_id = s.tenant_id
+     and t.code = s.segment_type
+     and t.valid_to = ores_utility_infinity_timestamp_fn()
+    where s.tenant_id = p_tenant_id
+      and s.id = p_segment_id
+      and s.valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- The trigger's key check refuses a segment that is not there.
+    if v_kind is not null and not (v_kind = any(p_kinds)) then
+        raise exception 'Invalid curve_segment_id: %. A % segment has no % part.',
+            p_segment_id, v_kind, p_part
+            using errcode = '23514';
+    end if;
+    return p_segment_id;
+end;
+$$ language plpgsql stable;
+"""]
+    for part, part_kinds_list in part_kinds(kinds).items():
+        kinds_sql = textwrap.fill(", ".join(f"'{k}'" for k in part_kinds_list), width=80,
+                                  initial_indent=" " * 12, subsequent_indent=" " * 12,
+                                  break_on_hyphens=False)
+        lines.append(f"""
+create or replace function ores_refdata_validate_{part}_fn(
+    p_tenant_id uuid,
+    p_value uuid
+) returns uuid as $$
+    select ores_refdata_validate_curve_segment_part_fn(
+        p_tenant_id, p_value, '{part}',
+        array[
+{kinds_sql}
+        ]);
+$$ language sql stable;
+""")
+    return "".join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true",
@@ -709,17 +868,23 @@ def main():
         print("\n".join(problems), file=sys.stderr)
         return 1
     content = render(sections)
+    kinds, _ = kind_leaves(source())
+    sql = render_sql(kinds)
     if args.check:
-        committed = (open(OUT, encoding="utf-8").read()
-                     if os.path.exists(OUT) else "")
-        if committed != content:
-            print(f"{OUT} differs from the projection; regenerate it.", file=sys.stderr)
-            return 1
+        for path, expected in ((OUT, content), (SQL_OUT, sql)):
+            committed = (open(path, encoding="utf-8").read()
+                         if os.path.exists(path) else "")
+            if committed != expected:
+                print(f"{path} differs from the projection; regenerate it.",
+                      file=sys.stderr)
+                return 1
         print(f"{len(sections)} sections of {sum(len(s['parameters']) for s in sections)}"
               " parameters match the module.")
         return 0
     with open(OUT, "w", encoding="utf-8") as handle:
         handle.write(content)
+    with open(SQL_OUT, "w", encoding="utf-8") as handle:
+        handle.write(sql)
     total = sum(len(s["parameters"]) for s in sections)
     blocks = sum(len(s["blocks"]) for s in sections)
     print(f"Wrote {OUT}: {len(sections)} sections, {total} parameters, {blocks} blocks.")

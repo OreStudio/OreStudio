@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 90B4ADF2-4A4A-535E-8F8A-28CF1C3A7DA5
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_segment_extrapolations commands from the shell?
+#+description: Every command the curve_segment_extrapolations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_segment_extrapolations:
+
+This file documents the curve_segment_extrapolations resource at the shell, one section per command. Every command is a subcommand of =curve_segment_extrapolations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E73BFB33-2510-5E91-BAEA-A3BA3F467BDC
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations.list=.
+
+#+name: curve_segment_extrapolations-list
+#+begin_src ores-shell :tangle curve_segment_extrapolations-list.ores :exports none
+curve_segment_extrapolations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E7D82BC4-DDDC-5FA1-8035-245EFC6D06DA
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations.get=.
+
+#+name: curve_segment_extrapolations-get
+#+begin_src ores-shell :tangle curve_segment_extrapolations-get.ores :exports none
+curve_segment_extrapolations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8CEC4A26-D921-538A-BF59-4AF54CAD56EE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations.get_many=.
+
+#+name: curve_segment_extrapolations-get-many
+#+begin_src ores-shell :tangle curve_segment_extrapolations-get-many.ores :exports none
+curve_segment_extrapolations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4C9C7314-2BE8-5746-A65A-EF23BBC35537
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations add <curve_segment_id> <extrapolate_flat> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations.put=.
+
+#+name: curve_segment_extrapolations-add
+#+begin_src ores-shell :tangle curve_segment_extrapolations-add.ores :exports none
+curve_segment_extrapolations add 00000000-0000-0000-0000-000000000000 false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D3C9771B-17E6-58BD-9699-B8F9B3DE28F0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations set <id> <curve_segment_id> <extrapolate_flat> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations.put=.
+
+#+name: curve_segment_extrapolations-set
+#+begin_src ores-shell :tangle curve_segment_extrapolations-set.ores :exports none
+curve_segment_extrapolations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: BE2FECBF-8AF0-5518-B409-C5712559C7F1
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations put-many --count <n> <id> <curve_segment_id> <extrapolate_flat> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations.put_many=.
+
+#+name: curve_segment_extrapolations-put-many
+#+begin_src ores-shell :tangle curve_segment_extrapolations-put-many.ores :exports none
+curve_segment_extrapolations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 280F68FC-7C24-5E74-BB46-A514D3BB967B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations.delete=.
+
+#+name: curve_segment_extrapolations-delete
+#+begin_src ores-shell :tangle curve_segment_extrapolations-delete.ores :exports none
+curve_segment_extrapolations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 81A22802-9F08-5B44-B84D-1043E6DB13C5
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations.delete_many=.
+
+#+name: curve_segment_extrapolations-delete-many
+#+begin_src ores-shell :tangle curve_segment_extrapolations-delete-many.ores :exports none
+curve_segment_extrapolations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 87E9F300-4DDC-53B0-BABE-75568A0868CE
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations_versions.list=.
+
+#+name: curve_segment_extrapolations-versions
+#+begin_src ores-shell :tangle curve_segment_extrapolations-versions.ores :exports none
+curve_segment_extrapolations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 5E063884-26C4-5542-8819-E74D5CBBCBA7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_extrapolations version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_extrapolations_versions.get=.
+
+#+name: curve_segment_extrapolations-version
+#+begin_src ores-shell :tangle curve_segment_extrapolations-version.ores :exports none
+curve_segment_extrapolations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

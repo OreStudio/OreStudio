@@ -88,8 +88,18 @@
 #include "ores.shell/app/commands/refdata/curve_section_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_security_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_segment_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_cross_currency_terms_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_segment_curve_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_discount_ratio_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_extrapolation_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_ibor_fallback_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_pillar_rule_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_projection_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_reference_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_tenor_basis_curves_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_segment_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_weighted_average_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_volatility_constant_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_volatility_curve_commands.hpp"
@@ -295,6 +305,16 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     curve_security_config_commands::register_commands(root_menu, session);
     curve_segment_commands::register_commands(root_menu, session);
     curve_segment_curve_commands::register_commands(root_menu, session);
+    curve_segment_convention_commands::register_commands(root_menu, session);
+    curve_segment_pillar_rule_commands::register_commands(root_menu, session);
+    curve_segment_projection_commands::register_commands(root_menu, session);
+    curve_segment_tenor_basis_curves_commands::register_commands(root_menu, session);
+    curve_segment_cross_currency_terms_commands::register_commands(root_menu, session);
+    curve_segment_reference_commands::register_commands(root_menu, session);
+    curve_segment_weighted_average_commands::register_commands(root_menu, session);
+    curve_segment_discount_ratio_commands::register_commands(root_menu, session);
+    curve_segment_extrapolation_commands::register_commands(root_menu, session);
+    curve_segment_ibor_fallback_commands::register_commands(root_menu, session);
     curve_segment_type_commands::register_commands(root_menu, session);
     curve_volatility_config_commands::register_commands(root_menu, session);
     day_count_fraction_type_commands::register_commands(root_menu, session);

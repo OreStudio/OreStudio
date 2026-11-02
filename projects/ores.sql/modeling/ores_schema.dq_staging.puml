@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 153
+Tables: 163
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1411,6 +1411,39 @@ package "dq_staging" #F3E5F5 {
     The settings of one Security entry of a curveconfig.xml, one row per curve_definition in the Securities section. A security entry names the market quotes a bond is priced from, each optional: its spread, its recovery rate, its prepayment rate, its price and its conversion factor. - Artefact Table
     end note
 
+    entity ores_dq_curve_segment_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * conventions : text
+    }
+
+    note right of ores_dq_curve_segment_conventions_artefact_tbl
+    The convention a segment's instruments are priced with, as ORE's Conventions. Eight of the twelve segment elements state it, and two of those may leave it out, so it is a part rather than a column of the segment: a weighted average, a yield plus default, a fitted bond and an ibor fallback segment have no convention to state. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_cross_currency_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * discount_curve : text
+        * spot_rate : text
+          projection_curve_domestic : text
+          projection_curve_foreign : text
+    }
+
+    note right of ores_dq_curve_segment_cross_currency_terms_artefact_tbl
+    What a cross currency segment states about its other currency, as ORE's DiscountCurve, SpotRate, ProjectionCurveDomestic and ProjectionCurveForeign. They hold one invariant: each says how the segment reaches the other currency's curve. ORE requires the discount curve and the spot rate, so every cross currency segment has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
     entity ores_dq_curve_segment_curves_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1430,6 +1463,142 @@ package "dq_staging" #F3E5F5 {
     The lists of curves some segments hold. A fitted bond and a bond yield shifted segment list the curves their bonds' indices are projected on, as IndexCurves, IborIndexCurves and InflationIndexCurves; a yield plus default segment lists its default curves, each with a weight. Each entry is one row, and role names the list it came from. - Artefact Table
     end note
 
+    entity ores_dq_curve_segment_discount_ratios_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * base_curve : text
+        * base_curve_currency : text
+        * numerator_curve : text
+        * numerator_curve_currency : text
+        * denominator_curve : text
+        * denominator_curve_currency : text
+    }
+
+    note right of ores_dq_curve_segment_discount_ratios_artefact_tbl
+    The three curves a discount ratio segment is built from and the currency of each, as ORE's BaseCurve, NumeratorCurve and DenominatorCurve. They hold one invariant: the segment is the base curve times the ratio of the other two. ORE requires all three curves and their currencies, so every discount ratio segment has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_extrapolations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * extrapolate_flat : boolean
+    }
+
+    note right of ores_dq_curve_segment_extrapolations_artefact_tbl
+    Whether a fitted bond or a bond yield shifted segment extrapolates flat past its last bond, as ORE's ExtrapolateFlat. Only those two elements state it, and it is optional, so a segment has this part only when its document states the flag. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_ibor_fallbacks_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * ibor_index : text
+        * rfr_curve : text
+          rfr_index : text
+          spread : numeric(38, 12)
+    }
+
+    note right of ores_dq_curve_segment_ibor_fallbacks_artefact_tbl
+    What an ibor fallback segment falls back from and to, as ORE's IborIndex, RfrCurve, RfrIndex and Spread. They hold one invariant: the ibor index is the RFR index on the RFR curve plus the spread. ORE requires the ibor index and the RFR curve, so every ibor fallback segment has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_pillar_rules_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+          pillar_choice : text
+          priority : integer
+          min_distance : integer
+    }
+
+    note right of ores_dq_curve_segment_pillar_rules_artefact_tbl
+    The rules that place a segment's pillars, as ORE's PillarChoice, Priority and MinDistance. They hold one invariant: together they say where the segment's instruments put the curve's pillars and which segment wins when two put them too close. Nine of the twelve elements state them, and every field is optional, so a segment has this part only when its document states one of them. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_projections_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * projection_curve : text
+    }
+
+    note right of ores_dq_curve_segment_projections_artefact_tbl
+    The curve a simple or an average OIS segment projects its floating index on, as ORE's ProjectionCurve. Only those two elements state it, and it is optional, so a segment has this part only when its document names the curve. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_references_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * reference_curve : text
+    }
+
+    note right of ores_dq_curve_segment_references_artefact_tbl
+    The curve a segment builds on, as ORE's ReferenceCurve. A zero spread segment adds its spreads to it, a bond yield shifted segment shifts it and a yield plus default segment adds its default curves to it. ORE requires it on all three, so every segment of those elements has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_tenor_basis_curves_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+          projection_curve_pay : text
+          projection_curve_receive : text
+          projection_curve_long : text
+          projection_curve_short : text
+    }
+
+    note right of ores_dq_curve_segment_tenor_basis_curves_artefact_tbl
+    The projection curves of a tenor basis segment's legs, as ORE's ProjectionCurvePay, ProjectionCurveReceive, ProjectionCurveLong and ProjectionCurveShort. They hold one invariant: each names the curve one leg of the basis swap projects on. Only a tenor basis segment states them, and each is optional, so a segment has this part only when its document names one. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_weighted_averages_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * reference_curve_1 : text
+        * reference_curve_2 : text
+        * weight_1 : double
+        * weight_2 : double
+    }
+
+    note right of ores_dq_curve_segment_weighted_averages_artefact_tbl
+    The two curves a weighted average segment averages and the weight of each, as ORE's ReferenceCurve1, ReferenceCurve2, Weight1 and Weight2. They hold one invariant: the segment is their weighted sum. ORE requires all four, so every weighted average segment has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
     entity ores_dq_curve_segments_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1440,38 +1609,10 @@ package "dq_staging" #F3E5F5 {
         * curve_definition_id : uuid <<FK>>
         * segment_type : text
         * position : integer
-          conventions : text
-          pillar_choice : text
-          priority : integer
-          min_distance : integer
-          projection_curve : text
-          discount_curve : text
-          spot_rate : text
-          projection_curve_domestic : text
-          projection_curve_foreign : text
-          projection_curve_pay : text
-          projection_curve_receive : text
-          projection_curve_long : text
-          projection_curve_short : text
-          reference_curve : text
-          reference_curve_2 : text
-          weight_1 : double
-          weight_2 : double
-          ibor_index : text
-          rfr_curve : text
-          rfr_index : text
-          spread : numeric(38, 12)
-          base_curve : text
-          base_curve_currency : text
-          numerator_curve : text
-          numerator_curve_currency : text
-          denominator_curve : text
-          denominator_curve_currency : text
-          extrapolate_flat : boolean
     }
 
     note right of ores_dq_curve_segments_artefact_tbl
-    A yield curve is bootstrapped from one or more segments, and each states its Type: Deposit, Cross Currency Basis Swap, Average OIS and eighteen more. The type fixes the segment element it is written under, so the row holds only the type and refers to curve_segment_type, and a type written under the wrong element cannot be stored. The twelve segment elements share a skeleton and differ in a few settings each: projection curves for simple and tenor basis segments, a discount curve and a spot rate for cross currency ones, a reference curve for zero spread ones. Each setting is its own typed column, null where the segment's element has no such setting. The lists a segment holds are child rows: its quotes in curve_quote, and the index curves and default curves of the bond and default based segments in curve_segment_curve. The convention a segment names may be any of ORE's convention kinds, which are one table each, so a function that looks in all of them checks the reference. - Artefact Table
+    A yield curve is bootstrapped from one or more segments, and each states its Type: Deposit, Cross Currency Basis Swap, Average OIS and eighteen more. The type fixes the segment element it is written under, so the row holds only the type and refers to curve_segment_type, and a type written under the wrong element cannot be stored. The twelve segment elements share a skeleton and differ in their settings, so the row holds only what every element has: its definition, its type and its place. Each component of settings an element states is a part of its own, joined to the segment by its id, and present only for the elements that state it: the convention in curve_segment_convention, the pillar rules in curve_segment_pillar_rule, a simple segment's projection curve in curve_segment_projection, a cross currency segment's terms in curve_segment_cross_currency_terms, and six more, one per component. The lists a segment holds are child rows too: its quotes in curve_quote, and the index curves and default curves of the bond and default based segments in curve_segment_curve. - Artefact Table
     end note
 
     entity ores_dq_curve_volatility_configs_artefact_tbl  #F7E5FF {

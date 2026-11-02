@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 255ACA0F-D571-5DA0-8F5B-843B876581AE
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_segment_tenor_basis_curves commands from the shell?
+#+description: Every command the curve_segment_tenor_basis_curves submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_segment_tenor_basis_curves:
+
+This file documents the curve_segment_tenor_basis_curves resource at the shell, one section per command. Every command is a subcommand of =curve_segment_tenor_basis_curves=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: B09CEDAC-ABDA-5D93-84A4-064677C76FAF
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves.list=.
+
+#+name: curve_segment_tenor_basis_curves-list
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-list.ores :exports none
+curve_segment_tenor_basis_curves list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 73344EA8-5837-5AE6-9B7B-6BE4F835FA17
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves.get=.
+
+#+name: curve_segment_tenor_basis_curves-get
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-get.ores :exports none
+curve_segment_tenor_basis_curves get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 66041649-C776-512B-B5E3-6D48411B6434
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves.get_many=.
+
+#+name: curve_segment_tenor_basis_curves-get-many
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-get-many.ores :exports none
+curve_segment_tenor_basis_curves get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C62B97B3-5501-5077-B96B-8EB2E465284D
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves add <curve_segment_id> <projection_curve_pay> <projection_curve_receive> <projection_curve_long> <projection_curve_short> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves.put=.
+
+#+name: curve_segment_tenor_basis_curves-add
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-add.ores :exports none
+curve_segment_tenor_basis_curves add 00000000-0000-0000-0000-000000000000 - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FD3AC869-E357-51A3-9B8B-968FC34EDA57
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves set <id> <curve_segment_id> <projection_curve_pay> <projection_curve_receive> <projection_curve_long> <projection_curve_short> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves.put=.
+
+#+name: curve_segment_tenor_basis_curves-set
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-set.ores :exports none
+curve_segment_tenor_basis_curves set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B4E896CA-77F9-5ED7-9AD5-B2F5D354391F
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves put-many --count <n> <id> <curve_segment_id> <projection_curve_pay> <projection_curve_receive> <projection_curve_long> <projection_curve_short> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves.put_many=.
+
+#+name: curve_segment_tenor_basis_curves-put-many
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-put-many.ores :exports none
+curve_segment_tenor_basis_curves put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C85A0617-ECB9-5317-951A-964A5B087DC1
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves.delete=.
+
+#+name: curve_segment_tenor_basis_curves-delete
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-delete.ores :exports none
+curve_segment_tenor_basis_curves delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 88B9C6C7-D92C-584A-A57C-4261CF663263
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves.delete_many=.
+
+#+name: curve_segment_tenor_basis_curves-delete-many
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-delete-many.ores :exports none
+curve_segment_tenor_basis_curves delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 48F1B314-D157-52D3-8BB8-4F1E96BB05B0
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves_versions.list=.
+
+#+name: curve_segment_tenor_basis_curves-versions
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-versions.ores :exports none
+curve_segment_tenor_basis_curves versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 3DA51AC5-D186-5E42-AC9B-B1EBB3835BFB
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segment_tenor_basis_curves version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segment_tenor_basis_curves_versions.get=.
+
+#+name: curve_segment_tenor_basis_curves-version
+#+begin_src ores-shell :tangle curve_segment_tenor_basis_curves-version.ores :exports none
+curve_segment_tenor_basis_curves version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

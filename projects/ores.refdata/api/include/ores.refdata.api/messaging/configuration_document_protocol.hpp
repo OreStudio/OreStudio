@@ -48,7 +48,17 @@
 #include "ores.refdata.api/domain/curve_report_configuration.hpp"
 #include "ores.refdata.api/domain/curve_security_config.hpp"
 #include "ores.refdata.api/domain/curve_segment.hpp"
+#include "ores.refdata.api/domain/curve_segment_convention.hpp"
+#include "ores.refdata.api/domain/curve_segment_cross_currency_terms.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
+#include "ores.refdata.api/domain/curve_segment_discount_ratio.hpp"
+#include "ores.refdata.api/domain/curve_segment_extrapolation.hpp"
+#include "ores.refdata.api/domain/curve_segment_ibor_fallback.hpp"
+#include "ores.refdata.api/domain/curve_segment_pillar_rule.hpp"
+#include "ores.refdata.api/domain/curve_segment_projection.hpp"
+#include "ores.refdata.api/domain/curve_segment_reference.hpp"
+#include "ores.refdata.api/domain/curve_segment_tenor_basis_curves.hpp"
+#include "ores.refdata.api/domain/curve_segment_weighted_average.hpp"
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
 #include "ores.refdata.api/domain/curve_volatility_constant.hpp"
 #include "ores.refdata.api/domain/curve_volatility_curve.hpp"
@@ -150,6 +160,17 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::curve_bootstrap_config> bootstrap_configs;
     std::vector<ores::refdata::domain::curve_segment> segments;
     std::vector<ores::refdata::domain::curve_segment_curve> segment_curves;
+    std::vector<ores::refdata::domain::curve_segment_convention> segment_conventions;
+    std::vector<ores::refdata::domain::curve_segment_pillar_rule> segment_pillar_rules;
+    std::vector<ores::refdata::domain::curve_segment_projection> segment_projections;
+    std::vector<ores::refdata::domain::curve_segment_tenor_basis_curves> segment_tenor_basis_curves;
+    std::vector<ores::refdata::domain::curve_segment_cross_currency_terms>
+        segment_cross_currency_terms;
+    std::vector<ores::refdata::domain::curve_segment_reference> segment_references;
+    std::vector<ores::refdata::domain::curve_segment_weighted_average> segment_weighted_averages;
+    std::vector<ores::refdata::domain::curve_segment_discount_ratio> segment_discount_ratios;
+    std::vector<ores::refdata::domain::curve_segment_extrapolation> segment_extrapolations;
+    std::vector<ores::refdata::domain::curve_segment_ibor_fallback> segment_ibor_fallbacks;
     std::vector<ores::refdata::domain::curve_quote> quotes;
 };
 

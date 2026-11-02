@@ -122,9 +122,19 @@
 #include "ores.refdata.service/messaging/curve_role_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_section_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_security_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_cross_currency_terms_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_segment_curve_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_discount_ratio_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_segment_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_extrapolation_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_ibor_fallback_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_pillar_rule_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_projection_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_reference_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_tenor_basis_curves_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_segment_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_segment_weighted_average_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_volatility_constant_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_volatility_curve_event_registrar.hpp"
@@ -383,6 +393,22 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_curve_security_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_segment_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_segment_curve_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_curve_segment_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_curve_segment_pillar_rule_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_curve_segment_projection_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_segment_tenor_basis_curves_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_segment_cross_currency_terms_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_curve_segment_reference_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_segment_weighted_average_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_segment_discount_ratio_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_segment_extrapolation_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_segment_ibor_fallback_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_segment_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_volatility_constant_event_mapping(event_source, event_bus, nats));

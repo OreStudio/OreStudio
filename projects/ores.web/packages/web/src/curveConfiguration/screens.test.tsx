@@ -166,7 +166,7 @@ const CURVE: CurveConfiguration = {
                                             'Conventions',
                                             '/CurveConfiguration/YieldCurves/YieldCurve/Segments/Simple/Conventions',
                                             {
-                                                entity: 'curve_segment',
+                                                entity: 'curve_segment_convention',
                                                 column: 'conventions',
                                                 value: 'USD-6M',
                                                 documented: true,
@@ -177,7 +177,7 @@ const CURVE: CurveConfiguration = {
                                             'PillarChoice',
                                             '/CurveConfiguration/YieldCurves/YieldCurve/Segments/Simple/PillarChoice',
                                             {
-                                                entity: 'curve_segment',
+                                                entity: 'curve_segment_pillar_rule',
                                                 column: 'pillar_choice',
                                                 value: 'MaturityDate',
                                                 documented: false,
@@ -189,7 +189,7 @@ const CURVE: CurveConfiguration = {
                                             'ProjectionCurve',
                                             '/CurveConfiguration/YieldCurves/YieldCurve/Segments/Simple/ProjectionCurve',
                                             {
-                                                entity: 'curve_segment',
+                                                entity: 'curve_segment_projection',
                                                 column: 'projection_curve',
                                                 value: 'USD-3M',
                                                 documented: true,

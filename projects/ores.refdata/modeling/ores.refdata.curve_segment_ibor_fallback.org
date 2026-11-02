@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: DB0CD8AE-5729-4387-A827-36503FDBE0C2
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.curve_segment_ibor_fallback
+#+description: Codegen entity model for the refdata =curve_segment_ibor_fallback= table. One part of a curve segment: the ibor index an ibor fallback segment replaces, and the RFR curve, index and spread it falls back to.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The ibor index an ibor fallback segment replaces, and the RFR curve, index and spread it falls back to.
+#+entity_singular: curve_segment_ibor_fallback
+#+entity_plural: curve_segment_ibor_fallbacks
+#+entity_title: Curve Segment Ibor Fallback
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+What an ibor fallback segment falls back from and to, as ORE's =IborIndex=,
+=RfrCurve=, =RfrIndex= and =Spread=. They hold one invariant: the ibor index is
+the RFR index on the RFR curve plus the spread. ORE requires the ibor index and
+the RFR curve, so every ibor fallback segment has this part.
+
+A segment holds at most one row of this part, so the generated table adds the
+unique index on the live rows of =(tenant_id, curve_segment_id)=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_segment_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:unique:   true
+:END:
+
+The segment this part belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** ibor_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The Ibor index an Ibor fallback segment builds.
+
+#+begin_src cpp :name generator
+std::string("EUR-EURIBOR-6M")
+#+end_src
+
+** rfr_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The risk free curve an Ibor fallback segment falls back to.
+
+#+begin_src cpp :name generator
+std::string("EUR-ESTER")
+#+end_src
+
+** rfr_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The risk free index an Ibor fallback segment falls back to.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread
+:PROPERTIES:
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The spread an Ibor fallback segment adds to the risk free rate.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_segment_id
+:PROPERTIES:
+:table:         ores_refdata_curve_segments_tbl
+:target_column: id
+:parent_entity: curve_segment
+:nullable:      false
+:error_message: Invalid curve_segment_id: %. No active curve segment found with this id.
+:END:
+
+The part's trigger refuses a segment whose element does not have this part, so
+the test seeds a IborFallback segment rather than the kind the generator names.
+
+#+begin_src cpp :name parent_seed_includes
+#include "curve_segment_seed.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    v.curve_segment_id = ores::refdata::tests::seed_curve_segment_of_kind(ctx, party_ctx, "IborFallback");
+#+end_src
+
+** ibor_index
+:PROPERTIES:
+:table:         ores_refdata_floating_index_types_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid ibor_index: %. No active floating index type found with this code.
+:END:
+
+** rfr_index
+:PROPERTIES:
+:table:         ores_refdata_floating_index_types_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid rfr_index: %. No active floating index type found with this code.
+:END:
+
+* Insert trigger
+** Validations
+
+The segment's element must be one that has this part. The function is written
+by the section generator from the projection's =import_segments=.
+
+| column           | validation_function                                  |
+|------------------+------------------------------------------------------|
+| curve_segment_id | ores_refdata_validate_curve_segment_ibor_fallback_fn |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_segment_ibor_fallbacks_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: segment_ibor_fallback
+:entity_plural_short:   segment_ibor_fallbacks
+:entity_singular_words: curve segment ibor fallback
+:entity_plural_words:   curve segment ibor fallbacks
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:24bda9d8-1cac-45f8-8d53-af43767ee229][ores.refdata.curve_segment]] — the segment this part belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:98901652-FEC5-4197-BE47-99F0C8453072][Split the curve segment by element]] — the task that split it.

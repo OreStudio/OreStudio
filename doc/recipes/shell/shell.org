@@ -1995,3 +1995,43 @@ tangled into the runnable script library
 * Commodity Future Option Expiries
 
 - [[id:3A3EB896-C432-570A-8BF1-F3A9B1F9FF57][How do I run the commodity_future_option_expiries commands from the shell?]]
+
+* Curve Segment Conventions
+
+- [[id:17BC82CA-4F37-5398-B050-9D033798C667][How do I run the curve_segment_conventions commands from the shell?]]
+
+* Curve Segment Cross Currency Terms
+
+- [[id:DE652CCF-A7D5-501D-AB08-CB17B4125B69][How do I run the curve_segment_cross_currency_terms commands from the shell?]]
+
+* Curve Segment Discount Ratios
+
+- [[id:DCACF291-4C05-5E3F-9F39-41D71A8C546E][How do I run the curve_segment_discount_ratios commands from the shell?]]
+
+* Curve Segment Extrapolations
+
+- [[id:90B4ADF2-4A4A-535E-8F8A-28CF1C3A7DA5][How do I run the curve_segment_extrapolations commands from the shell?]]
+
+* Curve Segment Ibor Fallbacks
+
+- [[id:1292E702-BDB3-5EFD-8D88-112D2DD1DAB9][How do I run the curve_segment_ibor_fallbacks commands from the shell?]]
+
+* Curve Segment Pillar Rules
+
+- [[id:28B1F088-D688-5869-8FA0-81ABE2F93DA5][How do I run the curve_segment_pillar_rules commands from the shell?]]
+
+* Curve Segment Projections
+
+- [[id:9E0B6952-8845-585C-A16C-00B08F823E6B][How do I run the curve_segment_projections commands from the shell?]]
+
+* Curve Segment References
+
+- [[id:FBD1E03B-1F49-51CA-820F-2AAEE6F13C01][How do I run the curve_segment_references commands from the shell?]]
+
+* Curve Segment Tenor Basis Curves
+
+- [[id:255ACA0F-D571-5DA0-8F5B-843B876581AE][How do I run the curve_segment_tenor_basis_curves commands from the shell?]]
+
+* Curve Segment Weighted Averages
+
+- [[id:B7E91FFF-6BC3-5A38-9618-57AE50E6E214][How do I run the curve_segment_weighted_averages commands from the shell?]]

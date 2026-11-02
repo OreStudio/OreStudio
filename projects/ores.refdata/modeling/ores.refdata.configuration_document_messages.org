@@ -48,7 +48,17 @@ message, and no family of conventions has a type here.
 #include "ores.refdata.api/domain/curve_report_configuration.hpp"
 #include "ores.refdata.api/domain/curve_security_config.hpp"
 #include "ores.refdata.api/domain/curve_segment.hpp"
+#include "ores.refdata.api/domain/curve_segment_convention.hpp"
+#include "ores.refdata.api/domain/curve_segment_cross_currency_terms.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
+#include "ores.refdata.api/domain/curve_segment_discount_ratio.hpp"
+#include "ores.refdata.api/domain/curve_segment_extrapolation.hpp"
+#include "ores.refdata.api/domain/curve_segment_ibor_fallback.hpp"
+#include "ores.refdata.api/domain/curve_segment_pillar_rule.hpp"
+#include "ores.refdata.api/domain/curve_segment_projection.hpp"
+#include "ores.refdata.api/domain/curve_segment_reference.hpp"
+#include "ores.refdata.api/domain/curve_segment_tenor_basis_curves.hpp"
+#include "ores.refdata.api/domain/curve_segment_weighted_average.hpp"
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
 #include "ores.refdata.api/domain/curve_volatility_constant.hpp"
 #include "ores.refdata.api/domain/curve_volatility_curve.hpp"
@@ -351,6 +361,56 @@ message, and no family of conventions has a type here.
 *** segment_curves
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::curve_segment_curve>
+:END:
+
+*** segment_conventions
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_convention>
+:END:
+
+*** segment_pillar_rules
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_pillar_rule>
+:END:
+
+*** segment_projections
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_projection>
+:END:
+
+*** segment_tenor_basis_curves
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_tenor_basis_curves>
+:END:
+
+*** segment_cross_currency_terms
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_cross_currency_terms>
+:END:
+
+*** segment_references
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_reference>
+:END:
+
+*** segment_weighted_averages
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_weighted_average>
+:END:
+
+*** segment_discount_ratios
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_discount_ratio>
+:END:
+
+*** segment_extrapolations
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_extrapolation>
+:END:
+
+*** segment_ibor_fallbacks
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_ibor_fallback>
 :END:
 
 *** quotes

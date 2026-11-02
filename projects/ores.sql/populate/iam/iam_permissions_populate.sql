@@ -689,6 +689,36 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_curves:read',              'View curve segment curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_curves:write',             'Create and modify curve segment curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_curves:delete',            'Delete curve segment curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_conventions:read',         'View curve segment conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_conventions:write',        'Create and modify curve segment conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_conventions:delete',       'Delete curve segment conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_pillar_rules:read',        'View curve segment pillar rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_pillar_rules:write',       'Create and modify curve segment pillar rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_pillar_rules:delete',      'Delete curve segment pillar rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_projections:read',         'View curve segment projections');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_projections:write',        'Create and modify curve segment projections');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_projections:delete',       'Delete curve segment projections');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_tenor_basis_curves:read',  'View curve segment tenor basis curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_tenor_basis_curves:write', 'Create and modify curve segment tenor basis curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_tenor_basis_curves:delete', 'Delete curve segment tenor basis curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_cross_currency_terms:read', 'View curve segment cross currency terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_cross_currency_terms:write', 'Create and modify curve segment cross currency terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_cross_currency_terms:delete', 'Delete curve segment cross currency terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_references:read',          'View curve segment references');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_references:write',         'Create and modify curve segment references');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_references:delete',        'Delete curve segment references');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_weighted_averages:read',   'View curve segment weighted averages');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_weighted_averages:write',  'Create and modify curve segment weighted averages');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_weighted_averages:delete', 'Delete curve segment weighted averages');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_discount_ratios:read',     'View curve segment discount ratios');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_discount_ratios:write',    'Create and modify curve segment discount ratios');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_discount_ratios:delete',   'Delete curve segment discount ratios');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_extrapolations:read',      'View curve segment extrapolations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_extrapolations:write',     'Create and modify curve segment extrapolations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_extrapolations:delete',    'Delete curve segment extrapolations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_ibor_fallbacks:read',      'View curve segment ibor fallbacks');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_ibor_fallbacks:write',     'Create and modify curve segment ibor fallbacks');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_ibor_fallbacks:delete',    'Delete curve segment ibor fallbacks');
 
     -- Derivation kinds permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::derivation_kinds:read',                    'View derivation kinds');

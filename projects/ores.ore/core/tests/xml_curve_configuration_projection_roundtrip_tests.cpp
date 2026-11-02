@@ -22,6 +22,8 @@
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.testing/project_root.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <filesystem>
@@ -396,6 +398,113 @@ TEST_CASE("a_row_the_document_has_no_place_for_is_refused_on_export",
     }
 }
 
+TEST_CASE("a_segment_holds_only_the_parts_its_element_has", "[ore][xml][roundtrip][curveconfig]") {
+    auto lg(make_logger(test_suite));
+
+    const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <YieldCurves>
+    <YieldCurve>
+      <CurveId>EUR-ALL</CurveId>
+      <CurveDescription>Two segments</CurveDescription>
+      <Currency>EUR</Currency>
+      <DiscountCurve>EUR-ALL</DiscountCurve>
+      <Segments>
+        <Direct><Type>Zero</Type><Quotes><Quote>ZERO/RATE/EUR/1Y</Quote></Quotes></Direct>
+        <Simple>
+          <Type>Deposit</Type>
+          <Conventions>EUR-DEPOSIT</Conventions>
+          <Quotes><Quote>MM/RATE/EUR/1D</Quote></Quotes>
+        </Simple>
+      </Segments>
+    </YieldCurve>
+  </YieldCurves>
+</CurveConfiguration>)");
+    const auto mapped = curve_configuration_projection::map(original);
+    REQUIRE(mapped.segments.size() == 2);
+    const auto& direct = mapped.segments[0];
+    const auto& simple = mapped.segments[1];
+
+    // A part of optional fields the element leaves out is no row at all: the
+    // direct segment states neither a convention nor a pillar rule.
+    REQUIRE(mapped.segment_conventions.size() == 1);
+    CHECK(mapped.segment_conventions.front().curve_segment_id == simple.id);
+    CHECK(mapped.segment_pillar_rules.empty());
+    CHECK(mapped.segment_projections.empty());
+
+    {
+        auto changed = mapped;
+        ores::refdata::domain::curve_segment_extrapolation p;
+        p.curve_segment_id = simple.id;
+        p.extrapolate_flat = true;
+        changed.segment_extrapolations.push_back(p);
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring("its element does not have"));
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::curve_segment_convention p;
+        p.curve_segment_id = boost::uuids::random_generator()();
+        p.conventions = "EUR-DEPOSIT";
+        changed.segment_conventions.push_back(p);
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring("is not in the document"));
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::curve_segment_pillar_rule p;
+        p.curve_segment_id = direct.id;
+        p.priority = 1;
+        changed.segment_pillar_rules.push_back(p);
+        changed.segment_pillar_rules.push_back(p);
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring("has two pillar rule rows"));
+    }
+    {
+        auto changed = mapped;
+        changed.segment_conventions.clear();
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring("has no convention"));
+    }
+}
+
+TEST_CASE("a_discount_ratio_segment_missing_a_curve_is_refused",
+          "[ore][xml][roundtrip][curveconfig]") {
+    auto lg(make_logger(test_suite));
+
+    // The reader checks a document against the schema, which requires each of
+    // the three curves and its currency, so the part never holds an empty one.
+
+    const auto document = [](const std::string& curves) {
+        return curve_configuration_projection::read(R"(<CurveConfiguration>
+  <YieldCurves>
+    <YieldCurve>
+      <CurveId>EUR-RATIO</CurveId>
+      <CurveDescription>A discount ratio</CurveDescription>
+      <Currency>EUR</Currency>
+      <DiscountCurve>EUR-RATIO</DiscountCurve>
+      <Segments>
+        <DiscountRatio>
+          <Type>Discount Ratio</Type>
+)" + curves + R"(
+        </DiscountRatio>
+      </Segments>
+    </YieldCurve>
+  </YieldCurves>
+</CurveConfiguration>)");
+    };
+    const std::string base = R"(<BaseCurve currency="EUR">EUR-EONIA</BaseCurve>)";
+    const std::string numerator = R"(<NumeratorCurve currency="USD">USD-SOFR</NumeratorCurve>)";
+    const std::string denominator =
+        R"(<DenominatorCurve currency="USD">USD-FedFunds</DenominatorCurve>)";
+
+    CHECK_NOTHROW(curve_configuration_projection::map(document(base + numerator + denominator)));
+    CHECK_THROWS_WITH(curve_configuration_projection::map(document(base + denominator)),
+                      Catch::Matchers::ContainsSubstring("'NumeratorCurve' is missing"));
+    CHECK_THROWS_WITH(curve_configuration_projection::map(document(
+                          base + numerator + "<DenominatorCurve>USD-FedFunds</DenominatorCurve>")),
+                      Catch::Matchers::ContainsSubstring("'currency' is missing"));
+}
+
 TEST_CASE("a_segment_document_states_its_optional_settings", "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
@@ -444,10 +553,18 @@ TEST_CASE("a_segment_document_states_its_optional_settings", "[ore][xml][roundtr
     CHECK(mapped.yield_curves.front().report_pillar_dates == std::optional<std::string>("1Y, 2Y"));
     REQUIRE(!mapped.quotes.empty());
     CHECK(mapped.quotes.front().optional_flag == std::optional<std::string>("true"));
-    REQUIRE(mapped.segments.front().priority);
-    CHECK(*mapped.segments.front().priority == 2);
-    CHECK(mapped.segments[1].extrapolate_flat == std::optional<bool>(true));
-    CHECK(mapped.segments[2].rfr_index == std::optional<std::string>("CHF-SARON"));
-    REQUIRE(mapped.segments[2].spread);
-    CHECK_FALSE(mapped.segments[2].spread->is_zero());
+    const auto part_of = [](const auto& parts, const auto& segment) {
+        const auto it = std::ranges::find_if(
+            parts, [&](const auto& p) { return p.curve_segment_id == segment.id; });
+        REQUIRE(it != parts.end());
+        return *it;
+    };
+    const auto pillar = part_of(mapped.segment_pillar_rules, mapped.segments[0]);
+    REQUIRE(pillar.priority);
+    CHECK(*pillar.priority == 2);
+    CHECK(part_of(mapped.segment_extrapolations, mapped.segments[1]).extrapolate_flat);
+    const auto fallback = part_of(mapped.segment_ibor_fallbacks, mapped.segments[2]);
+    CHECK(fallback.rfr_index == std::optional<std::string>("CHF-SARON"));
+    REQUIRE(fallback.spread);
+    CHECK_FALSE(fallback.spread->is_zero());
 }

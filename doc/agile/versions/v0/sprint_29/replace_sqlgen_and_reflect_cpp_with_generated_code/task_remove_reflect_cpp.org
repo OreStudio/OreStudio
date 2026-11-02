@@ -71,6 +71,16 @@ task and name that file in the Command column.
 
 * Notes
 
+**The conventions path waits on its own story.** =run_configuration_operations.cpp=
+uses =rfl::Generic= for the conventions export, and ores.ore core encodes
+convention rows with reflect-cpp in =conventions_family_pack.hpp=,
+=conventions_diff.cpp= and =conventions_family_cross_currency_fix_float.cpp=.
+The ores.ore codec task leaves them, because
+[[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Import and export conventions without a document aggregate]]
+replaces that code with typed family messages and a typed package. This task
+cannot close before that story does.
+
+
 **The byte tests lose their reference.** =message_codec_tests.cpp= and the
 codec enum tests compare the generated codec with the reflector's output. When
 reflect-cpp goes, they have nothing to compare with. Before the dependency is

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: AF63E82F-D4DD-41EC-A1FE-6B3B5824F462
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.ore.currency_config_messages
 #+description: Codegen operation model for the ORE currency configuration's exchange: the export that writes currencyconfig.xml, the preview that says what a file would change, and the import that writes it with the person's choices. Rendered to C++ and TypeScript from one source.

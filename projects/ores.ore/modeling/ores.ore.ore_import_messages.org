@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E723EABC-54B5-4EAC-BC0E-CFA1AFB021CB
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.ore.ore_import_messages
 #+description: Codegen operation model for the whole ORE import protocol: the client request and its response, the per-item error they share, and the execute, result and rollback messages the workflow engine exchanges with the saga. Rendered to C++ and TypeScript from one source.

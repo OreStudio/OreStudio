@@ -26,11 +26,11 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <rfl/json.hpp>
 
 namespace ores::ore::service::messaging {
 
@@ -119,7 +119,7 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
     start_workflow_message swm;
     swm.type = "ore_import_workflow";
     swm.tenant_id = boost::uuids::to_string(req_ctx.tenant_id().to_uuid());
-    swm.request_json = rfl::json::write(execute_req);
+    swm.request_json = ores::utility::codec::json::write(execute_req);
     swm.correlation_id = correlation_id;
     swm.instance_id = instance_id_str;
 

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: d50f9b8c-cfaf-451b-8cd1-71c12fe21d41
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.ore.ore_document_messages
 #+description: Codegen operation model for the one ORE document type the ORE component's exports return: a file name and its text. Rendered to C++ and TypeScript from one source, and shared by every document export.

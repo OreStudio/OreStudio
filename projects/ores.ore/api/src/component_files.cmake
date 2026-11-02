@@ -20,6 +20,11 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "messaging/currency_config_protocol_codec.cpp"
+    "messaging/ore_document_protocol_codec.cpp"
+    "messaging/ore_import_protocol_codec.cpp"
+    "messaging/pricing_engines_protocol_codec.cpp"
+    "messaging/run_configuration_protocol_codec.cpp"
 )
 
 # The headers are listed for the install and IDE targets.

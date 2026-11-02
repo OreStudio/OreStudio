@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E5052BA8-882F-4EC0-9A5A-E7DC6E36C8E3
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.sensitivity_template
 #+description: Codegen entity model for the analytics =sensitivity_template= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

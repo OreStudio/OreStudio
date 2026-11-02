@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: F95005F1-86BE-4FE7-998A-069937FF6895
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.stress_shift_family
 #+description: Codegen entity model for the analytics =stress_shift_family= table. The shift families of an ORE stress scenario.

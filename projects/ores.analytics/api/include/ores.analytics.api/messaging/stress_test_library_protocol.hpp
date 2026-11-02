@@ -26,11 +26,17 @@
 #define ORES_ANALYTICS_API_MESSAGING_STRESS_TEST_LIBRARY_PROTOCOL_HPP
 
 #include "ores.analytics.api/domain/stress_test_library.hpp"
+#include "ores.analytics.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::analytics::messaging {
@@ -275,7 +281,795 @@ inline constexpr std::string_view created = "analytics.v1.stress_test_libraries_
 inline constexpr std::string_view updated = "analytics.v1.stress_test_libraries_events.updated";
 inline constexpr std::string_view deleted = "analytics.v1.stress_test_libraries_events.deleted";
 }
+/**
+ * @brief The members of stress_test_library_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stress_test_library_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &stress_test_library_key::id},
+    };
+}
+
+/**
+ * @brief The members of stress_test_library_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stress_test_library_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &stress_test_library_write::id},
+        utility::codec::field{"name", &stress_test_library_write::name},
+        utility::codec::field{"configuration_id", &stress_test_library_write::configuration_id},
+        utility::codec::field{"use_spreaded_term_structures",
+                              &stress_test_library_write::use_spreaded_term_structures},
+    };
+}
+
+/**
+ * @brief The members of stress_test_library_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stress_test_library_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &stress_test_library_change::write},
+        utility::codec::field{"precondition", &stress_test_library_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of stress_test_library_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stress_test_library_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &stress_test_library_removal::key},
+        utility::codec::field{"precondition", &stress_test_library_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of stress_test_library_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stress_test_library_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &stress_test_library_lookup::key},
+        utility::codec::field{"stress_test_library",
+                              &stress_test_library_lookup::stress_test_library},
+    };
+}
+
+/**
+ * @brief The members of stress_test_libraries_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stress_test_libraries_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &stress_test_libraries_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of stress_test_library_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stress_test_library_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &stress_test_library_event::event_id},
+        utility::codec::field{"key", &stress_test_library_event::key},
+        utility::codec::field{"action", &stress_test_library_event::action},
+        utility::codec::field{"version", &stress_test_library_event::version},
+        utility::codec::field{"occurred_at", &stress_test_library_event::occurred_at},
+        utility::codec::field{"correlation_id", &stress_test_library_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of stress_test_library_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stress_test_library_version_key&) {
+    return std::tuple{
+        utility::codec::field{"stress_test_library",
+                              &stress_test_library_version_key::stress_test_library},
+        utility::codec::field{"version", &stress_test_library_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of stress_test_library_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stress_test_library_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &stress_test_library_versions_filter::version},
+        utility::codec::field{"from_version", &stress_test_library_versions_filter::from_version},
+        utility::codec::field{"to_version", &stress_test_library_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_stress_test_libraries_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_stress_test_libraries_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_stress_test_libraries_request::offset},
+        utility::codec::field{"limit", &list_stress_test_libraries_request::limit},
+        utility::codec::field{"order", &list_stress_test_libraries_request::order},
+        utility::codec::field{"filter", &list_stress_test_libraries_request::filter},
+        utility::codec::field{"as_of", &list_stress_test_libraries_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_stress_test_libraries_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_stress_test_libraries_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_stress_test_libraries_response::result},
+        utility::codec::field{"stress_test_libraries",
+                              &list_stress_test_libraries_response::stress_test_libraries},
+        utility::codec::field{"total", &list_stress_test_libraries_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_stress_test_library_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_stress_test_library_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_stress_test_library_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_stress_test_library_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_stress_test_library_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_stress_test_library_response::result},
+        utility::codec::field{"stress_test_library",
+                              &get_stress_test_library_response::stress_test_library},
+    };
+}
+
+/**
+ * @brief The members of get_many_stress_test_libraries_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_stress_test_libraries_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_stress_test_libraries_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_stress_test_libraries_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_stress_test_libraries_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_stress_test_libraries_response::result},
+        utility::codec::field{"entries", &get_many_stress_test_libraries_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_stress_test_library_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_stress_test_library_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_stress_test_library_request::change},
+        utility::codec::field{"intent", &put_stress_test_library_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_stress_test_library_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_stress_test_library_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_stress_test_library_response::result},
+        utility::codec::field{"stress_test_library",
+                              &put_stress_test_library_response::stress_test_library},
+    };
+}
+
+/**
+ * @brief The members of put_many_stress_test_libraries_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_stress_test_libraries_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_stress_test_libraries_request::changes},
+        utility::codec::field{"intent", &put_many_stress_test_libraries_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_stress_test_libraries_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_stress_test_libraries_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_stress_test_libraries_response::result},
+        utility::codec::field{"stress_test_libraries",
+                              &put_many_stress_test_libraries_response::stress_test_libraries},
+    };
+}
+
+/**
+ * @brief The members of delete_stress_test_library_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_stress_test_library_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_stress_test_library_request::removal},
+        utility::codec::field{"intent", &delete_stress_test_library_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_stress_test_library_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_stress_test_library_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_stress_test_library_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_stress_test_libraries_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_stress_test_libraries_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_stress_test_libraries_request::removals},
+        utility::codec::field{"intent", &delete_many_stress_test_libraries_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_stress_test_libraries_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_stress_test_libraries_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_stress_test_libraries_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_stress_test_library_versions_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_stress_test_library_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_stress_test_library_versions_request::key},
+        utility::codec::field{"offset", &list_stress_test_library_versions_request::offset},
+        utility::codec::field{"limit", &list_stress_test_library_versions_request::limit},
+        utility::codec::field{"order", &list_stress_test_library_versions_request::order},
+        utility::codec::field{"filter", &list_stress_test_library_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_stress_test_library_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_stress_test_library_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_stress_test_library_versions_response::result},
+        utility::codec::field{"versions", &list_stress_test_library_versions_response::versions},
+        utility::codec::field{"total", &list_stress_test_library_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_stress_test_library_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_stress_test_library_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_stress_test_library_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_stress_test_library_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_stress_test_library_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_stress_test_library_version_response::result},
+        utility::codec::field{"version", &get_stress_test_library_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::stress_test_library_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::stress_test_library_key& v);
+    static ores::analytics::messaging::stress_test_library_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::stress_test_library_key& v);
+    static ores::analytics::messaging::stress_test_library_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::stress_test_library_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::stress_test_library_write& v);
+    static ores::analytics::messaging::stress_test_library_write read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::stress_test_library_write& v);
+    static ores::analytics::messaging::stress_test_library_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::stress_test_library_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::stress_test_library_change& v);
+    static ores::analytics::messaging::stress_test_library_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::stress_test_library_change& v);
+    static ores::analytics::messaging::stress_test_library_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::stress_test_library_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::stress_test_library_removal& v);
+    static ores::analytics::messaging::stress_test_library_removal read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::stress_test_library_removal& v);
+    static ores::analytics::messaging::stress_test_library_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::stress_test_library_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::stress_test_library_lookup& v);
+    static ores::analytics::messaging::stress_test_library_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::stress_test_library_lookup& v);
+    static ores::analytics::messaging::stress_test_library_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::stress_test_libraries_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::stress_test_libraries_filter& v);
+    static ores::analytics::messaging::stress_test_libraries_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::stress_test_libraries_filter& v);
+    static ores::analytics::messaging::stress_test_libraries_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::stress_test_library_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::stress_test_library_event& v);
+    static ores::analytics::messaging::stress_test_library_event read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::stress_test_library_event& v);
+    static ores::analytics::messaging::stress_test_library_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::stress_test_library_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::stress_test_library_version_key& v);
+    static ores::analytics::messaging::stress_test_library_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::stress_test_library_version_key& v);
+    static ores::analytics::messaging::stress_test_library_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::stress_test_library_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::stress_test_library_versions_filter& v);
+    static ores::analytics::messaging::stress_test_library_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::stress_test_library_versions_filter& v);
+    static ores::analytics::messaging::stress_test_library_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_stress_test_libraries_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_stress_test_libraries_request& v);
+    static ores::analytics::messaging::list_stress_test_libraries_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_stress_test_libraries_request& v);
+    static ores::analytics::messaging::list_stress_test_libraries_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_stress_test_libraries_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_stress_test_libraries_response& v);
+    static ores::analytics::messaging::list_stress_test_libraries_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_stress_test_libraries_response& v);
+    static ores::analytics::messaging::list_stress_test_libraries_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_stress_test_library_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_stress_test_library_request& v);
+    static ores::analytics::messaging::get_stress_test_library_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_stress_test_library_request& v);
+    static ores::analytics::messaging::get_stress_test_library_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_stress_test_library_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_stress_test_library_response& v);
+    static ores::analytics::messaging::get_stress_test_library_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_stress_test_library_response& v);
+    static ores::analytics::messaging::get_stress_test_library_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_stress_test_libraries_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_many_stress_test_libraries_request& v);
+    static ores::analytics::messaging::get_many_stress_test_libraries_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_many_stress_test_libraries_request& v);
+    static ores::analytics::messaging::get_many_stress_test_libraries_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_stress_test_libraries_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_many_stress_test_libraries_response& v);
+    static ores::analytics::messaging::get_many_stress_test_libraries_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_many_stress_test_libraries_response& v);
+    static ores::analytics::messaging::get_many_stress_test_libraries_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_stress_test_library_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_stress_test_library_request& v);
+    static ores::analytics::messaging::put_stress_test_library_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_stress_test_library_request& v);
+    static ores::analytics::messaging::put_stress_test_library_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_stress_test_library_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_stress_test_library_response& v);
+    static ores::analytics::messaging::put_stress_test_library_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_stress_test_library_response& v);
+    static ores::analytics::messaging::put_stress_test_library_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_stress_test_libraries_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_many_stress_test_libraries_request& v);
+    static ores::analytics::messaging::put_many_stress_test_libraries_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_many_stress_test_libraries_request& v);
+    static ores::analytics::messaging::put_many_stress_test_libraries_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_stress_test_libraries_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_many_stress_test_libraries_response& v);
+    static ores::analytics::messaging::put_many_stress_test_libraries_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_many_stress_test_libraries_response& v);
+    static ores::analytics::messaging::put_many_stress_test_libraries_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_stress_test_library_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_stress_test_library_request& v);
+    static ores::analytics::messaging::delete_stress_test_library_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_stress_test_library_request& v);
+    static ores::analytics::messaging::delete_stress_test_library_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_stress_test_library_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_stress_test_library_response& v);
+    static ores::analytics::messaging::delete_stress_test_library_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_stress_test_library_response& v);
+    static ores::analytics::messaging::delete_stress_test_library_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_stress_test_libraries_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_many_stress_test_libraries_request& v);
+    static ores::analytics::messaging::delete_many_stress_test_libraries_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_many_stress_test_libraries_request& v);
+    static ores::analytics::messaging::delete_many_stress_test_libraries_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_stress_test_libraries_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_many_stress_test_libraries_response& v);
+    static ores::analytics::messaging::delete_many_stress_test_libraries_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_many_stress_test_libraries_response& v);
+    static ores::analytics::messaging::delete_many_stress_test_libraries_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_stress_test_library_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_stress_test_library_versions_request& v);
+    static ores::analytics::messaging::list_stress_test_library_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_stress_test_library_versions_request& v);
+    static ores::analytics::messaging::list_stress_test_library_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_stress_test_library_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_stress_test_library_versions_response& v);
+    static ores::analytics::messaging::list_stress_test_library_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_stress_test_library_versions_response& v);
+    static ores::analytics::messaging::list_stress_test_library_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_stress_test_library_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_stress_test_library_version_request& v);
+    static ores::analytics::messaging::get_stress_test_library_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_stress_test_library_version_request& v);
+    static ores::analytics::messaging::get_stress_test_library_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_stress_test_library_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_stress_test_library_version_response& v);
+    static ores::analytics::messaging::get_stress_test_library_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_stress_test_library_version_response& v);
+    static ores::analytics::messaging::get_stress_test_library_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

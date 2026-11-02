@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-ores-analytics-codecs-off-reflect-cpp
+#+pr: 4375
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 6 of 7, one component. ores.analytics encodes and decodes without reflect-c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,10 @@ Step 6 of 7, one component. ores.analytics encodes and decodes without reflect-c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Opt the 29 analytics models into the wire codec and regenerate.
+- Move the dq publish handler onto the codec, keeping its error message, and
+  drop the service's include-only reflect-cpp use.
+- Prove every domain type and every operation message against reflect-cpp.
 
 * Measurements
 
@@ -58,7 +59,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Analytics suites | api 2 cases, core 85, quant 526 and shell analytics 483 pass; service has no cases | the =ores.analytics.*.tests= and =ores.shell.analytics.tests= binaries | d5e6f769a4 plus this branch |
+| Codec cases | 3 cases, 230 assertions pass | =ores.analytics.api.tests "[codec]"= | d5e6f769a4 plus this branch |
+| Component drift (analytics), format, CMake lists, unique type names | all clean | =check_component_drift.py --component analytics-cpp=, and the check scripts | d5e6f769a4 plus this branch |
+| reflect-cpp left in analytics sources, outside tests | none | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.analytics= | d5e6f769a4 plus this branch |
 
 * Notes
 
@@ -77,12 +81,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4375][#4375]] | [analytics] Encode and decode without reflect-cpp |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Operation messages compared only at defaults | =codec_wire_bytes_tests.cpp= | Accepted | Filled pricing engines and today's market documents; 3 cases, 230 assertions pass. |
+| 2 | Test the malformed-command path | =publish_from_dq_handler.cpp= | No change | dq's tests own the command; the codec's refusal is tested in scheduler. |
+| 3 | Confirm the exception type | | No change | The codec throws std::exception subclasses. |
+| 4 | Watch CI | | No change | |
 
 * Result
+
+ores.analytics encodes and decodes without reflect-cpp. Its 29 models use the
+generated codec, its dq publish handler reads and writes through it, and no
+analytics source outside the tests includes reflect-cpp. The bytes match
+reflect-cpp's.

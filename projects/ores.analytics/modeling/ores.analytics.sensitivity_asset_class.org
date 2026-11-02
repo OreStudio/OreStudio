@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8A1F3C6D-2B47-4E09-9F15-7D3B8E2A4C51
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.sensitivity_asset_class
 #+description: Codegen entity model for the analytics =sensitivity_asset_class= table. The asset classes ORE presents a sensitivity template prefix for, with the words a person reads.

@@ -26,11 +26,17 @@
 #define ORES_ANALYTICS_API_MESSAGING_PRICING_METHOD_PROTOCOL_HPP
 
 #include "ores.analytics.api/domain/pricing_method.hpp"
+#include "ores.analytics.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::analytics::messaging {
@@ -272,7 +278,764 @@ inline constexpr std::string_view created = "analytics.v1.pricing_methods_events
 inline constexpr std::string_view updated = "analytics.v1.pricing_methods_events.updated";
 inline constexpr std::string_view deleted = "analytics.v1.pricing_methods_events.deleted";
 }
+/**
+ * @brief The members of pricing_method_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_method_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &pricing_method_key::code},
+    };
+}
+
+/**
+ * @brief The members of pricing_method_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_method_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &pricing_method_write::code},
+        utility::codec::field{"description", &pricing_method_write::description},
+        utility::codec::field{"detail", &pricing_method_write::detail},
+        utility::codec::field{"source", &pricing_method_write::source},
+    };
+}
+
+/**
+ * @brief The members of pricing_method_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_method_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &pricing_method_change::write},
+        utility::codec::field{"precondition", &pricing_method_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of pricing_method_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_method_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &pricing_method_removal::key},
+        utility::codec::field{"precondition", &pricing_method_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of pricing_method_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_method_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &pricing_method_lookup::key},
+        utility::codec::field{"pricing_method", &pricing_method_lookup::pricing_method},
+    };
+}
+
+/**
+ * @brief The members of pricing_methods_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_methods_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &pricing_methods_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of pricing_method_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_method_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &pricing_method_event::event_id},
+        utility::codec::field{"key", &pricing_method_event::key},
+        utility::codec::field{"action", &pricing_method_event::action},
+        utility::codec::field{"version", &pricing_method_event::version},
+        utility::codec::field{"occurred_at", &pricing_method_event::occurred_at},
+        utility::codec::field{"correlation_id", &pricing_method_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of pricing_method_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_method_version_key&) {
+    return std::tuple{
+        utility::codec::field{"pricing_method", &pricing_method_version_key::pricing_method},
+        utility::codec::field{"version", &pricing_method_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of pricing_method_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_method_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &pricing_method_versions_filter::version},
+        utility::codec::field{"from_version", &pricing_method_versions_filter::from_version},
+        utility::codec::field{"to_version", &pricing_method_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_pricing_methods_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_pricing_methods_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_pricing_methods_request::offset},
+        utility::codec::field{"limit", &list_pricing_methods_request::limit},
+        utility::codec::field{"order", &list_pricing_methods_request::order},
+        utility::codec::field{"filter", &list_pricing_methods_request::filter},
+        utility::codec::field{"as_of", &list_pricing_methods_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_pricing_methods_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_pricing_methods_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_pricing_methods_response::result},
+        utility::codec::field{"methods", &list_pricing_methods_response::methods},
+        utility::codec::field{"total", &list_pricing_methods_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_pricing_method_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_pricing_method_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_pricing_method_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_pricing_method_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_pricing_method_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_pricing_method_response::result},
+        utility::codec::field{"pricing_method", &get_pricing_method_response::pricing_method},
+    };
+}
+
+/**
+ * @brief The members of get_many_pricing_methods_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_pricing_methods_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_pricing_methods_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_pricing_methods_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_pricing_methods_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_pricing_methods_response::result},
+        utility::codec::field{"entries", &get_many_pricing_methods_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_pricing_method_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_pricing_method_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_pricing_method_request::change},
+        utility::codec::field{"intent", &put_pricing_method_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_pricing_method_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_pricing_method_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_pricing_method_response::result},
+        utility::codec::field{"pricing_method", &put_pricing_method_response::pricing_method},
+    };
+}
+
+/**
+ * @brief The members of put_many_pricing_methods_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_pricing_methods_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_pricing_methods_request::changes},
+        utility::codec::field{"intent", &put_many_pricing_methods_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_pricing_methods_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_pricing_methods_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_pricing_methods_response::result},
+        utility::codec::field{"methods", &put_many_pricing_methods_response::methods},
+    };
+}
+
+/**
+ * @brief The members of delete_pricing_method_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_pricing_method_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_pricing_method_request::removal},
+        utility::codec::field{"intent", &delete_pricing_method_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_pricing_method_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_pricing_method_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_pricing_method_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_pricing_methods_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_pricing_methods_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_pricing_methods_request::removals},
+        utility::codec::field{"intent", &delete_many_pricing_methods_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_pricing_methods_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_pricing_methods_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_pricing_methods_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_pricing_method_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_pricing_method_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_pricing_method_versions_request::key},
+        utility::codec::field{"offset", &list_pricing_method_versions_request::offset},
+        utility::codec::field{"limit", &list_pricing_method_versions_request::limit},
+        utility::codec::field{"order", &list_pricing_method_versions_request::order},
+        utility::codec::field{"filter", &list_pricing_method_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_pricing_method_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_pricing_method_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_pricing_method_versions_response::result},
+        utility::codec::field{"versions", &list_pricing_method_versions_response::versions},
+        utility::codec::field{"total", &list_pricing_method_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_pricing_method_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_pricing_method_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_pricing_method_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_pricing_method_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_pricing_method_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_pricing_method_version_response::result},
+        utility::codec::field{"version", &get_pricing_method_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::pricing_method_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::pricing_method_key& v);
+    static ores::analytics::messaging::pricing_method_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::pricing_method_key& v);
+    static ores::analytics::messaging::pricing_method_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::pricing_method_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::pricing_method_write& v);
+    static ores::analytics::messaging::pricing_method_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::pricing_method_write& v);
+    static ores::analytics::messaging::pricing_method_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::pricing_method_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::pricing_method_change& v);
+    static ores::analytics::messaging::pricing_method_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::pricing_method_change& v);
+    static ores::analytics::messaging::pricing_method_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::pricing_method_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::pricing_method_removal& v);
+    static ores::analytics::messaging::pricing_method_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::pricing_method_removal& v);
+    static ores::analytics::messaging::pricing_method_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::pricing_method_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::pricing_method_lookup& v);
+    static ores::analytics::messaging::pricing_method_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::pricing_method_lookup& v);
+    static ores::analytics::messaging::pricing_method_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::pricing_methods_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::pricing_methods_filter& v);
+    static ores::analytics::messaging::pricing_methods_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::pricing_methods_filter& v);
+    static ores::analytics::messaging::pricing_methods_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::pricing_method_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::pricing_method_event& v);
+    static ores::analytics::messaging::pricing_method_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::pricing_method_event& v);
+    static ores::analytics::messaging::pricing_method_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_method_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::pricing_method_version_key& v);
+    static ores::analytics::messaging::pricing_method_version_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_method_version_key& v);
+    static ores::analytics::messaging::pricing_method_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_method_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::pricing_method_versions_filter& v);
+    static ores::analytics::messaging::pricing_method_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_method_versions_filter& v);
+    static ores::analytics::messaging::pricing_method_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_pricing_methods_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_pricing_methods_request& v);
+    static ores::analytics::messaging::list_pricing_methods_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_pricing_methods_request& v);
+    static ores::analytics::messaging::list_pricing_methods_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_pricing_methods_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_pricing_methods_response& v);
+    static ores::analytics::messaging::list_pricing_methods_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_pricing_methods_response& v);
+    static ores::analytics::messaging::list_pricing_methods_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_pricing_method_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::get_pricing_method_request& v);
+    static ores::analytics::messaging::get_pricing_method_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_pricing_method_request& v);
+    static ores::analytics::messaging::get_pricing_method_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_pricing_method_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::get_pricing_method_response& v);
+    static ores::analytics::messaging::get_pricing_method_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_pricing_method_response& v);
+    static ores::analytics::messaging::get_pricing_method_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_pricing_methods_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_many_pricing_methods_request& v);
+    static ores::analytics::messaging::get_many_pricing_methods_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_many_pricing_methods_request& v);
+    static ores::analytics::messaging::get_many_pricing_methods_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_pricing_methods_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_many_pricing_methods_response& v);
+    static ores::analytics::messaging::get_many_pricing_methods_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_many_pricing_methods_response& v);
+    static ores::analytics::messaging::get_many_pricing_methods_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_pricing_method_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::put_pricing_method_request& v);
+    static ores::analytics::messaging::put_pricing_method_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_pricing_method_request& v);
+    static ores::analytics::messaging::put_pricing_method_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_pricing_method_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::put_pricing_method_response& v);
+    static ores::analytics::messaging::put_pricing_method_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_pricing_method_response& v);
+    static ores::analytics::messaging::put_pricing_method_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_pricing_methods_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_many_pricing_methods_request& v);
+    static ores::analytics::messaging::put_many_pricing_methods_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_many_pricing_methods_request& v);
+    static ores::analytics::messaging::put_many_pricing_methods_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_pricing_methods_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_many_pricing_methods_response& v);
+    static ores::analytics::messaging::put_many_pricing_methods_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_many_pricing_methods_response& v);
+    static ores::analytics::messaging::put_many_pricing_methods_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_pricing_method_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_pricing_method_request& v);
+    static ores::analytics::messaging::delete_pricing_method_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_pricing_method_request& v);
+    static ores::analytics::messaging::delete_pricing_method_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_pricing_method_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_pricing_method_response& v);
+    static ores::analytics::messaging::delete_pricing_method_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_pricing_method_response& v);
+    static ores::analytics::messaging::delete_pricing_method_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_pricing_methods_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_many_pricing_methods_request& v);
+    static ores::analytics::messaging::delete_many_pricing_methods_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_many_pricing_methods_request& v);
+    static ores::analytics::messaging::delete_many_pricing_methods_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_pricing_methods_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_many_pricing_methods_response& v);
+    static ores::analytics::messaging::delete_many_pricing_methods_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_many_pricing_methods_response& v);
+    static ores::analytics::messaging::delete_many_pricing_methods_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_pricing_method_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_pricing_method_versions_request& v);
+    static ores::analytics::messaging::list_pricing_method_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_pricing_method_versions_request& v);
+    static ores::analytics::messaging::list_pricing_method_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_pricing_method_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_pricing_method_versions_response& v);
+    static ores::analytics::messaging::list_pricing_method_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_pricing_method_versions_response& v);
+    static ores::analytics::messaging::list_pricing_method_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_pricing_method_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_pricing_method_version_request& v);
+    static ores::analytics::messaging::get_pricing_method_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_pricing_method_version_request& v);
+    static ores::analytics::messaging::get_pricing_method_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_pricing_method_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_pricing_method_version_response& v);
+    static ores::analytics::messaging::get_pricing_method_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_pricing_method_version_response& v);
+    static ores::analytics::messaging::get_pricing_method_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

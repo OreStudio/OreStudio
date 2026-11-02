@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5C7E2B41-9D3A-4F58-8B21-6E4A0C9D7F13
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.sensitivity_method
 #+description: Codegen entity model for the analytics =sensitivity_method= table. How ORE prices the products that carry a sensitivity template key.

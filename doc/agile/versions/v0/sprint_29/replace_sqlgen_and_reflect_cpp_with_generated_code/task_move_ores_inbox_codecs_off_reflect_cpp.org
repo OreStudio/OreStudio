@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-ores-inbox-codecs-off-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 6 of 7, one component. ores.inbox encodes and decodes without reflect-cpp. 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,12 @@ Step 6 of 7, one component. ores.inbox encodes and decodes without reflect-cpp. 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Opt the 20 inbox models into the wire codec and regenerate.
+- Give the approval sweep's scheduler payload wire fields, and write it and
+  the apply step command through the codec.
+- Move reporting's write of the apply step command, which waited on inbox.
+- Prove every domain type, every operation message and the apply step command
+  against reflect-cpp.
 
 * Measurements
 
@@ -58,9 +61,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Inbox and reporting suites | inbox api 3 cases, core 73 and shell inbox 322 pass; inbox service has no cases; reporting core passes all but the 2 cases that need main's =result_id= column, which this environment's database lacks | the =ores.inbox.*.tests=, =ores.shell.inbox.tests= and =ores.reporting.core.tests= binaries | 2e42042c72 plus this branch |
+| Codec cases | 3 cases, 276 assertions pass | =ores.inbox.api.tests "[codec]"= | 2e42042c72 plus this branch |
+| Component drift (inbox), format, CMake lists, unique type names | all clean | =check_component_drift.py --component inbox-cpp=, and the check scripts | 2e42042c72 plus this branch |
+| reflect-cpp left in inbox and reporting sources, outside tests | none | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.inbox projects/ores.reporting= | 2e42042c72 plus this branch |
 
 * Notes
+
+** Reporting's wait was not needed
+
+The reporting task left =engine_settings_apply_workflow.hpp= writing
+=apply_step_command= with reflect-cpp because inbox had not moved. The command
+already stated its wire fields, so the write could have moved then. It moves
+here, and reporting has no reflect-cpp outside its tests.
 
 * Test Scenarios
 
@@ -86,3 +99,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ores.inbox encodes and decodes without reflect-cpp. Its 20 models use the
+generated codec, and its hand-written sweep payload and apply step command go
+through it. Reporting's last reflect-cpp write moved with it. The bytes match
+reflect-cpp's.

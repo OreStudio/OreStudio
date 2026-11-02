@@ -690,4 +690,18 @@ TEST_CASE("a_curve_entry_holds_only_the_parts_its_construction_has",
         changed.commodity_curve_bases.push_back(p);
         refused(changed, "its construction does not have");
     }
+
+    const auto untyped = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <DefaultCurves>
+    <DefaultCurve>
+      <CurveId>CPTY_B_SR_EUR</CurveId>
+      <CurveDescription>No type</CurveDescription>
+      <Currency>EUR</Currency>
+      <DayCounter>A360</DayCounter>
+    </DefaultCurve>
+  </DefaultCurves>
+</CurveConfiguration>)");
+    CHECK_THROWS_WITH(
+        curve_configuration_projection::map(untyped),
+        Catch::Matchers::ContainsSubstring("states neither a Type nor Configurations"));
 }

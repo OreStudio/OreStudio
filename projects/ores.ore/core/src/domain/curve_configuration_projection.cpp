@@ -1205,11 +1205,15 @@ void import_default_curve(ores::refdata::messaging::curve_configuration_document
 
     auto r = add(0);
     r.is_inline = true;
+    // The schema leaves an inline Type optional only because the Configurations
+    // list may state the types instead; a curve with neither has no construction.
     r.default_curve_type = v.spelling("Type");
+    if (!r.default_curve_type)
+        throw refusal("default curve " + d.curve_id + " states neither a Type nor Configurations");
     r.day_counter = v.spelling("DayCounter");
     import_configuration_settings(r, v);
     import_configuration_lists(out, d, r, v);
-    import_default_curve_parts(ctx, r.id, r.default_curve_type.value_or(""), v);
+    import_default_curve_parts(ctx, r.id, *r.default_curve_type, v);
     out.default_curve_configurations.push_back(std::move(r));
 }
 

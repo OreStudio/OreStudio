@@ -215,6 +215,11 @@ via its "Verifies task" field.
 | 2 | The document service saves and reads no commodity curve rows, so a stored document loses its commodity curves' settings and its export fails. Found by the live check; main has the same gap. | =curve_configuration_document_service.cpp= | Decline here | Not this task's split. Captured as =carry_commodity_curves_through_the_curve_configuration_document=. |
 | 3 | No service serves =refdata.v1.ops.begin_bundle_import=, so =ore import-run= fails on any run with a conventions file. Found by the live check; main has the same gap. | =ores.refdata= messaging | Decline here | Not this task's split. Captured as =serve_the_conventions_bundle_import=. The live check ran without a conventions file. |
 | 4 | misspell-fixer on the branch's changed files. | all | Clean | Exit 0. |
+| 5 | PR #4398 round 1: an inline default curve with no Type is refused as type '' not modelled. | =curve_configuration_projection.cpp= | Accept | The refusal stays: with neither a Type nor Configurations a curve has no construction. Its message now says so, and the new test checks it. |
+| 6 | Round 1: an empty PriceSegments element would not round trip. | =curve_configuration_projection.cpp= | Decline | The schema requires at least one PriceSegment, and the reader validates against it. |
+| 7 | Round 1: test a commodity curve with both BasisConfiguration and BasePriceCurve. | tests | Decline | The four constructions are an xs:choice, so the reader refuses such a document before the projection sees it. |
+| 8 | Round 1: a helper for the five has-gated takes in the default curve export. | =curve_configuration_projection.cpp= | Decline | Five one-line conditions read plainly; a helper adds a layer for no gain. |
+| 9 | Round 1: test a BasisConfiguration missing BasisConventions. | tests | Decline | The schema requires it and the reader validates against the schema; the first run of the new test showed that check refusing a basis with no BasisQuotes. |
 
 * Result
 

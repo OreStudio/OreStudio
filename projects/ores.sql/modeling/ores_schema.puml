@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-677 tables in 21 groups.
+681 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -127,7 +127,9 @@ entity "refdata" as refdata {
   ores_refdata_crm_driver_pairs_tbl
   ores_refdata_crm_enabled_derived_pairs_tbl
   ores_refdata_crm_topology_configs_tbl
-  ores_refdata_cross_currency_basis_conventions_tbl
+  ores_refdata_cross_currency_basis_flat_legs_tbl
+  ores_refdata_cross_currency_basis_spread_legs_tbl
+  ores_refdata_cross_currency_basis_swap_terms_tbl
   ores_refdata_cross_currency_fix_float_fixed_legs_tbl
   ores_refdata_cross_currency_fix_float_float_legs_tbl
   ores_refdata_cross_currency_fix_float_swap_terms_tbl
@@ -260,7 +262,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-185 tables — ores_schema.refdata.puml
+187 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -304,7 +306,9 @@ entity "dq_staging" as dq_staging {
   ores_dq_counterparty_identifiers_artefact_tbl
   ores_dq_countries_artefact_tbl
   ores_dq_crm_topology_configs_artefact_tbl
-  ores_dq_cross_currency_basis_conventions_artefact_tbl
+  ores_dq_cross_currency_basis_flat_legs_artefact_tbl
+  ores_dq_cross_currency_basis_spread_legs_artefact_tbl
+  ores_dq_cross_currency_basis_swap_terms_artefact_tbl
   ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl
   ores_dq_cross_currency_fix_float_float_legs_artefact_tbl
   ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl
@@ -414,7 +418,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-147 tables — ores_schema.dq_staging.puml
+149 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {

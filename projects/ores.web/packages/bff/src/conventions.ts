@@ -32,6 +32,7 @@ import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/repo
 import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
 import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
 import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
+import { subjects as crossCurrencyBasisConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/cross_currency_basis_convention_protocol';
 import { subjects as crossCurrencyFixFloatConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/cross_currency_fix_float_convention_protocol';
 import { subjects as tenorBasisSwapConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_basis_swap_convention_protocol';
 import { subjects as dayCountSubjects } from '@ores/wire-protocol/generated/refdata/protocol/day_count_fraction_type_protocol';
@@ -76,7 +77,7 @@ export interface ConventionFamily {
 /**
  * A family whose entity is a composite: one central convention row plus the
  * part entities it carries, which are mutually exclusive for a tenor basis
- * swap and all present for a cross-currency fix-float swap. The family protocol has no
+ * swap and all present for a cross-currency swap. The family protocol has no
  * list, so the central row is listed through the convention entity filtered by
  * its kind. The server therefore keeps the filter, the order, the page and the
  * total, and the family's get_many answers the parts for exactly that page's
@@ -97,6 +98,18 @@ interface CompositeFamily {
 }
 
 const COMPOSITE_FAMILIES: Readonly<Record<string, CompositeFamily>> = {
+    'cross-currency-basis': {
+        entity: 'cross_currency_basis_convention',
+        registryKeys: [
+            'convention',
+            'cross_currency_basis_swap_terms',
+            'cross_currency_basis_flat_leg',
+            'cross_currency_basis_spread_leg',
+        ],
+        kindCode: 'CROSS_CURRENCY_BASIS',
+        getManySubject:
+            crossCurrencyBasisConventionSubjects.get_many_cross_currency_basis_conventions_request,
+    },
     'cross-currency-fix-float': {
         entity: 'cross_currency_fix_float_convention',
         registryKeys: [

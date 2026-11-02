@@ -812,9 +812,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::average_ois_conventions:delete',           'Delete averaging OIS conventions');
 
     -- Cross-currency basis conventions permissions
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_conventions:read',    'View cross-currency basis conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_conventions:write',   'Create and modify cross-currency basis conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_conventions:delete',  'Delete cross-currency basis conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_flat_legs:read', 'View cross-currency basis flat legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_flat_legs:write', 'Create and modify cross-currency basis flat legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_flat_legs:delete', 'Delete cross-currency basis flat legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_spread_legs:read', 'View cross-currency basis spread legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_spread_legs:write', 'Create and modify cross-currency basis spread legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_spread_legs:delete', 'Delete cross-currency basis spread legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_swap_terms:read', 'View cross-currency basis swap terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_swap_terms:write', 'Create and modify cross-currency basis swap terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_swap_terms:delete', 'Delete cross-currency basis swap terms');
 
     -- Two-tenor basis swap conventions permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_basis_two_swap_conventions:read',     'View two-tenor basis swap conventions');

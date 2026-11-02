@@ -126,10 +126,20 @@ before insert or update of name
 on ores_refdata_conventions_tbl
 for each row execute function ores_refdata_validate_convention_terms_fn('convention');
 
-create or replace trigger ores_refdata_cross_currency_basis_conventions_terms_trg
-before insert or update of eom, flat_fixing_days, flat_include_spread, flat_index, flat_index_is_resettable, flat_is_averaged, flat_lookback, flat_observation_shift, flat_payment_lag, flat_rate_cutoff, flat_tenor, id, is_resettable, roll_convention, settlement_calendar, settlement_days, spread_fixing_days, spread_include_spread, spread_index, spread_is_averaged, spread_lookback, spread_observation_shift, spread_payment_lag, spread_rate_cutoff, spread_tenor
-on ores_refdata_cross_currency_basis_conventions_tbl
-for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_basis_convention');
+create or replace trigger ores_refdata_cross_currency_basis_flat_legs_terms_trg
+before insert or update of flat_fixing_days, flat_include_spread, flat_index, flat_index_is_resettable, flat_is_averaged, flat_lookback, flat_observation_shift, flat_payment_lag, flat_rate_cutoff, flat_tenor
+on ores_refdata_cross_currency_basis_flat_legs_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_basis_flat_leg');
+
+create or replace trigger ores_refdata_cross_currency_basis_spread_legs_terms_trg
+before insert or update of spread_fixing_days, spread_include_spread, spread_index, spread_is_averaged, spread_lookback, spread_observation_shift, spread_payment_lag, spread_rate_cutoff, spread_tenor
+on ores_refdata_cross_currency_basis_spread_legs_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_basis_spread_leg');
+
+create or replace trigger ores_refdata_cross_currency_basis_swap_terms_terms_trg
+before insert or update of eom, is_resettable, roll_convention, settlement_calendar, settlement_days
+on ores_refdata_cross_currency_basis_swap_terms_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_basis_swap_terms');
 
 create or replace trigger ores_refdata_cross_currency_fix_float_fixed_legs_terms_trg
 before insert or update of fixed_convention, fixed_currency, fixed_day_count_fraction, fixed_frequency

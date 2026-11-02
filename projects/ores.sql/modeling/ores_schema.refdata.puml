@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 185
+Tables: 187
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2041,37 +2041,23 @@ package "refdata" #FFF3E0 {
     topologies and never share an engine.
     end note
 
-    entity ores_refdata_cross_currency_basis_conventions_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_cross_currency_basis_flat_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : text <<PK>>
+        * id : uuid <<PK>>
         * party_id : uuid <<PK, FK>>
         --
         * version : integer
-        * settlement_days : integer
-          settlement_calendar : text
-        * roll_convention : text
+        * convention_id : uuid <<FK>>
         * flat_index : text
-        * spread_index : text
-          eom : boolean
-          is_resettable : boolean
           flat_index_is_resettable : boolean
           flat_tenor : text
-          spread_tenor : text
-          spread_payment_lag : integer
           flat_payment_lag : integer
-          spread_include_spread : boolean
-          spread_lookback : text
-          spread_fixing_days : integer
-          spread_rate_cutoff : integer
-          spread_is_averaged : boolean
-          spread_observation_shift : boolean
           flat_include_spread : boolean
           flat_lookback : text
           flat_fixing_days : integer
           flat_rate_cutoff : integer
           flat_is_averaged : boolean
           flat_observation_shift : boolean
-          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2080,16 +2066,92 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_cross_currency_basis_conventions_tbl
+    note right of ores_refdata_cross_currency_basis_flat_legs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Cross-Currency Basis Convention Table
-    Describes how ORE builds both legs of a cross-currency basis swap: the two
-    indices, their tenors, their payment lags and their fixing and cutoff rules, and
-    whether the spread is included in a leg's coupons. Corresponds to the
-    <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural
-    key (ORE <Id> element).
+    Cross Currency Basis Flat Leg Table
+    The leg of a cross-currency basis swap that pays its index flat, as ORE's
+    FlatIndex with the Flat* fixing rules: whether the index is resettable,
+    the tenor, the payment lag, whether the spread is included in the coupon, the
+    lookback, the fixing days, the rate cutoff, whether coupons are averaged, and
+    whether the observation is shifted. They are a part because each states how
+    this one leg builds its coupon; the spread leg beside it states its own. Each
+    column keeps the flat_ prefix of ORE's element, because the screen shows
+    both legs of one convention on one row, and the two legs' columns would
+    otherwise share their names.
+    end note
+
+    entity ores_refdata_cross_currency_basis_spread_legs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
+        * spread_index : text
+          spread_tenor : text
+          spread_payment_lag : integer
+          spread_include_spread : boolean
+          spread_lookback : text
+          spread_fixing_days : integer
+          spread_rate_cutoff : integer
+          spread_is_averaged : boolean
+          spread_observation_shift : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_basis_spread_legs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Basis Spread Leg Table
+    The leg of a cross-currency basis swap that pays its index plus the basis
+    spread, as ORE's SpreadIndex with the Spread* fixing rules: the tenor, the
+    payment lag, whether the spread is included in the coupon, the lookback, the
+    fixing days, the rate cutoff, whether coupons are averaged, and whether the
+    observation is shifted. They are a part because each states how this one leg
+    builds its coupon; the flat leg beside it states its own. Each column keeps the
+    spread_ prefix of ORE's element, for the reason the flat leg's columns do.
+    end note
+
+    entity ores_refdata_cross_currency_basis_swap_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
+        * settlement_days : integer
+          settlement_calendar : text
+        * roll_convention : text
+          eom : boolean
+          is_resettable : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_basis_swap_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Basis Swap Terms Table
+    The terms a cross-currency basis swap states once for both legs, as ORE's
+    SettlementDays, SettlementCalendar, RollConvention, EOM and
+    IsResettable. It is a part because its fields hold one invariant: each
+    applies to the whole swap at once, so neither leg can hold it alone. The
+    settlement fields fix the settlement date, the roll convention and the end of
+    month rule roll the schedules of both legs, and the resettable flag resets the
+    notional of the swap. The flat and spread legs beside it hold none of them.
     end note
 
     entity ores_refdata_cross_currency_fix_float_fixed_legs_tbl <<temporal>> #C6F0D8 {
@@ -6617,6 +6679,9 @@ ores_refdata_parties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_driver_pairs_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_enabled_derived_pairs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_basis_flat_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_basis_spread_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_basis_swap_terms_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_fixed_legs_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_float_legs_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_swap_terms_tbl : "has"

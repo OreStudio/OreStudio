@@ -87,7 +87,9 @@
 #include "ores.refdata.service/messaging/crm_driver_pair_event_registrar.hpp"
 #include "ores.refdata.service/messaging/crm_enabled_derived_pair_event_registrar.hpp"
 #include "ores.refdata.service/messaging/crm_topology_config_event_registrar.hpp"
-#include "ores.refdata.service/messaging/cross_currency_basis_convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/cross_currency_basis_flat_leg_event_registrar.hpp"
+#include "ores.refdata.service/messaging/cross_currency_basis_spread_leg_event_registrar.hpp"
+#include "ores.refdata.service/messaging/cross_currency_basis_swap_terms_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cross_currency_fix_float_fixed_leg_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cross_currency_fix_float_float_leg_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cross_currency_fix_float_swap_terms_event_registrar.hpp"
@@ -334,7 +336,11 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
         register_counterparty_identifier_change_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_counterparty_change_event_mapping(event_source, event_bus, nats));
     subs.push_back(
-        register_cross_currency_basis_convention_event_mapping(event_source, event_bus, nats));
+        register_cross_currency_basis_flat_leg_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_cross_currency_basis_spread_leg_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_cross_currency_basis_swap_terms_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_cross_currency_fix_float_fixed_leg_event_mapping(event_source, event_bus, nats));
     subs.push_back(

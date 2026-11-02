@@ -217,8 +217,12 @@
 \ir ./refdata_fx_option_conventions_drop.sql
 \ir ./refdata_average_ois_conventions_notify_trigger_drop.sql
 \ir ./refdata_average_ois_conventions_drop.sql
-\ir ./refdata_cross_currency_basis_conventions_notify_trigger_drop.sql
-\ir ./refdata_cross_currency_basis_conventions_drop.sql
+\ir ./refdata_cross_currency_basis_flat_legs_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_basis_flat_legs_drop.sql
+\ir ./refdata_cross_currency_basis_spread_legs_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_basis_spread_legs_drop.sql
+\ir ./refdata_cross_currency_basis_swap_terms_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_basis_swap_terms_drop.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_notify_trigger_drop.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_drop.sql
 \ir ./refdata_tenor_basis_swap_pay_receives_notify_trigger_drop.sql

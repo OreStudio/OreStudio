@@ -44,7 +44,6 @@ constexpr family_codec family_codecs[] = {
     {"cms_spread_option", &pack_cms_spread_option, &join_cms_spread_option},
     {"commodity_forward", &pack_commodity_forward, &join_commodity_forward},
     {"commodity_future", &pack_commodity_future, &join_commodity_future},
-    {"cross_currency_basis", &pack_cross_currency_basis, &join_cross_currency_basis},
     {"deposit", &pack_deposit, &join_deposit},
     {"fra", &pack_fra, &join_fra},
     {"future", &pack_future, &join_future},
@@ -80,8 +79,7 @@ constexpr bool joined_families_in_registry(std::span<const std::string_view> fam
 constexpr bool codecs_cover_the_registry() {
     std::size_t own_element = 0;
     for (const auto& family : refdata::domain::convention_families) {
-        if (is_tenor_basis_swap_family(family.key) ||
-            is_cross_currency_fix_float_family(family.key))
+        if (is_joined_family(family.key))
             continue;
         ++own_element;
         std::size_t found = 0;
@@ -91,9 +89,10 @@ constexpr bool codecs_cover_the_registry() {
         if (found != 1)
             return false;
     }
-    return joined_families_in_registry(tenor_basis_swap_families) &&
-           joined_families_in_registry(cross_currency_fix_float_families) &&
-           std::size(family_codecs) == own_element;
+    for (const auto& kind : joined_kinds)
+        if (!joined_families_in_registry(kind.families))
+            return false;
+    return std::size(family_codecs) == own_element;
 }
 
 // A family added to the modelling tree has no way to be read from or written
@@ -110,8 +109,8 @@ conventions_package split_conventions(const conventions& v) {
 
     for (const auto& codec : conventions_family::family_codecs)
         codec.pack(root, p.bundle);
-    conventions_family::pack_tenor_basis_swap(root, p.bundle);
-    conventions_family::pack_cross_currency_fix_float(root, p.bundle);
+    for (const auto& kind : conventions_family::joined_kinds)
+        kind.pack(root, p.bundle);
     p.fx = conventions_family::project_fx(root);
     return p;
 }
@@ -122,19 +121,20 @@ conventions join_conventions(const conventions_package& p) {
     conventions r;
     xml::record_writer root(*xg::conventions_document().root, &r);
 
-    std::vector<const conventions_family::package_row*> tenor;
-    std::vector<const conventions_family::package_row*> fix_float;
+    using conventions_family::joined_kinds;
     // The central convention family is shared by every joined kind, so its rows
     // go to each kind's join, and each join keeps the rows of its own kind.
+    std::vector<std::vector<const conventions_family::package_row*>> joined(
+        std::size(joined_kinds));
     for (const auto& row : p.bundle.rows) {
-        const bool is_tenor = conventions_family::is_tenor_basis_swap_family(row.family);
-        const bool is_fix_float =
-            conventions_family::is_cross_currency_fix_float_family(row.family);
-        if (is_tenor)
-            tenor.push_back(&row);
-        if (is_fix_float)
-            fix_float.push_back(&row);
-        if (is_tenor || is_fix_float)
+        bool is_joined = false;
+        for (std::size_t i = 0; i < std::size(joined_kinds); ++i) {
+            if (conventions_family::is_in(joined_kinds[i], row.family)) {
+                joined[i].push_back(&row);
+                is_joined = true;
+            }
+        }
+        if (is_joined)
             continue;
 
         const auto codec =
@@ -146,8 +146,8 @@ conventions join_conventions(const conventions_package& p) {
         codec->join(row, root);
     }
 
-    conventions_family::join_tenor_basis_swap(tenor, root);
-    conventions_family::join_cross_currency_fix_float(fix_float, root);
+    for (std::size_t i = 0; i < std::size(joined_kinds); ++i)
+        joined_kinds[i].join(joined[i], root);
     conventions_family::join_fx(p.fx, root);
     return r;
 }

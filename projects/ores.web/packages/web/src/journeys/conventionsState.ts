@@ -170,6 +170,15 @@ export function specsOf(family: string): readonly TermSpec[] {
  * visiting the part screens. A family with neither spec shows its id.
  */
 const SUMMARY_COLUMNS: Readonly<Record<string, readonly string[]>> = {
+    'cross-currency-basis': [
+        'name',
+        'settlement_days',
+        'settlement_calendar',
+        'flat_index',
+        'flat_tenor',
+        'spread_index',
+        'spread_tenor',
+    ],
     'cross-currency-fix-float': [
         'name',
         'settlement_days',

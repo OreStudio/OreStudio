@@ -87,6 +87,7 @@ READ_ELSEWHERE = {
 
 # The element a kind is written as, where no pack_family call names it.
 ELEMENT_OF = {"TENOR_BASIS_SWAP": "TenorBasisSwap",
+              "CROSS_CURRENCY_BASIS": "CrossCurrencyBasis",
               "CROSS_CURRENCY_FIX_FLOAT": "CrossCurrencyFixFloat",
               "CURRENCY_PAIR": "FX"}
 

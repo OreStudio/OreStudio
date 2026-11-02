@@ -7413,7 +7413,8 @@ def keep_going_args(build_dir, preset):
     cmake --build has no keep-going option of its own, and the two generators
     the presets use spell it differently: ninja takes a failure count, make a
     bare flag. The build directory's cache names its generator. Before the
-    first configure there is no cache, so the preset name decides.
+    first configure there is no cache, so the preset name decides. Any other
+    generator gets no option, because a wrong one fails the build.
     """
     cache = Path(build_dir) / "CMakeCache.txt"
     generator = ""
@@ -7423,10 +7424,14 @@ def keep_going_args(build_dir, preset):
                 generator = line.split("=", 1)[1].strip()
                 break
     if not generator:
-        generator = "Ninja" if "ninja" in preset else "Unix Makefiles"
-    if generator == "Ninja":
+        generator = "Ninja" if "ninja" in preset.lower() else "Unix Makefiles"
+    if generator.startswith("Ninja"):
         return ["--", "-k", "0"]
-    return ["--", "-k"]
+    if generator.endswith("Makefiles"):
+        return ["--", "-k"]
+    print(f"⚠️  --keep-going: no known option for the {generator!r} generator; "
+          f"building without it.")
+    return []
 
 
 def cmd_build(argv):

@@ -34,3 +34,17 @@ def test_the_cache_wins_over_the_preset_name(tmp_path):
 def test_before_the_first_configure_the_preset_name_decides(tmp_path):
     assert keep_going_args(tmp_path, "linux-clang-release-ninja") == ["--", "-k", "0"]
     assert keep_going_args(tmp_path, "linux-clang-release-make") == ["--", "-k"]
+
+
+def test_every_ninja_generator_takes_a_failure_count(tmp_path):
+    assert keep_going_args(_cache(tmp_path, "Ninja Multi-Config"), "x") == ["--", "-k", "0"]
+
+
+def test_an_unknown_generator_gets_no_option(tmp_path):
+    """A guessed option could fail a build that would otherwise run."""
+    assert keep_going_args(_cache(tmp_path, "Xcode"), "x") == []
+
+
+def test_an_unknown_preset_name_before_configure_means_make(tmp_path):
+    assert keep_going_args(tmp_path, "linux-gcc-debug") == ["--", "-k"]
+    assert keep_going_args(tmp_path, "Linux-Clang-Ninja") == ["--", "-k", "0"]

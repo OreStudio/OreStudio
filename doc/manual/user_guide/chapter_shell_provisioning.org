@@ -89,8 +89,10 @@ line a source. It then sends one provision request for the first tenant
 and follows the run to its end.
 
 A new system fetches no public rates until each public source's terms
-are accepted. The acceptance is recorded under the administrator's
-account, with the time the server records it. To leave the terms for the
+are accepted. The shell does not show the terms' text: running the
+command accepts each source's terms as they stand at that moment. The
+acceptance is recorded under the administrator's account, with the time
+the server records it. To leave the terms for the
 administrator to read and accept, add =--no-accept-terms=; accept them
 later on the Public rates screen, or all at once with
 =provider_terms_operations accept-all=.

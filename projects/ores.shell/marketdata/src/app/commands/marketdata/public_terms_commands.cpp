@@ -39,7 +39,8 @@ void public_terms_commands::register_commands(cli::Menu& root_menu, nats_client&
                 [&session](std::ostream& out, std::vector<std::string>) {
                     accept_all(out, session);
                 },
-                "Accept the terms of every provider that states them, as they stand");
+                "Accept the terms of every provider that states them, as they stand, "
+                "without showing their text");
         });
 }
 

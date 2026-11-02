@@ -94,6 +94,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Local review: spelling check over the changed files | | Clean | |
+| 2 | A calibration with no model under its heading is accepted | text_value_reader.cpp | Accepted | Refused: the engine writes the model only when it calibrated one. Tested. |
+| 3 | A quoted value holding a newline would split | text_value_reader.cpp | Declined | ORE writes these values unquoted, as the samples show. |
+| 4 | A malformed double drops only its row | text_value_reader.cpp | Dismissed | Any refusal refuses the whole run in post_process_results, so no row is lost silently. |
+| 5 | Misaligned format arguments | report_execution_handler.cpp | Accepted | clang-format applied. |
+| 6 | Test a model spanning lines with commas and quotes | results_text_value_reader_tests.cpp | Accepted | Added. |
 |   |                 |      |          |       |
 
 * Result

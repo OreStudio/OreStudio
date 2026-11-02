@@ -109,8 +109,14 @@ text_value_read_outcome read_text_values(std::string_view csv, const output_fami
                                                               csv.substr(first_break + 1);
     if (columns->document) {
         const auto document = trimmed_text(body);
-        if (!document.empty())
-            outcome.rows.push_back(text_value_row{.name = std::string(columns->value),
+        // The engine writes the model only when it calibrated one, so a heading
+        // with nothing under it is a file cut short, not an empty result.
+        if (document.empty()) {
+            outcome.refusals.push_back(family.code + " states no " + std::string(columns->value) +
+                                       ".");
+            return outcome;
+        }
+        outcome.rows.push_back(text_value_row{.name = std::string(columns->value),
                                                   .value_type = "xml",
                                                   .value = std::string(document),
                                                   .line = 2});

@@ -92,6 +92,23 @@ TEST_CASE("the calibrated model is one value, the whole document", text_tags) {
     CHECK(outcome.rows[0].value.ends_with("</CrossAssetModel>"));
 }
 
+TEST_CASE("a model that spans lines and holds commas and quotes is one value", text_tags) {
+    const std::string xml = "<CrossAssetModel>\n  <DomesticCcy>EUR</DomesticCcy>\n"
+                            "  <Note text=\"a, b\">c,d</Note>\n</CrossAssetModel>";
+    const auto outcome =
+        read_text_values("#CrossAssetModel\n" + xml + "\n", *family_named("calibration"));
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.rows.size() == 1);
+    CHECK(outcome.rows[0].value == xml);
+}
+
+TEST_CASE("a calibration with no model under its heading is refused", text_tags) {
+    const auto outcome = read_text_values("#CrossAssetModel\n\n", *family_named("calibration"));
+    REQUIRE(outcome.refusals.size() == 1);
+    CHECK(outcome.rows.empty());
+}
+
 TEST_CASE("a double that is not a figure is refused by line", text_tags) {
     const auto outcome = read_text_values("#TradeId,ResultId,ResultType,ResultValue\nT1,npv,double,x\n",
                                           *family_named("additional_results"));

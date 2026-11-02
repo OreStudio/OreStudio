@@ -1041,7 +1041,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         const auto load_text_values = [&] {
             if (output.text_values.empty())
                 return;
-            BOOST_LOG_SEV(lg(), info) << "Loading " << output.text_values.size() << " text value(s)";
+            BOOST_LOG_SEV(lg(), info)
+                << "Loading " << output.text_values.size() << " text value(s)";
             repository::report_text_value_repository repo;
             repo.insert(tenant_ctx, output.text_values);
         };
@@ -1077,8 +1078,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 market_state_note = "Its market state was not stored: " + answer->result.message;
             } else {
                 BOOST_LOG_SEV(lg(), info)
-                    << "Stored " << answer->rows << " market-state value(s) from "
-                    << answer->files << " file(s) for " << req.report_instance_id;
+                    << "Stored " << answer->rows << " market-state value(s) from " << answer->files
+                    << " file(s) for " << req.report_instance_id;
             }
         } catch (const std::exception& e) {
             market_state_note = std::string("Its market state was not stored: ") + e.what();
@@ -1091,13 +1092,13 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         post_process_results_result result;
         result.success = true;
         result.rows_loaded = static_cast<int>(loaded);
-        result.message = std::format(
-            "Loaded {} metrics, {} cashflow figures and {} text values for run {}.{}",
-                                     output.metrics.size(),
-                                     output.cashflows.size(),
-                                     output.text_values.size(),
-                                     req.report_instance_id,
-                                     market_state_note);
+        result.message =
+            std::format("Loaded {} metrics, {} cashflow figures and {} text values for run {}.{}",
+                        output.metrics.size(),
+                        output.cashflows.size(),
+                        output.text_values.size(),
+                        req.report_instance_id,
+                        market_state_note);
 
         BOOST_LOG_SEV(lg(), info) << "post_process_results complete | instance="
                                   << req.report_instance_id << " rows=" << loaded;

@@ -438,7 +438,7 @@ TEST_CASE("a_segment_holds_only_the_parts_its_element_has", "[ore][xml][roundtri
         p.extrapolate_flat = true;
         changed.segment_extrapolations.push_back(p);
         CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
-                          Catch::Matchers::ContainsSubstring("its element does not have"));
+                          Catch::Matchers::ContainsSubstring("its construction does not have"));
     }
     {
         auto changed = mapped;

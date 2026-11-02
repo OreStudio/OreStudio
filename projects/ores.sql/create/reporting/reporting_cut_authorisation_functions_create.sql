@@ -85,7 +85,7 @@ begin
           and dd.tenant_id = d.tenant_id
           and dd.decision_code in ('approve', 'refuse')
           and dd.valid_to = ores_utility_infinity_timestamp_fn()
-        order by dd.decided_at desc
+        order by dd.decided_at desc, dd.id desc
         limit 1) decision on true
     where d.valid_to = ores_utility_infinity_timestamp_fn()
       and d.applied_at is null

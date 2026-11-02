@@ -153,6 +153,13 @@ int cut_authorisation_applier::apply() {
             // decided, so the audit tail of the row names them and not the
             // service that happened to run the reconciliation.
             const auto ctx = ctx_.with_tenant(*tenant, decision.decided_by);
+            if (ctx.service_account().empty()) {
+                // The service account names the system as the writer; falling
+                // back to the decider hides that, so at least say so.
+                BOOST_LOG_SEV(lg(), warn)
+                    << "No service account on the apply context for request "
+                    << decision.request_id << "; the decider is recorded as the applier.";
+            }
             const auto applier = ctx.service_account().empty() ? decision.decided_by
                                                                : ctx.service_account();
 

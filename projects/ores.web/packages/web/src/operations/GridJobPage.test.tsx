@@ -25,7 +25,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type {
     BatchView,
-    GridReportRunView,
+    ReportRunDetailView,
     ResultView,
     WorkunitView,
 } from '@ores/wire-protocol/browser';
@@ -42,7 +42,7 @@ import {
 } from './GridJobPage.js';
 import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
 import { GRID_JOBS_QUERY_KEY } from './GridJobs.js';
-import { REPORT_RUN_QUERY_KEY } from './GridReportRunPage.js';
+import { reportRunKey } from '../reporting/ReportRunPage.js';
 
 /**
  * The job page, as a reader sees it.
@@ -122,7 +122,7 @@ function render(
     runs: readonly ResultView[],
     permissions: readonly string[] = ['storage::objects:read'],
     shownBatch: BatchView = batch,
-    reportRun?: GridReportRunView,
+    reportRun?: ReportRunDetailView,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['my-access'], {
@@ -151,7 +151,7 @@ function render(
         page([wu, workunit({ id: SIBLING_ID, canonical_result_id: null })]),
     );
     if (reportRun !== undefined) {
-        client.setQueryData([REPORT_RUN_QUERY_KEY, reportRun.id], reportRun);
+        client.setQueryData(reportRunKey(reportRun.id), reportRun);
     }
     client.setQueryData([APP_VERSION_QUERY_KEY, APP_VERSION_ID], {
         version: { engine_version: '1.8.17.0', wrapper_version: '1.0.0' },
@@ -186,7 +186,7 @@ describe('the job page', () => {
             report_run_name: 'NPV 2026-10-23 22:07:58',
         });
 
-        expect(html).toContain(`/operations/grid/report-runs/${runId}`);
+        expect(html).toContain(`/reporting/runs/${runId}`);
         expect(html).not.toContain('No report is behind this batch.');
     });
 
@@ -194,7 +194,7 @@ describe('the job page', () => {
         const html = render(workunit(), [run()]);
 
         expect(html).toContain('No report is behind this batch.');
-        expect(html).not.toContain('/operations/grid/report-runs/');
+        expect(html).not.toContain('/reporting/runs/');
     });
 
     it('says a job that ran and failed is done, and warns that a closed batch is not a success', () => {
@@ -341,7 +341,7 @@ describe('the lineage of the job page', () => {
         external_ref: RUN_ID,
         report_run_name: 'NPV 2026-10-23 22:07:58',
     };
-    const reportRun: GridReportRunView = {
+    const reportRun: ReportRunDetailView = {
         id: RUN_ID,
         name: 'NPV 2026-10-23 22:07:58',
         description: '',
@@ -353,11 +353,15 @@ describe('the lineage of the job page', () => {
         state_name: 'completed',
         health: 'completed clean',
         output_message: '',
+        output_storage_key: '',
         started_at: null,
         completed_at: null,
+        duration_ms: null,
+        priced_at: null,
+        price_note: '',
         batch_id: BATCH_ID,
         modified_by: 'scheduler',
-        recorded_at: '2026-10-23 22:07:58.000000Z' as GridReportRunView['recorded_at'],
+        recorded_at: '2026-10-23 22:07:58.000000Z' as ReportRunDetailView['recorded_at'],
     };
 
     it('draws the chain from the report to the job for a batch a report made', () => {
@@ -370,7 +374,7 @@ describe('the lineage of the job page', () => {
         expect(chain.indexOf('Scheduled job')).toBeLessThan(chain.indexOf('>NPV<'));
         expect(chain.indexOf('>NPV<')).toBeLessThan(chain.indexOf('this job'));
         expect(chain).toContain(`/reporting/reports/${DEFINITION_ID}`);
-        expect(chain).toContain(`/operations/grid/report-runs/${RUN_ID}`);
+        expect(chain).toContain(`/reporting/runs/${RUN_ID}`);
     });
 
     it('says the batch names the run only in its External Ref, and counts the siblings', () => {
@@ -394,7 +398,7 @@ describe('the lineage of the job page', () => {
         const html = render(workunit(), [run()], ['storage::objects:read'], reportBatch);
         const chain = html.slice(html.indexOf('>Lineage<'));
 
-        expect(chain).toContain(`/operations/grid/report-runs/${RUN_ID}`);
+        expect(chain).toContain(`/reporting/runs/${RUN_ID}`);
         expect(chain).not.toContain('/reporting/reports/');
     });
 });

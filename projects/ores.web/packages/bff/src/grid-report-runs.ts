@@ -22,10 +22,14 @@
 import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
-    gridReportRunViewSchema,
     readBatches,
     reportHealthWordSchema,
-    type GridReportRunView,
+    reportRunErrorViewSchema,
+    reportRunRowViewSchema,
+    reportRunDetailViewSchema,
+    type ReportRunErrorView,
+    type ReportRunRowView,
+    type ReportRunDetailView,
 } from '@ores/wire-protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
@@ -173,25 +177,17 @@ async function readDefinitionName(
     }
 }
 
+/** The health of one run; a failed read leaves it unknown and does not fail the page. */
 async function readHealth(
     session: LiveSession,
     id: string,
     log: FastifyBaseLogger,
-): Promise<{ health: GridReportRunView['health']; stateName: string }> {
+): Promise<RunHealth> {
     try {
-        const reply = await session.client.callAuthenticated(
-            instanceSubjects.get_report_instance_health_request,
-            { instance_ids: [id] },
-            z.looseObject({ result: resultSchema, health: z.array(row).default([]) }),
-        );
-        const entry = reply.result.outcome === 'ok' ? reply.health[0] : undefined;
-        return {
-            health: reportHealthWordSchema.safeParse(entry?.['health']).data ?? null,
-            stateName: text(entry?.['state_name']),
-        };
+        return (await readRunHealth(session, [id])).get(id) ?? NO_HEALTH;
     } catch (error) {
         log.warn({ err: error }, 'The health of the report run could not be read');
-        return { health: null, stateName: '' };
+        return NO_HEALTH;
     }
 }
 
@@ -201,7 +197,7 @@ async function readHealth(
  * The search matches text, so the page of 5 is narrowed by an exact match. A run id is
  * a uuid, so a second batch that merely contains it is not expected.
  */
-async function readBatchId(
+export async function readBatchId(
     session: LiveSession,
     id: string,
     log: FastifyBaseLogger,
@@ -234,7 +230,7 @@ const nullableText = (value: unknown): string | null => {
 async function readRunsOfDefinition(
     session: LiveSession,
     definitionId: string,
-): Promise<readonly Record<string, unknown>[]> {
+): Promise<readonly ReportRunRowView[]> {
     const reply = await session.client.callAuthenticated(
         instanceSubjects.list_report_instances_request,
         {
@@ -260,25 +256,41 @@ async function readRunsOfDefinition(
     const runs = [...reply.instances].sort((left, right) =>
         text(right['started_at']).localeCompare(text(left['started_at'])),
     );
-    const states = await readRunStates(
+    const health = await readRunHealth(
         session,
         runs.map((run) => text(run['id'])),
     );
-    return runs.map((run) => ({
-        id: text(run['id']),
-        name: text(run['name']),
-        state_name: states.get(text(run['id'])) ?? '',
-        started_at: text(run['started_at']),
-        completed_at: text(run['completed_at']),
-        priced_at: text(run['priced_at']),
-    }));
+    return runs.map((run) => {
+        const id = text(run['id']);
+        const started = nullableText(run['started_at']);
+        const completed = nullableText(run['completed_at']);
+        const word = health.get(id) ?? NO_HEALTH;
+        return reportRunRowViewSchema.parse({
+            id,
+            name: text(run['name']),
+            state_name: word.stateName,
+            health: word.health,
+            started_at: started,
+            completed_at: completed,
+            duration_ms: durationMs(started, completed),
+            priced_at: nullableText(run['priced_at']),
+        });
+    });
 }
 
-/** The state name each run reached, for the runs whose health could be read. */
-export async function readRunStates(
+/** The health word a run's state reads as, and the state's own name. */
+interface RunHealth {
+    readonly health: ReportRunDetailView['health'];
+    readonly stateName: string;
+}
+
+const NO_HEALTH: RunHealth = { health: null, stateName: '' };
+
+/** The health of each run, for the runs whose health could be read. */
+async function readRunHealth(
     session: LiveSession,
     instanceIds: readonly string[],
-): Promise<ReadonlyMap<string, string>> {
+): Promise<ReadonlyMap<string, RunHealth>> {
     if (instanceIds.length === 0) {
         return new Map();
     }
@@ -291,8 +303,43 @@ export async function readRunStates(
         return new Map();
     }
     return new Map(
-        reply.health.map((entry) => [text(entry['report_instance_id']), text(entry['state_name'])]),
+        reply.health.map((entry) => [
+            text(entry['report_instance_id']),
+            {
+                health: reportHealthWordSchema.safeParse(entry['health']).data ?? null,
+                stateName: text(entry['state_name']),
+            },
+        ]),
     );
+}
+
+/** The state name each run reached, for the runs whose health could be read. */
+export async function readRunStates(
+    session: LiveSession,
+    instanceIds: readonly string[],
+): Promise<ReadonlyMap<string, string>> {
+    const health = await readRunHealth(session, instanceIds);
+    return new Map([...health].map(([id, word]) => [id, word.stateName]));
+}
+
+/** The time from a run's start to its completion, or null until both are known. */
+function durationMs(started: string | null, completed: string | null): number | null {
+    if (started === null || completed === null) {
+        return null;
+    }
+    const elapsed = Date.parse(completed) - Date.parse(started);
+    return Number.isNaN(elapsed) || elapsed < 0 ? null : elapsed;
+}
+
+/**
+ * The one thing a problem names, as a person reads it: the curve a curve failure
+ * is about, otherwise the record the engine named.
+ */
+function aboutOf(entry: Record<string, unknown>): string {
+    if (text(entry['scope_code']) === 'Curve' && text(entry['cause']) !== '') {
+        return text(entry['cause']);
+    }
+    return text(entry['subject_id']) || text(entry['cause']);
 }
 
 /** How many of a report's runs a page asks for. */
@@ -316,7 +363,7 @@ export function registerGridReportRunRoutes(
     /** The runs of one report, newest first, with the state each reached. */
     server.get(
         '/api/reporting/reports/:id/runs',
-        async (request): Promise<{ runs: readonly unknown[] }> => {
+        async (request): Promise<{ runs: readonly ReportRunRowView[] }> => {
             const session = requireSession(request);
             const parsed = idParamsSchema.safeParse(request.params);
             if (!parsed.success) {
@@ -327,9 +374,10 @@ export function registerGridReportRunRoutes(
         },
     );
 
+    /** The problems one run recorded, one row each. */
     server.get(
-        '/api/operations/grid/report-runs/:id/errors',
-        async (request): Promise<{ total: number; errors: readonly unknown[] }> => {
+        '/api/reporting/runs/:id/errors',
+        async (request): Promise<{ total: number; errors: readonly ReportRunErrorView[] }> => {
             const session = requireSession(request);
             const parsed = idParamsSchema.safeParse(request.params);
             if (!parsed.success) {
@@ -356,27 +404,26 @@ export function registerGridReportRunRoutes(
             }
             return {
                 total: reply.total,
-                errors: reply.errors.map((entry) => ({
-                    id: text(entry['id']),
-                    scope: text(entry['scope_code']),
-                    severity: text(entry['severity']),
-                    message: text(entry['message']),
-                    subject: nullableText(entry['subject']),
-                    subject_id: nullableText(entry['subject_id']),
-                    cause: nullableText(entry['cause']),
-                    subject_version:
-                        typeof entry['subject_version'] === 'number'
-                            ? entry['subject_version']
-                            : null,
-                    subject_as_of: nullableText(entry['subject_as_of']),
-                    time: text(entry['event_time']),
-                })),
+                errors: reply.errors.map((entry) =>
+                    reportRunErrorViewSchema.parse({
+                        id: text(entry['id']),
+                        severity: text(entry['severity']),
+                        scope: text(entry['scope_code']),
+                        about: aboutOf(entry),
+                        message: text(entry['message']),
+                        subject: nullableText(entry['subject']),
+                        subject_id: nullableText(entry['subject_id']),
+                        cause: nullableText(entry['cause']),
+                        time: text(entry['event_time']),
+                    }),
+                ),
             };
         },
     );
+    /** One run: what it is, the state it reached, its batch and where its output is. */
     server.get(
-        '/api/operations/grid/report-runs/:id',
-        async (request): Promise<GridReportRunView> => {
+        '/api/reporting/runs/:id',
+        async (request): Promise<ReportRunDetailView> => {
             const session = requireSession(request);
             const parsed = idParamsSchema.safeParse(request.params);
             if (!parsed.success) {
@@ -392,7 +439,9 @@ export function registerGridReportRunRoutes(
                 readBatchId(session, id, request.log),
                 readDefinitionName(session, text(run['definition_id']), request.log),
             ]);
-            return gridReportRunViewSchema.parse({
+            const started = nullableText(run['started_at']);
+            const completed = nullableText(run['completed_at']);
+            return reportRunDetailViewSchema.parse({
                 id: text(run['id']),
                 name: text(run['name']),
                 description: text(run['description']),
@@ -406,8 +455,10 @@ export function registerGridReportRunRoutes(
                 state_name: health.stateName,
                 health: health.health,
                 output_message: text(run['output_message']),
-                started_at: nullableText(run['started_at']),
-                completed_at: nullableText(run['completed_at']),
+                output_storage_key: text(run['output_storage_key']),
+                started_at: started,
+                completed_at: completed,
+                duration_ms: durationMs(started, completed),
                 priced_at: nullableText(run['priced_at']),
                 price_note: text(run['price_note']),
                 batch_id: batchId,

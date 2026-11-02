@@ -30,10 +30,13 @@ import {
     type ResultReason,
     type RunResultRow,
 } from '../api/client.js';
+import type { ReportRunErrorView } from '@ores/wire-protocol/browser';
+import { ReadFailure } from '../operations/GridJobs.js';
+import { useRunErrors } from './RunErrorsTable.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Donut, bookSharesOf, problemsOf, type Share } from './Donut.js';
 import { bookPath, counterpartyPath, tradePath } from '../shell/paths.js';
-import { asFigure, toAggregateRows, toErrors, toTradeRows, type RunError } from './resultsModel.js';
+import { asFigure, toAggregateRows, toTradeRows } from './resultsModel.js';
 
 /**
  * What a run produced, read at the level the reader asks for.
@@ -80,29 +83,23 @@ export function RunResultsPanel({
         queryFn: () => api.reportRuns(definitionId),
         meta: { quiet: true },
     });
-    const errors = useQuery({
-        queryKey: ['reporting-run-errors', runId],
-        queryFn: () => api.gridReportRunErrors(runId),
-        meta: { quiet: true },
-    });
+    const errors = useRunErrors(runId);
     const errorsOf = useMemo(() => {
-        const byTrade = new Map<string, RunError[]>();
-        for (const error of toErrors(errors.data ?? []).rows) {
-            if (error.scope !== 'Trade' || error.subjectId === '') {
+        const byTrade = new Map<string, ReportRunErrorView[]>();
+        for (const error of errors.data ?? []) {
+            const trade = error.subject_id ?? '';
+            if (error.scope !== 'Trade' || trade === '') {
                 continue;
             }
-            byTrade.set(error.subjectId, [...(byTrade.get(error.subjectId) ?? []), error]);
+            byTrade.set(trade, [...(byTrade.get(trade) ?? []), error]);
         }
         return byTrade;
     }, [errors.data]);
     const [selected, setSelected] = useState('');
 
-    const text = (value: unknown): string => (typeof value === 'string' ? value : '');
     const candidates = (otherRuns.data ?? [])
-        .map((entry) => entry as Record<string, unknown>)
-        .filter((entry) => text(entry['state_name']) === 'completed')
-        .filter((entry) => text(entry['id']) !== runId)
-        .map((entry) => ({ id: text(entry['id']), name: text(entry['name']) }));
+        .filter((entry) => entry.state_name === 'completed' && entry.id !== runId)
+        .map((entry) => ({ id: entry.id, name: entry.name }));
     const chooseBaseline = (next: string): void => {
         const params = new URLSearchParams(search);
         if (next === '') {
@@ -173,7 +170,7 @@ export function RunResultsPanel({
         })),
     );
     const problems: readonly Share[] = problemsOf(
-        toErrors(errors.data ?? []).rows,
+        errors.data ?? [],
         t(`${field}.unscoped`),
         t(`${field}.otherScopes`),
     );
@@ -230,7 +227,9 @@ export function RunResultsPanel({
                 </select>
             </label>
             {results.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
-            {results.isError && <p className="text-sm text-down">{t(`${field}.failed`)}</p>}
+            {results.isError && (
+                <ReadFailure error={results.error} onRetry={() => void results.refetch()} />
+            )}
             {results.isSuccess && !errors.isPending && problems.length > 0 && (
                 <Donut
                     title={t(`${field}.problemsTitle`)}
@@ -389,7 +388,7 @@ function TradeTable({
     onSelect,
 }: {
     readonly rows: readonly RunResultRow[];
-    readonly errorsOf: ReadonlyMap<string, readonly RunError[]>;
+    readonly errorsOf: ReadonlyMap<string, readonly ReportRunErrorView[]>;
     readonly selected: string;
     readonly onSelect: (id: string) => void;
 }): ReactNode {
@@ -638,7 +637,7 @@ function TradeResult({
     errors,
 }: {
     readonly row: RunResultRow | undefined;
-    readonly errors: readonly RunError[];
+    readonly errors: readonly ReportRunErrorView[];
 }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.results';
@@ -703,12 +702,12 @@ function TradeResult({
                 ) : (
                     <ul className="space-y-1">
                         {errors.map((error) => (
-                            <li key={error.message} className="text-sm">
+                            <li key={error.id} className="text-sm">
                                 <span className="mr-2 rounded border border-line px-1 text-xs text-down">
                                     {error.severity}
                                 </span>
                                 {error.message}
-                                {error.cause === '' ? '' : ` (${error.cause})`}
+                                {error.cause === null || error.cause === '' ? '' : ` (${error.cause})`}
                             </li>
                         ))}
                     </ul>

@@ -278,8 +278,18 @@ export type {
 } from './grid-app-versions.js';
 
 // The report run behind a batch, as the report run page reads it.
-export { gridReportRunViewSchema } from './grid-report-runs.js';
-export type { GridReportRunView } from './grid-report-runs.js';
+export {
+    reportRunDetailViewSchema,
+    reportRunErrorViewSchema,
+    reportRunFileViewSchema,
+    reportRunRowViewSchema,
+} from './report-runs.js';
+export type {
+    ReportRunDetailView,
+    ReportRunErrorView,
+    ReportRunFileView,
+    ReportRunRowView,
+} from './report-runs.js';
 
 // The message bus the operations screen reads, as the BFF serves it: the NATS
 // server samples and one row per stream, each the newest sample of the range.

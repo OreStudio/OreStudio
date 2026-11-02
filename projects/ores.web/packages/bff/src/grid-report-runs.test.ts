@@ -186,10 +186,10 @@ async function get(mode: SessionMode, url: string, answers: Answers = ANSWERS) {
     return { response, calls };
 }
 
-const URL_OF_RUN = `/api/operations/grid/report-runs/${RUN}`;
+const URL_OF_RUN = `/api/reporting/runs/${RUN}`;
 const URL_OF_ERRORS = `${URL_OF_RUN}/errors`;
 
-describe('GET /api/operations/grid/report-runs/:id', () => {
+describe('GET /api/reporting/runs/:id', () => {
     it('serves the run with its health word and the batch that names it', async () => {
         const { response, calls } = await get('application', URL_OF_RUN);
 
@@ -256,7 +256,7 @@ describe('GET /api/operations/grid/report-runs/:id', () => {
     it('refuses an id that is not a uuid before any call goes out', async () => {
         const { response, calls } = await get(
             'application',
-            '/api/operations/grid/report-runs/nope',
+            '/api/reporting/runs/nope',
         );
 
         expect(response.statusCode).toBe(400);
@@ -264,7 +264,7 @@ describe('GET /api/operations/grid/report-runs/:id', () => {
     });
 });
 
-describe('GET /api/operations/grid/report-runs/:id/errors', () => {
+describe('GET /api/reporting/runs/:id/errors', () => {
     const ERROR = 'e0000000-0000-4000-8000-000000000001';
 
     it('serves the errors the run recorded, with the subject a screen links by', async () => {
@@ -297,14 +297,44 @@ describe('GET /api/operations/grid/report-runs/:id/errors', () => {
                     id: ERROR,
                     scope: 'Trade',
                     severity: 'error',
+                    about: '28e6d1c3-b0aa-55fa-9c14-142e3e34092e',
+                    message: 'Cannot build all required curves!',
                     subject: 'trade',
                     subject_id: '28e6d1c3-b0aa-55fa-9c14-142e3e34092e',
-                    subject_version: 3,
-                    subject_as_of: '2026-05-05 00:00:00.000000Z',
                 },
             ],
         });
         expect(calls[0]?.body).toMatchObject({ report_instance_id: RUN, limit: 500 });
+    });
+
+    it('names the curve a curve problem is about, one row per problem', async () => {
+        const curve = (id: string, message: string) => ({
+            id,
+            scope_code: 'Curve',
+            severity: 'error',
+            message,
+            subject: null,
+            subject_id: null,
+            cause: 'Yield/USD/USD1D',
+            event_time: '2026-10-25 09:51:53.527119Z',
+        });
+        const { response } = await get('application', URL_OF_ERRORS, {
+            ...ANSWERS,
+            'reporting.v1.report_error_events.list_by_report_instance_id': {
+                result: OK,
+                total: 2,
+                errors: [
+                    curve(ERROR, 'Failed to build curve.'),
+                    { ...curve('e0000000-0000-4000-8000-000000000002', 'Skipping Failed trade.'), scope_code: 'Analytics', cause: null },
+                ],
+            },
+        });
+
+        const errors = response.json<{ errors: { scope: string; about: string }[] }>().errors;
+        expect(errors).toEqual([
+            expect.objectContaining({ scope: 'Curve', about: 'Yield/USD/USD1D' }),
+            expect.objectContaining({ scope: 'Analytics', about: '' }),
+        ]);
     });
 
     it('passes a refusal through rather than calling it a bad request', async () => {

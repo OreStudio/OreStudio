@@ -28,7 +28,6 @@ import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/ref
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { NO_ORDER, readAll, refusal, resultSchema, row, text } from './refdata-calls.js';
-import { fetchStored } from './grid-downloads.js';
 import { readRun, readRunStates as readStates } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';
 
@@ -877,34 +876,6 @@ export function registerGridReportResultsRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
-    /** One reporting run, with the state it reached. */
-    server.get('/api/reporting/runs/:id', async (request) => {
-        const session = requireSession(request);
-        const parsed = runParamsSchema.safeParse(request.params);
-        if (!parsed.success) {
-            throw invalidRequest('The address names an id that is not a uuid.');
-        }
-        const run = await readRun(session, parsed.data.id);
-        if (run === null) {
-            throw notFound('No report run has this id.');
-        }
-        const states = await readStates(session, [parsed.data.id]);
-        return {
-            id: text(run['id']),
-            name: text(run['name']),
-            party_id: text(run['party_id']),
-            definition_id: text(run['definition_id']),
-            kind: text(run['kind']),
-            state_name: states.get(parsed.data.id) ?? '',
-            started_at: text(run['started_at']),
-            completed_at: text(run['completed_at']),
-            priced_at: text(run['priced_at']),
-            price_note: text(run['price_note']),
-            output_message: text(run['output_message']),
-            output_storage_key: text(run['output_storage_key']),
-        };
-    });
-
     /** The results of one run, at the level the reader asked for. */
     server.get('/api/reporting/runs/:id/results', async (request): Promise<ResultsAnswer> => {
         const session = requireSession(request);
@@ -965,28 +936,5 @@ export function registerGridReportResultsRoutes(
             );
         }
         return answer;
-    });
-
-    /** The output archive of one run, as the run stored it. */
-    server.get('/api/reporting/runs/:id/output', async (request, reply) => {
-        const session = requireSession(request);
-        const parsed = runParamsSchema.safeParse(request.params);
-        if (!parsed.success) {
-            throw invalidRequest('The address names an id that is not a uuid.');
-        }
-        const run = await readRun(session, parsed.data.id);
-        if (run === null) {
-            throw notFound('No report run has this id.');
-        }
-        const key = text(run['output_storage_key']);
-        if (key === '') {
-            throw notFound('This run produced no output.');
-        }
-        const archive = await fetchStored(session, key);
-        return reply
-            .header('Content-Type', 'application/gzip')
-            .header('Content-Disposition', 'attachment; filename="output.tar.gz"')
-            .header('Cache-Control', 'private, no-store')
-            .send(archive);
     });
 }

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 0270159B-73F3-4AC6-93A2-82EB16A82F82
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.feed_selection
 #+description: Codegen operation model for starting and stopping the feeds a person picked, or the feeds a filter matches.

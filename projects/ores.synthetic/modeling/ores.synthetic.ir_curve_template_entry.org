@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 42D13718-A760-4D36-B02F-A54E0161E36C
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.synthetic.ir_curve_template_entry

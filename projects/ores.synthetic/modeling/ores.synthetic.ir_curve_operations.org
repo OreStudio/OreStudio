@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8d59e5dc-164b-402f-92ca-3bf9ccc2a1ff
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.ir_curve_operations
 #+description: Codegen operation model for the IR curve simulation and shape preview.

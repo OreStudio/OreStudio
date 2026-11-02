@@ -25,11 +25,17 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_FEED_CONFIG_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_FEED_CONFIG_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -301,6 +307,397 @@ struct calibrate_response {
     std::vector<calibrated_feed> feeds;
 };
 
+/**
+ * @brief The members of start_feed_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const start_feed_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"config_id", &start_feed_request::config_id},
+    };
 }
+
+/**
+ * @brief The members of start_feed_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const start_feed_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &start_feed_response::success},
+        ::ores::utility::codec::field{"message", &start_feed_response::message},
+    };
+}
+
+/**
+ * @brief The members of stop_feed_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stop_feed_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"config_id", &stop_feed_request::config_id},
+        ::ores::utility::codec::field{"source_name", &stop_feed_request::source_name},
+    };
+}
+
+/**
+ * @brief The members of stop_feed_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stop_feed_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &stop_feed_response::success},
+        ::ores::utility::codec::field{"message", &stop_feed_response::message},
+    };
+}
+
+/**
+ * @brief The members of provider_dispersion, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const provider_dispersion&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"provider_code", &provider_dispersion::provider_code},
+        ::ores::utility::codec::field{"item", &provider_dispersion::item},
+        ::ores::utility::codec::field{"basis_points", &provider_dispersion::basis_points},
+    };
+}
+
+/**
+ * @brief The members of feed_start, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const feed_start&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"from_fixing", &feed_start::from_fixing},
+        ::ores::utility::codec::field{"item", &feed_start::item},
+        ::ores::utility::codec::field{"provider_code", &feed_start::provider_code},
+        ::ores::utility::codec::field{"vendor_id", &feed_start::vendor_id},
+        ::ores::utility::codec::field{"value", &feed_start::value},
+        ::ores::utility::codec::field{"inverted", &feed_start::inverted},
+        ::ores::utility::codec::field{"fixing_date", &feed_start::fixing_date},
+        ::ores::utility::codec::field{"received_at", &feed_start::received_at},
+        ::ores::utility::codec::field{"window_days", &feed_start::window_days},
+        ::ores::utility::codec::field{"used", &feed_start::used},
+        ::ores::utility::codec::field{"hourly_spread", &feed_start::hourly_spread},
+        ::ores::utility::codec::field{"note", &feed_start::note},
+        ::ores::utility::codec::field{"age_days", &feed_start::age_days},
+        ::ores::utility::codec::field{"daily_spread", &feed_start::daily_spread},
+        ::ores::utility::codec::field{"annual_drift", &feed_start::annual_drift},
+        ::ores::utility::codec::field{"min_return", &feed_start::min_return},
+        ::ores::utility::codec::field{"max_return", &feed_start::max_return},
+        ::ores::utility::codec::field{"jumps", &feed_start::jumps},
+        ::ores::utility::codec::field{"dispersion", &feed_start::dispersion},
+    };
+}
+
+/**
+ * @brief The members of running_feed, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const running_feed&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"source_name", &running_feed::source_name},
+        ::ores::utility::codec::field{"start", &running_feed::start},
+    };
+}
+
+/**
+ * @brief The members of list_feeds_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_feeds_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of list_feeds_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_feeds_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &list_feeds_response::success},
+        ::ores::utility::codec::field{"running_feeds", &list_feeds_response::running_feeds},
+    };
+}
+
+/**
+ * @brief The members of calibration_policy_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_policy_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"from_policy_row",
+                                      &calibration_policy_summary::from_policy_row},
+        ::ores::utility::codec::field{"window_days", &calibration_policy_summary::window_days},
+        ::ores::utility::codec::field{"allow_inverse", &calibration_policy_summary::allow_inverse},
+        ::ores::utility::codec::field{"fallback_code", &calibration_policy_summary::fallback_code},
+        ::ores::utility::codec::field{"provider_order",
+                                      &calibration_policy_summary::provider_order},
+    };
+}
+
+/**
+ * @brief The members of candidate_outcome, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const candidate_outcome&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"item", &candidate_outcome::item},
+        ::ores::utility::codec::field{"provider_code", &candidate_outcome::provider_code},
+        ::ores::utility::codec::field{"inverted", &candidate_outcome::inverted},
+        ::ores::utility::codec::field{"rank", &candidate_outcome::rank},
+        ::ores::utility::codec::field{"state", &candidate_outcome::state},
+        ::ores::utility::codec::field{"reason", &candidate_outcome::reason},
+    };
+}
+
+/**
+ * @brief The members of calibrated_feed, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibrated_feed&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"config_id", &calibrated_feed::config_id},
+        ::ores::utility::codec::field{"source_name", &calibrated_feed::source_name},
+        ::ores::utility::codec::field{"base_currency_code", &calibrated_feed::base_currency_code},
+        ::ores::utility::codec::field{"quote_currency_code", &calibrated_feed::quote_currency_code},
+        ::ores::utility::codec::field{"explicit_items", &calibrated_feed::explicit_items},
+        ::ores::utility::codec::field{"window_days_override",
+                                      &calibrated_feed::window_days_override},
+        ::ores::utility::codec::field{"refused", &calibrated_feed::refused},
+        ::ores::utility::codec::field{"start", &calibrated_feed::start},
+        ::ores::utility::codec::field{"candidates", &calibrated_feed::candidates},
+        ::ores::utility::codec::field{"running", &calibrated_feed::running},
+        ::ores::utility::codec::field{"outcome", &calibrated_feed::outcome},
+        ::ores::utility::codec::field{"outcome_message", &calibrated_feed::outcome_message},
+    };
+}
+
+/**
+ * @brief The members of calibrate_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibrate_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"asset_class_code", &calibrate_request::asset_class_code},
+        ::ores::utility::codec::field{"config_id", &calibrate_request::config_id},
+        ::ores::utility::codec::field{"apply", &calibrate_request::apply},
+    };
+}
+
+/**
+ * @brief The members of calibrate_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibrate_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &calibrate_response::success},
+        ::ores::utility::codec::field{"message", &calibrate_response::message},
+        ::ores::utility::codec::field{"policy", &calibrate_response::policy},
+        ::ores::utility::codec::field{"feeds", &calibrate_response::feeds},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::start_feed_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::start_feed_request& v);
+    static ores::synthetic::messaging::start_feed_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::start_feed_request& v);
+    static ores::synthetic::messaging::start_feed_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::start_feed_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::start_feed_response& v);
+    static ores::synthetic::messaging::start_feed_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::start_feed_response& v);
+    static ores::synthetic::messaging::start_feed_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::stop_feed_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::stop_feed_request& v);
+    static ores::synthetic::messaging::stop_feed_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::stop_feed_request& v);
+    static ores::synthetic::messaging::stop_feed_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::stop_feed_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::stop_feed_response& v);
+    static ores::synthetic::messaging::stop_feed_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::stop_feed_response& v);
+    static ores::synthetic::messaging::stop_feed_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::provider_dispersion> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::provider_dispersion& v);
+    static ores::synthetic::messaging::provider_dispersion read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::provider_dispersion& v);
+    static ores::synthetic::messaging::provider_dispersion
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::feed_start> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::feed_start& v);
+    static ores::synthetic::messaging::feed_start read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::feed_start& v);
+    static ores::synthetic::messaging::feed_start read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::running_feed> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::running_feed& v);
+    static ores::synthetic::messaging::running_feed read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::running_feed& v);
+    static ores::synthetic::messaging::running_feed read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::list_feeds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_feeds_request& v);
+    static ores::synthetic::messaging::list_feeds_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::list_feeds_request& v);
+    static ores::synthetic::messaging::list_feeds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::list_feeds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_feeds_response& v);
+    static ores::synthetic::messaging::list_feeds_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::list_feeds_response& v);
+    static ores::synthetic::messaging::list_feeds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_policy_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibration_policy_summary& v);
+    static ores::synthetic::messaging::calibration_policy_summary read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_policy_summary& v);
+    static ores::synthetic::messaging::calibration_policy_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::candidate_outcome> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::candidate_outcome& v);
+    static ores::synthetic::messaging::candidate_outcome read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::candidate_outcome& v);
+    static ores::synthetic::messaging::candidate_outcome
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::calibrated_feed> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibrated_feed& v);
+    static ores::synthetic::messaging::calibrated_feed read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::calibrated_feed& v);
+    static ores::synthetic::messaging::calibrated_feed
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::calibrate_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibrate_request& v);
+    static ores::synthetic::messaging::calibrate_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::calibrate_request& v);
+    static ores::synthetic::messaging::calibrate_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::calibrate_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibrate_response& v);
+    static ores::synthetic::messaging::calibrate_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::calibrate_response& v);
+    static ores::synthetic::messaging::calibrate_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

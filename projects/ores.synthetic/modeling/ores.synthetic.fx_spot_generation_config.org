@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9CCB36D2-D297-478D-8968-41FE16623FBC
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.synthetic.fx_spot_generation_config

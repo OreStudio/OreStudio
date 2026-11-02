@@ -7407,15 +7407,26 @@ def _acquire_build_lock():
         time.sleep(BUILD_LOCK_POLL_INTERVAL)
 
 
+def split_keep_going(value, targets):
+    """Separate -k's optional count from a target argparse handed it.
+
+    -k takes an optional value, so in `-k some_target` the target arrives as
+    the count. A value that is not an ASCII number goes back to the targets.
+    """
+    if value is None or (value.isascii() and value.isdigit()):
+        return value, targets
+    return "0", [value, *targets]
+
+
 def keep_going_args(build_dir, preset, failures=0):
     """The native build tool's keep-going option, after cmake's `--`.
 
     cmake --build has no keep-going option of its own, and the two generators
     the presets use spell it differently: ninja takes a failure count, make a
     bare flag. Ninja stops after that many failures, and 0 means never. The
-    build directory's cache names its generator. Before the
-    first configure there is no cache, so the preset name decides. Any other
-    generator gets no option, because a wrong one fails the build.
+    build directory's cache names its generator. Before the first configure
+    there is no cache, so the preset name decides. Any other generator gets
+    no option, because a wrong one fails the build.
     """
     cache = Path(build_dir) / "CMakeCache.txt"
     generator = ""
@@ -7483,7 +7494,8 @@ def cmd_build(argv):
                     metavar="N",
                     help="Keep building past a failed target, so one run "
                          "reports every failure. Ninja stops after N failures; "
-                         "the default, 0, never stops. Make takes no count. "
+                         "the default, 0, never stops, and 1 is ninja's own "
+                         "stop at the first. Make takes no count. "
                          "Ignored with --direct")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print the command(s) without running them")
@@ -7507,10 +7519,7 @@ def cmd_build(argv):
                          "(about 3s). Only safe when no page has been added, "
                          "renamed or deleted since the last scan.")
     args = ap.parse_args(argv)
-    # -k takes an optional count, so `-k some_target` hands the target to -k.
-    if args.keep_going is not None and not args.keep_going.isdigit():
-        args.targets.insert(0, args.keep_going)
-        args.keep_going = "0"
+    args.keep_going, args.targets = split_keep_going(args.keep_going, args.targets)
     # `status` reads like the other pillars' status verbs; as a target it
     # would start a build, which the worktree lock then refuses.
     if args.targets == ["status"]:

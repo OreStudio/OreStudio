@@ -46,11 +46,17 @@ export interface CurveEntity {
     readonly vector: string;
 }
 
-/** A child element an entry holds, and the column that records its presence. */
+/**
+ * A child element an entry holds, and how the entry records its presence: a
+ * column of the entry's rows, or the rows of an entity the element's
+ * construction writes.
+ */
 export interface CurveBlock {
     readonly element: string;
     /** The column that records whether the entry holds the element, and empty for none. */
     readonly presence: string;
+    /** The entity whose row states the element, and empty for none. */
+    readonly presenceEntity: string;
 }
 
 /** One kind of a collection row, and the leaves the projection reads for it. */
@@ -281,10 +287,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'ParametricSmileConfiguration',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -429,14 +437,17 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'ProxyConfig',
                 presence: '',
+                presenceEntity: 'swaption_proxy_config',
             },
             {
                 element: 'ParametricSmileConfiguration',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -523,6 +534,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -727,18 +739,22 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'ProxyConfig',
                 presence: '',
+                presenceEntity: 'cap_floor_proxy_config',
             },
             {
                 element: 'ParametricSmileConfiguration',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'BootstrapConfig',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -811,10 +827,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Terms',
                 presence: '',
+                presenceEntity: 'cds_volatility_term',
             },
             {
                 element: 'StrikeSurface',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -869,6 +887,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Configurations',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -961,14 +980,17 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Report',
                 presence: 'has_report',
+                presenceEntity: '',
             },
             {
                 element: 'BootstrapConfig',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'Segments',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [
@@ -1503,10 +1525,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Seasonality',
                 presence: 'has_seasonality',
+                presenceEntity: '',
             },
             {
                 element: 'Quotes',
                 presence: 'has_quotes',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -1639,10 +1663,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'BootstrapConfig',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -1729,10 +1755,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'DividendInterpolation',
                 presence: 'has_dividend_interpolation',
+                presenceEntity: '',
             },
             {
                 element: 'Quotes',
                 presence: 'has_quotes',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -1825,10 +1853,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'VolatilityConfig',
                 presence: 'has_volatility_config',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -2026,6 +2056,22 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 entity: 'commodity_curve_config',
                 vector: 'commodity_curves',
             },
+            {
+                entity: 'commodity_curve_cross_currency',
+                vector: 'commodity_curve_cross_currencies',
+            },
+            {
+                entity: 'commodity_curve_interpolation',
+                vector: 'commodity_curve_interpolations',
+            },
+            {
+                entity: 'commodity_curve_direct',
+                vector: 'commodity_curve_directs',
+            },
+            {
+                entity: 'commodity_curve_basis',
+                vector: 'commodity_curve_bases',
+            },
         ],
         parameters: [
             {
@@ -2048,69 +2094,73 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
             {
                 entity: 'commodity_curve_config',
+                column: 'extrapolation',
+                ore: 'Extrapolation',
+                xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/Extrapolation',
+            },
+            {
+                entity: 'commodity_curve_cross_currency',
                 column: 'base_price_curve',
                 ore: 'BasePriceCurve',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/BasePriceCurve',
             },
             {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_cross_currency',
                 column: 'base_yield_curve',
                 ore: 'BaseYieldCurve',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/BaseYieldCurve',
             },
             {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_cross_currency',
                 column: 'yield_curve',
                 ore: 'YieldCurve',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/YieldCurve',
             },
             {
-                entity: 'commodity_curve_config',
-                column: 'spot_quote',
-                ore: 'SpotQuote',
-                xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/SpotQuote',
-            },
-            {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_interpolation',
                 column: 'day_counter',
                 ore: 'DayCounter',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/DayCounter',
             },
             {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_interpolation',
                 column: 'interpolation_method',
                 ore: 'InterpolationMethod',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/InterpolationMethod',
             },
             {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_direct',
+                column: 'spot_quote',
+                ore: 'SpotQuote',
+                xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/SpotQuote',
+            },
+            {
+                entity: 'commodity_curve_direct',
                 column: 'conventions',
                 ore: 'Conventions',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/Conventions',
-            },
-            {
-                entity: 'commodity_curve_config',
-                column: 'extrapolation',
-                ore: 'Extrapolation',
-                xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/Extrapolation',
             },
         ],
         blocks: [
             {
                 element: 'BasisConfiguration',
-                presence: 'has_basis_configuration',
+                presence: '',
+                presenceEntity: 'commodity_curve_basis',
             },
             {
                 element: 'PriceSegments',
-                presence: 'has_price_segments',
+                presence: '',
+                presenceEntity: 'commodity_price_segment',
             },
             {
                 element: 'Quotes',
                 presence: 'has_quotes',
+                presenceEntity: '',
             },
             {
                 element: 'BootstrapConfig',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -2215,10 +2265,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'VolatilityConfig',
                 presence: 'has_volatility_config',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -2410,6 +2462,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'VolatilityConfig',
                 presence: 'has_volatility_config',
+                presenceEntity: '',
             },
         ],
         collections: [],

@@ -525,6 +525,9 @@ function blocksOf(
     wiring: CurveSectionWiring,
 ): readonly CurveBlockView[] {
     return wiring.blocks.map((block) => {
+        if (block.presenceEntity !== '') {
+            return { element: block.element, present: rows.has(block.presenceEntity) };
+        }
         const stated = [...rows.values()].find(
             (row) => block.presence !== '' && row[block.presence] !== undefined,
         );

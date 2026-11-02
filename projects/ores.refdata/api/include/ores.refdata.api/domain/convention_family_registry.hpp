@@ -97,12 +97,36 @@ inline constexpr convention_family_entry convention_families[] = {
      "refdata.v1.commodity_forward_conventions",
      true,
      convention_write_mode::party},
-    {"commodity_future",
-     "commodity_future_convention",
-     "ores::refdata::domain::commodity_future_convention",
-     "refdata.v1.commodity_future_conventions",
+    {"commodity_future_averaging_terms",
+     "commodity_future_averaging_terms",
+     "ores::refdata::domain::commodity_future_averaging_terms",
+     "refdata.v1.commodity_future_averaging_terms",
      true,
-     convention_write_mode::party},
+     convention_write_mode::by_id},
+    {"commodity_future_contract_terms",
+     "commodity_future_contract_terms",
+     "ores::refdata::domain::commodity_future_contract_terms",
+     "refdata.v1.commodity_future_contract_terms",
+     true,
+     convention_write_mode::by_id},
+    {"commodity_future_expiry_anchor",
+     "commodity_future_expiry_anchor",
+     "ores::refdata::domain::commodity_future_expiry_anchor",
+     "refdata.v1.commodity_future_expiry_anchors",
+     true,
+     convention_write_mode::by_id},
+    {"commodity_future_off_peak_index",
+     "commodity_future_off_peak_index",
+     "ores::refdata::domain::commodity_future_off_peak_index",
+     "refdata.v1.commodity_future_off_peak_indexes",
+     true,
+     convention_write_mode::by_id},
+    {"commodity_future_option_expiry",
+     "commodity_future_option_expiry",
+     "ores::refdata::domain::commodity_future_option_expiry",
+     "refdata.v1.commodity_future_option_expiries",
+     true,
+     convention_write_mode::by_id},
     {"convention",
      "convention",
      "ores::refdata::domain::convention",
@@ -260,7 +284,11 @@ enum class convention_family_key : std::size_t {
     cds,
     cms_spread_option,
     commodity_forward,
-    commodity_future,
+    commodity_future_averaging_terms,
+    commodity_future_contract_terms,
+    commodity_future_expiry_anchor,
+    commodity_future_off_peak_index,
+    commodity_future_option_expiry,
     convention,
     cross_currency_basis_flat_leg,
     cross_currency_basis_spread_leg,
@@ -300,8 +328,21 @@ static_assert(
 static_assert(
     convention_families[static_cast<std::size_t>(convention_family_key::commodity_forward)].key ==
     "commodity_forward");
-static_assert(convention_families[static_cast<std::size_t>(convention_family_key::commodity_future)]
-                  .key == "commodity_future");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_averaging_terms)]
+                  .key == "commodity_future_averaging_terms");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_contract_terms)]
+                  .key == "commodity_future_contract_terms");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_expiry_anchor)]
+                  .key == "commodity_future_expiry_anchor");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_off_peak_index)]
+                  .key == "commodity_future_off_peak_index");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_option_expiry)]
+                  .key == "commodity_future_option_expiry");
 static_assert(convention_families[static_cast<std::size_t>(convention_family_key::convention)]
                   .key == "convention");
 static_assert(convention_families[static_cast<std::size_t>(

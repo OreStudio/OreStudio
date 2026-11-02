@@ -53,7 +53,12 @@ using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 /**
- * @brief NATS message handler for commodity future convention operations.
+ * @brief NATS message handler for the composite commodity future convention family.
+ *
+ * The adapter decides nothing: it proves the request, checks the permission the
+ * family needs -- the central row's own read or write code -- decodes the
+ * canonical request, calls the service and replies with the response the
+ * service filled.
  */
 class commodity_future_convention_handler {
 public:
@@ -66,64 +71,7 @@ public:
         , verifier_(std::move(verifier)) {}
 
     /**
-     * @brief Serves refdata.v1.commodity_future_conventions.list.
-     *
-     * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
-     * service and replies with the response the service filled. The outcome
-     * a caller reads -- missing, conflicting, denied -- is the service's
-     * answer, so the two cannot disagree about what happened.
-     */
-    void list_commodity_future_conventions(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            commodity_future_convention_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "refdata::commodity_future_conventions:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<list_commodity_future_conventions_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        service::commodity_future_convention_service svc(req_ctx);
-        try {
-            auto response = svc.list_commodity_future_conventions(*req);
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, response);
-        } catch (const std::exception& e) {
-            // The service reports what it decided in the response; an
-            // exception here is the store failing, which is a different
-            // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            list_commodity_future_conventions_response failure;
-            failure.result.outcome = ores::utility::domain::outcome::failed;
-            failure.result.code = "internal_error";
-            failure.result.message = e.what();
-            reply(nats_, msg, failure);
-        }
-    }
-
-    /**
      * @brief Serves refdata.v1.commodity_future_conventions.get.
-     *
-     * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
-     * service and replies with the response the service filled. The outcome
-     * a caller reads -- missing, conflicting, denied -- is the service's
-     * answer, so the two cannot disagree about what happened.
      */
     void get_commodity_future_convention(ores::nats::message msg) {
         BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
@@ -134,9 +82,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            commodity_future_convention_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "refdata::commodity_future_conventions:read")) {
+        if (!has_permission(req_ctx, "refdata::conventions:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -169,12 +115,6 @@ public:
 
     /**
      * @brief Serves refdata.v1.commodity_future_conventions.get_many.
-     *
-     * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
-     * service and replies with the response the service filled. The outcome
-     * a caller reads -- missing, conflicting, denied -- is the service's
-     * answer, so the two cannot disagree about what happened.
      */
     void get_many_commodity_future_conventions(ores::nats::message msg) {
         BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
@@ -185,9 +125,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            commodity_future_convention_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "refdata::commodity_future_conventions:read")) {
+        if (!has_permission(req_ctx, "refdata::conventions:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -220,12 +158,6 @@ public:
 
     /**
      * @brief Serves refdata.v1.commodity_future_conventions.put.
-     *
-     * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
-     * service and replies with the response the service filled. The outcome
-     * a caller reads -- missing, conflicting, denied -- is the service's
-     * answer, so the two cannot disagree about what happened.
      */
     void put_commodity_future_convention(ores::nats::message msg) {
         BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
@@ -236,9 +168,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            commodity_future_convention_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "refdata::commodity_future_conventions:write")) {
+        if (!has_permission(req_ctx, "refdata::conventions:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -271,12 +201,6 @@ public:
 
     /**
      * @brief Serves refdata.v1.commodity_future_conventions.put_many.
-     *
-     * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
-     * service and replies with the response the service filled. The outcome
-     * a caller reads -- missing, conflicting, denied -- is the service's
-     * answer, so the two cannot disagree about what happened.
      */
     void put_many_commodity_future_conventions(ores::nats::message msg) {
         BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
@@ -287,9 +211,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            commodity_future_convention_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "refdata::commodity_future_conventions:write")) {
+        if (!has_permission(req_ctx, "refdata::conventions:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -313,210 +235,6 @@ public:
             BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_commodity_future_conventions_response failure;
-            failure.result.outcome = ores::utility::domain::outcome::failed;
-            failure.result.code = "internal_error";
-            failure.result.message = e.what();
-            reply(nats_, msg, failure);
-        }
-    }
-
-    /**
-     * @brief Serves refdata.v1.commodity_future_conventions.delete.
-     *
-     * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
-     * service and replies with the response the service filled. The outcome
-     * a caller reads -- missing, conflicting, denied -- is the service's
-     * answer, so the two cannot disagree about what happened.
-     */
-    void delete_commodity_future_convention(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            commodity_future_convention_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "refdata::commodity_future_conventions:delete")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<delete_commodity_future_convention_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        service::commodity_future_convention_service svc(req_ctx);
-        try {
-            auto response = svc.delete_commodity_future_convention(*req);
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, response);
-        } catch (const std::exception& e) {
-            // The service reports what it decided in the response; an
-            // exception here is the store failing, which is a different
-            // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            delete_commodity_future_convention_response failure;
-            failure.result.outcome = ores::utility::domain::outcome::failed;
-            failure.result.code = "internal_error";
-            failure.result.message = e.what();
-            reply(nats_, msg, failure);
-        }
-    }
-
-    /**
-     * @brief Serves refdata.v1.commodity_future_conventions.delete_many.
-     *
-     * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
-     * service and replies with the response the service filled. The outcome
-     * a caller reads -- missing, conflicting, denied -- is the service's
-     * answer, so the two cannot disagree about what happened.
-     */
-    void delete_many_commodity_future_conventions(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            commodity_future_convention_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "refdata::commodity_future_conventions:delete")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<delete_many_commodity_future_conventions_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        service::commodity_future_convention_service svc(req_ctx);
-        try {
-            auto response = svc.delete_many_commodity_future_conventions(*req);
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, response);
-        } catch (const std::exception& e) {
-            // The service reports what it decided in the response; an
-            // exception here is the store failing, which is a different
-            // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            delete_many_commodity_future_conventions_response failure;
-            failure.result.outcome = ores::utility::domain::outcome::failed;
-            failure.result.code = "internal_error";
-            failure.result.message = e.what();
-            reply(nats_, msg, failure);
-        }
-    }
-
-    /**
-     * @brief Serves refdata.v1.commodity_future_conventions_versions.list.
-     *
-     * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
-     * service and replies with the response the service filled. The outcome
-     * a caller reads -- missing, conflicting, denied -- is the service's
-     * answer, so the two cannot disagree about what happened.
-     */
-    void list_commodity_future_convention_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            commodity_future_convention_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "refdata::commodity_future_conventions:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<list_commodity_future_convention_versions_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        service::commodity_future_convention_service svc(req_ctx);
-        try {
-            auto response = svc.list_commodity_future_convention_versions(*req);
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, response);
-        } catch (const std::exception& e) {
-            // The service reports what it decided in the response; an
-            // exception here is the store failing, which is a different
-            // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            list_commodity_future_convention_versions_response failure;
-            failure.result.outcome = ores::utility::domain::outcome::failed;
-            failure.result.code = "internal_error";
-            failure.result.message = e.what();
-            reply(nats_, msg, failure);
-        }
-    }
-
-    /**
-     * @brief Serves refdata.v1.commodity_future_conventions_versions.get.
-     *
-     * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
-     * service and replies with the response the service filled. The outcome
-     * a caller reads -- missing, conflicting, denied -- is the service's
-     * answer, so the two cannot disagree about what happened.
-     */
-    void get_commodity_future_convention_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
-            commodity_future_convention_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "refdata::commodity_future_conventions:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<get_commodity_future_convention_version_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        service::commodity_future_convention_service svc(req_ctx);
-        try {
-            auto response = svc.get_commodity_future_convention_version(*req);
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, response);
-        } catch (const std::exception& e) {
-            // The service reports what it decided in the response; an
-            // exception here is the store failing, which is a different
-            // thing and is reported as such.
-            BOOST_LOG_SEV(commodity_future_convention_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            get_commodity_future_convention_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();

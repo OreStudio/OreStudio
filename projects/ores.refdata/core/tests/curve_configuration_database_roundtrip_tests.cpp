@@ -28,7 +28,7 @@
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
-#include "ores.refdata.core/repository/commodity_future_convention_repository.hpp"
+#include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"
 #include "ores.refdata.core/repository/curve_definition_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_repository.hpp"
@@ -49,6 +49,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 /**
@@ -133,6 +134,25 @@ void write_missing(const ores::database::context& ctx,
     std::vector<Row> missing;
     for (const auto& r : rows)
         if (!held.contains(r.id))
+            missing.push_back(r);
+    if (!missing.empty())
+        repo.write(ctx, missing);
+}
+
+// Writes the central rows of one atomised kind that the tenant does not hold
+// yet, matched by name. The checks that resolve a convention read the central
+// row, so a case that only needs a name to resolve writes no part.
+void write_missing_central(const ores::database::context& ctx,
+                           const std::vector<ores::refdata::domain::convention>& rows,
+                           std::string_view kind) {
+    convention_repository repo;
+    std::set<std::string> held;
+    for (const auto& r : repo.read_latest(ctx))
+        if (r.identity.kind_code == kind)
+            held.insert(r.payload.name);
+    std::vector<ores::refdata::domain::convention> missing;
+    for (const auto& r : rows)
+        if (r.identity.kind_code == kind && !held.contains(r.payload.name))
             missing.push_back(r);
     if (!missing.empty())
         repo.write(ctx, missing);
@@ -337,10 +357,10 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     ores::testing::scoped_database_helper h;
 
     const auto c = load_conventions("external/ore/examples/Products/Input/conventions.xml");
-    write_missing(h.context(),
-                  commodity_future_convention_repository(),
-                  rows_of<ores::refdata::domain::commodity_future_convention>(split_conventions(c),
-                                                                              "commodity_future"));
+    write_missing_central(
+        h.context(),
+        rows_of<ores::refdata::domain::convention>(split_conventions(c), "convention"),
+        "COMMODITY_FUTURE");
 
     const auto full = load_document(products_example);
     curve_document original;

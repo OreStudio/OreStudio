@@ -516,7 +516,7 @@ describe('changing a curve configuration', () => {
         // Every family is named, empty where nothing changed: the service reads
         // the document whole, and writes only the rows it is sent.
         expect(Object.keys(payload.document)).toContain('config');
-        expect(Object.keys(payload.document)).toHaveLength(34);
+        expect(Object.keys(payload.document)).toHaveLength(44);
         const empty = Object.entries(payload.document).filter(
             ([family, rows]) => family !== 'config' && family !== 'yield_curves',
         );

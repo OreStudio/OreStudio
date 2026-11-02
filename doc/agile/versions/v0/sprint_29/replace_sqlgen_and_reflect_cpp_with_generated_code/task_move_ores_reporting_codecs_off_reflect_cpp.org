@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-ores-reporting-codecs-off-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 6 of 7, one component. ores.reporting encodes and decodes without reflect-c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,16 @@ Step 6 of 7, one component. ores.reporting encodes and decodes without reflect-c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Opt the 47 reporting models into the wire codec and regenerate.
+- Move the hand-written sites with a codemod: =rfl::json::read= to
+  =json::try_read=, =rfl::json::write= to =json::write=, and the reflect-cpp
+  includes out where nothing uses them. The dq publish read keeps its error
+  message through a try/catch.
+- Give the hand-written trigger payload, engine settings request and report
+  definition template wire fields.
+- Move the reads that ore and compute left waiting on reporting's codec.
+- Prove every domain type, every operation message and the template against
+  reflect-cpp.
 
 * Measurements
 
@@ -58,9 +65,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reporting suites | api 72 cases, core 243, service 10 and shell reporting 698 pass | the =ores.reporting.*.tests= and =ores.shell.reporting.tests= binaries | b1dcb41541 plus this branch |
+| Codec cases | 3 cases, 568 assertions pass | =ores.reporting.api.tests "[codec]"= | b1dcb41541 plus this branch |
+| Ore and compute suites after their moves | ore core 468, ore service 6 and compute core 81 cases pass | =ores.ore.core.tests=, =ores.ore.service.tests=, =ores.compute.core.tests= | b1dcb41541 plus this branch |
+| Component drift (reporting), format, CMake lists, unity collisions, unique type names | all clean | =check_component_drift.py --component reporting=, and the check scripts | b1dcb41541 plus this branch |
+| reflect-cpp left in reporting sources, outside tests | 1 file | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.reporting= | b1dcb41541 plus this branch |
 
 * Notes
+
+** What keeps reflect-cpp
+
+=engine_settings_apply_workflow.hpp= writes inbox's =apply_step_command= with
+reflect-cpp. Inbox has no codec yet, so the write moves in inbox's own task.
+
+** The reads other components waited on
+
+ore's =report_package_handler.cpp= read =prepare_ore_package_request= and
+wrote its result, and compute's =report_submit_handler.cpp= read
+=submit_compute_request=. Both waited on this codec and move here, so compute
+now has no reflect-cpp outside its tests.
 
 * Test Scenarios
 
@@ -86,3 +109,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ores.reporting encodes and decodes without reflect-cpp, apart from one write of
+inbox's command. Its 47 models use the generated codec, its workflows and
+handlers read and write through it, and its hand-written payloads state their
+wire fields. ore's and compute's reads of reporting's messages moved too. The
+bytes match reflect-cpp's.

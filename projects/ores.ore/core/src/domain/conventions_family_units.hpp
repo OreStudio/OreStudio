@@ -188,8 +188,7 @@ void pack_commodity_future(const xml::record_reader& root,
 
 /// Writes the elements of the rows that belong to the six commodity future
 /// families.
-void join_commodity_future(const std::vector<const package_row*>& rows,
-                           xml::record_writer& root);
+void join_commodity_future(const std::vector<const package_row*>& rows, xml::record_writer& root);
 
 /// The facts of each commodity future the rows hold, keyed as the fix-float
 /// swap's are.
@@ -200,13 +199,12 @@ commodity_future_facts(const refdata::messaging::conventions_bundle& bundle);
 inline constexpr std::string_view commodity_future_kind = "COMMODITY_FUTURE";
 
 /// The families that are one document element, the commodity future.
-inline constexpr std::string_view commodity_future_families[] = {
-    "convention",
-    "commodity_future_averaging_terms",
-    "commodity_future_contract_terms",
-    "commodity_future_expiry_anchor",
-    "commodity_future_off_peak_index",
-    "commodity_future_option_expiry"};
+inline constexpr std::string_view commodity_future_families[] = {"convention",
+                                                                 "commodity_future_averaging_terms",
+                                                                 "commodity_future_contract_terms",
+                                                                 "commodity_future_expiry_anchor",
+                                                                 "commodity_future_off_peak_index",
+                                                                 "commodity_future_option_expiry"};
 
 /// Writes the elements of the rows that belong to the three tenor families.
 void join_tenor_basis_swap(const std::vector<const package_row*>& rows, xml::record_writer& root);

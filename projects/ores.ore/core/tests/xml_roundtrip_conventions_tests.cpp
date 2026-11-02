@@ -575,8 +575,8 @@ TEST_CASE("conventions_commodity_future_round_trips", "[ore][xml][roundtrip][con
             rows_of<rd::commodity_future_expiry_anchor>(mapped, "commodity_future_expiry_anchor");
         const auto option =
             rows_of<rd::commodity_future_option_expiry>(mapped, "commodity_future_option_expiry");
-        const auto off_peak = rows_of<rd::commodity_future_off_peak_index>(
-            mapped, "commodity_future_off_peak_index");
+        const auto off_peak =
+            rows_of<rd::commodity_future_off_peak_index>(mapped, "commodity_future_off_peak_index");
         const auto averaging = rows_of<rd::commodity_future_averaging_terms>(
             mapped, "commodity_future_averaging_terms");
         REQUIRE(centrals.size() == futures.size());

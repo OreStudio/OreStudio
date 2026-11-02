@@ -136,9 +136,9 @@ public:
     static ores::refdata::messaging::commodity_future_convention_item
     map_commodity_future(const xml::record_reader& v);
 
-    static void reverse_commodity_future(
-        const ores::refdata::messaging::commodity_future_convention_item& v,
-        xml::record_writer w);
+    static void
+    reverse_commodity_future(const ores::refdata::messaging::commodity_future_convention_item& v,
+                             xml::record_writer w);
 
     static ores::refdata::messaging::cross_currency_basis_convention_item
     map_cross_currency_basis(const xml::record_reader& v);

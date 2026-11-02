@@ -214,8 +214,7 @@ conventions_mapper::map_commodity_future(const record_reader& v) {
 void conventions_mapper::reverse_commodity_future(
     const ores::refdata::messaging::commodity_future_convention_item& v, record_writer w) {
     if (!v.convention || v.contract_terms.size() != 1 || v.expiry_anchor.size() > 1 ||
-        v.option_expiry.size() > 1 || v.off_peak_index.size() > 1 ||
-        v.averaging_terms.size() > 1)
+        v.option_expiry.size() > 1 || v.off_peak_index.size() > 1 || v.averaging_terms.size() > 1)
         throw std::runtime_error(
             std::format("Commodity future convention \"{}\" needs its central row, one contract "
                         "terms row, and at most one row of each other part.",
@@ -246,11 +245,10 @@ void conventions_mapper::reverse_commodity_future(
                 months.append_spelling("Month", token, "month");
         }
     }
-    if (anchor &&
-        (anchor->anchor_nth_nth || anchor->anchor_day_of_month ||
-         anchor->anchor_calendar_days_before || anchor->anchor_business_days_after ||
-         anchor->anchor_nth_weekday || anchor->anchor_last_weekday ||
-         anchor->anchor_weekly_day_of_the_week)) {
+    if (anchor && (anchor->anchor_nth_nth || anchor->anchor_day_of_month ||
+                   anchor->anchor_calendar_days_before || anchor->anchor_business_days_after ||
+                   anchor->anchor_nth_weekday || anchor->anchor_last_weekday ||
+                   anchor->anchor_weekly_day_of_the_week)) {
         auto a = w.child("AnchorDay");
         if (anchor->anchor_nth_nth || anchor->anchor_nth_weekday) {
             auto nth = a.child("NthWeekday");
@@ -262,13 +260,11 @@ void conventions_mapper::reverse_commodity_future(
                                as_integer(anchor->anchor_calendar_days_before));
         put_enum(a, "LastWeekday", anchor->anchor_last_weekday, "weekday");
         put_enum(a, "WeeklyDayOfTheWeek", anchor->anchor_weekly_day_of_the_week, "weekday");
-        a.set_optional_integer("BusinessDaysAfter",
-                               as_integer(anchor->anchor_business_days_after));
+        a.set_optional_integer("BusinessDaysAfter", as_integer(anchor->anchor_business_days_after));
     }
     if (option) {
         w.set_optional_integer("OptionExpiryMonthLag", as_integer(option->option_expiry_month_lag));
-        put_enum(
-            w, "OptionContractFrequency", option->option_contract_frequency, "frequency type");
+        put_enum(w, "OptionContractFrequency", option->option_contract_frequency, "frequency type");
         w.set_optional_integer("OptionExpiryOffset", as_integer(option->option_expiry_offset));
         w.set_optional_integer("OptionCalendarDaysBefore",
                                as_integer(option->option_calendar_days_before));
@@ -380,8 +376,7 @@ struct commodity_future_parts {
     /// Keeps a part row, or says the family is not a part of this kind.
     bool keep(const package_row& row) {
         if (row.family == "commodity_future_averaging_terms")
-            averaging.push_back(
-                unpack_row<refdata::domain::commodity_future_averaging_terms>(row));
+            averaging.push_back(unpack_row<refdata::domain::commodity_future_averaging_terms>(row));
         else if (row.family == "commodity_future_contract_terms")
             terms.push_back(unpack_row<refdata::domain::commodity_future_contract_terms>(row));
         else if (row.family == "commodity_future_expiry_anchor")
@@ -436,7 +431,9 @@ void join_commodity_future(const std::vector<const package_row*>& rows, record_w
         }
     }
 
-    const auto as_is = [](const auto& part) { return part; };
+    const auto as_is = [](const auto& part) {
+        return part;
+    };
     for (const auto& c : central)
         conventions_mapper::reverse_commodity_future(parts.item_of(c, as_is),
                                                      root.append("CommodityFuture"));

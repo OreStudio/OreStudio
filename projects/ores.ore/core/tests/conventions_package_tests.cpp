@@ -111,11 +111,10 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", "[ore][conve
             count(document, "AverageOIS") + count(document, "BMABasisSwap") +
             count(document, "BondYield") + count(document, "CDS") +
             count(document, "CmsSpreadOption") + count(document, "CommodityForward") +
-            count(document, "Deposit") +
-            count(document, "FRA") + count(document, "Future") + count(document, "FxOption") +
-            count(document, "IborIndex") + count(document, "InflationSwap") +
-            count(document, "IntradayPowerLoad") + count(document, "OIS") +
-            count(document, "OvernightIndex") + count(document, "Swap") +
+            count(document, "Deposit") + count(document, "FRA") + count(document, "Future") +
+            count(document, "FxOption") + count(document, "IborIndex") +
+            count(document, "InflationSwap") + count(document, "IntradayPowerLoad") +
+            count(document, "OIS") + count(document, "OvernightIndex") + count(document, "Swap") +
             count(document, "SwapIndex") + count(document, "TenorBasisTwoSwap") +
             count(document, "Zero") + count(document, "ZeroInflationIndex");
         const std::size_t outside_central_and_parts =
@@ -126,9 +125,8 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", "[ore][conve
             rows_of("cross_currency_fix_float_float_leg") -
             rows_of("cross_currency_basis_swap_terms") - rows_of("cross_currency_basis_flat_leg") -
             rows_of("cross_currency_basis_spread_leg") -
-            rows_of("commodity_future_contract_terms") -
-            rows_of("commodity_future_expiry_anchor") - rows_of("commodity_future_option_expiry") -
-            rows_of("commodity_future_off_peak_index") -
+            rows_of("commodity_future_contract_terms") - rows_of("commodity_future_expiry_anchor") -
+            rows_of("commodity_future_option_expiry") - rows_of("commodity_future_off_peak_index") -
             rows_of("commodity_future_averaging_terms");
         CHECK(outside_central_and_parts == elements);
         ++checked;

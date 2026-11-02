@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/store-a-run-s-figures-in-blocks
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,11 +30,11 @@ It should read a block of rows, write the block, and read the next.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

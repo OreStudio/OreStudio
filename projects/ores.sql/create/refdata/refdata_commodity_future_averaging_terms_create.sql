@@ -22,88 +22,32 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- * Commodity Future Convention Table
+ * Commodity Future Averaging Terms Table
  *
- * Describes how ORE builds a commodity future: when it expires, which contract
- * months it lists, how its expiry anchors to a day of the month or a weekday, and
- * the schedule of the options written on it. Corresponds to the
- * <CommodityFuture> element in ORE conventions.xml. The id field is the natural
- * key (ORE <Id> element).
- *
- * Thirty of the element's thirty-four fields are modelled here, as forty columns,
- * because the element's nested structs are flattened rather than given tables of
- * their own.
- * AnchorDay becomes seven columns, OptionNthWeekday two more, and
- * OffPeakPowerIndexData four. The corpus uses all six of AnchorDay's variants,
- * so flattening it is what lets a commodity future round trip at all.
- *
- * Five files carry the element, in eight hundred and eight elements, and two of
- * them carried nothing else unmodelled when it landed.
- *
- * Four more fields hold lists, and each is written as a text column rather than
- * counted: AveragingData becomes eight columns, and ProhibitedExpiries,
- * FutureContinuationMappings and OptionContinuationMappings become one text
- * column each, holding comma-separated dates and from:to pairs. A column is a
- * weaker home than a table, and it is what keeps the field in the element's
- * round trip rather than excluding the file from it.
+ * How an averaging commodity future averages the prices of its underlying, as
+ * ORE's AveragingData: the commodity it averages, the period, the pricing
+ * calendar, the conventions the averaging follows, whether it counts business
+ * days, the delivery roll days, the future month offset and the daily expiry
+ * offset. It is a part because its fields hold one invariant: each applies only
+ * when the future averages, and ORE requires the commodity, the period, the
+ * calendar and the conventions together, so the part makes those four columns
+ * required. A convention fills this part at most once.
  */
 
-create table if not exists "ores_refdata_commodity_future_conventions_tbl" (
-    "id" text not null,
+create table if not exists "ores_refdata_commodity_future_averaging_terms_tbl" (
+    "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "convention_id" uuid not null,
     "party_id" uuid not null,
-    "contract_frequency" text not null,
-    "calendar" text not null,
-    "expiry_calendar" text null,
-    "expiry_month_lag" integer null,
-    "one_contract_month" text null,
-    "offset_days" integer null,
-    "business_day_convention" text null,
-    "adjust_before_offset" boolean null,
-    "is_averaging" boolean null,
-    "valid_contract_months" text null,
-    "anchor_day_of_month" integer null,
-    "anchor_calendar_days_before" integer null,
-    "anchor_business_days_after" integer null,
-    "anchor_nth_nth" integer null,
-    "anchor_nth_weekday" text null,
-    "anchor_last_weekday" text null,
-    "anchor_weekly_day_of_the_week" text null,
-    "option_expiry_month_lag" integer null,
-    "option_contract_frequency" text null,
-    "option_expiry_offset" integer null,
-    "option_calendar_days_before" integer null,
-    "option_min_business_days_before" integer null,
-    "option_expiry_day" integer null,
-    "option_nth_nth" integer null,
-    "option_nth_weekday" text null,
-    "option_expiry_last_weekday_of_month" text null,
-    "option_expiry_weekly_day_of_the_week" text null,
-    "option_business_day_convention" text null,
-    "hours_per_day" integer null,
-    "off_peak_index" text null,
-    "peak_index" text null,
-    "off_peak_hours" double precision null,
-    "peak_calendar" text null,
-    "index_name" text null,
-    "savings_time" text null,
-    "delivery_location" text null,
-    "balance_of_the_month" boolean null,
-    "balance_of_the_month_pricing_calendar" text null,
-    "option_underlying_future_convention" text null,
-    "averaging_commodity_name" text null,
-    "averaging_period" text null,
-    "averaging_pricing_calendar" text null,
-    "averaging_conventions" text null,
+    "averaging_commodity_name" text not null,
+    "averaging_period" text not null,
+    "averaging_pricing_calendar" text not null,
+    "averaging_conventions" text not null,
     "averaging_use_business_days" boolean null,
     "averaging_delivery_roll_days" integer null,
     "averaging_future_month_offset" integer null,
     "averaging_daily_expiry_offset" integer null,
-    "prohibited_expiries" text null,
-    "future_continuation_mappings" text null,
-    "option_continuation_mappings" text null,
-    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -118,29 +62,45 @@ create table if not exists "ores_refdata_commodity_future_conventions_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '')
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
+-- Unique convention_id for active records
+create unique index if not exists commodity_future_averaging_terms_convention_id_uniq_idx
+on "ores_refdata_commodity_future_averaging_terms_tbl" (tenant_id, convention_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists commodity_future_conventions_version_uniq_idx
-on "ores_refdata_commodity_future_conventions_tbl" (tenant_id, id, party_id, version)
+create unique index if not exists commodity_future_averaging_terms_version_uniq_idx
+on "ores_refdata_commodity_future_averaging_terms_tbl" (tenant_id, id, party_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists commodity_future_conventions_id_uniq_idx
-on "ores_refdata_commodity_future_conventions_tbl" (tenant_id, id, party_id)
+create unique index if not exists commodity_future_averaging_terms_id_uniq_idx
+on "ores_refdata_commodity_future_averaging_terms_tbl" (tenant_id, id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists commodity_future_conventions_tenant_idx
-on "ores_refdata_commodity_future_conventions_tbl" (tenant_id)
+create index if not exists commodity_future_averaging_terms_tenant_idx
+on "ores_refdata_commodity_future_averaging_terms_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_refdata_commodity_future_conventions_insert_fn()
+create or replace function ores_refdata_commodity_future_averaging_terms_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate convention_id (soft FK to ores_refdata_conventions_tbl)
+    if not exists (
+        select 1 from ores_refdata_conventions_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.convention_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid convention_id: %. No active convention found with this id.', NEW.convention_id
+            using errcode = '23503';
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -150,9 +110,24 @@ begin
     -- account row holds it, and a self write retires that row.
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
 
+    -- Bump ores_refdata_conventions_tbl's version alongside this write (composite entity
+    -- versioning — see the "Temporal composite entity versioning"
+    -- architecture doc). The touch function re-validates modified_by
+    -- itself; change_reason_code is passed through as-is since it was
+    -- already validated above.
+    perform ores_refdata_conventions_touch_version_fn(
+        NEW.tenant_id,
+        NEW.convention_id,
+        NEW.change_reason_code,
+        NEW.change_commentary,
+        NEW.modified_by,
+        NEW.performed_by,
+        'commodity_future_averaging_terms'
+    );
+
     -- Version management
     select version into current_version
-    from "ores_refdata_commodity_future_conventions_tbl"
+    from "ores_refdata_commodity_future_averaging_terms_tbl"
     where tenant_id = NEW.tenant_id
       and id = NEW.id and party_id = NEW.party_id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -167,13 +142,13 @@ begin
             if not ores_utility_version_replace_allowed_fn() then
                 perform ores_outcome_raise_fn(
                     'already_exists',
-                    'commodity_future_convention',
+                    'commodity_future_averaging_terms',
                     'id');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
-                'commodity_future_convention',
+                'commodity_future_averaging_terms',
                 'id',
                 NEW.version::text,
                 current_version::text);
@@ -184,7 +159,7 @@ begin
         -- multi-write to this row (e.g. a composite entity's parent
         -- touched twice by two different children in one transaction)
         -- would collide with itself. clock_timestamp() always advances.
-        update "ores_refdata_commodity_future_conventions_tbl"
+        update "ores_refdata_commodity_future_averaging_terms_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id and party_id = NEW.party_id
@@ -202,29 +177,40 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_refdata_commodity_future_conventions_insert_trg
-before insert on "ores_refdata_commodity_future_conventions_tbl"
-for each row execute function ores_refdata_commodity_future_conventions_insert_fn();
+create or replace trigger ores_refdata_commodity_future_averaging_terms_insert_trg
+before insert on "ores_refdata_commodity_future_averaging_terms_tbl"
+for each row execute function ores_refdata_commodity_future_averaging_terms_insert_fn();
 
-create or replace rule ores_refdata_commodity_future_conventions_delete_rule as
-on delete to "ores_refdata_commodity_future_conventions_tbl" do instead (
-    update "ores_refdata_commodity_future_conventions_tbl"
+create or replace rule ores_refdata_commodity_future_averaging_terms_delete_rule as
+on delete to "ores_refdata_commodity_future_averaging_terms_tbl" do instead (
+    update "ores_refdata_commodity_future_averaging_terms_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id and party_id = OLD.party_id
       and valid_to = ores_utility_infinity_timestamp_fn();
+    -- Bump ores_refdata_conventions_tbl's version on delete too (composite entity
+    -- versioning), symmetric with the insert-side call above.
+    select ores_refdata_conventions_touch_version_fn(
+        OLD.tenant_id,
+        OLD.convention_id,
+        OLD.change_reason_code,
+        OLD.change_commentary,
+        OLD.modified_by,
+        OLD.performed_by,
+        'commodity_future_averaging_terms'
+    );
 );
 
 -- =============================================================================
--- Row-level security: tenant isolation for Commodity Future Convention
+-- Row-level security: tenant isolation for Commodity Future Averaging Terms
 -- =============================================================================
-alter table ores_refdata_commodity_future_conventions_tbl enable row level security;
+alter table ores_refdata_commodity_future_averaging_terms_tbl enable row level security;
 
-drop policy if exists commodity_future_conventions_tbl_tenant_isolation_policy
-    on ores_refdata_commodity_future_conventions_tbl;
+drop policy if exists commodity_future_averaging_terms_tbl_tenant_isolation_policy
+    on ores_refdata_commodity_future_averaging_terms_tbl;
 
-create policy commodity_future_conventions_tbl_tenant_isolation_policy
-on ores_refdata_commodity_future_conventions_tbl
+create policy commodity_future_averaging_terms_tbl_tenant_isolation_policy
+on ores_refdata_commodity_future_averaging_terms_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -237,11 +223,11 @@ with check (
 -- party set admits. The visible_party_ids-is-null passthrough applies
 -- for sessions with no party restriction (tenant admins, service
 -- contexts).
-drop policy if exists commodity_future_conventions_tbl_party_isolation_policy
-    on ores_refdata_commodity_future_conventions_tbl;
+drop policy if exists commodity_future_averaging_terms_tbl_party_isolation_policy
+    on ores_refdata_commodity_future_averaging_terms_tbl;
 
-create policy commodity_future_conventions_tbl_party_isolation_policy
-on ores_refdata_commodity_future_conventions_tbl
+create policy commodity_future_averaging_terms_tbl_party_isolation_policy
+on ores_refdata_commodity_future_averaging_terms_tbl
 as restrictive
 for all using (
     ores_iam_visible_party_ids_fn() is null

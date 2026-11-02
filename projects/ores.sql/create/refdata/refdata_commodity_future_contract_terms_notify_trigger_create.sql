@@ -23,13 +23,13 @@
  * To modify, update the template and regenerate.
  */
 
-create or replace function ores_refdata_commodity_future_conventions_notify_fn()
+create or replace function ores_refdata_commodity_future_contract_terms_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
     change_action text;
     changed_version integer := 0;
-    changed_id text;
+    changed_id uuid;
     changed_key jsonb;
     changed_tenant_id text;
     changed_party_id text;
@@ -64,7 +64,7 @@ begin
 
     notification_payload := jsonb_build_object(
         'event_id', gen_random_uuid()::text,
-        'entity', 'ores.refdata.commodity_future_convention',
+        'entity', 'ores.refdata.commodity_future_contract_terms',
         'key', changed_key::text,
         'action', change_action,
         'version', changed_version,
@@ -74,12 +74,12 @@ begin
         'party_id', changed_party_id
     );
 
-    perform pg_notify('ores_refdata_commodity_future_conventions', notification_payload::text);
+    perform pg_notify('ores_refdata_commodity_future_contract_terms', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_refdata_commodity_future_conventions_notify_trg
-after insert or update or delete on ores_refdata_commodity_future_conventions_tbl
-for each row execute function ores_refdata_commodity_future_conventions_notify_fn();
+create or replace trigger ores_refdata_commodity_future_contract_terms_notify_trg
+after insert or update or delete on ores_refdata_commodity_future_contract_terms_tbl
+for each row execute function ores_refdata_commodity_future_contract_terms_notify_fn();

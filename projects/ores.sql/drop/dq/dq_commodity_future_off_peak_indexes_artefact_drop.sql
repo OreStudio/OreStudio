@@ -17,11 +17,4 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_notify_trigger_drop.mustache
- * To modify, update the template and regenerate.
- */
-
-drop trigger if exists ores_refdata_commodity_future_conventions_notify_trg on "ores_refdata_commodity_future_conventions_tbl";
-drop function if exists ores_refdata_commodity_future_conventions_notify_fn;
+drop table if exists "ores_dq_commodity_future_off_peak_indexes_artefact_tbl";

@@ -26,19 +26,19 @@ A run's intermediate state is held as rows that a user can query, not as a blob.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
 
-- rawcube and netcube are read into a cube hypertable in ores.reporting with the columns result, trade or netting set, date index, date, sample, depth and value.
-- scenariostatistics, stress_scenarios and the scenario dumps are read into a factor hypertable in ores.marketdata with the columns result, date, scenario, factor and value, one row for each value.
-- todaysmarketcalibration is read into a calibration table in ores.marketdata with one row for each result key.
-- scenario.csv is catalogued as a run result and lands in the metric table.
+- rawcube, netcube, scenario and scenario_fullSurface are catalogued as run results and land in the metric table, one row for each figure, keyed by result, file, line and heading.
+- scenariostatistics and stress_scenarios are read into a scenario value hypertable in ores.marketdata with the columns result, file, line, date, scenario, factor and value, one row for each value.
+- todaysmarketcalibration is read into a calibration value table in ores.marketdata with one row for each line, its text kept and its number beside it.
+- A family whose figures the run configuration decides requires no figure column, so a run that simulates other curves than the sample is read whole.
 - The market_state_payloads table, the payload index and the base64 writer are removed.
 - A test reads each checked-in sample of these families and lands every value.
 
@@ -74,9 +74,42 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ore core suite | 459 cases pass | =ores.ore.core.tests= | d922ae99d9 |
+| reporting core suite | 245 cases pass | =ores.reporting.core.tests= | d922ae99d9 |
+| marketdata state tests | 9 cases pass | =ores.marketdata.core.tests "[marketdata][market_state_reader],[repository][market_state_value]"= | d922ae99d9 |
+| Group Consolidated Exposure run | completed; 36 npv.csv metrics on lines 2 to 10, 2 saccr.csv metrics; calibration file read, 0 rows | instance cde4ca51, SQL over the metric and market state tables | d922ae99d9 |
 
 * Notes
+
+- The red test that proved the metric key was first green for the wrong reason:
+  its helper gave each metric a random party, so the two rows never shared a
+  key. With one party, as a run stamps, it failed on the unique index.
+- The corpus gate passed with the scenario families, but my first marketdata
+  tests were refused: the catalogue generator required every column the samples
+  share, so the scenario families required the sample's curves. =var= had the
+  same defect for quantiles. Fixed in the generator, not the generated file.
+- =stress_scenarios= states no record, so the reader made the scenario the
+  subject and left the scenario column empty. A scenario or factor key now fills
+  its own column even as the subject.
+- The Acme reports price NPV and SA-CCR only, and ORE writes an empty
+  calibration for them, so the run proves the market-state path reads and stores
+  without refusal but no Acme report drives the scenario files. Those are proven
+  by the reader and repository tests against the real tables.
+
+* Result
+
+Every market-state file a run writes is now rows a user can query, and no family
+is stored as a blob. The cubes and the sensitivity scenario files are run results
+in the metric table. =stress_scenarios= and =scenariostatistics= land in
+=ores_marketdata_market_scenario_values_tbl=, one row for each factor of each
+line, and =todaysmarketcalibration= in
+=ores_marketdata_market_calibration_values_tbl=, one row for each line with its
+text and, for a double, its figure. Every row of the run's figures and state is
+keyed by result, file and line, which is the only key that holds when a file
+states many rows with the same subject, date and heading. The payload table, the
+payload index, the base64 writer and their permissions are gone. Every acceptance
+bullet is met; the end-to-end proof of the scenario path is limited as the Notes
+say.
 
 * Test Scenarios
 

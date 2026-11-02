@@ -28,6 +28,7 @@
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_contract_terms_repository.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"
 #include "ores.refdata.core/repository/curve_definition_repository.hpp"
@@ -50,7 +51,6 @@
 #include <set>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <vector>
 
 /**
@@ -140,33 +140,48 @@ void write_missing(const ores::database::context& ctx,
         repo.write(ctx, missing);
 }
 
-// Writes the central rows of one atomised kind that the tenant does not hold
-// yet, matched by name, as the tenant's system party: the central table refuses
-// a row with no party. The checks that resolve a convention read the central
-// row, so a case that only needs a name to resolve writes no part.
-void write_missing_central(ores::testing::scoped_database_helper& h,
-                           std::vector<ores::refdata::domain::convention> rows,
-                           std::string_view kind) {
+// Writes the commodity futures the tenant does not hold yet, matched by name:
+// each one's central row and the contract terms every commodity future fills,
+// as the tenant's system party, because the central table refuses a row with no
+// party. The volatilities resolve a future by its central row, so the optional
+// parts are not written.
+void write_missing_commodity_futures(ores::testing::scoped_database_helper& h,
+                                     const conventions_package& mapped) {
     const auto& ctx = h.context();
     boost::uuids::uuid system_party{};
     for (const auto& p : party_repository().read_latest(ctx))
         if (p.tenant_id == h.tenant_id() && p.party_category == "System")
             system_party = p.id;
     REQUIRE(system_party != boost::uuids::uuid{});
-    for (auto& r : rows)
-        r.identity.party_id = system_party;
 
-    convention_repository repo;
+    convention_repository conventions;
     std::set<std::string> held;
-    for (const auto& r : repo.read_latest(ctx))
-        if (r.identity.kind_code == kind)
+    for (const auto& r : conventions.read_latest(ctx))
+        if (r.identity.kind_code == "COMMODITY_FUTURE")
             held.insert(r.payload.name);
-    std::vector<ores::refdata::domain::convention> missing;
-    for (const auto& r : rows)
-        if (r.identity.kind_code == kind && !held.contains(r.payload.name))
-            missing.push_back(r);
-    if (!missing.empty())
-        repo.write(ctx, missing);
+
+    std::vector<ores::refdata::domain::convention> central;
+    std::set<boost::uuids::uuid> written;
+    for (auto r : rows_of<ores::refdata::domain::convention>(mapped, "convention")) {
+        if (r.identity.kind_code != "COMMODITY_FUTURE" || held.contains(r.payload.name))
+            continue;
+        r.identity.party_id = system_party;
+        written.insert(r.identity.id);
+        central.push_back(std::move(r));
+    }
+    std::vector<ores::refdata::domain::commodity_future_contract_terms> terms;
+    for (auto r : rows_of<ores::refdata::domain::commodity_future_contract_terms>(
+             mapped, "commodity_future_contract_terms")) {
+        if (!written.contains(r.convention_id))
+            continue;
+        r.party_id = system_party;
+        terms.push_back(std::move(r));
+    }
+    REQUIRE(terms.size() == central.size());
+    if (central.empty())
+        return;
+    conventions.write(ctx, central);
+    commodity_future_contract_terms_repository().write(ctx, terms);
 }
 
 // The conventions the example's curves name, written so the segment trigger
@@ -368,10 +383,7 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     ores::testing::scoped_database_helper h;
 
     const auto c = load_conventions("external/ore/examples/Products/Input/conventions.xml");
-    write_missing_central(
-        h,
-        rows_of<ores::refdata::domain::convention>(split_conventions(c), "convention"),
-        "COMMODITY_FUTURE");
+    write_missing_commodity_futures(h, split_conventions(c));
 
     const auto full = load_document(products_example);
     curve_document original;

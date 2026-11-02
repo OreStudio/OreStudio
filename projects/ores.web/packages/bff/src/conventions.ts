@@ -32,6 +32,7 @@ import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/repo
 import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
 import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
 import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
+import { subjects as commodityFutureConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/commodity_future_convention_protocol';
 import { subjects as crossCurrencyBasisConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/cross_currency_basis_convention_protocol';
 import { subjects as crossCurrencyFixFloatConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/cross_currency_fix_float_convention_protocol';
 import { subjects as tenorBasisSwapConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_basis_swap_convention_protocol';
@@ -77,7 +78,8 @@ export interface ConventionFamily {
 /**
  * A family whose entity is a composite: one central convention row plus the
  * part entities it carries, which are mutually exclusive for a tenor basis
- * swap and all present for a cross-currency swap. The family protocol has no
+ * swap, all present for a cross-currency swap, and optional beside the
+ * contract terms for a commodity future. The family protocol has no
  * list, so the central row is listed through the convention entity filtered by
  * its kind. The server therefore keeps the filter, the order, the page and the
  * total, and the family's get_many answers the parts for exactly that page's
@@ -98,6 +100,20 @@ interface CompositeFamily {
 }
 
 const COMPOSITE_FAMILIES: Readonly<Record<string, CompositeFamily>> = {
+    'commodity-future': {
+        entity: 'commodity_future_convention',
+        registryKeys: [
+            'convention',
+            'commodity_future_averaging_terms',
+            'commodity_future_contract_terms',
+            'commodity_future_expiry_anchor',
+            'commodity_future_off_peak_index',
+            'commodity_future_option_expiry',
+        ],
+        kindCode: 'COMMODITY_FUTURE',
+        getManySubject:
+            commodityFutureConventionSubjects.get_many_commodity_future_conventions_request,
+    },
     'cross-currency-basis': {
         entity: 'cross_currency_basis_convention',
         registryKeys: [

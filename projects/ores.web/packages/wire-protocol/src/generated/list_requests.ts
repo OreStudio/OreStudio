@@ -2086,12 +2086,77 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'refdata.v1.commodity_future_conventions.list': {
+    'refdata.v1.commodity_future_averaging_terms.list': {
         asOf: true,
-        filter: ['id_one_of'],
-        rows: ['commodity_future_conventions'],
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_averaging_terms'],
     },
-    'refdata.v1.commodity_future_conventions_versions.list': {
+    'refdata.v1.commodity_future_averaging_terms.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_averaging_terms'],
+    },
+    'refdata.v1.commodity_future_averaging_terms_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_future_contract_terms.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_contract_terms'],
+    },
+    'refdata.v1.commodity_future_contract_terms.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_contract_terms'],
+    },
+    'refdata.v1.commodity_future_contract_terms_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_future_expiry_anchors.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_expiry_anchors'],
+    },
+    'refdata.v1.commodity_future_expiry_anchors.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_expiry_anchors'],
+    },
+    'refdata.v1.commodity_future_expiry_anchors_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_future_off_peak_indexes.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_off_peak_indexes'],
+    },
+    'refdata.v1.commodity_future_off_peak_indexes.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_off_peak_indexes'],
+    },
+    'refdata.v1.commodity_future_off_peak_indexes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_future_option_expiries.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_option_expiries'],
+    },
+    'refdata.v1.commodity_future_option_expiries.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_option_expiries'],
+    },
+    'refdata.v1.commodity_future_option_expiries_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

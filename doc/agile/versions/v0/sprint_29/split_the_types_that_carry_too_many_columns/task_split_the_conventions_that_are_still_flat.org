@@ -28,9 +28,9 @@ The three remaining convention kinds are on the family's shape: a central conven
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | The fix float kind is merged (PR #4351). The cross currency basis kind is split, built, tested and checked live. |
-| Waiting on   | The review of the basis PR. |
-| Next         | Raise the basis PR, then split commodity future. |
+| Now          | The fix float (PR #4351) and basis (PR #4359) kinds are merged. The commodity future kind is split into a central row, its contract terms and four optional parts. |
+| Waiting on   | The build and tests of the commodity future slice. |
+| Next         | Check the commodity future slice live, then close the task. |
 | Last touched | 2026-11-02                             |
 
 * Acceptance
@@ -179,6 +179,58 @@ ones the flat table had.
 | Atomicity scope | One owner, one transaction: the family write of the central row and its three parts. |
 | Consistency point | None: the parts are not a view of the world. |
 | Forbidden here | Kind-specific columns on the shared central row, and two parts of one family that state a column of the same name. |
+
+** Commodity future: contract terms and four optional parts
+
+The commodity future kind takes the family's shape, but its blocks are not all
+present, as the cross currency legs are. ORE requires the contract frequency
+and the calendar of every commodity future, and makes each other block
+optional. So the kind has one part every convention fills and four it fills at
+most once:
+
+| Part | Columns | Filled in the seed |
+|------+---------+--------------------|
+| =commodity_future_contract_terms= | 18: the frequency, the calendars, the expiry rules, the contract months, the hours per day, the index name, the savings time, the delivery location, the balance of the month fields, the prohibited expiries, the future continuations | 790 of 790 |
+| =commodity_future_expiry_anchor= | 7 =anchor_*= columns: one form of =AnchorDay= | 645 |
+| =commodity_future_option_expiry= | 13 =option_*= columns, with the option underlying and the option continuations | 38 |
+| =commodity_future_off_peak_index= | 4: =OffPeakPowerIndexData=, all required | 26 |
+| =commodity_future_averaging_terms= | 8 =averaging_*= columns: =AveragingData=, four of them required | 60 |
+
+The seed counts are the rows the DQ seed stages from the corpus. No seeded
+anchor states more than one form.
+
+A part makes required what ORE requires together. The flat row held the
+off-peak and the averaging fields as nullable columns, and only the mapper
+knew that the four off-peak fields come together. Each is now a part whose
+required columns are not null, so the table holds that rule.
+
+=hours_per_day= and =savings_time= stay on the contract terms. They are not
+inside =OffPeakPowerIndexData=, and the seed states the hours per day on more
+conventions (31) than it states the off-peak data on (26), so they are not
+that part's invariant. The lists stay text columns, as on the flat row.
+
+The column names already differ from part to part, so no column needs a new
+prefix. =oresmd_uri= goes to the central row, as for the other atomised kinds,
+and the central row stages no URI. The flat row took its URI from
+=IndexName=, so the 34 seeded conventions that state an index name no longer
+stage one. This is the same loss the fix float and basis kinds accepted.
+
+The seed does not decode =OptionNthWeekday=, so it stages no
+=option_nth_nth= or =option_nth_weekday=. The flat seed did not stage them
+either. The ORE mapper reads and writes both.
+
+| Field | Answer |
+|-------+--------|
+| Data and operation | The contract terms, the expiry anchor, the option expiry, the off-peak power index and the averaging data of one commodity future convention. The ORE conventions import writes them, and the export and the convention screens read them. |
+| Classification | Family parts: five parts of the =commodity_future_convention= family. |
+| Invariant, or none | The contract terms state the listed contract, and ORE requires them. Each optional part's fields mean something only when the convention states that block, and the off-peak and averaging parts require the fields ORE requires together. |
+| Owners | One: ores.refdata. |
+| Bundle or package, and why | Neither. Each part is related to its central row by =convention_id=, and the family write puts all the rows of one convention in one unit of work. |
+| Sanctioned pattern | =ores.codegen.family= with =central_entity: convention= and five rows in the Parts table. |
+| Generated artefact | The five part entities, each with its table, codec, repository, service, protocol and shell commands. |
+| Atomicity scope | One owner, one transaction: the family write of the central row and its parts. |
+| Consistency point | None: the parts are not a view of the world. |
+| Forbidden here | Kind-specific columns on the shared central row, two rows of one optional part for one convention, and two parts of one family that state a column of the same name. |
 
 * Test Scenarios
 

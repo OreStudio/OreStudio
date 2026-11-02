@@ -1759,6 +1759,10 @@ def _member_headers(cpp_types, model_path, domain_entity):
             # root, which is its api subcomponent for most and core for some.
             owner = f"{parts[0]}.{parts[1]}"
             add_named(name, root if owner == own else f"{owner}.api")
+        # A message in the component's own namespace names its types as
+        # "domain::x", which is neither of the two forms above.
+        for name in re.findall(r"(?<![\w:])domain::(\w+)", cpp_type):
+            add_named(name, root)
         for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
             add_named(name, None)
     return out

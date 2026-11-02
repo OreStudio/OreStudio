@@ -8,7 +8,7 @@
 #+filetags: :hotfix:build:ci:sprint_29:v0:
 #+created: 2026-10-31
 #+updated: 2026-10-31
-#+environment: merry_newton
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -38,6 +38,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |------+-------+-------+-----+-------------|
 | [[id:53628EFD-225D-4C9F-BBD7-EC0FCC601186][Name the two types gcc refuses in a unity build]] | DONE | 2026-10-31 | 2026-10-31 | gcc's -Wsubobject-linkage rejects a subobject whose type has no linkage. The nats client holds a latch from its anonymous namespace and the jwks coroutine holds a lambda from its own function scope, so the gcc nightly fails on ores.nats.lib and nothing in a clang build says so. |
 | [[id:AEBC33C4-F6D5-4DB7-98CF-E42F0449CD76][Point the web reads at the feed catalogue]] | DONE | 2026-10-31 | 2026-10-31 | The source entity became the feed, and the generated market_data_source protocol module went with it. The BFF still imported that module, so the web target stopped building on every platform. |
+| [[id:4565EA21-C3B4-46F0-9BE4-E0F2D84D6829][Share one run builder per test suite]] | DONE | 2026-11-02 | 2026-11-02 | Two reporting tests and two marketdata tests each defined their own file-local run builder, which the unity build refuses; one marketdata copy had been renamed rather than shared. |
 
 * Decisions
 

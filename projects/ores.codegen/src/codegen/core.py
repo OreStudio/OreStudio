@@ -1899,15 +1899,23 @@ def _write_observers(component_root):
     entity_write_observer for its entity type, and the specialisation only acts
     where the repository sees it. The specialisations are the record of which
     entities are observed, so they are read from the headers that state them.
+    Two headers observing one entity is refused, because only one of them can
+    be the one a repository sees.
     """
+    root = Path(component_root)
     observed = {}
-    for header in sorted(Path(component_root).glob("**/include/**/*.hpp")):
+    for header in sorted(root.glob("**/include/**/*.hpp")):
         text = header.read_text(encoding="utf-8", errors="ignore")
         if "entity_write_observer<" not in text:
             continue
-        include = str(header).split("/include/", 1)[1]
+        parts = header.relative_to(root).parts
+        include = "/".join(parts[parts.index("include") + 1:])
         for entity in _OBSERVER_SPECIALISATION.findall(text):
-            observed.setdefault(entity, include)
+            if entity in observed and observed[entity] != include:
+                raise ValueError(
+                    f"the entity {entity} is observed in both {observed[entity]} and "
+                    f"{include}; a repository can see only one of them.")
+            observed[entity] = include
     return observed
 
 
@@ -1928,16 +1936,21 @@ def _require_visible_write_observer(model_path, entity):
     """
     if not model_path or not entity:
         return
-    root = Path(model_path).resolve().parent.parent
+    # A component's models live in its modeling directory, beside the include
+    # trees the observers are declared in. A model elsewhere is a fixture with
+    # no component around it, so there is nothing to scan.
+    modeling = Path(model_path).resolve().parent
+    if modeling.name != "modeling":
+        return
     header = _unseen_write_observer(
-        Path(model_path).read_text(encoding="utf-8"), entity, _write_observers(str(root)))
+        Path(model_path).read_text(encoding="utf-8"), entity,
+        _write_observers(str(modeling.parent)))
     if header is not None:
         raise ValueError(
             f"{Path(model_path).name}: the entity {entity} is observed in {header}, "
             f"but the model's repository does not include it, so its writes would "
             f"go unobserved. Add an impl_includes block naming "
             f'#include "{header}".')
-
 
 def _protocol_enabled(model_path):
     """Whether a model generates its protocol header, after its own overrides."""

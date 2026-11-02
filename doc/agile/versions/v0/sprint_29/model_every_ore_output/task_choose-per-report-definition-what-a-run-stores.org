@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/choose-per-report-definition-what-a-run-stores
-#+pr:
+#+pr: 4371
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4371][#4371]] | [ore,reporting,marketdata,web] Let a report definition choose which output families a run stores |
 
 * Review
 

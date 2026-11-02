@@ -60,10 +60,18 @@ export interface CurveCollectionKind {
     readonly leaves: readonly CurveCollectionLeaf[];
 }
 
-/** One leaf of a kind: the column that holds it and the ORE element it is. */
+/**
+ * One leaf of a kind: the ORE element it is, and the part of the row that holds
+ * it. A row's kinds share no settings column, so each leaf is in a part of the
+ * row, joined to it by the collection's part key.
+ */
 export interface CurveCollectionLeaf {
     readonly column: string;
     readonly ore: string;
+    /** The part table that holds the leaf. */
+    readonly entity: string;
+    /** The document vector that carries the part's rows. */
+    readonly vector: string;
 }
 
 /** A child element an entry holds rows of, and the columns that place its leaves. */
@@ -80,6 +88,8 @@ export interface CurveCollection {
     readonly kindColumn: string;
     /** The column a quote of one row joins back to, or empty for no quotes. */
     readonly quoteParent: string;
+    /** The column a part of one row joins back to. */
+    readonly partParent: string;
     /** The kinds a row may state, and the leaves each kind reads. */
     readonly kinds: readonly CurveCollectionKind[];
 }
@@ -969,6 +979,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 parentKey: 'curve_definition_id',
                 kindColumn: 'segment_type',
                 quoteParent: 'curve_segment_id',
+                partParent: 'curve_segment_id',
                 kinds: [
                     {
                         kind: 'Direct',
@@ -976,18 +987,26 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                         ],
                     },
@@ -997,22 +1016,32 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'projection_curve',
                                 ore: 'ProjectionCurve',
+                                entity: 'curve_segment_projection',
+                                vector: 'segment_projections',
                             },
                         ],
                     },
@@ -1022,22 +1051,32 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'projection_curve',
                                 ore: 'ProjectionCurve',
+                                entity: 'curve_segment_projection',
+                                vector: 'segment_projections',
                             },
                         ],
                     },
@@ -1047,34 +1086,50 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'projection_curve_pay',
                                 ore: 'ProjectionCurvePay',
+                                entity: 'curve_segment_tenor_basis_curves',
+                                vector: 'segment_tenor_basis_curves',
                             },
                             {
                                 column: 'projection_curve_receive',
                                 ore: 'ProjectionCurveReceive',
+                                entity: 'curve_segment_tenor_basis_curves',
+                                vector: 'segment_tenor_basis_curves',
                             },
                             {
                                 column: 'projection_curve_long',
                                 ore: 'ProjectionCurveLong',
+                                entity: 'curve_segment_tenor_basis_curves',
+                                vector: 'segment_tenor_basis_curves',
                             },
                             {
                                 column: 'projection_curve_short',
                                 ore: 'ProjectionCurveShort',
+                                entity: 'curve_segment_tenor_basis_curves',
+                                vector: 'segment_tenor_basis_curves',
                             },
                         ],
                     },
@@ -1084,34 +1139,50 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'discount_curve',
                                 ore: 'DiscountCurve',
+                                entity: 'curve_segment_cross_currency_terms',
+                                vector: 'segment_cross_currency_terms',
                             },
                             {
                                 column: 'spot_rate',
                                 ore: 'SpotRate',
+                                entity: 'curve_segment_cross_currency_terms',
+                                vector: 'segment_cross_currency_terms',
                             },
                             {
                                 column: 'projection_curve_domestic',
                                 ore: 'ProjectionCurveDomestic',
+                                entity: 'curve_segment_cross_currency_terms',
+                                vector: 'segment_cross_currency_terms',
                             },
                             {
                                 column: 'projection_curve_foreign',
                                 ore: 'ProjectionCurveForeign',
+                                entity: 'curve_segment_cross_currency_terms',
+                                vector: 'segment_cross_currency_terms',
                             },
                         ],
                     },
@@ -1121,22 +1192,32 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'reference_curve',
                                 ore: 'ReferenceCurve',
+                                entity: 'curve_segment_reference',
+                                vector: 'segment_references',
                             },
                         ],
                     },
@@ -1146,18 +1227,26 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                         ],
                     },
@@ -1167,18 +1256,26 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'extrapolate_flat',
                                 ore: 'ExtrapolateFlat',
+                                entity: 'curve_segment_extrapolation',
+                                vector: 'segment_extrapolations',
                             },
                         ],
                     },
@@ -1188,14 +1285,20 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'reference_curve',
                                 ore: 'ReferenceCurve',
+                                entity: 'curve_segment_reference',
+                                vector: 'segment_references',
                             },
                             {
                                 column: 'extrapolate_flat',
                                 ore: 'ExtrapolateFlat',
+                                entity: 'curve_segment_extrapolation',
+                                vector: 'segment_extrapolations',
                             },
                         ],
                     },
@@ -1203,20 +1306,28 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                         kind: 'WeightedAverage',
                         leaves: [
                             {
-                                column: 'reference_curve',
+                                column: 'reference_curve_1',
                                 ore: 'ReferenceCurve1',
+                                entity: 'curve_segment_weighted_average',
+                                vector: 'segment_weighted_averages',
                             },
                             {
                                 column: 'reference_curve_2',
                                 ore: 'ReferenceCurve2',
+                                entity: 'curve_segment_weighted_average',
+                                vector: 'segment_weighted_averages',
                             },
                             {
                                 column: 'weight_1',
                                 ore: 'Weight1',
+                                entity: 'curve_segment_weighted_average',
+                                vector: 'segment_weighted_averages',
                             },
                             {
                                 column: 'weight_2',
                                 ore: 'Weight2',
+                                entity: 'curve_segment_weighted_average',
+                                vector: 'segment_weighted_averages',
                             },
                         ],
                     },
@@ -1226,6 +1337,8 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'reference_curve',
                                 ore: 'ReferenceCurve',
+                                entity: 'curve_segment_reference',
+                                vector: 'segment_references',
                             },
                         ],
                     },
@@ -1235,30 +1348,44 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'ibor_index',
                                 ore: 'IborIndex',
+                                entity: 'curve_segment_ibor_fallback',
+                                vector: 'segment_ibor_fallbacks',
                             },
                             {
                                 column: 'rfr_curve',
                                 ore: 'RfrCurve',
+                                entity: 'curve_segment_ibor_fallback',
+                                vector: 'segment_ibor_fallbacks',
                             },
                             {
                                 column: 'rfr_index',
                                 ore: 'RfrIndex',
+                                entity: 'curve_segment_ibor_fallback',
+                                vector: 'segment_ibor_fallbacks',
                             },
                             {
                                 column: 'spread',
                                 ore: 'Spread',
+                                entity: 'curve_segment_ibor_fallback',
+                                vector: 'segment_ibor_fallbacks',
                             },
                         ],
                     },

@@ -122,10 +122,6 @@ function document(): Record<string, unknown> {
                 curve_definition_id: DEFINITION_ID,
                 segment_type: 'Deposit',
                 position: 0,
-                conventions: 'USD-6M',
-                projection_curve: 'USD-3M',
-                pillar_choice: 'MaturityDate',
-                min_distance: null,
                 // The document carries the instant the row was recorded, which no
                 // ORE element holds, so it is not a leaf of the segment.
                 recorded_at: '2026-10-30 10:26:32.965385Z',
@@ -135,6 +131,36 @@ function document(): Record<string, unknown> {
                 curve_definition_id: EQUITY_DEFINITION_ID,
                 segment_type: 'Zero',
                 position: 0,
+            },
+        ],
+        // A segment's settings are its parts, keyed by the segment. The other
+        // segment's convention comes first, so a leaf read from the wrong part
+        // row shows.
+        segment_conventions: [
+            {
+                id: '11111111-1111-4111-8111-111111111111',
+                curve_segment_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                conventions: 'ACME-ZERO',
+            },
+            {
+                id: '22222222-2222-4222-8222-222222222222',
+                curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                conventions: 'USD-6M',
+            },
+        ],
+        segment_projections: [
+            {
+                id: '33333333-3333-4333-8333-333333333333',
+                curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                projection_curve: 'USD-3M',
+            },
+        ],
+        segment_pillar_rules: [
+            {
+                id: '44444444-4444-4444-8444-444444444444',
+                curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                pillar_choice: 'MaturityDate',
+                min_distance: null,
             },
         ],
         quotes: [
@@ -617,7 +643,7 @@ describe('the curve configuration a report binds', () => {
         expect(row?.kind).toBe('Simple');
         // The leaves are the ones the kind reads, in the order the projection
         // reads them, and not the row's columns: a Simple segment reads its
-        // conventions, the settings every kind shares, and its projection curve.
+        // convention, its pillar rules and its projection curve, each a part.
         expect(row?.leaves.map((leaf) => leaf.ore)).toEqual([
             'Conventions',
             'PillarChoice',
@@ -626,7 +652,9 @@ describe('the curve configuration a report binds', () => {
             'ProjectionCurve',
         ]);
         const conventions = row?.leaves.find((leaf) => leaf.ore === 'Conventions');
+        // The convention is this segment's part row, not the first in the vector.
         expect(conventions?.value).toBe('USD-6M');
+        expect(conventions?.entity).toBe('curve_segment_convention');
         expect(conventions?.label).toBe('Conventions');
         expect(conventions?.documented).toBe(true);
         // The path carries the kind the row states, which is what the contract keys on.

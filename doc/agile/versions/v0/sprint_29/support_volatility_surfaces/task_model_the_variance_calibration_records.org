@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: feature/model-the-variance-calibration-records
-#+pr:
+#+pr: 4426
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4426][#4426]] | [synthetic] Model the variance calibration records |
 
 * Review
 

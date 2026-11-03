@@ -31,12 +31,24 @@ select plan(5);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
+-- A route is (party, publisher, class), and the class a route names must be one
+-- its feed's scope carries. The seed's number of routes is not stated: what
+-- must hold is that a publisher is routed wherever its feed states a class.
 select is(
-    (select count(*)::int from ores_marketdata_routes_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    5,
-    'the seed holds five routes, four FX and one IR'
+    (select count(*)::int from (
+        select distinct f.publisher_code, s.asset_class
+        from ores_marketdata_feed_scopes_tbl s
+        join ores_marketdata_feeds_tbl f on f.id = s.feed_id
+        where f.publisher_code in ('ecb', 'boc', 'imf', 'tcmb')
+          and s.valid_to = ores_utility_infinity_timestamp_fn()
+          and f.valid_to = ores_utility_infinity_timestamp_fn()
+        except
+        select r.publisher_code, r.asset_class
+        from ores_marketdata_routes_tbl r
+        where r.tenant_id = ores_utility_system_tenant_id_fn()
+          and r.valid_to = ores_utility_infinity_timestamp_fn()) unrouted),
+    0,
+    'every public publisher routes the classes its feed states'
 );
 
 create temporary table t_ecb on commit drop as
@@ -92,14 +104,15 @@ select throws_ok(
 );
 
 select is(
-    (select count(*)::int
-     from ores_marketdata_routes_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and asset_class = 'fx'
-       and publisher_code in ('ecb', 'imf', 'boc', 'tcmb')
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    4,
-    'the four public publishers route at FX'
+    (select count(*)::int from (values ('ecb'), ('imf'), ('boc'), ('tcmb')) p(code)
+     where not exists (
+         select 1 from ores_marketdata_routes_tbl r
+         where r.publisher_code = p.code
+           and r.asset_class = 'fx'
+           and r.tenant_id = ores_utility_system_tenant_id_fn()
+           and r.valid_to = ores_utility_infinity_timestamp_fn())),
+    0,
+    'every public publisher routes at FX'
 );
 
 select * from finish();

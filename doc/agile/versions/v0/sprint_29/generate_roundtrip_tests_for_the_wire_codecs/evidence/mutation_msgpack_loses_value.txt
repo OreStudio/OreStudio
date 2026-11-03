@@ -1,0 +1,43 @@
+# mutate.py msgpack-loses-value, compass build ores.dq.api.tests, then the generated case
+diff --git a/projects/ores.dq/api/src/messaging/artefact_type_protocol_codec.cpp b/projects/ores.dq/api/src/messaging/artefact_type_protocol_codec.cpp
+index b1a68a45ed..9bbed583da 100644
+--- a/projects/ores.dq/api/src/messaging/artefact_type_protocol_codec.cpp
++++ b/projects/ores.dq/api/src/messaging/artefact_type_protocol_codec.cpp
+@@ -67,7 +67,9 @@ std::string wire_traits<ores::dq::messaging::artefact_type_write>::write_msgpack
+ ores::dq::messaging::artefact_type_write
+ wire_traits<ores::dq::messaging::artefact_type_write>::read_msgpack(
+     std::span<const std::byte> data) {
+-    return object::read_msgpack<ores::dq::messaging::artefact_type_write>(data);
++    auto r = object::read_msgpack<ores::dq::messaging::artefact_type_write>(data);
++    r.display_order = 0;
++    return r;
+ }
+ 
+ std::string wire_traits<ores::dq::messaging::artefact_type_change>::write_json(
+
+$ ores.dq.api.tests 'ores::dq::messaging::artefact_type_write'
+Filters: "ores::dq::messaging::artefact_type_write"
+Randomness seeded to: 3127014614
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ores.dq.api.tests is a Catch2 v3.16.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+ores::dq::messaging::artefact_type_write
+-------------------------------------------------------------------------------
+projects/ores.dq/api/tests/artefact_type_protocol_codec_roundtrip_tests.cpp:35
+...............................................................................
+
+../../../projects/ores.testing/include/ores.testing/wire_roundtrip.hpp:52: FAILED:
+  CHECK( traits::read_msgpack(bytes(traits::write_msgpack(v))) == v )
+with expansion:
+  {?} == {?}
+with message:
+  sample value
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 4 | 3 passed | 1 failed
+
+exit: 42

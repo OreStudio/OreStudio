@@ -1,0 +1,35 @@
+# mutate.py drop-member, then compass build ores.dq.api.tests
+diff --git a/projects/ores.dq/api/include/ores.dq.api/messaging/artefact_type_protocol.hpp b/projects/ores.dq/api/include/ores.dq.api/messaging/artefact_type_protocol.hpp
+index 1d6f057e1f..51cc846d24 100644
+--- a/projects/ores.dq/api/include/ores.dq.api/messaging/artefact_type_protocol.hpp
++++ b/projects/ores.dq/api/include/ores.dq.api/messaging/artefact_type_protocol.hpp
+@@ -384,7 +384,6 @@ inline constexpr std::string_view deleted = "dq.v1.artefact_types_events.deleted
+         utility::codec::field{"description", &artefact_type_write::description},
+         utility::codec::field{"artefact_table", &artefact_type_write::artefact_table},
+         utility::codec::field{"target_table", &artefact_type_write::target_table},
+-        utility::codec::field{"target_subject", &artefact_type_write::target_subject},
+         utility::codec::field{"display_order", &artefact_type_write::display_order},
+     };
+ }
+
+🔒 Build lock: slot 'a' held as abstract AF_UNIX socket 'ores-build-slot-a' (netns 4026531833; shared namespace unverified)
+⚙️  Parallel build jobs: 3 (source: build-lock slot 'a')
+🕒 Build started: 2026-11-03 11:38:10 GMT
+📝 Build output: tmp/ores-build.log.a (tail -f to follow)
+🔨 /usr/bin/ninja -C build/output/linux-clang-release-ninja -t recompact
+🔨 cmake --build --preset linux-clang-release-ninja --target ores.dq.api.tests -j 3
+FAILED: [code=1] projects/ores.dq/api/tests/CMakeFiles/ores.dq.api.tests.dir/Unity/unity_0_cxx.cxx.o 
+build/scripts/compiler_cache_wrapper.sh /usr/bin/clang++ -DBOOST_ATOMIC_NO_LIB -DBOOST_ATOMIC_STATIC_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_CHRONO_STATIC_LINK -DBOOST_CONTAINER_NO_LIB -DBOOST_CONTAINER_STATIC_LINK -DBOOST_DATE_TIME_NO_LIB -DBOOST_DATE_TIME_STATIC_LINK -DBOOST_FILESYSTEM_NO_LIB -DBOOST_FILESYSTEM_STATIC_LINK=1 -DBOOST_IOSTREAMS_NO_LIB -DBOOST_IOSTREAMS_STATIC_LINK -DBOOST_JSON_NO_LIB=1 -DBOOST_JSON_STATIC_LINK=1 -DBOOST_LOG_NO_LIB -DBOOST_LOG_STATIC_LINK -DBOOST_PROGRAM_OPTIONS_NO_LIB -DBOOST_PROGRAM_OPTIONS_STATIC_LINK -DBOOST_RANDOM_NO_LIB -DBOOST_RANDOM_STATIC_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_STATIC_LINK -DBOOST_THREAD_USE_LIB -Iprojects/ores.dq/api/src/../include -Iprojects/ores.eventing/api/src/../include -Iprojects/ores.logging/include -Iprojects/ores.platform/include -Ibuild/output/linux-clang-release-ninja/projects/ores.utility/src/include -Iprojects/ores.utility/include -Iprojects/ores.testing/include -Iprojects/ores.nats/src/../include -Iprojects/ores.security/src/../include -Iprojects/ores.telemetry/core/src/../include -Iprojects/ores.database/src/../include -Iprojects/ores.telemetry/database/src/../include -Iprojects/ores.telemetry/core/include -Iprojects/ores.marketdata/api/src/../include -Iprojects/ores.refdata/api/src/../include -Iprojects/ores.diff/src/../include -Iprojects/ores.iam/api/src/../include -Iprojects/ores.inbox/api/src/../include -Iprojects/ores.workflow/api/src/../include -Iprojects/ores.refdata/core/src/../include -Iprojects/ores.ore/core/src/../include -Iprojects/ores.ore/api/src/../include -Iprojects/ores.storage/api/src/../include -Iprojects/ores.analytics/api/src/../include -Iprojects/ores.reporting/api/src/../include -Iprojects/ores.trading/api/src/../include -isystem build/output/linux-clang-release-ninja/vcpkg_installed/x64-linux/include -isystem build/output/linux-clang-release-ninja/vcpkg_installed/x64-linux/include/postgresql/server -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wno-missing-field-initializers -Wno-missing-designated-field-initializers -Werror -fbracket-depth=1024 -MD -MT projects/ores.dq/api/tests/CMakeFiles/ores.dq.api.tests.dir/Unity/unity_0_cxx.cxx.o -MF projects/ores.dq/api/tests/CMakeFiles/ores.dq.api.tests.dir/Unity/unity_0_cxx.cxx.o.d -o projects/ores.dq/api/tests/CMakeFiles/ores.dq.api.tests.dir/Unity/unity_0_cxx.cxx.o -c build/output/linux-clang-release-ninja/projects/ores.dq/api/tests/CMakeFiles/ores.dq.api.tests.dir/Unity/unity_0_cxx.cxx
+In file included from projects/ores.dq/api/tests/CMakeFiles/ores.dq.api.tests.dir/Unity/unity_0_cxx.cxx:7:
+In file included from projects/ores.dq/api/tests/artefact_type_protocol_codec_roundtrip_tests.cpp:27:
+../../../projects/ores.testing/include/ores.testing/wire_roundtrip.hpp:44:19: error: static assertion failed due to requirement 'utility::codec::names_every_member(0)': the type has a member its wire shape does not name
+   44 |     static_assert(utility::codec::names_every_member<T>(0),
+      |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+projects/ores.dq/api/tests/artefact_type_protocol_codec_roundtrip_tests.cpp:36:20: note: in instantiation of function template specialization 'ores::testing::check_wire_roundtrip<ores::dq::messaging::artefact_type_write>' requested here
+   36 |     ores::testing::check_wire_roundtrip<ores::dq::messaging::artefact_type_write>();
+      |                    ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+❌ Command failed with exit code 1: cmake --build --preset linux-clang-release-ninja --target ores.dq.api.tests -j 3
+🕒 Build finished (failed, exit 1, took 0:01:32): 2026-11-03 11:39:42 GMT
+

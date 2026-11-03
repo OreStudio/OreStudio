@@ -21,7 +21,7 @@ Every trade type states how well it is modelled as a level we measure, from a co
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -76,8 +76,10 @@ it into our model; a generated trade has nothing to read it from.
 
 * Suggestions
 
-In the order we recommend. The first is what the tests we have actually prove;
-the rest build checks on top of an honest base.
+In the order we recommend. The first two are the task
+[[id:8CCC7800-12A8-4E66-829D-E02303C6CA70][Audit what the trade representation tests prove]]: what the tests we have
+actually prove, and a roundtrip that fails when it does not roundtrip. The rest
+build checks on top of that honest base.
 
 1. *Audit the tests we have.* For each test that claims something about a
    trade's representation (the corpus roundtrip, the per-family projection and
@@ -86,12 +88,19 @@ the rest build checks on top of an honest base.
    generator, and see which tests fail. The output is a table of test, claim,
    defects caught, defects let through. A test that claims a roundtrip and
    compares nothing is the first finding already.
-2. *Make the roundtrip compare content.* Canonicalise both documents (element
-   order where ORE ignores it, whitespace, numeric spelling, defaults ORE
-   assumes) and diff each trade's output against its input. Every difference is
-   a property the model drops or changes. An allowlist names each accepted loss
-   and why, and is asserted for equality, as =known_export_gaps= is, so it can
-   only shrink. Cheap, and it inventories the model's losses at once.
+2. *Make the roundtrip compare content, with a differ on the value
+   fingerprint.* This is the well known round-trip property test with a
+   canonical comparison. No mainstream C++ XML diff exists (XMLUnit is Java and
+   .NET), and libxml2's C14N keeps number spelling and sibling order, so it
+   would report noise. Our =value_fingerprint= already reads a document into a
+   canonical list of path and value, in memory. A differ on it returns every
+   difference, lost, added or changed, with the values before and after, and a
+   fingerprint scoped to one trade lets the corpus roundtrip compare trade by
+   trade and name the trade, its type and the path. A known-losses list names
+   each accepted loss and why, asserted for equality as =known_export_gaps= is,
+   so it can only shrink; a trade no family maps fails unless its type is
+   listed as unmapped. Everything runs in memory or in the system temp
+   directory.
 3. *Take the contract from ORE, not from its XSD.* ORE's trade classes read
    their XML in =fromXML= and validate it in =build=: the mandatory children,
    the parsers that fix each value's vocabulary (=parseBarrierType=,
@@ -111,27 +120,37 @@ the rest build checks on top of an honest base.
    paths ORE's own samples of that type state. A path the samples always fill
    and the generator leaves empty or out is a defect. It catches the FxSwap far
    leg and the empty schedule dates without knowing ORE's rules.
-5. *Let ORE judge.* For each trade type, write generated trades and ask ORE to
+5. *Generate, write, read, compare.* The other direction, from our model to
+   XML: a property-based test (RapidCheck, which works with Catch2) generates
+   many instruments of each type, writes them and reads them back, and requires
+   equality. It reaches values the samples never state, such as the ones our
+   generator produces.
+6. *Prove the tests catch defects.* Mutation testing makes small changes to the
+   code under test and reports each one no test notices; for C++ the known tool
+   is Mull, built on clang. Run on the projection files, it lists every reader
+   or writer line no test watches. It runs outside the normal build, as an
+   occasional job.
+7. *Let ORE judge.* For each trade type, write generated trades and ask ORE to
    build them against a complete market (ORE's example market, so a missing
    curve does not hide a representation defect). Classify each error as
    representation (parse or build of the trade), market or engine
    configuration. A build failure of the first kind fails the check. This is
    the final word, and the costliest, so it runs on few trades per type.
-6. *Constrain the vocabulary.* The ORE element map and the value sets seeded for
+8. *Constrain the vocabulary.* The ORE element map and the value sets seeded for
    the reporting parameters already hold ORE's spellings. Use them, or the
    contract of 3, for the trade fields too, so a domain column such as a barrier
    type takes ORE's values or maps to them explicitly.
-7. *Publish the level of each type.* A matrix of trade type by level: the model
+9. *Publish the level of each type.* A matrix of trade type by level: the model
    holds every property, the generator fills them, the XSD accepts, the
    roundtrip keeps content, ORE parses, ORE builds, ORE prices. Each type states
-   the level it claims, and the check of 1 to 5 holds it there. "Modelled" then
+   the level it claims, and the check of 1 to 7 holds it there. "Modelled" then
    means a level we measure rather than a word we use.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:8CCC7800-12A8-4E66-829D-E02303C6CA70][Audit what the trade representation tests prove]] | STARTED | 2026-11-03 | | List every test that claims something about how a trade is represented, state what each asserts, and prove it with planted defects: which defects each test catches and which it lets through. |
 
 * Decisions
 

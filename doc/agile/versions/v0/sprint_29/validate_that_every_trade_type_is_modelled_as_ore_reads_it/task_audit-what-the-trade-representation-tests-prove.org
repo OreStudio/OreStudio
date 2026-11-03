@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 8CCC7800-12A8-4E66-829D-E02303C6CA70
+:END:
+#+title: Task: Audit what the trade representation tests prove
+#+description: List every test that claims something about how a trade is represented, state what each asserts, and prove it with planted defects: which defects each test catches and which it lets through.
+#+type: task
+#+level: s1
+#+filetags: :trading:ore:synthetic:test:validate_that_every_trade_type_is_modelled_as_ore_reads_it:sprint_29:v0:
+#+owner: marco
+#+branch: feature/validate-the-trade-representation
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A table of every trade representation test, the claim it makes, and the planted defects it catches and lets through, so the story builds its checks on tests whose meaning is known.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- Every test that claims something about a trade's representation is listed with what it asserts.
+- Each planted defect is applied, the suites are run, and the tests that fail and pass are recorded.
+- A test that claims more than it checks is named, with the fix the story should make.
+
+* Plan
+
+The audit found that the tests pass because they do not compare what a
+roundtrip writes with what it read. The fix is the well known round-trip
+property test with a canonical comparison: reading a document and writing it
+back must give an equivalent document, and the test names every difference.
+Everything runs in memory or in the system temp directory; no test names a
+directory of its own.
+
+1. *Inventory what each test claims.* Four groups touch a trade's
+   representation: the codec roundtrips (=ores.trading/api/tests=, a struct
+   survives encode and decode), the repository tests (=ores.trading/core/tests=,
+   a struct survives the database), the ORE XML tests (=ores.ore/core/tests=:
+   projection, exporter, import, corpus roundtrips) and the generator tests
+   (=ores.synthetic/core/tests=). Only the ORE XML group can claim anything
+   about ORE, and the generator group claims nothing about ORE at all. Record
+   each test, its claim and what it asserts.
+2. *Build a differ on the value fingerprint.* =value_fingerprint= already reads
+   a document without a schema into a sorted list of path and value, numbers
+   written as the decimal they mean and =xs:all= order ignored. That is the
+   canonical form XMLUnit gives Java; no mainstream C++ XML diff exists, and
+   libxml2's C14N keeps number spelling and sibling order, so it would report
+   noise. Add, beside the fingerprint in =ores.ore.core/xml=:
+   - =value_difference=: a path, a kind (lost, added or changed) and the value
+     before and after.
+   - =diff_values(expected, actual)=: every difference between two
+     fingerprints, not the first. The fingerprint's paths carry no index, so
+     values are matched as a multiset per path, and a path whose values differ
+     on both sides pairs them as changes before counting the rest as lost or
+     added.
+   - A fingerprint scoped to one element of a document, so a portfolio is
+     compared trade by trade, matched on the trade's id, and a difference
+     names its trade and type.
+   - A formatter that states the differences as one readable line each.
+   Unit tests cover each kind of difference, numbers spelled two ways, sibling
+   order, and a repeated element. The values sweep in
+   =xml_roundtrip_values_tests.cpp= moves onto the differ and its
+   =fingerprint_difference=, which names only the first difference, is
+   deleted.
+3. *Make the corpus roundtrip compare content.* The roundtrip gains an
+   in-memory form, text in and text out, so the test needs no directory. The
+   test =roundtrip mirrors every portfolio in the ORE example corpus= compares
+   each trade of each sample with what our model writes back, and fails naming
+   the file, the trade, its type, the path and the values.
+4. *Known losses, asserted exactly.* Each accepted loss is a trade type, a path
+   and a reason in a list in the test, asserted for equality as
+   =known_export_gaps= is: a new loss fails, and a loss that stops happening
+   fails until its entry is removed. The first run's differences, every one of
+   them, are the baseline the list starts from; a loss we judge a defect
+   rather than a gap is fixed or recorded on the story that fixes trades. The
+   FxSwap far leg, stated today only as a code comment, becomes an entry.
+5. *A passthrough is a failure.* A trade no family maps is written back as its
+   type and envelope alone and counted apart; it fails unless its type is on an
+   explicit list of unmapped types.
+6. *Correct the tests that claim more than they check.* The first one is
+   =a_vanilla_option_exports_its_expiry_and_style=: it checks no style, and its
+   comment says ORE implies European exercise for an FxOption, which ORE
+   refutes (=Exercise type "" not recognized=). The corpus name =mirrors every
+   portfolio= is earned once step 3 holds.
+
+The other direction, from our model to XML, and the proof that the tests catch
+defects, are later tasks of the story: a property-based test with RapidCheck
+and mutation testing with Mull.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** What the audit found before any planted defect
+
+- The FX option reader ignores the document's =Style= and sets
+  =exercise_style= to "European" (=fx_instrument_projection.cpp=, =read_fx_option=);
+  the writer writes no =Style= at all (=write_fx_option=). Every FX option loses
+  its style on the roundtrip, and ORE refuses one with no style, which is why
+  the run of 2026-11-03 failed every generated FxOption.
+- The FxSwap writer writes an empty far date and zero far amounts: the model
+  has no far leg, a gap stated only in a code comment.
+- The corpus roundtrip's own comment says the per-document suites assert deep
+  field fidelity for the products they name and the corpus suite asserts the
+  walk. So a product with no deep suite of its own is compared by nothing.
+- The values sweep compares content, but only through the XML binding layer
+  (document to generated record to document), never through our trade model.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

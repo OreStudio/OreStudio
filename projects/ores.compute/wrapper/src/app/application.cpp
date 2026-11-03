@@ -478,6 +478,12 @@ std::string read_file_text(const fs::path& path) {
  * knows how to read it: the format belongs to the engine, and the reporting
  * service loads what this writes without knowing any of it. Every line becomes a
  * row, whatever its severity, so a reader can see the whole account.
+ *
+ * The engine states its messages twice: as rows of its structured log, which name
+ * the record each one is about, and as text lines that embed the same message.
+ * The structured log is read when the engine wrote one, because a row that names
+ * its trade is what a reader can act on; the text log is the account of last
+ * resort, and every engine that writes one writes it.
  */
 void upload_canonical_log(auto& lg,
                           const config::options& cfg,
@@ -485,11 +491,16 @@ void upload_canonical_log(auto& lg,
                           const fs::path& output_dir) {
     if (evt.logs_uri.empty())
         return;
-    const auto text_log = output_dir / "log.txt";
-    if (!fs::is_regular_file(text_log))
-        return;
 
-    const auto events = ores::ore::log::parse_engine_log_text(read_file_text(text_log), "log.txt");
+    const auto structured_log = output_dir / "log_structured.json";
+    const auto text_log = output_dir / "log.txt";
+    const auto events = fs::is_regular_file(structured_log) ?
+                            ores::ore::log::parse_engine_log_json(
+                                read_file_text(structured_log), "log_structured.json") :
+                        fs::is_regular_file(text_log) ?
+                            ores::ore::log::parse_engine_log_text(read_file_text(text_log),
+                                                                  "log.txt") :
+                            std::vector<ores::ore::log::engine_log_event>{};
     if (events.empty())
         return;
 
@@ -825,6 +836,8 @@ void process_assignment(ores::nats::service::client& nats,
         }
 
         const int exit_code = engine_proc.exit_code();
+        // Where the engine writes what it produced, whatever it made of the run.
+        const fs::path output_dir = job_dir / "Output";
 
         if (exit_code != 0) {
             // Include ORE's own log (log.txt) in the error — it has more
@@ -846,7 +859,6 @@ void process_assignment(ores::nats::service::client& nats,
             // that priced everything. What the engine left behind is the
             // verdict, so the run is judged on its output and its own log, and
             // a run that wrote no analytics is a failed result like any other.
-            const fs::path output_dir = job_dir / "Output";
             std::vector<std::string> output_file_names;
             if (fs::is_directory(output_dir)) {
                 for (const auto& entry : fs::directory_iterator(output_dir))
@@ -865,13 +877,11 @@ void process_assignment(ores::nats::service::client& nats,
                 // the run's owner can only read it from the output. A failed
                 // job therefore uploads what the engine wrote, so the failure
                 // can be recorded per reason instead of as one message.
-                const fs::path failed_output_dir = job_dir / "Output";
                 try {
-                    if (fs::is_directory(failed_output_dir) &&
-                        fs::directory_iterator(failed_output_dir) != fs::directory_iterator{}) {
+                    if (fs::is_directory(output_dir) &&
+                        fs::directory_iterator(output_dir) != fs::directory_iterator{}) {
                         const fs::path output_archive = job_dir / "output.tar.gz";
-                        ores::storage::filesystem::archiver::pack(failed_output_dir,
-                                                                  output_archive);
+                        ores::storage::filesystem::archiver::pack(output_dir, output_archive);
                         output_bytes = static_cast<std::int64_t>(fs::file_size(output_archive));
                         ores::storage::net::http_client::put(
                             make_url(cfg.http_base_url, evt.output_uri),
@@ -901,15 +911,17 @@ void process_assignment(ores::nats::service::client& nats,
 
                 upload_output_files(lg, cfg, evt, output_dir);
 
-                // The engine's own account of the run, in the same shape: every
-                // line it wrote, whatever its severity.
-                upload_canonical_log(lg, cfg, evt, output_dir);
-
                 BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
                 // Success.
                 outcome = 1;
             }
         }
+
+        // The engine's own account of the run, in the same shape whatever the
+        // verdict: every line it wrote, whatever its severity. A failed job's
+        // log is what the run's owner reads to see which trades failed, so it
+        // is uploaded on that path too, and not only when the run succeeded.
+        upload_canonical_log(lg, cfg, evt, output_dir);
     } catch (const std::exception& e) {
         error_message = e.what();
         BOOST_LOG_SEV(lg, error) << "Job failed: " << e.what();

@@ -192,16 +192,14 @@ the request, so the two share it.
  */
 #+end_src
 
-*** decay
-:PROPERTIES:
-:cpp_type: /** @brief The heat's loop gain, jump over
-:END:
-
 *** loop_gain
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
+#+begin_src cpp :name comment
+/** @brief The heat's loop gain, jump over decay; the heat settles while it is below one. */
+#+end_src
 
 *** run_seed
 :PROPERTIES:
@@ -212,60 +210,51 @@ the request, so the two share it.
 /** @brief The seed every random stream of the run is keyed by. */
 #+end_src
 
-*** spans
-:PROPERTIES:
-:cpp_type: /** @brief The simulated seconds one unit of market time
-:END:
-
 *** speed
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
-
-*** second
-:PROPERTIES:
-:cpp_type: /** @brief How often a calm market turns active, per
-:END:
+#+begin_src cpp :name comment
+/** @brief The simulated seconds one unit of market time spans; zero when not reported. */
+#+end_src
 
 *** wake_rate
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
-
-*** second
-:PROPERTIES:
-:cpp_type: /** @brief How often an active market turns calm, per
-:END:
+#+begin_src cpp :name comment
+/** @brief How often a calm market turns active, per second; zero when not reported. */
+#+end_src
 
 *** calm_rate
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
-
-*** tails
-:PROPERTIES:
-:cpp_type: /** @brief How far activity tilts a price's shape toward its
-:END:
+#+begin_src cpp :name comment
+/** @brief How often an active market turns calm, per second; zero when not reported. */
+#+end_src
 
 *** tail_loading
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
-
-*** market
-:PROPERTIES:
-:cpp_type: /** @brief The pace of an active
-:END:
+#+begin_src cpp :name comment
+/** @brief How far activity tilts a price's shape toward its tails; zero is off. */
+#+end_src
 
 *** active_multiplier
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
+#+begin_src cpp :name comment
+/** @brief The pace of an active market; the calm pace follows from it. Zero when not reported.
+ */
+#+end_src
 
 ** get_market_trace_request
 :PROPERTIES:
@@ -295,16 +284,14 @@ the request, so the two share it.
 /** @brief How far back to read, in seconds of the run. */
 #+end_src
 
-*** return
-:PROPERTIES:
-:cpp_type: /** @brief The most events to
-:END:
-
 *** limit
 :PROPERTIES:
 :cpp_type: std::uint32_t
 :default: 5000
 :END:
+#+begin_src cpp :name comment
+/** @brief The most events to return; the newest are kept. */
+#+end_src
 
 ** market_trace_event
 #+begin_src cpp :name comment
@@ -359,16 +346,15 @@ the request, so the two share it.
 /** @brief For a tick: the wall seconds since the feed last ticked. */
 #+end_src
 
-*** gap
-:PROPERTIES:
-:cpp_type: /** @brief For a tick: the law's intensity integrated over the
-:END:
-
 *** compensated_gap
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
+#+begin_src cpp :name comment
+/** @brief For a tick: the law's intensity integrated over the gap; Exp(1) when the feed
+ * follows its law. */
+#+end_src
 
 *** heat
 :PROPERTIES:
@@ -378,14 +364,12 @@ the request, so the two share it.
 
 *** multiplier
 :PROPERTIES:
-:cpp_type: /** @brief The regime's
-:END:
-
-*** multiplier
-:PROPERTIES:
 :cpp_type: double
 :default: 1.0
 :END:
+#+begin_src cpp :name comment
+/** @brief The regime's multiplier; the pace less it is the heat's share. */
+#+end_src
 
 *** pace
 :PROPERTIES:
@@ -464,27 +448,23 @@ the request, so the two share it.
 /** @brief For a Hawkes law: the excess intensity now, above the baseline. */
 #+end_src
 
-*** ratio
-:PROPERTIES:
-:cpp_type: /** @brief For a Hawkes law: the branching
-:END:
-
 *** branching_ratio
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
-
-*** time
-:PROPERTIES:
-:cpp_type: /** @brief For a Hawkes law: the decay, per unit of operational
-:END:
+#+begin_src cpp :name comment
+/** @brief For a Hawkes law: the branching ratio; zero for the other laws. */
+#+end_src
 
 *** decay
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
+#+begin_src cpp :name comment
+/** @brief For a Hawkes law: the decay, per unit of operational time; zero otherwise. */
+#+end_src
 
 ** get_market_trace_response
 
@@ -614,16 +594,14 @@ the request, so the two share it.
 /** @brief The ticks of each group in the slot, by the group's index. */
 #+end_src
 
-*** slot
-:PROPERTIES:
-:cpp_type: /** @brief The mean pace over the
-:END:
-
 *** pace
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
+#+begin_src cpp :name comment
+/** @brief The mean pace over the slot; zero when the loop took no reading in it. */
+#+end_src
 
 *** active_share
 :PROPERTIES:
@@ -884,14 +862,12 @@ the request, so the two share it.
 /** @brief The simulated seconds one unit of market time spans. */
 #+end_src
 
-*** tails
-:PROPERTIES:
-:cpp_type: /** @brief How far activity tilts a price's shape toward its
-:END:
-
 *** tail_loading
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
 :END:
+#+begin_src cpp :name comment
+/** @brief How far activity tilts a price's shape toward its tails; zero is off. */
+#+end_src
 

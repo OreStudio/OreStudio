@@ -311,12 +311,14 @@ Two things the identity does not name, by design or not yet:
 - *The quoting convention.* By design. A convention is how a consumer reads a
   number, and it is reference data of the pair, as the curve role is data of the
   consumer and not of the curve.
-- *A fitted surface.* Not yet. A bootstrapped curve has an identity of its own:
-  its points are a =discount= series with a =curve_id=, distinct from the swap
-  quotes it inverted. A surface built from quotes has no such identity, so a
-  fitted surface cannot yet be stored as derived data with its lineage. Which
-  object the build of a surface writes, and how it is named, is decided in the
-  note on the surface pipeline.
+- *A fitted surface.* Not yet, and the shape is decided. A bootstrapped curve
+  has an identity of its own: its points are a =discount= series with a
+  =curve_id=, distinct from the swap quotes it inverted. Surface construction
+  does exactly the same: the surface blueprint names an output series, and the
+  fit writes the fitted vols on the blueprint's grid as its observations, with
+  the lineage, the candidate and the publication of a curve. What is missing is
+  the oresmd instrument type for that series, with a surface identity in the
+  place of =curve_id=.
 
 ** From quotes to a published surface
 
@@ -329,7 +331,8 @@ tenors, its strike labels, its delta and ATM conventions and its smile model
 (SSVI, SABR, a spline or Vanna-Volga: the tenant chooses, and SSVI in the
 generator does not constrain the choice), as
 [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][User Journey: Author a surface's framework]]
-describes. Its build fits the model to the quotes, checks the four conditions
+describes. Its build, a /fit/ where a curve's is a /bootstrap/, fits the
+model to the quotes, checks the four conditions
 above and the checks of
 [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]],
 and writes a candidate. A pillar reads its quote series by oresmd identity, as

@@ -93,10 +93,29 @@ Decisions agreed with the user on 2026-11-03:
   makes a noisy run repeatable. Everything stays behind the adapter seam: the
   ingest, the store and the tenant's marking see contributor quotes on the same
   four messages as a vendor's. Because the truth is known, a tenant's marked
-  surface can be measured against it, which no real feed allows. Open: where
-  the latent truth is kept so tests can read it and tenants cannot (a provider
-  restricted to the system party, or the simulator's own trace), and whether
-  oresmd carries a bid and an ask side.
+  surface can be measured against it, which no real feed allows. The truth needs
+  nothing special: as for IR, where the clean pillar quotes and their bootstrap
+  are the truth, the contributor whose profile is =none= is a provider like the
+  others, and its quotes, constructed by the same build, are the true surface.
+  A tenant sees it only if the system routes that provider to it. Open: oresmd
+  has no bid or ask side for a quote today (its =side= field belongs to index
+  CDS options), so how a contributor's bid and ask are named is decided in the
+  pipeline note.
+- Agreed on 2026-11-03: *surface construction* follows curve construction
+  exactly. A surface blueprint names its output series; its build fits the
+  tenant's chosen smile model to the quotes, checks it, and writes the fitted
+  vols on the blueprint's grid as observations of that series, each with a
+  lineage record naming the source series and the blueprint version. That is
+  the candidate, and the same four-eyes publish makes it a published set that
+  reports bind. The blueprint is the series' only writer, and the series'
+  identity says its points are inferred, as a discount series with a
+  =curve_id= does. oresmd needs a new instrument type for that series, with a
+  surface identity in place of =curve_id=. Naming: a curve's method is a
+  /bootstrap/, a sequential solve pillar by pillar; a surface's method is a
+  /fit/, all points at once. Both are /construction/. "Calibration" is not used
+  for it, because it already names the start of a synthetic feed from fixings.
+  The one true bootstrap among vol surfaces, stripping caplet vols from cap
+  vols, keeps that name when cap/floor surfaces arrive.
 
 The user asks that all of this is explained in great detail in the knowledge
 notes on synthetic data generation: each model, why it was chosen over the

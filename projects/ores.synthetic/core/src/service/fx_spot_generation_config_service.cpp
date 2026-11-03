@@ -122,6 +122,11 @@ fx_spot_generation_config_to_domain(const messaging::fx_spot_generation_config_w
     v.branching_ratio = write.branching_ratio;
     v.decay = write.decay;
     v.sensitivity = write.sensitivity;
+    v.variance_model = write.variance_model;
+    v.garch_alpha = write.garch_alpha;
+    v.garch_gamma = write.garch_gamma;
+    v.garch_beta = write.garch_beta;
+    v.garch_window_days = write.garch_window_days;
     return v;
 }
 

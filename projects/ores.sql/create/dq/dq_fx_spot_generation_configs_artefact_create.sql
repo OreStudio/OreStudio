@@ -46,7 +46,12 @@ create table if not exists "ores_dq_fx_spot_generation_configs_artefact_tbl" (
     "arrival_mode" text not null default 'periodic',
     "branching_ratio" double precision not null default 0.0,
     "decay" double precision not null default 1.0,
-    "sensitivity" double precision not null default 1.0
+    "sensitivity" double precision not null default 1.0,
+    "variance_model" text not null default 'constant',
+    "garch_alpha" double precision not null default 0.05,
+    "garch_gamma" double precision not null default 0.0,
+    "garch_beta" double precision not null default 0.9,
+    "garch_window_days" integer not null default 1826
 );
 
 create index if not exists dq_fx_spot_generation_configs_artefact_dataset_idx

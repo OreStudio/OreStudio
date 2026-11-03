@@ -145,7 +145,8 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         "add <config_id> <base_currency_code> <quote_currency_code> <source_name> <oresmd_uri> "
         "<price_source> <calibration_window_days> <gmm_initial_price> <ticks_per_hour> "
         "<process_type> <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode> "
-        "<branching_ratio> <decay> <sensitivity> <reason> <commentary>");
+        "<branching_ratio> <decay> <sensitivity> <variance_model> <garch_alpha> <garch_gamma> "
+        "<garch_beta> <garch_window_days> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -155,8 +156,8 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         "set <id> <config_id> <base_currency_code> <quote_currency_code> <source_name> "
         "<oresmd_uri> <price_source> <calibration_window_days> <gmm_initial_price> "
         "<ticks_per_hour> <process_type> <enabled> <auto_start> <folder_id> <asset_class_code> "
-        "<arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary> [--version "
-        "<n>]");
+        "<arrival_mode> <branching_ratio> <decay> <sensitivity> <variance_model> <garch_alpha> "
+        "<garch_gamma> <garch_beta> <garch_window_days> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -166,7 +167,8 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         "put-many --count <n> <id> <config_id> <base_currency_code> <quote_currency_code> "
         "<source_name> <oresmd_uri> <price_source> <calibration_window_days> <gmm_initial_price> "
         "<ticks_per_hour> <process_type> <enabled> <auto_start> <folder_id> <asset_class_code> "
-        "<arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary>");
+        "<arrival_mode> <branching_ratio> <decay> <sensitivity> <variance_model> <garch_alpha> "
+        "<garch_gamma> <garch_beta> <garch_window_days> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -367,8 +369,8 @@ void fx_spot_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 18 + 2) {
-            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 23 + 2) {
+            fail(out) << "Expected " << (23 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -411,6 +413,16 @@ void fx_spot_generation_config_commands::process_add(std::ostream& out,
             req.change.write.decay, parsed->positionals[next++], "decay");
         fx_spot_generation_config_read_token(
             req.change.write.sensitivity, parsed->positionals[next++], "sensitivity");
+        fx_spot_generation_config_read_token(
+            req.change.write.variance_model, parsed->positionals[next++], "variance_model");
+        fx_spot_generation_config_read_token(
+            req.change.write.garch_alpha, parsed->positionals[next++], "garch_alpha");
+        fx_spot_generation_config_read_token(
+            req.change.write.garch_gamma, parsed->positionals[next++], "garch_gamma");
+        fx_spot_generation_config_read_token(
+            req.change.write.garch_beta, parsed->positionals[next++], "garch_beta");
+        fx_spot_generation_config_read_token(
+            req.change.write.garch_window_days, parsed->positionals[next++], "garch_window_days");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -455,8 +467,8 @@ void fx_spot_generation_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 19 + 2) {
-            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 24 + 2) {
+            fail(out) << "Expected " << (24 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -500,6 +512,16 @@ void fx_spot_generation_config_commands::process_set(std::ostream& out,
             req.change.write.decay, parsed->positionals[next++], "decay");
         fx_spot_generation_config_read_token(
             req.change.write.sensitivity, parsed->positionals[next++], "sensitivity");
+        fx_spot_generation_config_read_token(
+            req.change.write.variance_model, parsed->positionals[next++], "variance_model");
+        fx_spot_generation_config_read_token(
+            req.change.write.garch_alpha, parsed->positionals[next++], "garch_alpha");
+        fx_spot_generation_config_read_token(
+            req.change.write.garch_gamma, parsed->positionals[next++], "garch_gamma");
+        fx_spot_generation_config_read_token(
+            req.change.write.garch_beta, parsed->positionals[next++], "garch_beta");
+        fx_spot_generation_config_read_token(
+            req.change.write.garch_window_days, parsed->positionals[next++], "garch_window_days");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -556,8 +578,8 @@ void fx_spot_generation_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 19 + 2) {
-            fail(out) << "Expected " << (change_count * 19 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 24 + 2) {
+            fail(out) << "Expected " << (change_count * 24 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -603,6 +625,16 @@ void fx_spot_generation_config_commands::process_put_many(std::ostream& out,
                 change.write.decay, parsed->positionals[next++], "decay");
             fx_spot_generation_config_read_token(
                 change.write.sensitivity, parsed->positionals[next++], "sensitivity");
+            fx_spot_generation_config_read_token(
+                change.write.variance_model, parsed->positionals[next++], "variance_model");
+            fx_spot_generation_config_read_token(
+                change.write.garch_alpha, parsed->positionals[next++], "garch_alpha");
+            fx_spot_generation_config_read_token(
+                change.write.garch_gamma, parsed->positionals[next++], "garch_gamma");
+            fx_spot_generation_config_read_token(
+                change.write.garch_beta, parsed->positionals[next++], "garch_beta");
+            fx_spot_generation_config_read_token(
+                change.write.garch_window_days, parsed->positionals[next++], "garch_window_days");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -188,6 +188,41 @@ struct fx_spot_generation_config final {
     double sensitivity = 1.0;
 
     /**
+     * @brief How the feed's daily variance moves: "constant", the mixture's own variance on every
+     * day, or "gjr_garch", a GJR-GARCH(1,1) variance carried from one market day to the next that
+     * scales the mixture's shocks. "gjr_garch" needs an engine that can scale its law, geometric or
+     * arithmetic.
+     */
+    std::string variance_model = "constant";
+
+    /**
+     * @brief For "gjr_garch": how strongly a day's move raises the next day's variance. At least
+     * zero. The authored value; a fixing feed with enough history fits its own at start and keeps
+     * this as the fallback.
+     */
+    double garch_alpha = 0.05;
+
+    /**
+     * @brief For "gjr_garch": the extra reaction to a fall of the pair. Negative when a rise of the
+     * pair raises the variance more, as for a pair whose base currency is a safe haven; alpha +
+     * gamma is at least zero.
+     */
+    double garch_gamma = 0.0;
+
+    /**
+     * @brief For "gjr_garch": how much of a day's variance carries into the next. At least zero;
+     * with alpha and gamma it must leave the persistence below one, which the feed checks at start
+     * against its own mixture.
+     */
+    double garch_beta = 0.9;
+
+    /**
+     * @brief For "gjr_garch" on a fixing feed: how many days of the chosen item's fixings the fit
+     * reads, five years by default. Between 30 and 3660.
+     */
+    int garch_window_days = 1826;
+
+    /**
      * @brief Username of the person who last modified this FX spot generation config.
      */
     std::string modified_by;

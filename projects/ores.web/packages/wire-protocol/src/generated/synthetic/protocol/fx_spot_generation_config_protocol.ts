@@ -52,6 +52,11 @@ export interface FxSpotGenerationConfigWrite {
     branching_ratio: number;
     decay: number;
     sensitivity: number;
+    variance_model: string;
+    garch_alpha: number;
+    garch_gamma: number;
+    garch_beta: number;
+    garch_window_days: number;
 }
 
 export interface FxSpotGenerationConfigChange {

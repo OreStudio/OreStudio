@@ -54,6 +54,11 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "branching_ratio" double precision not null default 0.0,
     "decay" double precision not null default 1.0,
     "sensitivity" double precision not null default 1.0,
+    "variance_model" text not null,
+    "garch_alpha" double precision not null default 0.05,
+    "garch_gamma" double precision not null default 0.0,
+    "garch_beta" double precision not null default 0.9,
+    "garch_window_days" integer not null default 1826,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -78,7 +83,13 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     check ("process_type" in ('geometric', 'arithmetic', 'ornstein_uhlenbeck')),
     check ("price_source" in ('fixed', 'fixing')),
     check ("gmm_initial_price" > 0),
-    check ("calibration_window_days" is null or "calibration_window_days" between 2 and 180)
+    check ("calibration_window_days" is null or "calibration_window_days" between 2 and 180),
+    check ("variance_model" in ('constant', 'gjr_garch')),
+    check ("garch_alpha" >= 0),
+    check ("garch_beta" >= 0),
+    check ("garch_alpha" + "garch_gamma" >= 0),
+    check ("garch_window_days" between 30 and 3660),
+    check ("variance_model" <> 'gjr_garch' or "process_type" in ('geometric', 'arithmetic'))
 );
 
 -- Composite natural key: unique combination for active records

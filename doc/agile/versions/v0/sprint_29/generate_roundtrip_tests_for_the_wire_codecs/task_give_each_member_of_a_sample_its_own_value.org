@@ -26,11 +26,11 @@ A generated roundtrip test fails when a codec reads one member's value into anot
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
-| Now          | The sampler is numbered; the full build and suites are next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run every suite on a full build. |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -52,7 +52,8 @@ vector or map at an even number holds the samples at that number and the next.
 Integers stay inside their range and away from zero, so a narrow integer never
 wraps to its default. bool, an enumeration, the error code and a type with only
 two sample texts have fewer values than a struct can have members, so they
-repeat.
+repeat. A date's year stays in 2000 to 2199, because an instant is built from
+the date and the clock's nanosecond count holds only the years 1678 to 2261.
 
 * Measurements
 
@@ -68,8 +69,17 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Sampler tests | 47 =[codec]= cases pass, 230 assertions; the whole suite 197 cases, 933 assertions | =ores.utility.tests "[codec]"=, then =ores.utility.tests= | working tree on =5baa8bb3e6= |
 | =same-type-mixup= after the fix | the case fails, 1 of 4 assertions: the JSON check on the sample value | =evidence/mutation_same_type_mixup_after_the_fix.txt= | working tree on =5baa8bb3e6= |
+| First full run, years 1900 to 9899 | 7 of 98 suites fail: 31 generated cases in 5 api suites on =audit.recorded_at=, and the 2 marketdata suites on a stale database schema | =compass test run -- -j 4 --output-on-failure= | =8654ee4314= |
+| The instant case on the old year range | fails at sample number 364 | =ores.utility.tests "an instant sample survives its text form at any sample number"= | working tree on =8654ee4314= |
+| Utility suite after the year fix | 198 cases pass, 3791 assertions | =ores.utility.tests= | working tree on =8654ee4314= |
+| Every suite, after the year fix and a database recreate | 98 of 98 pass | =compass test run -- -j 4 --output-on-failure= | working tree on =8654ee4314= |
 
 * Notes
+
+- The first full run found that a sampled instant past 2261 wraps round in the
+  clock's 64-bit nanosecond count, here to 1873 with nanoseconds the text form
+  does not keep, so the value read back differs. The utility case "an instant
+  sample survives its text form at any sample number" now guards the range.
 
 * Test Scenarios
 
@@ -92,6 +102,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR 4421: use =removesuffix= in =mutate.py= | =evidence/mutate.py= | Accept | Done. |
+| 2 | PR 4421: =revert= discards other uncommitted edits | =evidence/mutate.py= | Accept | The docstring says so. |
+| 3 | PR 4421: a second mutation stacks on the first | =evidence/mutate.py= | Accept | The docstring says to revert first. |
+| 4 | PR 4421: the include test checks no order | =test_protocol_roundtrip_tests_template.py= | Decline | The include order has no effect on the generated code. |
+| 5 | PR 4421: say how the samples stay distinct | =sample.hpp= | Accept | Member j takes the numbers 2j and 2j + 1; the doc comment says so. |
 
 * Result
+
+A sample is now numbered, and member j of a struct takes the numbers 2j and
+2j + 1, so two members of one type hold different values in both samples. The
+=same-type-mixup= mutation now fails the generated case, and every suite passes
+(98 of 98). All three acceptance bullets are met. The review of PR 4421 is
+answered here: three changes to =evidence/mutate.py=, one decline.

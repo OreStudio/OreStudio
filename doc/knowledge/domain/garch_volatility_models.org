@@ -400,9 +400,49 @@ which every environment holds; see
 3. *The starting variance.* =sigma^2_0= is the last value of the fitted
    variance filtered through the whole history, so a feed that starts in a
    turbulent period starts turbulent.
-4. *Authored values.* A pair with too little history for a stable fit, or a fit
-   that reaches the stationarity bound, takes authored parameters, as it takes
-   authored mixture components.
+4. *Authored values.* A pair with too little history for a stable fit takes an
+   authored shape, as it takes authored mixture components. An authored shape
+   is a calibration like a fitted one, so it is reviewed and recorded the same
+   way.
+
+** A calibration is stored and reviewed before a feed runs it
+
+A feed never fits its own variance. The estimate above is a calibration with
+three stages, each stored as a versioned record, so every number a feed runs
+traces back to the fixings it came from and to the person who accepted it.
+
+1. *Capture the inputs.* A capture reads the pair's fixings under the asset
+   class's calibration policy, which states the variance window, the order of
+   the providers and whether an inverse may be read. It stores a
+   /variance calibration input/: the pair, the item and provider read, the
+   policy and its version, the window, whether the item was inverted, and one
+   /point/ per fixing date. A point holds the fixing as stored, the return it
+   gives in the pair's market convention, and whether it was used; a point left
+   out, such as a value that is not a number, keeps its reason. Nothing is
+   fitted at this stage.
+2. *Fit and review.* A fit reads one stored input, never the live fixings, so
+   the same input always gives the same result. It stores a
+   /variance calibration/ that names its input and the method's version, and
+   holds what a reviewer needs to judge it: =alpha=, =gamma=, =beta=, the
+   persistence, the long-run and starting variance, the likelihood, and whether
+   the starts of the simplex agreed. A calibration is /proposed/ when it is
+   stored. A person approves or rejects it and states why; approving one
+   /supersedes/ the pair's earlier approval, so one approved calibration is
+   current. A fit that cannot be made, for too few returns or a shape at the
+   stationarity bound, is stored as rejected with its reason, so the attempt is
+   kept.
+3. *Apply.* A feed's configuration names the approved calibration it runs.
+   Choosing another is a new version of the configuration, so the feed's
+   history shows when each calibration came into use. When a run starts it
+   reads the calibration it names and fits nothing, and its start record names
+   that calibration and its version. A feed whose calibration is no longer
+   approved does not start, and says why.
+
+The chain reads in both directions: from a run to its calibration, to the input
+the calibration was fitted from, to the fixings of that input; and from a
+calibration to the feeds that run it. A negative =gamma=, which says that falls
+calm the market rather than excite it, is the kind of estimate this review
+exists to catch before a feed runs it.
 
 ** A daily recursion in a feed that ticks
 
@@ -432,8 +472,9 @@ counterpart (=daily_negative_second_moment=) and
 =process_factory::make_gjr_garch_process= builds it with the mixture's own daily
 variance as the long-run level. The decorator reads the day's return once, at the
 roll, so it adds a few nanoseconds a tick to the mixture's step. The FX spot feed
-chooses between a fitted and the authored shape in =choose_daily_variance=, in
-=ores.synthetic.api/feeds/fixing_calibration.hpp=.
+builds the process from the approved calibration its configuration names; the
+capture, the fit and the review run as operations of =ores.synthetic=, and the
+fit calls =fit_gjr_garch= on the points of one stored input.
 
 The tests reproduce QuantLib's GARCH calculation test values, compare the cost
 with QuantLib's Garch11 cost function ported as an independent expectation, and

@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
 #+branch: feature/re-inventory-what-the-splits-leave
-#+pr: 4402
+#+pr: 4408
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -187,6 +187,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4408][#4408]] | [sql] Quiet the schema grants without a null device |
 | [[https://github.com/OreStudio/OreStudio/pull/4402][#4402]] | [agile,doc] Re-inventory what the splits leave |
 
 * Review

@@ -47,6 +47,7 @@
 #include "ores.refdata.service/messaging/bond_future_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/bond_yield_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_change_event_registrar.hpp"
+#include "ores.refdata.service/messaging/book_product_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_status_event_registrar.hpp"
@@ -275,6 +276,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_asset_class_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_change_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_book_product_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_purpose_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_status_event_mapping(event_source, event_bus, nats));
     subs.push_back(

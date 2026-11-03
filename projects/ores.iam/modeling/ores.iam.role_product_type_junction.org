@@ -123,6 +123,18 @@ ID of the IAM role; must exist in ores_iam_roles_tbl.
 #include <string>
 #+end_src
 
+** Conventions
+:PROPERTIES:
+:iterator_var: rpt
+:END:
+
+** Table display
+
+| column            | header       |
+|-------------------+--------------|
+| product_type_code | Product Type |
+| version           | Version      |
+
 * See also
 
 - [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product type]] states what a product type is and the one catalogue that

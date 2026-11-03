@@ -32,10 +32,10 @@ std::string convert_to_table(const std::vector<book_product_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "Product Type" << "Version" << fort::endr;
 
-    for ([[maybe_unused]] const auto& : v) {
-        table << fort::endr;
+    for ([[maybe_unused]] const auto& bpt : v) {
+        table << bpt.product_type_code << bpt.version << fort::endr;
     }
     return table.to_string();
 }

@@ -140,7 +140,7 @@ cut and the market data cut work; it is not this task's.
 **The .1 family is not built.** Five reports need a 0.1-unit bump series, and
 each needs an analytic type the platform does not bind, so a definition would
 state a run that cannot execute. They are named on
-[[file:../../../../knowledge/reports/reports.org][the reports index]] under what
+[[file:../../../../../knowledge/reports/reports.org][the reports index]] under what
 is not built, with the matrix and remaining ladder reports.
 
 **The generic seed is behind the ACME one.**

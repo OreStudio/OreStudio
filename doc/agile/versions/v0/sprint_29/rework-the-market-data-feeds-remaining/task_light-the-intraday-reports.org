@@ -28,9 +28,9 @@ The intraday reports select the LIVE cut, their configs say live market data, an
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Built, run and documented; the run stops on the environment's schema, not on the cut. |
-| Waiting on   | Nothing.                               |
-| Next         | Re-run once the environment's database is rebuilt, to see the run reach the engine. |
+| Now          | Each cycle has its own run settings, the sensitivity runs name the files they read, every intraday report has a page, and a run reaches the ORE package step. |
+| Waiting on   | The environment's service binaries, which predate this branch. |
+| Next         | Rebuild the services from this branch and re-run, to see the package step complete and the engine answer. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -38,6 +38,12 @@ The intraday reports select the LIVE cut, their configs say live market data, an
 - The Intraday Risk Monitor and Headline Position select LIVE and their configs say live.
 - The missing intraday definitions are created with their configs and analytics, dual-cycle ones split.
 - A run of the headline report resolves LIVE, mints the cut and records it; the docs and seeds agree.
+- The close twins bind run settings whose market data type is eod, so a close report values the
+  portfolio on the weekday before the run date and a live report values it on the day it runs.
+- Every configuration that switches the sensitivity analytic on names the two files that
+  analytic reads, and no configuration asks the engine for sensitivities with no factors to shift.
+- Every intraday report has a page, the vega and greek ladder family has a page each under the
+  names the product owner settled, and the index states both counts.
 - The tests and gates are green.
 
 * Plan
@@ -83,6 +89,53 @@ it is what an environment that is not recreated needs.
 The .1 family is out of scope, as instructed: five reports whose measures need
 an analytic type the platform does not bind.
 
+* The two bodies of work
+
+** The documentation
+
+The folder holds one page per report, and every intraday report now has one.
+Twenty-four pages are new and three are extended. Sixteen describe a report the
+seeds hold. Thirteen describe the vega and greek ladder family, under the names
+the product owner settled, with the B&R suffix spelled out.
+
+A page carries what a reader needs to run the report and to read it: the purpose
+and the decision it feeds, the audience, the cycle and the schedule with the
+reason for it, the inputs, the columns of every file the bound analytics write,
+the ORE fragment that configures them, the parameters a definition states, a
+worked read of the archive, and what is not built. The columns come from
+[[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] and the
+measures from [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]], so a
+page states what those pages state rather than a second opinion.
+
+The decision the work settled is that a report on two cycles is two pages and not
+one. A definition states one cut selection, so the close twin is a definition of
+its own with its own run settings, and a reader chooses between two reports. The
+frequency follows the report type: the monitors run through the trading day, the
+close twins run at the close, the maps and Trades Since Last In are on demand, and
+the ladder family is end of day, with an intraday variant worth naming for the ATM
+and surface vega ladders.
+
+** The setup
+
+The reports were seeded but their run settings were not the ones the reports
+need. Every risk report configuration stated market data type live, so the close
+twins valued the portfolio at the instant the run started. The type now follows
+the cut the definitions that share the row select, and the close twins bind a row
+of their own. Four rows are added per tenant: UK gains two, US and HK one each.
+
+The sensitivity analytic named no file, so a run asked the engine for
+sensitivities with no factors to shift. Every configuration that switches the
+analytic on now names =sensitivityConfigFile= =sensitivity.xml= and
+=marketConfigFile= =simulation.xml=, the names the file types table gives those
+parameters and the names the shipped example =ore_sensi.xml= states.
+
+The intraday definitions also take the engine set their cycle is worth. A trading
+desk report reads the live cut and binds =Intraday Indicative=; the oversight,
+valuation and close reports keep =EOD Official=.
+
+Northwind is generated from the same ACME rows, so the tenant it provisions
+carries all of it.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -95,20 +148,26 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Catalogue entries | 42 (was 31) | =json count of report_catalogue.json= | deb15641d0 + uncommitted |
-| Definition rows the four ACME parties hold | 101 (was 78) | =select count(*) from ores_reporting_report_definitions_tbl= | uncommitted |
-| Definitions that select LIVE | 10 in the catalogue; 22 published (UK 10, US 6, HK 6) | =select p.short_code, count(*) ... group by 1= | uncommitted |
-| Definitions that select EOD | 3 in the catalogue; 7 published | as above | uncommitted |
-| Run settings that say live | 46 of 46 | =select count(*) ... and market_data_type = 'live'= | uncommitted |
-| The cut a run minted | =fd636290-b0f8-4c3c-af9f-1a8f83ce16df=, badge =in_use= | [[file:./evidence/live_resolution_and_record.txt][the run's transcript]] | uncommitted |
-| Cut assembly and resolution suites | 58 assertions in 13 cases; 69 in 25 | =ores.reporting.core.tests "[cut_assembly]"= and ="[service][cut][resolution]"= | uncommitted |
-| Publish suites (pgTAP) | 31 tests across three files, all passing | =pg_prove -d $DB ... reporting_publish_cut_selection_test.sql reporting_publish_report_bindings_test.sql reporting_publish_risk_report_configs_test.sql= | 83e06dfad8 |
-| Reporting suites | core 250 of 260 cases; service 10 of 10; shell reporting 762 of 762 | =ores.reporting.core.tests=, =ores.reporting.service.tests=, =ores.shell.reporting.tests= | 83e06dfad8 |
-| Core cases that fail | 10, every one a table this environment's schema lacks (=ores_reporting_ore_file*_tbl=, =ores_reporting_report_metrics_tbl=, run results) | as above | 83e06dfad8 |
-| SQL hygiene | 1921 files, 0 problems | =python3 projects/ores.sql/utility/check_sql_hygiene.py projects/ores.sql/create projects/ores.sql/populate projects/ores.sql/test= | c04f2b2a3b |
-| Codegen documentation | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | c04f2b2a3b |
-| Codegen and seed drift | none: regenerating writes nothing | =codegen.sh regenerate --component reporting --address ores.sql.schema=, then the two =generate_*.py= and =generate_sql.py= runs | c04f2b2a3b |
-| Org lint | filetags and generator markers valid; no dangling id links | =./compass.sh lint= | c04f2b2a3b |
+| Catalogue entries | 42 (was 31) | =json count of report_catalogue.json= | deb15641d0 |
+| Definition rows the four ACME parties hold | 101, unchanged | =select count(*) from ores_reporting_report_definitions_tbl= | 99d234e95c |
+| Definitions that select LIVE | 10 in the catalogue; 22 published (UK 10, US 6, HK 6) | =select p.short_code, count(*) ... group by 1= | 99d234e95c |
+| Definitions that select EOD | 3 in the catalogue; 7 published | as above | 99d234e95c |
+| Run settings rows of the ACME tenant | 50: 46 live, 4 eod | =select market_data_type, count(*) ... group by 1= | 99d234e95c |
+| Close twins that bind an eod run settings row | 7 of 7: UK 3, US 2, HK 2, onto 4 eod rows | =select p.short_code, count(*) filter (where cfg.market_data_type='eod') ...= | 99d234e95c |
+| Sensitivity analytics that name both files | 13 of 13, across 5 run settings rows | =select cfg.name ... max(case when ap.name = 'sensitivityConfigFile' ...)= | 99d234e95c |
+| Intraday definitions that bind Intraday Indicative | 22 of 29: UK 10, US 6, HK 6. The other 7 are the close twins on EOD Official | =select p.short_code, pe.name, count(*) ... group by 1,2= | 99d234e95c |
+| Report pages in the folder | 27, of which 24 are new and 1 structure note is new | =ls doc/knowledge/reports/report_*.org= | 8b528a1a31 |
+| The cut a run minted | =LIVE.ACME-LONDON.2026-11-03T15:39:32Z=, and the run then failed in the package step | [[file:./evidence/intraday_run_chain.txt][the run's transcript]] | uncommitted |
+| Publish suites (pgTAP) | 184 tests across 19 files, all passing | =pg_prove= as the test DDL role over =projects/ores.sql/test/reporting_*.sql= | 3ce7901845 |
+| Bindings suite cases | 11, of which 4 are the rebinding cases added here | =pg_prove -d $DB projects/ores.sql/test/reporting_publish_report_bindings_test.sql= | 3ce7901845 |
+| Reporting suites | core 1473 assertions in 260 cases; service 26 in 10; shell reporting 2113 in 762 | =ores.reporting.core.tests=, =ores.reporting.service.tests=, =ores.shell.reporting.tests= | 8b528a1a31 |
+| Run document generator | 60 assertions in 27 cases, the eod and live valuation dates among them | =ores.reporting.core.tests "[run_document_generator]"= | 8b528a1a31 |
+| SQL hygiene | 1921 files, 0 problems | =python3 projects/ores.sql/utility/check_sql_hygiene.py projects/ores.sql/create projects/ores.sql/populate projects/ores.sql/test= | 99d234e95c |
+| Codegen documentation | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | 8b528a1a31 |
+| Codegen drift | none: regenerating writes nothing | =codegen.sh regenerate --component reporting --address ores.sql.schema= | 99d234e95c |
+| Seed drift | none: the two generators and =generate_sql.py= write what the tree holds | =generate_report_data.py=, =generate_sql.py= in both datasets | 99d234e95c |
+| Org lint | filetags and generator markers valid; no dangling id links | =./compass.sh lint= | 8b528a1a31 |
+| Ore core suite | does not run: the binary predates the branch and fails to load =ores::ore::results::index_payload= | =ores.ore.core.tests= | 8b528a1a31 |
 
 * Notes
 
@@ -128,6 +187,46 @@ than this branch carries, and =ores_reporting_file_types_tbl= has no
 =ore_file_code= column here. The reporting service selects that column, so the
 run fails while resolving the ORE files its configuration binds. No figure is
 produced, and the instance records the failure in its output message.
+
+**What the second pass proves, and what stops it.** The transcript in
+[[file:./evidence/intraday_run_chain.txt][the new evidence file]] shows the same
+chain with the run settings this task adds. A live definition mints its cut,
+labels it =LIVE.ACME-LONDON.2026-11-03T15:39:32Z=, records it on the instance and
+dispatches the workflow. The workflow gathers the trades, gathers the market
+data and assembles the bundle, and the ORE package step then asks the reference
+data service for the conventions families the run document needs. It stops on
+=refdata.v1.commodity_future_conventions.list=, which no running service answers,
+and the run records the timeout on itself.
+
+The checkout names no such family. Its convention family registry names
+=commodity_future_averaging_terms=, =commodity_future_contract_terms=,
+=commodity_future_expiry_anchor=, =commodity_future_off_peak_index= and
+=commodity_future_option_expiry=, each with a subject stem of its own, so the
+exporter that runs and the registry in the tree were built from different
+revisions. The services in this environment predate the branch, which is the
+same class of fact the earlier pass recorded about the schema. The engine is
+therefore not reached here, and the run records the step that stopped it.
+
+**What the close twin does instead.** A definition that selects the EOD cut does
+not mint its cut; it names one, and the environment holds none for the day. The
+transcript shows the refusal, which names the scope, the rates centre and the
+date. That refusal is the change working: before this task the twin bound run
+settings whose market data type was live, so it priced from the instant it
+started and reported live figures under the close's name. A close report that
+cannot find its close now says so.
+
+**A publish that could not rebind.** Writing the close twin's run settings found
+a second gap. The publish inserted a binding only where the party held none, so a
+catalogue that moved a definition onto another configuration document changed
+nothing in a database that was already provisioned. The upsert mode gained the
+missing path, and the suite gained four cases for it.
+
+**The environment's administrator could not act in a party.** The first
+triggers failed at the run grant, because the account's session party was a
+System Party row that the parties dataset superseded the same morning. The
+membership is a row of =ores_iam_account_parties_tbl= and removing the stale one
+is what let the account offer the real parties at login. The evidence records the
+command.
 
 **What the cut does not hold.** The market data snapshot and the deal population
 are empty on the minted cut, because no component materialises either: market
@@ -175,9 +274,33 @@ via its "Verifies task" field.
 
 * Result
 
-The intraday reports are seeded, select the LIVE cut, and their run settings say
-live. A run of the Headline Position as the UK entity mints a LIVE cut, records
-it, and reads back with its badge; the run stops on the environment's schema
-before the engine reaches a price. Thirteen catalogued reports remain prose only,
-five of them the .1 family this task was told not to build.
+Every intraday report has a page, its cycle has its own run settings, and its
+sensitivity runs name the files they read.
 
+The pages are twenty-seven, one per report the folder documents: sixteen for the
+reports the seeds hold, thirteen for the vega and greek ladder family, and the
+smoke test. The index states both counts and the structure note states which
+family a reader wants and in what order.
+
+The setup is two changes to the seeds and one to the publish. The risk report
+configuration's market data type follows the cut the definitions that share the
+row select, so the seven close twins across the three entities bind a row of kind
+eod and value the portfolio on the weekday before the run date. The sensitivity
+analytic names =sensitivity.xml= and =simulation.xml= in thirteen of thirteen
+configurations that switch it on. The publish can rebind a definition that a
+catalogue moved onto another document.
+
+A run reaches the ORE package step with the new settings, minting its cut and
+recording it, and stops there on a conventions family that this environment's
+older service binaries disagree about. The run records the step that stopped it,
+and the engine is not reached here. Every gate that can run passes: 184 pgTAP
+tests across the reporting suites, 1473 assertions in the core reporting suites,
+26 in the reporting service, 2113 in the shell reporting suites, the 39 codegen
+documentation checks, 1921 SQL files with no problem, and the org lint clean. The
+ore core suite does not run at all, because its binary predates the branch and
+fails to load =ores::ore::results::index_payload=.
+
+What remains not built is the ladder family: no definition states one, no mapper
+reads or writes a =SensitivityAnalysis= document, the store states no shift size,
+no volatility market data is seeded, and no stored shape holds a bucketed ladder.
+Each is named on the page that needs it and in the index.

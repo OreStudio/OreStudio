@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: feature/capture-the-inputs-of-a-variance-calibration
-#+pr:
+#+pr: 4427
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4427][#4427]] | [synthetic] Capture and fit a feed's variance in the class calibration |
 
 * Review
 

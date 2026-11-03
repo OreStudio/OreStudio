@@ -82,7 +82,7 @@ describe('the workflow wire boundary', () => {
         if (process.env['ORES_UPDATE_FIXTURES'] === '1') {
             writeFileSync(FIXTURE, encoded);
         }
-        expect(encoded).toBe(readFileSync(FIXTURE, 'utf8'));
+        expect(encoded).toBe(readFileSync(FIXTURE, 'utf8').replace(/\r\n/g, '\n'));
     });
 
     it('names the provisioning run the way ores.iam does', () => {

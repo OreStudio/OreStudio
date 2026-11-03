@@ -19,6 +19,9 @@
  */
 #include "ores.marketdata.service/app/billing.hpp"
 #include <algorithm>
+#if defined(_MSC_VER) && !defined(__clang__)
+#include <boost/multiprecision/cpp_int.hpp>
+#endif
 #include <map>
 #include <numeric>
 #include <set>
@@ -27,6 +30,12 @@
 namespace ores::marketdata::service::app {
 
 namespace {
+
+#if defined(_MSC_VER) && !defined(__clang__)
+using billing_integer = boost::multiprecision::int128_t;
+#else
+using billing_integer = __int128;
+#endif
 
 using party_key = std::pair<boost::uuids::uuid, boost::uuids::uuid>;
 
@@ -87,7 +96,7 @@ counted count_events(const boost::uuids::uuid& source,
 }
 
 std::int64_t per_thousand(std::int64_t ticks, std::int64_t charge) {
-    return static_cast<std::int64_t>((static_cast<__int128>(ticks) * charge + 500) / 1000);
+    return static_cast<std::int64_t>((static_cast<billing_integer>(ticks) * charge + 500) / 1000);
 }
 
 }
@@ -111,10 +120,10 @@ std::vector<std::int64_t> split_weighted(std::int64_t total,
     if (sum <= 0 || total == 0)
         return out;
 
-    std::vector<std::pair<__int128, std::size_t>> fractions;
+    std::vector<std::pair<billing_integer, std::size_t>> fractions;
     std::int64_t given = 0;
     for (std::size_t i = 0; i < weights.size(); ++i) {
-        const __int128 scaled = static_cast<__int128>(total) * weights[i];
+        const billing_integer scaled = static_cast<billing_integer>(total) * weights[i];
         out[i] = static_cast<std::int64_t>(scaled / sum);
         given += out[i];
         fractions.push_back({scaled % sum, i});
@@ -191,9 +200,9 @@ source_bill rate_source(const domain::feed& source,
         } else if (component.driver == "per_party") {
             line.quantity = static_cast<std::int64_t>(c.subscribers.size());
         } else if (component.driver == "per_licence") {
-            const auto held = c.holders.find(component.licence_right);
+            const auto licence_holders = c.holders.find(component.licence_right);
             line.quantity =
-                held == c.holders.end() ? 0 : static_cast<std::int64_t>(held->second.size());
+                licence_holders == c.holders.end() ? 0 : static_cast<std::int64_t>(licence_holders->second.size());
         } else if (component.driver == "per_thousand_ticks") {
             line.quantity = c.total_ticks;
             line.total_micros = per_thousand(c.total_ticks, component.charge_micros);

@@ -84,6 +84,16 @@ describe('labelOf', () => {
         expect(labelOf('/r/ores_dev_eager_maxwell/')).toBe('eager_maxwell');
         expect(labelOf('/r/tmp_hotfix_bff')).toBe('tmp_hotfix_bff');
     });
+
+    it('reads Windows paths with backslashes', () => {
+        expect(labelOf('C:\\work\\ores_dev_eager_maxwell\\')).toBe('eager_maxwell');
+        expect(labelOf('C:\\work\\tmp_hotfix_bff')).toBe('tmp_hotfix_bff');
+        expect(labelOf('\\\\server\\work\\ores_dev_eager_maxwell\\')).toBe('eager_maxwell');
+    });
+
+    it('preserves a literal backslash in a POSIX directory name', () => {
+        expect(labelOf('/work/ores_dev_eager\\maxwell/')).toBe('eager\\maxwell');
+    });
 });
 
 describe('GitWorkTreeSource', () => {

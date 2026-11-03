@@ -21,6 +21,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
     AmbiguousStepError,
@@ -40,7 +41,7 @@ const fixture = (name: string): string =>
 const single = fixture('single_client_scenario.org');
 const multi = fixture('multi_client_scenario.org');
 
-const repoRoot = new URL('../../../../../../', import.meta.url).pathname;
+const repoRoot = fileURLToPath(new URL('../../../../../../', import.meta.url));
 const template = join(
     repoRoot,
     'projects/ores.codegen/library/templates/doc_test_scenario.org.mustache',
@@ -312,7 +313,7 @@ describe('writing a run into a scenario', () => {
         const text = fromTemplate();
         const done = recordRun(text, run([outcome(null, 'Log in as <persona>', 'PASS')]));
         expect(done.text).toMatch(
-            /\*\*\* Result\n\n\| Field {2}\| Value \|\n\|-+\+-+\|\n\| Status \| PASS \|\n/,
+            /\*\*\* Result\r?\n\r?\n\| Field {2}\| Value \|\r?\n\|-+\+-+\|\r?\n\| Status \| PASS \|\r?\n/,
         );
     });
 

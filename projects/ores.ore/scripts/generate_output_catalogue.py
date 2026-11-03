@@ -208,7 +208,7 @@ def collect():
                 family, pattern = family_of(name)
                 entry = families.setdefault(family, {
                     "family": family, "pattern": pattern, "headers": [],
-                    "values": {}, "sample": os.path.relpath(path, ROOT)})
+                    "values": {}, "sample": os.path.relpath(path, ROOT).replace(os.sep, "/")})
                 headers, values = read_family(path)
                 if headers not in entry["headers"]:
                     entry["headers"].append(headers)
@@ -319,6 +319,19 @@ extern const std::string_view output_catalogue_text;
 """
 
 
+def raw_string_literals(text):
+    """Keep each literal below MSVC's 16,380-byte limit, including UTF-8."""
+    delimiter = "CAT"
+    index = 0
+    while f'){delimiter}"' in text:
+        index += 1
+        delimiter = f"CAT{index}"
+    # A Unicode scalar occupies at most four UTF-8 bytes. Adjacent literals
+    # concatenate at compile time without changing the table or its lifetime.
+    return [f'R"{delimiter}({text[start:start + 4000]}){delimiter}"'
+            for start in range(0, len(text), 4000)] or [f'R"{delimiter}(){delimiter}"']
+
+
 def render(catalogue):
     lines = []
     lines.append("/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-")
@@ -351,14 +364,14 @@ def render(catalogue):
     lines.append("namespace ores::ore::results {")
     lines.append("")
     lines.append("const std::string_view output_catalogue_text{")
-    lines.append('R"CAT(')
+    records = []
     for row in catalogue:
         cols = ",".join(f"{name}:{kind}" for name, kind in row["columns"])
-        lines.append("\t".join([row["family"], row["pattern"], row["parameter"],
+        records.append("\t".join([row["family"], row["pattern"], row["parameter"],
                                 row["analytic"], row["keys"], row["required"],
                                 row["qualifiers"], row["measures"], row["open"],
                                 str(row["variants"]), row["sample"], cols]))
-    lines.append(')CAT"');
+    lines.extend(raw_string_literals("\n" + "\n".join(records) + "\n"))
     lines.append("};")
     lines.append("")
     lines.append("}")
@@ -408,9 +421,9 @@ def main(argv):
         return 0
 
     os.makedirs(os.path.dirname(DATA), exist_ok=True)
-    with open(DATA, "w", encoding="utf-8") as f:
+    with open(DATA, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
-    with open(DATA_HPP, "w", encoding="utf-8") as f:
+    with open(DATA_HPP, "w", encoding="utf-8", newline="\n") as f:
         f.write(data_header)
     named = sum(1 for r in catalogue if r["parameter"])
     print(f"wrote {len(catalogue)} families, {named} named by a parameter, "

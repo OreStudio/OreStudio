@@ -396,13 +396,13 @@ private:
                     auth_nats_, in.config, in.components, in.fixing_items, in.policy, &clock);
                 one.refused = resolved.refused;
                 one.start = to_wire(resolved.source);
-                for (const auto& c : resolved.candidates)
-                    one.candidates.push_back({.item = c.item,
-                                              .provider_code = c.provider_code,
-                                              .inverted = c.inverted,
-                                              .rank = c.rank,
-                                              .state = std::string(feed::to_string(c.state)),
-                                              .reason = c.reason});
+                for (const auto& candidate : resolved.candidates)
+                    one.candidates.push_back({.item = candidate.item,
+                                              .provider_code = candidate.provider_code,
+                                              .inverted = candidate.inverted,
+                                              .rank = candidate.rank,
+                                              .state = std::string(feed::to_string(candidate.state)),
+                                              .reason = candidate.reason});
             }
             resp.feeds.push_back(std::move(one));
         }

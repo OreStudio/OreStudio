@@ -11,6 +11,12 @@ vcpkg_from_github(
         # 1 or a mean of 0 fails to decode. The patch reads either integer kind
         # into a floating-point field, as the reader already does for floats.
         accept-integer-for-double.patch
+        # MSVC runs out of template context in the pairwise duplicate-name
+        # checker. Keep its validation, using constexpr value comparisons;
+        # the patch leaves the existing implementation on other compilers.
+        msvc-field-name-check.patch
+        # Compute the same tuple offsets without recursive intermediate types.
+        msvc-tuple-positions.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)

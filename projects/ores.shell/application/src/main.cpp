@@ -24,10 +24,7 @@
 #include <openssl/crypto.h>
 
 int main(int argc, char** argv) {
-    BOOST_SCOPE_EXIT(void) {
-        OPENSSL_cleanup();
-    }
-    BOOST_SCOPE_EXIT_END;
+    BOOST_SCOPE_EXIT_ALL(&) { OPENSSL_cleanup(); };
 
     using namespace ores::shell;
     try {

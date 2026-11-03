@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: F0859472-1ACE-4E08-A6AA-358234AA7BAA
+:END:
+#+title: Task: Stamp the time a build starts and finishes
+#+description: compass build prints and logs when a build started and when it finished, with its outcome and elapsed time.
+#+type: task
+#+level: s1
+#+filetags: :stamp_build_start_and_finish:sprint_29:v0:
+#+owner: marco
+#+branch: feature/stamp-build-start-and-finish
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:839D0CD2-7684-4580-8C60-AE68C9DAD478][Stamp the time a build starts and finishes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person who reads a build's console output or its log can tell when the build started, when it ended, and how it ended.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:839D0CD2-7684-4580-8C60-AE68C9DAD478][Stamp the time a build starts and finishes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- compass build prints the start time after the parallel jobs line
+- compass build prints the finish time, the outcome and the elapsed time when the build ends
+- Both lines are in the build log
+
+* Plan
+
+Stamp only the cmake path of =cmd_build=, because that is the output a person
+reads to see when a build ran. The start line goes after the parallel jobs line,
+when the slot and the job count are known. The finish line goes in the =finally=
+block, so a failed or interrupted build also gets one. One helper,
+=_build_stamp=, prints each line and writes it to the build log. A dry run gets
+no stamps, because nothing runs.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Compass suite | 509 passed, 1 skipped | =projects/ores.compass/venv/bin/python -m pytest projects/ores.compass/tests= | =86127a72d5= |
+| Stamp tests on main's code | 2 of 3 fail (the dry-run test passes) | the same suite, =test_build_stamp.py= only, with main's =compass.py= | =52e75ba2d9= |
+| Local check gate | PASS, 3 of 3 (=tooling=) | =./compass.sh check= | =8ac44bb031=, the same tree as =86127a72d5= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass build= now prints =🕒 Build started: <date> <time> <zone>= after the
+parallel jobs line. When the build ends, it prints =🕒 Build finished (<outcome>,
+took <h:mm:ss>): <date> <time> <zone>=. The outcome is =succeeded=, =failed,
+exit N= or =interrupted=. Both lines also go into the slot's build log, so
+=compass build --status= shows when the last build ended. A real
+=compass build -j2 ores.platform.lib= printed both lines and wrote both to
+=tmp/ores-build.log.b=. The =--direct= emacs path is unchanged.

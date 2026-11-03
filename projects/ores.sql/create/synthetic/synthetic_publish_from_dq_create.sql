@@ -354,7 +354,16 @@ begin
                 a.enabled,
                 a.auto_start,
                 a.price_source,
-                a.provider_code
+                a.provider_code,
+                a.arrival_mode,
+                a.branching_ratio,
+                a.decay,
+                a.sensitivity,
+                a.variance_model,
+                a.garch_alpha,
+                a.garch_gamma,
+                a.garch_beta,
+                a.garch_window_days
             from ores_dq_fx_spot_generation_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
             order by a.base_currency_code, a.quote_currency_code
@@ -380,6 +389,8 @@ begin
                 source_name, oresmd_uri, price_source, gmm_initial_price, ticks_per_hour, process_type,
                 enabled, auto_start,
                 asset_class_code,
+                arrival_mode, branching_ratio, decay, sensitivity,
+                variance_model, garch_alpha, garch_gamma, garch_beta, garch_window_days,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
@@ -409,6 +420,8 @@ begin
                 coalesce(r.enabled, true),
                 coalesce(r.auto_start, false),
                 'fx',
+                r.arrival_mode, r.branching_ratio, r.decay, r.sensitivity,
+                r.variance_model, r.garch_alpha, r.garch_gamma, r.garch_beta, r.garch_window_days,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             from (select 1) as _dummy

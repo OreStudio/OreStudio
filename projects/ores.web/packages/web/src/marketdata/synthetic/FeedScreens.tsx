@@ -41,7 +41,7 @@ import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { PATHS } from '../../shell/paths.js';
 import { Button, Notice } from '../../ui/Primitives.js';
 import { FeedStatus, RunOutcomeText, useFeedRuns } from './feedRuns.js';
-import { FeedStartNotice } from './feedStart.js';
+import { FeedRunPanel } from './feedStart.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
 import type { FeedKind } from './feedKind.js';
 import { folderChain } from './feedTree.js';
@@ -122,7 +122,7 @@ function FeedBody({
     const parts = useFeedParts(kind, id);
     const { tab, bar } = useRecordTabs({
         label: name,
-        tabs: ['details', ...kind.tabs.map((one) => one.name), 'history'],
+        tabs: ['details', 'run', ...kind.tabs.map((one) => one.name), 'history'],
     });
     const running = feed.running;
     const runs = useFeedRuns();
@@ -184,9 +184,14 @@ function FeedBody({
                 </Notice>
             )}
             {bar}
-            {feed.start !== null && feed.start !== undefined && (
-                <FeedStartNotice start={feed.start} />
-            )}
+            {tab === 'run' &&
+                (feed.start !== null && feed.start !== undefined ? (
+                    <FeedRunPanel start={feed.start} />
+                ) : (
+                    <p className="text-sm text-ink-muted">
+                        {t('marketdata.fxFeeds.run.notRunning')}
+                    </p>
+                ))}
             {tab === 'details' && (
                 <RecordDetails specs={kind.fields} row={feed} extra={kind.extraDetails(feed, t)} />
             )}

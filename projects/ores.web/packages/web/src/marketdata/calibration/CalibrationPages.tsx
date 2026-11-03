@@ -59,6 +59,12 @@ import { FX_FEED_KIND, fxFeedPath } from '../synthetic/fxFeeds.js';
 import { formatDateTime } from '../../ui/Time.js';
 import { CalibrationRun, useCalibrationRun } from './CalibrationRun.js';
 import {
+    garchText,
+    VarianceCalibrationFacts,
+    VarianceReview,
+    VarianceStateTag,
+} from './VarianceCalibration.js';
+import {
     CALIBRATED_CLASSES,
     FILTERS,
     calibrationEntries,
@@ -336,12 +342,15 @@ export function CalibrationPage(): ReactNode {
                                 <th className="py-2">
                                     {t('marketdata.calibration.columns.state')}
                                 </th>
+                                <th className="py-2">
+                                    {t('marketdata.calibration.columns.variance')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {shown.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="py-3 text-ink-muted">
+                                    <td colSpan={5} className="py-3 text-ink-muted">
                                         {t('marketdata.calibration.empty')}
                                     </td>
                                 </tr>
@@ -363,7 +372,7 @@ export function CalibrationPage(): ReactNode {
                                             </div>
                                         </td>
                                         <td className="py-2 tabular-nums">
-                                            {feed.start.from_fixing ? feed.start.value : '—'}
+                                            <StartLevel start={feed.start} />
                                         </td>
                                         <td className="py-2">
                                             {feed.start.from_fixing ? (
@@ -386,6 +395,12 @@ export function CalibrationPage(): ReactNode {
                                                 </Tag>
                                             )}
                                         </td>
+                                        <td className="py-2">
+                                            <VarianceCell
+                                                variance={feed.variance}
+                                                to={`${calibrationFeedPath(assetClass, feed.config_id)}?tab=variance`}
+                                            />
+                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -394,6 +409,66 @@ export function CalibrationPage(): ReactNode {
                 </>
             )}
         </div>
+    );
+}
+
+/**
+ * A feed's start level in the pair's market convention. An item that quotes the pair the other
+ * way round is read as one over its value, so the level is shown first and the fixing it came
+ * from beside it, rather than the raw fixing alone.
+ */
+export function StartLevel({ start }: { readonly start: CalibratedFeed['start'] }): ReactNode {
+    const { t } = useTranslation();
+    if (!start.from_fixing) {
+        return '—';
+    }
+    const raw = Number(start.value);
+    if (!start.inverted || !Number.isFinite(raw) || raw === 0) {
+        return start.value;
+    }
+    return (
+        <span>
+            {(1 / raw).toPrecision(6)}
+            <span className="block text-xs text-ink-faint">
+                {t('marketdata.calibration.invertedFrom', { value: start.value })}
+            </span>
+        </span>
+    );
+}
+
+/** A feed's variance calibration in one cell: its state and its persistence, to open it from. */
+function VarianceCell({
+    variance,
+    to,
+}: {
+    readonly variance: CalibratedFeed['variance'];
+    readonly to: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (variance === null || variance === undefined) {
+        return <span className="text-ink-faint">—</span>;
+    }
+    return (
+        <Link className="flex flex-wrap items-center gap-1 hover:underline" to={to}>
+            <VarianceStateTag state={variance.state} />
+            {variance.persistence !== null && variance.persistence !== undefined && (
+                <span className="text-xs tabular-nums text-ink-muted">
+                    {t('marketdata.calibration.variance.cell', {
+                        alpha: garchText(variance.alpha),
+                        gamma: garchText(variance.gamma),
+                        beta: garchText(variance.beta),
+                        persistence: garchText(variance.persistence),
+                    })}
+                </span>
+            )}
+            {variance.persistence !== null &&
+                variance.persistence !== undefined &&
+                !variance.starts_agreed && (
+                    <Tag tone="warn" small>
+                        {t('marketdata.calibration.variance.startsDisagreedShort')}
+                    </Tag>
+                )}
+        </Link>
     );
 }
 
@@ -948,7 +1023,7 @@ function CalibrationLog({ configId }: { readonly configId: string }): ReactNode 
     );
 }
 
-const FEED_TABS = ['record', 'flow'] as const;
+const FEED_TABS = ['record', 'variance', 'flow'] as const;
 
 /** One feed's calibration: its record (start, candidates, trail, measures) and its flow. */
 export function CalibrationFeedPage(): ReactNode {
@@ -1134,6 +1209,34 @@ export function CalibrationFeedPage(): ReactNode {
                         </Card>
                     </div>
                 </div>
+            ) : tab === 'variance' ? (
+                <Card title={t('marketdata.calibration.variance.title')}>
+                    {feed.variance === null || feed.variance === undefined ? (
+                        <p className="text-sm text-ink-muted">
+                            {t('marketdata.calibration.variance.none')}
+                        </p>
+                    ) : (
+                        <div className="space-y-4">
+                            <p className="text-sm text-ink-muted">
+                                {t('marketdata.calibration.variance.lead')}
+                            </p>
+                            <VarianceCalibrationFacts variance={feed.variance} />
+                            {feed.variance.calibration_id === '' && (
+                                <Notice tone="info">
+                                    {t('marketdata.calibration.variance.notStored')}
+                                </Notice>
+                            )}
+                            <VarianceReview
+                                variance={feed.variance}
+                                onReviewed={() => {
+                                    void refresh();
+                                    void client.invalidateQueries({ queryKey: ['records'] });
+                                    void client.invalidateQueries({ queryKey: ['history'] });
+                                }}
+                            />
+                        </div>
+                    )}
+                </Card>
             ) : (
                 <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
                     <div className="space-y-4">

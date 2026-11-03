@@ -364,8 +364,10 @@ export function registerCalibrationRoutes(
                 repointed_feeds: z.array(z.string()).default([]),
             }),
         );
+        // A refusal is the service's answer about the calibration, such as one already decided,
+        // not an outage, so it is a conflict the reviewer reads.
         if (!reply.success) {
-            throw upstreamFailure(reply.message);
+            throw new HttpFailure(409, { code: 'conflict', message: reply.message });
         }
         return {
             state: reply.state,

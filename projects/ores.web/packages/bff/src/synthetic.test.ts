@@ -818,8 +818,11 @@ describe('synthetic calibration', () => {
             decision: 'reject',
             reason: 'unstable',
         });
-        expect(response.statusCode).not.toBe(200);
-        expect(response.body).toContain('Only a proposed calibration is reviewed');
+        expect(response.statusCode).toBe(409);
+        expect(response.json()).toMatchObject({
+            code: 'conflict',
+            message: 'Only a proposed calibration is reviewed; it is approved.',
+        });
     });
 
     it('refuses a review that states no reason', async () => {

@@ -4419,6 +4419,7 @@ const pt: SourceCatalogue = {
                 memberships: 'Pertenças',
                 centres: 'Centros de negócios',
                 counterparties: 'Contrapartes',
+                run: 'Esta execução',
                 arrivals: 'Chegadas',
                 variance: 'Variância',
                 behaviour: 'Comportamento do preço',
@@ -4872,6 +4873,48 @@ const pt: SourceCatalogue = {
 
     marketdata: {
         calibration: {
+            variance: {
+                title: 'Calibração da variância diária',
+                lead: 'A calibração GJR-GARCH do par deste feed: a forma, a evidência com que foi ajustada, a entrada de onde veio, e a sua revisão. Um feed só usa uma calibração aprovada.',
+                none: 'A variância deste feed é constante, ou não arrancou de um fixing, por isso não tem calibração de variância.',
+                notStored:
+                    'Uma pré-visualização ajusta a variância e não guarda nada. Calibre o feed para guardar esta entrada e este ajuste, e reveja-o aqui.',
+                alpha: 'Alfa',
+                gamma: 'Gama',
+                beta: 'Beta',
+                persistence: 'Persistência',
+                startingRatio: 'Primeiro dia / longo prazo',
+                starts: 'Arranques',
+                startsAgreed: '{starts}, todos concordam',
+                startsDisagreed: '{starts}, discordam',
+                startsDisagreedShort: 'arranques discordam',
+                disagreeWarning:
+                    'Os pontos de partida do ajuste terminaram em ótimos diferentes, por isso este histórico identifica mal a forma. Pondere-a antes de a aprovar.',
+                returns: 'Retornos usados',
+                returnsOf: '{used} de {points} fixings',
+                window: 'Janela',
+                windowOf: '{days} dias até {end}',
+                provider: 'Fornecedor',
+                orientation: 'Sentido',
+                inverted: 'Invertido: o item cota o par no sentido contrário',
+                direct: 'Direto',
+                item: 'Item',
+                calibrationId: 'Calibração',
+                inputId: 'Entrada',
+                reviewReason: 'Motivo',
+                reviewHint: 'Obrigatório. Guardado com a decisão no histórico da calibração.',
+                approve: 'Aprovar',
+                reject: 'Rejeitar',
+                cell: 'α {alpha} γ {gamma} β {beta} · persistência {persistence}',
+                state: {
+                    proposed: 'Proposta',
+                    approved: 'Aprovada',
+                    rejected: 'Rejeitada',
+                    superseded: 'Substituída',
+                    failed: 'Não guardada',
+                },
+            },
+            invertedFrom: 'o inverso do fixing {value}',
             title: 'Calibração',
             lead: 'Como cada fluxo de uma classe de ativos toma o seu nível inicial e a sua volatilidade dos fixings públicos.',
             systemOnly:
@@ -4945,6 +4988,7 @@ const pt: SourceCatalogue = {
                 overridden: 'Derrogações',
             },
             columns: {
+                variance: 'Variância',
                 feed: 'Fluxo',
                 start: 'Início',
                 source: 'Fonte',
@@ -4979,6 +5023,7 @@ const pt: SourceCatalogue = {
                 title: 'Fluxo',
                 tabs: 'Calibração do fluxo',
                 tab: {
+                    variance: 'Variância',
                     record: 'Registo do fluxo',
                     flow: 'Percurso',
                 },
@@ -5788,6 +5833,9 @@ const pt: SourceCatalogue = {
             'model.gjr_garch': 'GJR-GARCH — uma variância levada de um dia para o outro',
             calibration: 'Calibração',
             calibrationNone: 'Nenhuma',
+            running: 'O que o feed em execução usa',
+            notRunning: 'O feed não está a correr.',
+            openCalibration: 'Abrir a sua calibração: a evidência e a revisão',
             calibrationLead:
                 'Um feed GJR-GARCH usa a calibração aprovada do seu par. As calibrações são capturadas, ajustadas e aprovadas ou rejeitadas no ecrã Calibração; aprovar uma aponta os feeds do par para ela.',
         },
@@ -6162,6 +6210,16 @@ const pt: SourceCatalogue = {
                 variance_model:
                     'Constante mantém a variância da mistura em todos os dias. GJR-GARCH transporta uma variância de um dia para o seguinte, de modo que os dias calmos e agitados se agrupam; precisa do motor geométrico ou aritmético.',
             },
+            run: {
+                level: 'Nível',
+                levelInverted:
+                    'O inverso do fixing {provider} de {value} em {date}, recebido {received}: o item cota o par no sentido contrário.',
+                source: 'Item de fixing',
+                window: 'Janela',
+                variance: 'Variância diária',
+                notRunning:
+                    'O feed não está a correr, por isso não há execução a descrever. Arranque-o para ver de onde parte.',
+            },
             start: {
                 title: 'De onde arrancou esta execução',
                 fromFixing:
@@ -6174,6 +6232,7 @@ const pt: SourceCatalogue = {
                     'O item cita o par ao contrário, por isso o valor foi lido como o seu inverso.',
                 window: '{used} fixings em {days} dias mediram a sua dispersão.',
                 variance: {
+                    calibration: 'Calibração {id}, versão {version}.',
                     fitted: 'Variância diária: GJR-GARCH ajustado a {returns} retornos diários, alfa {alpha}, gama {gamma}, beta {beta}, persistência {persistence}.',
                     authored:
                         'Variância diária: GJR-GARCH com a forma definida, alfa {alpha}, gama {gamma}, beta {beta}, persistência {persistence}.',

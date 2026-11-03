@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-the-calibration-chain-of-a-feed
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A reader sees how every number of a run came to be. The This run tab states the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

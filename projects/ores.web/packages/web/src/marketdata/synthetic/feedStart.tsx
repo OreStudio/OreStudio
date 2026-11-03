@@ -23,54 +23,101 @@ import type { ReactNode } from 'react';
 import type { FeedStart } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { OresmdUrl } from '../../oresmd/OresmdUrl.js';
-import { Notice } from '../../ui/Primitives.js';
 import { formatDateTime } from '../../ui/Time.js';
 
+/** A run's level in the pair's market convention: an inverted item is read as one over it. */
+export function levelOf(start: FeedStart): string {
+    const raw = Number(start.value);
+    if (!start.inverted || !Number.isFinite(raw) || raw === 0) {
+        return start.value;
+    }
+    return (1 / raw).toPrecision(6);
+}
+
+function Section({
+    title,
+    children,
+}: {
+    readonly title: string;
+    readonly children: ReactNode;
+}): ReactNode {
+    return (
+        <section className="space-y-2">
+            <h3 className="text-sm font-medium text-ink">{title}</h3>
+            <div className="space-y-1 text-sm text-ink-muted">{children}</div>
+        </section>
+    );
+}
+
 /**
- * Where a run's starting value came from, in one sentence: the fixing it took,
- * with the value as the publisher wrote it, the publisher's date and the time it
- * arrived; or that no fixing set the level and the run kept its configured one.
- * The item itself is drawn as the oresmd URI it is, so a reader can open the
- * series the value came from.
+ * Where a run started, as plain text in sections: the level it took, in the pair's market
+ * convention; the fixing that level came from; the window that measured its spread; and the
+ * daily variance it runs, with the calibration that variance was approved as. A reader can
+ * follow each number to its source.
  */
-export function FeedStartNotice({ start }: { readonly start: FeedStart }): ReactNode {
+export function FeedRunPanel({ start }: { readonly start: FeedStart }): ReactNode {
     const { t, language } = useTranslation();
     const received =
         start.received_at === null || start.received_at === undefined
             ? t('marketdata.fxFeeds.start.receivedUnknown')
             : formatDateTime(start.received_at, language);
+    const date =
+        start.fixing_date === null || start.fixing_date === undefined
+            ? t('marketdata.fxFeeds.start.dateUnknown')
+            : start.fixing_date;
     return (
-        <Notice tone="info">
-            <p className="font-medium">{t('marketdata.fxFeeds.start.title')}</p>
-            <p>
-                {start.from_fixing
-                    ? t('marketdata.fxFeeds.start.fromFixing', {
-                          provider: start.provider_code,
-                          value: start.value,
-                          date:
-                              start.fixing_date === null || start.fixing_date === undefined
-                                  ? t('marketdata.fxFeeds.start.dateUnknown')
-                                  : start.fixing_date,
-                          received,
-                      })
-                    : t('marketdata.fxFeeds.start.fixedLevel')}
-            </p>
-            {start.from_fixing && start.item !== '' && <OresmdUrl uri={start.item} />}
-            {start.from_fixing && start.inverted && <p>{t('marketdata.fxFeeds.start.inverted')}</p>}
-            {start.from_fixing && start.used > 0 && (
-                <p>
-                    {t('marketdata.fxFeeds.start.window', {
-                        used: String(start.used),
-                        days: String(start.window_days),
-                    })}
-                </p>
+        <div className="space-y-6" data-feed-run>
+            <Section title={t('marketdata.fxFeeds.run.level')}>
+                {start.from_fixing ? (
+                    <>
+                        <p className="text-base font-medium tabular-nums text-ink">
+                            {levelOf(start)}
+                        </p>
+                        <p>
+                            {start.inverted
+                                ? t('marketdata.fxFeeds.run.levelInverted', {
+                                      provider: start.provider_code,
+                                      value: start.value,
+                                      date,
+                                      received,
+                                  })
+                                : t('marketdata.fxFeeds.start.fromFixing', {
+                                      provider: start.provider_code,
+                                      value: start.value,
+                                      date,
+                                      received,
+                                  })}
+                        </p>
+                    </>
+                ) : (
+                    <p>{t('marketdata.fxFeeds.start.fixedLevel')}</p>
+                )}
+                {start.note !== '' && <p>{start.note}</p>}
+            </Section>
+            {start.from_fixing && start.item !== '' && (
+                <Section title={t('marketdata.fxFeeds.run.source')}>
+                    <OresmdUrl uri={start.item} />
+                </Section>
             )}
-            {start.from_fixing && <FeedStartMeasures start={start} />}
-            {start.note !== '' && <p>{start.note}</p>}
+            {start.from_fixing && (start.used > 0 || start.daily_spread != null) && (
+                <Section title={t('marketdata.fxFeeds.run.window')}>
+                    {start.used > 0 && (
+                        <p>
+                            {t('marketdata.fxFeeds.start.window', {
+                                used: String(start.used),
+                                days: String(start.window_days),
+                            })}
+                        </p>
+                    )}
+                    <FeedStartMeasures start={start} />
+                </Section>
+            )}
             {start.variance !== null && start.variance !== undefined && (
-                <FeedStartVariance variance={start.variance} />
+                <Section title={t('marketdata.fxFeeds.run.variance')}>
+                    <FeedStartVariance variance={start.variance} />
+                </Section>
             )}
-        </Notice>
+        </div>
     );
 }
 
@@ -96,6 +143,14 @@ export function FeedStartVariance({
     };
     return (
         <div data-feed-variance className="space-y-1">
+            {variance.calibration_id !== '' && (
+                <p>
+                    {t('marketdata.fxFeeds.start.variance.calibration', {
+                        id: variance.calibration_id,
+                        version: String(variance.calibration_version),
+                    })}
+                </p>
+            )}
             <p>
                 {variance.fitted
                     ? t('marketdata.fxFeeds.start.variance.fitted', {

@@ -24,7 +24,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { FeedStart } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
-import { FeedStartNotice } from './feedStart.js';
+import { FeedRunPanel } from './feedStart.js';
 
 const START: FeedStart = {
     from_fixing: true,
@@ -48,7 +48,7 @@ function render(start: FeedStart): string {
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <FeedStartNotice start={start} />
+                <FeedRunPanel start={start} />
             </TranslationProvider>
         </QueryClientProvider>,
     );
@@ -57,7 +57,7 @@ function render(start: FeedStart): string {
 describe('where a feed run started', () => {
     it('names the provider, the item, the fixing date and the time it arrived', () => {
         const html = render(START);
-        expect(html).toContain('Where this run started');
+        expect(html).toContain('Level');
         expect(html).toContain('ECB');
         expect(html).toContain('2026-10-27');
         expect(html).toContain('261 fixings over 400 days measured its spread.');
@@ -81,9 +81,41 @@ describe('where a feed run started', () => {
         expect(html).not.toContain('fixing of');
     });
 
-    it('says the item quotes the pair the other way round when it was inverted', () => {
-        const html = render({ ...START, inverted: true });
-        expect(html).toContain('one over it');
+    it('shows an inverted start at its level in market convention, before the raw fixing', () => {
+        const html = render({ ...START, value: '1.4239', inverted: true });
+        const level = (1 / 1.4239).toPrecision(6);
+        expect(html).toContain(level);
+        expect(html).toContain('the item quotes the pair the other way round');
+        expect(html.indexOf(level)).toBeLessThan(html.indexOf('1.4239'));
+    });
+
+    it('lays the run out as plain sections, not as a notice over the feed', () => {
+        const html = render(START);
+        expect(html).toContain('data-feed-run');
+        expect(html).not.toContain('role="status"');
+        expect(html).not.toContain('Where this run started');
+    });
+
+    it('names the calibration a run took its variance from', () => {
+        const html = render({
+            ...START,
+            variance: {
+                model: 'gjr_garch',
+                calibration_id: 'b608b4be-6a2d-56d1-a144-09cb668ba393',
+                calibration_version: 2,
+                fitted: true,
+                alpha: 0.0113,
+                gamma: 0.023,
+                beta: 0.9323,
+                persistence: 0.9551,
+                initial_ratio: 0.92,
+                returns: 279,
+                note: 'Fitted from 279 daily returns and approved: Starts agree.',
+            },
+        });
+        expect(html).toContain('Daily variance');
+        expect(html).toContain('Calibration b608b4be-6a2d-56d1-a144-09cb668ba393, version 2.');
+        expect(html).toContain('persistence 0.955');
     });
 
     it('says the volatility changed the calibration and records the rest for later', () => {

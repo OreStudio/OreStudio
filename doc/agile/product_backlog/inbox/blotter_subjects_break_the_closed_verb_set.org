@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: DC54C1AA-A619-49E6-9305-36B172CE2155
 :END:
-#+title: Blotter subjects break the closed verb set
-#+description: The blotter subjects trading.v1.blotter.rail and trading.v1.blotter.page use verbs outside the closed set of eight, so the subject conformance tests fail on main since PR #4403.
+#+title: Blotter subjects break the closed verb set (resolved)
+#+description: Resolved: the subjects moved to the ops namespace. The blotter subjects trading.v1.blotter.rail and trading.v1.blotter.page use verbs outside the closed set of eight, so the subject conformance tests fail on main since PR #4403.
 #+type: capture
 #+level: cross
 #+filetags: :trading:nats:codegen:
@@ -18,6 +18,10 @@ The blotter model in =projects/ores.trading/modeling/ores.trading.blotter.org= d
 * Why
 
 Two tests in =test_check_subject_conformance.py= fail on main: =test_the_committed_tree_is_clean_against_its_baseline= and =test_no_declared_subject_violates_the_protocol=. The =codegen-tests= gate check is red for every branch until this is fixed. The subjects came from PR #4403 (merge b903acb430).
+
+* Resolution
+
+Both reads moved to the reserved ops namespace, as =trading.v1.ops.get_blotter_rail= and =trading.v1.ops.get_blotter_page=. The names agree with the request types. The page reads with keyed paging, and the protocol's =list= reads with offset paging, so =list= does not fit it. The rail returns counts, not an entity, so no verb in the closed set fits it. The BFF does not call these subjects, so no client changed.
 
 * References
 

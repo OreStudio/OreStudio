@@ -27,6 +27,7 @@
 
 #include "ores.trading.api/domain/bond_option_settlement.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #include <tuple>

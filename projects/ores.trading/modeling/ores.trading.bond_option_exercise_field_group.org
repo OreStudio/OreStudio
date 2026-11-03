@@ -20,6 +20,7 @@
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #+end_src

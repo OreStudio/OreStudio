@@ -48,6 +48,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:ED38F922-C76B-4F8C-A8A3-FE7244E9FCA7][Add the calibrated FX volatility surface series to oresmd]] | DONE | 2026-11-03 | 2026-11-03 | An instrument type whose identity names a calibrated surface, with expiry and strike axes, created with its blueprint; see A calibrated surface is a series of its own in the oresmd note. |
 | [[id:886DD1DB-7FFD-4EB0-9BE7-D7A5F1C1BEBD][Calibrate a volatility surface from its quotes]] | BACKLOG | | | The marketdata.v1.surface.calibrate operation and its engine, with the recipe and result checks run in the service, writing a candidate with lineage; see Constructing a volatility surface: from quotes to a published set. |
 | [[id:780C7570-E322-4B2F-833A-C352D4A95B84][Read a published surface and its slices]] | BACKLOG | | | The surface and slice reads the slices journey needs, over the published set rather than the quotes; see Constructing a volatility surface: from quotes to a published set. |
+| [[id:64F0A193-A749-4B94-99C6-78CCFC9C45AD][Read whole numbers as doubles on the wire]] | DONE | | 2026-11-03 | Fix the MessagePack reader refusing a whole number packed as an integer for a double field, which broke the Price behaviour tab. |
 
 * Decisions
 

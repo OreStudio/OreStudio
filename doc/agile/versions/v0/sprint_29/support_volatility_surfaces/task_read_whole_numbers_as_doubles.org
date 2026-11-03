@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 64F0A193-A749-4B94-99C6-78CCFC9C45AD
+:END:
+#+title: Task: Read whole numbers as doubles on the wire
+#+description: Fix the MessagePack reader refusing a whole number packed as an integer for a double field, which broke the Price behaviour tab.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: fix/accept-whole-numbers-as-doubles
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A web request whose double field holds a whole number decodes in the C++ services, as it does in JSON.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The MessagePack double reader accepts integer frames; a string or a boolean is still refused.
+- Simulate and convert on the Price behaviour tab succeed against the deployed services.
+
+* Plan
+
+Testing GJR-GARCH on the Price behaviour tab showed every simulate and convert
+request refused with "Not a number". The web encoder has one number type and packs
+1.0 as the integer 1; the hand-written MessagePack reader accepted only a float
+frame for a double. Accept integer frames in the reader, as the JSON reader does.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+
+The MessagePack double reader accepts integer frames. =ores.utility.tests= passes
+with two new cases, and against the deployed services a simulate request with
+=initial_price= 1 and a convert request with whole-number fields both decode and
+return results, where the same requests were refused before.

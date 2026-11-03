@@ -109,6 +109,16 @@ private:
                       const std::string& result_id);
 
     /**
+     * @brief Reads the log rows of the trades the run's package left out.
+     *
+     * The package leaves out a trade whose ORE XML it cannot write and states
+     * why beside itself. Most runs leave nothing out and store no such log, so
+     * an absent one is not a failure.
+     */
+    [[nodiscard]] std::vector<service::engine_log_row>
+    read_package_log_rows(const std::string& tenant_id, const std::string& report_instance_id);
+
+    /**
      * @brief Records the log of every result of one run, in one write.
      *
      * A run is stored against its errors once, so the rows of all its results

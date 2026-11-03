@@ -144,6 +144,42 @@ std::string portfolio_projection::write(const document& v) {
     return out;
 }
 
+written_portfolio portfolio_projection::write_leaving_out(const document& v) {
+    written_portfolio result;
+    std::string out;
+    if (xml::emitter::emit(pf::portfolio_document(), &v, out)) {
+        result.xml = std::move(out);
+        return result;
+    }
+
+    // A trade's product lives in the columns the document shares, so each
+    // trade is tried in a copy that keeps the columns and holds that trade
+    // alone. The copy is made once and only when the whole document refuses.
+    auto alone = v;
+    auto kept = v;
+    kept.trade.clear();
+    const auto& type = *pf::portfolio_document().root;
+    for (const auto& trade : v.trade) {
+        alone.trade = {trade};
+        const auto emitted = xml::emitter::emit(pf::portfolio_document(), &alone, out);
+        if (emitted) {
+            kept.trade.push_back(trade);
+            continue;
+        }
+        std::string trade_type;
+        for (const auto& one : xml::record_reader(type, &alone).children("Trade"))
+            trade_type = one.spelling("TradeType").value_or("");
+        result.refused.push_back(refused_trade{
+            .trade_id = trade.id, .trade_type = trade_type, .message = emitted.error().message});
+    }
+    if (kept.trade.empty() && !result.refused.empty())
+        throw std::runtime_error(
+            "No trade of the portfolio can be written; the first refusal is: " +
+            result.refused.front().message);
+    result.xml = write(kept);
+    return result;
+}
+
 std::vector<xml::trade_import_item> portfolio_projection::map(const document& v,
                                                               std::string_view origin) {
     const auto& type = *pf::portfolio_document().root;

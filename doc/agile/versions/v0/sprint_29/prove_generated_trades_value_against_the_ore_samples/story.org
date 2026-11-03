@@ -54,8 +54,12 @@ engine's structured log groups the errors as follows.
    levels. The FX index is written =GBP/CHF= where ORE wants
    =FX-<source>-GBP-CHF=. Schedule rules have an empty =StartDate=. FxTaRF has no
    =RangeBounds=, FxAccumulator no payoff type, Ascot no =FixedLegData= and
-   BondPosition no =BondBasketData=. The roundtrip tests over the ORE samples
-   should have caught each of these; find why they did not.
+   BondPosition no =BondBasketData=. London's NPV run of 2026-11-03 left out
+   37 more trades its writer refused: BalanceGuaranteedSwap with no =Tranche=,
+   EquityAccumulator with no =RangeBounds=, EquityOptionPosition with no
+   =Underlying= and EquityWorstOfBasketSwap with no =Underlyings=. The
+   roundtrip tests over the ORE samples should have caught each of these; find
+   why they did not.
 2. *The generated data is wrong*, 4 trades. FxSwap is booked with an empty
    =FarDate= and zero far amounts. A comparison of generated trades with the ORE
    samples should have caught it.

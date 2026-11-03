@@ -217,11 +217,11 @@ TEST_CASE("an analytic that failed leaves the reports of another that ran",
     CHECK(outcome.failure.empty());
 }
 
-TEST_CASE("a run fails when every analytic it started failed",
-          "[ore][log][engine_run_verdict]") {
-    const auto log = line("NOTICE", "run analytic with label 'PRICING'") +
-                     line("NOTICE", "run analytic with label 'SA_CCR'") +
-                     line("ALERT", "Error in ORE analytics: Failed to run analytics PRICING, SA_CCR");
+TEST_CASE("a run fails when every analytic it started failed", "[ore][log][engine_run_verdict]") {
+    const auto log =
+        line("NOTICE", "run analytic with label 'PRICING'") +
+        line("NOTICE", "run analytic with label 'SA_CCR'") +
+        line("ALERT", "Error in ORE analytics: Failed to run analytics PRICING, SA_CCR");
 
     const auto outcome = judge_engine_run({"log.txt", "runtimes.csv"}, log);
 

@@ -89,6 +89,21 @@ A person can follow a report run from trigger to stored rows and confirm each fa
 10. Keep the tests to what they mean: the SQL tests read the moved columns
     through the ORE file, and a test that counted every live feed counts the
     seeded ones, since the integration tests write into the same database.
+11. Keep the reports of the analytics that ran. Run eb9acf8b wrote npv.csv,
+    then SA-CCR failed, and the run stored nothing. The verdict now succeeds a
+    run when the engine says only some of the analytics it started failed; the
+    failure stays in the log the run records as its errors.
+12. Book what each party prices. The holding company held 73 FX exotics and
+    bonds although the Acme design gives it Swap, FxForward and Bond in GBP,
+    USD, HKD and EUR. A trade generation config now states its trade types in
+    a junction, trade_generation_trade_type, with a soft FK to the product
+    type catalogue; a config with none books every type of its class. The
+    group's configs book Bond and FxForward, and an FX trade's pair is kept to
+    the currencies the party holds a yield curve for.
+13. Leave out a trade whose ORE XML cannot be written. One equity trade with
+    no Underlyings refused London's whole portfolio. The package now writes
+    the rest, and states each trade it left out in a canonical log stored at
+    ore/package_logs/<run>.csv, which the run records with the engine's errors.
 
 * Measurements
 

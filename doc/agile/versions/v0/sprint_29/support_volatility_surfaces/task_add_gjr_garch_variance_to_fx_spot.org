@@ -32,11 +32,11 @@ synthetic FX spot" in Volatility clustering and GARCH models.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -129,3 +129,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A synthetic FX spot feed can carry a GJR-GARCH daily variance, fitted from its
+fixing history or authored, and the FX feed screen edits it on a Variance tab.
+
+- =ores.analytics.quant= gained a native GJR-GARCH model, a Nelder-Mead simplex, a
+  volatility multiplier on the two mixture processes and a decorator that drives
+  it day by day. No QuantLib code is used.
+- Tests: 555 quant test cases pass. They reproduce QuantLib's GARCH calculation
+  values to 1e-6, match QuantLib's Garch11 cost ported as an independent
+  expectation to 1e-13, and repeat its calibration and initial-guess tests with
+  our own random numbers. A deliberate flip of the GJR indicator is caught by
+  three tests.
+- Performance, measured with the on-demand =[.benchmark]= test, three runs: the
+  plain mixture takes about 67 ns a tick and the decorated one about 70.6 ns,
+  after moving the day's return to the roll (it was 85 ns with a log a tick).
+  A fit over 1,260 daily returns took about 8 ms.
+- The config carries the model, the shape and the history window; a feed start
+  records how its variance started. The web tests pass (256 synthetic and i18n,
+  1,228 BFF).

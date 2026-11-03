@@ -402,6 +402,30 @@ mixture's deviations from its mean are scaled so the mixture's daily variance is
 return of the generated path over the day. Saturday and Sunday are not market
 days, so the variance does not change across them.
 
+** In the code
+
+The model is native to =ores.analytics.quant=, with no QuantLib code.
+=math::gjr_garch_model=, in =ores.analytics.quant/math/gjr_garch.hpp=, can only be
+built by =make()=, which refuses a shape outside the admissible region, so a
+model in hand always has a positive variance and a finite long-run level; omega
+follows from the long-run variance. The same header holds the filter, the
+Gaussian cost, the mixture's closed-form =p_minus= (=negative_second_moment=) and
+=fit_gjr_garch=, which fits from several starts by the native simplex of
+=math/nelder_mead.hpp= and keeps the best.
+=service::gjr_garch_variance_process= wraps any process that honours
+=set_volatility_multiplier()=, which the two mixture processes do, and
+=process_factory::make_gjr_garch_process= builds it with the mixture's own daily
+variance as the long-run level. The decorator reads the day's return once, at the
+roll, so it adds a few nanoseconds a tick to the mixture's step. The FX spot feed
+chooses between a fitted and the authored shape in =choose_daily_variance=, in
+=ores.synthetic.api/feeds/fixing_calibration.hpp=.
+
+The tests reproduce QuantLib's GARCH calculation test values, compare the cost
+with QuantLib's Garch11 cost function ported as an independent expectation, and
+repeat QuantLib's calibration and initial-guess tests with this project's random
+numbers: the fit recovers the parameters that drew a series, and every start
+reaches the same optimum.
+
 * Comparison with continuous-time models (Heston)
 
 ** Two families

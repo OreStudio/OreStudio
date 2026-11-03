@@ -375,11 +375,15 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                   << (start.note.empty() ? "" : ". " + start.note);
     }
     // A run that took no fixing records the level it kept, so its start states the level the run
-    // began at even after a later calibration moves the config's level.
-    if (!start.from_fixing)
-        if (const auto kept =
-                ores::utility::decimal::decimal::from_string(std::format("{}", initial_price)))
+    // began at even after a later calibration moves the config's level. The config holds the level
+    // as a double, so its shortest spelling is what is recorded.
+    if (!start.from_fixing) {
+        if (const auto kept = ores::utility::decimal::decimal::from_double(initial_price))
             start.value = *kept;
+        else
+            BOOST_LOG_SEV(lg(), warn)
+                << "Feed " << cfg.source_name << " records no start level: " << kept.error();
+    }
 
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process;
     if (cfg.variance_model == "gjr_garch") {

@@ -22,7 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { z } from 'zod';
-import { api } from '../../api/client.js';
+import { api, type RecordRow } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { Notice } from '../../ui/Primitives.js';
 import { formatDateTime } from '../../ui/Time.js';
@@ -35,6 +35,7 @@ export const CALIBRATION_ENTITY = 'ores.synthetic.variance_calibration';
 export const INPUT_ENTITY = 'ores.synthetic.variance_calibration_input';
 
 const number = z.number().nullish();
+const PAIR_PAGE = 500;
 
 /** One stored variance calibration of a pair, as its record holds it. */
 const storedCalibrationSchema = z.looseObject({
@@ -65,25 +66,39 @@ const pointSchema = z.looseObject({
 
 export type CapturedPoint = z.infer<typeof pointSchema>;
 
+/** Every row of a pair, read a page at a time until the server's total is reached. */
+export async function readPair(
+    resource: string,
+    base: string,
+    quote: string,
+): Promise<readonly RecordRow[]> {
+    const rows: RecordRow[] = [];
+    for (;;) {
+        const page = await api.syntheticPage(resource, {
+            offset: rows.length,
+            limit: PAIR_PAGE,
+            search: '',
+            sort: '',
+            descending: false,
+            filters: { base_currency_code: base, quote_currency_code: quote },
+        });
+        rows.push(...page.rows);
+        if (page.rows.length === 0 || rows.length >= page.total) {
+            return rows;
+        }
+    }
+}
+
 /** Every stored variance calibration of a pair, oldest first. */
 export function usePairCalibrations(base: string, quote: string) {
     return useQuery({
         queryKey: ['records', CALIBRATIONS, base, quote],
         enabled: base !== '' && quote !== '',
-        queryFn: async () => {
-            const page = await api.syntheticPage(CALIBRATIONS, {
-                offset: 0,
-                limit: 500,
-                search: '',
-                sort: '',
-                descending: false,
-                filters: { base_currency_code: base, quote_currency_code: quote },
-            });
-            return z
+        queryFn: async () =>
+            z
                 .array(storedCalibrationSchema)
-                .parse(page.rows)
-                .toSorted((a, b) => a.recorded_at.localeCompare(b.recorded_at));
-        },
+                .parse(await readPair(CALIBRATIONS, base, quote))
+                .toSorted((a, b) => a.recorded_at.localeCompare(b.recorded_at)),
     });
 }
 
@@ -107,17 +122,7 @@ export function usePairInputs(base: string, quote: string) {
     return useQuery({
         queryKey: ['records', INPUTS, base, quote],
         enabled: base !== '' && quote !== '',
-        queryFn: async () =>
-            (
-                await api.syntheticPage(INPUTS, {
-                    offset: 0,
-                    limit: 500,
-                    search: '',
-                    sort: '',
-                    descending: false,
-                    filters: { base_currency_code: base, quote_currency_code: quote },
-                })
-            ).rows,
+        queryFn: () => readPair(INPUTS, base, quote),
     });
 }
 

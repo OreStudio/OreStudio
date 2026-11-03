@@ -85,12 +85,18 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | L1 | The review form followed the preview, so a stored fit was not reviewable once a newer fixing moved the preview | CalibrationPages.tsx | Accept | The review sits under the chart of the stored fit that waits; the preview card offers none |
 | L2 | Approving a later fit left older proposals waiting for review for ever | feed_config_handler.hpp | Accept | Approval supersedes older proposals of the pair with a reason; a repeat approval closes them too; checked live |
-| L3 | A kept run showed the config's later level, not the level it started at | fx_spot_feed.cpp, feedStart.tsx | Accept | The start records the kept level; the tab prefers it; tested in the web; the C++ path has no test, since building a feed needs NATS |
+| L3 | A kept run showed the config's later level, not the level it started at | fx_spot_feed.cpp, feedStart.tsx | Accept | The start records the kept level and the wire no longer blanks it; the tab prefers it; to_wire and the tab are tested; building a feed needs NATS, so the record itself is checked live on synthetic.demo.audusd |
 | L4 | Calibrations sorted by their last change put a just-superseded fit first | varianceRecords.tsx | Accept | Ordered by the input's window end, authored first; tested |
 | L5 | Chart axis labels stretched with the SVG and the top one was cut | varianceRecords.tsx | Accept | Labels are HTML beside the plot |
 | L6 | The class list marked an unstored preview fit as awaiting review | CalibrationPages.tsx | Accept | Only a stored proposal counts; the list counts fits that wait |
 | L7 | The review route had no inventory classification | route_classification.py | Accept | Classified; the inventory is current |
 | L8 | Timeline entries name the entity by its type, such as variance_calibration | Timeline.tsx | Decline | The shared timeline names every child row this way; a label table is its own change |
+| R1.1 | recorded_at must compare correctly; superseded_id reports one | feed_config_handler.hpp | Decline | recorded_at is a time_point, so the comparison is exact; superseded_id was one before this change, and one approval per pair holds (audit) |
+| R1.2 | std::format of a double can give an exponent the decimal parser refuses | fx_spot_feed.cpp | Accept | decimal::from_double records the shortest plain spelling; a refusal is logged |
+| R1.3 | Fitting before the level write could skip it on a throw, or move a number | feed_config_handler.hpp | Decline | Both take the input and the resolution by const reference; calibrate_variance reports a failed read or store in the summary rather than throwing |
+| R1.4 | A pair read stops at 500 records | varianceRecords.tsx | Accept | readPair reads page after page to the server's total; tested with 1203 rows |
+| R1.5 | A zero or null long-run variance breaks the recursion | varianceRecords.tsx | Decline | FittedVolatility returns nothing for a null shape, and the schema requires a positive long-run variance on a fit |
+| R1.6 | Confirm CI is green | PR | Decline | GitHub runs no check on a PR here; the local checks are the gate and their results are in the PR |
 
 * Result
 
@@ -120,5 +126,5 @@ The whole GJR-GARCH process is visible from the feed and the calibration page.
 | Recursion | the browser series ends at the stored ratio for 9992a6e9 and bfbb563e (no disagreement shown) |
 | Live review | approving bfbb563e superseded the authored fc63f5c7, re-pointed 2 feeds; a repeat approval superseded 9992a6e9 |
 | Audit | 9 of 9 passed: 2 inputs, 509 points, 42 calibrations, 51 feeds |
-| C++ suites | ores.synthetic.api.tests 844 cases passed; ores.synthetic.service.tests 76 of 77, the failure is "the adapter announces again until the service answers", which a process outside this environment answers (it fails with this environment's marketdata and synthetic services stopped); this change does not touch the announce |
+| C++ suites | ores.synthetic.api.tests 844 cases passed; ores.synthetic.service.tests 77 of 78, the failure is "the adapter announces again until the service answers", which a process outside this environment answers (it fails with this environment's marketdata and synthetic services stopped); this change does not touch the announce |
 | Local checks | site-page, web, cmake-sources, lint, org-links, heading-numbers, format, bff-list-requests, route-inventory passed |

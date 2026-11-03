@@ -460,11 +460,12 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
         return one.source_name == seeds.fx_enabled_source;
     });
     REQUIRE(fx_run != list.running_feeds.end());
-    // The FX config states a fixed price, so its run kept its level and names no fixing.
+    // The FX config states a fixed price, so its run kept its level, names no fixing, and
+    // states the level it kept.
     REQUIRE(fx_run->start.has_value());
     CHECK_FALSE(fx_run->start->from_fixing);
     CHECK(fx_run->start->item.empty());
-    CHECK(fx_run->start->value.empty());
+    CHECK(fx_run->start->value == "1.08");
     // A curve starts from no published value, so its run carries no start.
     const auto ir_run = std::ranges::find_if(list.running_feeds, [&](const auto& one) {
         return one.source_name == seeds.ir_enabled_source;
@@ -708,4 +709,20 @@ TEST_CASE("a stored FX spot config is written back with every field it holds",
     // A field the write type gains and write_of forgets compiles silently; the count keeps the
     // two in step.
     CHECK(std::tuple_size_v<decltype(ores::synthetic::messaging::wire_fields(w))> == 21);
+}
+
+TEST_CASE("a run's start states its level whether a fixing set it or the run kept it",
+          "[feed_config_handler][to_wire]") {
+    using ores::utility::decimal::decimal;
+    ores::marketdata::domain::feed_start kept;
+    kept.value = decimal::from_double(0.66).value();
+    CHECK(ores::synthetic::service::to_wire(kept).value == "0.66");
+
+    ores::marketdata::domain::feed_start fixed_with_no_record;
+    CHECK(ores::synthetic::service::to_wire(fixed_with_no_record).value.empty());
+
+    ores::marketdata::domain::feed_start from_fixing;
+    from_fixing.from_fixing = true;
+    from_fixing.value = decimal::from_string("1.4335").value();
+    CHECK(ores::synthetic::service::to_wire(from_fixing).value == "1.4335");
 }

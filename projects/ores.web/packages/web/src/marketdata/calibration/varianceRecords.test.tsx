@@ -20,11 +20,13 @@
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { api } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import {
     AwaitingReview,
     orderByWindow,
+    readPair,
     ParameterHistory,
     VolatilityChart,
     conditionalVolatility,
@@ -182,5 +184,33 @@ describe('the order of a pair\u2019s calibrations', () => {
             ]),
         );
         expect(ordered.map((c) => c.id)).toEqual(['authored', 'older-fit', 'newer-fit']);
+    });
+});
+
+describe('the read of a pair\u2019s records', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('reads page after page until the server\u2019s total, so no record is cut off', async () => {
+        const all = Array.from({ length: 1203 }, (_, i) => ({
+            id: `row-${String(i)}`,
+            version: 1,
+        }));
+        const page = vi
+            .spyOn(api, 'syntheticPage')
+            .mockImplementation(async (_resource, query) => ({
+                rows: all.slice(query.offset, query.offset + query.limit),
+                total: all.length,
+            }));
+
+        const rows = await readPair('variance-calibrations', 'AUD', 'USD');
+
+        expect(rows).toHaveLength(1203);
+        expect(page).toHaveBeenCalledTimes(3);
+        expect(page.mock.calls[0]?.[1].filters).toEqual({
+            base_currency_code: 'AUD',
+            quote_currency_code: 'USD',
+        });
     });
 });

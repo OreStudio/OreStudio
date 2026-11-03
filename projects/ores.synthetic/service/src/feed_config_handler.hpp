@@ -127,7 +127,8 @@ to_wire(const ores::marketdata::domain::feed_start& start) {
             .item = start.item,
             .provider_code = start.provider_code,
             .vendor_id = start.vendor_id,
-            .value = start.from_fixing ? start.value.to_string() : std::string{},
+            .value = start.from_fixing || !start.value.is_zero() ? start.value.to_string() :
+                                                                   std::string{},
             .inverted = start.inverted,
             .fixing_date = start.fixing_date,
             .received_at = start.received_at,

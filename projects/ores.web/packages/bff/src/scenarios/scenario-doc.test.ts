@@ -68,7 +68,7 @@ function outcome(
 }
 
 /** A scenario rendered from the template that compass fills in. */
-function fromTemplate(): string {
+function fromTemplate(eol?: '\n' | '\r\n'): string {
     const values: Record<string, string> = {
         id: '11111111-2222-4333-8444-555555555555',
         title: 'Test Scenario: Check the template',
@@ -81,8 +81,9 @@ function fromTemplate(): string {
         story_title: 'The story',
         state: 'PENDING',
     };
-    return readFileSync(template, 'utf8')
-        .replace(/^\{\{!.*\}\}\n/, '')
+    const source = readFileSync(template, 'utf8');
+    return (eol === undefined ? source : source.replace(/\r?\n/g, eol))
+        .replace(/^\{\{!.*\}\}\r?\n/, '')
         .replace(/\{\{(\w+)\}\}/g, (_, key: string) => values[key] ?? '');
 }
 
@@ -169,9 +170,12 @@ describe('reading a single-client scenario', () => {
     });
 });
 
-describe('a scenario made by the current compass template', () => {
+describe.each([
+    ['LF', '\n'],
+    ['CRLF', '\r\n'],
+] as const)('a scenario made by the current compass template (%s)', (_name, eol) => {
     it.skipIf(!existsSync(template))('parses', () => {
-        const scenario = parseScenario(fromTemplate());
+        const scenario = parseScenario(fromTemplate(eol));
         expect(scenario.state).toBe('PENDING');
         expect(scenario.clients).toEqual([]);
         expect(scenario.steps.map((s) => s.title)).toEqual([
@@ -187,7 +191,7 @@ describe('a scenario made by the current compass template', () => {
     });
 
     it.skipIf(!existsSync(template))('takes a run and reads it back', () => {
-        const text = fromTemplate();
+        const text = fromTemplate(eol);
         const first = parseScenario(text).steps[0];
         expect(first).toBeDefined();
         const done = recordRun(

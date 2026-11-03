@@ -19,10 +19,11 @@
  *
  */
 
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { symlinkForTest } from '../test-support/symlink.js';
 import {
     GitWorkTreeSource,
     MAX_TREES,
@@ -138,10 +139,10 @@ describe('GitWorkTreeSource', () => {
         expect(trees[1]?.current?.taskTitle).toBe('Show the work trees on the board');
     });
 
-    it('marks its own tree when git names it through a link', async () => {
+    it('marks its own tree when git names it through a link', async (context) => {
         const real = await tree('ores_dev_e', ENTRY);
         const link = join(base, 'link_to_e');
-        await symlink(real, link);
+        await symlinkForTest(context, real, link, 'dir');
         const trees = await new GitWorkTreeSource(
             '/doc',
             runner(link, [{ root: real, branch: 'feature/e' }]),
@@ -149,10 +150,15 @@ describe('GitWorkTreeSource', () => {
         expect(trees[0]?.isSession).toBe(true);
     });
 
-    it('reads no journal that is a link', async () => {
+    it('reads no journal that is a link', async (context) => {
         const real = await tree('real', ENTRY);
         const root = await tree('ores_dev_c');
-        await symlink(join(real, '.journal.org'), join(root, '.journal.org'));
+        await symlinkForTest(
+            context,
+            join(real, '.journal.org'),
+            join(root, '.journal.org'),
+            'file',
+        );
         const trees = await new GitWorkTreeSource(
             '/doc',
             runner(root, [{ root, branch: 'feature/c' }]),

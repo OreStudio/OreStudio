@@ -176,6 +176,8 @@ template <>
 struct sampler<boost::uuids::uuid> {
     static boost::uuids::uuid make(std::size_t which) {
         boost::uuids::uuid out{};
+        // The start byte wraps, so the values repeat after 256 numbers and
+        // number 128 gives the first sample's uuid.
         auto next = static_cast<std::uint8_t>(which == 0 ? 0xa0 : which == 1 ? 0x10 : 0x20 + which);
         for (auto& byte : out)
             byte = next++;

@@ -72,6 +72,7 @@ task and name that file in the Command column.
 | First full run, years 1900 to 9899 | 7 of 98 suites fail: 31 generated cases in 5 api suites on =audit.recorded_at=, and the 2 marketdata suites on a stale database schema | =compass test run -- -j 4 --output-on-failure= | =8654ee4314= |
 | The instant case on the old year range | fails at sample number 364 | =ores.utility.tests "an instant sample survives its text form at any sample number"= | working tree on =8654ee4314= |
 | Utility suite after the year fix | 198 cases pass, 3791 assertions | =ores.utility.tests= | working tree on =8654ee4314= |
+| Utility suite, twins over numbers 0 to 999 | 198 cases pass, 15767 assertions | =ores.utility.tests= | working tree on =e23be9a87b= |
 | Every suite, after the year fix and a database recreate | 98 of 98 pass | =compass test run -- -j 4 --output-on-failure= | working tree on =8654ee4314= |
 
 * Notes
@@ -107,6 +108,11 @@ via its "Verifies task" field.
 | 3 | PR 4421: a second mutation stacks on the first | =evidence/mutate.py= | Accept | The docstring says to revert first. |
 | 4 | PR 4421: the include test checks no order | =test_protocol_roundtrip_tests_template.py= | Decline | The include order has no effect on the generated code. |
 | 5 | PR 4421: say how the samples stay distinct | =sample.hpp= | Accept | Member j takes the numbers 2j and 2j + 1; the doc comment says so. |
+| 6 | PR 4430: the uuid start byte wraps, so number 128 repeats sample 0 | =sample.hpp= | Accept | A comment says so; a struct would need more than 128 uuid members to see it. |
+| 7 | PR 4430: guard that numbers which and which + 1 differ for every sampler | =sample.hpp= | Decline | Every sampler here meets it, and the twins tests fail for one that does not. |
+| 8 | PR 4430: a duration Rep narrower than 16 bits overflows | =sample.hpp= | Decline | No such duration is on the wire; =Rep(1234)= has the same limit. |
+| 9 | PR 4430: the twins tests check only numbers 0 and 1 | =codec_sample_tests.cpp= | Accept | Both now loop over numbers 0 to 999. |
+| 10 | PR 4430: confirm the gate is green before merge | | Accept | It passed, 27 of 27, and runs again for this round. |
 
 * Result
 

@@ -235,7 +235,7 @@ TEST_CASE("a member whose default is the first sample takes the second", sample_
 }
 
 TEST_CASE("two members of one type hold different values", sample_tags) {
-    for (const std::size_t which : {0u, 1u}) {
+    for (std::size_t which = 0; which < 1000; ++which) {
         CAPTURE(which);
         const auto v = sample<sample_probe_twins>(which);
         CHECK(v.text_a != v.text_b);
@@ -253,7 +253,7 @@ TEST_CASE("two members of one type hold different values", sample_tags) {
 
 TEST_CASE("the twins sample survives JSON and MessagePack exactly", sample_tags) {
     using namespace ores::utility::codec;
-    for (const std::size_t which : {0u, 1u}) {
+    for (std::size_t which = 0; which < 1000; ++which) {
         CAPTURE(which);
         const auto v = sample<sample_probe_twins>(which);
         CHECK(object::read_json<sample_probe_twins>(object::write_json(v)) == v);

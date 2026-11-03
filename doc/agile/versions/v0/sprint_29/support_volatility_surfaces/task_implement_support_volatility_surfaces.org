@@ -56,22 +56,31 @@ Decisions agreed with the user on 2026-11-03:
 - The MDN route is abandoned. A surface moves through its own parameter
   processes (ATM level, skew, curvature per tenor), with shocks correlated with
   spot but not driven by it.
-- GARCH drives FX spot returns, not the surface. Proposed: the GMM stays the
-  shape of each shock and GJR-GARCH scales it by the day's volatility.
+- GARCH drives FX spot returns, not the surface (agreed 2026-11-03). Proposed:
+  the GMM stays the shape of each shock and GJR-GARCH scales it by the day's
+  volatility.
 - A surface follows the IR curve approach: state processes, a template ladder
   of pillars, one quote tick per pillar on an oresmd series, a blueprint that
   builds the surface (SABR or SVI) with static no-arbitrage checks, then a
   candidate and a published set. Quotes are published, not model parameters.
-- Proposed on 2026-11-03, to confirm: a derived calibration source publishes
+- Agreed on 2026-11-03: a derived calibration source publishes
   plausible starting ATM, RR and BF items from the spot fixings (realised
   volatility for ATM, skewness for RR, excess kurtosis for BF, through a
   Gram-Charlier smile, with the higher moments shrunk to authored priors). A
   real vol source, if one is found, ranks above it and replaces it.
-- Proposed on 2026-11-03, to confirm: the surface is SSVI (or eSSVI). The state
+- Agreed on 2026-11-03: the surface is SSVI (or eSSVI). The state
   processes are its parameters (ATM total variance per tenor, skew, curvature),
   each held inside the no-arbitrage region, so every surface is free of static
   arbitrage by construction. The generator prices ATM, RR and BF quotes from
   the SSVI state; the blueprint fits SSVI back and checks it.
+
+The user asks that all of this is explained in great detail in the knowledge
+notes on synthetic data generation: each model, why it was chosen over the
+alternatives, its parameters and their bounds, how it is calibrated, and how it
+reaches the code. A decision without its reasoning in a note is not done.
+
+The history depth the derived source and the GARCH fit need comes from
+[[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]].
 
 Steps:
 

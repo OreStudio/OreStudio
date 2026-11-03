@@ -36,6 +36,7 @@
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.core/messaging/population_knobs.hpp"
 #include "ores.iam.core/messaging/provision_step_arguments.hpp"
+#include "ores.iam.core/messaging/report_schedule_selection.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/account_service.hpp"
@@ -63,6 +64,8 @@
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -740,6 +743,17 @@ private:
 
     /// The result a step reports, so the run's record says what it acted on.
     struct provision_step_result {
+        /// What one party's report definitions came to when the step scheduled
+        /// them. Read together, the entries say how much of the catalogue a
+        /// run put on the scheduler and how much it left for a person.
+        struct party_report_schedule {
+            std::string party;
+            std::uint32_t scheduled = 0;
+            std::uint32_t already_scheduled = 0;
+            std::uint32_t on_demand = 0;
+            std::uint32_t not_a_cron = 0;
+        };
+
         std::string kind;
         std::vector<std::string> bundles;
         std::string root_lei;
@@ -759,6 +773,8 @@ private:
         std::uint32_t trades_planned = 0;
         std::uint32_t trades_written = 0;
         std::uint32_t trades_already_present = 0;
+        /// What a schedule_reports step did for each party it named.
+        std::vector<party_report_schedule> report_schedules;
     };
 
     /**
@@ -880,6 +896,9 @@ private:
                 return;
             case provision_step_action::generate_trades:
                 generate_trades_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::schedule_reports:
+                schedule_reports_step(wf, command, resolve_step_actor(command));
                 return;
             case provision_step_action::refuse:
                 wf.fail("The step kind '" + command.kind +
@@ -1760,6 +1779,112 @@ private:
                 << "generate_trades: " << entry.name << " for party " << entry.party << ": planned "
                 << run.planned << ", wrote " << run.written << ", already present "
                 << run.already_present;
+        }
+
+        wf.complete(rfl::json::write(result));
+    }
+
+    /// Every definition a party owns, one page at a time, as the party reads
+    /// them. A single page with a fixed limit would schedule the first hundred
+    /// and leave the rest of the catalogue unscheduled without saying so.
+    static std::vector<ores::reporting::domain::report_definition>
+    list_party_report_definitions(internal_request_client& client,
+                                  const boost::uuids::uuid& party_id) {
+        std::vector<ores::reporting::domain::report_definition> definitions;
+        std::uint32_t offset = 0;
+        constexpr std::uint32_t page_size = 100;
+        while (true) {
+            ores::reporting::messaging::list_report_definitions_request request;
+            request.offset = offset;
+            request.limit = page_size;
+            request.filter =
+                ores::reporting::messaging::report_definitions_filter{.party_id = party_id};
+            const auto page = client.request(request).definitions;
+            for (const auto& definition : page)
+                definitions.push_back(definition);
+            if (page.size() < page_size)
+                return definitions;
+            offset += page_size;
+        }
+    }
+
+    /**
+     * @brief Schedules the report definitions each party the step names
+     * publishes.
+     *
+     * A provisioned tenant ticks nothing on its own: the catalogue states what
+     * each report's schedule is, but a run needs a scheduler job and a run
+     * grant, and only the reporting schedule operation creates the pair. So the
+     * run that builds the tenant also puts its catalogue on the scheduler,
+     * acting as the run's administrator inside each party, which is the
+     * identity the operation makes the grant for.
+     *
+     * Three rules keep that honest. A report the catalogue states as on demand
+     * is left to be asked for by hand, and the step never fails because of it:
+     * asking for a report a person asks for is not a provisioning fault. A
+     * definition that already holds a scheduler job is passed over, so a second
+     * provision creates no second job and no second grant. And a definition
+     * whose schedule is not a cron is passed over with a warning, because the
+     * tenant should still come up.
+     */
+    void schedule_reports_step(const ores::service::messaging::workflow_step_context& wf,
+                               const ores::iam::workflow::provision_tenant_step_command& command,
+                               const step_actor& actor) {
+        const auto arguments = parse_report_schedule_arguments(command.arguments_json);
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        provision_step_result result;
+        result.kind = command.kind;
+
+        for (const auto& party_name : arguments.parties) {
+            const auto party = find_party(discover, party_name);
+            if (!party)
+                throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
+
+            // The operation makes the run grant for the session's party, and
+            // refuses a definition of another one, so the step acts as the
+            // party whose catalogue it schedules.
+            auto party_client =
+                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+
+            std::vector<ores::iam::messaging::report_schedule_candidate> candidates;
+            for (const auto& definition : list_party_report_definitions(party_client, party->id))
+                candidates.push_back(
+                    {.id = boost::uuids::to_string(definition.id),
+                     .schedule_expression = definition.schedule_expression,
+                     .holds_scheduler_job = definition.scheduler_job_id.has_value()});
+
+            const auto selection =
+                ores::iam::messaging::select_report_definitions_to_schedule(candidates);
+
+            provision_step_result::party_report_schedule schedule;
+            schedule.party = party_name;
+            schedule.already_scheduled = selection.already_scheduled;
+            schedule.on_demand = selection.on_demand;
+            schedule.not_a_cron = selection.not_a_cron;
+
+            if (!selection.ids.empty()) {
+                ores::reporting::messaging::schedule_report_definitions_request request;
+                request.ids = selection.ids;
+                // One call carries a party's whole catalogue; each definition
+                // costs a run grant, a scheduler write and a definition save,
+                // so the operation outlives the client's default patience.
+                const auto response = party_client.request(request, std::chrono::seconds{600});
+                if (!response.success)
+                    throw std::runtime_error("The reporting service refused to schedule " +
+                                             std::to_string(response.failed_ids.size()) +
+                                             " report definitions of '" + party_name +
+                                             "': " + response.message);
+                schedule.scheduled = static_cast<std::uint32_t>(response.scheduled_count);
+            }
+
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "schedule_reports: " << party_name << ": scheduled " << schedule.scheduled
+                << ", already scheduled " << schedule.already_scheduled << ", on demand "
+                << schedule.on_demand << ", not a cron " << schedule.not_a_cron;
+            result.parties.push_back(boost::uuids::to_string(party->id));
+            result.report_schedules.push_back(std::move(schedule));
         }
 
         wf.complete(rfl::json::write(result));

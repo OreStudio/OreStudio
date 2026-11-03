@@ -47,6 +47,7 @@ enum class provision_step_action {
     attach_photos,
     subscribe_market_data,
     generate_trades,
+    schedule_reports,
     complete_provisioning,
     start_tenant_setup,
     refuse
@@ -88,6 +89,8 @@ enum class provision_step_action {
         return provision_step_action::subscribe_market_data;
     if (kind == "generate_trades")
         return provision_step_action::generate_trades;
+    if (kind == schedule_reports_step_kind)
+        return provision_step_action::schedule_reports;
     return provision_step_action::refuse;
 }
 
@@ -615,6 +618,43 @@ parse_trade_generation_assignments(const std::string& arguments_json) {
             throw std::runtime_error("The step's config '" + entry.name +
                                      "' states a trades_per_book of 0.");
     }
+    return result;
+}
+
+/**
+ * @brief The parties whose report definitions a schedule_reports step schedules.
+ *
+ * The step names the parties and nothing else. What to schedule is not the
+ * profile's to state: each party's published definitions are the catalogue, and
+ * each one's schedule is the schedule the catalogue gives it. A profile that
+ * named definitions would be a copy of the catalogue that goes stale, which is
+ * the state this step exists to end.
+ */
+struct report_schedule_step_arguments {
+    std::vector<std::string> parties;
+};
+
+/**
+ * @brief Reads a schedule_reports step's arguments.
+ *
+ * A party is named by the legal name the LEI import created it with, as the
+ * staff step names it, so the step reaches the party through the party read
+ * rather than through an identifier that only exists once a run has created it.
+ */
+[[nodiscard]] inline report_schedule_step_arguments
+parse_report_schedule_arguments(const std::string& arguments_json) {
+    const auto arguments = detail::read_step_arguments(arguments_json);
+    const auto* found = detail::member(arguments, "parties");
+    if (found == nullptr)
+        throw std::runtime_error("The step names no 'parties' argument.");
+
+    report_schedule_step_arguments result;
+    result.parties = detail::read_string_list(*found, "parties");
+    if (result.parties.empty())
+        throw std::runtime_error("The step names no party in its 'parties' argument.");
+    for (const auto& party : result.parties)
+        if (party.empty())
+            throw std::runtime_error("The step names an empty party in its 'parties' argument.");
     return result;
 }
 

@@ -102,6 +102,8 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.workflow.api.lib
         ores.assets.api.lib
+        ores.reporting.api.lib
+        ores.scheduler.api.lib
     PRIVATE
         ores.history.core.lib
         ores.iam.client.lib

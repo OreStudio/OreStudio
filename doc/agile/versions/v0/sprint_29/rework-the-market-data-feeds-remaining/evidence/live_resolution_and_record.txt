@@ -70,3 +70,23 @@ output_message | Repository error: ores_q_32: ERROR:  column "ore_file_code" doe
                | LINE 1: ...alytic_type_code, ore_parameter, direction, kind, ore_file_c...+
                |                                                              ^
 
+
+## What every intraday definition binds
+
+             name             | binding_types |                                                 types                                                 
+------------------------------+---------------+-------------------------------------------------------------------------------------------------------
+ Headline Position            |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Headline Position (EOD)      |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Intraday Change              |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Intraday Risk Monitor        |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Option Map                   |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Spike Map                    |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Spot Greeks                  |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Spot Greeks (EOD)            |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Spot Ladder                  |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Strike Map                   |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Trades Since Last In         |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Triple Vol Spot Ladder       |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Triple Vol Spot Ladder (EOD) |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+(13 rows)
+

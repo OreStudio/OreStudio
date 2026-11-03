@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 099697A6-8526-48E0-A63D-DB3932C06468
 :END:
-#+title: A derived source publishes what it infers from stored fixings
-#+description: A derived source is a publisher whose adapter reads stored fixings through the market data reader and publishes the values it infers from them, under its own identity, so a vendor of the same items replaces it by rank.
+#+title: Derivation of FX volatility quotes from historical fixings
+#+description: Where no free source publishes FX implied volatilities, a derived source of our own derives ATM, RR and BF quotes from the historical spot fixings: an adapter that reads them through the market data reader and publishes under its own identity, so a vendor of the same quotes replaces it by rank.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:synthetic:architecture:adapters:

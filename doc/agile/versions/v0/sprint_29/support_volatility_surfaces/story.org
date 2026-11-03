@@ -74,7 +74,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   Gram-Charlier smile. Consequences: the values are plausible, not real; a real
   vendor is another provider of the same items and replaces the derived source
   by a change of route. See
-  [[id:099697A6-8526-48E0-A63D-DB3932C06468][A derived source publishes what it infers from stored fixings]]
+  [[id:099697A6-8526-48E0-A63D-DB3932C06468][Derivation of FX volatility quotes from historical fixings]]
   and "How a volatility surface starts" in
   [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
 - *Derived values carry their own identity* (2026-11-03). Context: the derived

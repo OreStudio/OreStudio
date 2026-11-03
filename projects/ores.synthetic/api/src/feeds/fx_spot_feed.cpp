@@ -374,6 +374,12 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                           std::string(", its fixed level"))
                                   << (start.note.empty() ? "" : ". " + start.note);
     }
+    // A run that took no fixing records the level it kept, so its start states the level the run
+    // began at even after a later calibration moves the config's level.
+    if (!start.from_fixing)
+        if (const auto kept =
+                ores::utility::decimal::decimal::from_string(std::format("{}", initial_price)))
+            start.value = *kept;
 
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process;
     if (cfg.variance_model == "gjr_garch") {

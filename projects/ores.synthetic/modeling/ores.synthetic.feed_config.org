@@ -640,6 +640,14 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief The stored calibration; empty when the run was not applied. */
 #+end_src
 
+*** method
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief "gjr_garch_qmle" for a fit, "authored" for an authored shape. */
+#+end_src
+
 *** state
 :PROPERTIES:
 :cpp_type: std::string
@@ -890,6 +898,14 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /** @brief The variance calibration of a GJR-GARCH feed that starts from a fixing; absent otherwise. */
+#+end_src
+
+*** current_variance
+:PROPERTIES:
+:cpp_type: std::optional<variance_calibration_summary>
+:END:
+#+begin_src cpp :name comment
+/** @brief The calibration the feed's config names and runs, as stored; absent when it names none. */
 #+end_src
 
 ** calibrate_request

@@ -4911,6 +4911,16 @@ const fr: SourceCatalogue = {
     marketdata: {
         calibration: {
             variance: {
+                runs: 'La calibration qu’utilise ce flux',
+                runsNone:
+                    'La variance du flux est constante, ou sa configuration ne nomme aucune calibration.',
+                fresh: 'L’ajustement de cette exécution',
+                awaiting: 'nouvel ajustement à revoir',
+                fitRejected: 'ajustement rejeté',
+                method: {
+                    gjr_garch_qmle: 'Ajustée',
+                    authored: 'Rédigée',
+                },
                 title: 'Calibration de la variance quotidienne',
                 lead: 'La calibration GJR-GARCH de la paire de ce flux : la forme, les éléments avec lesquels elle a été ajustée, l’entrée dont elle vient, et sa revue. Un flux n’utilise qu’une calibration approuvée.',
                 none: 'La variance de ce flux est constante, ou il n’a pas démarré d’un fixing, il n’a donc pas de calibration de variance.',

@@ -590,13 +590,19 @@ describe('synthetic calibration', () => {
                         source_name: 'synthetic.bloomberg.eurusd',
                         start: { from_fixing: true, note: '' },
                         variance,
+                        current_variance: { ...variance, method: 'authored', state: 'approved' },
                     },
                 ],
             },
         });
         const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
         expect(response.statusCode).toBe(200);
-        expect(response.json().feeds[0].variance).toEqual(variance);
+        expect(response.json().feeds[0].variance).toMatchObject(variance);
+        expect(response.json().feeds[0].current_variance).toMatchObject({
+            calibration_id: variance.calibration_id,
+            method: 'authored',
+            state: 'approved',
+        });
     });
 
     it('states the defaults, with no version, when the class has no policy row', async () => {

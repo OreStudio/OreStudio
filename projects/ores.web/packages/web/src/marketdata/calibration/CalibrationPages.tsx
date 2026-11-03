@@ -397,7 +397,7 @@ export function CalibrationPage(): ReactNode {
                                         </td>
                                         <td className="py-2">
                                             <VarianceCell
-                                                variance={feed.variance}
+                                                feed={feed}
                                                 to={`${calibrationFeedPath(assetClass, feed.config_id)}?tab=variance`}
                                             />
                                         </td>
@@ -436,38 +436,53 @@ export function StartLevel({ start }: { readonly start: CalibratedFeed['start'] 
     );
 }
 
-/** A feed's variance calibration in one cell: its state and its persistence, to open it from. */
+/**
+ * A feed's variance in one cell: the calibration it runs, with its state and persistence, and a
+ * mark when the run fitted a new one that waits for review.
+ */
 function VarianceCell({
-    variance,
+    feed,
     to,
 }: {
-    readonly variance: CalibratedFeed['variance'];
+    readonly feed: CalibratedFeed;
     readonly to: string;
 }): ReactNode {
     const { t } = useTranslation();
-    if (variance === null || variance === undefined) {
+    const runs = feed.current_variance;
+    const fresh = feed.variance;
+    if ((runs === null || runs === undefined) && (fresh === null || fresh === undefined)) {
         return <span className="text-ink-faint">—</span>;
     }
+    const awaiting =
+        fresh !== null &&
+        fresh !== undefined &&
+        fresh.state === 'proposed' &&
+        fresh.calibration_id !== (runs?.calibration_id ?? '');
     return (
         <Link className="flex flex-wrap items-center gap-1 hover:underline" to={to}>
-            <VarianceStateTag state={variance.state} />
-            {variance.persistence !== null && variance.persistence !== undefined && (
-                <span className="text-xs tabular-nums text-ink-muted">
-                    {t('marketdata.calibration.variance.cell', {
-                        alpha: garchText(variance.alpha),
-                        gamma: garchText(variance.gamma),
-                        beta: garchText(variance.beta),
-                        persistence: garchText(variance.persistence),
-                    })}
-                </span>
+            {runs !== null && runs !== undefined && (
+                <>
+                    <VarianceStateTag state={runs.state} />
+                    <span className="text-xs tabular-nums text-ink-muted">
+                        {t('marketdata.calibration.variance.cell', {
+                            alpha: garchText(runs.alpha),
+                            gamma: garchText(runs.gamma),
+                            beta: garchText(runs.beta),
+                            persistence: garchText(runs.persistence),
+                        })}
+                    </span>
+                </>
             )}
-            {variance.persistence !== null &&
-                variance.persistence !== undefined &&
-                !variance.starts_agreed && (
-                    <Tag tone="warn" small>
-                        {t('marketdata.calibration.variance.startsDisagreedShort')}
-                    </Tag>
-                )}
+            {awaiting && (
+                <Tag tone="accent" small>
+                    {t('marketdata.calibration.variance.awaiting')}
+                </Tag>
+            )}
+            {fresh !== null && fresh !== undefined && fresh.state === 'rejected' && (
+                <Tag tone="down" small>
+                    {t('marketdata.calibration.variance.fitRejected')}
+                </Tag>
+            )}
         </Link>
     );
 }
@@ -1210,33 +1225,44 @@ export function CalibrationFeedPage(): ReactNode {
                     </div>
                 </div>
             ) : tab === 'variance' ? (
-                <Card title={t('marketdata.calibration.variance.title')}>
-                    {feed.variance === null || feed.variance === undefined ? (
-                        <p className="text-sm text-ink-muted">
-                            {t('marketdata.calibration.variance.none')}
-                        </p>
-                    ) : (
-                        <div className="space-y-4">
+                <div className="space-y-4">
+                    <p className="text-sm text-ink-muted">
+                        {t('marketdata.calibration.variance.lead')}
+                    </p>
+                    <Card title={t('marketdata.calibration.variance.runs')}>
+                        {feed.current_variance === null || feed.current_variance === undefined ? (
                             <p className="text-sm text-ink-muted">
-                                {t('marketdata.calibration.variance.lead')}
+                                {t('marketdata.calibration.variance.runsNone')}
                             </p>
-                            <VarianceCalibrationFacts variance={feed.variance} />
-                            {feed.variance.calibration_id === '' && (
-                                <Notice tone="info">
-                                    {t('marketdata.calibration.variance.notStored')}
-                                </Notice>
-                            )}
-                            <VarianceReview
-                                variance={feed.variance}
-                                onReviewed={() => {
-                                    void refresh();
-                                    void client.invalidateQueries({ queryKey: ['records'] });
-                                    void client.invalidateQueries({ queryKey: ['history'] });
-                                }}
-                            />
-                        </div>
-                    )}
-                </Card>
+                        ) : (
+                            <VarianceCalibrationFacts variance={feed.current_variance} />
+                        )}
+                    </Card>
+                    <Card title={t('marketdata.calibration.variance.fresh')}>
+                        {feed.variance === null || feed.variance === undefined ? (
+                            <p className="text-sm text-ink-muted">
+                                {t('marketdata.calibration.variance.none')}
+                            </p>
+                        ) : (
+                            <div className="space-y-4">
+                                <VarianceCalibrationFacts variance={feed.variance} />
+                                {feed.variance.calibration_id === '' && (
+                                    <Notice tone="info">
+                                        {t('marketdata.calibration.variance.notStored')}
+                                    </Notice>
+                                )}
+                                <VarianceReview
+                                    variance={feed.variance}
+                                    onReviewed={() => {
+                                        void refresh();
+                                        void client.invalidateQueries({ queryKey: ['records'] });
+                                        void client.invalidateQueries({ queryKey: ['history'] });
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </Card>
+                </div>
             ) : (
                 <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
                     <div className="space-y-4">

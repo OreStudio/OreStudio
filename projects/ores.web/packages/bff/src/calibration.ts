@@ -79,6 +79,7 @@ const candidateOutcomeSchema = z.object({
 const varianceCalibrationSummarySchema = z.object({
     input_id: z.string().default(''),
     calibration_id: z.string().default(''),
+    method: z.string().default(''),
     state: z.string().default(''),
     state_reason: z.string().default(''),
     item: z.string().default(''),
@@ -114,6 +115,7 @@ const calibratedFeedSchema = z.object({
     outcome: z.string().default(''),
     outcome_message: z.string().default(''),
     variance: varianceCalibrationSummarySchema.nullish(),
+    current_variance: varianceCalibrationSummarySchema.nullish(),
 });
 
 export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;

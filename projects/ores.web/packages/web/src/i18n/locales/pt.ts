@@ -4874,6 +4874,16 @@ const pt: SourceCatalogue = {
     marketdata: {
         calibration: {
             variance: {
+                runs: 'A calibração que este feed usa',
+                runsNone:
+                    'A variância do feed é constante, ou a sua configuração não nomeia calibração.',
+                fresh: 'O ajuste desta execução',
+                awaiting: 'novo ajuste a rever',
+                fitRejected: 'ajuste rejeitado',
+                method: {
+                    gjr_garch_qmle: 'Ajustada',
+                    authored: 'Redigida',
+                },
                 title: 'Calibração da variância diária',
                 lead: 'A calibração GJR-GARCH do par deste feed: a forma, a evidência com que foi ajustada, a entrada de onde veio, e a sua revisão. Um feed só usa uma calibração aprovada.',
                 none: 'A variância deste feed é constante, ou não arrancou de um fixing, por isso não tem calibração de variância.',

@@ -4843,6 +4843,15 @@ export const en: SourceCatalogue = {
     marketdata: {
         calibration: {
             variance: {
+                runs: 'The calibration this feed runs',
+                runsNone: "The feed's variance is constant, or its config names no calibration.",
+                fresh: "This run's fit",
+                awaiting: 'new fit to review',
+                fitRejected: 'fit rejected',
+                method: {
+                    gjr_garch_qmle: 'Fitted',
+                    authored: 'Authored',
+                },
                 title: 'Daily variance calibration',
                 lead: "The GJR-GARCH calibration of this feed's pair: the shape, the evidence it was fitted with, the input it was fitted from, and its review. A feed runs only an approved calibration.",
                 none: "This feed's variance is constant, or it did not start from a fixing, so it has no variance calibration.",

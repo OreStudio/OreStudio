@@ -32,6 +32,7 @@ import { VarianceCalibrationFacts, VarianceReview } from './VarianceCalibration.
 const FIT: VarianceCalibration = {
     input_id: '11111111-1111-4111-8111-111111111111',
     calibration_id: 'b608b4be-6a2d-56d1-a144-09cb668ba393',
+    method: 'gjr_garch_qmle',
     state: 'proposed',
     state_reason: '',
     item: 'oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD',
@@ -113,6 +114,37 @@ describe('the evidence of a variance calibration', () => {
     it('reads an inverted input as such', () => {
         const html = render(<VarianceCalibrationFacts variance={{ ...FIT, inverted: true }} />);
         expect(html).toContain('the item quotes the pair the other way round');
+    });
+});
+
+describe('the method of a variance calibration', () => {
+    it('names an authored shape and shows no input, since it was fitted from none', () => {
+        const html = render(
+            <VarianceCalibrationFacts
+                variance={{
+                    ...FIT,
+                    method: 'authored',
+                    state: 'approved',
+                    state_reason: 'The authored shape installed with the system feeds',
+                    input_id: '',
+                    item: '',
+                    point_count: 0,
+                    used_count: 0,
+                    window_days: 0,
+                    window_end: '',
+                }}
+            />,
+        );
+        expect(html).toContain('Authored');
+        expect(html).toContain('Approved');
+        expect(html).not.toContain('Returns used');
+        expect(html).not.toContain('Window');
+    });
+
+    it('names a fit', () => {
+        expect(
+            render(<VarianceCalibrationFacts variance={{ ...FIT, method: 'gjr_garch_qmle' }} />),
+        ).toContain('Fitted');
     });
 });
 

@@ -740,6 +740,7 @@ export type CalibrationCandidate = z.infer<typeof calibrationCandidateSchema>;
 const varianceCalibrationSchema = z.object({
     input_id: z.string().default(''),
     calibration_id: z.string().default(''),
+    method: z.string().default(''),
     state: z.string().default(''),
     state_reason: z.string().default(''),
     item: z.string().default(''),
@@ -776,6 +777,7 @@ const calibratedFeedSchema = z.object({
     outcome: z.enum(['', 'updated', 'unchanged', 'kept', 'refused', 'failed']).default(''),
     outcome_message: z.string().default(''),
     variance: varianceCalibrationSchema.nullish(),
+    current_variance: varianceCalibrationSchema.nullish(),
 });
 
 export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;

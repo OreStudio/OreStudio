@@ -66,6 +66,11 @@ export function VarianceCalibrationFacts({
         <div className="space-y-4" data-variance-calibration>
             <div className="flex flex-wrap items-center gap-2">
                 <VarianceStateTag state={variance.state} />
+                {variance.method !== '' && (
+                    <Tag tone="muted" small>
+                        {t(`marketdata.calibration.variance.method.${variance.method}`)}
+                    </Tag>
+                )}
                 {variance.state_reason !== '' && (
                     <span className="text-sm text-ink-muted">{variance.state_reason}</span>
                 )}
@@ -106,34 +111,36 @@ export function VarianceCalibrationFacts({
             {fitted && !variance.starts_agreed && (
                 <Notice tone="warn">{t('marketdata.calibration.variance.disagreeWarning')}</Notice>
             )}
-            <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Fact
-                    label={t('marketdata.calibration.variance.returns')}
-                    value={t('marketdata.calibration.variance.returnsOf', {
-                        used: String(variance.used_count),
-                        points: String(variance.point_count),
-                    })}
-                />
-                <Fact
-                    label={t('marketdata.calibration.variance.window')}
-                    value={t('marketdata.calibration.variance.windowOf', {
-                        days: String(variance.window_days),
-                        end: variance.window_end,
-                    })}
-                />
-                <Fact
-                    label={t('marketdata.calibration.variance.provider')}
-                    value={variance.provider_code}
-                />
-                <Fact
-                    label={t('marketdata.calibration.variance.orientation')}
-                    value={t(
-                        variance.inverted
-                            ? 'marketdata.calibration.variance.inverted'
-                            : 'marketdata.calibration.variance.direct',
-                    )}
-                />
-            </dl>
+            {variance.item !== '' && (
+                <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <Fact
+                        label={t('marketdata.calibration.variance.returns')}
+                        value={t('marketdata.calibration.variance.returnsOf', {
+                            used: String(variance.used_count),
+                            points: String(variance.point_count),
+                        })}
+                    />
+                    <Fact
+                        label={t('marketdata.calibration.variance.window')}
+                        value={t('marketdata.calibration.variance.windowOf', {
+                            days: String(variance.window_days),
+                            end: variance.window_end,
+                        })}
+                    />
+                    <Fact
+                        label={t('marketdata.calibration.variance.provider')}
+                        value={variance.provider_code}
+                    />
+                    <Fact
+                        label={t('marketdata.calibration.variance.orientation')}
+                        value={t(
+                            variance.inverted
+                                ? 'marketdata.calibration.variance.inverted'
+                                : 'marketdata.calibration.variance.direct',
+                        )}
+                    />
+                </dl>
+            )}
             {variance.item !== '' && (
                 <Fact label={t('marketdata.calibration.variance.item')}>
                     <OresmdUrl uri={variance.item} />

@@ -231,6 +231,8 @@ export interface VarianceCalibrationSummary {
     input_id: string;
     /** @brief The stored calibration; empty when the run was not applied. */
     calibration_id: string;
+    /** @brief "gjr_garch_qmle" for a fit, "authored" for an authored shape. */
+    method: string;
     /** @brief "proposed" when the fit was made, "rejected" when it could not be. */
     state: string;
     /** @brief Why the fit was rejected; empty for a proposed one. */
@@ -299,6 +301,8 @@ export interface CalibratedFeed {
     outcome_message: string;
     /** @brief The variance calibration of a GJR-GARCH feed that starts from a fixing; absent otherwise. */
     variance: VarianceCalibrationSummary | null;
+    /** @brief The calibration the feed's config names and runs, as stored; absent when it names none. */
+    current_variance: VarianceCalibrationSummary | null;
 }
 
 /**

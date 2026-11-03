@@ -640,6 +640,7 @@ private:
                 continue;
             }
             const auto& in = std::get<feed::fx_spot_feed_build_input>(*outcome.input);
+            one.current_variance = current_variance_of(req_ctx, in.config);
             one.explicit_items = !in.fixing_items.empty();
             one.window_days_override = in.config.calibration_window_days;
             if (in.config.price_source != "fixing") {
@@ -900,6 +901,40 @@ private:
         return {.input = input, .calibration = calibration};
     }
 
+    // The calibration a feed runs is the one its config names, read as stored with the input it
+    // was fitted from, so a reader sees what the feed is on beside any new fit of the run.
+    static std::optional<ores::synthetic::messaging::variance_calibration_summary>
+    current_variance_of(const ores::database::context& req_ctx,
+                        const ores::synthetic::domain::fx_spot_generation_config& cfg) {
+        namespace repo = ores::synthetic::repository;
+        if (cfg.variance_model != "gjr_garch" || !cfg.variance_calibration_id)
+            return std::nullopt;
+        const auto id = boost::uuids::to_string(*cfg.variance_calibration_id);
+        const auto found = repo::variance_calibration_repository{}.read_latest(req_ctx, id);
+        if (found.empty())
+            return std::nullopt;
+        const auto& c = found.front();
+        ores::synthetic::messaging::variance_calibration_summary v;
+        report_stored(c, v);
+        v.calibration_id = id;
+        if (c.input_id) {
+            v.input_id = boost::uuids::to_string(*c.input_id);
+            const auto inputs =
+                repo::variance_calibration_input_repository{}.read_latest(req_ctx, v.input_id);
+            if (!inputs.empty()) {
+                const auto& in = inputs.front();
+                v.item = in.fixing_uri;
+                v.provider_code = in.provider_code;
+                v.inverted = in.inverted;
+                v.window_days = in.window_days;
+                v.window_end = std::format("{:%F}", in.window_end);
+                v.point_count = in.point_count;
+                v.used_count = in.used_count;
+            }
+        }
+        return v;
+    }
+
     // A preview stores nothing, but a calibration an earlier applied run stored is the one a
     // reviewer decides, so the preview reports it as stored, with its ids.
     void report_stored_variance_calibration(
@@ -923,6 +958,7 @@ private:
 
     static void report_stored(const ores::synthetic::domain::variance_calibration& stored,
                               ores::synthetic::messaging::variance_calibration_summary& v) {
+        v.method = stored.method;
         v.state = stored.state;
         v.state_reason = stored.state_reason;
         v.alpha = stored.alpha;

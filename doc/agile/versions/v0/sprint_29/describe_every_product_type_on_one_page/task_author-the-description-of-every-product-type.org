@@ -26,11 +26,11 @@ Every product type states what it is in prose a person can read before booking i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -120,3 +120,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 121 product types state what they are, in one sentence, and name the
+document the sentence was written from.
+
+The catalogue holds the prose in its `* Descriptions` table: one row per code,
+with the description, the document and the file inside it. Codegen refuses a
+catalogue code with no row, a row missing any of the three columns, and a row
+for a code the catalogue does not state, so the seed cannot carry an empty
+description again. Five tests state those rules, and one asserts that every type
+in the catalogue is described and sourced.
+
+One hundred and three descriptions are the domain notes', collected into the
+catalogue; the tail each note ends on, "ORE's <name> product", is dropped because
+the page states the code beside the sentence. Eighteen types no note names are
+written from the ORE example trades and the guide chapter that documents their
+structure, and each names that chapter.
+
+The database recreates at =5469f5b0de= with 121 rows, all carrying a
+description, a source and a source reference. The gates: 51 local checks, 77
+pgTAP suites, and the codegen suite at 1846 tests. The C++ suites need the
+build, which adds the nine roundtrip test files the regeneration created.
+
+Two defects main carried were fixed on the way, because the gate renders every
+component when the generator changes: the physical-space inventory and the list
+request descriptors were stale, nine wire-codec roundtrip tests were never
+committed, and the reporting element map still named the commodity curve table
+the curve split replaced.

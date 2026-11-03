@@ -119,3 +119,9 @@ A backtest can read the derived FX volatility quotes of any past day from the st
 - Tests: 17 reader test cases against the database, and 20 derived source test
   cases, among them a past day derived from its returns alone, a history kept once
   and then a day at a time, and no day the store holds written again.
+| R2.1 | A batch could end inside a day, so a failed write left a day held in part, which the days held count as whole | derived_fx_vol_adapter.cpp | Accept | A batch ends only between days |
+| R2.2 | A retried write sends new random ids | derived_fx_vol_adapter.cpp | Accept, no change | The store keys a current observation by series, time and coordinate, and its insert trigger closes the older row, so a retry is a new version, never a second current row; a name-based id would be refused as existing under the default precondition and block the retry |
+| R2.3 | The windows that read the days held may leave gaps | derived_fx_vol_adapter.cpp | Accept, no change | A window holds to - days + 1 to to, both included, so windows ending 120 days apart tile the history; a comment says so |
+| R2.4 | persist derives again over the whole history on each cycle | derived_fx_vol_feed.cpp | Accept | A pair whose days held cover every return is skipped before the convention is read; tested |
+| R2.5 | A day whose quotes cannot be derived is silently retried each cycle | derived_fx_vol.cpp, derived_fx_vol_feed.cpp | Accept | derive_missing_days names the underived days; persist reports their count once and holds them until a restart; tested |
+| R2.6 | The construction order, the delegation choice, a double blank line, and an id parse that throws | derived_fx_vol_adapter.cpp | Accept | Commented, removed, and the ids parse to an error rather than throw |

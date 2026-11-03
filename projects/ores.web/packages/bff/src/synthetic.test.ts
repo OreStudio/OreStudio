@@ -169,6 +169,9 @@ describe('synthetic resource routes', () => {
             'ir-curve-feeds',
             'ir-parameter-values',
             'ir-template-entries',
+            'variance-calibrations',
+            'variance-calibration-inputs',
+            'variance-calibration-input-points',
             'process-types',
             'parameter-definitions',
             'tenors',
@@ -186,6 +189,9 @@ describe('synthetic resource routes', () => {
         const providers = resources.find((resource) => resource.key === 'providers');
         expect(providers?.writable).toBe(false);
         expect(providers?.readOnlyBecause).toContain('catalogue');
+        const calibrations = resources.find((r) => r.key === 'variance-calibrations');
+        expect(calibrations?.writable).toBe(false);
+        expect(calibrations?.readOnlyBecause).toContain('decided by a review');
     });
 
     it('reads every row of a resource, as of now and unfiltered', async () => {

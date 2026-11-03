@@ -37,6 +37,12 @@ export interface CalibrationPolicyWrite {
     asset_class_code: string;
     window_days: number;
     variance_window_days: number;
+    variance_approval_mode: string;
+    variance_min_returns: number;
+    variance_require_starts_agree: boolean;
+    variance_min_persistence: number;
+    variance_max_persistence: number;
+    variance_min_reaction: number;
     allow_inverse: boolean;
     fallback_code: string;
 }

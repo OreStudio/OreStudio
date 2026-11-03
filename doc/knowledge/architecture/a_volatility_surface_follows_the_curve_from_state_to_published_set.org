@@ -2,7 +2,7 @@
 :ID: 53D14F31-EE32-493E-BBEB-140AA4906BE4
 :END:
 #+title: A volatility surface follows the curve from state to published set
-#+description: The path of a synthetic FX volatility surface, mapped step by step onto the IR curve's: generation config, generator kind, contributors, quotes, ingest, surface blueprint, fit, candidate, publication and the ORE export.
+#+description: The path of a synthetic FX volatility surface, mapped step by step onto the IR curve's: generation config, generator kind, contributors, quotes, ingest, surface blueprint, calibration, candidate, publication and the ORE export.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:synthetic:architecture:volatility:
@@ -19,8 +19,8 @@ series; a blueprint constructs an object from them, checks it and writes a
 candidate with lineage; a four-eyes publish makes the candidate authoritative;
 and a report binds the published set, which the ORE export writes at the
 boundary. Two steps differ. Synthetic contributors stand between the state and
-the quotes, and a surface is /fitted/ all at once where a curve is
-/bootstrapped/ pillar by pillar.
+the quotes, and a surface is /calibrated/ to all its quotes at once where a
+curve is /bootstrapped/ pillar by pillar.
 
 * Detail
 
@@ -37,8 +37,8 @@ the quotes, and a surface is /fitted/ all at once where a curve is
 | Seam | The simulator adapter, four messages | The same |
 | Store | Series keyed by item, provider and party | The same |
 | Recipe | A curve blueprint | A surface blueprint |
-| Construction | A bootstrap | A fit |
-| Candidate | A =discount= series with a =curve_id=, with lineage | A fitted surface series, with lineage |
+| Construction | A bootstrap | A calibration |
+| Candidate | A =discount= series with a =curve_id=, with lineage | A calibrated surface series, with lineage |
 | Publish | Four-eyes publish to a published set | The same |
 | Consume | Report binding; ORE export of the set's points | The same |
 
@@ -104,15 +104,16 @@ is followed step for step.
    as-of, as
    [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
    requires.
-3. *The fit.* The model is fitted to all the quotes at once. A curve has an order
-   in which one pillar's solve feeds the next, which is what makes its method a
-   bootstrap; a surface has none, so its method is a fit. Both are
-   /construction/. A butterfly quoted as a broker strangle is matched as a
+3. *The calibration.* The smile model is calibrated to all the quotes at once,
+   as a desk calibrates its smile model to the day's market. A curve has an
+   order in which one pillar's solve feeds the next, which is what makes its
+   method a bootstrap; a surface has none, so its method is a calibration. Both
+   are /construction/. A butterfly quoted as a broker strangle is matched as a
    strangle price rather than as a smile volatility.
-4. *The checks.* The fitted surface is checked for calendar-spread and butterfly
+4. *The checks.* The calibrated surface is checked for calendar-spread and butterfly
    arbitrage ([[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage Conditions]]),
-   and the fit error of each point is recorded beside the checks.
-5. *The candidate.* The fit writes the fitted volatilities on the blueprint's
+   and the calibration error of each point is recorded beside the checks.
+5. *The candidate.* The calibration writes the calibrated volatilities on the blueprint's
    grid as observations of its output series, at the as-of, each with a lineage
    record naming the source series and the blueprint version. The blueprint is
    the series' only writer, and the series' identity says its points are
@@ -125,10 +126,6 @@ The trader's side of these steps is the journeys
 [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]],
 [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] and
 [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]].
-This note calls the construction step a /fit/ and keeps /calibration/ for the
-start of a synthetic feed from public data, the meaning of the calibration
-policy and the calibration screen.
-
 ** Consumption
 
 A report binds the published set as
@@ -139,7 +136,7 @@ configuration from the set's points. For a surface, the published grid becomes
 ORE volatility quotes at the boundary with an ORE volatility configuration that
 describes the grid. ORE interpolates between grid points by its own rules, so
 the blueprint's grid and the exported configuration together decide how closely
-ORE reproduces the fitted surface at the strikes a trade needs.
+ORE reproduces the calibrated surface at the strikes a trade needs.
 
 ** Other asset classes
 
@@ -150,7 +147,7 @@ schema row.
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — exemplifies: the same construction, with a fit in the place of a bootstrap.
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — exemplifies: the same construction, with a calibration in the place of a bootstrap.
 - [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve]] — completes: the binding, for a surface.
 - [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] — completes: the step between the state and the quotes.
 - [[id:099697A6-8526-48E0-A63D-DB3932C06468][A derived source publishes what it infers from stored fixings]] — completes: where the starting quotes come from.

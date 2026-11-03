@@ -115,8 +115,10 @@ Decisions agreed with the user on 2026-11-03:
   =curve_id= does. oresmd needs a new instrument type for that series, with a
   surface identity in place of =curve_id=. Naming: a curve's method is a
   /bootstrap/, a sequential solve pillar by pillar; a surface's method is a
-  /fit/, all points at once. Both are /construction/. "Calibration" is not used
-  for it, because it already names the start of a synthetic feed from fixings.
+  /calibration/, all points at once, the idiomatic market term (agreed with
+  the user). Both are /construction/. Calibrating a smile model to quotes and
+  calibrating a generator to public fixings are one meaning: fitting a model's
+  parameters to data.
   The one true bootstrap among vol surfaces, stripping caplet vols from cap
   vols, keeps that name when cap/floor surfaces arrive.
 
@@ -145,7 +147,7 @@ Steps:
    - Architecture: A volatility surface follows the curve from state to
      published set; A synthetic contributor publishes noisy observations of a
      latent surface; A derived source publishes what it infers from stored
-     fixings (new); oresmd (extended: the fitted surface series).
+     fixings (new); oresmd (extended: the calibrated surface series).
    - Structure notes: Volatility, Stochastic Processes and Market Data
      Architecture order the new pages.
    Every page states the target state only, and every link carries its

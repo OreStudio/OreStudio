@@ -60,7 +60,7 @@ mid path unchanged.
 ** The truth is a contributor
 
 The clean contributor is a provider like the others, routed like the others. Its
-quotes, constructed by the same fit as any tenant's, give the true surface, as
+quotes, constructed by the same calibration as any tenant's, give the true surface, as
 the clean pillar quotes and their bootstrap give the true curve. A tenant sees
 that provider only if the system routes it to the tenant. Because the truth is
 known, the distance between a tenant's marked surface and the true one can be

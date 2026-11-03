@@ -1316,6 +1316,96 @@ CHECKS_BY_ID = {check.id: check for check in CATALOGUE}
 
 
 # --------------------------------------------------------------------------
+# Reach: which build targets a changed file compiles into
+# --------------------------------------------------------------------------
+
+# These checks stand up the database and the fleet. A change that compiles into
+# test binaries alone leaves every library and service as it was, so they would
+# prove again what main already proved.
+FLEET_CHECKS = ("db", "ticks-smoke", "step-consumers")
+FLEET_CLASSES = ("cpp", "services", "sql")
+COMPILED_SUFFIXES = (".cpp", ".hpp", ".h", ".ipp", ".c", ".cc", ".cxx")
+TEST_TARGET_SUFFIX = ".tests"
+
+
+def fleet_paths(changed: list[str]) -> list[str]:
+    """The changed paths that select a fleet check."""
+    return [
+        path for path in changed
+        if any(fnmatch.fnmatch(path, pattern)
+               for name, patterns in PATH_RULES if name in FLEET_CLASSES
+               for pattern in patterns)
+    ]
+
+
+def fleet_skip_reason(changed: list[str], reach: dict[str, set[str]]) -> str:
+    """Why the fleet checks can be skipped, or an empty string when they cannot.
+
+    @p reach maps a repository path to the targets whose objects compile it.
+    A path the map does not know is one the build cannot vouch for: a new
+    file, a CMakeLists.txt, a SQL script. Each of those keeps the fleet checks.
+    """
+    paths = fleet_paths(changed)
+    if not paths or "unknown" in classify(changed)[0]:
+        return ""
+    targets: set[str] = set()
+    for path in paths:
+        reached = reach.get(path)
+        if not reached or not all(t.endswith(TEST_TARGET_SUFFIX) for t in reached):
+            return ""
+        targets |= reached
+    return "the change compiles only into " + ", ".join(sorted(targets))
+
+
+def target_of(output: str) -> str | None:
+    """The CMake target an object or a PCH belongs to, from its path."""
+    marker = "/CMakeFiles/"
+    start = output.find(marker)
+    if start < 0:
+        return None
+    name = output[start + len(marker):].split("/", 1)[0]
+    return name[:-len(".dir")] if name.endswith(".dir") else None
+
+
+def read_reach(build_dir: Path, wanted: list[str]) -> dict[str, set[str]]:
+    """The targets that compile each wanted path, from ninja's dependency log.
+
+    The log is read after the build, because a log from before it misses a file
+    the change added and keeps one it removed.
+    """
+    proc = subprocess.run(
+        ["ninja", "-C", str(build_dir), "-t", "deps"],
+        capture_output=True, text=True, check=False)
+    if proc.returncode != 0:
+        return {}
+    wanted_abs = {os.path.normpath(REPO_ROOT / path): path for path in wanted}
+    names = {os.path.basename(path) for path in wanted}
+    reach: dict[str, set[str]] = {}
+    target = None
+    for line in proc.stdout.splitlines():
+        if not line.startswith(" "):
+            target = target_of(line.split(":", 1)[0]) if line else None
+            continue
+        entry = line.strip()
+        # Most of the log's lines name some other file; the name test is cheap.
+        if target is None or os.path.basename(entry) not in names:
+            continue
+        path = wanted_abs.get(os.path.normpath(os.path.join(build_dir, entry)))
+        if path:
+            reach.setdefault(path, set()).add(target)
+    return reach
+
+
+def fleet_skip(changed: list[str], preset: str) -> str:
+    """Why the fleet checks can be skipped for this change, read from the build."""
+    paths = fleet_paths(changed)
+    if not paths or not all(path.endswith(COMPILED_SUFFIXES) for path in paths):
+        return ""
+    build_dir = REPO_ROOT / "build" / "output" / preset
+    return fleet_skip_reason(changed, read_reach(build_dir, paths))
+
+
+# --------------------------------------------------------------------------
 # Running
 # --------------------------------------------------------------------------
 
@@ -1327,6 +1417,7 @@ class Result:
     seconds: float = 0.0
     log: Path | None = None
     tail: str = ""
+    reason: str = ""
 
     @property
     def failed(self) -> bool:
@@ -1447,8 +1538,11 @@ def run_one(check: Check, base: str, preset: str) -> Result:
     return Result(check=check, status=status, seconds=seconds, log=log, tail=tail)
 
 
-def run_all(selected: list[Check], base: str, preset: str, jobs: int) -> list[Result]:
+def run_all(selected: list[Check], base: str, preset: str, jobs: int,
+            changed: list[str] | None = None) -> list[Result]:
+    """Run each phase in order. @p changed is None when every check must run."""
     results: list[Result] = []
+    skip_reason = ""
     by_phase: dict[int, list[Check]] = {}
     for check in selected:
         by_phase.setdefault(check.phase, []).append(check)
@@ -1467,14 +1561,20 @@ def run_all(selected: list[Check], base: str, preset: str, jobs: int) -> list[Re
         else:
             phase_results = []
             for check in group:
+                if check.id in FLEET_CHECKS and skip_reason:
+                    phase_results.append(Result(check=check, reason=skip_reason))
+                    continue
                 print(f"   running {check.id}…", flush=True)
-                phase_results.append(run_one(check, base, preset))
+                result = run_one(check, base, preset)
+                phase_results.append(result)
+                # The scope is decided once the build has run, so the dependency
+                # log it reads describes the tree under test.
+                if check.id == "build" and result.status == "PASS" and changed is not None:
+                    skip_reason = fleet_skip(changed, preset)
         for result in phase_results:
-            print(
-                f"   {'✅' if not result.failed else '❌'} {result.check.id} "
-                f"({result.seconds:.1f}s)",
-                flush=True,
-            )
+            mark = "⏭" if result.status == "SKIP" else "❌" if result.failed else "✅"
+            detail = result.reason if result.status == "SKIP" else f"{result.seconds:.1f}s"
+            print(f"   {mark} {result.check.id} ({detail})", flush=True)
         results.extend(phase_results)
     return results
 
@@ -1490,14 +1590,16 @@ def render(classes: set[str], reasons: dict[str, list[str]], changed: list[str],
     ref = ref or base
     passed = [r for r in results if r.status == "PASS"]
     failed = [r for r in results if r.failed]
+    skipped = [r for r in results if r.status == "SKIP"]
     total = sum(r.seconds for r in results)
 
     lines: list[str] = []
     lines.append("# Local checks")
     lines.append("")
     verdict = "PASS" if not failed else f"FAIL — {len(failed)} check(s)"
-    lines.append(f"**{verdict}.**  {len(results)} run, {len(passed)} passed, "
-                 f"{len(failed)} failed.  Wall clock in checks: {total:.0f}s.")
+    lines.append(f"**{verdict}.**  {len(results) - len(skipped)} run, {len(passed)} passed, "
+                 f"{len(failed)} failed, {len(skipped)} skipped.  "
+                 f"Wall clock in checks: {total:.0f}s.")
     lines.append("")
     lines.append(f"- Base: `{base}`, merge base `{base_sha}`")
     lines.append(f"- Preset: `{preset}`")
@@ -1538,6 +1640,12 @@ def render(classes: set[str], reasons: dict[str, list[str]], changed: list[str],
             f"| `{result.check.id}` | {mark} | {result.seconds:.1f}s | {result.check.title} |"
         )
     lines.append("")
+    if skipped:
+        lines.append("## Skipped")
+        lines.append("")
+        for result in skipped:
+            lines.append(f"- `{result.check.id}`: {result.reason}.")
+        lines.append("")
 
     lines.append("## Why these checks")
     lines.append("")
@@ -1555,11 +1663,14 @@ def render(classes: set[str], reasons: dict[str, list[str]], changed: list[str],
 
 def console_summary(results: list[Result], report: Path | None) -> None:
     failed = [r for r in results if r.failed]
+    ran = [r for r in results if r.status != "SKIP"]
+    skipped = len(results) - len(ran)
+    note = f", {skipped} skipped" if skipped else ""
     print()
     if not failed:
-        print(f"✅  local checks: {len(results)}/{len(results)} passed")
+        print(f"✅  local checks: {len(ran)}/{len(ran)} passed{note}")
     else:
-        print(f"❌  local checks: {len(failed)} of {len(results)} failed")
+        print(f"❌  local checks: {len(failed)} of {len(ran)} failed{note}")
         for result in failed:
             print(f"   • {result.check.id}: {result.check.title}")
             if result.check.fix:
@@ -1689,13 +1800,20 @@ def main(argv: list[str] | None = None) -> int:
             sample = ", ".join(files[:4])
             more = f" (+{len(files) - 4})" if len(files) > 4 else ""
             print(f"  {name:<10} {sample}{more}")
+        fleet = [c.id for c in selected if c.id in FLEET_CHECKS]
+        if fleet and not args.all and all(
+                path.endswith(COMPILED_SUFFIXES) for path in fleet_paths(changed)):
+            print()
+            print(f"  {', '.join(fleet)} are skipped after the build if the change"
+                  " compiles only into test binaries.")
         return 0
 
     missing = missing_tools(selected)
     if missing:
         print(f"⚠️  missing tools: {', '.join(missing)} — their checks will fail")
 
-    results = run_all(selected, ref, preset, args.jobs)
+    results = run_all(selected, ref, preset, args.jobs,
+                      changed=None if args.all else changed)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     report = OUTPUT_DIR / "report.md"

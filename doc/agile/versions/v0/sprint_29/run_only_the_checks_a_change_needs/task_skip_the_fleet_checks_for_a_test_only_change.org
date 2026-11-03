@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :tooling:ci:local_checks:run_only_the_checks_a_change_needs:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/skip-the-fleet-checks-for-a-test-only-change
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A change that reaches only test binaries runs build and ctest but not the databa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

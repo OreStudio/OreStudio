@@ -84,6 +84,21 @@ database that carries no tenant data beyond the seed.
 A documentation-only change therefore runs =compass site page= and the doc
 corpus checks and never reaches the compiler.
 
+A change that compiles only into test binaries skips the fleet checks: =db=,
+=ticks-smoke= and =step-consumers=. The runner decides this after =build=
+passes. It reads =ninja -t deps= and finds the targets that compile each
+changed path. It skips the three checks only when all of these are true:
+
+- Every path that selects a fleet check is a C++ source or header.
+- The dependency log knows every such path.
+- Every target that compiles such a path is a =.tests= binary.
+- No changed path is unclassified.
+
+A new file, a =CMakeLists.txt= or a SQL script keeps the fleet checks, because
+the log cannot vouch for it. The report names each skipped check and the test
+binaries that caused the skip. When the runner skips =db=, =ctest= runs with
+the fleet in the state the developer left it. =--all= skips nothing.
+
 * Running it
 
 | Command | What it does |

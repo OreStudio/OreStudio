@@ -123,9 +123,9 @@ the component that owns it.
 - [[id:7DFE57DE-70C9-4EB6-AF94-DCEC65ADB494][The ORE XML infrastructure]] — the
   structure note that orders this cluster; this page is its first step, because
   the boundary it draws is what the other five pages act inside.
-- [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value is converted at
-  the entity mapper, never in the codec]] — *completes* this page: it descends
-  from the boundary into the one transformation the rows undergo.
+- [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value reaches the row in
+  the form the value set names]] — *completes* this page: it descends from the
+  boundary into the transformations the rows undergo.
 - [[id:FB734007-5AB3-41D0-8F94-4A37584FE049][The export writes the stored
   form, so a round trip is not byte-identical]] — *answers* where the run
   document's reconstruction is used, and what the codec is asked to write.

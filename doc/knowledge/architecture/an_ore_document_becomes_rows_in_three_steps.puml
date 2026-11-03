@@ -17,22 +17,29 @@
 '
 @startuml
 
-title One value: as ORE wrote it, as the mapper stored it, as the set judges it
+title One value: as ORE wrote it, as the row holds it, as the set judges it
 
 actor "document" as caller
 participant "projection\nread" as codec
 participant "projection\nmap" as map
 participant "entity mapper" as mapper
+participant "value set\nore_renderings.json" as set
 database "ores_refdata_*_configs_tbl" as db
 participant "validate_curve_values_fn" as guard
 
 caller -> codec : curveconfig.xml, MF
-codec --> map : record, rendering as written
-map --> mapper : rows, rendering as written
-mapper -> mapper : stored_business_day_convention(MF)\n= ModifiedFollowing
-mapper -> db : insert ModifiedFollowing
+codec --> map : record, MF kept
+map --> mapper : rows, MF
+mapper -> db : insert MF
 db -> guard : before insert
-guard -> guard : ores_reporting_value_in_set_fn(set, value)
-guard --> db : accept, or raise naming the set
+guard -> set : canonical_value_fn(set, MF)
+set --> guard : ModifiedFollowing
+guard --> db : store ModifiedFollowing, or raise naming the set
+
+legend bottom
+A conventions document's codec converts on read, from the tables
+generated from the same file, so its mapper receives Following
+instead of F.
+end legend
 
 @enduml

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/support-volatility-surfaces
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -29,11 +29,11 @@ one covers the idea, a new note when none does.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | The four claims are checked.           |
 | Waiting on   | Nothing.                               |
-| Next         | Check the doubtful claims.             |
+| Next         | Write the decision notes.              |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -108,6 +108,43 @@ The knowledge base already holds this material. Read it before writing new notes
 - [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]]: the driver and derived (proxy) pattern for FX surfaces, correlation and basis proxying, marks, tenor propagation.
 - [[id:C8B4449D-E82E-4184-8E0B-50F070FAF22B][Correlations and derived volatility surfaces]]: an earlier backlog story on correlation management and surface proxying in ores.marketdata.
 - [[id:B91F6F7D-5C8A-4DB0-A5C6-827EEC43BE41][Design and add oresmd volatility-surface sub-schema]]: a sprint 24 task on one strike, expiry and model sub-schema for the eight vol quote sub-families.
+
+** Checks of the analysis's claims (2026-11-03)
+
+1. *FX implied vols on DBnomics, from the BIS or the ECB.* Not found. A
+   DBnomics API search for "implied volatility" returns no dataset, and a
+   search for "volatility" returns only the ECB's systemic stress indicator
+   (CISS) and unrelated OECD data. No free source of ATM, RR or BF quotes was
+   found; the daily FX vol surfaces on offer are commercial (LSEG, GFI,
+   Exchange Data International). Consequence: the starting surface has no free
+   public source. Its shape is authored, as the GMM components are.
+   https://api.db.nomics.world/v22/search?q=volatility
+2. *The MOVE index on FRED.* Not found on FRED. The ICE BofA series that FRED
+   does carry state that reproduction in any form is prohibited without ICE
+   Data's written permission, and from April 2026 keep only three years of
+   observations, so they cannot be stored as fixings in any case. FRED carries
+   VIX as =VIXCLS= (daily close, Cboe), marked "Copyrighted: Citation
+   Required"; its storage terms are unread. VIX is an equity vol index and does
+   not set an FX surface.
+   https://fred.stlouisfed.org/series/BAMLC0A0CMEY ,
+   https://fred.stlouisfed.org/series/VIXCLS
+3. *The RR and BF formulas.* σ_call = σ_ATM + σ_BF + σ_RR/2 and
+   σ_put = σ_ATM + σ_BF − σ_RR/2 hold only for the smile convention. The broker
+   convention quotes a market strangle at one volatility and at strikes of its
+   own, and turning it into call and put volatilities needs a numerical solve
+   against a smile. Healy (2025), "Counterexamples for FX Options Interpolations
+   - Part II", arXiv:2512.19625, eq. 1 and 5–12, citing Clark (2011) and
+   Reiswich and Wystup (2012). The same paper notes that FX SABR usually fixes
+   β = 1. FX Volatility Surface states the smile definition without the broker
+   one, so that note is extended.
+4. *"SABR and SVI keep the surface free of static arbitrage."* False in
+   general. Gatheral and Jacquier (2014), "Arbitrage-free SVI volatility
+   surfaces", arXiv:1204.0646: SVI smiles may be arbitrageable, a slice is free
+   of butterfly arbitrage only if its density function g(k) ≥ 0, and a
+   restricted class (SSVI) is free of static arbitrage in closed form. Hagan's
+   SABR expansion can give a negative density at low strikes; arbitrage-free
+   SABR (Hagan et al. 2014) addresses it. Consequence: the surface blueprint
+   checks static arbitrage, as a curve blueprint checks its curve.
 
 * Test Scenarios
 

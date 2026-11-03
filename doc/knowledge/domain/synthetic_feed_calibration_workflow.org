@@ -106,7 +106,7 @@ later approval replaces it, and publishing again keeps the later one.
 The chain reads from a run to the calibration it names, to the input that
 calibration was fitted from, to the points of that input, to the fixings they
 were read from, and to the policy and its version they were read under; and from a
-calibration back to the feeds that name it. On screen, a feed's /Run/ tab holds
+calibration back to the feeds that name it. On screen, a feed's /Calibration/ tab holds
 the run in four cards: the start level in the pair's market convention, with the
 fixing, its provider and its orientation; what the fixing window measured; the
 daily variance, as a table of the GJR-GARCH parameters; and the calibration the run

@@ -122,7 +122,7 @@ function FeedBody({
     const parts = useFeedParts(kind, id);
     const { tab, bar } = useRecordTabs({
         label: name,
-        tabs: ['details', 'run', ...kind.tabs.map((one) => one.name), 'history'],
+        tabs: ['details', 'calibration', ...kind.tabs.map((one) => one.name), 'history'],
     });
     const running = feed.running;
     const runs = useFeedRuns();
@@ -184,7 +184,7 @@ function FeedBody({
                 </Notice>
             )}
             {bar}
-            {tab === 'run' && <FeedRunTab feed={feed} start={feed.start} />}
+            {tab === 'calibration' && <FeedRunTab feed={feed} start={feed.start} />}
             {tab === 'details' && (
                 <RecordDetails specs={kind.fields} row={feed} extra={kind.extraDetails(feed, t)} />
             )}

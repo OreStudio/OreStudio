@@ -29,7 +29,7 @@ import { calibrationFeedPath } from '../../shell/paths.js';
 import { Card, MeasureTile } from '../../ui/Card.js';
 import { Fact, Notice, Tag } from '../../ui/Primitives.js';
 import { formatDateTime } from '../../ui/Time.js';
-import { ParameterTable, garchText } from '../calibration/VarianceCalibration.js';
+import { ParameterTable, garchRows } from '../calibration/VarianceCalibration.js';
 
 /** A run's level in the pair's market convention: an inverted item is read as one over it. */
 export function levelOf(start: FeedStart): string {
@@ -57,7 +57,8 @@ export function FeedRunTab({
     readonly start: FeedStart | null | undefined;
 }): ReactNode {
     const { t } = useTranslation();
-    const garch = show(feed['variance_model']) === 'gjr_garch';
+    const model = show(feed['variance_model']);
+    const garch = model === 'gjr_garch';
     const running = start !== null && start !== undefined;
     return (
         <div className="space-y-4" data-feed-run>
@@ -70,7 +71,7 @@ export function FeedRunTab({
                     {running && start.from_fixing && <WindowCard start={start} />}
                 </div>
                 <div className="space-y-4">
-                    {show(feed['variance_model']) !== '' && (
+                    {model !== '' && (
                         <VarianceCard garch={garch} variance={running ? start.variance : null} />
                     )}
                     {garch && (
@@ -226,6 +227,16 @@ function VarianceCard({
     readonly variance: Variance | null | undefined;
 }): ReactNode {
     const { t } = useTranslation();
+    const rows = (shape: Variance): { label: string; value: string }[] => {
+        const all = garchRows(t, shape);
+        if (shape.fitted) {
+            all.push({
+                label: t('marketdata.calibration.variance.startingRatio'),
+                value: shape.initial_ratio.toFixed(2),
+            });
+        }
+        return all;
+    };
     return (
         <Card
             title={t('marketdata.fxFeeds.run.variance')}
@@ -245,34 +256,7 @@ function VarianceCard({
                 <p className="text-sm text-ink-muted">{t('marketdata.fxFeeds.run.noShape')}</p>
             ) : (
                 <>
-                    <ParameterTable
-                        rows={[
-                            {
-                                label: t('marketdata.calibration.variance.alpha'),
-                                value: garchText(variance.alpha),
-                            },
-                            {
-                                label: t('marketdata.calibration.variance.gamma'),
-                                value: garchText(variance.gamma),
-                            },
-                            {
-                                label: t('marketdata.calibration.variance.beta'),
-                                value: garchText(variance.beta),
-                            },
-                            {
-                                label: t('marketdata.calibration.variance.persistence'),
-                                value: garchText(variance.persistence),
-                            },
-                            ...(variance.fitted
-                                ? [
-                                      {
-                                          label: t('marketdata.calibration.variance.startingRatio'),
-                                          value: variance.initial_ratio.toFixed(2),
-                                      },
-                                  ]
-                                : []),
-                        ]}
-                    />
+                    <ParameterTable rows={rows(variance)} />
                     <dl className="grid gap-4 sm:grid-cols-2">
                         <Fact
                             label={t('marketdata.fxFeeds.run.shape')}

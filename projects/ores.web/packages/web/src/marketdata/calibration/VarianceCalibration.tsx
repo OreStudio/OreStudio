@@ -59,6 +59,27 @@ export function ParameterTable({
     );
 }
 
+/** A GJR-GARCH shape as the rows of a parameter table: alpha, gamma, beta and persistence. */
+export function garchRows(
+    t: (key: string) => string,
+    shape: {
+        readonly alpha?: number | null | undefined;
+        readonly gamma?: number | null | undefined;
+        readonly beta?: number | null | undefined;
+        readonly persistence?: number | null | undefined;
+    },
+): { label: string; value: string }[] {
+    return [
+        { label: t('marketdata.calibration.variance.alpha'), value: garchText(shape.alpha) },
+        { label: t('marketdata.calibration.variance.gamma'), value: garchText(shape.gamma) },
+        { label: t('marketdata.calibration.variance.beta'), value: garchText(shape.beta) },
+        {
+            label: t('marketdata.calibration.variance.persistence'),
+            value: garchText(shape.persistence),
+        },
+    ];
+}
+
 const STATE_TONES: Readonly<Record<string, 'up' | 'down' | 'warn' | 'muted' | 'accent'>> = {
     approved: 'up',
     proposed: 'accent',
@@ -92,8 +113,8 @@ export function VarianceCalibrationFacts({
 }): ReactNode {
     const { t } = useTranslation();
     const shaped = variance.alpha !== null && variance.alpha !== undefined;
-    // An authored shape was written, not fitted, so it has no starts to agree or disagree.
-    const fitted = shaped && variance.method !== 'authored';
+    // Only a fit has starts; an authored shape was written, so it has none to agree.
+    const fitted = shaped && variance.method === 'gjr_garch_qmle';
     return (
         <div className="space-y-4" data-variance-calibration>
             <div className="flex flex-wrap items-center gap-2">
@@ -109,26 +130,7 @@ export function VarianceCalibrationFacts({
             </div>
             {shaped ? (
                 <div className="grid gap-4 lg:grid-cols-2">
-                    <ParameterTable
-                        rows={[
-                            {
-                                label: t('marketdata.calibration.variance.alpha'),
-                                value: garchText(variance.alpha),
-                            },
-                            {
-                                label: t('marketdata.calibration.variance.gamma'),
-                                value: garchText(variance.gamma),
-                            },
-                            {
-                                label: t('marketdata.calibration.variance.beta'),
-                                value: garchText(variance.beta),
-                            },
-                            {
-                                label: t('marketdata.calibration.variance.persistence'),
-                                value: garchText(variance.persistence),
-                            },
-                        ]}
-                    />
+                    <ParameterTable rows={garchRows(t, variance)} />
                     <dl className="grid content-start gap-4 sm:grid-cols-2">
                         <Fact
                             label={t('marketdata.calibration.variance.startingRatio')}

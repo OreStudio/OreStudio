@@ -88,10 +88,18 @@ via its "Verifies task" field.
 | L4 | The calibration id links to the feed's calibration page, not to a page of its own | feedStart.tsx | Decline | No page of one calibration exists; the feed's Variance tab on the Calibration screen shows that calibration, its input and its review |
 | L5 | The mockup charts a daily variance stream and a Hawkes intensity | feedStart.tsx | Decline | A run stores no daily variance series, so a chart would draw invented data; it needs the series first |
 | L6 | Misspell flags French and Portuguese words | fr.ts, pt.ts | Decline | Existing lines, correct words (persistance, existant, sucess-); this change touches none |
+| R1.1 | An unknown or missing method counts as fitted | VarianceCalibration.tsx | Accept | Starts and the warning show only for method gjr_garch_qmle |
+| R1.2 | Two calibration ids link to the same page | feedStart.tsx | Decline | The user asked for the id as a link; the target tab shows the running and the configured calibration both |
+| R1.3 | An empty configured id raises a false restart warning | feedStart.tsx | Decline | A GJR-GARCH config must name a calibration (CHECK constraint), and the card shows only for GJR-GARCH |
+| R1.4 | The configured level may differ from the run's if the config changed | feedStart.tsx | Decline | A run that kept its level records no value; a config change restarts the feed, so the two agree |
+| R1.5 | The variance model is read twice | feedStart.tsx | Accept | One local |
+| R1.6 | Card renders an h2 under the page's own headings | Card.tsx | Decline | The calibration page drew its cards the same way; the move changes no heading |
+| R1.7 | Optional row spread inside the array; the GARCH rows are built twice | feedStart.tsx, VarianceCalibration.tsx | Accept | garchRows builds them once; the feed card pushes its optional row |
+| U1 | Name the tab after the calibration, and the variance card after GJR-GARCH | FeedScreens.tsx, locales | Accept | Tab id and label are calibration; the card is GJR-GARCH daily variance |
 
 * Result
 
-A feed's /Run/ tab replaces the /This run/ and /Variance/ tabs. It holds four
+A feed's /Calibration/ tab replaces the /This run/ and /Variance/ tabs. It holds four
 cards in the calibration page's style: the start level in market convention, with
 the fixing, provider, orientation, date and item; the fixing window as tiles,
 each marked as setting the spread or recorded only; the daily variance as a table

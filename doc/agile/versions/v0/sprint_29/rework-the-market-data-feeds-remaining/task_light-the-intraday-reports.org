@@ -28,9 +28,9 @@ The intraday reports select the LIVE cut, their configs say live market data, an
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Built, run and documented; the run stops on the environment's schema, not on the cut. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Re-run once the environment's database is rebuilt, to see the run reach the engine. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -42,9 +42,46 @@ The intraday reports select the LIVE cut, their configs say live market data, an
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The work has three parts, and the first is the one the other two depend on.
+
+**The cut selection has to reach the definition.** A catalogue states a report's
+cycle, and the cycle is the kind of cut the report prices from. The DQ artefact
+table had no column for it, so the chain gained one: the artefact model gains
+=cut_kind_code=, the acme and northwind catalogues state it per report, the SQL
+generator writes it into the artefact populates, and the publish copies it onto
+the definition. The publish also gained an upsert mode. Until now a publish that
+found any definition for the party returned "skipped", so a moved catalogue
+could not reach a database that was already provisioned; the upsert writes the
+moved statement as a new version of the definition the party holds, and leaves
+the identity, the party and the pipeline phases alone.
+
+**A report on both cycles is two definitions.** One definition states one
+selection, so the reports the catalogue marks intraday · eod are seeded twice:
+the plain name selects =LIVE= and runs during the day, and the same name with
+"(EOD)" selects =EOD= and runs at the close. The existing Headline Position
+definition became the LIVE one, because that is what its ten-minute schedule
+already said, and the close definition is new beside it.
+
+**A run must be able to mint its body.** The trigger resolved its definition's
+selection but passed no body, so a LIVE selection could never mint: the
+resolution refused for the market data snapshot and the deal population that no
+store materialises. Two changes settle that. The trigger now assembles the body
+from the store, through the same reader the hand take uses, reading the trade
+store, the published sets and the compute versions as the person who asked for
+the run; and the mint requires the parts the store answers (the reference data
+version and the engine version) rather than the two references no component
+keeps, which the cut records as its note instead. The design's own note on a
+body already said the population and the snapshot are references the store does
+not materialise, and the hand take writes them empty too.
+
+**A development environment is not rebuilt.** The seeds changed and the database
+stayed the same one: [[file:./evidence/apply_the_intraday_selections.sql][the
+apply script]] adds the artefact column, stages the regenerated populates and
+publishes them in upsert mode, per party. It is idempotent and re-runnable, and
+it is what an environment that is not recreated needs.
+
+The .1 family is out of scope, as instructed: five reports whose measures need
+an analytic type the platform does not bind.
 
 * Measurements
 
@@ -58,9 +95,54 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Catalogue entries | 42 (was 31) | =json count of report_catalogue.json= | deb15641d0 + uncommitted |
+| Definition rows the four ACME parties hold | 101 (was 78) | =select count(*) from ores_reporting_report_definitions_tbl= | uncommitted |
+| Definitions that select LIVE | 10 in the catalogue; 22 published (UK 10, US 6, HK 6) | =select p.short_code, count(*) ... group by 1= | uncommitted |
+| Definitions that select EOD | 3 in the catalogue; 7 published | as above | uncommitted |
+| Run settings that say live | 46 of 46 | =select count(*) ... and market_data_type = 'live'= | uncommitted |
+| The cut a run minted | =fd636290-b0f8-4c3c-af9f-1a8f83ce16df=, badge =in_use= | [[file:./evidence/live_resolution_and_record.txt][the run's transcript]] | uncommitted |
+| Cut assembly and resolution suites | 58 assertions in 13 cases; 69 in 25 | =ores.reporting.core.tests "[cut_assembly]"= and ="[service][cut][resolution]"= | uncommitted |
+| Publish suites (pgTAP) | 8 tests in one file, 7 in the other | =pg_prove ... reporting_publish_cut_selection_test.sql ...= | uncommitted |
 
 * Notes
+
+**What the run proves, and what it does not.** The transcript in
+[[file:./evidence/live_resolution_and_record.txt][the evidence file]] shows the
+whole resolution: the trigger reads the definition's selection, assembles the
+body, mints a cut of kind LIVE at the instant the run started, labels it
+=LIVE.ACME-LONDON.2026-11-03T13:19:47Z=, writes it, records the cut on the run
+instance, and dispatches the workflow. Reading the cut back through the service
+shows its badge: =in_use=, because the kind needs no authorisation and the body
+is fixed; the earlier cuts of the same scope read =superseded=, which is the
+supersession rule working on real rows.
+
+The run then stops before the engine, on the environment's schema rather than on
+the report: the database this environment runs was built from an older checkout
+than this branch carries, and =ores_reporting_file_types_tbl= has no
+=ore_file_code= column here. The reporting service selects that column, so the
+run fails while resolving the ORE files its configuration binds. No figure is
+produced, and the instance records the failure in its output message.
+
+**What the cut does not hold.** The market data snapshot and the deal population
+are empty on the minted cut, because no component materialises either: market
+data answers which published sets were in use, and the trade store answers how
+many deals it held, and this environment holds no published set at all. The
+cut's commentary states both, so the record says what the run priced from rather
+than looking like a smaller body. Making those two references real is the trade
+cut and the market data cut work; it is not this task's.
+
+**The .1 family is not built.** Five reports need a 0.1-unit bump series, and
+each needs an analytic type the platform does not bind, so a definition would
+state a run that cannot execute. They are named on
+[[file:../../../../knowledge/reports/reports.org][the reports index]] under what
+is not built, with the matrix and remaining ladder reports.
+
+**The generic seed is behind the ACME one.**
+=projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql=
+still seeds 31 definitions for the generic provisioning path with no cut
+selection. It is a second statement of the same catalogue and was left alone, so
+a tenant provisioned through it holds no intraday report; the ACME datasets carry
+them.
 
 * Test Scenarios
 
@@ -86,3 +168,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The intraday reports are seeded, select the LIVE cut, and their run settings say
+live. A run of the Headline Position as the UK entity mints a LIVE cut, records
+it, and reads back with its badge; the run stops on the environment's schema
+before the engine reaches a price. Thirteen catalogued reports remain prose only,
+five of them the .1 family this task was told not to build.
+

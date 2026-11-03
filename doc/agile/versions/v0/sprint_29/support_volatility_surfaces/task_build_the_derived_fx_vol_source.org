@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-derived-fx-vol-source
-#+pr: 4412
+#+pr: 4413
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -30,11 +30,11 @@ ranked above it replaces it with no change downstream.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -104,6 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4413][#4413]] | [synthetic] Publish FX volatility quotes derived from stored fixings |
 | [[https://github.com/OreStudio/OreStudio/pull/4412][#4412]] | [analytics] Take the normal, the roots and the moments from std and Boost |
 | [[https://github.com/OreStudio/OreStudio/pull/4411][#4411]] | [analytics] Derive FX volatility quotes from a pair's daily returns |
 
@@ -128,3 +129,34 @@ via its "Verifies task" field.
 | R2.4 | The test tag moved from brent to root | tests | Accept, no change | Nothing filters or cites either tag |
 | R2.5 | normal.hpp puts Boost's erf header in every includer | normal.hpp | Accept | The quantile is defined in normal.cpp; the header keeps the std one-liners |
 | R2.6 | The tolerance comment is hard to read | root.hpp | Accept | Reworded |
+| L5 | The adapter held its feed's lock while it read fixings over NATS, and the demand callback takes the same lock on the NATS thread | derived_fx_vol_adapter.cpp | Accept | The lock guards the pending demand alone; the universe is set once before ready_ is released, so an answer reads it while the loop refreshes |
+| L6 | A pair list in the adapter would repeat the one in the catalogue | derived_fx_vol_adapter.cpp | Accept | The universe is the provider's vendor instruments, read through a new market_data_client::list_vendor_instruments |
+| L7 | The synthetic service could not read vendor instruments | iam_roles_populate.sql | Accept | SyntheticService gains marketdata::market_data_vendor_instruments:read |
+
+* Result
+
+A derived source now publishes, once a day, the ATM, 25 and 10 delta risk reversal
+and butterfly quotes of ten FX pairs at eight expiries from 1W to 2Y, inferred from
+the ECB reference fixings the store holds, under its own provider =derived= and as
+quotes of the same =fx_option= items a vendor would quote.
+
+- =ores.analytics.quant= computes the quotes natively, over std and Boost.Math where
+  they supply a routine: the moments and their shrinkage, the Gram-Charlier smile of
+  Backus, Foresi, Li and Wu held inside its density region, the term scaling, and the
+  quotes of a convention, spot or forward, premium-adjusted or not, smile or broker
+  butterfly (PRs 4411 and 4412). The tests reproduce QuantLib's delta calculator
+  tables and ORE's broker butterfly check; 597 quant test cases pass.
+- The synthetic service hosts =derived_fx_vol_adapter= for the session
+  =derived-local=; =derived_fx_vol_feed= reads each demanded pair's euro legs, takes a
+  cross's returns as their difference, reads the pair's =fx_option_convention= and
+  publishes the latest day it has not sent. 9 tests cover the notation, the legs,
+  the convention across the switch tenor, the ticks and the feed's lifecycle.
+- The catalogue gains the supplier, adapter module, session, provider, feed, 400
+  vendor instruments mapped to their items, their scopes, and the system party's
+  subscription and route; the synthetic service may read vendor instruments.
+| R3.1 | A pair already sent for its day did not send an id demanded later, until the next fixing day | derived_fx_vol_feed.cpp | Accept | The last day sent is kept per vendor id; a refresh sends each demanded id behind its pair's latest day; a test demands one id, refreshes, demands a second, and sees only the second sent |
+| R3.2 | A demand replaces the earlier one | derived_fx_vol_feed.cpp | Accept, no change | The service computes the adapter's whole demand from the catalogue on every send (adapter_supervisor::send_demand), as the official adapter also assumes |
+| R3.3 | Every expiry is derived though one quote is demanded | derived_fx_vol_feed.cpp | Accept | Only the expiries of the ids still owed are derived |
+| R3.4 | A client is built per fixings read | derived_fx_vol_adapter.cpp | Decline | At most twenty reads an hour, and the client wraps a reference |
+| R3.5 | A fixing that does not parse is dropped without a word | derived_fx_vol_adapter.cpp | Accept | The count is logged with the item |
+| R3.6 | The convention id format is written in the adapter; a non-finite quote would go out as nan; the spot stands for the forward | derived_fx_vol.cpp, derivation note | Accept | fx_option_convention_id is shared and tested; derived_fx_ticks leaves a non-finite quote out, tested; the note states the forward's bias |

@@ -1,0 +1,283 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "derived_fx_vol_adapter.hpp"
+#include "ores.marketdata.api/domain/adapter_subjects.hpp"
+#include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/version/version.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <charconv>
+#include <span>
+#include <utility>
+
+namespace ores::synthetic::service {
+
+using namespace ores::logging;
+using clock = std::chrono::steady_clock;
+namespace mm = ores::marketdata::messaging;
+namespace subjects = ores::marketdata::domain;
+
+namespace {
+
+/// The publisher whose reference fixings the derived source reads.
+constexpr std::string_view fixing_provider = "ecb";
+
+/// The history read for a pair: the five years every environment holds, and a margin.
+constexpr int window_days = 1830;
+
+}
+
+derived_fx_vol_adapter::derived_fx_vol_adapter(ores::nats::service::client& nats,
+                                               ores::nats::service::nats_client& svc_nats,
+                                               ores::database::context db_ctx,
+                                               std::string source_name,
+                                               std::string provider_code,
+                                               derived_fx_vol_timing timing)
+    : nats_(nats)
+    , svc_nats_(svc_nats)
+    , db_ctx_(std::move(db_ctx))
+    , source_name_(std::move(source_name))
+    , provider_code_(std::move(provider_code))
+    , timing_(timing)
+    , feed_(source_name_, provider_code_, make_readers()) {}
+
+derived_fx_vol_adapter::~derived_fx_vol_adapter() {
+    stop();
+}
+
+feed::derived_fx_readers derived_fx_vol_adapter::make_readers() {
+    return {.fixings = [this](const std::string& item, std::chrono::year_month_day to)
+                -> std::expected<feed::dated_series, std::string> {
+                if (!system_party_) {
+                    ores::refdata::repository::party_repository parties;
+                    const auto system =
+                        parties.read_system_party(db_ctx_, db_ctx_.tenant_id().to_string());
+                    if (system.empty())
+                        return std::unexpected("the tenant has no system party");
+                    system_party_ = boost::uuids::to_string(system.front().id);
+                }
+                auto delegated = svc_nats_.with_delegation({});
+                ores::marketdata::client::market_data_client md(delegated);
+                const auto window =
+                    md.get_fixing_window({.item = item,
+                                          .provider_code = std::string(fixing_provider),
+                                          .party_id = *system_party_,
+                                          .to = to,
+                                          .days = window_days});
+                if (!window)
+                    return std::unexpected(window.error());
+                feed::dated_series out;
+                const auto n = std::min(window->dates.size(), window->values.size());
+                out.dates.reserve(n);
+                out.values.reserve(n);
+                std::size_t unread = 0;
+                for (std::size_t i = 0; i < n; ++i) {
+                    const auto& text = window->values[i];
+                    double value = 0.0;
+                    const auto [end, ec] =
+                        std::from_chars(text.data(), text.data() + text.size(), value);
+                    if (ec != std::errc{} || end != text.data() + text.size()) {
+                        ++unread;
+                        continue;
+                    }
+                    out.dates.push_back(window->dates[i]);
+                    out.values.push_back(value);
+                }
+                if (unread > 0)
+                    BOOST_LOG_SEV(lg(), warn) << unread << " fixing(s) of " << item
+                                              << " are not numbers and are left out";
+                return out;
+            },
+            .convention = [this](const feed::derived_fx_pair& pair)
+                -> std::expected<ores::refdata::domain::fx_option_convention, std::string> {
+                const auto id = feed::fx_option_convention_id(pair);
+                ores::refdata::repository::fx_option_convention_repository repo;
+                const auto found = repo.read_latest(db_ctx_, id);
+                if (found.empty())
+                    return std::unexpected("no FX option convention '" + id + "'");
+                return found.front();
+            }};
+}
+
+void derived_fx_vol_adapter::start() {
+    const auto subject = subjects::adapter_demand_subject(source_name_);
+    BOOST_LOG_SEV(lg(), info) << "Starting the derived source '" << source_name_ << "': demand on '"
+                              << subject << "'";
+    demand_sub_ =
+        nats_.subscribe(subject, [this](ores::nats::message msg) { demand_message(msg); });
+    thread_ = std::thread(&derived_fx_vol_adapter::loop, this);
+}
+
+void derived_fx_vol_adapter::stop() {
+    stop_.store(true, std::memory_order_relaxed);
+    demand_sub_.reset();
+    if (thread_.joinable())
+        thread_.join();
+}
+
+bool derived_fx_vol_adapter::load_universe() {
+    try {
+        ores::marketdata::client::market_data_client md(svc_nats_);
+        const auto instruments = md.list_vendor_instruments(provider_code_);
+        if (!instruments) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Cannot read the universe of '" << source_name_ << "': " << instruments.error();
+            return false;
+        }
+        std::vector<std::string> ids;
+        ids.reserve(instruments->size());
+        for (const auto& v : *instruments)
+            if (v.id_scheme == feed::derived_fx_id_scheme && v.field == feed::derived_fx_field)
+                ids.push_back(v.external_id);
+        feed_.set_universe(ids);
+        return feed_.has_universe();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot read the universe of '" << source_name_
+                                  << "': " << e.what();
+        return false;
+    }
+}
+
+void derived_fx_vol_adapter::demand_message(const ores::nats::message& msg) {
+    auto request = ores::nats::default_wire_codec().decode<mm::adapter_demand_request>(msg.data);
+    if (!request) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to decode a demand on '" << msg.subject
+                                  << "': " << request.error().what();
+        return;
+    }
+    // Until the universe is read the source has not announced, and it refuses every id as
+    // not ready; the service sends the demand again once it announces. Once ready, the
+    // universe no longer changes, so the answer reads it while the loop refreshes.
+    mm::adapter_demand_response response;
+    if (!ready_.load(std::memory_order_acquire)) {
+        for (const auto& id : request->ids)
+            response.rejected.push_back({id, "not_ready"});
+    } else {
+        response = feed_.answer(*request);
+        std::lock_guard lock(mu_);
+        pending_ = std::move(*request);
+    }
+    ores::service::messaging::reply(nats_, msg, response);
+}
+
+bool derived_fx_vol_adapter::announce() {
+    try {
+        auto request = feed_.announcement();
+        request.adapter_code = "derived";
+        request.module_version = ORES_VERSION;
+        const auto bytes = ores::nats::default_wire_codec().encode(request);
+        const auto reply = nats_.request_sync(subjects::adapter_announce_subject(),
+                                              std::span<const std::byte>(bytes),
+                                              {},
+                                              timing_.reply_timeout);
+        const auto response =
+            ores::nats::default_wire_codec().decode<mm::adapter_announce_response>(reply.data);
+        if (!response || !response->success) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "The service refused the announce of '" << source_name_
+                << "': " << (response ? response->message : response.error().what());
+            return false;
+        }
+        BOOST_LOG_SEV(lg(), info) << "Announced '" << source_name_
+                                  << "': " << response->served_count << " served, "
+                                  << response->unknown_count << " unknown";
+        return true;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "The announce of '" << source_name_ << "' got no answer: " << e.what();
+        return false;
+    }
+}
+
+void derived_fx_vol_adapter::serve(clock::time_point now) {
+    if (!ready_.load(std::memory_order_relaxed)) {
+        if (now < next_universe_)
+            return;
+        if (!load_universe()) {
+            next_universe_ = now + timing_.retry_interval;
+            return;
+        }
+        ready_.store(true, std::memory_order_release);
+    }
+    if (now >= next_announce_) {
+        announced_ = announce();
+        next_announce_ = now + (announced_ ? timing_.reannounce_interval : timing_.retry_interval);
+    }
+    if (!announced_)
+        return;
+
+    if (now >= next_heartbeat_) {
+        try {
+            mm::adapter_heartbeat beat;
+            beat.adapter_id = source_name_;
+            beat.counter = ++beats_;
+            nats_.publish(subjects::adapter_heartbeat_subject(source_name_),
+                          ores::nats::default_wire_codec().encode(beat));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to send the heartbeat of '" << source_name_ << "': " << e.what();
+        }
+        next_heartbeat_ = now + timing_.heartbeat_interval;
+    }
+
+    std::optional<mm::adapter_demand_request> taken;
+    {
+        std::lock_guard lock(mu_);
+        taken.swap(pending_);
+    }
+    if (taken) {
+        feed_.demand(*taken);
+        next_refresh_ = now;
+    }
+    if (now < next_refresh_)
+        return;
+
+    const auto today = std::chrono::year_month_day{
+        std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())};
+    // A publish that fails, such as on a lost connection, ends this refresh: the pair it
+    // was sending is sent again on the next, since its day is recorded only once sent.
+    try {
+        const auto sent = feed_.refresh(today, [&](const mm::adapter_tick& tick) {
+            nats_.publish(subjects::adapter_ingress_subject(source_name_, tick.external_id),
+                          ores::nats::default_wire_codec().encode(tick));
+        });
+        for (const auto& failure : feed_.failures())
+            BOOST_LOG_SEV(lg(), warn) << "The derived source left out " << failure;
+        if (sent > 0)
+            BOOST_LOG_SEV(lg(), info)
+                << "Sent " << sent << " derived quote(s) of '" << source_name_ << "'";
+        next_refresh_ = now + timing_.refresh_interval;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << source_name_ << "': " << e.what();
+        next_refresh_ = now + timing_.retry_interval;
+    }
+}
+
+void derived_fx_vol_adapter::loop() {
+    constexpr auto slice = std::chrono::milliseconds(50);
+    while (!stop_.load(std::memory_order_relaxed)) {
+        serve(clock::now());
+        std::this_thread::sleep_for(slice);
+    }
+}
+
+}

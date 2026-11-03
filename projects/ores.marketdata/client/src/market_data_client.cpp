@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_data_vendor_instrument_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -267,6 +268,19 @@ std::expected<std::vector<domain::feed>, std::string> market_data_client::list_f
     if (resp->result.outcome != ores::utility::domain::outcome::ok)
         return std::unexpected(describe(resp->result));
     return std::move(resp->feeds);
+}
+
+std::expected<std::vector<domain::market_data_vendor_instrument>, std::string>
+market_data_client::list_vendor_instruments(const std::string& provider_code) {
+    messaging::list_market_data_vendor_instruments_request req;
+    req.limit = all_rows;
+    req.filter = messaging::market_data_vendor_instruments_filter{.provider_code = provider_code};
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
+    return std::move(resp->vendor_instruments);
 }
 
 }

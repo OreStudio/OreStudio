@@ -21,6 +21,7 @@
 #define ORES_MARKETDATA_CLIENT_MARKET_DATA_CLIENT_HPP
 
 #include "ores.marketdata.api/domain/feed.hpp"
+#include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
@@ -156,6 +157,15 @@ public:
      * adapter that needs to know its sources asks here and reads no table of marketdata.
      */
     [[nodiscard]] std::expected<std::vector<domain::feed>, std::string> list_feeds();
+
+    /**
+     * @brief The vendor instruments of one provider.
+     *
+     * Sends marketdata.v1.market_data_vendor_instruments.list filtered to the provider,
+     * so an adapter whose universe is what the catalogue holds for it reads it here.
+     */
+    [[nodiscard]] std::expected<std::vector<domain::market_data_vendor_instrument>, std::string>
+    list_vendor_instruments(const std::string& provider_code);
 
 private:
     ores::nats::service::nats_client& nats_;

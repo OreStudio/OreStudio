@@ -1,0 +1,350 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
+#include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <charconv>
+#include <chrono>
+#include <cmath>
+#include <cstdint>
+#include <expected>
+#include <limits>
+#include <map>
+#include <random>
+#include <set>
+#include <string>
+#include <vector>
+
+namespace {
+
+const std::string derived_tags("[feeds][derived_fx_vol]");
+
+using Catch::Approx;
+using namespace ores::synthetic::feed;
+using namespace std::chrono;
+namespace mm = ores::marketdata::messaging;
+namespace qm = ores::analytics::quant::math;
+
+constexpr year_month_day derived_start{year{2021}, month{1}, day{4}};
+
+/// Business-day fixings of the euro in two currencies from one seeded random walk each.
+std::map<std::string, dated_series> derived_fixings(int count, std::uint32_t seed) {
+    std::mt19937 rng(seed);
+    std::normal_distribution<double> usd(0.0, 0.005);
+    std::normal_distribution<double> jpy(0.0, 0.007);
+    dated_series eur_usd;
+    dated_series eur_jpy;
+    double u = 1.10;
+    double j = 130.0;
+    for (sys_days d{derived_start}; static_cast<int>(eur_usd.dates.size()) < count; d += days{1}) {
+        const weekday w{d};
+        if (w == Saturday || w == Sunday)
+            continue;
+        u *= std::exp(usd(rng));
+        j *= std::exp(jpy(rng));
+        eur_usd.dates.emplace_back(d);
+        eur_usd.values.push_back(u);
+        eur_jpy.dates.emplace_back(d);
+        eur_jpy.values.push_back(j);
+    }
+    return {{ecb_fixing_item("USD"), eur_usd}, {ecb_fixing_item("JPY"), eur_jpy}};
+}
+
+ores::refdata::domain::fx_option_convention derived_convention(std::string delta,
+                                                               std::string long_term_delta) {
+    ores::refdata::domain::fx_option_convention c;
+    c.id = "EUR-USD-FXOPTION";
+    c.atm_type = "AtmDeltaNeutral";
+    c.delta_type = std::move(delta);
+    c.switch_tenor = "2Y";
+    c.long_term_atm_type = "AtmDeltaNeutral";
+    c.long_term_delta_type = std::move(long_term_delta);
+    c.risk_reversal_in_favor_of = "Call";
+    c.butterfly_style = "Broker";
+    return c;
+}
+
+/// The fixings up to a day, as the reader would return them.
+dated_series derived_window(const dated_series& all, year_month_day to) {
+    dated_series out;
+    for (std::size_t i = 0; i < all.dates.size(); ++i)
+        if (all.dates[i] <= to) {
+            out.dates.push_back(all.dates[i]);
+            out.values.push_back(all.values[i]);
+        }
+    return out;
+}
+
+derived_fx_readers derived_readers_of(const std::map<std::string, dated_series>& fixings) {
+    return {.fixings = [&fixings](const std::string& item,
+                                  year_month_day to) -> std::expected<dated_series, std::string> {
+                const auto it = fixings.find(item);
+                if (it == fixings.end())
+                    return std::unexpected("no such item");
+                return derived_window(it->second, to);
+            },
+            .convention = [](const derived_fx_pair& pair)
+                -> std::expected<ores::refdata::domain::fx_option_convention, std::string> {
+                if (pair.quote == "JPY")
+                    return derived_convention("PaSpot", "PaFwd");
+                return derived_convention("Spot", "Fwd");
+            }};
+}
+
+std::vector<std::string> derived_ids_of(const derived_fx_pair& pair) {
+    std::vector<std::string> out;
+    for (const auto& e : derived_fx_expiries)
+        for (const auto label : derived_fx_labels)
+            out.push_back(derived_fx_external_id(
+                {.pair = pair, .expiry = std::string(e.label), .label = std::string(label)}));
+    return out;
+}
+
+mm::adapter_demand_request derived_demand_of(const std::vector<std::string>& ids) {
+    mm::adapter_demand_request request;
+    for (const auto& id : ids)
+        request.ids.push_back(
+            {std::string(derived_fx_id_scheme), id, std::string(derived_fx_field)});
+    return request;
+}
+
+}
+
+TEST_CASE("a_derived_vendor_id_names_a_pair_an_expiry_and_a_label_and_reads_back", derived_tags) {
+    const derived_fx_quote_id id{
+        .pair = {.base = "EUR", .quote = "USD"}, .expiry = "1Y", .label = "25RR"};
+    CHECK(derived_fx_external_id(id) == "EURUSD/1Y/25RR");
+    CHECK(parse_derived_fx_external_id("EURUSD/1Y/25RR") == id);
+    CHECK_FALSE(parse_derived_fx_external_id("EURUSD/5Y/25RR"));
+    CHECK_FALSE(parse_derived_fx_external_id("EURUSD/1Y/15RR"));
+    CHECK_FALSE(parse_derived_fx_external_id("EURUS/1Y/ATM"));
+    CHECK_FALSE(parse_derived_fx_external_id("EURUSD/1Y/ATM/X"));
+    CHECK_FALSE(parse_derived_fx_external_id("EURUSD"));
+}
+
+TEST_CASE("a_pair_reads_the_euro_fixings_of_its_sides", derived_tags) {
+    const auto direct = ecb_legs_of({.base = "EUR", .quote = "USD"});
+    CHECK(direct.plus == ecb_fixing_item("USD"));
+    CHECK_FALSE(direct.minus);
+    const auto cross = ecb_legs_of({.base = "USD", .quote = "JPY"});
+    CHECK(cross.plus == ecb_fixing_item("JPY"));
+    CHECK(cross.minus == ecb_fixing_item("USD"));
+    const auto inverse = ecb_legs_of({.base = "GBP", .quote = "EUR"});
+    CHECK_FALSE(inverse.plus);
+    CHECK(inverse.minus == ecb_fixing_item("GBP"));
+}
+
+TEST_CASE("a_cross_returns_the_change_of_the_ratio_of_its_legs_on_the_days_both_hold",
+          derived_tags) {
+    const dated_series jpy{.dates = {derived_start,
+                                     year_month_day{sys_days{derived_start} + days{1}},
+                                     year_month_day{sys_days{derived_start} + days{2}},
+                                     year_month_day{sys_days{derived_start} + days{3}}},
+                           .values = {130.0, 131.0, 0.0, 129.0}};
+    const dated_series usd{.dates = {derived_start,
+                                     year_month_day{sys_days{derived_start} + days{1}},
+                                     year_month_day{sys_days{derived_start} + days{3}}},
+                           .values = {1.10, 1.12, 1.09}};
+    const auto r = pair_log_returns(jpy, usd);
+    REQUIRE(r);
+    REQUIRE(r->returns.size() == 2);
+    CHECK(r->returns[0] == Approx(std::log((131.0 / 1.12) / (130.0 / 1.10))).epsilon(1e-12));
+    CHECK(r->returns[1] == Approx(std::log((129.0 / 1.09) / (131.0 / 1.12))).epsilon(1e-12));
+    CHECK(r->last == year_month_day{sys_days{derived_start} + days{3}});
+
+    const auto inverse = pair_log_returns(std::nullopt, usd);
+    REQUIRE(inverse);
+    CHECK(inverse->returns[0] == Approx(-std::log(1.12 / 1.10)).epsilon(1e-14));
+    CHECK_FALSE(pair_log_returns(std::nullopt, std::nullopt));
+}
+
+TEST_CASE("an_expiry_at_the_switch_tenor_takes_the_long_term_convention", derived_tags) {
+    const auto c = derived_convention("PaSpot", "PaFwd");
+    const auto short_term = quote_convention_at(c, 1.0);
+    const auto long_term = quote_convention_at(c, 2.0);
+    REQUIRE(short_term);
+    REQUIRE(long_term);
+    CHECK(short_term->delta == qm::fx_delta_type::premium_adjusted_spot);
+    CHECK(long_term->delta == qm::fx_delta_type::premium_adjusted_forward);
+    CHECK(long_term->atm == qm::fx_atm_type::delta_neutral);
+    CHECK(long_term->favour == qm::fx_risk_reversal_favour::call);
+    CHECK(long_term->butterfly == qm::fx_butterfly_style::broker);
+
+    auto no_switch = c;
+    no_switch.switch_tenor = "0D";
+    CHECK(quote_convention_at(no_switch, 2.0)->delta == qm::fx_delta_type::premium_adjusted_spot);
+}
+
+TEST_CASE("a_convention_the_derivation_cannot_quote_is_refused_naming_its_type", derived_tags) {
+    auto c = derived_convention("Spot", "Fwd");
+    c.atm_type = "AtmPutCall50";
+    const auto refused = quote_convention_at(c, 1.0);
+    REQUIRE_FALSE(refused);
+    CHECK(refused.error().find("AtmPutCall50") != std::string::npos);
+    auto unstated = derived_convention("Spot", "Fwd");
+    unstated.risk_reversal_in_favor_of.reset();
+    unstated.butterfly_style.reset();
+    const auto defaults = quote_convention_at(unstated, 1.0);
+    REQUIRE(defaults);
+    CHECK(defaults->favour == qm::fx_risk_reversal_favour::call);
+    CHECK(defaults->butterfly == qm::fx_butterfly_style::smile);
+}
+
+TEST_CASE("a_derivation_becomes_one_tick_per_label_of_each_quoted_expiry", derived_tags) {
+    const auto fixings = derived_fixings(400, 3);
+    const auto returns = pair_log_returns(fixings.at(ecb_fixing_item("USD")), std::nullopt);
+    REQUIRE(returns);
+    std::vector<qm::fx_expiry> expiries;
+    for (const auto& e : derived_fx_expiries)
+        expiries.push_back(
+            {.label = std::string(e.label),
+             .years = e.years,
+             .convention = *quote_convention_at(derived_convention("Spot", "Fwd"), e.years)});
+    const auto d = qm::derive_fx_quotes(returns->returns, expiries, {});
+    REQUIRE(d);
+    REQUIRE(d->expiries[7].has_value() == false);
+    const auto ticks = derived_fx_ticks({.base = "EUR", .quote = "USD"}, *d, *returns->last, 40);
+    REQUIRE(ticks.size() == 7 * derived_fx_labels.size());
+    CHECK(ticks.front().external_id == "EURUSD/1W/ATM");
+    CHECK(ticks[1].external_id == "EURUSD/1W/25RR");
+    CHECK(ticks.back().external_id == "EURUSD/1Y/10BF");
+    CHECK(ticks.front().sequence == 40);
+    CHECK(ticks.back().sequence == 40 + ticks.size() - 1);
+    for (const auto& t : ticks) {
+        CHECK(t.id_scheme == derived_fx_id_scheme);
+        CHECK(t.field == derived_fx_field);
+        CHECK(t.vendor_time == sys_days{*returns->last} + hours(17));
+    }
+    double atm = 0.0;
+    std::from_chars(
+        ticks.front().value.data(), ticks.front().value.data() + ticks.front().value.size(), atm);
+    CHECK(atm == d->expiries[0]->quotes.atm);
+}
+
+TEST_CASE("the_feed_serves_only_its_notation_and_answers_demand_from_its_universe", derived_tags) {
+    const auto fixings = derived_fixings(10, 1);
+    derived_fx_vol_feed feed("derived-fx-vol", "derived", derived_readers_of(fixings));
+    auto ids = derived_ids_of({.base = "EUR", .quote = "USD"});
+    ids.emplace_back("not-a-derived-id");
+    feed.set_universe(ids);
+    const auto announce = feed.announcement();
+    CHECK(announce.adapter_id == "derived-fx-vol");
+    CHECK(announce.provider_code == "derived");
+    CHECK(announce.universe.size() == ids.size() - 1);
+
+    auto request = derived_demand_of({"EURUSD/1Y/ATM", "GBPUSD/1Y/ATM"});
+    request.ids.push_back({"iso4217", "USD", "rate"});
+    const auto response = feed.answer(request);
+    REQUIRE(response.accepted.size() == 1);
+    CHECK(response.accepted[0].external_id == "EURUSD/1Y/ATM");
+    CHECK(response.rejected.size() == 2);
+}
+
+TEST_CASE("the_feed_publishes_a_day_once_and_the_next_day_when_its_fixings_arrive", derived_tags) {
+    const auto fixings = derived_fixings(1300, 7);
+    derived_fx_vol_feed feed("derived-fx-vol", "derived", derived_readers_of(fixings));
+    const auto eurusd = derived_ids_of({.base = "EUR", .quote = "USD"});
+    const auto usdjpy = derived_ids_of({.base = "USD", .quote = "JPY"});
+    std::vector<std::string> universe = eurusd;
+    universe.insert(universe.end(), usdjpy.begin(), usdjpy.end());
+    feed.set_universe(universe);
+    feed.demand(derived_demand_of({"EURUSD/1M/ATM", "EURUSD/1Y/25RR", "USDJPY/3M/25BF"}));
+
+    const auto& usd = fixings.at(ecb_fixing_item("USD"));
+    const auto day = usd.dates[1200];
+    std::vector<mm::adapter_tick> sent;
+    const auto collect = [&](const mm::adapter_tick& t) {
+        sent.push_back(t);
+    };
+    CHECK(feed.refresh(day, collect) == 3);
+    CHECK(feed.failures().empty());
+    std::set<std::string> names;
+    for (const auto& t : sent) {
+        names.insert(t.external_id);
+        CHECK(t.vendor_time == sys_days{day} + hours(17));
+    }
+    CHECK(names == std::set<std::string>{"EURUSD/1M/ATM", "EURUSD/1Y/25RR", "USDJPY/3M/25BF"});
+
+    sent.clear();
+    CHECK(feed.refresh(day, collect) == 0);
+    const auto next = usd.dates[1201];
+    CHECK(feed.refresh(next, collect) == 3);
+    for (const auto& t : sent)
+        CHECK(t.vendor_time == sys_days{next} + hours(17));
+}
+
+TEST_CASE("a_pair_the_feed_cannot_derive_is_named_and_the_others_are_still_sent", derived_tags) {
+    auto fixings = derived_fixings(1300, 9);
+    derived_fx_vol_feed feed("derived-fx-vol", "derived", derived_readers_of(fixings));
+    const auto eurusd = derived_ids_of({.base = "EUR", .quote = "USD"});
+    const auto gbpusd = derived_ids_of({.base = "GBP", .quote = "USD"});
+    std::vector<std::string> universe = eurusd;
+    universe.insert(universe.end(), gbpusd.begin(), gbpusd.end());
+    feed.set_universe(universe);
+    feed.demand(derived_demand_of({"EURUSD/3M/ATM", "GBPUSD/3M/ATM"}));
+    std::size_t sent = 0;
+    CHECK(feed.refresh(fixings.at(ecb_fixing_item("USD")).dates.back(),
+                       [&](const mm::adapter_tick&) { ++sent; }) == 1);
+    CHECK(sent == 1);
+    REQUIRE(feed.failures().size() == 1);
+    CHECK(feed.failures()[0].starts_with("GBPUSD: "));
+}
+
+TEST_CASE("an_id_demanded_after_its_pair_was_sent_is_sent_at_once_and_alone", derived_tags) {
+    const auto fixings = derived_fixings(1300, 11);
+    derived_fx_vol_feed feed("derived-fx-vol", "derived", derived_readers_of(fixings));
+    feed.set_universe(derived_ids_of({.base = "EUR", .quote = "USD"}));
+    const auto day = fixings.at(ecb_fixing_item("USD")).dates[1250];
+    std::vector<std::string> sent;
+    const auto collect = [&](const mm::adapter_tick& t) {
+        sent.push_back(t.external_id);
+    };
+
+    feed.demand(derived_demand_of({"EURUSD/1M/ATM"}));
+    CHECK(feed.refresh(day, collect) == 1);
+    feed.demand(derived_demand_of({"EURUSD/1M/ATM", "EURUSD/6M/10RR"}));
+    sent.clear();
+    CHECK(feed.refresh(day, collect) == 1);
+    CHECK(sent == std::vector<std::string>{"EURUSD/6M/10RR"});
+    sent.clear();
+    CHECK(feed.refresh(day, collect) == 0);
+}
+
+TEST_CASE("a_quote_that_is_not_finite_is_left_out_of_the_ticks", derived_tags) {
+    qm::fx_derivation d;
+    d.expiries.emplace_back(qm::derived_fx_expiry{
+        .label = "1M",
+        .quotes = {.atm = 0.1,
+                   .rr25 = std::numeric_limits<double>::quiet_NaN(),
+                   .bf25 = 0.002,
+                   .rr10 = std::numeric_limits<double>::infinity(),
+                   .bf10 = 0.006},
+        .smile = {.sigma = 0.1, .skewness = 0.0, .excess_kurtosis = 0.0, .years = 1.0 / 12.0},
+        .window = 21});
+    const auto ticks = derived_fx_ticks({.base = "EUR", .quote = "USD"}, d, derived_start, 0);
+    REQUIRE(ticks.size() == 3);
+    CHECK(ticks[0].external_id == "EURUSD/1M/ATM");
+    CHECK(ticks[1].external_id == "EURUSD/1M/25BF");
+    CHECK(ticks[2].external_id == "EURUSD/1M/10BF");
+}
+
+TEST_CASE("a_pair_names_its_option_convention_as_refdata_does", derived_tags) {
+    CHECK(fx_option_convention_id({.base = "USD", .quote = "JPY"}) == "USD-JPY-FXOPTION");
+}

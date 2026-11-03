@@ -38,6 +38,7 @@ set(files
     "balance_guaranteed_swap_tranche_protocol_codec_roundtrip_tests.cpp"
     "barrier_type_codec_roundtrip_tests.cpp"
     "barrier_type_protocol_codec_roundtrip_tests.cpp"
+    "blotter_protocol_codec_roundtrip_tests.cpp"
     "bond_amortization_data_codec_roundtrip_tests.cpp"
     "bond_fixed_leg_data_codec_roundtrip_tests.cpp"
     "bond_float_data_codec_roundtrip_tests.cpp"

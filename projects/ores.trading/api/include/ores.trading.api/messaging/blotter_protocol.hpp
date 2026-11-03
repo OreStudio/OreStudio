@@ -61,6 +61,8 @@ struct blotter_rail_node {
      * takes it to mean.
      */
     std::uint64_t count;
+
+    friend bool operator==(const blotter_rail_node&, const blotter_rail_node&) = default;
 };
 
 /**
@@ -83,6 +85,9 @@ struct get_blotter_rail_request {
      * @brief Which rows the rail counts. Absent counts every row of the party.
      */
     std::optional<ores::trading::messaging::trade_summaries_filter> filter;
+
+    friend bool operator==(const get_blotter_rail_request&,
+                           const get_blotter_rail_request&) = default;
 };
 
 /**
@@ -98,6 +103,9 @@ struct get_blotter_rail_response {
      * come first, with an empty node id.
      */
     std::vector<blotter_rail_node> nodes;
+
+    friend bool operator==(const get_blotter_rail_response&,
+                           const get_blotter_rail_response&) = default;
 };
 
 /**
@@ -138,6 +146,9 @@ struct get_blotter_page_request {
      * client changing.
      */
     std::string after;
+
+    friend bool operator==(const get_blotter_page_request&,
+                           const get_blotter_page_request&) = default;
 };
 
 /**
@@ -158,6 +169,9 @@ struct get_blotter_page_response {
      * short page, because a page may be short for a reason of its own.
      */
     std::string next;
+
+    friend bool operator==(const get_blotter_page_response&,
+                           const get_blotter_page_response&) = default;
 };
 
 /**

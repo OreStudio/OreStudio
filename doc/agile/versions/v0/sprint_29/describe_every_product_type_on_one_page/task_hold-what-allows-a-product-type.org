@@ -140,6 +140,28 @@ rows behind, as it already leaves the books they point at. That gap predates thi
 task — no purge reaches the books at all — and closing it means deciding what a
 purge does with books, which is its own task.
 
+** 2026-11-03 — a test counts relationships, not rows
+
+Four marketdata suites were red on main because they asserted the size of a
+seed: ten feeds, five routes, two adapters, two suppliers, four feed scopes.
+Main's derived FX volatility catalogue added one of each and the suites failed
+without anything being wrong. The counts are now relationships that follow the
+data:
+
+- every feed names a catalogued publisher and an enabled session;
+- every public publisher reads through the Frankfurter session at end of day,
+  and routes the classes its feed states, at FX among them;
+- every feed scope names a publisher the vendor instruments belong to, and every
+  public feed carries a scope;
+- the adapters and suppliers the system tenant holds are exactly the ones the
+  dataset stages, compared as sets;
+- an insert-only publish skips as many rows as the dataset stages, whatever that
+  number is.
+
+The same rule settled this task's own suite: it asks whether a book allows
+exactly the catalogue's codes, not whether it allows 121 of them. A count is a
+fact about today's data, and a test that states it fails on the next good day.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -189,14 +211,22 @@ path enforces the book's rule.
   refusal, the code it carries, the rule its message names, and that no anchor
   was written. Another asserts the port reads the junction only when the book
   restricts, and asks as the caller.
-- The 98 ctest suites pass, the codegen suite passes 1861 tests, and every local
-  check passes.
+- All 83 pgTAP suites pass, the 98 ctest suites pass, the codegen suite passes
+  1861 tests, and every local check passes.
 
-** What is left
+** The purge deletes what the task added
 
-- The tenant purger does not delete either junction, as it does not delete the
-  books they point at. Closing that is a purge task, not this one.
-- Four marketdata pgTAP suites fail on a tree with no change from this task:
-  main's derived FX volatility catalogue adds a feed, a route, an adapter, a
-  supplier and the feed scopes that name them, and the four suites still assert
-  the counts from before it.
+The tenant purger was a hand-written list of tables, and the two junctions were
+not on it: purging a tenant would have left its books, its allowed product types
+and its role grants behind. It is now a sweep of the catalogue — every public
+table that carries a tenant_id — so a table cannot be forgotten, and the new
+junctions are purged without the function naming them. Each table's delete rules
+are disabled around its own delete and put back even when the delete fails; the
+columns are compared as text, because two audit tables record the tenant as the
+string an operator presented; and the two functions are security definer, as a
+purge of every table is a privileged act that a caller with table rights alone
+cannot perform.
+
+A pgTAP suite, =test/iam_tenant_purge_test.sql=, proves it on a tenant that owns
+a book and its allowed types: it counts the tenant's rows across every table
+that carries one before the purge, and again after, and expects zero.

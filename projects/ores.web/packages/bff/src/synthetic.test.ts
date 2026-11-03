@@ -494,7 +494,7 @@ describe('synthetic calibration', () => {
     const policyRows = {
         'synthetic.v1.calibration_policies.list': {
             result: ok,
-            calibration_policies: [{ id: POLICY_ID, version: 3, asset_class_code: 'fx' }],
+            policies: [{ id: POLICY_ID, version: 3, asset_class_code: 'fx' }],
         },
     };
 
@@ -626,7 +626,7 @@ describe('synthetic calibration', () => {
         ...policyRows,
         'synthetic.v1.calibration_provider_orders.list': {
             result: ok,
-            calibration_provider_orders: rungs.map(([id, provider_code, rank, version]) => ({
+            provider_orders: rungs.map(([id, provider_code, rank, version]) => ({
                 id,
                 version,
                 policy_id: POLICY_ID,
@@ -848,7 +848,7 @@ describe('synthetic calibration', () => {
                 ...policyRows,
                 'synthetic.v1.calibration_provider_orders.list': {
                     result: ok,
-                    calibration_provider_orders: [
+                    provider_orders: [
                         { id: ID, version: 1, policy_id: POLICY_ID, provider_code: 'ecb', rank: 0 },
                     ],
                 },

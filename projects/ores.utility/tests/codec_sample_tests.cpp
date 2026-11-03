@@ -97,6 +97,56 @@ struct sample_probe_every_member {
     };
 }
 
+struct sample_probe_twins {
+    std::string text_a;
+    std::string text_b;
+    std::int32_t int_a = 0;
+    std::int32_t int_b = 0;
+    std::uint16_t count_a = 0;
+    std::uint16_t count_b = 0;
+    double ratio_a = 0.0;
+    double ratio_b = 0.0;
+    boost::uuids::uuid id_a{};
+    boost::uuids::uuid id_b{};
+    ores::utility::decimal::decimal amount_a;
+    ores::utility::decimal::decimal amount_b;
+    std::chrono::system_clock::time_point at_a{};
+    std::chrono::system_clock::time_point at_b{};
+    std::optional<std::string> note_a;
+    std::optional<std::string> note_b;
+    std::vector<std::int64_t> values_a;
+    std::vector<std::int64_t> values_b;
+    sample_probe_leaf leaf_a;
+    sample_probe_leaf leaf_b;
+
+    friend bool operator==(const sample_probe_twins&, const sample_probe_twins&) = default;
+};
+
+[[nodiscard]] constexpr auto wire_fields(const sample_probe_twins&) {
+    return std::tuple{
+        utility::codec::field{"text_a", &sample_probe_twins::text_a},
+        utility::codec::field{"text_b", &sample_probe_twins::text_b},
+        utility::codec::field{"int_a", &sample_probe_twins::int_a},
+        utility::codec::field{"int_b", &sample_probe_twins::int_b},
+        utility::codec::field{"count_a", &sample_probe_twins::count_a},
+        utility::codec::field{"count_b", &sample_probe_twins::count_b},
+        utility::codec::field{"ratio_a", &sample_probe_twins::ratio_a},
+        utility::codec::field{"ratio_b", &sample_probe_twins::ratio_b},
+        utility::codec::field{"id_a", &sample_probe_twins::id_a},
+        utility::codec::field{"id_b", &sample_probe_twins::id_b},
+        utility::codec::field{"amount_a", &sample_probe_twins::amount_a},
+        utility::codec::field{"amount_b", &sample_probe_twins::amount_b},
+        utility::codec::field{"at_a", &sample_probe_twins::at_a},
+        utility::codec::field{"at_b", &sample_probe_twins::at_b},
+        utility::codec::field{"note_a", &sample_probe_twins::note_a},
+        utility::codec::field{"note_b", &sample_probe_twins::note_b},
+        utility::codec::field{"values_a", &sample_probe_twins::values_a},
+        utility::codec::field{"values_b", &sample_probe_twins::values_b},
+        utility::codec::field{"leaf_a", &sample_probe_twins::leaf_a},
+        utility::codec::field{"leaf_b", &sample_probe_twins::leaf_b},
+    };
+}
+
 struct sample_probe_code {
     std::string text = "unset";
 
@@ -129,6 +179,7 @@ using ores::utility::codec_sample_probe::sample_probe_code;
 using ores::utility::codec_sample_probe::sample_probe_colour;
 using ores::utility::codec_sample_probe::sample_probe_every_member;
 using ores::utility::codec_sample_probe::sample_probe_leaf;
+using ores::utility::codec_sample_probe::sample_probe_twins;
 
 // The sampler's leaf specialisations win over its wire_fields branch. The codec
 // tries wire_fields first, so the two agree only while no leaf states one.
@@ -178,8 +229,37 @@ TEST_CASE("a sampled struct sets every member away from its default", sample_tag
 
 TEST_CASE("a member whose default is the first sample takes the second", sample_tags) {
     CHECK(sample<sample_probe_colour>(0) == sample_probe_colour::green);
-    CHECK(sample<sample_probe_leaf>(0).tint == sample_probe_colour::red);
+    CHECK(ores::utility::codec::sample_unlike(sample_probe_colour::green) ==
+          sample_probe_colour::red);
     CHECK(sample<sample_probe_every_member>(0).flag == false);
+}
+
+TEST_CASE("two members of one type hold different values", sample_tags) {
+    for (const std::size_t which : {0u, 1u}) {
+        CAPTURE(which);
+        const auto v = sample<sample_probe_twins>(which);
+        CHECK(v.text_a != v.text_b);
+        CHECK(v.int_a != v.int_b);
+        CHECK(v.count_a != v.count_b);
+        CHECK(v.ratio_a != v.ratio_b);
+        CHECK(v.id_a != v.id_b);
+        CHECK(v.amount_a != v.amount_b);
+        CHECK(v.at_a != v.at_b);
+        CHECK(v.note_a != v.note_b);
+        CHECK(v.values_a != v.values_b);
+        CHECK(v.leaf_a != v.leaf_b);
+    }
+}
+
+TEST_CASE("the twins sample survives JSON and MessagePack exactly", sample_tags) {
+    using namespace ores::utility::codec;
+    for (const std::size_t which : {0u, 1u}) {
+        CAPTURE(which);
+        const auto v = sample<sample_probe_twins>(which);
+        CHECK(object::read_json<sample_probe_twins>(object::write_json(v)) == v);
+        const auto packed = object::write_msgpack(v);
+        CHECK(object::read_msgpack<sample_probe_twins>(sample_bytes_of(packed)) == v);
+    }
 }
 
 TEST_CASE("a vector sample holds two different elements", sample_tags) {

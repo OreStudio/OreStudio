@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-03
 #+updated: 2026-11-03
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A generated roundtrip test fails when a codec reads one member's value into anot
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
-| Now          | Not yet started.                       |
+| Now          | The sampler is numbered; the full build and suites are next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run every suite on a full build. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -41,9 +41,18 @@ A generated roundtrip test fails when a codec reads one member's value into anot
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Number the samples. =sample<T>(n)= takes any number, and each leaf type
+gives a different value for each number, keeping its values for 0 and 1. Member
+j of a struct takes =sample_unlike(default, 2j)=, which is =sample(2j)= unless
+that is the default, then =sample(2j + 1)=; the struct's second sample takes the
+other of the two. A nested struct's number moves its members' numbers by a block
+of twice its member count, so two members of one struct type differ too. A
+vector or map at an even number holds the samples at that number and the next.
+
+Integers stay inside their range and away from zero, so a narrow integer never
+wraps to its default. bool, an enumeration, the error code and a type with only
+two sample texts have fewer values than a struct can have members, so they
+repeat.
 
 * Measurements
 
@@ -57,7 +66,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Sampler tests | 47 =[codec]= cases pass, 230 assertions; the whole suite 197 cases, 933 assertions | =ores.utility.tests "[codec]"=, then =ores.utility.tests= | working tree on =5baa8bb3e6= |
+| =same-type-mixup= after the fix | the case fails, 1 of 4 assertions: the JSON check on the sample value | =evidence/mutation_same_type_mixup_after_the_fix.txt= | working tree on =5baa8bb3e6= |
 
 * Notes
 

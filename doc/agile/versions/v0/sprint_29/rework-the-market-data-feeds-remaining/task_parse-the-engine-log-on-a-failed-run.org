@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/parse-the-engine-log-on-a-failed-run
-#+pr:
+#+pr: 4449
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4449][#4449]] | [reporting] Record a failed run's log as rows, not a transcript |
 
 * Review
 

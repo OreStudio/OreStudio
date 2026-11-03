@@ -68,3 +68,11 @@ def test_a_hand_written_codec_gets_no_tests(kind):
 def test_a_family_entity_has_no_domain_codec_to_include():
     assert "domain/widget_codec.hpp" in render("domain_entity")
     assert "domain/widget_codec.hpp" not in render("domain_entity", family=True)
+
+
+@pytest.mark.parametrize("kind", ["domain_entity", "operation", "family"])
+def test_each_message_codec_include_renders(kind):
+    includes = ["ores.x.api/domain/gadget_codec.hpp", "ores.y.api/domain/part_codec.hpp"]
+    out = render(kind, message_codec_includes=includes)
+    for include in includes:
+        assert f'#include "{include}"' in out

@@ -26,11 +26,11 @@ The knowledge base describes the target workflow: a calibration run captures its
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -87,3 +87,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story records the decision that the GJR-GARCH variance is a stored, reviewed
+calibration. The GARCH note's Calibration section states the three stages,
+capture, fit and review, and apply, with the records and the links of each, and
+its In the code section no longer describes a fit at start. The GARCH variance
+task notes that its fit at start is superseded. Seven tasks name the work: the
+records, the capture, the fit, the review, the application to a feed, the screen
+that shows the chain, and the derived source defects found in the same live test.
+

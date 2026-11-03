@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 80EB8717-BCF9-4432-A340-E5560FA05E65
+:END:
+#+title: Two protocol headers have no TypeScript twin
+#+description: The protocol-twins check fails on main. The blotter model opts out because codegen cannot project a message type from another protocol, and the market regime protocol header has no model at all.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:typescript:gates:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The =protocol-twins= check requires a TypeScript twin for every protocol header, and it fails on main for two headers:
+
+- =projects/ores.trading/api/include/ores.trading.api/messaging/blotter_protocol.hpp=. The model sets =:ores.ts.protocol.enabled: nil=, because its requests carry =std::optional<ores::trading::messaging::trade_summaries_filter>=. =org_loader._ts_type= projects no message type of another protocol. The fix maps =ores::<component>::messaging::<name>= to its interface, and the template imports it from the protocol module that defines it. =trade_summary_protocol.ts= already exports =TradeSummariesFilter=.
+- =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/market_regime_protocol.hpp=. It came from #3796 and is hand-written, with no model. The fix models it, so codegen writes both the header and the twin.
+
+* Why
+
+The gate runs =protocol-twins= for every change in the modeling class, so the gate is red for all of those changes until both gaps are fixed. The gap came to light on the branch that moved the blotter subjects to the ops namespace.
+
+* References
+
+-
+
+* See also
+
+-

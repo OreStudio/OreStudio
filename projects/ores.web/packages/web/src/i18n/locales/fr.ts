@@ -3817,6 +3817,9 @@ const fr: SourceCatalogue = {
         'Generate the trades': 'Générer les transactions',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Enregistre une configuration de génération de transactions pour chaque partie que le point de départ nomme, et écrit la population qu'il indique dans les livres propres de cette partie.",
+        'Schedule the reports': 'Planifier les rapports',
+        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.":
+            "Planifie chaque définition de rapport que chaque partie qu'il nomme publie, en tant qu'administrateur de l'exécution, afin que le catalogue se déclenche sans qu'une personne agisse. Un rapport dont le calendrier est l'espace réservé à la demande est laissé à une demande manuelle.",
         'Hand the tenant to its administrator': 'Remettre le locataire à son administrateur',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             "Démarre la propre exécution de configuration du locataire, qui s'exécute en tant qu'administrateur du locataire et termine le locataire.",

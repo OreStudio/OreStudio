@@ -3773,6 +3773,9 @@ export const en: SourceCatalogue = {
         'Generate the trades': 'Generate the trades',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.",
+        'Schedule the reports': 'Schedule the reports',
+        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.":
+            "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.",
         'Hand the tenant to its administrator': 'Hand the tenant to its administrator',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.",

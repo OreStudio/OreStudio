@@ -79,10 +79,7 @@ struct fx_spot_generation_config_entity {
     double decay = 1.0;
     double sensitivity = 1.0;
     std::string variance_model = "constant";
-    double garch_alpha = 0.05;
-    double garch_gamma = 0.0;
-    double garch_beta = 0.9;
-    int garch_window_days = 1826;
+    std::optional<boost::uuids::uuid> variance_calibration_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -119,10 +116,7 @@ struct fx_spot_generation_config_entity {
                query_builder::bind("decay", &e::decay) |
                query_builder::bind("sensitivity", &e::sensitivity) |
                query_builder::bind("variance_model", &e::variance_model) |
-               query_builder::bind("garch_alpha", &e::garch_alpha) |
-               query_builder::bind("garch_gamma", &e::garch_gamma) |
-               query_builder::bind("garch_beta", &e::garch_beta) |
-               query_builder::bind("garch_window_days", &e::garch_window_days) |
+               query_builder::bind("variance_calibration_id", &e::variance_calibration_id) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

@@ -33,6 +33,7 @@
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_paths_common.hpp"
+#include "ores.synthetic.core/repository/variance_calibration_repository.hpp"
 #include "ores.synthetic.core/repository/calibration_policy_repository.hpp"
 #include "ores.synthetic.core/repository/calibration_provider_order_repository.hpp"
 #include "ores.synthetic.core/repository/folder_repository.hpp"
@@ -212,6 +213,18 @@ feed_kind make_fx_spot_kind() {
                 if (fx.calibration_window_days)
                     policy.window_days = *fx.calibration_window_days;
 
+                // The calibration a GJR-GARCH feed names is a system row, read as stored; the
+                // feed decides at start whether it is approved.
+                std::optional<ores::synthetic::domain::variance_calibration> calibration;
+                if (fx.variance_calibration_id) {
+                    const auto found =
+                        ores::synthetic::repository::variance_calibration_repository{}.read_latest(
+                            ores::database::service::tenant_context::with_system_tenant(ctx),
+                            boost::uuids::to_string(*fx.variance_calibration_id));
+                    if (!found.empty())
+                        calibration = found.front();
+                }
+
                 // The feed quotes the pair in the notation of the adapter's provider, so a feed
                 // started by hand publishes the same ids the demand set names.
                 std::optional<feed::adapter_target> target;
@@ -226,7 +239,8 @@ feed_kind make_fx_spot_kind() {
                                                                             std::move(components),
                                                                             std::move(target),
                                                                             std::move(fixing_items),
-                                                                            std::move(policy)}},
+                                                                            std::move(policy),
+                                                                            std::move(calibration)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));

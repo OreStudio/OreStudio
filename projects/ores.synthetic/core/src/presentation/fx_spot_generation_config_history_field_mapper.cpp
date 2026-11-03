@@ -64,10 +64,10 @@ render_fx_spot_generation_config_fields(const domain::fx_spot_generation_config&
     fields.push_back({.name = "Decay", .value = std::to_string(v.decay)});
     fields.push_back({.name = "Sensitivity", .value = std::to_string(v.sensitivity)});
     fields.push_back({.name = "Variance Model", .value = v.variance_model});
-    fields.push_back({.name = "Garch Alpha", .value = std::to_string(v.garch_alpha)});
-    fields.push_back({.name = "Garch Gamma", .value = std::to_string(v.garch_gamma)});
-    fields.push_back({.name = "Garch Beta", .value = std::to_string(v.garch_beta)});
-    fields.push_back({.name = "Garch Window Days", .value = std::to_string(v.garch_window_days)});
+    fields.push_back({.name = "Variance Calibration ID",
+                      .value = v.variance_calibration_id ?
+                                   boost::uuids::to_string(*v.variance_calibration_id) :
+                                   std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

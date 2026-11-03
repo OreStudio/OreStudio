@@ -33,6 +33,7 @@
 #include "ores.synthetic.api/domain/fx_spot_fixing_item.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
+#include "ores.synthetic.api/domain/variance_calibration.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_faults.hpp"
 #include "ores.synthetic.api/feeds/adapter_target.hpp"
@@ -268,6 +269,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   const std::vector<ores::synthetic::domain::fx_spot_fixing_item>& fixing_items,
                   const calibration_policy& policy,
+                  const std::optional<ores::synthetic::domain::variance_calibration>& variance,
                   ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter = std::nullopt,
                   const ores::marketdata::domain::market_clock* clock = nullptr);

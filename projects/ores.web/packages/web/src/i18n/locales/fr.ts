@@ -5823,28 +5823,14 @@ const fr: SourceCatalogue = {
         },
         variance: {
             title: 'Variance quotidienne',
-            lead: 'Si la variance quotidienne de ce flux est constante ou suit un GJR-GARCH, afin que les jours calmes et agités se regroupent, et la forme dont elle part.',
+            lead: 'Si la variance quotidienne de ce flux est constante ou suit un GJR-GARCH, pour que les jours calmes et agités se regroupent, et la calibration revue qu’il utilise.',
             model: 'Modèle de variance',
             'model.constant': 'Constante — la variance du mélange chaque jour',
-            'model.gjr_garch': 'GJR-GARCH — une variance reportée de jour en jour',
-            alpha: 'Alpha',
-            alphaHelp:
-                'La force avec laquelle le mouvement d’un jour relève la variance du lendemain. Au moins zéro.',
-            gamma: 'Gamma',
-            gammaHelp:
-                'La réaction supplémentaire à une baisse de la paire ; alpha plus gamma vaut au moins zéro.',
-            beta: 'Bêta',
-            betaHelp: 'La part de la variance d’un jour reportée au suivant. Au moins zéro.',
-            window: 'Historique, jours',
-            windowHelp:
-                'Les jours de fixings qu’un flux à fixing utilise pour ajuster sa forme, de 30 à 3660.',
-            fitted: 'Un flux qui part d’un fixing ajuste sa propre forme sur cet historique, et garde ces valeurs quand l’historique est trop court. Le point de départ du run indique laquelle il a utilisée.',
-            engine: 'Une variance GJR-GARCH met le mélange à l’échelle ; elle demande donc le moteur géométrique ou arithmétique. Changez d’abord le moteur dans l’onglet Comportement du prix.',
-            editTitle: 'Modifier la variance quotidienne de {feed}',
-            runningNote: 'Le flux tourne sur la variance avec laquelle il a démarré.',
-            restart: 'Le redémarrer pour appliquer',
-            restartFailed:
-                'Enregistré, mais le redémarrage a échoué : {message}. Le flux garde son ancienne variance jusqu’à son prochain démarrage.',
+            'model.gjr_garch': 'GJR-GARCH — une variance portée d’un jour à l’autre',
+            calibration: 'Calibration',
+            calibrationNone: 'Aucune',
+            calibrationLead:
+                'Un flux GJR-GARCH utilise la calibration approuvée de sa paire. Les calibrations sont capturées, ajustées, puis approuvées ou rejetées sur l’écran Calibration ; en approuver une y rattache les flux de la paire.',
         },
         market: {
             title: 'Le marché',
@@ -6221,14 +6207,6 @@ const fr: SourceCatalogue = {
                     'La fenêtre propre au flux, de 2 à 180 jours, à la place de celle de la politique de sa classe. Laissez vide pour suivre la politique.',
                 variance_model:
                     'Constante garde la variance du mélange chaque jour. GJR-GARCH reporte une variance d’un jour au suivant, si bien que les jours calmes et agités se regroupent ; il demande le moteur géométrique ou arithmétique.',
-                garch_alpha:
-                    'GJR-GARCH seulement : la force avec laquelle le mouvement d’un jour relève la variance du lendemain. Au moins zéro.',
-                garch_gamma:
-                    'GJR-GARCH seulement : la réaction supplémentaire à une baisse de la paire. Négatif quand une hausse relève davantage la variance ; alpha plus gamma vaut au moins zéro.',
-                garch_beta:
-                    'GJR-GARCH seulement : la part de la variance d’un jour reportée au suivant. Au moins zéro.',
-                garch_window_days:
-                    'GJR-GARCH seulement : combien de jours de fixings un flux à fixing utilise pour ajuster sa forme, de 30 à 3660. Cinq ans par défaut.',
             },
             start: {
                 title: "D'où part cette exécution",

@@ -38,6 +38,7 @@
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/variance_calibration.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
+#include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/variance_calibration_input_repository.hpp"
 #include "ores.synthetic.core/repository/variance_calibration_repository.hpp"
 #include "ores.synthetic.core/service/fx_spot_generation_config_service.hpp"
@@ -80,6 +81,8 @@ variance_of(const ores::marketdata::domain::feed_start& start) {
         return std::nullopt;
     const auto& v = *start.variance;
     return ores::synthetic::messaging::variance_start{.model = v.model,
+                                                      .calibration_id = v.calibration_id,
+                                                      .calibration_version = v.calibration_version,
                                                       .fitted = v.fitted,
                                                       .alpha = v.alpha,
                                                       .gamma = v.gamma,
@@ -88,6 +91,32 @@ variance_of(const ores::marketdata::domain::feed_start& start) {
                                                       .initial_ratio = v.initial_ratio,
                                                       .returns = v.returns,
                                                       .note = v.note};
+}
+
+/// A stored FX spot config as a write that keeps every field it holds.
+inline ores::synthetic::messaging::fx_spot_generation_config_write
+write_of(const ores::synthetic::domain::fx_spot_generation_config& cfg) {
+    return {.id = cfg.id,
+            .config_id = cfg.config_id,
+            .base_currency_code = cfg.base_currency_code,
+            .quote_currency_code = cfg.quote_currency_code,
+            .source_name = cfg.source_name,
+            .oresmd_uri = cfg.oresmd_uri,
+            .price_source = cfg.price_source,
+            .calibration_window_days = cfg.calibration_window_days,
+            .gmm_initial_price = cfg.gmm_initial_price,
+            .ticks_per_hour = cfg.ticks_per_hour,
+            .process_type = cfg.process_type,
+            .enabled = cfg.enabled,
+            .auto_start = cfg.auto_start,
+            .folder_id = cfg.folder_id,
+            .asset_class_code = cfg.asset_class_code,
+            .arrival_mode = cfg.arrival_mode,
+            .branching_ratio = cfg.branching_ratio,
+            .decay = cfg.decay,
+            .sensitivity = cfg.sensitivity,
+            .variance_model = cfg.variance_model,
+            .variance_calibration_id = cfg.variance_calibration_id};
 }
 
 /// A run's start in the words of the wire, field for field.
@@ -391,10 +420,165 @@ public:
         }
     }
 
+    void review_variance_calibration(ores::nats::message msg) {
+        using namespace ores::synthetic::messaging;
+        [[maybe_unused]] const auto cid = log_handler_entry(feed_config_handler_lg(), msg);
+
+        auto ctx_expected = authenticated_context("review", msg);
+        if (!ctx_expected)
+            return;
+        const auto& req_ctx = *ctx_expected;
+
+        auto req = decode<review_variance_calibration_request>(msg);
+        if (!req || req->calibration_id.empty() ||
+            (req->decision != "approve" && req->decision != "reject") || req->reason.empty()) {
+            reply(nats_,
+                  msg,
+                  review_variance_calibration_response{
+                      .success = false,
+                      .message = "A review names the calibration, a decision of approve or "
+                                 "reject, and the reason for it."});
+            return;
+        }
+        // The calibrations and the feeds an approval re-points are system rows that every tenant
+        // runs, so only the system tenant reviews them, under a permission of its own.
+        if (!feed_kind_registry::is_system_caller(req_ctx) ||
+            !has_permission(req_ctx, "synthetic::variance_calibrations:review")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        try {
+            reply(nats_, msg, review(req_ctx, *req));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(feed_config_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  review_variance_calibration_response{.success = false,
+                                                       .message = client_message(e)});
+        }
+    }
+
 private:
     // Resolves every feed of the class as a start would, or the one feed the request names, and
     // starts none. A feed that cannot be built still appears, with the reason, so the class shows
     // every feed it holds. An applied calibration writes what moved as a new version.
+    // Each write claims the version it read, so a review that raced another is refused rather
+    // than overwriting it. Approving supersedes before it approves, because the partial unique
+    // index admits one approval of a pair; a review that stops between the two leaves the pair
+    // with no approval and the feeds on the superseded one, and the same review run again
+    // completes it.
+    ores::synthetic::messaging::review_variance_calibration_response
+    review(const ores::database::context& req_ctx,
+           const ores::synthetic::messaging::review_variance_calibration_request& req) {
+        using namespace ores::synthetic::messaging;
+        using ores::utility::domain::outcome;
+        using ores::utility::domain::precondition;
+        using ores::utility::domain::precondition_kind;
+        namespace repo = ores::synthetic::repository;
+        namespace svc = ores::synthetic::service;
+        review_variance_calibration_response resp;
+
+        const auto found = repo::variance_calibration_repository{}.read_latest(req_ctx,
+                                                                              req.calibration_id);
+        if (found.empty()) {
+            resp.message = "No variance calibration " + req.calibration_id + " exists.";
+            return resp;
+        }
+        const auto& c = found.front();
+        if (c.state != "proposed") {
+            resp.message = "Only a proposed calibration is reviewed; " + req.calibration_id +
+                           " is " + c.state + ".";
+            resp.state = c.state;
+            return resp;
+        }
+        const auto claimed = [](int version) {
+            return precondition{.kind = precondition_kind::must_match_version,
+                                .version = static_cast<std::uint32_t>(version)};
+        };
+        const auto write_state = [&](const ores::synthetic::domain::variance_calibration& row,
+                                     const std::string& state,
+                                     const std::string& reason) {
+            const ores::utility::domain::change_intent intent{
+                .reason_code = "system.review",
+                .commentary = std::format("Variance calibration {} {}: {}",
+                                          boost::uuids::to_string(row.id), state, reason)};
+            const auto written = svc::variance_calibration_service(req_ctx).put_variance_calibration(
+                {.change = {.write = {.id = row.id,
+                                      .base_currency_code = row.base_currency_code,
+                                      .quote_currency_code = row.quote_currency_code,
+                                      .input_id = row.input_id,
+                                      .method = row.method,
+                                      .method_version = row.method_version,
+                                      .alpha = row.alpha,
+                                      .gamma = row.gamma,
+                                      .beta = row.beta,
+                                      .persistence = row.persistence,
+                                      .long_run_variance = row.long_run_variance,
+                                      .starting_variance_ratio = row.starting_variance_ratio,
+                                      .log_likelihood = row.log_likelihood,
+                                      .returns_used = row.returns_used,
+                                      .starts = row.starts,
+                                      .starts_agreed = row.starts_agreed,
+                                      .state = state,
+                                      .state_reason = reason},
+                            .precondition = claimed(row.version)},
+                 .intent = intent});
+            if (written.result.outcome != outcome::ok)
+                throw std::runtime_error("the calibration " + boost::uuids::to_string(row.id) +
+                                         " was not written: " + written.result.message);
+        };
+
+        if (req.decision == "reject") {
+            write_state(c, "rejected", req.reason);
+            resp.success = true;
+            resp.state = "rejected";
+            resp.message = "Rejected: " + req.reason;
+            return resp;
+        }
+
+        for (const auto& other : repo::variance_calibration_repository{}.read_latest(req_ctx)) {
+            if (other.id == c.id || other.state != "approved" ||
+                other.base_currency_code != c.base_currency_code ||
+                other.quote_currency_code != c.quote_currency_code)
+                continue;
+            write_state(other, "superseded", "superseded by " + req.calibration_id);
+            resp.superseded_id = boost::uuids::to_string(other.id);
+        }
+        write_state(c, "approved", req.reason);
+        resp.state = "approved";
+
+        const ores::utility::domain::change_intent repoint{
+            .reason_code = "system.review",
+            .commentary = std::format("Runs the approved variance calibration {}{}",
+                                      req.calibration_id,
+                                      resp.superseded_id.empty() ?
+                                          std::string() :
+                                          ", which superseded " + resp.superseded_id)};
+        for (const auto& cfg : repo::fx_spot_generation_config_repository{}.read_latest(req_ctx)) {
+            if (cfg.variance_model != "gjr_garch" || cfg.base_currency_code != c.base_currency_code ||
+                cfg.quote_currency_code != c.quote_currency_code ||
+                cfg.variance_calibration_id == c.id)
+                continue;
+            auto write = write_of(cfg);
+            write.variance_calibration_id = c.id;
+            const auto written =
+                svc::fx_spot_generation_config_service(req_ctx).put_fx_spot_generation_config(
+                    {.change = {.write = std::move(write), .precondition = claimed(cfg.version)},
+                     .intent = repoint});
+            if (written.result.outcome != outcome::ok)
+                throw std::runtime_error("the feed " + cfg.source_name +
+                                         " was not pointed at the approved calibration: " +
+                                         written.result.message);
+            resp.repointed_feeds.push_back(cfg.source_name);
+        }
+        resp.success = true;
+        resp.message = std::format("Approved; {} feed(s) now run it.", resp.repointed_feeds.size());
+        BOOST_LOG_SEV(feed_config_handler_lg(), info)
+            << "Variance calibration " << req.calibration_id << " approved; "
+            << resp.repointed_feeds.size() << " feed(s) re-pointed";
+        return resp;
+    }
+
     ores::synthetic::messaging::calibrate_response
     calibrate_class(const ores::database::context& req_ctx,
                     const feed_kind& kind,
@@ -576,27 +760,10 @@ private:
             }
             if (change.level) {
                 const auto& cfg = in.config;
+                auto write = write_of(cfg);
+                write.gmm_initial_price = *change.level;
                 put_fx_spot_generation_config_request request{
-                    .change = {.write = {.id = cfg.id,
-                                         .config_id = cfg.config_id,
-                                         .base_currency_code = cfg.base_currency_code,
-                                         .quote_currency_code = cfg.quote_currency_code,
-                                         .source_name = cfg.source_name,
-                                         .oresmd_uri = cfg.oresmd_uri,
-                                         .price_source = cfg.price_source,
-                                         .calibration_window_days = cfg.calibration_window_days,
-                                         .gmm_initial_price = *change.level,
-                                         .ticks_per_hour = cfg.ticks_per_hour,
-                                         .process_type = cfg.process_type,
-                                         .enabled = cfg.enabled,
-                                         .auto_start = cfg.auto_start,
-                                         .folder_id = cfg.folder_id,
-                                         .asset_class_code = cfg.asset_class_code,
-                                         .arrival_mode = cfg.arrival_mode,
-                                         .branching_ratio = cfg.branching_ratio,
-                                         .decay = cfg.decay,
-                                         .sensitivity = cfg.sensitivity},
-                               .precondition = claimed(cfg.version)},
+                    .change = {.write = std::move(write), .precondition = claimed(cfg.version)},
                     .intent = intent};
                 const auto written =
                     ores::synthetic::service::fx_spot_generation_config_service(req_ctx)

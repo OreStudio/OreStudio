@@ -92,3 +92,15 @@ TEST_CASE("ores::synthetic::messaging::calibrate_request", "[codec][roundtrip][p
 TEST_CASE("ores::synthetic::messaging::calibrate_response", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::synthetic::messaging::calibrate_response>();
 }
+
+TEST_CASE("ores::synthetic::messaging::review_variance_calibration_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::synthetic::messaging::review_variance_calibration_request>();
+}
+
+TEST_CASE("ores::synthetic::messaging::review_variance_calibration_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::synthetic::messaging::review_variance_calibration_response>();
+}

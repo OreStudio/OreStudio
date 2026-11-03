@@ -275,10 +275,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             asset_class_code: code.default('fx'),
             calibration_window_days: z.int().min(2).max(180).nullable().default(null),
             variance_model: code.default('constant'),
-            garch_alpha: z.number().min(0).default(0.05),
-            garch_gamma: z.number().default(0),
-            garch_beta: z.number().min(0).default(0.9),
-            garch_window_days: z.int().min(30).max(3660).default(1826),
+            variance_calibration_id: idSchema.nullable().default(null),
         }) satisfies z.ZodType<FxSpotGenerationConfigWrite>,
     },
     {

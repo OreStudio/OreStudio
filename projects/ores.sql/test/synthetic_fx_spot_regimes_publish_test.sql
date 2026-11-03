@@ -23,14 +23,15 @@
  * synthetic.feeds.uniform_demo runs every pair on the GJR-GARCH daily variance.
  * Inside this transaction GBP/USD is given a Hawkes arrival and authored GARCH
  * parameters that differ from every column default, so a publish that drops a
- * column leaves a default behind and fails here.
+ * column leaves a default behind and fails here. The authored shape lands on the
+ * approved, authored calibration of the pair, which the feed names.
  *
  * Run as ORES_TEST_DB_USER: pg_prove -d <database> test/synthetic_fx_spot_regimes_publish_test.sql
  */
 
 begin;
 
-select plan(4);
+select plan(5);
 
 create temporary table t_dataset on commit drop as
 select id, code from ores_dq_datasets_tbl
@@ -63,10 +64,14 @@ select lives_ok(
 create temporary table t_feeds on commit drop as
 select x.base_currency_code || x.quote_currency_code as pair,
        x.arrival_mode, x.branching_ratio, x.decay, x.sensitivity,
-       x.variance_model, x.garch_alpha, x.garch_gamma, x.garch_beta, x.garch_window_days
+       x.variance_model, x.variance_calibration_id,
+       v.method, v.state, v.input_id, v.alpha as garch_alpha, v.gamma as garch_gamma,
+       v.beta as garch_beta
 from ores_synthetic_fx_spot_generation_configs_tbl x
 join ores_synthetic_market_data_generation_configs_tbl c
   on c.id = x.config_id and c.valid_to = ores_utility_infinity_timestamp_fn()
+left join ores_synthetic_variance_calibrations_tbl v
+  on v.id = x.variance_calibration_id and v.valid_to = ores_utility_infinity_timestamp_fn()
 where c.dataset_id = (select id from t_dataset where code = 'synthetic.feeds.uniform_demo')
   and x.valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -83,9 +88,16 @@ select results_eq(
 );
 
 select results_eq(
-    $$select garch_alpha, garch_gamma, garch_beta, garch_window_days from t_feeds where pair = 'GBPUSD'$$,
-    $$values (0.04::double precision, 0.06::double precision, 0.88::double precision, 730)$$,
-    'the GJR-GARCH parameters of the artefact row reach the live feed'
+    $$select garch_alpha, garch_gamma, garch_beta from t_feeds where pair = 'GBPUSD'$$,
+    $$values (0.04::double precision, 0.06::double precision, 0.88::double precision)$$,
+    'the GJR-GARCH shape of the artefact row reaches the calibration the feed runs'
+);
+
+select is(
+    (select count(*)::int from t_feeds
+     where method = 'authored' and state = 'approved' and input_id is null),
+    11,
+    'every pair runs an approved authored calibration, named by its feed'
 );
 
 select * from finish();

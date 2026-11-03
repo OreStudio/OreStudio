@@ -49,6 +49,9 @@ struct provider_dispersion final {
 struct variance_start final {
     /// "constant" or "gjr_garch".
     std::string model;
+    /// The approved variance calibration the run took its shape from, and the version read.
+    std::string calibration_id;
+    int calibration_version = 0;
     bool fitted = false;
     double alpha = 0.0;
     double gamma = 0.0;

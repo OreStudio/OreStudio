@@ -8,7 +8,7 @@
 #+filetags: :generate_roundtrip_tests_for_the_wire_codecs:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-each-member-of-a-sample-its-own-value
-#+pr:
+#+pr: 4430
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4430][#4430]] | [utility] Give each member of a sample its own value |
 
 * Review
 

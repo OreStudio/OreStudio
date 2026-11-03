@@ -1,0 +1,271 @@
+:PROPERTIES:
+:ID: B9792D9D-38B3-40A4-90FD-C35F02C68284
+:END:
+#+title: GJR-GARCH sets the daily variance of FX spot
+#+description: Why FX spot carries a GJR-GARCH variance from day to day, how it scales the GMM's shocks, how it is calibrated from five years of fixings, and how it composes with the intraday volatility channel.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:garch:fx:knowledge:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+* Summary
+
+A synthetic FX spot feed carries a GJR-GARCH variance from one market day to
+the next. The GMM of the feed still gives the shape of each shock, its fat tails
+and its regimes; GJR-GARCH gives the size of the day's shocks, so a volatile day
+makes the next day volatile too, and a fall can raise volatility more than a
+rise. The variance is calibrated from five years of daily fixings, with its
+long-run level fixed to the realised variance and the rest estimated by quasi
+maximum likelihood. Within the day the volatility channel spreads the day's
+variance over busy and quiet periods, so the two models work at different time
+scales and multiply. GARCH sets spot only. The volatility surface reads none of
+its state; it has processes of its own, as
+[[id:3C5FA141-16E5-4505-A36D-F6C29AE7679B][A volatility surface moves through its SSVI parameters]]
+describes.
+
+* Detail
+
+** The decision, and what it changes
+
+Before 2026-11-03 the knowledge base gave GARCH two different roles, and the
+code gave it none:
+
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+  used GJR-GARCH for *volatility surfaces*. It carried a GARCH variance from
+  day to day and passed it to the MDN, which produced the surface. GARCH did not
+  touch spot generation there.
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][Market volatility channel]] cites
+  GARCH under "the models not adopted": volatility clustering as a process on
+  variance itself, "what this design is not".
+- The code has no GARCH process. FX spot is the GMM process of
+  [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], calibrated in
+  level and volatility from public fixings.
+
+The decision, taken on 2026-11-03 together with dropping the MDN: GJR-GARCH
+drives the daily variance of FX spot, and it plays no part in the surface. Both
+earlier notes are updated to say so. The approach document's section "Vol
+surface update via GARCH state propagation" no longer applies, because the MDN
+it fed is gone. The volatility channel keeps its own scope, the intraday, and
+this note states how the two compose.
+
+** Why spot needs a daily memory
+
+The GMM draws every shock independently. The approach document says what that
+costs, in its section "Preserving volatility clustering": i.i.d. draws destroy
+the temporal autocorrelation of volatility, so a calm day is as likely after a
+crash as after another calm day. Real FX returns are not like that. Large moves
+come in clusters that last days to weeks, and
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][GARCH volatility models]] explains
+the stylised fact and the model.
+
+The volatility channel adds clustering of a different kind. Its shared heat
+rises with activity and fades with a decay of minutes to hours, so it clusters
+volatility within the day. It does not carry a calm or a stressed state from one
+day to the next, and its own literature section records two things
+activity-driven variance does not give: the leverage effect, and a
+volatility of volatility. GJR-GARCH gives the day-to-day memory and the
+leverage effect, so it adds what the channel lacks rather than repeating it.
+
+** The model
+
+Let $r_d$ be the log return of spot over market day $d$, and $\sigma_d^2$ its
+variance given everything up to the start of the day:
+
+$$r_d = \mu + \varepsilon_d, \qquad \varepsilon_d = \sigma_d\, z_d$$
+
+$$\sigma_{d+1}^2 = \omega + \left(\alpha + \gamma\,\mathbb{1}\{\varepsilon_d < 0\}\right)\varepsilon_d^2 + \beta\,\sigma_d^2$$
+
+This is the GJR form of Glosten, Jagannathan and Runkle (1993). The
+indicator adds $\gamma$ to the reaction after a fall, so with $\gamma > 0$ a
+fall raises tomorrow's variance more than a rise of the same size.
+
+*** The shock is the GMM, standardised
+
+$z_d$ is not a normal draw. It is the feed's own GMM, standardised to mean zero
+and variance one: if the mixture has mean $m$ and standard deviation $s$, then
+$z = (x - m)/s$ for a draw $x$. The GMM keeps the job it does well, the shape
+of a shock: fat tails, asymmetry, and the regimes of its components. GARCH
+takes the job the GMM cannot do, the size of a shock as a function of the past.
+This keeps every existing FX spot config valid: its components become the
+shape, and the GARCH rows are added beside them.
+
+The alternative the GARCH note describes, the skewed Student-t of Hansen
+(1994), gives a shape with two parameters. It is not taken, because the GMM rows already exist,
+are already calibrated from fixings, and already carry the tilt the volatility
+channel applies to a law's tails.
+
+*** The sign of the leverage in FX
+
+In equity a fall is bad news, so $\gamma > 0$ always. In FX a "fall" depends on
+how the pair is quoted: when USD/JPY falls, the yen strengthens, and in a
+crisis the yen is often the currency that strengthens. So the asymmetry has a
+direction per pair, and $\gamma$ may be negative. A negative $\gamma$ makes a
+rise of the pair raise variance more than a fall. Variance stays positive if
+
+$$\omega > 0, \quad \alpha \ge 0, \quad \beta \ge 0, \quad \alpha + \gamma \ge 0$$
+
+so $\gamma$ ranges over $[-\alpha, \infty)$, and no separate direction flag is
+needed.
+
+*** Stationarity
+
+The variance reverts to a long-run level only if the *persistence* is below
+one:
+
+$$p = \alpha + \beta + \gamma\,\kappa < 1, \qquad \kappa = \mathbb{E}\left[z^2\,\mathbb{1}\{z < 0\}\right]$$
+
+For a symmetric shock $\kappa = 1/2$, which gives the familiar
+$\alpha + \beta + \gamma/2 < 1$. The standardised GMM is not symmetric in
+general, so $\kappa$ is computed from its components in closed form, and it is
+computed once per config. The long-run variance is then
+
+$$\bar{\sigma}^2 = \frac{\omega}{1 - p}$$
+
+and a shock decays with a half-life of $\ln(1/2) / \ln(p)$ days. Persistence
+close to one, which daily FX returns commonly show, gives half-lives of weeks.
+The GARCH note treats stationarity and the near-unit-root regime in depth.
+
+** Calibration
+
+The parameters come from the same daily fixings that already set the level of
+the feed, read through the reader of
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+A GARCH fit needs years of data, not the 90-day window that sets the level, so
+it reads five years of daily fixings. Every environment has them from a static
+DQ snapshot of the public fixings, which the adapter brings up to date by
+fetching only the days after its latest stored fixing.
+
+1. *Variance targeting.* $\bar{\sigma}^2$ is the sample variance of the daily
+   log returns, and $\omega = \bar{\sigma}^2 (1 - p)$. This removes one
+   parameter from the fit and ties the long-run level to the data directly
+   (Engle and Mezrich, 1996).
+2. *Quasi maximum likelihood.* $\alpha$, $\beta$ and $\gamma$ maximise the
+   Gaussian likelihood of the returns, subject to the positivity and
+   stationarity bounds above. The Gaussian likelihood is used even though $z$ is
+   a mixture: Bollerslev and Wooldridge (1992) show that the estimator is
+   consistent when the conditional mean and variance are right, whatever the
+   true shape. Five years is about 1,250 daily returns.
+3. *The starting variance.* $\sigma_0^2$ is the last value of the fitted
+   variance, filtered through the whole history. A feed that starts in a
+   stressed period therefore starts stressed, not at the long-run level.
+4. *A fallback.* When a pair has too little history for a stable fit, or the
+   fit reaches the stationarity bound, the config carries authored values, as
+   it carries authored GMM components today. The calibration result records
+   which path it took, as the calibration measures already record how a start
+   was resolved.
+
+** Time: a GARCH day in a feed that ticks
+
+GARCH is written per day. A spot feed ticks many times a day, at gaps the
+arrival process chooses, as
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]] describes. Three rules
+join the two:
+
+- *The day is the FX day.* A market day ends at the FX day roll, 17:00 New
+  York time, on the market's operational clock. The variance $\sigma_d^2$ holds
+  for the whole day and changes only at the roll.
+- *A tick takes its share of the day.* A tick that covers a fraction $s$ of the
+  day takes a shock whose variance is $\sigma_d^2\, s$. The GMM's
+  components are scaled so the mixture's variance per day is $\sigma_d^2$:
+  their deviations from the mixture mean are multiplied by $\sigma_d / s_0$,
+  where $s_0$ is the mixture's own daily standard deviation, and the mixture's
+  drift is left alone. This is the time-scaled rule the mixture already
+  follows for =next(elapsed)=, with a scale that changes once a day.
+- *The update reads the day's return.* At the roll, $\varepsilon_d$ is the log
+  return of the generated path over the day, the sum of its ticks. The update
+  needs nothing else.
+
+** How GARCH and the volatility channel compose
+
+The two models act at different time scales, and they multiply. GARCH sets how
+much variance the day has. The volatility channel decides where in the day it
+falls: its loading raises the variance of a tick in a busy period and lowers it
+in a quiet one, normalised so that a run's volatility stays the volatility its
+configuration states. Over a day, the expected variance is therefore still
+$\sigma_d^2$:
+
+$$\operatorname{Var}(\text{tick}) = \sigma_d^2 \times L(\text{activity}) \times s, \qquad \mathbb{E}[L] = 1$$
+
+The analysis this design came from asks for a feedback loop in both directions:
+busy intraday trading should raise the next day's variance, and a high daily
+variance should raise the baseline rate of the tick arrivals.
+
+- *From the intraday to the day.* This direction needs no extra mechanism. A
+  busy day, with the channel's loading high, produces a larger day return
+  $\varepsilon_d$, and the GARCH update turns it into a larger
+  $\sigma_{d+1}^2$. Realized GARCH (Hansen, Huang and Shek, 2012) formalises a
+  variant that updates from an intraday realised variance instead of the
+  squared day return, which is less noisy. Our generated path is known
+  exactly, so its realised variance is free to compute; the variant is a
+  possible refinement, not a requirement.
+- *From the day to the intraday.* This direction is not adopted. A daily
+  variance that raises the arrival rate is activity and volatility exciting
+  each other, which the volatility channel leaves out of scope and captures as
+  [[id:4A00CBE5-E42B-46A8-A09B-FD698A09E4BB][Make activity and volatility excite each other]].
+  It belongs there, with that capture's stability condition.
+
+** How it reaches the code
+
+None of this exists yet. The intended shape, to be confirmed when the work
+starts:
+
+- A process type in =ores.analytics.quant= that wraps the geometric GMM
+  process behind =i_stochastic_process=. It holds $\sigma_d^2$, the return
+  accumulated since the roll and the time to the next roll. It supports
+  =next(elapsed)=, so it runs under a Poisson or Hawkes clock, and it passes
+  the volatility channel's tilt through to the mixture it wraps.
+- Its parameters $(\alpha, \beta, \gamma)$, the target variance and the
+  starting variance as rows beside the GMM components of the FX spot config,
+  in the way the IR curve config holds its process parameter values.
+- Validation that refuses a set outside the positivity and stationarity bounds,
+  as the GMM's weight check refuses an all-zero set.
+- The calibration step, beside the level calibration that already exists.
+
+** What GARCH does not do
+
+- It does not set the volatility surface. The surface's ATM level, skew and
+  curvature have processes of their own; their shocks are correlated with the
+  spot shocks, but they read none of the GARCH state. Their long-run levels
+  come from the derived source, which reads the same fixings, so the two agree
+  on the volatility of the pair without one driving the other.
+- It does not model the weekend. FX does not trade from the Friday roll to the
+  Sunday open, and the variance does not change over it.
+- It is univariate. Two pairs that share a currency each have their own GARCH,
+  and their variances do not move together. Joint variance across pairs is a
+  multivariate GARCH, and the approach document's open decision OD-1 on joint
+  modelling is where that belongs.
+
+* See also
+
+- Glosten, L. R., Jagannathan, R. and Runkle, D. E. (1993). "On the relation
+  between the expected value and the volatility of the nominal excess return on
+  stocks." /Journal of Finance/, 48(5), 1779-1801.
+  [[https://doi.org/10.1111/j.1540-6261.1993.tb05128.x][doi:10.1111/j.1540-6261.1993.tb05128.x]].
+  The GJR model.
+- Bollerslev, T. and Wooldridge, J. M. (1992). "Quasi-maximum likelihood
+  estimation and inference in dynamic models with time-varying covariances."
+  /Econometric Reviews/, 11(2), 143-172.
+  [[https://doi.org/10.1080/07474939208800229][doi:10.1080/07474939208800229]].
+  Why a Gaussian likelihood is a sound estimator under a non-normal shock.
+- Engle, R. F. and Mezrich, J. (1996). "GARCH for groups." /Risk/, 9(8), 36-40.
+  [[https://econbiz.de/Record/garch-for-groups-a-round-up-of-recent-developments-in-garch-techniques-for-estimating-correlation-engle-robert/10007078117][EconBiz record]].
+  Variance targeting; cited through later work, the article itself not read.
+- Hansen, P. R., Huang, Z. and Shek, H. H. (2012). "Realized GARCH: a joint
+  model for returns and realized measures of volatility." /Journal of Applied
+  Econometrics/, 27(6), 877-906.
+  [[https://doi.org/10.1002/jae.1234][doi:10.1002/jae.1234]]. Updating the
+  variance from an intraday realised measure.
+- Hansen, B. E. (1994). "Autoregressive conditional density estimation."
+  /International Economic Review/, 35(3), 705-730.
+  [[https://doi.org/10.2307/2527081][doi:10.2307/2527081]]. The skewed
+  Student-t shock, the alternative to the GMM shape.
+- Engle, R. F. (1982). "Autoregressive conditional heteroscedasticity with
+  estimates of the variance of United Kingdom inflation." /Econometrica/,
+  50(4), 987-1007. Listed in
+  [[https://www.econlib.org/library/Enc/bios/Engle.html][Engle's bibliography]].
+  ARCH.
+- Bollerslev, T. (1986). "Generalized autoregressive conditional
+  heteroskedasticity." /Journal of Econometrics/, 31(3), 307-327.
+  [[https://doi.org/10.1016/0304-4076(86)90063-1][doi:10.1016/0304-4076(86)90063-1]].
+  GARCH.

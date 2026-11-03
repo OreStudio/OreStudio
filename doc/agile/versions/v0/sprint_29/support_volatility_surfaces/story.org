@@ -40,8 +40,42 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:F2F684E4-FD35-4C78-85CF-E6299995EE5A][Scaffold story: Support volatility surfaces]] | STARTED | 2026-11-03 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6B682F27-6C29-4954-A355-39E27E7197B7][Document the volatility surface architecture]] | STARTED | 2026-11-03 | | Integrate the volatility surface analysis into the knowledge base as linked notes, and name the tasks of the arc from it. |
 | [[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]] | BACKLOG | | | A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today. |
+| [[id:E9F41943-12D6-47AB-BA60-6FC0931F1A99][Check that IR calibration is set up for every supported currency]] | BACKLOG | | | Check, currency by currency, that each synthetic IR curve feed has a public calibration source, a calibration policy and a stored history, and set up or record what is missing. |
 
 * Decisions
+
+- *GJR-GARCH sets the daily variance of FX spot, and not the surface*
+  (2026-11-03). Context: the approach document used GARCH only to feed the
+  MDN's surface, the volatility channel listed GARCH as not adopted, and FX spot
+  draws i.i.d. GMM shocks with no memory from day to day. Decision: a GJR-GARCH
+  variance scales the standardised GMM shock, is calibrated from five years of
+  fixings by variance targeting and quasi maximum likelihood, and multiplies
+  with the intraday volatility channel. Consequences: the feed gains volatility
+  clustering across days and a per-pair leverage effect; the surface reads no
+  GARCH state. See
+  [[id:B9792D9D-38B3-40A4-90FD-C35F02C68284][GJR-GARCH sets the daily variance of FX spot]].
+- *A surface is SSVI and moves through its parameters; the MDN is abandoned*
+  (2026-11-03). Context: the MDN is not available, does not cover IR, and makes
+  the surface a function of spot variance only. Decision: the surface is SSVI
+  with $\gamma = 1/2$; its forward variances follow CIR processes, its skew a
+  tanh of an OU process and its curvature a bounded logistic of an OU process,
+  so every emitted surface is free of static arbitrage; the shocks are
+  correlated with spot. Consequences: the generator prices quotes from the
+  state in the pair's own convention, the blueprint fits SSVI back and checks
+  it, and a fitted surface still needs an identity of its own. See
+  [[id:3C5FA141-16E5-4505-A36D-F6C29AE7679B][A volatility surface moves through its SSVI parameters]].
+- *A derived source supplies the starting surface* (2026-11-03). Context: no
+  free public source of FX implied volatilities was found. Decision: a
+  publisher of our own backs ATM, RR and BF out of the spot fixings through the
+  Gram-Charlier smile. Consequences: the values are plausible, not real; a real
+  vendor is another provider of the same items and replaces the derived source
+  by a change of route.
+- *Five years of public fixings ship as a static DQ snapshot* (2026-11-03).
+  Context: every environment backfilled its window from the publishers' API.
+  Decision: DQ holds a five-year snapshot refreshed by hand, and the adapter
+  fills each item's gap from its latest stored fixing to today. Consequences:
+  the load on Frankfurter drops to one small request per item per new
+  environment, and every provider in the snapshot must allow redistribution.
 
 * Out of scope
 

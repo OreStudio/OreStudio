@@ -153,7 +153,8 @@ begin
         name, description, enabled, auto_start,
         base_currency_code, quote_currency_code,
         gmm_initial_price, ticks_per_hour, process_type,
-        price_source, provider_code
+        price_source, provider_code,
+        variance_model
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -166,7 +167,8 @@ begin
         true, true, p.base, p.quote,
         p.start_level, 1800, 'geometric',
         'fixing',
-        'bloomberg'
+        'bloomberg',
+        'gjr_garch'
     from t_bloomberg_fx p;
 
     insert into ores_dq_gmm_components_artefact_tbl (

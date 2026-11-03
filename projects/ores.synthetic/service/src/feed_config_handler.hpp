@@ -39,6 +39,7 @@
 #include "ores.synthetic.api/feeds/variance_calibration.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/variance_calibration_input_point_repository.hpp"
 #include "ores.synthetic.core/repository/variance_calibration_input_repository.hpp"
 #include "ores.synthetic.core/repository/variance_calibration_repository.hpp"
 #include "ores.synthetic.core/service/fx_spot_generation_config_service.hpp"
@@ -826,13 +827,21 @@ private:
             one.variance = std::move(v);
             return;
         }
+        if (window->dates.size() != window->values.size()) {
+            v.state = "rejected";
+            v.state_reason = std::format("the fixing window holds {} dates and {} values",
+                                         window->dates.size(),
+                                         window->values.size());
+            one.variance = std::move(v);
+            return;
+        }
         const auto points =
             feed::capture_variance_points(window->dates, window->values, src.inverted);
         std::vector<feed::mixture_component> components;
         for (const auto& c : in.components)
             components.push_back({.mean = c.mean, .stdev = c.stdev, .weight = c.weight});
-        const auto fit =
-            feed::fit_variance(points, feed::daily_p_minus(components, in.config.ticks_per_hour));
+        const double p_minus = feed::daily_p_minus(components, in.config.ticks_per_hour);
+        const auto fit = feed::fit_variance(points, p_minus);
 
         v.point_count = static_cast<int>(points.size());
         v.used_count = static_cast<int>(std::ranges::count_if(points, &feed::variance_point::used));
@@ -846,7 +855,8 @@ private:
         v.starts = fit.starts;
         v.starts_agreed = fit.starts_agreed;
         if (apply)
-            store_variance_calibration(req_ctx, in, policy, *src.fixing_date, points, fit, v);
+            store_variance_calibration(
+                req_ctx, in, policy, *src.fixing_date, points, fit, p_minus, v);
         one.variance = std::move(v);
     }
 
@@ -864,6 +874,7 @@ private:
                                std::chrono::year_month_day window_end,
                                const std::vector<ores::synthetic::feed::variance_point>& points,
                                const ores::synthetic::feed::variance_fit& fit,
+                               double p_minus,
                                ores::synthetic::messaging::variance_calibration_summary& v) {
         using namespace ores::synthetic::messaging;
         using ores::utility::domain::outcome;
@@ -877,9 +888,15 @@ private:
         const auto party = boost::uuids::to_string(cfg.party_id);
         const auto input_id = name(std::format(
             "input|{}|{}|{:%F}|{}", party, v.item, window_end, policy.variance_window_days));
-        const auto calibration_id = name(std::format("calibration|{}|gjr_garch_qmle|{}",
+        // The fit depends on the feed's mixture through p_minus as well as on the input, so two
+        // feeds that read one item under different mixtures fit two calibrations.
+        const auto calibration_id = name(std::format("calibration|{}|gjr_garch_qmle|{}|{:.12f}",
                                                      boost::uuids::to_string(input_id),
-                                                     feed::variance_fit_method_version));
+                                                     feed::variance_fit_method_version,
+                                                     p_minus));
+        const auto point_id = [&](std::chrono::year_month_day date) {
+            return name(std::format("point|{}|{:%F}", boost::uuids::to_string(input_id), date));
+        };
         const precondition absent{.kind = precondition_kind::must_not_exist};
         const ores::utility::domain::change_intent intent{
             .reason_code = "system.calibration",
@@ -888,9 +905,10 @@ private:
                                       v.provider_code,
                                       v.item)};
         try {
-            if (repo::variance_calibration_input_repository{}
-                    .read_latest(req_ctx, boost::uuids::to_string(input_id))
-                    .empty()) {
+            const bool input_stored = !repo::variance_calibration_input_repository{}
+                                           .read_latest(req_ctx, boost::uuids::to_string(input_id))
+                                           .empty();
+            if (!input_stored) {
                 const auto written =
                     svc::variance_calibration_input_service(req_ctx).put_variance_calibration_input(
                         {.change = {.write = {.id = input_id,
@@ -912,20 +930,28 @@ private:
                          .intent = intent});
                 if (written.result.outcome != outcome::ok)
                     throw std::runtime_error("the input was not stored: " + written.result.message);
+            }
+            // The points name their input, so they are written after it, in one call. A run that
+            // stopped between the two left an input without its points; the last point's id
+            // tells, and the points are written again.
+            const bool points_stored =
+                points.empty() ||
+                (input_stored &&
+                 !repo::variance_calibration_input_point_repository{}
+                      .read_latest(req_ctx, boost::uuids::to_string(point_id(points.back().date)))
+                      .empty());
+            if (!points_stored) {
                 put_many_variance_calibration_input_points_request request{.intent = intent};
                 for (const auto& p : points)
-                    request.changes.push_back(
-                        {.write = {.id = name(std::format("point|{}|{:%F}",
-                                                          boost::uuids::to_string(input_id),
-                                                          p.date)),
-                                   .input_id = input_id,
-                                   .fixing_date = p.date,
-                                   .fixing_text = p.text,
-                                   .fixing_value = p.value,
-                                   .log_return = p.log_return,
-                                   .used = p.used,
-                                   .exclusion_reason = p.exclusion_reason},
-                         .precondition = absent});
+                    request.changes.push_back({.write = {.id = point_id(p.date),
+                                                         .input_id = input_id,
+                                                         .fixing_date = p.date,
+                                                         .fixing_text = p.text,
+                                                         .fixing_value = p.value,
+                                                         .log_return = p.log_return,
+                                                         .used = p.used,
+                                                         .exclusion_reason = p.exclusion_reason},
+                                               .precondition = {.kind = precondition_kind::any}});
                 const auto stored = svc::variance_calibration_input_point_service(req_ctx)
                                         .put_many_variance_calibration_input_points(request);
                 if (stored.result.outcome != outcome::ok)
@@ -937,8 +963,18 @@ private:
             const auto existing = repo::variance_calibration_repository{}.read_latest(
                 req_ctx, boost::uuids::to_string(calibration_id));
             if (!existing.empty()) {
-                v.state = existing.front().state;
-                v.state_reason = existing.front().state_reason;
+                // A stored calibration is reported as stored, so the summary never mixes a
+                // decision with the numbers of a fit made since.
+                const auto& stored = existing.front();
+                v.state = stored.state;
+                v.state_reason = stored.state_reason;
+                v.alpha = stored.alpha;
+                v.gamma = stored.gamma;
+                v.beta = stored.beta;
+                v.persistence = stored.persistence;
+                v.starting_variance_ratio = stored.starting_variance_ratio;
+                v.starts = stored.starts;
+                v.starts_agreed = stored.starts_agreed;
             } else {
                 const auto written =
                     svc::variance_calibration_service(req_ctx).put_variance_calibration(
@@ -971,6 +1007,9 @@ private:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(feed_config_handler_lg(), warn)
                 << "Variance calibration of " << cfg.source_name << " was not stored: " << e.what();
+            v.state = "failed";
+            v.input_id.clear();
+            v.calibration_id.clear();
             v.state_reason =
                 std::string("The variance calibration was not stored: ") + client_message(e);
         }

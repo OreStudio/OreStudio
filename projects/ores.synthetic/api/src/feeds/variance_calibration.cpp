@@ -20,12 +20,16 @@
 #include "ores.synthetic.api/feeds/variance_calibration.hpp"
 #include "ores.analytics.quant/math/gjr_garch.hpp"
 #include "ores.synthetic.api/feeds/fixing_calibration.hpp"
+#include <algorithm>
 #include <charconv>
 #include <cmath>
 #include <cstddef>
 #include <numbers>
 #include <numeric>
+#include <optional>
 #include <string>
+#include <system_error>
+#include <vector>
 
 namespace ores::synthetic::feed {
 

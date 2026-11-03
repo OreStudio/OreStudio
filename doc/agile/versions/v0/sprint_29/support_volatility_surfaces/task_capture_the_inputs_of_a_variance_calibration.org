@@ -83,7 +83,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A partial input is never repaired | feed_config_handler.hpp | Accepted | The points name their input, so they follow it; the last point's id tells whether they landed, and a run writes them again when not |
+| 2 | The calibration id ignores p_minus | feed_config_handler.hpp | Accepted | The id names the feed's daily p_minus, so feeds that read one item under different mixtures fit two calibrations |
+| 3 | A failed store still reports proposed | feed_config_handler.hpp | Accepted | The state is failed and the ids are cleared |
+| 4 | A read-back mixes stored and new values | feed_config_handler.hpp | Accepted | An existing calibration is reported from its stored row |
+| 5 | Missing standard includes | variance_calibration.cpp | Accepted | Added |
+| 6 | Dates and values of different lengths are truncated | feed_config_handler.hpp | Accepted | Such a window is rejected with its reason |
+| 7 | daily_p_minus has no guard on ticks or components | variance_calibration.cpp | Declined | The table checks ticks_per_hour is positive, and a feed with no components is skipped before it is calibrated |
+| 8 | Confirm the starting ratio uses the next step's variance | variance_calibration.cpp | Declined | filter returns one more than the shocks, and its last element is the forecast, the first day's variance; a test now pins it |
+| 9 | Pin the likelihood with a hand-computed test | feeds_variance_calibration_tests.cpp | Accepted | The test recomputes it from the shape and the filtered variances |
+| 10 | Batch the window reads | feed_config_handler.hpp | Declined | 28 reads per run; not a cost at this size |
+| 11 | An automated test of the storage path | feed_config_handler.hpp | Declined | The path needs the service and the store; the live runs prove the records and the repeat, and the repair is the same deterministic ids |
 
 * Result
 

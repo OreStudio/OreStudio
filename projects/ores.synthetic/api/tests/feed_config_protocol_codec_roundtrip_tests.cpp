@@ -47,6 +47,10 @@ TEST_CASE("ores::synthetic::messaging::provider_dispersion", "[codec][roundtrip]
     ores::testing::check_wire_roundtrip<ores::synthetic::messaging::provider_dispersion>();
 }
 
+TEST_CASE("ores::synthetic::messaging::variance_start", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::synthetic::messaging::variance_start>();
+}
+
 TEST_CASE("ores::synthetic::messaging::feed_start", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::synthetic::messaging::feed_start>();
 }

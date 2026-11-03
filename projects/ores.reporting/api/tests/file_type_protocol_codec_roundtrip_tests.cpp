@@ -128,6 +128,18 @@ TEST_CASE("ores::reporting::messaging::delete_many_file_types_response",
         ores::reporting::messaging::delete_many_file_types_response>();
 }
 
+TEST_CASE("ores::reporting::messaging::list_by_ore_file_code_file_types_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::reporting::messaging::list_by_ore_file_code_file_types_request>();
+}
+
+TEST_CASE("ores::reporting::messaging::list_by_ore_file_code_file_types_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::reporting::messaging::list_by_ore_file_code_file_types_response>();
+}
+
 TEST_CASE("ores::reporting::messaging::list_by_analytic_type_code_file_types_request",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<

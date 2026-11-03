@@ -23,9 +23,9 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 |---------------+----------------------------------------|
 | State         | STARTED                                |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Scaffolding the story.                 |
+| Now           | The architecture is documented.        |
 | Waiting on    | Nothing.                               |
-| Next          | Document the architecture.             |
+| Next          | Seed the fixings history.              |
 | Last touched  | 2026-11-03                             |
 
 * Acceptance
@@ -37,10 +37,18 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F2F684E4-FD35-4C78-85CF-E6299995EE5A][Scaffold story: Support volatility surfaces]] | STARTED | 2026-11-03 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:6B682F27-6C29-4954-A355-39E27E7197B7][Document the volatility surface architecture]] | STARTED | 2026-11-03 | | Integrate the volatility surface analysis into the knowledge base as linked notes, and name the tasks of the arc from it. |
+| [[id:F2F684E4-FD35-4C78-85CF-E6299995EE5A][Scaffold story: Support volatility surfaces]] | DONE | 2026-11-03 | 2026-11-03 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6B682F27-6C29-4954-A355-39E27E7197B7][Document the volatility surface architecture]] | DONE | 2026-11-03 | 2026-11-03 | Integrate the volatility surface analysis into the knowledge base as linked notes, and name the tasks of the arc from it. |
 | [[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]] | BACKLOG | | | A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today. |
 | [[id:E9F41943-12D6-47AB-BA60-6FC0931F1A99][Check that IR calibration is set up for every supported currency]] | BACKLOG | | | Check, currency by currency, that each synthetic IR curve feed has a public calibration source, a calibration policy and a stored history, and set up or record what is missing. |
+| [[id:D5A1A642-5982-4B7F-A0F9-4D0921FC8D91][Keep the derived FX volatility quotes for backtesting]] | BACKLOG | | | Store each day's derived ATM, RR and BF quotes for good, as fixings are, so a backtest can read years of them; today they age out of the tick table after seven days. |
+| [[id:FC6463DC-6901-477D-83A5-6D49761DCE2A][Add the daily GJR-GARCH variance to the synthetic FX spot]] | BACKLOG | | | A process that scales each standardised GMM shock by a GJR-GARCH variance updated at the FX day roll, calibrated from five years of fixings; see Daily GJR-GARCH variance of synthetic FX spot in Volatility clustering and GARCH models. |
+| [[id:B3ED233A-99E2-4AF0-8238-862D64A9E651][Build the derived source of FX volatility quotes]] | BACKLOG | | | An adapter that reads historical fixings through the reader and publishes ATM, RR and BF quotes under its own identity; see Derivation of FX volatility quotes from historical fixings. |
+| [[id:67D0F734-5703-43DF-BF16-F5513C85A01F][Build the synthetic FX volatility surface generator]] | BACKLOG | | | A generator of kind fx_vol_surface whose SSVI state evolves through bounded processes correlated with spot, observed by contributors with noise profiles; see the approach note and A synthetic contributor publishes noisy observations of a latent surface. |
+| [[id:A9C30523-4950-460B-B9E0-C05A84F57210][Model the volatility surface blueprint]] | BACKLOG | | | The recipe record of a surface: pillars naming their series per contributor, weights, smile model, output grid and output series; see Constructing a volatility surface: from quotes to a published set. |
+| [[id:ED38F922-C76B-4F8C-A8A3-FE7244E9FCA7][Add the calibrated FX volatility surface series to oresmd]] | BACKLOG | | | An instrument type whose identity names a calibrated surface, with expiry and strike axes, created with its blueprint; see A calibrated surface is a series of its own in the oresmd note. |
+| [[id:886DD1DB-7FFD-4EB0-9BE7-D7A5F1C1BEBD][Calibrate a volatility surface from its quotes]] | BACKLOG | | | The marketdata.v1.surface.calibrate operation and its engine, with the recipe and result checks run in the service, writing a candidate with lineage; see Constructing a volatility surface: from quotes to a published set. |
+| [[id:780C7570-E322-4B2F-833A-C352D4A95B84][Read a published surface and its slices]] | BACKLOG | | | The surface and slice reads the slices journey needs, over the published set rather than the quotes; see Constructing a volatility surface: from quotes to a published set. |
 
 * Decisions
 

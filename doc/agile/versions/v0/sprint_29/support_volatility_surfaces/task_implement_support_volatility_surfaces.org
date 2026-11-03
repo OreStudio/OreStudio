@@ -29,11 +29,11 @@ one covers the idea, a new note when none does.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | The four claims are checked.           |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Write the decision notes.              |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -238,3 +238,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The volatility surface architecture is in the knowledge base, signed off by the
+user on 2026-11-03.
+
+- Quant: SVI Volatility Parameterisation (new, with a layperson's mental
+  model); two paper summaries, Gatheral and Jacquier (2014) and Backus,
+  Foresi, Li and Wu (1997); FX Volatility Surface (strangle conventions, SSVI,
+  a layperson's mental model); Volatility clustering and GARCH models (Daily
+  GJR-GARCH variance of synthetic FX spot); Market volatility channel (the
+  daily variance); Synthetic market data generation: approach (SSVI parameter
+  dynamics, GARCH on spot, open decisions OD-1, 2, 3, 6 and 8).
+- Calibration: Synthetic prices are calibrated from free public sources (the
+  five-year history, the derived starting surface, the rule for derived
+  values).
+- Architecture: Constructing a volatility surface: from quotes to a published
+  set, in the shape of Bootstrapping a curve; A synthetic contributor publishes
+  noisy observations of a latent surface; Derivation of FX volatility quotes
+  from historical fixings; oresmd (a calibrated surface is a series of its
+  own).
+- Structure: Volatility, Stochastic Processes and Market Data Architecture
+  order the new pages, and the three patterns list the construction note.
+- The story names the arc's later tasks, each traced to its note.
+
+Every page states the target state, and every link carries its relation. The
+changed pages build with no failure, every org link resolves, and the
+structure-note and pattern checks pass.

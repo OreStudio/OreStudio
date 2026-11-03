@@ -34,8 +34,8 @@
 #include <array>
 #include <cstdint>
 #include <exception>
-#include <stdexcept>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -124,9 +124,9 @@ public:
                     }
                 }
             }
-            response.nodes.insert(response.nodes.begin(),
-                                  blotter_rail_node{
-                                      .dimension = "party", .node_id = "", .count = party_total});
+            response.nodes.insert(
+                response.nodes.begin(),
+                blotter_rail_node{.dimension = "party", .node_id = "", .count = party_total});
             response.result.outcome = ores::utility::domain::outcome::ok;
             BOOST_LOG_SEV(blotter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
@@ -178,8 +178,8 @@ public:
         get_blotter_page_response response;
         try {
             repository::trade_summary_repository summaries;
-            const auto rows = summaries.read_blotter_page(
-                req_ctx, asked, req->order, req->after, req->filter);
+            const auto rows =
+                summaries.read_blotter_page(req_ctx, asked, req->order, req->after, req->filter);
             response.rows = rows;
             /*
              * A short page is the last one, but a full page that happens to end
@@ -187,9 +187,8 @@ public:
              * only when one may exist, and the store answers the rest.
              */
             if (rows.size() == asked)
-                response.next =
-                    repository::trade_summary_repository::blotter_page_key(rows.back(),
-                                                                           req->order.field);
+                response.next = repository::trade_summary_repository::blotter_page_key(
+                    rows.back(), req->order.field);
             response.result.outcome = ores::utility::domain::outcome::ok;
             BOOST_LOG_SEV(blotter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);

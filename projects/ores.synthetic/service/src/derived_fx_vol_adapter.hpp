@@ -27,9 +27,11 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <expected>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -54,9 +56,10 @@ struct derived_fx_vol_timing final {
 /**
  * @brief The derived source of FX volatility quotes as an adapter of the market data service.
  *
- * It reads its universe from the catalogue, the ECB fixings of each demanded pair through
- * the market data reader as the system party, and each pair's quoting convention from
- * refdata, and publishes the quotes the feed derives through the adapter's four messages.
+ * It reads its universe from the catalogue, the ECB fixings of each pair through the market
+ * data reader as the system party, and each pair's quoting convention from refdata. It
+ * keeps every day's quotes as the observations of a series of its own, filling the history
+ * the fixings cover, and publishes the demanded quotes through the adapter's four messages.
  * It fetches nothing from outside: every input is already stored.
  */
 class derived_fx_vol_adapter final {
@@ -73,6 +76,7 @@ public:
                            ores::database::context db_ctx,
                            std::string source_name,
                            std::string provider_code,
+                           boost::uuids::uuid feed_id,
                            derived_fx_vol_timing timing = {});
     ~derived_fx_vol_adapter();
 
@@ -84,6 +88,8 @@ public:
 
 private:
     feed::derived_fx_readers make_readers();
+    feed::derived_fx_store make_store();
+    std::expected<std::string, std::string> system_party();
     bool load_universe();
     bool announce();
     void demand_message(const ores::nats::message& msg);
@@ -95,6 +101,7 @@ private:
     ores::database::context db_ctx_;
     std::string source_name_;
     std::string provider_code_;
+    boost::uuids::uuid feed_id_;
     derived_fx_vol_timing timing_;
     /** Guards the demand the NATS thread hands to the loop, and nothing else. */
     std::mutex mu_;

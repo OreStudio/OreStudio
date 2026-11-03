@@ -17,6 +17,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <algorithm>
 #include <charconv>
 #include <cmath>
@@ -111,6 +112,21 @@ std::optional<derived_fx_quote_id> parse_derived_fx_external_id(std::string_view
                                .label = std::string(label)};
 }
 
+boost::uuids::uuid derived_fx_method_id() {
+    return boost::uuids::string_generator{}("fefdf018-d882-5c4e-bd27-2aeedfcad9c9");
+}
+
+std::string derived_fx_series_uri(const derived_fx_pair& pair) {
+    return "oresmd://fx/" + pair.base +
+           "?type=series&instrument=fx_option&quote=rate_lnvol&ccy=" + pair.quote;
+}
+
+std::string derived_fx_quote_uri(const derived_fx_quote_id& id) {
+    return "oresmd://fx/" + id.pair.base +
+           "?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=" + id.pair.quote +
+           "&expiry=" + id.expiry + "&strike_label=" + id.label;
+}
+
 std::string fx_option_convention_id(const derived_fx_pair& pair) {
     return pair.base + "-" + pair.quote + "-FXOPTION";
 }
@@ -148,9 +164,12 @@ pair_log_returns(const std::optional<dated_series>& plus,
     }
     pair_returns out;
     out.returns.reserve(level.empty() ? 0 : level.size() - 1);
+    out.dates.reserve(out.returns.capacity());
     for (auto it = level.begin(); it != level.end(); ++it)
-        if (const auto next = std::next(it); next != level.end())
+        if (const auto next = std::next(it); next != level.end()) {
             out.returns.push_back(next->second - it->second);
+            out.dates.push_back(next->first);
+        }
     if (!level.empty())
         out.last = level.rbegin()->first;
     return out;
@@ -220,6 +239,57 @@ derived_fx_ticks(const derived_fx_pair& pair,
                            .vendor_time = stamp,
                            .sequence = sequence++});
         }
+    }
+    return out;
+}
+
+std::expected<derived_history, std::string>
+derive_missing_days(const derived_fx_pair& pair,
+                    const pair_returns& returns,
+                    const refdata::domain::fx_option_convention& convention,
+                    const std::set<std::chrono::year_month_day>& stored,
+                    const qm::fx_derivation_settings& settings,
+                    int minimum_returns) {
+    std::vector<qm::fx_expiry> expiries;
+    expiries.reserve(derived_fx_expiries.size());
+    for (const auto& e : derived_fx_expiries) {
+        const auto at = quote_convention_at(convention, e.years);
+        if (!at)
+            return std::unexpected("the convention at " + std::string(e.label) + ": " + at.error());
+        expiries.push_back({.label = std::string(e.label), .years = e.years, .convention = *at});
+    }
+    derived_history out;
+    const auto n = std::min(returns.returns.size(), returns.dates.size());
+    const auto first = static_cast<std::size_t>(std::max(minimum_returns, 1)) - 1;
+    for (std::size_t k = first; k < n; ++k) {
+        const auto day = returns.dates[k];
+        if (stored.contains(day))
+            continue;
+        const auto derivation = qm::derive_fx_quotes(
+            std::span<const double>(returns.returns.data(), k + 1), expiries, settings);
+        if (!derivation) {
+            out.underived.push_back(day);
+            continue;
+        }
+        derived_fx_day today{.day = day, .points = {}};
+        for (const auto& expiry : derivation->expiries) {
+            if (!expiry)
+                continue;
+            const auto& q = expiry->quotes;
+            const std::array<double, derived_fx_labels.size()> values{
+                q.atm, q.rr25, q.bf25, q.rr10, q.bf10};
+            for (std::size_t i = 0; i < derived_fx_labels.size(); ++i)
+                if (std::isfinite(values[i]))
+                    today.points.push_back({.coordinate = derived_fx_quote_uri(
+                                                {.pair = pair,
+                                                 .expiry = expiry->label,
+                                                 .label = std::string(derived_fx_labels[i])}),
+                                            .value = values[i]});
+        }
+        if (today.points.empty())
+            out.underived.push_back(day);
+        else
+            out.days.push_back(std::move(today));
     }
     return out;
 }

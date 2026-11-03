@@ -182,7 +182,7 @@ private:
             if (source.session_code != "derived-local")
                 continue;
             auto one = std::make_unique<ores::synthetic::service::derived_fx_vol_adapter>(
-                nats_, svc_nats_, db_ctx_, source.name, source.publisher_code);
+                nats_, svc_nats_, db_ctx_, source.name, source.publisher_code, source.id);
             one->start();
             derived_.push_back(std::move(one));
         }

@@ -26,6 +26,7 @@
 #include <expected>
 #include <functional>
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -48,6 +49,23 @@ struct derived_fx_readers final {
 };
 
 /**
+ * @brief Where the derived source keeps its quotes for good, injected as its readers are.
+ *
+ * ensure_series returns the id of the pair's series, creating it the first time; stored_days
+ * the days the series already holds up to a day; write keeps the points of some days.
+ */
+struct derived_fx_store final {
+    std::function<std::expected<std::string, std::string>(const derived_fx_pair& pair)>
+        ensure_series;
+    std::function<std::expected<std::set<std::chrono::year_month_day>, std::string>(
+        const std::string& series_id, const derived_fx_pair& pair, std::chrono::year_month_day to)>
+        stored_days;
+    std::function<std::expected<void, std::string>(const std::string& series_id,
+                                                   const std::vector<derived_fx_day>& days)>
+        write;
+};
+
+/**
  * @brief The derived source of FX volatility quotes, as an adapter serves it.
  *
  * Its universe is the vendor ids the catalogue holds for it. It answers demand for ids
@@ -63,7 +81,8 @@ public:
     derived_fx_vol_feed(std::string source_name,
                         std::string provider_code,
                         derived_fx_readers readers,
-                        analytics::quant::math::fx_derivation_settings settings = {});
+                        analytics::quant::math::fx_derivation_settings settings = {},
+                        std::optional<derived_fx_store> store = {});
 
     /// Takes the catalogue's vendor ids; an id outside the derived notation is left out.
     void set_universe(const std::vector<std::string>& external_ids);
@@ -92,6 +111,16 @@ public:
      */
     std::size_t refresh(std::chrono::year_month_day today, const publish_fn& publish);
 
+    /**
+     * @brief Keeps every day of every pair of the universe the store does not yet hold.
+     *
+     * The first call reads the days each series holds and fills the rest of the history
+     * the fixings cover; a later call writes only the days since. A pair that cannot be
+     * kept is named in failures() and tried again on the next call. Returns how many days
+     * were written. Without a store it keeps nothing.
+     */
+    std::size_t persist(std::chrono::year_month_day today);
+
     /// Why each pair left out of the last refresh was left out.
     [[nodiscard]] const std::vector<std::string>& failures() const {
         return failures_;
@@ -115,6 +144,9 @@ private:
     std::map<std::string, std::chrono::year_month_day> last_sent_;
     std::vector<std::string> failures_;
     std::uint64_t sequence_ = 0;
+    std::optional<derived_fx_store> store_;
+    /** The series and the days held of each pair kept so far, by pair. */
+    std::map<std::string, std::pair<std::string, std::set<std::chrono::year_month_day>>> kept_;
 };
 
 }

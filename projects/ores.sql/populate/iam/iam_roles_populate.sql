@@ -1153,6 +1153,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_fixings:read');
     -- The derived source's universe is the vendor instruments the catalogue holds for it.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_data_vendor_instruments:read');
+    -- The derived source keeps its quotes as the observations of a series of its own.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_series:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_observations:write');
 
     -- ORE Import service: workflow management + delegated refdata/trading writes
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'ORE Import workflow domain service', false);

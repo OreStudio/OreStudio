@@ -281,6 +281,49 @@ std::expected<std::vector<domain::feed>, std::string> market_data_client::list_f
     return std::move(resp->feeds);
 }
 
+std::expected<std::vector<domain::market_series>, std::string>
+market_data_client::list_series_of_provider(const std::string& provider_code) {
+    messaging::list_market_series_request req;
+    req.limit = all_rows;
+    req.filter = messaging::market_series_filter{.provider_code = provider_code};
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
+    return std::move(resp->market_series);
+}
+
+std::expected<domain::market_series, std::string>
+market_data_client::put_series(const messaging::market_series_write& write,
+                               const ores::utility::domain::change_intent& intent) {
+    messaging::put_market_series_request req;
+    req.change.write = write;
+    req.intent = intent;
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok || !resp->market_series)
+        return std::unexpected(describe(resp->result));
+    return std::move(*resp->market_series);
+}
+
+std::expected<std::size_t, std::string>
+market_data_client::put_observations(const std::vector<messaging::market_observation_write>& writes,
+                                     const ores::utility::domain::change_intent& intent) {
+    messaging::put_many_market_observations_request req;
+    req.changes.reserve(writes.size());
+    for (const auto& w : writes)
+        req.changes.push_back({.write = w, .precondition = {}});
+    req.intent = intent;
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
+    return resp->market_observations.size();
+}
+
 std::expected<std::vector<domain::market_data_vendor_instrument>, std::string>
 market_data_client::list_vendor_instruments(const std::string& provider_code) {
     messaging::list_market_data_vendor_instruments_request req;

@@ -23,11 +23,13 @@
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <array>
 #include <chrono>
 #include <cstdint>
 #include <expected>
 #include <optional>
+#include <set>
 #include <span>
 #include <string>
 #include <string_view>
@@ -38,6 +40,14 @@ namespace ores::synthetic::feed {
 /// The derived source's own notation: its scheme, and the field of every quote.
 inline constexpr std::string_view derived_fx_id_scheme = "derived_fx_vol";
 inline constexpr std::string_view derived_fx_field = "rate_lnvol";
+
+/**
+ * @brief How a derived series names its derivation: the kind, and the method and its version,
+ * which a change of the computation raises so a series says which method computed it.
+ */
+inline constexpr std::string_view derived_fx_derivation_kind = "FX_VOL_DERIVATION";
+inline constexpr int derived_fx_method_version = 1;
+ORES_SYNTHETIC_API_EXPORT boost::uuids::uuid derived_fx_method_id();
 
 /// A pair the derived source quotes, in its market base/quote order.
 struct derived_fx_pair final {
@@ -82,6 +92,12 @@ ORES_SYNTHETIC_API_EXPORT std::string derived_fx_external_id(const derived_fx_qu
 ORES_SYNTHETIC_API_EXPORT std::optional<derived_fx_quote_id>
 parse_derived_fx_external_id(std::string_view external_id);
 
+/// The oresmd URI of a pair's fx_option series, which holds every quote of every expiry.
+ORES_SYNTHETIC_API_EXPORT std::string derived_fx_series_uri(const derived_fx_pair& pair);
+
+/// The oresmd URI of one quote, the item its vendor id maps to and its point of the series.
+ORES_SYNTHETIC_API_EXPORT std::string derived_fx_quote_uri(const derived_fx_quote_id& id);
+
 /// The id of a pair's fx_option_convention in refdata, such as EUR-USD-FXOPTION.
 ORES_SYNTHETIC_API_EXPORT std::string fx_option_convention_id(const derived_fx_pair& pair);
 
@@ -109,9 +125,10 @@ struct dated_series final {
     std::vector<double> values;
 };
 
-/// A pair's daily log returns, oldest first, and the last date they reach.
+/// A pair's daily log returns, oldest first, each with the day it ends on.
 struct pair_returns final {
     std::vector<double> returns;
+    std::vector<std::chrono::year_month_day> dates;
     std::optional<std::chrono::year_month_day> last;
 };
 
@@ -145,6 +162,41 @@ derived_fx_ticks(const derived_fx_pair& pair,
                  const analytics::quant::math::fx_derivation& derivation,
                  std::chrono::year_month_day day,
                  std::uint64_t first_sequence);
+
+/// One quote of a day, at its point of the pair's series.
+struct derived_fx_point final {
+    std::string coordinate;
+    double value;
+};
+
+/// The quotes of one day of a pair, derived from the returns up to that day.
+struct derived_fx_day final {
+    std::chrono::year_month_day day;
+    std::vector<derived_fx_point> points;
+};
+
+/**
+ * @brief The quotes of each day of a pair's history the store does not yet hold.
+ *
+ * Each day is derived from the returns that end on or before it, so a past day reads no
+ * later fixing. A day with fewer returns than the minimum is left out, as is an expiry
+ * whose window the returns up to its day do not cover, and a quote that is not finite.
+ * The days come oldest first. A day whose quotes could not be derived at all is named
+ * among the underived. Refuses a convention the derivation cannot quote.
+ */
+/// The days of a pair's history derived, and the days whose quotes could not be derived.
+struct derived_history final {
+    std::vector<derived_fx_day> days;
+    std::vector<std::chrono::year_month_day> underived;
+};
+
+ORES_SYNTHETIC_API_EXPORT std::expected<derived_history, std::string>
+derive_missing_days(const derived_fx_pair& pair,
+                    const pair_returns& returns,
+                    const refdata::domain::fx_option_convention& convention,
+                    const std::set<std::chrono::year_month_day>& stored,
+                    const analytics::quant::math::fx_derivation_settings& settings,
+                    int minimum_returns);
 
 }
 

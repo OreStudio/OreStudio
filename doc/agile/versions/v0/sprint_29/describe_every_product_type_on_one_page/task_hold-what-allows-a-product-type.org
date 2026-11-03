@@ -28,9 +28,9 @@ The page can answer which books allow a type and who may book one. Both answers 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | The two junctions are modelled and generated; the drops, permissions, seeds and the booking check remain. |
+| Now          | Modelled, generated, dropped and permitted. The ACME seed and the booking check remain. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Seed ACME for all 121 types, then make the booking path read the book's rule. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

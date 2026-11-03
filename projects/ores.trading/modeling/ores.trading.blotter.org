@@ -1,7 +1,6 @@
 :PROPERTIES:
 :ID: 662d60e0-4740-4fff-a4de-a32eaf711eca
 :ores.cpp.wire-codec.enabled: true
-:ores.ts.protocol.enabled: nil
 :END:
 #+title: ores.trading.blotter
 #+description: Codegen operation model for the blotter's two reads: one page of rows, keyed by the sort key and the row id, and one rail of counts per node.

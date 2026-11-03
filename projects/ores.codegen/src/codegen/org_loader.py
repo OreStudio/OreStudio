@@ -2666,6 +2666,10 @@ _TS_UTILITY_DOMAIN_TYPES = {
     # and the interface imports from the generated module that model writes.
     "ores::ore::messaging::ore_document": (
         "OreDocument", "generated/ore/protocol/ore_document_protocol"),
+    # The blotter filters its rows the way the trade list does, so its reads
+    # take the trade summary protocol's filter rather than a copy of it.
+    "ores::trading::messaging::trade_summaries_filter": (
+        "TradeSummariesFilter", "generated/trading/protocol/trade_summary_protocol"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.

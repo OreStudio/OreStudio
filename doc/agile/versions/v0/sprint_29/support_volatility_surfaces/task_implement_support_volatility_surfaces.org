@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 6B682F27-6C29-4954-A355-39E27E7197B7
+:END:
+#+title: Task: Document the volatility surface architecture
+#+description: Integrate the volatility surface analysis into the knowledge base as linked notes, and name the tasks of the arc from it.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The volatility surface architecture is in the knowledge base as small, linked
+notes, and the rest of the arc is named from it. The source is the analysis the
+user supplies. Each idea goes into the note that owns it: an existing note when
+one covers the idea, a new note when none does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Receive the analysis from the user.    |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- Every idea in the supplied analysis is in exactly one knowledge note, or is listed in this task's Notes as left out, with the reason.
+- The existing notes are extended, not repeated. A new note links to the notes it builds on, and those notes link back.
+- An overview note states the architecture: the surface types, the quotes behind them, how a surface is built, where it is stored, and how pricing reads it.
+- The story's Tasks table names the later tasks of the arc, each traced to the note that motivates it.
+- The site pages build and every link resolves.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The knowledge base already holds this material. Read it before writing new notes:
+
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]]: pillar quoting (ATM, RR, STR), delta conventions, smile models and interpolation across time.
+- [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]]: the driver and derived (proxy) pattern for FX surfaces, correlation and basis proxying, marks, tenor propagation.
+- [[id:C8B4449D-E82E-4184-8E0B-50F070FAF22B][Correlations and derived volatility surfaces]]: an earlier backlog story on correlation management and surface proxying in ores.marketdata.
+- [[id:B91F6F7D-5C8A-4DB0-A5C6-827EEC43BE41][Design and add oresmd volatility-surface sub-schema]]: a sprint 24 task on one strike, expiry and model sub-schema for the eight vol quote sub-families.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

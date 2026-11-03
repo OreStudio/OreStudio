@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: feature/keep-derived-vol-quotes-for-backtesting
-#+pr: 4415
+#+pr: 4416
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -89,6 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4416][#4416]] | [synthetic] Keep the derived FX volatility quotes for backtesting |
 | [[https://github.com/OreStudio/OreStudio/pull/4415][#4415]] | [marketdata] Read the observations of a series over a window of days |
 
 * Review

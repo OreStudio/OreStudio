@@ -203,8 +203,8 @@ output it recorded then.
 | Read the runs | List the runs of the definition | =reporting.v1.report_instances.list= | exists |
 | Open any run | Read one run, including a failed one or one carrying errors | =reporting.v1.report_instances.get= | exists |
 | Read the run's errors | List the errors of the run the person opened | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
-| Leave a run open | Learn that a new run of this definition was created | =reporting.v1.report_instances_events.created= | exists |
-| Reload the history | Learn that a run changed, which is how a running run becomes a completed one | =reporting.v1.report_instances_events.updated= | exists |
+| Leave a run open | Learn that a new run of this definition was created | =reporting.v1.events.report_instances.created= | exists |
+| Reload the history | Learn that a run changed, which is how a running run becomes a completed one | =reporting.v1.events.report_instances.updated= | exists |
 | See the previous fire times | Read when the schedule fired, whether or not a run survived | (no read of =report_trigger_event= over NATS) | missing |
 | Say when the next run is due | Read the scheduler job behind the definition's =scheduler_job_id= | (no scheduler read) | missing |
 | The screen itself | Read one definition with its runs in one answer | (no BFF route) | missing |
@@ -215,8 +215,8 @@ below =TenantAdmin= and =SuperAdmin=, so a trading desk can open a run that
 carries errors and cannot read the errors behind it until a role below those two
 is granted the read. That is the permission gap [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] states in full.
 
-=reporting.v1.report_instances_events.created= is the real signal behind step 6,
-and =reporting.v1.report_instances_events.updated= is the real signal behind a
+=reporting.v1.events.report_instances.created= is the real signal behind step 6,
+and =reporting.v1.events.report_instances.updated= is the real signal behind a
 row that changes state in place. The screen uses them and does not poll. No event
 exists for =report_trigger_event=, so a firing that produced no run sends nothing
 at all, and the one signal this journey most needs is the one it cannot subscribe

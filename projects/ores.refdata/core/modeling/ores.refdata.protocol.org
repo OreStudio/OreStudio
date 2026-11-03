@@ -50,9 +50,9 @@ One payload, three subjects. The collection's prefix is
 
 | Subject | Payload | Published when |
 |---------+---------+----------------|
-| =refdata.v1.currencies_events.created= | =event_id= (uuid), =key.iso_code= (string), =action=, =version= (int), =occurred_at= (UTC time point), =correlation_id= (string, optional) | A currency is created. |
-| =refdata.v1.currencies_events.updated= | the same | A currency is updated. |
-| =refdata.v1.currencies_events.deleted= | the same | A currency is deleted. |
+| =refdata.v1.events.currencies.created= | =event_id= (uuid), =key.iso_code= (string), =action=, =version= (int), =occurred_at= (UTC time point), =correlation_id= (string, optional) | A currency is created. |
+| =refdata.v1.events.currencies.updated= | the same | A currency is updated. |
+| =refdata.v1.events.currencies.deleted= | the same | A currency is deleted. |
 
 A subscriber that wants every action subscribes to
 =refdata.v1.currencies_events.>=, which =event_subject_wildcard<currency_event>()=

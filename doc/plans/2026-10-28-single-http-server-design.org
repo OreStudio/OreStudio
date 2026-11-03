@@ -580,8 +580,8 @@ its own and caches none.
 The hardest part, and the reason the BFF exists.
 
 *Shape.* One shared NATS connection and *one* subscription for the whole
-process, over the events root: =*.v1.*_events.>=. The hub routes each message in
-process by =(component, resource)=.
+process, over the events root: =*.v1.events.>=. The hub routes each message in
+process by =(component, collection)=.
 
 One subscription and not one per entity. cnats delivers a callback subscription
 on a library thread of its own — the client's own comment says the handler runs
@@ -648,17 +648,17 @@ administrator hears every party of its tenant. Party filtering changes the
 payload (the key list), which is why serialisation is per party bucket and not
 per entity.
 
-*The events collection is not addressable, and the port pays for it.* An entity
-event is published on =<component>.v1.<collection>_events.<action>=. A NATS
-wildcard is a whole token, so =*.v1.*_events.>= is a literal token that matches
-nothing: the server accepts the subscription, delivers nothing to it, and the
-stream is silent with no error anywhere. The feed therefore subscribes =*.v1.>=
-and rejects what is not an event in the parse. That is correct, and it copies
-every versioned request in the system into the gateway as well, which nothing
-asked for. Giving the events a token of their own (=<component>.v1.events.
-<collection>.<action>=, heard by =*.v1.events.>=) removes the copy and every
-=subject_prefix= in the tree changes to do it. Until then this is the cost of the
-stream, stated rather than discovered.
+*Why an event carries an events namespace.* An event is published on
+=<component>.v1.events.<collection>.<action>=. The namespace is a token of its
+own because a NATS wildcard is a whole token: the first version of this design
+published on =<component>.v1.<collection>_events.<action>=, and a subscriber to
+=*.v1.*_events.>= heard nothing at all, because =*_events= is a literal token
+that matches no subject. The server accepted the subscription, delivered nothing,
+and the stream was silent with no error anywhere; only a live run found it. The
+feed had then to subscribe =*.v1.>=, which copied every versioned request in the
+system into the gateway. The namespace removes that copy, one subscription hears
+the events of every component, and the cost of the correction was a new
+=subject_prefix= in every entity's event header.
 
 *The constants, carried over exactly.* =BATCH_WINDOW_MS = 150=, =MAX_KEYS = 20=,
 a watch declaration of at most 50 entries, and both names validated against

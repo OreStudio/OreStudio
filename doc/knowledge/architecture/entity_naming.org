@@ -173,7 +173,9 @@ identifier silently collapses; declare both.
 | Single version | =get_{facet_stem}_version_request= / =_response= on ={component}.v1.{plural}_versions.get= |
 | Event subjects | =namespace {singular}_event_subjects= with =created=, =updated=, =deleted= |
 
-The subject grammar is four segments: ={component}.v1.{plural}.{verb}=. See
+The subject grammar is four segments for a request,
+={component}.v1.{plural}.{verb}=, and five for an event,
+={component}.v1.events.{plural}.{created,updated,deleted}=. See
 [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]
 for the grammar itself.
 

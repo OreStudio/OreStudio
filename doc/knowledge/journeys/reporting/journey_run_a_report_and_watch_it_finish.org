@@ -197,8 +197,8 @@ press produced, if a read served it.
 | Press Run now | Trigger a run of one definition | =reporting.v1.ops.trigger_report_instance= | exists |
 | Read the run | Read the run that was created | =reporting.v1.report_instances.get= | exists |
 | Read the run | List the runs of the definition | =reporting.v1.report_instances.list= | exists |
-| Wait, and be told | Learn that the run changed | =reporting.v1.report_instances_events.updated= | exists |
-| Wait, and be told | Learn that the run was created | =reporting.v1.report_instances_events.created= | exists |
+| Wait, and be told | Learn that the run changed | =reporting.v1.events.report_instances.updated= | exists |
+| Wait, and be told | Learn that the run was created | =reporting.v1.events.report_instances.created= | exists |
 | Read the pipeline | Follow the pre-processing steps | =reporting.v1.ops.gather_trades=, =gather_market_data=, =assemble_bundle= | exists |
 | Read the pipeline | Prepare the ORE package the engine reads | =ore.v1.ops.prepare_ore_package= | exists |
 | Read the pipeline | Submit the work to the compute grid | =compute.v1.ops.submit_compute= | exists |

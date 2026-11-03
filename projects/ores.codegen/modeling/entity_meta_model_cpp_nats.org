@@ -104,7 +104,7 @@ struct entity_event_traits<ores::refdata::messaging::book_event> {
 
 The event itself, =book_event=, is declared in the entity's protocol header
 beside its key. The action completes the subject, so one payload is addressed
-by =refdata.v1.books_events.created=, =.updated= and =.deleted=.
+by =refdata.v1.events.books.created=, =.updated= and =.deleted=.
 
 And, in another component's =party_event_registrar.hpp= (the
 event-registrar pattern, illustrated from a real consumer):

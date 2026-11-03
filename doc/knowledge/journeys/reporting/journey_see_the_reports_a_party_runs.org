@@ -199,8 +199,8 @@ two can differ.
 | Read the error count | Read one error | =reporting.v1.report_error_events.get= | exists |
 | Read the error count | Read the scope vocabulary | =reporting.v1.report_error_scopes.list= | exists |
 | Read the run's kind | Read the kinds a run can carry | =reporting.v1.report_instance_kinds.list= | exists |
-| Watch the screen | Learn that a run was created | =reporting.v1.report_instances_events.created= | exists |
-| Watch the screen | Learn that a run changed | =reporting.v1.report_instances_events.updated= | exists |
+| Watch the screen | Learn that a run was created | =reporting.v1.events.report_instances.created= | exists |
+| Watch the screen | Learn that a run changed | =reporting.v1.events.report_instances.updated= | exists |
 | Read the schedule firing | Learn when a schedule last fired | (no read of =report_trigger_event= over NATS) | missing |
 | The screen itself | Read the definitions and their latest runs in one answer | (no BFF route) | missing |
 

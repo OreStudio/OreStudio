@@ -128,9 +128,9 @@ A sub-resource exists because a read that returns something other than a page
 of the resource is not a read of the resource. The versions of an entity are
 the case in point: a read that returns version records is not a read of the
 entity, and giving it a verb of its own would put a second kind of thing behind
-the verb slot. Naming the collection instead keeps the grammar at four
-segments, keeps one subject per operation, and lets the collection inherit the
-list contract rather than restate it.
+the verb slot. Naming the collection instead keeps a request at four segments,
+keeps one subject per operation, and lets the collection inherit the list
+contract rather than restate it.
 
 A sub-resource's key is composite: it is the parent's key together with the
 member's own identifier. The composite-key rule below already covers it, so a
@@ -1107,6 +1107,12 @@ distinguishable. An operation that acts on an entity the common way belongs in
 the common set, and an operation that merely has an unusual name does not
 qualify as a domain operation.
 
+=events= is reserved on the same terms, for the announcements rather than for
+the operations. It sits in the resource's place, so an event has one segment
+more than a request, and no entity may be named =events=: a resource with that
+name would be indistinguishable from the announcements, and the wildcard that
+hears every event would start hearing its requests too.
+
 ** HTTP projection
 
 A client that speaks HTTP rather than the bus reaches the same operations
@@ -1156,8 +1162,9 @@ Every clause above that can be checked mechanically is checked mechanically, and
 a generated message that violates one fails the check rather than passing
 review.
 
-A conforming message has a subject with four segments whose component owns it
-and whose last segment is in the verb set; a key that carries every identifying
+A conforming message has a subject of four segments, or five when it announces
+a change, whose component owns it and whose last segment is in the verb set or
+in the event actions; a key that carries every identifying
 column with its own type; a response that carries a =result= and no data
 outside =ok=; a list whose =offset=, =limit= and =total= are unconditional, and
 whose order is from the model's sortable fields with the key as the last

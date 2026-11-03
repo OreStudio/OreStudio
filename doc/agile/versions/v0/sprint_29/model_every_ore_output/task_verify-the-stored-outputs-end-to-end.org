@@ -26,11 +26,11 @@ A person can follow a report run from trigger to stored rows and confirm each fa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | The PR, with the run screens, the ORE file catalogue and its schemas. |
-| Waiting on   | The tester's run of the scenario, which the acceptance asks for. |
-| Next         | The tester runs the scenario; a failure becomes a capture or a fix. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-11-02                               |
 
 * Acceptance
@@ -128,6 +128,13 @@ task and name that file in the Command column.
 | Web tests, after the rebase on main | 195 files, 2,423 tests passed; typecheck clean | =npm run -w packages/web test= | 6cb69dc954 |
 | ORE files and file types | 148 ORE files in 14 categories; 164 file types, each naming one ORE file | =python3 projects/ores.sql/utility/generate_file_types_populate.py --check= | 949443f621 |
 | Files of a run identified | 25 of 25, run 66a4f745 | =GET /api/reporting/runs/<id>/files= | 949443f621 |
+| C++ tests, after the second rebase on main | 86 suites, 16,367 test cases, none failed | =./compass.sh build rat=, with the services up | 1c6e7482eb |
+| SQL tests, after the second rebase on main | 78 files, 732 tests passed, on a recreated database | =projects/ores.sql/test/run_tests.sh= | c6fd6680c5 |
+| BFF and web tests, after the second rebase on main | BFF 91 files, 1,251 tests, two clean runs; web 195 files, 2,426 tests; both typechecks clean | =npm run -w packages/bff test=, =npm run -w packages/web test= | c6fd6680c5 |
+| Group NPV on a fresh environment, live pricing | 73 of 73 trades valued (63 FxForward, 10 Bond), run 2b8c4e27 | =run_report.sh ACMCOR "Group Consolidated Exposure"=, then the run's npv.csv | 0ab0aff0f2 |
+| Hong Kong NPV | 39 of 63 trades valued, run bfa92bc3 | the same, for ACCOHK NPV | 0ab0aff0f2 |
+| London NPV, trades left out | run completes; 37 trades left out, each a Trade error | the same, for ACCOUK NPV | 0ab0aff0f2 |
+| Every group and Hong Kong report | 34 runs, 25 completed; 9 Hong Kong runs failed | =trigger_all.sh=, then =summary.sql= over the runs | 0ab0aff0f2 |
 | Portfolio against the downloaded schema | validates | =xmllint --noout --schema input.xsd portfolio.xml= | 949443f621 |
 
 * Notes
@@ -212,18 +219,41 @@ via its "Verifies task" field.
 | 24 | PR 4400: the xsd glob in local_checks.py may not expand | build/scripts/local_checks.py | Declined | The checker matches paths with fnmatch, so the glob works. |
 | 25 | PR 4400: track the cause of the CSA and conventions flakes | product_backlog/inbox | Accepted | Raised as an inbox capture. |
 | 26 | PR 4400: run compass check before merge | — | Declined | The operator asked not to run it. |
+| 27 | PR 4400 second review: parallel downloads can each hold up to 1 GiB | bff/src/report-run-files.ts | Declined | The files come from the platform's own store and a run's files are downloaded one at a time from its page; a concurrency cap waits for a measured need. |
+| 28 | PR 4400 second review: each request compiles the catalogue's regexes | bff/src/report-run-files.ts | Declined | The request already reads the catalogue over NATS; compiling 148 expressions is small beside that read, and a cache would need invalidation on reseed. |
+| 29 | An engine error's cause was always labelled a curve, so an analytic read "(curve PRICING)" | ores.ore/core/src/log/engine_run_verdict.cpp | Accepted | The label follows the scope: analytic, configuration or curve; a test covers it. |
+| 30 | After the rebase, reporting core failed to build: the cut services' calls to stamp found the cut authorisation applier's own stamp | ores.reporting/core/src/service/cut_authorisation_applier.cpp | Accepted | The new files shifted the unity batches so the two met in one unit; the applier's helper is now stamp_decision. |
 
 * Result
 
-A run of Group Consolidated Exposure completes for Acme Corporation Plc, and its
-page states it: its details, its results with nine trades, its problems as an
-overview and a list, and its 25 files in a tree, each named as the ORE user guide
-names it with a page that says what it holds, how it is laid out and which
-parameter names it. An XML file's page offers its schema with every schema it
-includes for the engine that ran it; the run's portfolio validates against the
-downloaded schema with xmllint. The figures land under the new family codes:
-36 under npv_report, 2 under saccr_report, 219 under pricing_stats, and the
-market data the run read under market_data_report.
+A run of a report completes for Acme Corporation Plc and stores what ORE wrote.
+The run page states the run's details, its results, its problems as an overview
+and a list, and its files in a tree; each file is named as the ORE user guide
+names it, with a page that says what it holds and, for an XML file, offers its
+schema with every schema it includes.
 
-The scenario holds the steps; the acceptance's last clause, the tester's run of
-it, is still to come.
+The tester signed off the NPV. On a fresh environment, Group Consolidated
+Exposure values all 73 trades of the group (63 FX forwards, 10 bonds) and Hong
+Kong's NPV values 39 of its 63. Getting there took four changes: a run keeps
+the reports of the analytics that ran when another fails; a trade generation
+config states the trade types it books, so the holding company books what it
+prices; a trade whose XML cannot be written is left out and named as an error
+rather than refusing the portfolio; and the Acme reports price at the run date,
+since a fresh environment has no previous close.
+
+The first pass of the other result types ran every report of the group and of
+Hong Kong: 34 runs, of which 25 completed. They store valuation (npv_report,
+cashflow_report), curves and market (curves_report, market_calibration,
+todays_market_calibration_cashflows, market_data_report), portfolio details
+(counterparties, netting_sets, trade_types, risk_factors, market_objects,
+underlying_indices) and run statistics (pricing_stats, runtimes). No run has yet
+stored sensitivities, exposure or XVA cubes, VaR, stress, FRTB or SA-CCR: nine
+Hong Kong reports fail on the trade XML gaps, a missing pricing engine, missing
+HKD-HONIA fixings, or a null pointer ORE dereferences inside its analytics
+(Boost assertion px != 0), most likely on an object the faulty trade XML names.
+London's and New York's runs complete but value nothing, because their market
+file carries a fraction of the quotes the group's does; that belongs to the
+market data work.
+
+The gaps in the trade XML and the generated trades are the story
+[[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]].

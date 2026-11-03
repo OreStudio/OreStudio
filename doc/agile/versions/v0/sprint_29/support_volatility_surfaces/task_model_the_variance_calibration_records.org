@@ -26,11 +26,11 @@ Three versioned ores.synthetic records hold the whole audit trail: the input sna
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance

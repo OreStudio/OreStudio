@@ -48,6 +48,7 @@ set(files
     "trade_generation_book_codec_roundtrip_tests.cpp"
     "trade_generation_config_codec_roundtrip_tests.cpp"
     "trade_generation_counterparty_codec_roundtrip_tests.cpp"
+    "trade_generation_trade_type_codec_roundtrip_tests.cpp"
     "yield_curve_process_parameter_definition_codec_roundtrip_tests.cpp"
     "yield_curve_process_type_codec_roundtrip_tests.cpp"
 )

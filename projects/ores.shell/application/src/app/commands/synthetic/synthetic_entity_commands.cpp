@@ -30,6 +30,7 @@
 #include "ores.shell/app/commands/synthetic/trade_generation_book_commands.hpp"
 #include "ores.shell/app/commands/synthetic/trade_generation_config_commands.hpp"
 #include "ores.shell/app/commands/synthetic/trade_generation_counterparty_commands.hpp"
+#include "ores.shell/app/commands/synthetic/trade_generation_trade_type_commands.hpp"
 #include "ores.shell/app/commands/synthetic/yield_curve_process_parameter_definition_commands.hpp"
 #include "ores.shell/app/commands/synthetic/yield_curve_process_type_commands.hpp"
 
@@ -54,6 +55,7 @@ void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
     market_data_generation_config_commands::register_commands(root_menu, session);
     market_data_provider_commands::register_commands(root_menu, session);
     trade_generation_book_commands::register_commands(root_menu, session);
+    trade_generation_trade_type_commands::register_commands(root_menu, session);
     trade_generation_config_commands::register_commands(root_menu, session);
     trade_generation_counterparty_commands::register_commands(root_menu, session);
     yield_curve_process_type_commands::register_commands(root_menu, session);

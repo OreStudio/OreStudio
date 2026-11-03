@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: AE737967-9D6C-4067-BF9A-DCF3D316C63D
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.synthetic.trade_generation_trade_type
+#+description: Codegen entity model for the synthetic trade_generation_trade_type table; one trade type a trade generation config books.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: trade_generation_trade_type
+#+entity_plural: trade_generation_trade_types
+#+entity_title: Trade Generation Trade Type
+#+brief: One trade type a trade generation config books.
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+One trade type a trade generation config books. A config books the trade
+types of its asset class; when it states rows here it books only those, in the
+order the planner of the class cycles them. A config with no row books every
+type of its class.
+
+A party prices only some of the products of a class. The Acme holding company,
+for one, prices FX forwards and no FX option, so its FX config states
+=FxForward= here rather than taking the sixteen FX types the planner knows.
+
+The rows belong to a parent config through =config_id=, the same shape
+[[id:2E13AC47-E3F0-4485-AA4D-BC6E9CD1980B][Trade Generation Book]] uses for the book scope.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this trade type row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party (legal entity) this row's configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:END:
+
+Parent =trade_generation_config= whose trade types this row contributes to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** trade_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:natural_key: true
+:END:
+
+The trade type the configuration books, a code of the product type catalogue
+(=ores_trading_product_types_tbl.code=), such as =FxForward=.
+
+#+begin_src cpp :name generator
+std::string("FxForward")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_trade_generation_trade_types_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** config_id
+:PROPERTIES:
+:table:         ores_synthetic_trade_generation_configs_tbl
+:error_message: Invalid config_id: %. No active trade_generation_config found with this id.
+:nullable:      false
+:END:
+
+** trade_type_code
+:PROPERTIES:
+:table:             ores_trading_product_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid trade_type_code: %. No active trade type found with this code.
+:END:
+
+The trade type catalogue is system reference data, so the check reads the
+system tenant's rows.
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_generation_trade_type
+:entity_plural_short:   trade_generation_trade_types
+:entity_singular_words: trade generation trade type
+:entity_plural_words:   trade generation trade types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: t
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| trade_type_code | Trade Type  |
+| modified_by | Modified By |
+| version     | Version     |
+
+* See also
+
+- [[id:96AB808A-DF49-410F-8A90-D1065A3716AC][ores.synthetic]] — component group overview.
+- [[id:0CD68B09-6EBC-4180-A298-0CC386590F31][Trade Generation Config]] — the configuration this row is a trade type of.

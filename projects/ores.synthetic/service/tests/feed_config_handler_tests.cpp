@@ -656,3 +656,56 @@ TEST_CASE("feed_config_calibrate_writes_only_with_the_write_permissions",
     REQUIRE(by_tenant.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(by_tenant.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
 }
+
+TEST_CASE("a stored FX spot config is written back with every field it holds",
+          "[feed_config_handler][write_of]") {
+    ores::synthetic::domain::fx_spot_generation_config cfg;
+    cfg.id = boost::uuids::string_generator{}("11111111-1111-4111-8111-111111111111");
+    cfg.config_id = boost::uuids::string_generator{}("22222222-2222-4222-8222-222222222222");
+    cfg.base_currency_code = "GBP";
+    cfg.quote_currency_code = "JPY";
+    cfg.source_name = "synthetic.test.gbpjpy";
+    cfg.oresmd_uri = "oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=JPY";
+    cfg.price_source = "fixing";
+    cfg.calibration_window_days = 45;
+    cfg.gmm_initial_price = 191.5;
+    cfg.ticks_per_hour = 77;
+    cfg.process_type = "arithmetic";
+    cfg.enabled = false;
+    cfg.auto_start = true;
+    cfg.folder_id = boost::uuids::string_generator{}("33333333-3333-4333-8333-333333333333");
+    cfg.asset_class_code = "fx";
+    cfg.arrival_mode = "hawkes";
+    cfg.branching_ratio = 0.4;
+    cfg.decay = 7.0;
+    cfg.sensitivity = 2.5;
+    cfg.variance_model = "gjr_garch";
+    cfg.variance_calibration_id =
+        boost::uuids::string_generator{}("44444444-4444-4444-8444-444444444444");
+
+    const auto w = ores::synthetic::service::write_of(cfg);
+    CHECK(w.id == cfg.id);
+    CHECK(w.config_id == cfg.config_id);
+    CHECK(w.base_currency_code == cfg.base_currency_code);
+    CHECK(w.quote_currency_code == cfg.quote_currency_code);
+    CHECK(w.source_name == cfg.source_name);
+    CHECK(w.oresmd_uri == cfg.oresmd_uri);
+    CHECK(w.price_source == cfg.price_source);
+    CHECK(w.calibration_window_days == cfg.calibration_window_days);
+    CHECK(w.gmm_initial_price == cfg.gmm_initial_price);
+    CHECK(w.ticks_per_hour == cfg.ticks_per_hour);
+    CHECK(w.process_type == cfg.process_type);
+    CHECK(w.enabled == cfg.enabled);
+    CHECK(w.auto_start == cfg.auto_start);
+    CHECK(w.folder_id == cfg.folder_id);
+    CHECK(w.asset_class_code == cfg.asset_class_code);
+    CHECK(w.arrival_mode == cfg.arrival_mode);
+    CHECK(w.branching_ratio == cfg.branching_ratio);
+    CHECK(w.decay == cfg.decay);
+    CHECK(w.sensitivity == cfg.sensitivity);
+    CHECK(w.variance_model == cfg.variance_model);
+    CHECK(w.variance_calibration_id == cfg.variance_calibration_id);
+    // A field the write type gains and write_of forgets compiles silently; the count keeps the
+    // two in step.
+    CHECK(std::tuple_size_v<decltype(ores::synthetic::messaging::wire_fields(w))> == 21);
+}

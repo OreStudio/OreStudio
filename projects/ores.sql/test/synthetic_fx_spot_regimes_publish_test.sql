@@ -31,7 +31,7 @@
 
 begin;
 
-select plan(5);
+select plan(7);
 
 create temporary table t_dataset on commit drop as
 select id, code from ores_dq_datasets_tbl
@@ -98,6 +98,47 @@ select is(
      where method = 'authored' and state = 'approved' and input_id is null),
     11,
     'every pair runs an approved authored calibration, named by its feed'
+);
+
+-- A later approval replaces the authored one: a publish run again keeps it and installs none.
+update ores_synthetic_variance_calibrations_tbl
+set state = 'superseded', state_reason = 'superseded by a test approval'
+where id = (select variance_calibration_id from t_feeds where pair = 'EURUSD')
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+insert into ores_synthetic_variance_calibrations_tbl (
+    tenant_id, id, version, party_id, base_currency_code, quote_currency_code,
+    input_id, method, method_version, alpha, gamma, beta, persistence,
+    long_run_variance, starting_variance_ratio, log_likelihood,
+    returns_used, starts, starts_agreed, state, state_reason,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    ores_utility_system_tenant_id_fn(), '00000000-0000-0000-0000-00000000aa01', 0,
+    (select id from t_party), 'EUR', 'USD', null, 'authored', 1, 0.03, 0.01, 0.91, 0.945,
+    null, 1.0, null, 0, 0, false, 'approved', 'a later approval',
+    current_user, current_user, 'system.test', 'republish test'
+);
+
+select lives_ok(
+    format($$select * from ores_synthetic_publish_feeds_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb)$$,
+        (select id from t_dataset where code = 'synthetic.feeds.uniform_demo')),
+    'the feeds publish again over the later approval'
+);
+
+select results_eq(
+    $$select x.variance_calibration_id::text,
+             (select count(*)::int from ores_synthetic_variance_calibrations_tbl c
+              where c.base_currency_code = 'EUR' and c.quote_currency_code = 'USD'
+                and c.state = 'approved'
+                and c.valid_to = ores_utility_infinity_timestamp_fn())
+      from ores_synthetic_fx_spot_generation_configs_tbl x
+      join ores_synthetic_market_data_generation_configs_tbl c
+        on c.id = x.config_id and c.valid_to = ores_utility_infinity_timestamp_fn()
+     where c.dataset_id = (select id from t_dataset where code = 'synthetic.feeds.uniform_demo')
+       and x.base_currency_code = 'EUR' and x.quote_currency_code = 'USD'
+       and x.valid_to = ores_utility_infinity_timestamp_fn()$$,
+    $$values ('00000000-0000-0000-0000-00000000aa01'::text, 1)$$,
+    'the republished feed runs the later approval, and no second authored one is installed'
 );
 
 select * from finish();

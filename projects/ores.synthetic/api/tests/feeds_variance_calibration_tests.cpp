@@ -198,3 +198,88 @@ TEST_CASE("the likelihood a fit states is the Gaussian one of its returns at its
     CHECK(*fit.starting_variance_ratio ==
           Approx(variances.back() / *fit.long_run_variance).epsilon(1e-12));
 }
+
+namespace {
+
+ores::synthetic::domain::fx_spot_generation_config eurusd_feed() {
+    ores::synthetic::domain::fx_spot_generation_config cfg;
+    cfg.base_currency_code = "EUR";
+    cfg.quote_currency_code = "USD";
+    cfg.ticks_per_hour = 3600;
+    cfg.variance_model = "gjr_garch";
+    return cfg;
+}
+
+std::vector<ores::synthetic::domain::gmm_component> one_component() {
+    ores::synthetic::domain::gmm_component c;
+    c.mean = 0.0;
+    c.stdev = 0.0005;
+    c.weight = 1.0;
+    return {c};
+}
+
+ores::synthetic::domain::variance_calibration approved_fit() {
+    ores::synthetic::domain::variance_calibration c;
+    c.version = 2;
+    c.base_currency_code = "EUR";
+    c.quote_currency_code = "USD";
+    c.method = "gjr_garch_qmle";
+    c.alpha = 0.011;
+    c.gamma = 0.023;
+    c.beta = 0.932;
+    c.starting_variance_ratio = 0.92;
+    c.returns_used = 279;
+    c.state = "approved";
+    c.state_reason = "Starts agree.";
+    return c;
+}
+
+}
+
+TEST_CASE("a feed runs the shape of the approved calibration of its pair, and names it",
+          variance_calibration_tags) {
+    const auto run = calibrated_variance(eurusd_feed(), approved_fit(), one_component());
+    REQUIRE(run.has_value());
+    CHECK(run->shape.alpha == 0.011);
+    CHECK(run->shape.gamma == 0.023);
+    CHECK(run->shape.beta == 0.932);
+    CHECK(run->record.calibration_version == 2);
+    CHECK(run->record.fitted);
+    CHECK(run->record.returns == 279);
+    CHECK(run->record.initial_ratio == 0.92);
+    // A single normal component is symmetric, so a day's p_minus is one half.
+    CHECK(run->record.persistence == Approx(0.011 + 0.932 + 0.023 * 0.5).epsilon(1e-9));
+    CHECK(run->record.note == "Fitted from 279 daily returns and approved: Starts agree.");
+}
+
+TEST_CASE("a feed refuses to start on no calibration, another pair's, an unapproved or a "
+          "shapeless one",
+          variance_calibration_tags) {
+    const auto feed = eurusd_feed();
+    const auto mixture = one_component();
+    const auto none = calibrated_variance(feed, std::nullopt, mixture);
+    REQUIRE_FALSE(none.has_value());
+    CHECK(none.error().find("names no variance calibration") != std::string::npos);
+
+    auto other = approved_fit();
+    other.base_currency_code = "GBP";
+    const auto wrong_pair = calibrated_variance(feed, other, mixture);
+    REQUIRE_FALSE(wrong_pair.has_value());
+    CHECK(wrong_pair.error().find("is of GBP/USD, not of EUR/USD") != std::string::npos);
+
+    for (const std::string state : {"proposed", "rejected", "superseded"}) {
+        auto undecided = approved_fit();
+        undecided.state = state;
+        undecided.state_reason = "the reviewer said so";
+        const auto refused = calibrated_variance(feed, undecided, mixture);
+        REQUIRE_FALSE(refused.has_value());
+        CHECK(refused.error().find("is " + state + " (the reviewer said so), not approved") !=
+              std::string::npos);
+    }
+
+    auto shapeless = approved_fit();
+    shapeless.beta = std::nullopt;
+    const auto empty = calibrated_variance(feed, shapeless, mixture);
+    REQUIRE_FALSE(empty.has_value());
+    CHECK(empty.error().find("has no shape") != std::string::npos);
+}

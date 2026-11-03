@@ -20,9 +20,15 @@
 #ifndef ORES_SYNTHETIC_API_FEEDS_VARIANCE_CALIBRATION_HPP
 #define ORES_SYNTHETIC_API_FEEDS_VARIANCE_CALIBRATION_HPP
 
+#include "ores.analytics.quant/math/gjr_garch.hpp"
+#include "ores.marketdata.api/domain/feed_start.hpp"
+#include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
+#include "ores.synthetic.api/domain/gmm_component.hpp"
+#include "ores.synthetic.api/domain/variance_calibration.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/fixing_calibration.hpp"
 #include <chrono>
+#include <expected>
 #include <optional>
 #include <string>
 #include <vector>
@@ -86,6 +92,25 @@ inline constexpr double hours_per_market_day = 24.0;
  */
 ORES_SYNTHETIC_API_EXPORT double daily_p_minus(const std::vector<mixture_component>& components,
                                                int ticks_per_hour);
+
+/// The shape a feed runs, and the record of it its start keeps.
+struct feed_variance final {
+    ores::analytics::quant::math::gjr_garch_shape shape;
+    ores::marketdata::domain::variance_start record;
+};
+
+/**
+ * @brief The GJR-GARCH shape a feed runs: the one of the approved calibration its config names.
+ *
+ * A feed fits nothing at start, so a calibration that is missing, of another pair, not approved
+ * or without a shape refuses the start, with the reason a person reads, rather than running a
+ * variance nobody reviewed for this pair. The record names the calibration and its version, and
+ * states the persistence under the feed's own mixture.
+ */
+ORES_SYNTHETIC_API_EXPORT std::expected<feed_variance, std::string>
+calibrated_variance(const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                    const std::optional<ores::synthetic::domain::variance_calibration>& calibration,
+                    const std::vector<ores::synthetic::domain::gmm_component>& components);
 
 /// The version of the fit below, stored with every calibration it makes.
 inline constexpr int variance_fit_method_version = 1;

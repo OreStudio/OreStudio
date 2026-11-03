@@ -49,6 +49,14 @@ select * from ores_synthetic_publish_market_data_providers_from_dq_fn(
     (select id from t_dataset where code = 'synthetic.market_data_providers'),
     ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
 
+-- The store may already hold approvals, from a provision or another suite; inside this
+-- transaction none is current, so the publish installs the artefact's shapes.
+update ores_synthetic_variance_calibrations_tbl
+set state = 'superseded', state_reason = 'cleared for the regimes test'
+where tenant_id = ores_utility_system_tenant_id_fn()
+  and state = 'approved'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
 update ores_dq_fx_spot_generation_configs_artefact_tbl
 set arrival_mode = 'hawkes', branching_ratio = 0.5, decay = 10.0, sensitivity = 2.0,
     garch_alpha = 0.04, garch_gamma = 0.06, garch_beta = 0.88, garch_window_days = 730

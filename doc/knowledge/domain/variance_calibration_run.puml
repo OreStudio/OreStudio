@@ -1,0 +1,49 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+title The calibration run of an asset class
+
+start
+:Read the class's calibration policy\n(window, variance window, inverse rule,\nprovider order, fallback);
+repeat :Next feed of the class;
+  :Resolve the feed's fixing item\nunder the policy;
+  if (A fixing is found?) then (yes)
+    :Measure the level and the spread\nover the policy's window;
+    if (Applied?) then (yes)
+      :Write the level and the deviations\nas a new version of the feed;
+    endif
+    if (The feed's variance is GJR-GARCH?) then (yes)
+      :Read the variance window\nof the same item;
+      :Capture the points:\neach fixing as stored, its return in\nmarket convention, or why it is left out;
+      :Fit GJR-GARCH to the used returns\n(variance targeting, Gaussian QMLE);
+      if (Enough returns and an admissible shape?) then (yes)
+        :State: proposed;
+      else (no)
+        :State: rejected, with the reason;
+      endif
+      if (Applied?) then (yes)
+        :Store the input, its points and the\ncalibration once, under ids named\nby what identifies them;
+      endif
+    endif
+  else (no)
+    :Keep the fixed level, or refuse,\nas the policy's fallback says;
+  endif
+repeat while (More feeds?) is (yes)
+:Report every feed: its start,\nits changes and its variance calibration;
+stop
+@enduml

@@ -24,6 +24,7 @@ set(files
     "app/host.cpp"
     "config/options.cpp"
     "config/parser.cpp"
+    "derived_fx_vol_adapter.cpp"
     "feed_kind_registry.cpp"
     "main.cpp"
     "messaging/calibration_fallback_event_registrar.cpp"

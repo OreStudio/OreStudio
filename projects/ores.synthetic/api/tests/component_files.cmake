@@ -30,6 +30,7 @@ set(files
     "feed_factory_tests.cpp"
     "feed_filter_tests.cpp"
     "feed_overview_tests.cpp"
+    "feeds_derived_fx_vol_tests.cpp"
     "feeds_fixing_calibration_tests.cpp"
     "feeds_publish_subject_tests.cpp"
     "folder_codec_roundtrip_tests.cpp"

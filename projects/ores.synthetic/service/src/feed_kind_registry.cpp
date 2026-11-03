@@ -33,7 +33,6 @@
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_paths_common.hpp"
-#include "ores.synthetic.core/repository/variance_calibration_repository.hpp"
 #include "ores.synthetic.core/repository/calibration_policy_repository.hpp"
 #include "ores.synthetic.core/repository/calibration_provider_order_repository.hpp"
 #include "ores.synthetic.core/repository/folder_repository.hpp"
@@ -44,6 +43,7 @@
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/variance_calibration_repository.hpp"
 #include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -234,13 +234,13 @@ feed_kind make_fx_spot_kind() {
                         return {.input = std::nullopt, .skip_reason = written.error()};
                     target = std::move(*written);
                 }
-                return {.input =
-                            feed::feed_build_input{fx_spot_feed_build_input{fx,
-                                                                            std::move(components),
-                                                                            std::move(target),
-                                                                            std::move(fixing_items),
-                                                                            std::move(policy),
-                                                                            std::move(calibration)}},
+                return {.input = feed::feed_build_input{fx_spot_feed_build_input{
+                            fx,
+                            std::move(components),
+                            std::move(target),
+                            std::move(fixing_items),
+                            std::move(policy),
+                            std::move(calibration)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));

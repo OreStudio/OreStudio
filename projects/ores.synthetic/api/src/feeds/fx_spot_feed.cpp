@@ -316,9 +316,10 @@ calibrated_variance(const ores::synthetic::domain::fx_spot_generation_config& cf
     const auto& c = *calibration;
     const auto id = boost::uuids::to_string(c.id);
     if (c.state != "approved")
-        return std::unexpected("its variance calibration " + id + " is " + c.state +
-                               (c.state_reason.empty() ? std::string() : " (" + c.state_reason + ")") +
-                               ", not approved");
+        return std::unexpected(
+            "its variance calibration " + id + " is " + c.state +
+            (c.state_reason.empty() ? std::string() : " (" + c.state_reason + ")") +
+            ", not approved");
     if (!c.alpha || !c.gamma || !c.beta)
         return std::unexpected("its variance calibration " + id + " has no shape");
     std::vector<mixture_component> mixture;
@@ -430,8 +431,8 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     if (cfg.variance_model == "gjr_garch") {
         const auto calibrated = calibrated_variance(cfg, variance, components);
         if (!calibrated)
-            throw std::runtime_error("Feed " + cfg.source_name + " did not start: " +
-                                     calibrated.error() + ".");
+            throw std::runtime_error("Feed " + cfg.source_name +
+                                     " did not start: " + calibrated.error() + ".");
         const auto& choice = *calibrated;
         start.variance = choice.record;
         BOOST_LOG_SEV(lg(), info) << "Feed " << cfg.source_name

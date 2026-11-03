@@ -451,7 +451,8 @@ public:
         try {
             reply(nats_, msg, review(req_ctx, *req));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(feed_config_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(feed_config_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   review_variance_calibration_response{.success = false,
@@ -479,8 +480,8 @@ private:
         namespace svc = ores::synthetic::service;
         review_variance_calibration_response resp;
 
-        const auto found = repo::variance_calibration_repository{}.read_latest(req_ctx,
-                                                                              req.calibration_id);
+        const auto found =
+            repo::variance_calibration_repository{}.read_latest(req_ctx, req.calibration_id);
         if (found.empty()) {
             resp.message = "No variance calibration " + req.calibration_id + " exists.";
             return resp;
@@ -502,28 +503,31 @@ private:
             const ores::utility::domain::change_intent intent{
                 .reason_code = "system.review",
                 .commentary = std::format("Variance calibration {} {}: {}",
-                                          boost::uuids::to_string(row.id), state, reason)};
-            const auto written = svc::variance_calibration_service(req_ctx).put_variance_calibration(
-                {.change = {.write = {.id = row.id,
-                                      .base_currency_code = row.base_currency_code,
-                                      .quote_currency_code = row.quote_currency_code,
-                                      .input_id = row.input_id,
-                                      .method = row.method,
-                                      .method_version = row.method_version,
-                                      .alpha = row.alpha,
-                                      .gamma = row.gamma,
-                                      .beta = row.beta,
-                                      .persistence = row.persistence,
-                                      .long_run_variance = row.long_run_variance,
-                                      .starting_variance_ratio = row.starting_variance_ratio,
-                                      .log_likelihood = row.log_likelihood,
-                                      .returns_used = row.returns_used,
-                                      .starts = row.starts,
-                                      .starts_agreed = row.starts_agreed,
-                                      .state = state,
-                                      .state_reason = reason},
-                            .precondition = claimed(row.version)},
-                 .intent = intent});
+                                          boost::uuids::to_string(row.id),
+                                          state,
+                                          reason)};
+            const auto written =
+                svc::variance_calibration_service(req_ctx).put_variance_calibration(
+                    {.change = {.write = {.id = row.id,
+                                          .base_currency_code = row.base_currency_code,
+                                          .quote_currency_code = row.quote_currency_code,
+                                          .input_id = row.input_id,
+                                          .method = row.method,
+                                          .method_version = row.method_version,
+                                          .alpha = row.alpha,
+                                          .gamma = row.gamma,
+                                          .beta = row.beta,
+                                          .persistence = row.persistence,
+                                          .long_run_variance = row.long_run_variance,
+                                          .starting_variance_ratio = row.starting_variance_ratio,
+                                          .log_likelihood = row.log_likelihood,
+                                          .returns_used = row.returns_used,
+                                          .starts = row.starts,
+                                          .starts_agreed = row.starts_agreed,
+                                          .state = state,
+                                          .state_reason = reason},
+                                .precondition = claimed(row.version)},
+                     .intent = intent});
             if (written.result.outcome != outcome::ok)
                 throw std::runtime_error("the calibration " + boost::uuids::to_string(row.id) +
                                          " was not written: " + written.result.message);
@@ -556,7 +560,8 @@ private:
                                           std::string() :
                                           ", which superseded " + resp.superseded_id)};
         for (const auto& cfg : repo::fx_spot_generation_config_repository{}.read_latest(req_ctx)) {
-            if (cfg.variance_model != "gjr_garch" || cfg.base_currency_code != c.base_currency_code ||
+            if (cfg.variance_model != "gjr_garch" ||
+                cfg.base_currency_code != c.base_currency_code ||
                 cfg.quote_currency_code != c.quote_currency_code ||
                 cfg.variance_calibration_id == c.id)
                 continue;
@@ -567,9 +572,9 @@ private:
                     {.change = {.write = std::move(write), .precondition = claimed(cfg.version)},
                      .intent = repoint});
             if (written.result.outcome != outcome::ok)
-                throw std::runtime_error("the feed " + cfg.source_name +
-                                         " was not pointed at the approved calibration: " +
-                                         written.result.message);
+                throw std::runtime_error(
+                    "the feed " + cfg.source_name +
+                    " was not pointed at the approved calibration: " + written.result.message);
             resp.repointed_feeds.push_back(cfg.source_name);
         }
         resp.success = true;

@@ -260,6 +260,7 @@ false
 :type:          boolean
 :cpp_type:      bool
 :nullable:      false
+:default:       false
 :default_value: false
 :END:
 

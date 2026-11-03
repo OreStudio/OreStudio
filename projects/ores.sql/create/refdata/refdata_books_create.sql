@@ -46,7 +46,7 @@ create table if not exists "ores_refdata_books_tbl" (
     "book_purpose_type" text not null,
     "ledger_feed_type" text not null,
     "is_sweepable" boolean not null,
-    "restricts_product_types" boolean not null,
+    "restricts_product_types" boolean not null default false,
     "rates_centre_code" text not null,
     "sandbox_id" uuid null,
     "modified_by" text not null,

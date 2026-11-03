@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: A59F2386-79BF-4C32-B865-C7E22BED5B29
+:END:
+#+title: Task: Class a build script test as tooling
+#+description: Nineteen tests of build/scripts live under projects/ores.codegen/tests, so a change to one runs the two codegen drift checks, about 810s, for no codegen change.
+#+type: task
+#+level: s1
+#+filetags: :tooling:ci:local_checks:tests:run_only_the_checks_a_change_needs:sprint_29:v0:
+#+owner: marco
+#+branch: feature/run-only-the-checks-a-change-needs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A change to a build script or its test runs the build-script tests and none of the codegen drift checks.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The tests of build/scripts live in build/scripts/tests and a tooling check runs them
+- A change to one of them selects no codegen check
+- Every moved test still passes
+
+* Plan
+
+Move the tests that load only =build/scripts= code from
+=projects/ores.codegen/tests/= to =build/scripts/tests/=, beside the code they
+test. That path is already in the =tooling= class, so the path rules need no
+exception. A new =build-script-tests= check runs the folder with the codegen
+venv's python, as =codegen-tests= ran them. Each test finds the repository root
+with =parents[3]=, which is the same from both folders.
+
+Nineteen tests moved: every test that names =build/scripts= and loads no codegen
+module. Live references to the old paths move with them; sprint records keep
+the paths they had when they were written.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Gate plan before the move | 32 checks, classes =codegen=, =docs=, =tooling=; includes =component-drift= (436.6s) and =drift-sweep= (375.4s) at their last run | =compass check --plan= | =9cefbcadef= |
+| Gate plan after the move | 12 checks, classes =docs=, =tooling=; no drift check | =compass check --plan= | working tree on =9cefbcadef= |
+| Build-script suite | 169 pass, 1.8s | =pytest build/scripts/tests= | working tree on =9cefbcadef= |
+| Codegen suite | 1692 pass, 2 fail in =test_check_subject_conformance.py=: the blotter's =rail= and =page= verbs, from main at =748a5ee5fb= | =pytest projects/ores.codegen/tests= | working tree on =9cefbcadef= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The 19 tests of =build/scripts= now live in =build/scripts/tests/=, and the new
+=build-script-tests= check runs them for the =tooling= class. A change to one
+of them no longer selects a codegen check: this branch's gate went from 32
+checks to 12. All three acceptance bullets are met; the two codegen failures
+come from main, not from the move.

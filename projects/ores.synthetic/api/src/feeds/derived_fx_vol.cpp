@@ -17,6 +17,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <algorithm>
 #include <charconv>
 #include <cmath>
@@ -109,6 +110,10 @@ std::optional<derived_fx_quote_id> parse_derived_fx_external_id(std::string_view
                                         .quote = std::string(external_id.substr(3, 3))},
                                .expiry = std::string(expiry),
                                .label = std::string(label)};
+}
+
+boost::uuids::uuid derived_fx_method_id() {
+    return boost::uuids::string_generator{}("fefdf018-d882-5c4e-bd27-2aeedfcad9c9");
 }
 
 std::string derived_fx_series_uri(const derived_fx_pair& pair) {

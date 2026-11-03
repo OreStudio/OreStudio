@@ -24,8 +24,13 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/version/version.hpp"
+#include <boost/uuid/name_generator.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <charconv>
+#include <format>
+#include <set>
 #include <span>
 #include <utility>
 
@@ -44,6 +49,14 @@ constexpr std::string_view fixing_provider = "ecb";
 /// The history read for a pair: the five years every environment holds, and a margin.
 constexpr int window_days = 1830;
 
+/// The days of one read of what a series holds: 120 days of 40 quotes stay under the ceiling
+/// of one reply.
+constexpr int stored_chunk_days = 120;
+
+/// The observations one write carries, well under the broker's megabyte.
+constexpr std::size_t write_batch = 1000;
+
+
 }
 
 derived_fx_vol_adapter::derived_fx_vol_adapter(ores::nats::service::client& nats,
@@ -51,14 +64,16 @@ derived_fx_vol_adapter::derived_fx_vol_adapter(ores::nats::service::client& nats
                                                ores::database::context db_ctx,
                                                std::string source_name,
                                                std::string provider_code,
+                                               boost::uuids::uuid feed_id,
                                                derived_fx_vol_timing timing)
     : nats_(nats)
     , svc_nats_(svc_nats)
     , db_ctx_(std::move(db_ctx))
     , source_name_(std::move(source_name))
     , provider_code_(std::move(provider_code))
+    , feed_id_(feed_id)
     , timing_(timing)
-    , feed_(source_name_, provider_code_, make_readers()) {}
+    , feed_(source_name_, provider_code_, make_readers(), {}, make_store()) {}
 
 derived_fx_vol_adapter::~derived_fx_vol_adapter() {
     stop();
@@ -67,20 +82,15 @@ derived_fx_vol_adapter::~derived_fx_vol_adapter() {
 feed::derived_fx_readers derived_fx_vol_adapter::make_readers() {
     return {.fixings = [this](const std::string& item, std::chrono::year_month_day to)
                 -> std::expected<feed::dated_series, std::string> {
-                if (!system_party_) {
-                    ores::refdata::repository::party_repository parties;
-                    const auto system =
-                        parties.read_system_party(db_ctx_, db_ctx_.tenant_id().to_string());
-                    if (system.empty())
-                        return std::unexpected("the tenant has no system party");
-                    system_party_ = boost::uuids::to_string(system.front().id);
-                }
+                const auto party = system_party();
+                if (!party)
+                    return std::unexpected(party.error());
                 auto delegated = svc_nats_.with_delegation({});
                 ores::marketdata::client::market_data_client md(delegated);
                 const auto window =
                     md.get_fixing_window({.item = item,
                                           .provider_code = std::string(fixing_provider),
-                                          .party_id = *system_party_,
+                                          .party_id = *party,
                                           .to = to,
                                           .days = window_days});
                 if (!window)
@@ -116,6 +126,116 @@ feed::derived_fx_readers derived_fx_vol_adapter::make_readers() {
                     return std::unexpected("no FX option convention '" + id + "'");
                 return found.front();
             }};
+}
+
+std::expected<std::string, std::string> derived_fx_vol_adapter::system_party() {
+    if (!system_party_) {
+        ores::refdata::repository::party_repository parties;
+        const auto system = parties.read_system_party(db_ctx_, db_ctx_.tenant_id().to_string());
+        if (system.empty())
+            return std::unexpected("the tenant has no system party");
+        system_party_ = boost::uuids::to_string(system.front().id);
+    }
+    return *system_party_;
+}
+
+feed::derived_fx_store derived_fx_vol_adapter::make_store() {
+    return {
+        .ensure_series =
+            [this](const feed::derived_fx_pair& pair) -> std::expected<std::string, std::string> {
+            const auto party = system_party();
+            if (!party)
+                return std::unexpected(party.error());
+            const auto uri = feed::derived_fx_series_uri(pair);
+            ores::marketdata::client::market_data_client md(svc_nats_);
+            const auto series = md.list_series_of_provider(provider_code_);
+            if (!series)
+                return std::unexpected(series.error());
+            for (const auto& s : *series)
+                if (s.oresmd_uri == uri && boost::uuids::to_string(s.party_id) == *party)
+                    return boost::uuids::to_string(s.id);
+            const auto written = md.put_series(
+                {.id = boost::uuids::name_generator_sha1(feed::derived_fx_method_id())(uri + "|" +
+                                                                                       *party),
+                 .party_id = boost::uuids::string_generator{}(*party),
+                 .oresmd_uri = uri,
+                 .provider_code = provider_code_,
+                 .series_subclass = "volatility",
+                 .derivation_kind = std::string(feed::derived_fx_derivation_kind),
+                 .derivation_config_id = feed::derived_fx_method_id(),
+                 .derivation_config_version = feed::derived_fx_method_version},
+                {.reason_code = "system.new_record",
+                 .commentary = "The series the derived FX volatility quotes are kept under"});
+            if (!written)
+                return std::unexpected(written.error());
+            return boost::uuids::to_string(written->id);
+        },
+        .stored_days = [this](const std::string&,
+                              const feed::derived_fx_pair& pair,
+                              std::chrono::year_month_day to)
+            -> std::expected<std::set<std::chrono::year_month_day>, std::string> {
+            const auto party = system_party();
+            if (!party)
+                return std::unexpected(party.error());
+            auto delegated = svc_nats_.with_delegation({});
+            ores::marketdata::client::market_data_client md(delegated);
+            std::set<std::chrono::year_month_day> held;
+            for (int back = 0; back < window_days; back += stored_chunk_days) {
+                const auto end = std::chrono::year_month_day{std::chrono::sys_days{to} -
+                                                             std::chrono::days{back}};
+                const auto window =
+                    md.get_observation_window({.item = feed::derived_fx_series_uri(pair),
+                                               .provider_code = provider_code_,
+                                               .party_id = *party,
+                                               .to = end,
+                                               .days = stored_chunk_days});
+                if (!window)
+                    return std::unexpected(window.error());
+                for (const auto& at : window->observed_at)
+                    held.insert(
+                        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(at)});
+            }
+            return held;
+        },
+        .write = [this](const std::string& series_id, const std::vector<feed::derived_fx_day>& days)
+            -> std::expected<void, std::string> {
+            const auto party = system_party();
+            if (!party)
+                return std::unexpected(party.error());
+            const auto party_id = boost::uuids::string_generator{}(*party);
+            const auto series = boost::uuids::string_generator{}(series_id);
+            ores::marketdata::client::market_data_client md(svc_nats_);
+            boost::uuids::random_generator ids;
+            std::vector<mm::market_observation_write> batch;
+            const auto flush = [&]() -> std::expected<void, std::string> {
+                if (batch.empty())
+                    return {};
+                const auto stored =
+                    md.put_observations(batch,
+                                        {.reason_code = "system.new_record",
+                                         .commentary = "Derived FX volatility quotes"});
+                batch.clear();
+                if (!stored)
+                    return std::unexpected(stored.error());
+                return {};
+            };
+            for (const auto& day : days)
+                for (const auto& point : day.points) {
+                    batch.push_back({.id = ids(),
+                                     .party_id = party_id,
+                                     .series_id = series,
+                                     .observation_datetime =
+                                         std::chrono::sys_days{day.day} + std::chrono::hours(17),
+                                     .oresmd_uri = point.coordinate,
+                                     .value = std::format("{}", point.value),
+                                     .source = provider_code_,
+                                     .feed_id = feed_id_});
+                    if (batch.size() >= write_batch)
+                        if (const auto r = flush(); !r)
+                            return r;
+                }
+            return flush();
+        }};
 }
 
 void derived_fx_vol_adapter::start() {
@@ -256,6 +376,12 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
     // A publish that fails, such as on a lost connection, ends this refresh: the pair it
     // was sending is sent again on the next, since its day is recorded only once sent.
     try {
+        const auto kept = feed_.persist(today);
+        for (const auto& failure : feed_.failures())
+            BOOST_LOG_SEV(lg(), warn) << "The derived source kept no history of " << failure;
+        if (kept > 0)
+            BOOST_LOG_SEV(lg(), info)
+                << "Kept " << kept << " day(s) of derived quotes of '" << source_name_ << "'";
         const auto sent = feed_.refresh(today, [&](const mm::adapter_tick& tick) {
             nats_.publish(subjects::adapter_ingress_subject(source_name_, tick.external_id),
                           ores::nats::default_wire_codec().encode(tick));

@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <array>
 #include <chrono>
 #include <cstdint>
@@ -39,6 +40,14 @@ namespace ores::synthetic::feed {
 /// The derived source's own notation: its scheme, and the field of every quote.
 inline constexpr std::string_view derived_fx_id_scheme = "derived_fx_vol";
 inline constexpr std::string_view derived_fx_field = "rate_lnvol";
+
+/**
+ * @brief How a derived series names its derivation: the kind, and the method and its version,
+ * which a change of the computation raises so a series says which method computed it.
+ */
+inline constexpr std::string_view derived_fx_derivation_kind = "FX_VOL_DERIVATION";
+inline constexpr int derived_fx_method_version = 1;
+ORES_SYNTHETIC_API_EXPORT boost::uuids::uuid derived_fx_method_id();
 
 /// A pair the derived source quotes, in its market base/quote order.
 struct derived_fx_pair final {

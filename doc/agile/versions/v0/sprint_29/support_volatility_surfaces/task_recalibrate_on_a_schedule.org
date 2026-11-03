@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The calibration follows the public rates as they arrive. A scheduler job starts synthetic_calibration_workflow once each business day after the public sources publish; the fits the policy allows are approved, the exceptions reach the reviewer's inbox, and a running feed takes its new calibration at its next start.
+The calibration follows the public rates as they arrive. A scheduler job starts synthetic_calibration_workflow once each business day after the public sources publish; the fits the policy allows are approved, the exceptions reach the reviewer's inbox, and a running feed takes its new calibration at its next market day roll, with no restart.
 
 * Status
 

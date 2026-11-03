@@ -57,8 +57,10 @@ note right
   Exceptions wait in the reviewer's
   inbox; a person approves or rejects
   them through the same review verb.
-  A feed takes a new calibration
-  at its next start.
+  A running feed takes a new calibration
+  at its next market day roll, and keeps
+  its own level; only an operator's
+  Re-anchor restarts it from the fixings.
 end note
 stop
 @enduml

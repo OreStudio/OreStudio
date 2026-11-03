@@ -1,0 +1,10 @@
+2026-11-03T15:12:42+00:00 2026-11-03 15:12:42.479293 [INFO] [ores.synthetic.service.app.application] SYNTHETIC RUN SEED: 42, MARKET SPEED: 1440
+2026-11-03T15:13:46+00:00 2026-11-03 15:13:46.954812 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.audusd starts at 0.7196, its fixed level. The config names no fixing item, and no series covers its pair, so th
+2026-11-03T15:21:59+00:00 2026-11-03 15:21:59.814119 [INFO] [ores.synthetic.service.app.application] SYNTHETIC RUN SEED: 42, MARKET SPEED: 1440
+2026-11-03T15:22:00+00:00 2026-11-03 15:22:00.151864 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.audusd starts at 0.702297 from oresmd://fx/USD?type=fixing&index=fx&source=IMF&ccy=AUD (imf), inverted
+2026-11-03T15:45:38+00:00 2026-11-03 15:45:38.153775 [INFO] [ores.synthetic.service.app.application] SYNTHETIC RUN SEED: 42, MARKET SPEED: 1440
+2026-11-03T15:45:38+00:00 2026-11-03 15:45:38.661659 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.audusd starts at 0.702297 from oresmd://fx/USD?type=fixing&index=fx&source=IMF&ccy=AUD (imf), inverted
+2026-11-03T16:04:28+00:00 2026-11-03 16:04:28.675108 [INFO] [ores.synthetic.service.app.application] SYNTHETIC RUN SEED: 42, MARKET SPEED: 1440
+2026-11-03T16:04:29+00:00 2026-11-03 16:04:29.026182 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.audusd starts at 0.702297 from oresmd://fx/USD?type=fixing&index=fx&source=IMF&ccy=AUD (imf), inverted
+2026-11-03T16:08:52+00:00 2026-11-03 16:08:52.044365 [INFO] [ores.synthetic.service.app.application] SYNTHETIC RUN SEED: 42, MARKET SPEED: 1440
+2026-11-03T16:09:57+00:00 2026-11-03 16:09:57.591677 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.audusd starts at 0.7196, its fixed level. The config names no fixing item, and no series covers its pair, so th

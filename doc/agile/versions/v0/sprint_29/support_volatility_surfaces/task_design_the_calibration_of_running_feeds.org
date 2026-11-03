@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 04C84031-B265-4A75-A50F-E8C704614D9D
+:END:
+#+title: Task: Design the calibration of running feeds
+#+description: State in the story how a running feed stays continuous across restarts and recalibrations, and how its level is re-anchored to the public rates, and name the tasks that build it.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/design-the-calibration-of-running-feeds
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story states what happens after provisioning: a feed resumes from its own last stored spot after any restart, takes a newly approved calibration at its next market day roll without a restart, and is re-anchored to the public rates only by an explicit, recorded operator act.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The story's Decisions record continuity across restarts, the calibration taken at the day roll, and the free-running level with an explicit re-anchor.
+- The decisions and tasks that said a feed takes its calibration at its next start say the day roll.
+- Each piece is a task in the story's table, in the order it is built.
+
+* Plan
+
+Read what a restart does in the code and the journal, and where the GJR-GARCH
+process holds its state, to see what a running feed needs to stay continuous and
+where it can take a new calibration. Weigh three ways to keep the level near the
+public rates, and record the chosen one, a free-running level with an explicit
+re-anchor, with the two new decisions and three tasks.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| AUD/USD starts after a restart | 15:22, 15:45 and 16:04 each at 0.702297 from IMF; 18:09 to 18:33 each at 0.697593 | =journalctl --user -u ores.synthetic.service-prime_origin.service= filtered on its start line; =evidence/design_running_feeds_restarts_2026-11-03.txt= | services built from 861167d734 and from the tree merged as 7eb8ddec0c |
+| Market speed | 1440, a market day per wall minute | the same journal, the =MARKET SPEED= line | the same |
+| Size of the jump at a restart | not measured | the stored ticks around the 18:22 to 18:33 restarts were not found by series URI in the time given; the database was recreated at 16:08, so the earlier restarts' ticks are gone | |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story's Decisions record two more entries: a running feed is continuous, and
+takes a new calibration at its market day roll; and a running feed's level
+follows its own path, and only an operator re-anchors it (option A of three). The
+approval decision, the schedule task and the diagram now say a running feed
+takes a new calibration at its market day roll, not at its next start.
+
+Three tasks build it, placed after the release: resume a feed from its last
+stored spot; take a new calibration at the market day roll; and re-anchor a class
+to the public rates. The size of a restart's jump was not measured; the
+decisions rest on what the code and the journal show, that a restart begins at
+the fixing and reads no price the run had reached.

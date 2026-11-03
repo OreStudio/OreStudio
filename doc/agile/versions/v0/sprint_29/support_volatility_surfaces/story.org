@@ -61,10 +61,14 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:4C7886D2-8D1E-4D5E-86A4-0D9B14E616A7][Show a feed's run and its variance on one tab]] | DONE | 2026-11-03 | 2026-11-03 | Merge the This run and Variance tabs of a feed into one tab of fact cards, with the calibration as a link to its page. |
 | [[id:7B0EED43-9012-4A09-AAC0-1059E375F4D0][Show the variance calibration's history and its review state]] | DONE | 2026-11-03 | 2026-11-03 | A feed's history shows every variance calibration record of its pair, before and after approval; the feed and calibration screens say when a fit waits for review; and the fit is plotted from its stored points. |
 | [[id:5398F1B5-F8C3-4D47-A48A-84D483FC5BE1][Design the synthetic calibration workflow]] | DONE | 2026-11-03 | 2026-11-03 | State in the story how provisioning loads the public rates, calibrates, approves within policy and releases the feeds, and name the tasks that build it. |
+| [[id:04C84031-B265-4A75-A50F-E8C704614D9D][Design the calibration of running feeds]] | DONE | 2026-11-03 | 2026-11-03 | State in the story how a running feed stays continuous across restarts and recalibrations, and how its level is re-anchored to the public rates, and name the tasks that build it. |
 | [[id:F58607C0-9D3D-407C-B8AF-610A15F75AE5][Approve a fit within the class policy's rules]] | BACKLOG | | | The class calibration policy gains an approval mode and rules, so a fit that passes them is approved by the policy and only the exceptions wait for a person. |
 | [[id:BBCE9F48-939B-43DB-B703-99B3196942D4][Load the public rates as a workflow step]] | BACKLOG | | | The official service serves a step that backfills each accepted public source and completes once its fixings are stored, so a workflow can order calibration after the rates exist. |
 | [[id:8FB955DB-45B6-480C-AC69-8FBB55ACB8FA][Run the synthetic calibration workflow]] | BACKLOG | | | A workflow on the engine loads the public rates, calibrates the feeds, approves the fits the policy allows and tells the reviewer of the exceptions, started by an operator or by another run. |
 | [[id:813D806C-D1C5-4406-8AF1-1259C39E221A][Release the synthetic feeds after calibration]] | BACKLOG | | | The synthetic adapters serve no demand for an asset class until it is released, so every feed starts once, from its calibrated level, and the recorded spots have no jump. |
+| [[id:E4171CD9-B13C-4F7B-8F61-87AFD65191C4][Resume a feed from its last stored spot]] | BACKLOG | | | A feed that has run before starts again from its own last stored spot, not from the fixing, so a restart, a deploy or a crash puts no jump in the recorded series. |
+| [[id:A0A98F65-9E6B-4AD0-9AB8-3FF9C21CAE4C][Take a new calibration at the market day roll]] | BACKLOG | | | A running feed whose pair has a newly approved calibration, or whose spread was recalibrated, takes it at its next market day roll without a restart. |
+| [[id:958AD1EA-6A2B-4067-A162-5515B9CC7402][Re-anchor a class to the public rates]] | BACKLOG | | | An operator re-anchors an asset class: its feeds restart from the latest calibrated levels, a deliberate and recorded jump, since otherwise a running feed's level follows its own path. |
 | [[id:6E5973FF-B931-467F-BE72-542BC819EF10][Calibrate in the provisioning system run]] | BACKLOG | | | The system run of provisioning starts the calibration workflow after it publishes the system data, and a profile may release the feeds once it completes. |
 | [[id:D3E4FB25-30DE-48B3-B6B4-E3A766E8EB50][Recalibrate the synthetic feeds on a schedule]] | BACKLOG | | | The scheduler starts the calibration workflow each business day, so new fixings move the levels and the fits without a person starting it. |
 
@@ -222,8 +226,8 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   completes an approval that stopped part way. A person and the
   approve_within_policy step call the same verb. Consequences: one path and one
   history for every approval; an approval restarts no feed, which takes its new
-  calibration at its next start; a workflow is added only if an approval comes
-  to need another service.
+  calibration at its next market day roll; a workflow is added only if an
+  approval comes to need another service.
 - *The synthetic feeds start only when their class is released* (2026-11-03).
   Context: a feed that starts before calibration records spots at its authored
   level, and the first calibrated restart puts a jump in the series that every
@@ -235,6 +239,39 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   on a fresh production installation every synthetic feed is silent until an
   operator presses Start feeds after calibration, and the Calibration screen
   shows each class's release state, so the silence is explained.
+
+- *A running feed is continuous, and takes a new calibration at its market day
+  roll* (2026-11-03). Context: a feed has no resume, so any restart, deploy or
+  crash runs the start resolution again and begins at the newest fixing: the
+  AUD/USD restarts of 2026-11-03 at 15:22, 15:45 and 16:04 each started at
+  0.702297 from IMF, and none read the price its run had reached. At a market
+  speed of 1440 a market day passes each wall minute, so the path can move far
+  between restarts, and each restart can put a jump in the recorded spots. A
+  daily recalibration that needed a restart would add one more. Decision: a feed of a released class that
+  has a stored spot resumes from it, and its start record says so; only a feed
+  with no stored spot starts from the fixing or its configured level. A running
+  feed takes a newly approved calibration, and a recalibrated spread, at its next
+  market day roll, where the GJR-GARCH process already updates its variance and
+  its state is only the variance, the day's open price and the tick count.
+  Consequences: the stored series has no jump from a restart or a
+  recalibration; the GARCH variance may restart at the first-day ratio, a step in
+  volatility and not in price; the feed records which calibration each market
+  day ran under; the daily workflow restarts no feed.
+- *A running feed's level follows its own path, and only an operator re-anchors
+  it* (2026-11-03). Context: with continuity, a feed's level runs freely from
+  its release and drifts from the real rates; the daily calibration still writes
+  a configured level, which a running feed no longer reads. Three options were
+  weighed: a free-running level re-anchored by a person; a slow mean reversion
+  toward the latest fixing; and a restart from the fixings each day. The
+  synthetic market runs on its own clock, a day per wall minute, so it cannot
+  follow a rate that moves once a real day without either a daily jump or a pull
+  no real market has. Decision: the level is free-running. Re-anchoring a class
+  to the public rates is an explicit operator act on the Calibration screen: it
+  restarts the class's feeds from their calibrated levels and records who, when,
+  why and each level before and after. Consequences: the only jumps in a stored
+  series are a release and a re-anchor, each chosen and recorded; the configured
+  level is the level of the next release or re-anchor, and the screen labels it
+  so; no restart, recalibration or approval moves a running level.
 
 * Out of scope
 

@@ -48,6 +48,7 @@ declare
     v_inserted bigint := 0;
     v_updated bigint := 0;
     v_bound bigint := 0;
+    v_rebound bigint := 0;
     v_staged_bindings bigint := 0;
 begin
     perform ores_utility_allow_version_replace_fn();
@@ -227,6 +228,44 @@ begin
 
     get diagnostics v_bound = row_count;
 
+    -- A catalogue also moves which document a definition binds: a report that
+    -- gains a run settings row of its own, a report that moves to another pricing
+    -- engine. The insert above never touches a binding the party already holds, so
+    -- a moved binding needs the path below, which writes the staged binding over
+    -- the row in place as a new version of it. The identity of the binding stays, so
+    -- anything that named it still does.
+    if p_mode = 'upsert' then
+        perform ores_utility_allow_version_replace_fn();
+
+        insert into ores_reporting_report_configurations_tbl (
+            tenant_id, id, version, party_id, report_definition_id, configuration_type_code,
+            configuration_id, modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select
+            p_target_tenant_id, r.id, r.version, v_root_party_id, d.id,
+            b.configuration_type_code, c.id,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Rebound from DQ dataset'
+        from ores_dq_report_configurations_artefact_tbl b
+        join ores_reporting_report_definitions_tbl d
+          on d.tenant_id = p_target_tenant_id and d.party_id = v_root_party_id
+         and d.name = b.report_name and d.valid_to = ores_utility_infinity_timestamp_fn()
+        join ores_reporting_configurations_tbl c
+          on c.tenant_id = p_target_tenant_id and c.party_id = v_root_party_id
+         and c.configuration_type_code = b.configuration_type_code
+         and c.name = b.configuration_name and c.valid_to = ores_utility_infinity_timestamp_fn()
+        join ores_reporting_report_configurations_tbl r
+          on r.tenant_id = p_target_tenant_id
+         and r.party_id = v_root_party_id
+         and r.report_definition_id = d.id
+         and r.configuration_type_code = b.configuration_type_code
+         and r.valid_to = ores_utility_infinity_timestamp_fn()
+        where b.dataset_id = p_dataset_id
+          and r.configuration_id is distinct from c.id;
+
+        get diagnostics v_rebound = row_count;
+    end if;
+
     select count(*) into v_staged_bindings
     from ores_dq_report_configurations_artefact_tbl
     where dataset_id = p_dataset_id;
@@ -239,8 +278,10 @@ begin
     where v_updated > 0
     union all select 'bound'::text, v_bound
     where v_bound > 0
-    union all select 'skipped'::text, v_staged_bindings - v_bound
-    where v_staged_bindings - v_bound > 0;
+    union all select 'rebound'::text, v_rebound
+    where v_rebound > 0
+    union all select 'skipped'::text, v_staged_bindings - v_bound - v_rebound
+    where v_staged_bindings - v_bound - v_rebound > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 

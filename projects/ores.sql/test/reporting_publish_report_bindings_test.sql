@@ -33,7 +33,7 @@
 
 begin;
 
-select plan(7);
+select plan(11);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -149,6 +149,64 @@ select results_eq(
           jsonb_build_object('party_id', (select party_id::text from t_ctx))) p$$,
     $$values ('skipped'::text, 3::bigint)$$,
     'a repeat publish adds nothing, and says how many staged bindings it applied to nothing');
+
+-- A catalogue also moves a definition onto another document. The staged statement
+-- names the new document, and the publish writes it over the binding the party holds
+-- rather than leaving the old one in place.
+insert into ores_dq_pricing_model_configs_artefact_tbl (
+    dataset_id, tenant_id, id, version, party_id, name, description, config_variant,
+    configuration_id)
+select d.id, ores_utility_system_tenant_id_fn(), c.header_id, 0, c.party_id,
+    'Test rebound pricing engines', 'A document', '', c.configuration_id
+from t_document d, (select party_id,
+        '00000000-0000-0000-0000-0000000f0003'::uuid as header_id,
+        '00000000-0000-0000-0000-0000000f0004'::uuid as configuration_id from t_ctx) c;
+
+update ores_dq_report_configurations_artefact_tbl
+set configuration_name = 'Test rebound pricing engines'
+where dataset_id = (select id from t_definitions)
+  and report_name = 'Test bound report'
+  and configuration_type_code = 'pricing_engines';
+
+select is(
+    (select count(*) from ores_analytics_publish_pricing_engines_from_dq_fn(
+        (select id from t_document), ores_utility_system_tenant_id_fn(), 'upsert',
+        jsonb_build_object('party_id', (select party_id::text from t_ctx)))
+     where action in ('updated', 'inserted')),
+    1::bigint,
+    'the moved document is published before the definitions are rebound to it');
+
+select results_eq(
+    $$select p.action, p.record_count
+      from ores_reporting_publish_report_definitions_from_dq_fn(
+          (select id from t_definitions), ores_utility_system_tenant_id_fn(), 'upsert',
+          jsonb_build_object('party_id', (select party_id::text from t_ctx))) p
+      order by p.action$$,
+    $$values ('rebound'::text, 1::bigint), ('skipped'::text, 2::bigint)$$,
+    'a binding that names another document is rebound, and the rest are left alone');
+
+select is(
+    (select b.configuration_id from ores_reporting_report_configurations_tbl b
+     join ores_reporting_report_definitions_tbl d on d.id = b.report_definition_id
+      and d.valid_to = ores_utility_infinity_timestamp_fn()
+     where b.tenant_id = ores_utility_system_tenant_id_fn()
+       and d.name = 'Test bound report'
+       and b.configuration_type_code = 'pricing_engines'
+       and b.valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_dq_party_uuid_fn((select party_id from t_ctx),
+        '00000000-0000-0000-0000-0000000f0004'::uuid),
+    'the rebinding names the document the catalogue now names');
+
+select is(
+    (select count(*) from ores_reporting_report_configurations_tbl b
+     join ores_reporting_report_definitions_tbl d on d.id = b.report_definition_id
+      and d.valid_to = ores_utility_infinity_timestamp_fn()
+     where b.tenant_id = ores_utility_system_tenant_id_fn()
+       and d.name = 'Test bound report'
+       and b.configuration_type_code = 'pricing_engines'
+       and b.valid_to = ores_utility_infinity_timestamp_fn()),
+    1::bigint,
+    'the rebound binding replaces the old one rather than adding a second');
 
 select * from finish();
 rollback;

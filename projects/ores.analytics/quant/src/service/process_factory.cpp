@@ -103,10 +103,10 @@ process_factory::make_gjr_garch_process(const std::string& process_type,
                                      .inner_daily_variance = moments.variance * ticks_per_day,
                                      .inner_daily_drift = moments.mean * ticks_per_day,
                                      .measure = measure};
-    const auto model = math::gjr_garch_model::make(
-        shape,
-        frame.inner_daily_variance,
-        math::daily_negative_second_moment(per_tick, ticks_per_day));
+    const auto model =
+        math::gjr_garch_model::make(shape,
+                                    frame.inner_daily_variance,
+                                    math::daily_negative_second_moment(per_tick, ticks_per_day));
     if (!model)
         throw std::invalid_argument("process_factory::make_gjr_garch_process: " + model.error());
 

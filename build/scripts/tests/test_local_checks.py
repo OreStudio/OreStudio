@@ -364,8 +364,10 @@ def test_the_target_comes_from_the_object_path():
     assert target_of("publish/bin/ores.trading.api.tests") is None
 
 
-def _run_heavy(monkeypatch, changed, build_status="PASS"):
+def _run_heavy(monkeypatch, changed, build_status="PASS", skips=None):
     ran = []
+    if skips is None:
+        skips = {c: "the change compiles only into x.tests" for c in local_checks.FLEET_CHECKS}
 
     def fake_run_one(check, base, preset):
         ran.append(check.id)
@@ -373,8 +375,7 @@ def _run_heavy(monkeypatch, changed, build_status="PASS"):
         return local_checks.Result(check=check, status=status)
 
     monkeypatch.setattr(local_checks, "run_one", fake_run_one)
-    monkeypatch.setattr(local_checks, "fleet_skip",
-                        lambda changed, preset: "the change compiles only into x.tests")
+    monkeypatch.setattr(local_checks, "fleet_skips", lambda changed, preset: skips)
     selected = [c for c in local_checks.CATALOGUE
                 if c.id in ("build", "db", "ctest", "ticks-smoke", "step-consumers")]
     results = local_checks.run_all(selected, "origin/main", "p", 1, changed=changed)
@@ -405,3 +406,20 @@ def test_the_report_names_why_a_check_was_skipped():
                                  results, "p")
     assert "1 run, 1 passed, 0 failed, 1 skipped" in report
     assert "- `db`: the change compiles only into x.tests." in report
+
+
+def test_a_database_from_another_schema_is_rebuilt(monkeypatch):
+    skips = {"ticks-smoke": "the change compiles only into x.tests",
+             "step-consumers": "the change compiles only into x.tests"}
+    ran, results = _run_heavy(monkeypatch, [TEST_CPP], skips=skips)
+    assert ran == ["build", "db", "ctest"]
+    assert results["ticks-smoke"].status == "SKIP"
+
+
+def test_the_database_keeps_its_check_unless_its_schema_matches(monkeypatch):
+    monkeypatch.setattr(local_checks, "read_reach",
+                        lambda build_dir, wanted: {TEST_CPP: {"ores.trading.api.tests"}})
+    monkeypatch.setattr(local_checks, "database_in_sync", lambda: False)
+    assert set(local_checks.fleet_skips([TEST_CPP], "p")) == {"ticks-smoke", "step-consumers"}
+    monkeypatch.setattr(local_checks, "database_in_sync", lambda: True)
+    assert set(local_checks.fleet_skips([TEST_CPP], "p")) == set(local_checks.FLEET_CHECKS)

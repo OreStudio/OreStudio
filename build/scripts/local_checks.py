@@ -1396,13 +1396,37 @@ def read_reach(build_dir: Path, wanted: list[str]) -> dict[str, set[str]]:
     return reach
 
 
-def fleet_skip(changed: list[str], preset: str) -> str:
-    """Why the fleet checks can be skipped for this change, read from the build."""
+def database_in_sync() -> bool:
+    """Whether the database was built from this checkout's schema.
+
+    A test-only change leaves the schema alone, but the branch's base may not:
+    main moves, and a database from before the move fails the suites that read
+    the new tables. An answer compass cannot give counts as out of sync.
+    """
+    proc = subprocess.run(
+        ["./compass.sh", "env", "status", "--json"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False)
+    try:
+        database = json.loads(proc.stdout)["database"]
+    except (ValueError, KeyError, TypeError):
+        return False
+    return bool(database.get("reachable")) and (
+        database.get("schemaFingerprint") == database.get("expectedFingerprint"))
+
+
+def fleet_skips(changed: list[str], preset: str) -> dict[str, str]:
+    """The fleet checks this change can skip, each with its reason."""
     paths = fleet_paths(changed)
     if not paths or not all(path.endswith(COMPILED_SUFFIXES) for path in paths):
-        return ""
+        return {}
     build_dir = REPO_ROOT / "build" / "output" / preset
-    return fleet_skip_reason(changed, read_reach(build_dir, paths))
+    reason = fleet_skip_reason(changed, read_reach(build_dir, paths))
+    if not reason:
+        return {}
+    skips = {check_id: reason for check_id in FLEET_CHECKS}
+    if not database_in_sync():
+        del skips["db"]
+    return skips
 
 
 # --------------------------------------------------------------------------
@@ -1542,7 +1566,7 @@ def run_all(selected: list[Check], base: str, preset: str, jobs: int,
             changed: list[str] | None = None) -> list[Result]:
     """Run each phase in order. @p changed is None when every check must run."""
     results: list[Result] = []
-    skip_reason = ""
+    skips: dict[str, str] = {}
     by_phase: dict[int, list[Check]] = {}
     for check in selected:
         by_phase.setdefault(check.phase, []).append(check)
@@ -1561,8 +1585,8 @@ def run_all(selected: list[Check], base: str, preset: str, jobs: int,
         else:
             phase_results = []
             for check in group:
-                if check.id in FLEET_CHECKS and skip_reason:
-                    phase_results.append(Result(check=check, reason=skip_reason))
+                if check.id in skips:
+                    phase_results.append(Result(check=check, reason=skips[check.id]))
                     continue
                 print(f"   running {check.id}…", flush=True)
                 result = run_one(check, base, preset)
@@ -1570,7 +1594,7 @@ def run_all(selected: list[Check], base: str, preset: str, jobs: int,
                 # The scope is decided once the build has run, so the dependency
                 # log it reads describes the tree under test.
                 if check.id == "build" and result.status == "PASS" and changed is not None:
-                    skip_reason = fleet_skip(changed, preset)
+                    skips = fleet_skips(changed, preset)
         for result in phase_results:
             mark = "⏭" if result.status == "SKIP" else "❌" if result.failed else "✅"
             detail = result.reason if result.status == "SKIP" else f"{result.seconds:.1f}s"

@@ -96,8 +96,13 @@ changed path. It skips the three checks only when all of these are true:
 
 A new file, a =CMakeLists.txt= or a SQL script keeps the fleet checks, because
 the log cannot vouch for it. The report names each skipped check and the test
-binaries that caused the skip. When the runner skips =db=, =ctest= runs with
-the fleet in the state the developer left it. =--all= skips nothing.
+binaries that caused the skip. =--all= skips nothing.
+
+=db= has one more condition. The runner skips it only when the database's
+schema fingerprint equals the checkout's, as =compass env status --json=
+reports them. Main moves under a branch, and a database from before the move
+fails the suites that read the new tables. When the runner skips =db=, =ctest=
+runs with the fleet in the state the developer left it.
 
 * Running it
 

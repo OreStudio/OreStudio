@@ -85,6 +85,7 @@ mm::adapter_demand_response derived_fx_vol_feed::demand(const mm::adapter_demand
 
 std::expected<std::vector<mm::adapter_tick>, std::string>
 derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
+                              const std::set<std::string>& ids,
                               std::chrono::year_month_day today,
                               std::chrono::year_month_day& day) {
     const auto legs = ecb_legs_of(pair);
@@ -109,16 +110,26 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     if (!returns->last)
         return std::unexpected("the legs share no day of fixings");
     day = *returns->last;
-    if (const auto sent = last_sent_.find(key_of(pair));
-        sent != last_sent_.end() && sent->second >= day)
+
+    std::set<std::string> owed;
+    std::set<std::string> owed_expiries;
+    for (const auto& id : ids) {
+        const auto sent = last_sent_.find(id);
+        if (sent != last_sent_.end() && sent->second >= day)
+            continue;
+        owed.insert(id);
+        owed_expiries.insert(parse_derived_fx_external_id(id)->expiry);
+    }
+    if (owed.empty())
         return std::vector<mm::adapter_tick>{};
 
     const auto convention = readers_.convention(pair);
     if (!convention)
         return std::unexpected("the convention: " + convention.error());
     std::vector<qm::fx_expiry> expiries;
-    expiries.reserve(derived_fx_expiries.size());
     for (const auto& e : derived_fx_expiries) {
+        if (!owed_expiries.contains(std::string(e.label)))
+            continue;
         const auto at = quote_convention_at(*convention, e.years);
         if (!at)
             return std::unexpected("the convention at " + std::string(e.label) + ": " + at.error());
@@ -130,35 +141,36 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     for (const auto& expiry : derivation->expiries)
         if (!expiry)
             failures_.push_back(key_of(pair) + " " + expiry.error());
-    return derived_fx_ticks(pair, *derivation, day, sequence_);
+    auto ticks = derived_fx_ticks(pair, *derivation, day, sequence_);
+    std::erase_if(ticks, [&](const mm::adapter_tick& t) { return !owed.contains(t.external_id); });
+    return ticks;
 }
 
 std::size_t derived_fx_vol_feed::refresh(std::chrono::year_month_day today,
                                          const publish_fn& publish) {
     failures_.clear();
-    std::map<std::string, derived_fx_pair> pairs;
+    std::map<std::string, std::pair<derived_fx_pair, std::set<std::string>>> pairs;
     for (const auto& id : demanded_)
-        if (const auto quote = parse_derived_fx_external_id(id))
-            pairs.emplace(key_of(quote->pair), quote->pair);
+        if (const auto quote = parse_derived_fx_external_id(id)) {
+            auto& entry = pairs[key_of(quote->pair)];
+            entry.first = quote->pair;
+            entry.second.insert(id);
+        }
 
     std::size_t sent = 0;
-    for (const auto& [key, pair] : pairs) {
+    for (const auto& [key, entry] : pairs) {
         std::chrono::year_month_day day{};
-        const auto ticks = ticks_of(pair, today, day);
+        const auto ticks = ticks_of(entry.first, entry.second, today, day);
         if (!ticks) {
             failures_.push_back(key + ": " + ticks.error());
             continue;
         }
-        if (ticks->empty())
-            continue;
         for (const auto& tick : *ticks) {
-            if (!demanded_.contains(tick.external_id))
-                continue;
             publish(tick);
+            last_sent_.insert_or_assign(tick.external_id, day);
             ++sent;
+            ++sequence_;
         }
-        sequence_ += ticks->size();
-        last_sent_.insert_or_assign(key, day);
     }
     return sent;
 }

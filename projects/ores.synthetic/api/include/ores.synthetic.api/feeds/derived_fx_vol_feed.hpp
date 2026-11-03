@@ -51,8 +51,8 @@ struct derived_fx_readers final {
  * @brief The derived source of FX volatility quotes, as an adapter serves it.
  *
  * Its universe is the vendor ids the catalogue holds for it. It answers demand for ids
- * of that universe, and on a refresh publishes, for each demanded pair whose legs hold a
- * day of fixings later than the last it published, the quotes of that day. It publishes
+ * of that universe, and on a refresh publishes each demanded id not yet sent for the
+ * latest day its pair's legs hold, deriving only the expiries those ids need. It publishes
  * the current day only and never a past one, since a past day is computed again from the
  * fixings when it is needed.
  */
@@ -98,8 +98,10 @@ public:
     }
 
 private:
+    /// The ticks of the ids of a pair not yet sent for its latest day, and that day.
     std::expected<std::vector<marketdata::messaging::adapter_tick>, std::string>
     ticks_of(const derived_fx_pair& pair,
+             const std::set<std::string>& ids,
              std::chrono::year_month_day today,
              std::chrono::year_month_day& day);
 
@@ -109,6 +111,7 @@ private:
     analytics::quant::math::fx_derivation_settings settings_;
     std::set<std::string> universe_;
     std::set<std::string> demanded_;
+    /** The day each vendor id was last sent for, so an id demanded later is sent at once. */
     std::map<std::string, std::chrono::year_month_day> last_sent_;
     std::vector<std::string> failures_;
     std::uint64_t sequence_ = 0;

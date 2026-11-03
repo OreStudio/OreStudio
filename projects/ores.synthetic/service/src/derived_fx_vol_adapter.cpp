@@ -89,21 +89,27 @@ feed::derived_fx_readers derived_fx_vol_adapter::make_readers() {
                 const auto n = std::min(window->dates.size(), window->values.size());
                 out.dates.reserve(n);
                 out.values.reserve(n);
+                std::size_t unread = 0;
                 for (std::size_t i = 0; i < n; ++i) {
                     const auto& text = window->values[i];
                     double value = 0.0;
                     const auto [end, ec] =
                         std::from_chars(text.data(), text.data() + text.size(), value);
-                    if (ec != std::errc{} || end != text.data() + text.size())
+                    if (ec != std::errc{} || end != text.data() + text.size()) {
+                        ++unread;
                         continue;
+                    }
                     out.dates.push_back(window->dates[i]);
                     out.values.push_back(value);
                 }
+                if (unread > 0)
+                    BOOST_LOG_SEV(lg(), warn) << unread << " fixing(s) of " << item
+                                              << " are not numbers and are left out";
                 return out;
             },
             .convention = [this](const feed::derived_fx_pair& pair)
                 -> std::expected<ores::refdata::domain::fx_option_convention, std::string> {
-                const auto id = pair.base + "-" + pair.quote + "-FXOPTION";
+                const auto id = feed::fx_option_convention_id(pair);
                 ores::refdata::repository::fx_option_convention_repository repo;
                 const auto found = repo.read_latest(db_ctx_, id);
                 if (found.empty())

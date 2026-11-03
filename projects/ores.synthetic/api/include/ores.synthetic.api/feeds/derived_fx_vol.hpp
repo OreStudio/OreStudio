@@ -82,6 +82,9 @@ ORES_SYNTHETIC_API_EXPORT std::string derived_fx_external_id(const derived_fx_qu
 ORES_SYNTHETIC_API_EXPORT std::optional<derived_fx_quote_id>
 parse_derived_fx_external_id(std::string_view external_id);
 
+/// The id of a pair's fx_option_convention in refdata, such as EUR-USD-FXOPTION.
+ORES_SYNTHETIC_API_EXPORT std::string fx_option_convention_id(const derived_fx_pair& pair);
+
 /// The ECB reference fixing item of the euro in a currency.
 ORES_SYNTHETIC_API_EXPORT std::string ecb_fixing_item(std::string_view currency);
 
@@ -134,7 +137,8 @@ quote_convention_at(const refdata::domain::fx_option_convention& convention, dou
 
 /**
  * @brief The ticks of a pair's derived quotes on a day, one for each label of each
- * expiry the derivation could quote, stamped at the end of that day.
+ * expiry the derivation could quote, stamped at the end of that day. A quote that is
+ * not finite is left out rather than sent.
  */
 ORES_SYNTHETIC_API_EXPORT std::vector<marketdata::messaging::adapter_tick>
 derived_fx_ticks(const derived_fx_pair& pair,

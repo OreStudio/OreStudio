@@ -111,6 +111,10 @@ std::optional<derived_fx_quote_id> parse_derived_fx_external_id(std::string_view
                                .label = std::string(label)};
 }
 
+std::string fx_option_convention_id(const derived_fx_pair& pair) {
+    return pair.base + "-" + pair.quote + "-FXOPTION";
+}
+
 std::string ecb_fixing_item(std::string_view currency) {
     return "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=" + std::string(currency);
 }
@@ -203,7 +207,9 @@ derived_fx_ticks(const derived_fx_pair& pair,
         const auto& q = expiry->quotes;
         const std::array<double, derived_fx_labels.size()> values{
             q.atm, q.rr25, q.bf25, q.rr10, q.bf10};
-        for (std::size_t i = 0; i < derived_fx_labels.size(); ++i)
+        for (std::size_t i = 0; i < derived_fx_labels.size(); ++i) {
+            if (!std::isfinite(values[i]))
+                continue;
             out.push_back({.id_scheme = std::string(derived_fx_id_scheme),
                            .external_id =
                                derived_fx_external_id({.pair = pair,
@@ -213,6 +219,7 @@ derived_fx_ticks(const derived_fx_pair& pair,
                            .value = std::format("{}", values[i]),
                            .vendor_time = stamp,
                            .sequence = sequence++});
+        }
     }
     return out;
 }

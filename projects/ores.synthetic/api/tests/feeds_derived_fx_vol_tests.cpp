@@ -25,6 +25,7 @@
 #include <cmath>
 #include <cstdint>
 #include <expected>
+#include <limits>
 #include <map>
 #include <random>
 #include <set>
@@ -304,4 +305,46 @@ TEST_CASE("a_pair_the_feed_cannot_derive_is_named_and_the_others_are_still_sent"
     CHECK(sent == 1);
     REQUIRE(feed.failures().size() == 1);
     CHECK(feed.failures()[0].starts_with("GBPUSD: "));
+}
+
+TEST_CASE("an_id_demanded_after_its_pair_was_sent_is_sent_at_once_and_alone", derived_tags) {
+    const auto fixings = derived_fixings(1300, 11);
+    derived_fx_vol_feed feed("derived-fx-vol", "derived", derived_readers_of(fixings));
+    feed.set_universe(derived_ids_of({.base = "EUR", .quote = "USD"}));
+    const auto day = fixings.at(ecb_fixing_item("USD")).dates[1250];
+    std::vector<std::string> sent;
+    const auto collect = [&](const mm::adapter_tick& t) {
+        sent.push_back(t.external_id);
+    };
+
+    feed.demand(derived_demand_of({"EURUSD/1M/ATM"}));
+    CHECK(feed.refresh(day, collect) == 1);
+    feed.demand(derived_demand_of({"EURUSD/1M/ATM", "EURUSD/6M/10RR"}));
+    sent.clear();
+    CHECK(feed.refresh(day, collect) == 1);
+    CHECK(sent == std::vector<std::string>{"EURUSD/6M/10RR"});
+    sent.clear();
+    CHECK(feed.refresh(day, collect) == 0);
+}
+
+TEST_CASE("a_quote_that_is_not_finite_is_left_out_of_the_ticks", derived_tags) {
+    qm::fx_derivation d;
+    d.expiries.emplace_back(qm::derived_fx_expiry{
+        .label = "1M",
+        .quotes = {.atm = 0.1,
+                   .rr25 = std::numeric_limits<double>::quiet_NaN(),
+                   .bf25 = 0.002,
+                   .rr10 = std::numeric_limits<double>::infinity(),
+                   .bf10 = 0.006},
+        .smile = {.sigma = 0.1, .skewness = 0.0, .excess_kurtosis = 0.0, .years = 1.0 / 12.0},
+        .window = 21});
+    const auto ticks = derived_fx_ticks({.base = "EUR", .quote = "USD"}, d, derived_start, 0);
+    REQUIRE(ticks.size() == 3);
+    CHECK(ticks[0].external_id == "EURUSD/1M/ATM");
+    CHECK(ticks[1].external_id == "EURUSD/1M/25BF");
+    CHECK(ticks[2].external_id == "EURUSD/1M/10BF");
+}
+
+TEST_CASE("a_pair_names_its_option_convention_as_refdata_does", derived_tags) {
+    CHECK(fx_option_convention_id({.base = "USD", .quote = "JPY"}) == "USD-JPY-FXOPTION");
 }

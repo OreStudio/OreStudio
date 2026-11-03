@@ -66,6 +66,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:BBCE9F48-939B-43DB-B703-99B3196942D4][Load the public rates as a workflow step]] | BACKLOG | | | The official service serves a step that backfills each accepted public source and completes once its fixings are stored, so a workflow can order calibration after the rates exist. |
 | [[id:8FB955DB-45B6-480C-AC69-8FBB55ACB8FA][Run the synthetic calibration workflow]] | BACKLOG | | | A workflow on the engine loads the public rates, calibrates the feeds, approves the fits the policy allows and tells the reviewer of the exceptions, started by an operator or by another run. |
 | [[id:813D806C-D1C5-4406-8AF1-1259C39E221A][Release the synthetic feeds after calibration]] | BACKLOG | | | The synthetic adapters serve no demand for an asset class until it is released, so every feed starts once, from its calibrated level, and the recorded spots have no jump. |
+| [[id:D99095A2-2CB4-495D-8FFB-43476219EEC7][Record each start of a feed]] | BACKLOG | | | Every start of a feed, a release, a resume or a re-anchor, is stored as a record of its own with the price it started at and where that price came from, and shows in the feed's history. |
 | [[id:E4171CD9-B13C-4F7B-8F61-87AFD65191C4][Resume a feed from its last stored spot]] | BACKLOG | | | A feed that has run before starts again from its own last stored spot, not from the fixing, so a restart, a deploy or a crash puts no jump in the recorded series. |
 | [[id:A0A98F65-9E6B-4AD0-9AB8-3FF9C21CAE4C][Take a new calibration at the market day roll]] | BACKLOG | | | A running feed whose pair has a newly approved calibration, or whose spread was recalibrated, takes it at its next market day roll without a restart. |
 | [[id:958AD1EA-6A2B-4067-A162-5515B9CC7402][Re-anchor a class to the public rates]] | BACKLOG | | | An operator re-anchors an asset class: its feeds restart from the latest calibrated levels, a deliberate and recorded jump, since otherwise a running feed's level follows its own path. |
@@ -253,10 +254,15 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   feed takes a newly approved calibration, and a recalibrated spread, at its next
   market day roll, where the GJR-GARCH process already updates its variance and
   its state is only the variance, the day's open price and the tick count.
-  Consequences: the stored series has no jump from a restart or a
-  recalibration; the GARCH variance may restart at the first-day ratio, a step in
-  volatility and not in price; the feed records which calibration each market
-  day ran under; the daily workflow restarts no feed.
+  Every start of a feed, a release, a resume or a re-anchor, is stored as a
+  start record with its kind, its initial price and that price's source, its
+  starter and its calibration, and the feed's History tab reads it; today a
+  run's start lives only in the memory of the running feed. Consequences: the
+  stored series has no jump from a restart or a recalibration, and each restart
+  is an entry in the history naming the price it began at; the GARCH variance may
+  restart at the first-day ratio, a step in volatility and not in price; the feed
+  records which calibration each market day ran under; the daily workflow
+  restarts no feed.
 - *A running feed's level follows its own path, and only an operator re-anchors
   it* (2026-11-03). Context: with continuity, a feed's level runs freely from
   its release and drifts from the real rates; the daily calibration still writes

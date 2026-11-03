@@ -35,7 +35,7 @@ The recorded spot series of a feed is continuous across every restart. When a fe
 
 * Acceptance
 
-- A feed restarted after it has run starts within one tick's move of its last stored spot, and its start record says it resumed from that spot.
+- A feed restarted after it has run starts within one tick's move of its last stored spot, and its stored start record, which the feed's history shows, says it resumed from that spot and names the spot's price and time.
 - A feed with no stored spot starts as today, from the fixing or its configured level.
 - Restarting the synthetic service leaves no step in any feed's stored series larger than the feed's largest tick move.
 

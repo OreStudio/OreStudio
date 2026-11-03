@@ -96,8 +96,9 @@ follows its own path, and only an operator re-anchors it (option A of three). Th
 approval decision, the schedule task and the diagram now say a running feed
 takes a new calibration at its market day roll, not at its next start.
 
-Three tasks build it, placed after the release: resume a feed from its last
-stored spot; take a new calibration at the market day roll; and re-anchor a class
-to the public rates. The size of a restart's jump was not measured; the
+Four tasks build it, placed after the release: record each start of a feed, so
+every start's initial price and its source are stored and show in the feed's
+history; resume a feed from its last stored spot; take a new calibration at the
+market day roll; and re-anchor a class to the public rates. The size of a restart's jump was not measured; the
 decisions rest on what the code and the journal show, that a restart begins at
 the fixing and reads no price the run had reached.

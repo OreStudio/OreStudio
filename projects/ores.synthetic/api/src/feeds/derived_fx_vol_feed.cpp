@@ -40,11 +40,13 @@ bool in_notation(const mm::vendor_id& id) {
 derived_fx_vol_feed::derived_fx_vol_feed(std::string source_name,
                                          std::string provider_code,
                                          derived_fx_readers readers,
-                                         qm::fx_derivation_settings settings)
+                                         qm::fx_derivation_settings settings,
+                                         std::optional<derived_fx_store> store)
     : source_name_(std::move(source_name))
     , provider_code_(std::move(provider_code))
     , readers_(std::move(readers))
-    , settings_(settings) {}
+    , settings_(settings)
+    , store_(std::move(store)) {}
 
 void derived_fx_vol_feed::set_universe(const std::vector<std::string>& external_ids) {
     universe_.clear();
@@ -144,6 +146,78 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     auto ticks = derived_fx_ticks(pair, *derivation, day, sequence_);
     std::erase_if(ticks, [&](const mm::adapter_tick& t) { return !owed.contains(t.external_id); });
     return ticks;
+}
+
+std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
+    if (!store_)
+        return 0;
+    failures_.clear();
+    std::map<std::string, derived_fx_pair> pairs;
+    for (const auto& id : universe_)
+        if (const auto quote = parse_derived_fx_external_id(id))
+            pairs.emplace(key_of(quote->pair), quote->pair);
+
+    std::size_t written = 0;
+    for (const auto& [key, pair] : pairs) {
+        auto kept = kept_.find(key);
+        if (kept == kept_.end()) {
+            const auto series = store_->ensure_series(pair);
+            if (!series) {
+                failures_.push_back(key + ": the series: " + series.error());
+                continue;
+            }
+            auto held = store_->stored_days(*series, pair, today);
+            if (!held) {
+                failures_.push_back(key + ": the days held: " + held.error());
+                continue;
+            }
+            kept = kept_.emplace(key, std::pair{*series, std::move(*held)}).first;
+        }
+        auto& [series_id, held] = kept->second;
+
+        const auto legs = ecb_legs_of(pair);
+        const auto read = [&](const std::optional<std::string>& item)
+            -> std::expected<std::optional<dated_series>, std::string> {
+            if (!item)
+                return std::optional<dated_series>{};
+            auto series = readers_.fixings(*item, today);
+            if (!series)
+                return std::unexpected("the fixings of " + *item + ": " + series.error());
+            return std::optional<dated_series>{std::move(*series)};
+        };
+        const auto plus = read(legs.plus);
+        const auto minus = plus ? read(legs.minus) : plus;
+        if (!plus || !minus) {
+            failures_.push_back(key + ": " + (!plus ? plus.error() : minus.error()));
+            continue;
+        }
+        const auto returns = pair_log_returns(*plus, *minus);
+        if (!returns) {
+            failures_.push_back(key + ": " + returns.error());
+            continue;
+        }
+        const auto convention = readers_.convention(pair);
+        if (!convention) {
+            failures_.push_back(key + ": the convention: " + convention.error());
+            continue;
+        }
+        const auto missing = derive_missing_days(
+            pair, *returns, *convention, held, settings_, settings_.minimum_window);
+        if (!missing) {
+            failures_.push_back(key + ": " + missing.error());
+            continue;
+        }
+        if (missing->empty())
+            continue;
+        if (const auto stored = store_->write(series_id, *missing); !stored) {
+            failures_.push_back(key + ": the write: " + stored.error());
+            continue;
+        }
+        for (const auto& d : *missing)
+            held.insert(d.day);
+        written += missing->size();
+    }
+    return written;
 }
 
 std::size_t derived_fx_vol_feed::refresh(std::chrono::year_month_day today,

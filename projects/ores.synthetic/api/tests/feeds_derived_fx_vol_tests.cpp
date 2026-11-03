@@ -425,3 +425,90 @@ TEST_CASE("a_day_whose_history_covers_no_long_expiry_quotes_only_the_short_ones"
         year = year || p.coordinate.find("&expiry=1Y&") != std::string::npos;
     CHECK(year);
 }
+
+namespace {
+
+/// A store held in memory: each pair's series, and the days written to it.
+struct derived_memory_store {
+    std::map<std::string, std::set<year_month_day>> held;
+    std::map<std::string, std::size_t> writes;
+    std::set<std::string> refuse;
+
+    derived_fx_store store() {
+        return {
+            .ensure_series =
+                [this](const derived_fx_pair& pair) -> std::expected<std::string, std::string> {
+                const auto uri = derived_fx_series_uri(pair);
+                if (refuse.contains(pair.base + pair.quote))
+                    return std::unexpected("refused");
+                held.try_emplace(uri);
+                return uri;
+            },
+            .stored_days = [this](const std::string& series, const derived_fx_pair&, year_month_day)
+                -> std::expected<std::set<year_month_day>, std::string> { return held[series]; },
+            .write = [this](const std::string& series, const std::vector<derived_fx_day>& days)
+                -> std::expected<void, std::string> {
+                for (const auto& d : days)
+                    held[series].insert(d.day);
+                ++writes[series];
+                return {};
+            }};
+    }
+};
+
+}
+
+TEST_CASE("the_feed_keeps_the_whole_history_once_and_then_each_new_day", derived_tags) {
+    const auto fixings = derived_fixings(400, 19);
+    derived_memory_store memory;
+    derived_fx_vol_feed feed(
+        "derived-fx-vol", "derived", derived_readers_of(fixings), {}, memory.store());
+    feed.set_universe(derived_ids_of({.base = "EUR", .quote = "USD"}));
+    const auto& usd = fixings.at(ecb_fixing_item("USD"));
+    const auto series = derived_fx_series_uri({.base = "EUR", .quote = "USD"});
+
+    const auto first = feed.persist(usd.dates[350]);
+    CHECK(feed.failures().empty());
+    CHECK(first == 350 - 21 + 1);
+    CHECK(memory.held[series].size() == first);
+    CHECK(feed.persist(usd.dates[350]) == 0);
+    CHECK(feed.persist(usd.dates[351]) == 1);
+    CHECK(memory.held[series].contains(usd.dates[351]));
+    CHECK(memory.writes[series] == 2);
+}
+
+TEST_CASE("the_feed_writes_no_day_the_store_already_holds", derived_tags) {
+    const auto fixings = derived_fixings(200, 23);
+    derived_memory_store memory;
+    const auto& usd = fixings.at(ecb_fixing_item("USD"));
+    const auto series = derived_fx_series_uri({.base = "EUR", .quote = "USD"});
+    for (std::size_t i = 21; i <= 150; ++i)
+        memory.held[series].insert(usd.dates[i]);
+    derived_fx_vol_feed feed(
+        "derived-fx-vol", "derived", derived_readers_of(fixings), {}, memory.store());
+    feed.set_universe(derived_ids_of({.base = "EUR", .quote = "USD"}));
+    CHECK(feed.persist(usd.dates.back()) == (200 - 1) - 150);
+}
+
+TEST_CASE("the_feed_keeps_every_pair_of_its_universe_and_names_one_it_cannot", derived_tags) {
+    const auto fixings = derived_fixings(200, 29);
+    derived_memory_store memory;
+    memory.refuse.insert("EURUSD");
+    derived_fx_vol_feed feed(
+        "derived-fx-vol", "derived", derived_readers_of(fixings), {}, memory.store());
+    auto universe = derived_ids_of({.base = "EUR", .quote = "USD"});
+    const auto usdjpy = derived_ids_of({.base = "USD", .quote = "JPY"});
+    universe.insert(universe.end(), usdjpy.begin(), usdjpy.end());
+    feed.set_universe(universe);
+    CHECK(feed.persist(fixings.at(ecb_fixing_item("USD")).dates.back()) > 0);
+    REQUIRE(feed.failures().size() == 1);
+    CHECK(feed.failures()[0].starts_with("EURUSD: the series"));
+    CHECK_FALSE(memory.held[derived_fx_series_uri({.base = "USD", .quote = "JPY"})].empty());
+}
+
+TEST_CASE("a_feed_with_no_store_keeps_nothing", derived_tags) {
+    const auto fixings = derived_fixings(200, 31);
+    derived_fx_vol_feed feed("derived-fx-vol", "derived", derived_readers_of(fixings));
+    feed.set_universe(derived_ids_of({.base = "EUR", .quote = "USD"}));
+    CHECK(feed.persist(fixings.at(ecb_fixing_item("USD")).dates.back()) == 0);
+}

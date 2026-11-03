@@ -25,9 +25,12 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/observation_read_operations_protocol.hpp"
 #include "ores.marketdata.client/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include <cstddef>
 #include <expected>
 #include <optional>
 #include <string>
@@ -176,6 +179,24 @@ public:
      */
     [[nodiscard]] std::expected<std::vector<domain::market_data_vendor_instrument>, std::string>
     list_vendor_instruments(const std::string& provider_code);
+
+    /// The series of one provider. Sends marketdata.v1.market_series.list.
+    [[nodiscard]] std::expected<std::vector<domain::market_series>, std::string>
+    list_series_of_provider(const std::string& provider_code);
+
+    /// Writes a series and returns it as stored. Sends marketdata.v1.market_series.put.
+    [[nodiscard]] std::expected<domain::market_series, std::string>
+    put_series(const messaging::market_series_write& write,
+               const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Writes observations; one at a key already held is stored as its new version.
+     *
+     * Sends marketdata.v1.market_observations.put_many.
+     */
+    [[nodiscard]] std::expected<std::size_t, std::string>
+    put_observations(const std::vector<messaging::market_observation_write>& writes,
+                     const ores::utility::domain::change_intent& intent);
 
 private:
     ores::nats::service::nats_client& nats_;

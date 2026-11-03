@@ -1,0 +1,564 @@
+:PROPERTIES:
+:ID: D9D59BD1-CAC0-4B4A-B32D-A734A4D79AB0
+:END:
+#+title: Greek ladder reports
+#+description: The .1 family and the wider greek ladders: what a .1 report is in ORE terms, the full ladder family across delta, gamma, vega, rho, theta and the cross terms, what each needs, and what the store holds
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:reporting:risk:greeks:sensitivity:ore:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+* Summary
+
+ORE has no concept of a ".1"; it has a /shift/ — a shift type, a shift size,
+a shift scheme and the tenors, expiries or strikes to shift — and it writes
+the resulting value change to one =Delta= column. A .1 report is therefore a
+sensitivity report bound to a configuration whose shift size is 0.1 in that
+factor's own quote unit, and the family is as wide as the risk classes the
+engine shifts, not just volatility. Two of the family the product owner asked
+for — the risk reversal and the strangle — are not ORE factors at all: ORE
+shifts an ATM-only grid or a strike-by-strike surface, so =RR= and =STR= must
+be derived from the surface points by the smile identity that
+[[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] already states. The store names the sensitivity
+document and switches the analytic on for nine seeded risk configurations, but
+no configuration binds one, so today a sensitivity run shifts nothing. What
+follows fixes the vocabulary, the family, what each ladder needs, and what the
+store must grow before a single .1 report can be seeded.
+
+* What a .1 report is in ORE terms
+
+** ORE has a shift, not a .1
+
+The sensitivity configuration is one XML document whose root is
+=SensitivityAnalysis=, validated against =external/ore/xsd/sensitivity.xsd=.
+It carries one block for each group of risk factors — discount curves, index
+curves, yield curves, FX spots, FX volatilities, swaption volatilities, cap and
+floor volatilities, CDS volatilities, default and credit curves, equity spots
+and volatilities, both inflation curve families, both inflation cap/floor
+families, dividend yields, base correlations, security spreads, commodity
+curves and volatilities, intraday power curves, correlations and bond future
+volatilities — plus four switches that are not factors: =ComputeGamma=,
+=CrossGammaFilter=, =ThetaPeriod= and the par conversion group.
+
+Every factor block states the same four things:
+
+| Element | Meaning | Values |
+|---------+---------+--------|
+| =ShiftType= | how the number moves | =Relative=, =Absolute=, =EqualTo= |
+| =ShiftSize= | by how much | a real, with an optional =key= for an alternative size |
+| =ShiftScheme= | which direction the difference reads | =Forward=, =Backward=, =Central= |
+| the bucket list | what to bump | =ShiftTenors=, =ShiftExpiries=, =ShiftStrikes=, =ShiftLossLevels=, =ShiftTerms= |
+
+=ShiftType= and =ShiftScheme= are enums in =external/ore/xsd/ore_types.xsd=.
+The shipped =external/ore/examples/MarketRisk/Input/sensitivity.xml= shows the
+conventional numbers: curves at =Absolute= =0.0001= (one basis point) with a
+=Central= =0.001= override keyed =IR_FD=; FX spots at =Relative= =0.01=; FX
+volatilities at =Relative= =0.01= with an expiry list and an empty
+=ShiftStrikes=; and =ThetaPeriod= =1D=.
+
+No shipped example states a =ShiftSize= of 0.1, and the schema has no element
+for one. A ".1 report" is a name for a shift size, and the size is meaningless
+without the type and the unit it is quoted in.
+
+** The Delta column is a value change, not a derivative
+
+This is the load-bearing fact for the whole family, and it is worth stating
+precisely because the prose catalogue on
+[[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] writes the Greek as
+a quotient.
+
+ORE writes =sensitivity.csv= with =Delta= and =Gamma= columns
+([[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]], family
+=sensitivity_report=). Both are money. Neither is divided by the shift size.
+Measured on the shipped MarketRisk sample at commit =deb15641d0=:
+
+#+begin_src python
+import csv
+sens = {}
+with open('sensitivity.csv') as f:
+    r = csv.reader(f); next(r)
+    for row in r:
+        if len(row) >= 10:
+            sens[(row[0], row[2])] = (float(row[3]), float(row[8]))
+with open('scenario.csv') as f:
+    r = csv.reader(f); next(r)
+    for row in r:
+        if len(row) >= 8 and row[2] == 'Up':
+            shift, delta = sens[(row[0], row[1])]
+            print(row[1], shift, delta, float(row[7]))
+#+end_src
+
+Run it from =external/ore/examples/MarketRisk/ExpectedOutput/Sensi=. It prints
+the factor, its shift size, =Delta= from the sensitivity report and =Difference=
+from the scenario report.
+
+| Trade | Factor | ShiftSize_1 | =Delta= | =Difference= in scenario.csv |
+|-------+--------+-------------+---------+------------------------------|
+| CAP_EUR | IndexCurve/EUR-EURIBOR-6M/11/10Y | 0.0001 | −137.61 | −137.61 |
+| CAP_EUR | OptionletVolatility/EUR/8/2Y/0.04 | 0.0001 | −2.25 | −2.25 |
+| CAP_EUR | OptionletVolatility/EUR/18/5Y/0.04 | 0.0001 | −59.14 | −59.14 |
+| CAP_EUR | OptionletVolatility/EUR/23/7Y/0.04 | 0.0001 | −137.56 | −137.56 |
+
+Every pair matches to the printed precision. So =Delta= is
+$PV(\text{shifted}) - PV(\text{base})$, and the shift size is already inside
+it. Two consequences follow, and they decide the whole design:
+
+1. A .1 ladder is /not/ a comparison of a Vega against a spot move. It is the
+   =Delta= column of a run configured with =ShiftSize= = 0.1. The number the
+   trader reads is money per 0.1, and it is already in that unit.
+2. Two reports over the same book that differ only in shift size differ only in
+   their sensitivity configuration. Nothing in the report definition, the
+   analytics or the reader has to know what ".1" means.
+
+** The ATM-only switch is =ShiftStrikes=
+
+ORE distinguishes "shift the smile" from "shift the ATM level" with the same
+element. The two shipped configs are otherwise identical:
+=external/ore/examples/MarketRisk/Input/SensiSmile/sensitivity_atmOnly.xml=
+carries =<ShiftStrikes/>= for the swaption block, while
+=sensitivity_fullSurface.xml= carries a strike list. Their run documents,
+=ore_sensismile_atm.xml= and =ore_sensismile_surface.xml=, differ only in which
+=marketConfigFile= and =sensitivityConfigFile= they name.
+
+That is the direct ORE analogue of the .1 ATM and .1 surface reports, and it
+means the ATM ladder is native while the full-surface ladder is native too —
+provided the surface's strikes are nameable in the configuration.
+
+** What ".1" means in the shift's own unit
+
+The shift size is a bare real. Its unit comes from the factor:
+
+| Factor class | Unit of the shift | 0.1 means |
+|--------------+-------------------+-----------|
+| Curve rate (discount, index, yield, credit, inflation) | a rate, decimal | 10 basis points |
+| Volatility (FX, swaption, cap/floor, equity, commodity, CDS) | a volatility, decimal | 10 volatility points, if the surface is decimal |
+| FX spot, equity spot | a ratio, if =Relative= | 10 per cent, if =Relative= |
+| Theta | a period, not a size | the period itself |
+
+The shipped example quotes FX volatilities at =Relative= =0.01=, which is one
+per cent /of/ the volatility, not one volatility point. So "0.1 vol" could
+mean a =Relative= shift of 0.1 (a tenth of the level — rarely intended) or an
+=Absolute= shift of 0.1 on a surface stored in vol points. This ambiguity is
+the first open question for the product owner, and it is the only one that
+blocks every other decision.
+
+* The ladder family
+
+** Two axes, not one
+
+A ladder is a Cartesian product: a *risk class* (which market data it bumps and
+so which buckets it has) times an *order* (what it measures about that bump).
+
+The risk class is fixed by which block of =sensitivity.xsd= the factor belongs
+to. The order is fixed by four switches:
+
+| Ladder order | What it is | What produces it |
+|--------------+------------+------------------|
+| Delta (first order) | the value change for one shifted factor | the =ShiftSize= and the bucket list, one factor at a time |
+| Gamma (second order) | the curvature in one factor | =ComputeGamma= = true, or a =Central= shift scheme |
+| Cross-gamma | the curvature between two factors | =CrossGammaFilter= pairs, and two shift sizes in one row |
+| Theta | the value change for the passage of a period | =ThetaPeriod= |
+
+** The full family across the risk classes
+
+Each row is a ladder the engine can produce. The *bucket* column is the set of
+columns a reader needs to place a figure on the ladder.
+
+| # | Ladder | ORE factor key | Shift block | Bucket columns |
+|---+--------+----------------+-------------+----------------|
+| 1 | Rates delta | =DiscountCurve/<CCY>/<n>/<tenor>=, =IndexCurve/<index>/<n>/<tenor>=, =YieldCurve/<name>/<n>/<tenor>= | =DiscountCurves=, =IndexCurves=, =YieldCurves= | curve, tenor |
+| 2 | Rates gamma | the same keys | the same blocks, with =ComputeGamma= | curve, tenor |
+| 3 | Rates cross-gamma | pairs of the above | =CrossGammaFilter= | curve × tenor, pair |
+| 4 | Par-rate delta (DV01) | par instruments, not curve points | =ParConversion= on the curve block | instrument, tenor |
+| 5 | Inflation delta and gamma | =ZeroInflationIndexCurve/<index>/…=, =YYInflationIndexCurve/<index>/…= | the inflation curve blocks | index, tenor |
+| 6 | FX spot delta | =FxSpot/<ccypair>= | =FxSpots= | currency pair |
+| 7 | FX vol ladder, ATM only | =FxVolatility/<pair>/<strike>/<expiry>=, one strike | =FxVolatilities= with an empty =ShiftStrikes= | pair, expiry |
+| 8 | FX vol ladder, full surface | the same, every configured strike | =FxVolatilities= with =ShiftStrikes= populated | pair, expiry, strike |
+| 9 | FX risk-reversal ladder | derived, not a factor | none | pair, expiry |
+| 10 | FX strangle ladder | derived, not a factor | none | pair, expiry |
+| 11 | Swaption vol ladder, ATM | =SwaptionVolatility/<key>/<strike>/<expiry>/<term>= | =SwaptionVolatilities= with one strike | ccy, expiry, term |
+| 12 | Swaption vol ladder, smile | the same, every strike | =SwaptionVolatilities= with =ShiftStrikes= | ccy, expiry, term, strike |
+| 13 | Cap and floor vol ladder | =OptionletVolatility/<ccy>/<n>/<expiry>/<strike>= | =CapFloorVolatilities= | ccy, expiry, strike |
+| 14 | Yield vol ladder | =YieldVolatility/<name>/…= | =YieldVolatilities= | name, expiry, term |
+| 15 | Equity spot delta | =EquitySpot/<equity>= | =EquitySpots= | equity |
+| 16 | Equity vol ladder | =EquityVolatility/<equity>/<strike>/<expiry>= | =EquityVolatilities= | equity, expiry, strike |
+| 17 | Credit spread delta | =CreditCurve/<name>/<n>/<tenor>= | =CreditCurves= | name, tenor |
+| 18 | CDS vol ladder | =CDSVolatility/<name>/<n>/<expiry>= | =CDSVolatilities= | name, expiry |
+| 19 | Base correlation ladder | =BaseCorrelation/<index>/<n>/<lossLevel>/<term>= | =BaseCorrelations= | index, loss level, term |
+| 20 | Security spread delta | =SecuritySpread/<security>= | =SecuritySpreads= | security |
+| 21 | Commodity delta | =CommodityCurve/<name>/<n>/<tenor>= | =CommodityCurves= | name, tenor |
+| 22 | Commodity vol ladder | =CommodityVolatility/<name>/<strike>/<expiry>= | =CommodityVolatilities= | name, expiry, strike |
+| 23 | Dividend yield ladder | =DividendYieldCurve/<equity>/<n>/<tenor>= | =DividendYieldCurves= | equity, tenor |
+| 24 | Correlation ladder | =Correlation/<index1>/<index2>/<strike>/<expiry>= | =Correlations= | index pair, expiry, strike |
+| 25 | Bond future vol ladder | =BondFutureVolatility/<name>/…= | =BondFutureVolatilities= | name, expiry, strike |
+| 26 | Intraday power curve ladder | =IntradayPowerCurve/<name>/<n>/<tenor>= | =IntradayPowerCurves= | name, tenor |
+| 27 | Theta | =Theta//<n>/<period>= | =ThetaPeriod= | period |
+
+The factor-key spellings in the table are the ones a reader parses today: the
+sample at =MarketRisk/ExpectedOutput/Sensi/sensitivity.csv= writes
+=DiscountCurve/EUR/5/1Y=, =OptionletVolatility/EUR/8/2Y/0.04=,
+=BaseCorrelation/CDXIG/2/0.1/1D= and =Theta//0/1D=, and the same spellings
+appear as the risk-factor vocabulary of the correlation and covariance files
+([[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]]).
+
+** The four vol ladders the trader asked for, and how they relate
+
+The prose catalogue defines .1 ATM, .1 RR, .1 STR, .1 Triple and .1 Quad as
+"the PV change from a 0.1 bump" to one or more smile components. On an FX
+surface quoted as ATM, risk reversal and butterfly, that family is a linear
+change of basis over the surface points, and
+[[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] already
+states the identity:
+
+#+begin_src text
+sigma_call = sigma_ATM + sigma_BF + 0.5 * sigma_RR
+sigma_put  = sigma_ATM + sigma_BF - 0.5 * sigma_RR
+#+end_src
+
+Read backwards, the three components are:
+
+#+begin_src text
+sigma_ATM = sigma_ATM
+sigma_RR  = sigma_call - sigma_put
+sigma_BF  = 0.5 * (sigma_call + sigma_put) - sigma_ATM
+#+end_src
+
+So, writing $D_x$ for the =Delta= column at surface point $x$:
+
+| Report | What it is | Native in ORE? |
+|--------+------------+----------------|
+| .1 ATM | one shift on the ATM point of each expiry | Yes: =FxVolatilities= with an empty =ShiftStrikes= |
+| .1 surface (the catalogue's Triple) | the same shift on every strike of every expiry | Yes: =FxVolatilities= with =ShiftStrikes= populated |
+| .1 RR | $D_{call} - D_{put}$ at each expiry | No: a combination of two native runs |
+| .1 STR | $0.5 (D_{call} + D_{put}) - D_{ATM}$ | No: a combination of three native runs |
+| .1 Quad | a fourth surface component, unnamed in the catalogue | No: the catalogue does not say what the fourth component is |
+
+A caution on the STR row. The identity above is the *smile* butterfly. A broker
+quoting a strangle is quoting the price of the strangle structure, and turning
+that into a smile butterfly takes the calculation
+[[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] describes,
+because the strikes implied by the two quotes are not the same strikes. The
+strangle ladder must therefore read the butterfly style the pair is stored with,
+and it cannot be read as a plain average.
+
+Two things follow. First, the Triple is not a special configuration — it is the
+full-surface shift, and it already exists as a shipped example. Second, RR and
+STR are bookkeeping over native deltas, which is exactly what ORE's own par
+conversion does for rates: it converts zero-rate deltas into par-rate deltas
+through a change of basis rather than by re-running the engine
+([[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/methods.pdf][ORE
+Methods]], "Sensitivity/Par-Sensitivity Analysis"). The store should treat the
+RR and STR ladders the same way.
+
+Whether =ShiftStrikes= on an FX volatility block names a delta or an absolute
+strike decides whether the call and put points are addressable at all. The
+schema does not say, the examples leave the element empty for FX, and the store
+records the surface's =deltas= rather than its strikes
+(=ores_refdata_fx_volatility_configs_tbl=). This is the second open question,
+and it decides whether RR and STR can be computed from one full-surface run or
+need a configuration per delta.
+
+* What each ladder needs
+
+Three things, and the boundary between them is what the store's configuration
+model already draws: market data, the sensitivity configuration, and the engine
+settings.
+
+** Market data
+
+A ladder can only be as wide as the quotes behind it. The bucket list in the
+configuration must be a subset of the pillars the run's curves and surfaces
+actually carry, because the engine shifts the factors it is told to shift and
+silently writes nothing for a factor it cannot find.
+
+| Ladder group | Quotes the run must hold |
+|--------------+--------------------------|
+| Rates (1–4) | IR swap, deposit, FRA, OIS and basis quotes per currency, and the conventions to bootstrap them |
+| Inflation (5) | Zero and year-on-year inflation swap quotes per index |
+| FX spot (6) | One spot per currency pair in the book |
+| FX vol (7–10) | =FX_OPTION/RATE_LNVOL/<base>/<quote>/<expiry>/<strike>= at =ATM=, =25RR= and =25BF= per expiry |
+| Swaption vol (11–12) | Swaption ATM quotes per currency, expiry and term, and a smile if the smile ladder is wanted |
+| Cap and floor vol (13) | Caplet or optionlet quotes per currency, expiry and strike |
+| Equity (15–16) | Equity spots, and a vol surface per equity |
+| Credit (17–19) | CDS spreads per name and tenor, a recovery rate, and index tranche quotes for base correlation |
+| Commodity, dividend, correlation, bond future, power (21–26) | The respective curve or surface per underlier |
+
+The FX vol key spellings are the sample's own: the shipped
+=external/ore/examples/Input/market_20160205.txt= writes
+=FX_OPTION/RATE_LNVOL/EUR/USD/1Y/ATM= alongside =…/1Y/25RR= and =…/1Y/25BF=.
+That the market data carries the three components as separate keys while the
+sensitivity configuration addresses surface points is the gap this design has
+to bridge.
+
+** The sensitivity configuration**
+
+The same document serves every ladder. A report's ladder family is therefore a
+property of which document it binds, and the differences a trader cares about —
+0.1 against 1 basis point, ATM only against the whole smile, one currency pair
+against all — are differences between documents, not between reports.
+
+The example configs show what a full document costs to write: the shipped
+=sensitivity.xml= is 517 lines for three currencies, one swaption set, one
+equity set and six credit names, with a =ParConversion= block per curve. A
+configuration per ladder per shift family would multiply that. The design
+should therefore hold one document per *risk class* and let the shift size vary
+through the keyed =ShiftSize= override the schema already provides, rather than
+one document per report.
+
+** Engine and analytic settings**
+
+Beyond the configuration, a run needs:
+
+- the =sensitivity= analytic switched on, which the seeds already do;
+- =sensitivityConfigFile= naming the document, which no seed does;
+- =marketConfigFile= naming the risk-factor description, which the shipped
+  =ore_sensi.xml= sets to =simulation.xml= and =ore_sensismile_atm.xml= sets to
+  =simulation_atmOnly.xml=;
+- =recalibrateModels=, =parSensitivity= and =outputSensitivityThreshold=, which
+  the seeds already set to =Y=, =Y= and =0.000001=;
+- for par ladders, the conventions the =ParConversion= instruments name, and the
+  =ParConversionExcludes= list for curves that must stay in the zero domain.
+
+** What the cross terms need, and what 1.8.17.0 does not write**
+
+Cross-gamma needs =ComputeGamma= and a =CrossGammaFilter= listing the pairs as
+substrings of factor keys. The shipped filter names three pairs:
+
+#+begin_src xml
+<CrossGammaFilter>
+  <Pair>DiscountCurve/EUR,DiscountCurve/EUR</Pair>
+  <Pair>IndexCurve/EUR,IndexCurve/EUR</Pair>
+  <Pair>DiscountCurve/EUR,IndexCurve/EUR</Pair>
+</CrossGammaFilter>
+#+end_src
+
+The engine writes cross gammas into =sensitivity.csv= as rows with both
+=Factor_1= and =Factor_2= populated, not into a file of their own: at v1.8.17.0
+no writer reads =sensitivity.crossGammaOutputFile=, so =crossgamma.csv= never
+appears ([[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]]).
+Measured on the sample at commit =deb15641d0=, =sensitivity.csv= holds 968 data
+rows of which 484 carry a second factor, and =scenario.csv= holds 17,225 rows,
+the shifted values behind both. The ladder is therefore buildable; it just does
+not arrive in the file its name suggests.
+
+* What the store already has
+
+| Thing | Where | State |
+|-------+-------+-------|
+| The sensitivity analytic type | =ores_reporting_analytic_types_tbl=, code =sensitivity= | Seeded, "First and second order sensitivities of the portfolio's value" |
+| The sensitivity document as a bindable kind | =ores_reporting_configuration_types_tbl=, code =sensitivity=, root =SensitivityAnalysis=, parameter =sensitivityConfigFile=, owner =ores.analytics= | Seeded, with the document transcribed in the ORE file library notes |
+| The file in the library | =ores_reporting_ore_files_tbl=, code =sensitivity=, with a name pattern that also covers the stress and XVA variants | Seeded, with a description of the shift blocks |
+| The schema | =external/ore/xsd/sensitivity.xsd=, seeded as =sensitivity_schema= | Vendored |
+| Worked configurations | =external/ore/examples/MarketRisk/Input/sensitivity.xml= and the two SensiSmile variants | Vendored |
+| The outputs | =sensitivity.csv=, =scenario.csv=, =parsensitivity.csv=, =jacobi.csv=, =jacobi_inverse.csv= | Catalogued and read by the store |
+| The FX vol surface identity | [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] | Written, with the ATM/RR/BF algebra |
+| The classification axes and the report catalogue | [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] | Written, prose only for the .1 family |
+| Greek report definitions | =reporting_report_definitions_populate.sql= and the ACME seeds: "Delta and Gamma", "Vega", "Bucketed DV01", "Intraday Risk Monitor", "Headline Position" | Seeded, none of them a .1 report |
+
+* What the store lacks
+
+Each of these blocks at least one ladder.
+
+1. *No configuration binds a sensitivity document.* The ACME seeds switch the
+   =sensitivity= analytic on in nine risk report configurations and set three
+   parameters — =outputSensitivityThreshold=, =parSensitivity=,
+   =recalibrateModels= — and set =sensitivityConfigFile= in none of them. A run
+   today asks the engine for sensitivities with no factors to shift.
+2. *No mapper for the document.* =grep -rln SensitivityAnalysis projects/=
+   finds only seed rows and a description file; no C++ mapper reads or writes
+   =SensitivityAnalysis=. The document is a name in a lookup and a row in the
+   file library, not a modelled entity. The round trip is backlogged as
+   [[id:190620B4-2F86-44C0-B4B7-31EE2C07D3F9][Round trip the sensitivity
+   configuration]] in
+   [[id:A93B2CA2-66AB-4AD2-84EB-B41964980C57][Complete the ORE report
+   configuration]].
+3. *No volatility market data.* The ACME seed's 420 curve quotes are all
+   =IR_SWAP/RATE/…=; there is no =FX_OPTION/RATE_LNVOL= quote and no FX vol
+   surface config in the dataset. Every vol ladder in the family table — rows 7
+   to 14 and row 16 — needs this, and it is what
+   [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]]
+   is for.
+4. *No FX spot market data in the seed.* Row 6 needs at least one spot per pair,
+   and the seed holds curve quotes only.
+5. *No reading of the ladder into a stored shape.* =sensitivity.csv= is
+   catalogued as a family with a =TradeId= key and its figures become stored
+   values, but nothing states which bucketed shape a ladder report presents. The
+   prose catalogue does not settle it either: its "Spot Ladder" is
+   =audit-derived= and its "Spot Greeks Report" is =numeric-bump ·
+   risk-predict=, so neither reads a sensitivity run. The ladder needs a
+   definition of its own grid, not a copy of the engine's row order.
+6. *No cross-gamma ingestion path.* The figures exist in =sensitivity.csv= and in
+   =scenario.csv=, but no stored shape has a pair of factors as its key, and
+   =crossgamma.csv= cannot be relied on at v1.8.17.0.
+7. *No shift-size vocabulary.* Nothing in the store names 0.1, 1 basis point or
+   1 per cent as a choice. The risk report configuration holds the analytics and
+   their parameters and a book and portfolio scope, and nothing that says how
+   far to move a factor. This is the one gap the store cannot close without the
+   product owner's answer.
+
+* Reports to build
+
+The list is ordered so that each row's dependencies are met by an earlier row.
+*Cycle* uses the axes on [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]]:
+=intraday= reads live market data and is indicative, =eod= reads an authorised
+cut and is authoritative.
+
+| # | Report | Cycle | Configuration it binds | Analytics | Depends on |
+|---+--------+-------+------------------------+-----------+------------|
+| 1 | Rates delta ladder | eod and intraday | A sensitivity document whose curve blocks shift by the chosen rate size, with =ParConversion= for the DV01 reading | =sensitivity=, =npv= | Nothing new: curve quotes and the sensitivity binding |
+| 2 | Rates gamma ladder | eod | The same document with =ComputeGamma= on | =sensitivity=, =npv= | Report 1 |
+| 3 | Theta ladder | eod | A document with =ThetaPeriod= set and no factor blocks | =sensitivity=, =npv= | Report 1's binding |
+| 4 | Rates cross-gamma ladder | eod | The same document plus =CrossGammaFilter= pairs | =sensitivity=, =npv= | Report 2 |
+| 5 | .1 ATM vol ladder | eod and intraday | An FX vol block with an expiry list and an empty =ShiftStrikes=, =ShiftSize= 0.1 in vol points | =sensitivity=, =npv= | FX vol market data |
+| 6 | .1 surface vol ladder | eod and intraday | The same block with =ShiftStrikes= populated for every configured delta | =sensitivity=, =npv= | Report 5 |
+| 7 | .1 risk-reversal ladder | eod and intraday | No configuration of its own: it reads reports 5 and 6 | =sensitivity= plus the change of basis | Reports 5 and 6 |
+| 8 | .1 strangle ladder | eod and intraday | As report 7 | =sensitivity= plus the change of basis | Reports 5 and 6 |
+| 9 | Par-rate DV01 ladder | eod | Report 1's document with =parSensitivity= on and conventions on every par instrument | =sensitivity= | Report 1, conventions |
+| 10 | FX spot delta ladder | eod | An =FxSpots= block per currency pair, =Relative= 0.01 or the chosen spot size | =sensitivity=, =npv= | FX spot market data |
+| 11 | Swaption vol ladder | eod | A =SwaptionVolatilities= block per currency | =sensitivity=, =npv= | Swaption vol market data |
+| 12 | Cap and floor vol ladder | eod | A =CapFloorVolatilities= block per currency | =sensitivity=, =npv= | Cap/floor vol market data |
+| 13 | Credit spread ladder | eod | A =CreditCurves= block per name | =sensitivity=, =npv= | Credit market data |
+| 14 | Equity vol ladder | eod | An =EquityVolatilities= block per equity | =sensitivity=, =npv= | Equity vol market data |
+
+Rows 1–10 are the .1 family and the greek ladders the product owner asked for,
+restated across every risk class the store's data reaches. Rows 11–14 name the
+wider ladder for completeness; they are backlog until their market data exists,
+and each is the same report over a different block.
+
+Three reports from the existing EOD set in
+[[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] are not ladders and
+this design does not claim them: the "Rho/Vol Matrix", the "Spot/Vol Matrix" and
+the "Spot/Rho Matrix" are two-factor scenario grids, not bucketed deltas. They
+are built with the =stress= analytic and a =stresstest.xml=, and the sensitivity
+analytic with two shift sizes produces the same numbers as scenario rows
+(=scenario.csv= writes a =Cross= direction for them). They are the natural
+next step after row 4 and they are out of scope here.
+
+* Decisions
+
+** D1. A .1 report is a report bound to a shift size, not a report type
+
+The store gains no =point_one= report type, no =point_one= analytic and no
+per-report shift column. A .1 report differs from its 1-basis-point sibling only
+in the sensitivity configuration it binds. This keeps the report definition
+what [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and
+schedule]] says it is — the description of a report, with the engine parameters
+in a shared configuration — and it keeps the family open: a 0.5 report and a 2
+basis point report cost nothing.
+
+** D2. One sensitivity document per risk class, with keyed shift overrides
+
+The schema gives =ShiftSize=, =ShiftType= and =ShiftScheme= entries an optional
+=key= attribute, so one document can carry a named size family alongside the
+default and a run selects the family by key, without duplication. The store
+should seed one document per risk class and select the shift family through the
+key, rather than seed a document per report.
+
+** D3. RR and STR are derived in the store, not asked of the engine
+
+The engine has no risk-reversal factor. The store therefore computes the RR and
+STR ladders from the surface-point deltas of one full-surface run, using the
+identity on [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]].
+This mirrors what =ParConversion= already does for rates and keeps the derived
+figures reproducible from one stored run.
+
+** D4. The Triple is the full-surface shift
+
+The catalogue's ".1 Triple" and the engine's full-surface shift are the same
+computation. The store should name it once, prefer the engine's words, and
+record the catalogue's name as an alias rather than as a second report.
+
+** D5. Cross-gamma is read from =sensitivity.csv=
+
+Until =crossgamma.csv= has a writer, the cross ladder reads the =Factor_1= and
+=Factor_2= rows of =sensitivity.csv= and keeps =scenario.csv= as the evidence
+behind them. No new output file is expected.
+
+** D6. Theta is its own ladder, not a rates ladder
+
+=ThetaPeriod= produces a risk factor key of its own (=Theta//0/1D=) and a
+bucket list of its own (the period). It is a report in its own right because
+the number means something different: the value change from moving the clock,
+not from moving a market.
+
+* Open questions for the product owner
+
+** Q1. What is the .1?
+
+A .1 in vol points (=Absolute= 0.001 on a decimal surface, or =Absolute= 0.1 on
+a vol-point surface) and a .1 as a per-cent relative shift (=Relative= 0.1) are
+two different reports and differ by orders of magnitude on a 10-vol book. The
+catalogue says "0.1 bump", "0.1-unit shift" and "0.1% change in interest rates"
+in three neighbouring paragraphs, so the unit is stated inconsistently in the
+source. *Which one is the desk's .1, and is it the same number for rates and
+for volatility?*
+
+** Q2. Which greeks, and which buckets?
+
+The catalogue names Delta, Gamma, Vega, Rega, Sega, Theta and Rho. The engine
+shifts 26 risk classes and reports delta, gamma, cross-gamma and theta for each.
+Rega and Sega are the risk reversal and strangle, which the engine does not
+have (D3). *Does the .1 family mean the five vol ladders only, or the whole
+family in the reports table? And for each ladder, which bucket list is the
+desk's — the shipped sixteen-tenor curve list, the shipped four-expiry vol list,
+or something shorter?*
+
+** Q3. Which market data must the store hold for the ladders to be honest?
+
+Rows 7 to 10 of the family table need FX vol surfaces quoted as ATM, RR and BF;
+rows 11 to 14 need swaption, cap/floor, credit and equity data. *Which of these is
+in scope for the book the .1 reports will run on, and is the vol surface a
+requirement for the first .1 report or a later one?*
+
+** Q4. Which ORE version is the design against?
+
+Two versions publish today, 1.8.16.0-4-g3b62ba248 and 1.8.17.0
+(=external/ore/packages/manifest.json=). The cross-gamma finding, the
+=crossgamma.csv= gap and the analytic parameter list are all measured at
+1.8.17.0. *Is 1.8.17.0 the version the .1 reports must run on, and may the store
+stop publishing the older package?*
+
+** Q5. Is the .1 report an intraday report, an EOD report, or both?
+
+The catalogue gives the .1 family =intraday · eod= for cycle and =on-demand ·
+scheduled= for frequency, and the EOD set then lists ".1 Rho" and "Trade and
+Book Level .1 Triple Vol" as =scheduled= EOD members. A dual-cycle report needs
+two definitions with two market-data types, which
+[[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the
+LIVE cut]] is already doing for the headline reports. *Which of the .1 family
+runs intraday, and which runs only on the authorised cut?*
+
+* See also
+
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] — the business
+  catalogue, the five classification axes and the prose .1 table this page
+  grounds.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] — the
+  =sensitivity_report=, =par_sensitivity=, =scenario= and =jacobi= families,
+  their columns and what each figure means.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the
+  ATM, risk reversal and butterfly algebra the derived ladders use.
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]]
+  — the upstream engine, where it lives and what is vendored.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — how
+  the configuration documents are modelled and persisted.
+- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — the
+  smile model and interpolation settings a vol ladder's numbers depend on.
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]]
+  — where the engine parameters live and why the definition carries none.
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the pipeline
+  every ladder report runs through.
+- [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] — the folder this
+  page sits in, and the page-per-report convention the list above follows.
+- [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] —
+  the market data the vol ladders wait on.
+- [[https://opensourcerisk.org/documentation/][ORE documentation]] — the entry
+  point to the user guide, the methods and the API references.
+- [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/userguide.pdf][ORE
+  User Guide]] — the reference for how ORE is parameterised.
+- [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/methods.pdf][ORE
+  Methods]] — the methodology of the sensitivity and par-sensitivity analysis.
+- [[https://obrienjoey.github.io/post/ore_sensitivity][Sensitivity Analysis in
+  ORE]] — a worked end-to-end example of the configuration, the outputs and the
+  par conversion, with an independent check.

@@ -48,7 +48,7 @@ set(files
     "main.cpp"
     "mixture_tilt_tests.cpp"
     "nelder_mead_tests.cpp"
-    "normal_tests.cpp"
+    "normal_and_root_tests.cpp"
     "operational_clock_tests.cpp"
     "ornstein_uhlenbeck_process_tests.cpp"
     "process_factory_tests.cpp"

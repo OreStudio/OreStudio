@@ -17,8 +17,8 @@
  *
  */
 #include "ores.analytics.quant/math/fx_delta.hpp"
-#include "ores.analytics.quant/math/brent.hpp"
 #include "ores.analytics.quant/math/normal.hpp"
+#include "ores.analytics.quant/math/root.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -81,7 +81,7 @@ std::expected<double, std::string> fx_strike_from_delta(
     const double scaled = phi * delta / discount;
 
     if (!premium_adjusted(type)) {
-        if (!(scaled < 1.0))
+        if (!(scaled > 0.0 && scaled < 1.0))
             return std::unexpected("the delta is beyond what any strike reaches");
         const double d1 = phi * normal_quantile(scaled);
         return forward * std::exp(-d1 * stdev + 0.5 * stdev * stdev);
@@ -95,7 +95,7 @@ std::expected<double, std::string> fx_strike_from_delta(
     double lo = 0.0;
     if (side == option_side::call) {
         // The maximum of exp(x) N(d2) is where stdev N(d2) = n(d2).
-        const auto peak = brent_root(
+        const auto peak = find_root(
             [&](double d2) { return stdev * normal_cdf(d2) - normal_pdf(d2); }, -10.0, 10.0);
         if (!peak)
             return std::unexpected("the strike of the largest delta was not found: " +
@@ -112,7 +112,7 @@ std::expected<double, std::string> fx_strike_from_delta(
         if (hi - lo > 80.0 * stdev + 80.0)
             return std::unexpected("the delta is beyond what any strike reaches");
     }
-    const auto x = brent_root(delta_at, lo, hi);
+    const auto x = find_root(delta_at, lo, hi);
     if (!x)
         return std::unexpected(x.error());
     return forward * std::exp(*x);

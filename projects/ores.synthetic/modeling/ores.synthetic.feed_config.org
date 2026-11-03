@@ -1046,6 +1046,14 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief Why the decision was refused, or what it did. */
 #+end_src
 
+*** refusal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why the review was refused: "invalid", "not_found" or "decided"; empty when it was not. */
+#+end_src
+
 *** state
 :PROPERTIES:
 :cpp_type: std::string

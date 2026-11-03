@@ -438,7 +438,8 @@ public:
                   review_variance_calibration_response{
                       .success = false,
                       .message = "A review names the calibration, a decision of approve or "
-                                 "reject, and the reason for it."});
+                                 "reject, and the reason for it.",
+                      .refusal = "invalid"});
             return;
         }
         // The calibrations and the feeds an approval re-points are system rows that every tenant
@@ -481,12 +482,14 @@ private:
         const auto found =
             repo::variance_calibration_repository{}.read_latest(req_ctx, req.calibration_id);
         if (found.empty()) {
+            resp.refusal = "not_found";
             resp.message = "No variance calibration " + req.calibration_id + " exists.";
             return resp;
         }
         const auto& c = found.front();
         const bool repoint_only = c.state == "approved" && req.decision == "approve";
         if (c.state != "proposed" && !repoint_only) {
+            resp.refusal = "decided";
             resp.message = "Only a proposed calibration is reviewed; " + req.calibration_id +
                            " is " + c.state + ".";
             resp.state = c.state;
@@ -881,6 +884,8 @@ private:
 
     // The fit depends on the feed's mixture through p_minus as well as on the input, so two
     // feeds that read one item under different mixtures fit two calibrations.
+    // The text of each name is part of the stored id, the format of p_minus included: changing it
+    // names new ids, so a preview no longer finds the records an earlier run stored.
     static variance_ids
     name_variance_ids(const ores::synthetic::domain::fx_spot_generation_config& cfg,
                       const std::string& item,

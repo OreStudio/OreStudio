@@ -463,6 +463,9 @@ struct review_variance_calibration_response {
     bool success = false;
     /** @brief Why the decision was refused, or what it did. */
     std::string message;
+    /** @brief Why the review was refused: "invalid", "not_found" or "decided"; empty when it was
+     * not. */
+    std::string refusal;
     /** @brief The calibration's state after the review. */
     std::string state;
     /** @brief The approval the new one superseded; empty when there was none. */
@@ -815,6 +818,7 @@ struct review_variance_calibration_response {
     return std::tuple{
         ::ores::utility::codec::field{"success", &review_variance_calibration_response::success},
         ::ores::utility::codec::field{"message", &review_variance_calibration_response::message},
+        ::ores::utility::codec::field{"refusal", &review_variance_calibration_response::refusal},
         ::ores::utility::codec::field{"state", &review_variance_calibration_response::state},
         ::ores::utility::codec::field{"superseded_id",
                                       &review_variance_calibration_response::superseded_id},

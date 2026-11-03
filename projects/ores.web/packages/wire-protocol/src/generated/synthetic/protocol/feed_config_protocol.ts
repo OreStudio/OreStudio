@@ -358,6 +358,8 @@ export interface ReviewVarianceCalibrationResponse {
     success: boolean;
     /** @brief Why the decision was refused, or what it did. */
     message: string;
+    /** @brief Why the review was refused: "invalid", "not_found" or "decided"; empty when it was not. */
+    refusal: string;
     /** @brief The calibration's state after the review. */
     state: string;
     /** @brief The approval the new one superseded; empty when there was none. */

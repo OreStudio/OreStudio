@@ -85,7 +85,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Every review refusal becomes a 409 | calibration.ts | Accepted | The service states a refusal code; the BFF answers not_found 404, decided 409, invalid 400, and keeps any other failure as the service's own |
+| 2 | Confirm an approval sent again writes no new approval | feed_config_handler.hpp | Accepted | write_state is skipped on that path; checked live, the second approval of the EUR/USD fit wrote no version. An automated test needs the service harness and is not added |
+| 3 | A preview reads the store per feed | feed_config_handler.hpp | Declined | A class holds about fifty feeds; batch when classes grow |
+| 4 | The p_minus format is part of the id | feed_config_handler.hpp | Accepted | A comment says so above the naming |
+| 5 | A missing input shows as blanks | feed_config_handler.hpp | Declined | A calibration's input is held by a foreign key, and the audit checks every link |
+| 6 | French and Portuguese want a native pass | locales | Declined | Flagged to the product owner; not a merge blocker |
+| 7 | No browser run of approve and reject | VarianceCalibration.tsx | Declined | Covered by component and route tests and the live service; a browser check is left to the product owner |
 
 * Result
 

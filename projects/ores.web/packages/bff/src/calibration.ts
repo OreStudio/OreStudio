@@ -161,6 +161,15 @@ const policyBodySchema = z.object({
 
 const removeBodySchema = z.object({ intent: intentSchema });
 
+/** The HTTP answer to each refusal the review service states. */
+const REVIEW_REFUSALS: Readonly<
+    Record<string, { status: number; code: 'not-found' | 'conflict' | 'invalid-request' }>
+> = {
+    not_found: { status: 404, code: 'not-found' },
+    decided: { status: 409, code: 'conflict' },
+    invalid: { status: 400, code: 'invalid-request' },
+};
+
 const reviewBodySchema = z
     .object({
         decision: z.enum(['approve', 'reject']),
@@ -361,15 +370,20 @@ export function registerCalibrationRoutes(
                 reason: body.reason,
             } satisfies ReviewVarianceCalibrationRequest,
             operationReplySchema.extend({
+                refusal: z.string().default(''),
                 state: z.string().default(''),
                 superseded_id: z.string().default(''),
                 repointed_feeds: z.array(z.string()).default([]),
             }),
         );
-        // A refusal is the service's answer about the calibration, such as one already decided,
-        // not an outage, so it is a conflict the reviewer reads.
+        // The service says why it refused: a calibration that does not exist, one already decided,
+        // or a malformed review. Any other failure is the service's own, not the reviewer's.
         if (!reply.success) {
-            throw new HttpFailure(409, { code: 'conflict', message: reply.message });
+            const status = REVIEW_REFUSALS[reply.refusal];
+            if (status === undefined) {
+                throw upstreamFailure(reply.message);
+            }
+            throw new HttpFailure(status.status, { code: status.code, message: reply.message });
         }
         return {
             state: reply.state,

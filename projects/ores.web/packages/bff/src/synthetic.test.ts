@@ -815,6 +815,7 @@ describe('synthetic calibration', () => {
             {
                 'synthetic.v1.ops.review_variance_calibration': {
                     success: false,
+                    refusal: 'decided',
                     message: 'Only a proposed calibration is reviewed; it is approved.',
                 },
             },
@@ -829,6 +830,44 @@ describe('synthetic calibration', () => {
             code: 'conflict',
             message: 'Only a proposed calibration is reviewed; it is approved.',
         });
+    });
+
+    it('answers a review of a calibration that does not exist with not found', async () => {
+        const { server, sessionId } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: false,
+                    refusal: 'not_found',
+                    message: `No variance calibration ${CALIBRATION} exists.`,
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'reviewed',
+        });
+        expect(response.statusCode).toBe(404);
+        expect(response.json()).toMatchObject({ code: 'not-found' });
+    });
+
+    it("keeps a failure the service states no refusal for as the service's own", async () => {
+        const { server, sessionId } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: false,
+                    message: 'The request failed. The service log says why.',
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'reviewed',
+        });
+        expect(response.statusCode).not.toBe(409);
+        expect(response.statusCode).not.toBe(404);
+        expect(response.statusCode).toBeGreaterThanOrEqual(500);
     });
 
     it('refuses a review that states no reason', async () => {

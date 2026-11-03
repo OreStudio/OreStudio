@@ -23,9 +23,9 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 |---------------+----------------------------------------------------------------------|
 | State         | STARTED                                                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]               |
-| Now           | The variance calibration workflow is documented and its tasks named. |
+| Now           | The synthetic calibration workflow is designed and its tasks named.  |
 | Waiting on    | Nothing.                                                             |
-| Next          | Model the variance calibration records.                              |
+| Next          | Approve a fit within the class policy's rules.                       |
 | Last touched  | 2026-11-03                                                           |
 
 * Acceptance
@@ -59,8 +59,14 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:ACF60CC6-3DB4-44C4-9059-B8D58180E7AB][Run the derived source in the system tenant]] | BACKLOG | | | Fix the three defects of the derived FX volatility source that a live run showed: an unknown derivation kind, no conventions in the system tenant, and stale pgTAP counts. |
 | [[id:64F0A193-A749-4B94-99C6-78CCFC9C45AD][Read whole numbers as doubles on the wire]] | DONE | | 2026-11-03 | Fix the MessagePack reader refusing a whole number packed as an integer for a double field, which broke the Price behaviour tab. |
 | [[id:4C7886D2-8D1E-4D5E-86A4-0D9B14E616A7][Show a feed's run and its variance on one tab]] | DONE | 2026-11-03 | 2026-11-03 | Merge the This run and Variance tabs of a feed into one tab of fact cards, with the calibration as a link to its page. |
-| [[id:813D806C-D1C5-4406-8AF1-1259C39E221A][Start the synthetic feeds only after calibration]] | BACKLOG | | | Provisioning loads the public rates and calibrates the feeds when the backfill finishes, and the synthetic feeds start only when a person starts them, so the recorded spots have no jump from the authored level to the fixing. |
 | [[id:7B0EED43-9012-4A09-AAC0-1059E375F4D0][Show the variance calibration's history and its review state]] | DONE | 2026-11-03 | 2026-11-03 | A feed's history shows every variance calibration record of its pair, before and after approval; the feed and calibration screens say when a fit waits for review; and the fit is plotted from its stored points. |
+| [[id:5398F1B5-F8C3-4D47-A48A-84D483FC5BE1][Design the synthetic calibration workflow]] | DONE | 2026-11-03 | 2026-11-03 | State in the story how provisioning loads the public rates, calibrates, approves within policy and releases the feeds, and name the tasks that build it. |
+| [[id:F58607C0-9D3D-407C-B8AF-610A15F75AE5][Approve a fit within the class policy's rules]] | BACKLOG | | | The class calibration policy gains an approval mode and rules, so a fit that passes them is approved by the policy and only the exceptions wait for a person. |
+| [[id:BBCE9F48-939B-43DB-B703-99B3196942D4][Load the public rates as a workflow step]] | BACKLOG | | | The official service serves a step that backfills each accepted public source and completes once its fixings are stored, so a workflow can order calibration after the rates exist. |
+| [[id:8FB955DB-45B6-480C-AC69-8FBB55ACB8FA][Run the synthetic calibration workflow]] | BACKLOG | | | A workflow on the engine loads the public rates, calibrates the feeds, approves the fits the policy allows and tells the reviewer of the exceptions, started by an operator or by another run. |
+| [[id:813D806C-D1C5-4406-8AF1-1259C39E221A][Release the synthetic feeds after calibration]] | BACKLOG | | | The synthetic adapters serve no demand for an asset class until it is released, so every feed starts once, from its calibrated level, and the recorded spots have no jump. |
+| [[id:6E5973FF-B931-467F-BE72-542BC819EF10][Calibrate in the provisioning system run]] | BACKLOG | | | The system run of provisioning starts the calibration workflow after it publishes the system data, and a profile may release the feeds once it completes. |
+| [[id:D3E4FB25-30DE-48B3-B6B4-E3A766E8EB50][Recalibrate the synthetic feeds on a schedule]] | BACKLOG | | | The scheduler starts the calibration workflow each business day, so new fixings move the levels and the fits without a person starting it. |
 
 * Decisions
 
@@ -161,6 +167,74 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   the load on Frankfurter drops to one small request per item per new
   environment, and every provider in the snapshot must allow redistribution. The
   work is [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]].
+
+- *Calibration runs as a workflow, after the public rates are loaded*
+  (2026-11-03). Context: on a fresh installation the seeded system routes start
+  every synthetic feed the moment its adapter is accepted, at its authored level,
+  while the official adapters backfill the public rates on their own acceptance a
+  few seconds later; nothing orders the two, and calibrating, reviewing and
+  restarting were three manual acts with no owner. In the provisioning run of
+  2026-11-03 the 26 Bloomberg fixing feeds started from 16:09:57 and the IMF
+  fixings were stored at 16:10:03, so each run kept its authored level and the
+  recorded spots
+  jumped at the first calibrated restart. Decision: synthetic_calibration_workflow
+  runs on the engine in the system tenant, in the order load_public_rates,
+  calibrate_feeds, approve_within_policy, tell_reviewer. Loading the public rates
+  becomes a step of the official service rather than a side effect of
+  acceptance. Provisioning's system run starts the workflow after
+  system_provision, an operator starts it from the Calibration screen, and the
+  scheduler starts it each business day. The workflow's policy is stop: a step
+  that fails or times out ends the run there, so calibrate_feeds never runs on
+  public rates that were not loaded, and a release a profile orders runs only
+  after the workflow has completed. A stopped run leaves its class unreleased
+  until the engine's retry completes it. Consequences: every calibration is a
+  recorded run with steps a person can follow and retry; the tenant run does not
+  wait for it.
+
+  #+caption: How a fresh installation reaches calibrated, running feeds.
+  [[proj:doc/agile/versions/v0/sprint_29/support_volatility_surfaces/synthetic_calibration_workflow.png]]
+
+- *A fit within the class policy's rules is approved by the policy*
+  (2026-11-03). Context: a person approving each pair's fit would mean dozens of
+  clicks before a demonstration tenant is usable, and more each day. Measured on
+  the data of 2026-11-03, 13 of the 24 proposed fits pass the rules below, and 11
+  fail on disagreeing starts, a persistence out of range, or no reaction to moves.
+  Decision: each asset class's calibration policy holds an approval mode, manual
+  or auto, and its own rules. The FX policy is seeded in auto mode with these
+  values: at least 250 returns, starts that agree, persistence from 0.80 to
+  0.995, and an average reaction, alpha plus half of gamma, of at least 0.01. The
+  reaction is a threshold and not merely above zero, because a fit can reach
+  alpha and gamma of about 1e-11, a variance that does not react to moves
+  (USD/CHF on 2026-11-03). In auto mode a passing fit is approved through the
+  review verb with the policy, its id and its version as the decider; a failing
+  fit stays proposed with the failed rule as its reason, and its pair keeps the
+  shape it runs. Consequences: a
+  fresh installation needs no click to run fitted shapes where the data supports
+  them; a person sees only the exceptions; the history names who decided each
+  approval, a person or a policy version; a change of a rule is a new policy
+  version.
+- *One review verb serves a person and the policy, and there is no apply
+  workflow* (2026-11-03). Context: the project's proposal pattern starts an apply
+  workflow from a person's approval, because the work after the decision spans
+  services. Decision: approving a variance calibration stays one verb of the
+  synthetic service, which supersedes the pair's earlier approval and older
+  proposals, approves, and re-points the pair's feeds; a repeat of the verb
+  completes an approval that stopped part way. A person and the
+  approve_within_policy step call the same verb. Consequences: one path and one
+  history for every approval; an approval restarts no feed, which takes its new
+  calibration at its next start; a workflow is added only if an approval comes
+  to need another service.
+- *The synthetic feeds start only when their class is released* (2026-11-03).
+  Context: a feed that starts before calibration records spots at its authored
+  level, and the first calibrated restart puts a jump in the series that every
+  later pricing reads. Decision: each asset class carries a release state; the
+  synthetic adapters of a class that is not released do not announce, so no
+  demand reaches them. Releasing is an explicit, recorded act: the release step a
+  demonstration profile such as Acme orders, or an operator's Start feeds.
+  Consequences: every fixing-sourced feed starts once, from its calibrated level;
+  on a fresh production installation every synthetic feed is silent until an
+  operator presses Start feeds after calibration, and the Calibration screen
+  shows each class's release state, so the silence is explained.
 
 * Out of scope
 

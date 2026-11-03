@@ -1,0 +1,64 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+title How a fresh installation reaches calibrated, running feeds
+
+|bootstrap setup|
+start
+:Create the administrator and sign in;
+:Accept the public sources' terms;
+:Start provisioning;
+
+|Provisioning, system run|
+:system_provision\npublish system_core: feeds, authored calibrations,\nadapter catalogue;
+note right
+  Feeds of a class that is not
+  released do not announce,
+  so no demand starts them.
+end note
+fork
+  :start_calibration\nstart synthetic_calibration_workflow;
+  |synthetic_calibration_workflow|
+  :load_public_rates\nofficial service backfills each accepted source;
+  :calibrate_feeds\napplied run: levels, spreads,\nvariance inputs and fits;
+  :approve_within_policy\nfits that pass the policy's rules\nare approved by the policy;
+  :tell_reviewer\ninbox names the exceptions;
+  |Provisioning, system run|
+  if (profile orders the release?) then (Acme, demo)
+    :release_feeds\nthe feeds start from calibrated levels;
+  else (production)
+    :an operator presses Start feeds;
+  endif
+fork again
+  :start_tenant_setup;
+  |Tenant run|
+  :publish bundles, parties, staff,\nphotos, subscriptions, trades;
+  :complete_provisioning;
+end fork
+
+|Each business day|
+:scheduler starts synthetic_calibration_workflow;
+note right
+  Exceptions wait in the reviewer's
+  inbox; a person approves or rejects
+  them through the same review verb.
+  A feed takes a new calibration
+  at its next start.
+end note
+stop
+@enduml

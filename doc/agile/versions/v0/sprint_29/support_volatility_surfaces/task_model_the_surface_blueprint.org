@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/model-the-surface-blueprint
+#+pr: 4418
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -20,28 +20,47 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A party can record how one of its FX volatility surfaces is built: the pair, the
+smile model, the interpolation across expiries, the output grid and the output
+series, and the pillars the calibration reads, each naming one market series per
+contributor and that contributor's weight. It is the surface's counterpart of the
+IR curve bootstrap config and its pillars.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
 
--
+- =fx_vol_surface_blueprint= in =ores.refdata=: party, name, base and quote
+  currency, smile model (=ssvi=, =sabr=, =spline=), expiry interpolation, the output
+  grid's expiries and strikes, and the output series, a soft reference to an
+  =fx_vol_surface= =market_series= the party holds, chosen and not minted, as the
+  IR config's output series is.
+- =fx_vol_surface_pillar=: one expiry and strike label of a blueprint, =ATM=, a
+  risk reversal or butterfly at a delta, or a call or put at a delta.
+- =fx_vol_surface_pillar_source=: one contributor's market series for a pillar and
+  the weight it carries, the series a soft reference to a quote series.
+- What one row can show is checked on write: a pillar's strike label is ATM or a
+  risk reversal, butterfly, call or put at a delta, a source's weight is positive,
+  and a blueprint's pair is two different currencies. Whether each expiry holds the
+  pillars its smile model needs spans rows, so it is checked before a calibration
+  reads the blueprint, which is the calibration task's.
+- Generated through codegen across SQL, domain, repository, protocol, shell and
+  TypeScript, with the database round trip tested.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follow the IR curve bootstrap config and pillar: model the three entities in
+=ores.refdata=, generate them, and add the recipe's checks. The calibration that
+reads a blueprint, the surface reads and any screen are later tasks.
 
 * Measurements
 
@@ -74,12 +93,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4418][#4418]] | [refdata] Model the FX volatility surface blueprint, its pillars and their sources |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A weight of NaN passes =weight > 0= | ores.refdata.fx_vol_surface_pillar_source.org | Accepted | The check bounds the weight below infinity, which refuses NaN and infinity |
+| 2 | Confirm the strike label spellings, such as a zero delta | ores.refdata.fx_vol_surface_pillar.org | Accepted | A delta runs from 1 to 99; the new test showed an unmatched label gave a null substring that passed, so the test is coalesced to false |
+| 3 | Confirm both currency codes are validated | ores.refdata.fx_vol_surface_blueprint.org | Declined | The insert trigger validates both through ores_refdata_validate_currency_fn |
+| 4 | =expiry_code= is a soft reference | ores.refdata.fx_vol_surface_pillar.org | Declined | By design; the calibration task resolves it and reports a bad code |
+| 5 | Pillar sufficiency is not checked on write | ores.refdata.fx_vol_surface_blueprint.org | Declined | It spans rows; the calibration task checks it, as the acceptance states |
+| 6 | No tests of the rejections | - | Accepted | refdata_fx_vol_surface_recipe_checks_test.sql, 16 cases; 5 fail on the original checks |
 
 * Result
+
+The three entities are modelled in =ores.refdata= and generated across SQL, domain,
+repository, protocol, shell and TypeScript. The blueprint keeps its output series as
+the sole natural key and its name unique per party. A pillar is keyed by its
+blueprint, expiry and strike label, and a source by its pillar and series. The
+checks on write hold the strike label grammar, a positive weight and two different
+currencies. The tables, permissions, roles, handlers, event mappings and shell
+commands are registered, and the list requests are regenerated.
+
+Measured at 4aaadaf83f on a recreated database with Acme provisioned:
+=ores.refdata.core.tests= passed, and the generated shell tests for the three
+entities passed, 144 assertions in 51 test cases.

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: ED62DAED-6805-5C3D-8A80-B82C0CE39209
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_surface_pillar_sources commands from the shell?
+#+description: Every command the fx_vol_surface_pillar_sources submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_surface_pillar_sources:
+
+This file documents the fx_vol_surface_pillar_sources resource at the shell, one section per command. Every command is a subcommand of =fx_vol_surface_pillar_sources=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 8FBE27C9-5DBD-519E-A955-E6FAC854D2B1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources.list=.
+
+#+name: fx_vol_surface_pillar_sources-list
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-list.ores :exports none
+fx_vol_surface_pillar_sources list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 4D127EA1-39AC-5792-A0FB-EB6B811EE36C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources get <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources.get=.
+
+#+name: fx_vol_surface_pillar_sources-get
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-get.ores :exports none
+fx_vol_surface_pillar_sources get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 42D24F9E-21BE-5EB5-824B-CDC508E6BE3C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources.get_many=.
+
+#+name: fx_vol_surface_pillar_sources-get-many
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-get-many.ores :exports none
+fx_vol_surface_pillar_sources get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B64CFA52-3BB7-596E-B408-6ECE11562A1C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources add <party_id> <pillar_id> <market_series_id> <contributor_code> <weight> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources.put=.
+
+#+name: fx_vol_surface_pillar_sources-add
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-add.ores :exports none
+fx_vol_surface_pillar_sources add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 344086A1-764A-56B5-8A65-485971ECF181
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources set <id> <party_id> <pillar_id> <market_series_id> <contributor_code> <weight> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources.put=.
+
+#+name: fx_vol_surface_pillar_sources-set
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-set.ores :exports none
+fx_vol_surface_pillar_sources set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D31A8446-876C-5B0D-8FEF-D57BFF1983F8
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources put-many --count <n> <id> <party_id> <pillar_id> <market_series_id> <contributor_code> <weight> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources.put_many=.
+
+#+name: fx_vol_surface_pillar_sources-put-many
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-put-many.ores :exports none
+fx_vol_surface_pillar_sources put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 20A19332-9742-531D-B9CD-57C558E4AE31
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources.delete=.
+
+#+name: fx_vol_surface_pillar_sources-delete
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-delete.ores :exports none
+fx_vol_surface_pillar_sources delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1D23B86F-456F-5AA6-8839-DD5A4ACD2321
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources.delete_many=.
+
+#+name: fx_vol_surface_pillar_sources-delete-many
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-delete-many.ores :exports none
+fx_vol_surface_pillar_sources delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 41B11131-2049-558E-A5A8-75221458F48F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources_versions.list=.
+
+#+name: fx_vol_surface_pillar_sources-versions
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-versions.ores :exports none
+fx_vol_surface_pillar_sources versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 0FAFAE1F-A273-55DA-905B-DB5555359A41
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillar_sources version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillar_sources_versions.get=.
+
+#+name: fx_vol_surface_pillar_sources-version
+#+begin_src ores-shell :tangle fx_vol_surface_pillar_sources-version.ores :exports none
+fx_vol_surface_pillar_sources version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

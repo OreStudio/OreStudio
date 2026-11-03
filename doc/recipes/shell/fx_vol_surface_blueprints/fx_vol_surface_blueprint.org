@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 573B8928-38CB-5CB0-AC1A-5893CDB5A7A3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_surface_blueprints commands from the shell?
+#+description: Every command the fx_vol_surface_blueprints submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_surface_blueprints:
+
+This file documents the fx_vol_surface_blueprints resource at the shell, one section per command. Every command is a subcommand of =fx_vol_surface_blueprints=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 011902ED-B584-5848-BCEB-228F0377F23B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints.list=.
+
+#+name: fx_vol_surface_blueprints-list
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-list.ores :exports none
+fx_vol_surface_blueprints list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F0C5A611-CDBE-5186-8222-96BCC77A496B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints get <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints.get=.
+
+#+name: fx_vol_surface_blueprints-get
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-get.ores :exports none
+fx_vol_surface_blueprints get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: DA7E4138-27DE-5D29-9EA3-9527BF8B879B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints.get_many=.
+
+#+name: fx_vol_surface_blueprints-get-many
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-get-many.ores :exports none
+fx_vol_surface_blueprints get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8088D4DE-8EDB-50FB-A4AE-4FEB593FE416
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints add <output_series_id> <name> <base_currency_code> <quote_currency_code> <fx_option_convention_id> <smile_model> <expiry_interpolation> <output_expiries> <output_strikes> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints.put=.
+
+#+name: fx_vol_surface_blueprints-add
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-add.ores :exports none
+fx_vol_surface_blueprints add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: EAAFD4F9-4552-5AF9-8957-DDCBF753FDB9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints set <id> <output_series_id> <name> <base_currency_code> <quote_currency_code> <fx_option_convention_id> <smile_model> <expiry_interpolation> <output_expiries> <output_strikes> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints.put=.
+
+#+name: fx_vol_surface_blueprints-set
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-set.ores :exports none
+fx_vol_surface_blueprints set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B0878155-355D-54B3-BC77-6640FE58EE3E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints put-many --count <n> <id> <output_series_id> <name> <base_currency_code> <quote_currency_code> <fx_option_convention_id> <smile_model> <expiry_interpolation> <output_expiries> <output_strikes> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints.put_many=.
+
+#+name: fx_vol_surface_blueprints-put-many
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-put-many.ores :exports none
+fx_vol_surface_blueprints put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 2437988F-8E4D-5558-9AEE-B5F7097F06C7
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints.delete=.
+
+#+name: fx_vol_surface_blueprints-delete
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-delete.ores :exports none
+fx_vol_surface_blueprints delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 862E8854-154F-51BC-A2F0-88DCA5787319
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints.delete_many=.
+
+#+name: fx_vol_surface_blueprints-delete-many
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-delete-many.ores :exports none
+fx_vol_surface_blueprints delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 36EEC671-CC78-56FB-9F36-2C41B101BE3B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints_versions.list=.
+
+#+name: fx_vol_surface_blueprints-versions
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-versions.ores :exports none
+fx_vol_surface_blueprints versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 7F54D836-B9A4-5C8D-91CD-993CF60A9CD4
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_blueprints version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_blueprints_versions.get=.
+
+#+name: fx_vol_surface_blueprints-version
+#+begin_src ores-shell :tangle fx_vol_surface_blueprints-version.ores :exports none
+fx_vol_surface_blueprints version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

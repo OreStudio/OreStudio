@@ -21,7 +21,7 @@ A gate run that costs what the change reaches: the heavy checks run only when pr
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -39,7 +39,7 @@ A gate run that costs what the change reaches: the heavy checks run only when pr
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:95D01BC0-1687-44A4-90C1-BF3385ED2E4B][Run ctest in parallel in the gate]] | BACKLOG | | | The gate's ctest check took 1010s where a run at -j 4 took 682s; confirm the gate runs the suites one at a time and give it a job count. |
+| [[id:95D01BC0-1687-44A4-90C1-BF3385ED2E4B][Run ctest in parallel in the gate]] | DONE | 2026-11-03 | 2026-11-03 | The gate's ctest check took 1010s where a run at -j 4 took 682s; confirm the gate runs the suites one at a time and give it a job count. |
 | [[id:B31AE4FD-B1AE-4A06-91C4-8EA6CF1395DC][Skip the fleet checks for a test-only change]] | BACKLOG | | | When every changed compiled file reaches only test binaries, the db, ticks-smoke and step-consumers checks prove nothing new; skip them. |
 | [[id:3237C98A-F3CC-478F-BD74-477B5D8CCA03][Run only the suites a change reaches]] | BACKLOG | | | Use the build's dependency log to find the test binaries that compile a changed file, and run ctest on those suites only. |
 

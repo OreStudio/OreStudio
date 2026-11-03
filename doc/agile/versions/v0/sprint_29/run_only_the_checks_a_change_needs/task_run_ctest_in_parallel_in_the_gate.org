@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :tooling:ci:local_checks:run_only_the_checks_a_change_needs:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-only-the-checks-a-change-needs
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ The gate's ctest check runs the suites in parallel, with the resource locks the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -40,9 +40,12 @@ The gate's ctest check runs the suites in parallel, with the resource locks the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The test preset in =CMakePresets.json= names no job count, and the gate's
+=ctest= check passes none, so the gate ran the suites one at a time. Pass
+=-j 4= through =compass test run= in the check's command. The suites that must
+not overlap already say so: =ores.marketdata.core.tests= is =RUN_SERIAL= and
+the two web suites share the =ores_web_dist= resource lock. Four is the job
+count both full runs in this session used, and both passed.
 
 * Measurements
 
@@ -56,9 +59,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Gate =ctest=, one suite at a time | 1009.8s, 98 suites | =compass check= report, classes =cpp=, =docs= | =e23be9a87b= |
+| Gate =ctest=, one suite at a time, after a header rebuild | 1297.5s, 98 suites | =compass check= report, classes =cpp=, =docs= | =b8dc0a9b24= |
+| =ctest= at four jobs, outside the gate | 681.8s, 98 suites | =compass test run -- -j 4 --output-on-failure= | working tree on =8654ee4314= |
+| Gate tests | 34 pass | =pytest projects/ores.codegen/tests/test_local_checks.py= | working tree on =4d77014f25= |
 
 * Notes
+
+- This change's own gate classes are =tooling= and =docs=, which run no
+  =ctest=, so the first gate time at four jobs comes from the next C++ gate.
+  Record it on the story when it lands.
 
 * Test Scenarios
 
@@ -84,3 +94,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The gate's =ctest= check now runs the suites at four jobs. Outside the gate the
+same suites took 682s at four jobs against 1010s one at a time in the gate. The
+first acceptance bullet is met. The second is met for the before number and
+for the same command outside the gate; the gate's own after number lands with
+the next C++ gate.

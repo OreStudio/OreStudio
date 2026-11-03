@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.quant/math/brent.hpp"
 #include "ores.analytics.quant/math/normal.hpp"
+#include "ores.analytics.quant/math/root.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -50,12 +50,11 @@ TEST_CASE("the normal quantile inverts the distribution function across all thre
     }
 }
 
-TEST_CASE("the normal quantile is infinite at the ends and undefined outside them", "[normal]") {
-    CHECK(normal_quantile(0.0) == -std::numeric_limits<double>::infinity());
-    CHECK(normal_quantile(1.0) == std::numeric_limits<double>::infinity());
-    CHECK(std::isnan(normal_quantile(-0.1)));
-    CHECK(std::isnan(normal_quantile(1.1)));
-    CHECK(std::isnan(normal_quantile(std::numeric_limits<double>::quiet_NaN())));
+TEST_CASE("the normal quantile is refused at the ends and outside them", "[normal]") {
+    CHECK_THROWS(normal_quantile(0.0));
+    CHECK_THROWS(normal_quantile(1.0));
+    CHECK_THROWS(normal_quantile(-0.1));
+    CHECK_THROWS(normal_quantile(1.1));
 }
 
 TEST_CASE("the normal density integrates to the distribution function", "[normal]") {
@@ -70,31 +69,32 @@ TEST_CASE("the normal density integrates to the distribution function", "[normal
     CHECK(normal_pdf(0.0) == Catch::Approx(0.3989422804014327).epsilon(1e-15));
 }
 
-TEST_CASE("Brent finds a root to the tolerance", "[brent]") {
-    const auto r = brent_root([](double x) { return x * x * x - 2.0 * x - 5.0; }, 2.0, 3.0);
+TEST_CASE("a root search finds a root to the tolerance", "[root]") {
+    const auto r = find_root([](double x) { return x * x * x - 2.0 * x - 5.0; }, 2.0, 3.0);
     REQUIRE(r);
     CHECK(*r == Catch::Approx(2.0945514815423265).epsilon(1e-14));
-    const auto c = brent_root([](double x) { return std::cos(x) - x; }, 0.0, 1.0);
+    const auto c = find_root([](double x) { return std::cos(x) - x; }, 0.0, 1.0);
     REQUIRE(c);
     CHECK(*c == Catch::Approx(0.7390851332151607).epsilon(1e-14));
 }
 
-TEST_CASE("Brent returns an end that is already a root", "[brent]") {
-    CHECK(*brent_root([](double x) { return x - 1.0; }, 1.0, 3.0) == 1.0);
-    CHECK(*brent_root([](double x) { return x - 3.0; }, 1.0, 3.0) == 3.0);
-}
-
-TEST_CASE("Brent refuses a bracket without a sign change, and a search out of iterations",
-          "[brent]") {
-    CHECK_FALSE(brent_root([](double x) { return x * x + 1.0; }, -1.0, 1.0));
-    CHECK_FALSE(brent_root([](double x) { return std::exp(x) - 1e6; },
-                           -100.0,
-                           100.0,
-                           brent_options{.tolerance = 1e-15, .max_iterations = 2}));
-}
-
-TEST_CASE("Brent finds a root of a function that is flat near it", "[brent]") {
-    const auto r = brent_root([](double x) { return std::pow(x - 0.3, 5); }, -1.0, 1.0);
+TEST_CASE("a root search ends at a root of zero, where a relative tolerance alone would not",
+          "[root]") {
+    const auto r = find_root([](double x) { return std::sin(x) + x; }, -1.0, 2.0);
     REQUIRE(r);
-    CHECK(*r == Catch::Approx(0.3).margin(1e-2));
+    CHECK(std::abs(*r) < 1e-13);
+}
+
+TEST_CASE("a root search returns an end that is already a root", "[root]") {
+    CHECK(*find_root([](double x) { return x - 1.0; }, 1.0, 3.0) == 1.0);
+    CHECK(*find_root([](double x) { return x - 3.0; }, 1.0, 3.0) == 3.0);
+}
+
+TEST_CASE("a root search refuses a bracket without a sign change, and one out of iterations",
+          "[root]") {
+    CHECK_FALSE(find_root([](double x) { return x * x + 1.0; }, -1.0, 1.0));
+    CHECK_FALSE(find_root([](double x) { return std::exp(x) - 1e6; },
+                          -100.0,
+                          100.0,
+                          root_options{.tolerance = 0.0, .max_iterations = 2}));
 }

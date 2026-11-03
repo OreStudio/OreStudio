@@ -17,12 +17,11 @@
  *
  */
 #include "ores.analytics.quant/math/return_moments.hpp"
-#include "ores.analytics.quant/math/brent.hpp"
+#include <boost/math/statistics/univariate_statistics.hpp>
+#include <boost/math/tools/cubic_roots.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <initializer_list>
-#include <utility>
 
 namespace ores::analytics::quant::math {
 
@@ -41,34 +40,13 @@ double expansion_at(const return_shape& shape, double z) noexcept {
     return 1.0 + shape.skewness * he3 / 6.0 + shape.excess_kurtosis * he4 / 24.0;
 }
 
-/// The expansion's slope: skewness (z^2 - 1) / 2 + excess_kurtosis (z^3 - 3 z) / 6.
-double slope_at(const return_shape& shape, double z) noexcept {
-    return shape.skewness * (z * z - 1.0) / 2.0 + shape.excess_kurtosis * z * (z * z - 3.0) / 6.0;
-}
-
 }
 
 std::expected<return_moments, std::string> moments_of(std::span<const double> returns) {
     if (returns.size() < 4)
         return std::unexpected("the moments of a sample need at least four returns");
     const auto n = static_cast<double>(returns.size());
-    double mean = 0.0;
-    for (const double r : returns)
-        mean += r;
-    mean /= n;
-    double m2 = 0.0;
-    double m3 = 0.0;
-    double m4 = 0.0;
-    for (const double r : returns) {
-        const double d = r - mean;
-        const double d2 = d * d;
-        m2 += d2;
-        m3 += d2 * d;
-        m4 += d2 * d2;
-    }
-    m2 /= n;
-    m3 /= n;
-    m4 /= n;
+    const auto [mean, m2, m3, m4] = boost::math::statistics::first_four_moments(returns);
     // A constant series leaves only rounding residue once demeaned, of the order of
     // epsilon squared times its mean squared, so a spread below a part in 10^24 of the
     // mean's square, or below 10^-30 absolutely, is no spread.
@@ -104,25 +82,11 @@ bool is_gram_charlier_density(const return_shape& shape) noexcept {
     // With no kurtosis the expansion is a cubic, negative somewhere unless it has no skew.
     if (k == 0.0)
         return s == 0.0;
-    // The expansion rises without bound both ways, so it is lowest at a root of its slope
-    // k z^3 / 6 + s z^2 / 2 - k z / 2 - s / 2. The slope turns where its own slope
-    // k z^2 / 2 + s z - k / 2 is zero, which splits the line into three pieces on each of
-    // which the slope is monotone and has at most one root, and Cauchy's bound
-    // 1 + max(3, 3 |s| / k) holds every root, so it closes the two outer pieces.
-    const double root_of_discriminant = std::sqrt(s * s + k * k);
-    const double turn_low = (-s - root_of_discriminant) / k;
-    const double turn_high = (-s + root_of_discriminant) / k;
-    const double bound = 1.0 + std::max(3.0, 3.0 * std::abs(s) / k);
-    const auto slope = [&](double z) {
-        return slope_at(shape, z);
-    };
-    for (const auto& [lo, hi] : {std::pair{-bound, turn_low},
-                                 std::pair{turn_low, turn_high},
-                                 std::pair{turn_high, bound}}) {
-        const auto root = brent_root(slope, lo, hi, {.tolerance = 1e-14});
-        if (root && expansion_at(shape, *root) < -density_tolerance)
+    // The expansion rises without bound both ways, so it is lowest at a real root of
+    // its slope, k z^3 / 6 + s z^2 / 2 - k z / 2 - s / 2.
+    for (const double z : boost::math::tools::cubic_roots(k / 6.0, s / 2.0, -k / 2.0, -s / 2.0))
+        if (std::isfinite(z) && expansion_at(shape, z) < -density_tolerance)
             return false;
-    }
     return true;
 }
 
@@ -153,14 +117,7 @@ realised_volatility(std::span<const double> returns, int window, double periods_
     if (returns.size() < static_cast<std::size_t>(window))
         return std::unexpected("the sample is shorter than the window");
     const auto last = returns.last(static_cast<std::size_t>(window));
-    double mean = 0.0;
-    for (const double r : last)
-        mean += r;
-    mean /= window;
-    double ss = 0.0;
-    for (const double r : last)
-        ss += (r - mean) * (r - mean);
-    return std::sqrt(ss / (window - 1.0) * periods_per_year);
+    return std::sqrt(boost::math::statistics::sample_variance(last) * periods_per_year);
 }
 
 }

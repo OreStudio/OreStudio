@@ -19,24 +19,31 @@
 #ifndef ORES_ANALYTICS_QUANT_MATH_NORMAL_HPP
 #define ORES_ANALYTICS_QUANT_MATH_NORMAL_HPP
 
-#include "ores.analytics.quant/export.hpp"
+#include <boost/math/special_functions/erf.hpp>
+#include <cmath>
+#include <numbers>
 
 namespace ores::analytics::quant::math {
 
 /// The standard normal density.
-ORES_ANALYTICS_QUANT_EXPORT double normal_pdf(double x) noexcept;
+inline double normal_pdf(double x) noexcept {
+    return std::exp(-0.5 * x * x) * (std::numbers::inv_sqrtpi / std::numbers::sqrt2);
+}
 
 /// The standard normal distribution function.
-ORES_ANALYTICS_QUANT_EXPORT double normal_cdf(double x) noexcept;
+inline double normal_cdf(double x) noexcept {
+    return 0.5 * std::erfc(-x / std::numbers::sqrt2);
+}
 
 /**
- * @brief The standard normal quantile: the x with normal_cdf(x) = p.
+ * @brief The standard normal quantile, for p in (0, 1).
  *
- * Wichura's algorithm AS 241, PPND16 (Applied Statistics 37(3), 1988), which is
- * accurate to about one part in 10^16 over (0, 1). Minus infinity at zero, plus
- * infinity at one, and NaN outside [0, 1].
+ * The C++ library has no inverse of erfc, so Boost.Math's is used:
+ * x = -sqrt(2) erfc^-1(2 p). Boost raises an error at zero, one or outside.
  */
-ORES_ANALYTICS_QUANT_EXPORT double normal_quantile(double p) noexcept;
+inline double normal_quantile(double p) {
+    return -std::numbers::sqrt2 * boost::math::erfc_inv(2.0 * p);
+}
 
 }
 

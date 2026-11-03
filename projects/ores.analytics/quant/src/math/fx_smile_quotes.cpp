@@ -17,7 +17,7 @@
  *
  */
 #include "ores.analytics.quant/math/fx_smile_quotes.hpp"
-#include "ores.analytics.quant/math/brent.hpp"
+#include "ores.analytics.quant/math/root.hpp"
 #include <algorithm>
 #include <cmath>
 #include <initializer_list>
@@ -151,7 +151,7 @@ private:
     solve(G&& g, std::pair<double, double> bracket, const char* what) {
         if (bracket.first == bracket.second)
             return bracket.first;
-        const auto root = brent_root(g, bracket.first, bracket.second, {.tolerance = 1e-14});
+        const auto root = find_root(g, bracket.first, bracket.second, {.tolerance = 1e-14});
         if (!root)
             return std::unexpected(std::string(what) + ": " + root.error());
         return *root;

@@ -879,6 +879,9 @@ struct cut_authorisation_subject {
     int gap_count = 0;
     std::string applied_by = "";
     std::string applied_at = "";
+
+    friend bool operator==(const cut_authorisation_subject&,
+                           const cut_authorisation_subject&) = default;
 };
 
 struct list_cut_authorisation_subjects_request {
@@ -893,11 +896,17 @@ struct list_cut_authorisation_subjects_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> request_ids;
+
+    friend bool operator==(const list_cut_authorisation_subjects_request&,
+                           const list_cut_authorisation_subjects_request&) = default;
 };
 
 struct list_cut_authorisation_subjects_response {
     ores::utility::domain::result result;
     std::vector<cut_authorisation_subject> subjects;
+
+    friend bool operator==(const list_cut_authorisation_subjects_response&,
+                           const list_cut_authorisation_subjects_response&) = default;
 };
 
 struct take_cut_response {
@@ -1795,6 +1804,68 @@ wire_fields(const publish_ore_parameter_value_domains_from_dq_request&) {
 }
 
 /**
+ * @brief The members of cut_authorisation_subject, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const cut_authorisation_subject&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &cut_authorisation_subject::request_id},
+        ::ores::utility::codec::field{"cut_id", &cut_authorisation_subject::cut_id},
+        ::ores::utility::codec::field{"label", &cut_authorisation_subject::label},
+        ::ores::utility::codec::field{"kind_code", &cut_authorisation_subject::kind_code},
+        ::ores::utility::codec::field{"kind_name", &cut_authorisation_subject::kind_name},
+        ::ores::utility::codec::field{"timepoint", &cut_authorisation_subject::timepoint},
+        ::ores::utility::codec::field{"timepoint_timezone",
+                                      &cut_authorisation_subject::timepoint_timezone},
+        ::ores::utility::codec::field{"scope_code", &cut_authorisation_subject::scope_code},
+        ::ores::utility::codec::field{"business_centre_code",
+                                      &cut_authorisation_subject::business_centre_code},
+        ::ores::utility::codec::field{"state", &cut_authorisation_subject::state},
+        ::ores::utility::codec::field{"deal_count", &cut_authorisation_subject::deal_count},
+        ::ores::utility::codec::field{"market_data_set_count",
+                                      &cut_authorisation_subject::market_data_set_count},
+        ::ores::utility::codec::field{"gap_count", &cut_authorisation_subject::gap_count},
+        ::ores::utility::codec::field{"applied_by", &cut_authorisation_subject::applied_by},
+        ::ores::utility::codec::field{"applied_at", &cut_authorisation_subject::applied_at},
+    };
+}
+
+/**
+ * @brief The members of list_cut_authorisation_subjects_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_cut_authorisation_subjects_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_ids",
+                                      &list_cut_authorisation_subjects_request::request_ids},
+    };
+}
+
+/**
+ * @brief The members of list_cut_authorisation_subjects_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_cut_authorisation_subjects_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &list_cut_authorisation_subjects_response::result},
+        ::ores::utility::codec::field{"subjects",
+                                      &list_cut_authorisation_subjects_response::subjects},
+    };
+}
+
+/**
  * @brief The members of take_cut_response, named as the wire names them and in the order
  * the type declares them.
  *
@@ -2391,6 +2462,46 @@ struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::cut_bod
     static ores::reporting::messaging::cut_body_part read_json(std::string_view text);
     static std::string write_msgpack(const ores::reporting::messaging::cut_body_part& v);
     static ores::reporting::messaging::cut_body_part read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::cut_authorisation_subject> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::cut_authorisation_subject& v);
+    static ores::reporting::messaging::cut_authorisation_subject read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::cut_authorisation_subject& v);
+    static ores::reporting::messaging::cut_authorisation_subject
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_cut_authorisation_subjects_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_cut_authorisation_subjects_request& v);
+    static ores::reporting::messaging::list_cut_authorisation_subjects_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_cut_authorisation_subjects_request& v);
+    static ores::reporting::messaging::list_cut_authorisation_subjects_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_cut_authorisation_subjects_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_cut_authorisation_subjects_response& v);
+    static ores::reporting::messaging::list_cut_authorisation_subjects_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_cut_authorisation_subjects_response& v);
+    static ores::reporting::messaging::list_cut_authorisation_subjects_response
+    read_msgpack(std::span<const std::byte> data);
 };
 template <>
 struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::take_cut_response> {

@@ -1,0 +1,6 @@
+# =by-ore-file-code=
+#
+# GENERATED from doc/recipes/shell/ore_file_versions/ore_file_version.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+ore_file_versions by-ore-file-code __none__ --limit 1

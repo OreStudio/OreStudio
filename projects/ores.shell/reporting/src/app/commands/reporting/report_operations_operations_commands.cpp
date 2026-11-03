@@ -1620,7 +1620,9 @@ void report_operations_operations_commands::process_list_cut_authorisation_subje
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

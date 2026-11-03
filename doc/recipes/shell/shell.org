@@ -2079,3 +2079,19 @@ tangled into the runnable script library
 * Swaption Volatility Smiles
 
 - [[id:B27DFD9C-A19B-5A0E-B6A8-1546E5279B93][How do I run the swaption_volatility_smiles commands from the shell?]]
+
+* Ore File Categories
+
+- [[id:62E13E52-7696-52D1-8FCB-C69339DB81ED][How do I run the ore_file_categories commands from the shell?]]
+
+* Ore File Versions
+
+- [[id:B9B96BE3-0AA0-51A9-B012-95B65073FDF5][How do I run the ore_file_versions commands from the shell?]]
+
+* Ore Files
+
+- [[id:C9C72368-DD1B-52B7-8366-0224FA785031][How do I run the ore_files commands from the shell?]]
+
+* Trade Generation Trade Types
+
+- [[id:4BA21A7C-964A-5B51-B3A8-E9B7B1F30FBD][How do I run the trade_generation_trade_types commands from the shell?]]

@@ -419,9 +419,7 @@ function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode
                      * apply nobody made.
                      */}
                     {record.detail.appliedAt === null ? (
-                        <p className="mt-3 text-xs text-ink-muted">
-                            {t('cuts.auth.applyPending')}
-                        </p>
+                        <p className="mt-3 text-xs text-ink-muted">{t('cuts.auth.applyPending')}</p>
                     ) : (
                         <div className="mt-3 space-y-1">
                             <p className="text-xs text-ink">

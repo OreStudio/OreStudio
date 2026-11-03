@@ -904,6 +904,9 @@ private:
         one.variance = std::move(v);
     }
 
+    /// How the reason of an approval by the class policy begins, so the feed's note can tell it.
+    static constexpr std::string_view policy_approval_prefix = "Approved by the";
+
     /// Why a fitted shape waits, or that it passes the policy's rules, before anyone decides.
     static std::string waiting_reason(const ores::synthetic::feed::fit_evidence& evidence,
                                       const ores::synthetic::feed::variance_approval_rules& rules) {
@@ -939,7 +942,8 @@ private:
         if (!feed::approval_failures(evidence, policy.variance_approval).empty())
             return;
         const auto reason =
-            std::format("Approved by the {} calibration policy {} version {}: {}.",
+            std::format("{} {} calibration policy {} version {}: {}.",
+                        policy_approval_prefix,
                         asset_class_code,
                         policy.id,
                         policy.version,
@@ -949,7 +953,7 @@ private:
         if (!decided.success) {
             BOOST_LOG_SEV(feed_config_handler_lg(), warn)
                 << "The policy did not approve " << v.calibration_id << ": " << decided.message;
-            v.state_reason += " The policy's approval failed: " + decided.message;
+            v.state_reason = "Waits for review: the policy's approval failed: " + decided.message;
             return;
         }
         v.state = "approved";
@@ -969,7 +973,7 @@ private:
                                id);
         if (v.state == "rejected")
             return "GJR-GARCH daily variance rejected: " + v.state_reason;
-        if (v.state == "approved" && v.state_reason.starts_with("Approved by the"))
+        if (v.state == "approved" && v.state_reason.starts_with(policy_approval_prefix))
             return std::format("GJR-GARCH daily variance fitted from {} of {} return(s), "
                                "persistence {:.4f}: calibration {} approved by the class policy.",
                                v.used_count,

@@ -370,3 +370,13 @@ TEST_CASE("the evidence of a fit is its shape, and a rejected fit has none",
     CHECK(none.persistence == 0.0);
     CHECK_FALSE(approval_failures(none, variance_approval_rules{}).empty());
 }
+
+TEST_CASE("a fit whose shape is not finite fails the rules", variance_calibration_tags) {
+    const variance_approval_rules rules{.by_policy = true};
+    const fit_evidence nan{.returns = 280,
+                           .starts_agreed = true,
+                           .alpha = 0.0114,
+                           .gamma = 0.0229,
+                           .persistence = std::nan("")};
+    CHECK(approval_failures(nan, rules) == std::vector<std::string>{"its shape is not finite"});
+}

@@ -96,6 +96,13 @@ via its "Verifies task" field.
 | L4 | Two fixing feeds of one pair would each fit, and the later approval supersede the earlier | feed_config_handler.hpp | Decline | No pair has two fitted feeds today (28 pairs, 0 shared); the review closes older proposals, so the pair still ends with one approval |
 | L5 | feed_config_calibrate_writes_only_with_the_write_permissions times out with market data stopped | feed_config_handler_tests.cpp | Decline | It passes in 1.7 s with market data up; the gate stops market data while the test previews a database that now holds stored fixings, so the window reads time out. The preview makes no new remote call in this change |
 | L6 | protocol-twins, subject-conformance and codegen-tests fail | trading blotter, market regime | Decline | Files this branch does not touch; they fail on main the same way |
+| R1.1 | The reason and the decision count returns from different fields | feed_config_handler.hpp | Decline | A point is used exactly when it has a return, which the audit checks on every row; AUD/USD's 254 used points carry 254 returns |
+| R1.2 | The policy approval is told by a string literal | feed_config_handler.hpp | Accept | One constant, policy_approval_prefix, writes and reads it |
+| R1.3 | A failed approval's reason still says it passes | feed_config_handler.hpp | Accept | The reason says the fit waits because the approval failed |
+| R1.4 | The rule floor of 250 | calibration_policy model | Decline | Deliberate and documented on the column; the rules are not edited on screen |
+| R1.5 | A NaN shape passes the range checks | variance_calibration.cpp | Accept | A non-finite shape fails the rules; tested |
+| R1.6 | The reaction has no upper bound | variance_calibration.cpp | Decline | Deliberate; the persistence range bounds the shape |
+| R1.7 | The calibrate permission test depends on shared state | feed_config_handler_tests.cpp | Accept | Filed as the capture "The calibrate permission test times out when market data is stopped" |
 
 * Result
 

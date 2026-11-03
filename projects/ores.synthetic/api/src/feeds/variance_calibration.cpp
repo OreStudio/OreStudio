@@ -104,6 +104,12 @@ fit_evidence evidence_of(const variance_fit& fit) {
 std::vector<std::string> approval_failures(const fit_evidence& evidence,
                                            const variance_approval_rules& rules) {
     std::vector<std::string> out;
+    // Every comparison with NaN is false, so a non-finite shape would pass the range checks.
+    if (!std::isfinite(evidence.alpha) || !std::isfinite(evidence.gamma) ||
+        !std::isfinite(evidence.persistence)) {
+        out.push_back("its shape is not finite");
+        return out;
+    }
     if (evidence.returns < rules.min_returns)
         out.push_back(
             std::format("{} returns, fewer than {}", evidence.returns, rules.min_returns));

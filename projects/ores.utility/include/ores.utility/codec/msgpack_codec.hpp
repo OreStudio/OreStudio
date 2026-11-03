@@ -206,7 +206,12 @@ struct msgpack_codec<T> {
 };
 
 /**
- * @brief A floating-point number is the format's double frame.
+ * @brief A floating-point number is written as the format's double frame and read
+ * from a double or an integer frame.
+ *
+ * A JavaScript encoder has one number type and packs a whole number such as 1.0
+ * as an integer, so a double read from the web arrives in an integer frame. The
+ * JSON reader accepts either form for the same reason.
  */
 template <>
 struct msgpack_codec<double> {
@@ -216,9 +221,17 @@ struct msgpack_codec<double> {
     }
 
     static double read(const msgpack_object& v) {
-        if (v.type != MSGPACK_OBJECT_FLOAT)
+        switch (v.type) {
+        case MSGPACK_OBJECT_FLOAT32:
+        case MSGPACK_OBJECT_FLOAT64:
+            return v.via.f64;
+        case MSGPACK_OBJECT_POSITIVE_INTEGER:
+            return static_cast<double>(v.via.u64);
+        case MSGPACK_OBJECT_NEGATIVE_INTEGER:
+            return static_cast<double>(v.via.i64);
+        default:
             throw std::invalid_argument("Not a number: the MessagePack value is not one");
-        return v.via.f64;
+        }
     }
 };
 

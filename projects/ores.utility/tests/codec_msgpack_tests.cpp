@@ -181,3 +181,18 @@ TEST_CASE("a floating-point number is the frame reflect-cpp writes", "[codec][ms
     CHECK(wire_msgpack::write(negative) == rfl_msgpack(negative));
     CHECK(wire_msgpack::read<double>(rfl_msgpack(plain)) == plain);
 }
+
+TEST_CASE("a whole number packed as an integer reads as a floating-point number",
+          "[codec][msgpack]") {
+    CHECK(wire_msgpack::read<double>(rfl_msgpack(0)) == 0.0);
+    CHECK(wire_msgpack::read<double>(rfl_msgpack(1)) == 1.0);
+    CHECK(wire_msgpack::read<double>(rfl_msgpack(-3)) == -3.0);
+    CHECK(wire_msgpack::read<double>(rfl_msgpack(std::uint64_t{1} << 40)) == 1099511627776.0);
+}
+
+TEST_CASE("a value that is not a number does not read as a floating-point number",
+          "[codec][msgpack]") {
+    CHECK_THROWS_AS(wire_msgpack::read<double>(rfl_msgpack(std::string("1.5"))),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(wire_msgpack::read<double>(rfl_msgpack(true)), std::invalid_argument);
+}

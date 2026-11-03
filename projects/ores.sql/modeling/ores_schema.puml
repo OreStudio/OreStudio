@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-739 tables in 21 groups.
+742 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -210,6 +210,9 @@ entity "refdata" as refdata {
   ores_refdata_fra_conventions_tbl
   ores_refdata_future_conventions_tbl
   ores_refdata_fx_option_conventions_tbl
+  ores_refdata_fx_vol_surface_blueprints_tbl
+  ores_refdata_fx_vol_surface_pillar_sources_tbl
+  ores_refdata_fx_vol_surface_pillars_tbl
   ores_refdata_fx_volatility_configs_tbl
   ores_refdata_fx_volatility_smiles_tbl
   ores_refdata_ibor_index_conventions_tbl
@@ -288,7 +291,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-213 tables — ores_schema.refdata.puml
+216 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {

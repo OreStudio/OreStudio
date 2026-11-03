@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 5CC2D8E2-53FB-5DA1-AAC1-957B08F79539
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_surface_pillars commands from the shell?
+#+description: Every command the fx_vol_surface_pillars submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_surface_pillars:
+
+This file documents the fx_vol_surface_pillars resource at the shell, one section per command. Every command is a subcommand of =fx_vol_surface_pillars=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4AB4FED8-3F87-51EC-8339-59B56EEEDA24
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars.list=.
+
+#+name: fx_vol_surface_pillars-list
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-list.ores :exports none
+fx_vol_surface_pillars list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 1D2EE54E-7A94-58F8-A5ED-9FA9D77792EB
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars get <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars.get=.
+
+#+name: fx_vol_surface_pillars-get
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-get.ores :exports none
+fx_vol_surface_pillars get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 59C178CC-A5D0-5A0B-A095-72EC7F5F72C3
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars.get_many=.
+
+#+name: fx_vol_surface_pillars-get-many
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-get-many.ores :exports none
+fx_vol_surface_pillars get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4C82135E-8EBC-5F7F-A6F9-743EEAAC1AF7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars add <party_id> <blueprint_id> <expiry_code> <strike_label> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars.put=.
+
+#+name: fx_vol_surface_pillars-add
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-add.ores :exports none
+fx_vol_surface_pillars add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 7E385D5F-D571-588E-9257-9030F0758865
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars set <id> <party_id> <blueprint_id> <expiry_code> <strike_label> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars.put=.
+
+#+name: fx_vol_surface_pillars-set
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-set.ores :exports none
+fx_vol_surface_pillars set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 3F0AAB35-2FB6-5A39-91C2-C1A2CAD50726
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars put-many --count <n> <id> <party_id> <blueprint_id> <expiry_code> <strike_label> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars.put_many=.
+
+#+name: fx_vol_surface_pillars-put-many
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-put-many.ores :exports none
+fx_vol_surface_pillars put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 23B58DED-21B2-5B6C-9446-4D38CCC3F2AF
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars.delete=.
+
+#+name: fx_vol_surface_pillars-delete
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-delete.ores :exports none
+fx_vol_surface_pillars delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D05154ED-F249-5624-A88A-BDBB25CC9F17
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars.delete_many=.
+
+#+name: fx_vol_surface_pillars-delete-many
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-delete-many.ores :exports none
+fx_vol_surface_pillars delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 16D9071F-1769-517B-9A79-0BE4B56AC144
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars_versions.list=.
+
+#+name: fx_vol_surface_pillars-versions
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-versions.ores :exports none
+fx_vol_surface_pillars versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 13BAC368-D608-5B3A-91C5-05DB34BAF094
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_pillars version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.fx_vol_surface_pillars_versions.get=.
+
+#+name: fx_vol_surface_pillars-version
+#+begin_src ores-shell :tangle fx_vol_surface_pillars-version.ores :exports none
+fx_vol_surface_pillars version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

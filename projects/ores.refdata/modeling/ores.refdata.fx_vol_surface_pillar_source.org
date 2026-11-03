@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: AD6023D7-EB3D-4406-979D-24CEF998837F
+:END:
+#+title: ores.refdata.fx_vol_surface_pillar_source
+#+description: Codegen entity model for the refdata fx_vol_surface_pillar_source table; one contributor's market series for an FX volatility surface pillar, and the weight it carries.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: fx_vol_surface_pillar_source
+#+entity_plural: fx_vol_surface_pillar_sources
+#+entity_title: FX Volatility Surface Pillar Source
+#+brief: One contributor's market series for an FX volatility surface pillar, and the weight it carries.
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+One contributor's quote of a pillar: the market series it is read from, and the
+weight the contributor carries in the calibration. A pillar reads one series per
+contributor, so a broker's quotes and the derived source's quotes of the same point
+are two sources of one pillar, and a missing observation from one of them is not a
+refusal by itself. See
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]].
+
+=market_series_id= is a soft reference to an =fx_option= quote series in
+=ores.marketdata=, named by the caller from the series the party holds.
+=contributor_code= names the provider whose series it is, as the series' own
+=provider_code= does, so a reader sees the contributor without a cross-component
+read.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-surrogate-lookup
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this source row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+Owning party (legal entity) this source's blueprint belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** pillar_id
+:PROPERTIES:
+:type:       uuid
+:cpp_type:   boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:END:
+
+Parent =fx_vol_surface_pillar= this source quotes.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** market_series_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:END:
+
+Soft reference to the =fx_option= =market_series= (in =ores.marketdata=) whose
+observation at the as-of is this contributor's quote of the pillar.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** contributor_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The provider whose series this is, such as =derived= or =bloomberg=.
+
+#+begin_src cpp :name generator
+std::string("derived")
+#+end_src
+
+** weight
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 1.0
+:default:       1.0
+:END:
+
+The weight this contributor's quote carries in the calibration, positive and
+finite; the weights of a pillar's sources are relative, so their scale does not
+matter. PostgreSQL orders NaN above every number, so the bound below infinity
+refuses NaN as well.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_fx_vol_surface_pillar_sources_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "contributor_code" <> ''                                    |
+| "weight" > 0 and "weight" < 'Infinity'::double precision    |
+
+* Foreign keys
+
+** pillar_id
+:PROPERTIES:
+:table:         ores_refdata_fx_vol_surface_pillars_tbl
+:error_message: Invalid pillar_id: %. No active fx_vol_surface_pillar found with this id.
+:nullable:      false
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: pillar_source
+:entity_plural_short:   pillar_sources
+:entity_singular_words: FX volatility surface pillar source
+:entity_plural_words:   FX volatility surface pillar sources
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: s
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:E3778CAD-A176-4B6D-839F-3E8AB20AF28F][FX Volatility Surface Pillar]] -- the pillar this source quotes.
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] -- why a pillar names its series.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

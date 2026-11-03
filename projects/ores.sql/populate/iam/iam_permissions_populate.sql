@@ -795,6 +795,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:read',          'View ir curve bootstrap pillars');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:write',         'Create and modify ir curve bootstrap pillars');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:delete',        'Delete ir curve bootstrap pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:read', 'View FX volatility surface blueprints');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:write', 'Create and modify FX volatility surface blueprints');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:delete', 'Delete FX volatility surface blueprints');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:read', 'View FX volatility surface pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:write', 'Create and modify FX volatility surface pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:delete', 'Delete FX volatility surface pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:read', 'View FX volatility surface pillar sources');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:write', 'Create and modify FX volatility surface pillar sources');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:delete', 'Delete FX volatility surface pillar sources');
 
     -- Ledger feed types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ledger_feed_types:read',                   'View ledger feed types');

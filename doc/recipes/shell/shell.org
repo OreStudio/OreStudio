@@ -2095,3 +2095,15 @@ tangled into the runnable script library
 * Trade Generation Trade Types
 
 - [[id:4BA21A7C-964A-5B51-B3A8-E9B7B1F30FBD][How do I run the trade_generation_trade_types commands from the shell?]]
+
+* Fx Vol Surface Blueprints
+
+- [[id:573B8928-38CB-5CB0-AC1A-5893CDB5A7A3][How do I run the fx_vol_surface_blueprints commands from the shell?]]
+
+* Fx Vol Surface Pillar Sources
+
+- [[id:ED62DAED-6805-5C3D-8A80-B82C0CE39209][How do I run the fx_vol_surface_pillar_sources commands from the shell?]]
+
+* Fx Vol Surface Pillars
+
+- [[id:5CC2D8E2-53FB-5DA1-AAC1-957B08F79539][How do I run the fx_vol_surface_pillars commands from the shell?]]

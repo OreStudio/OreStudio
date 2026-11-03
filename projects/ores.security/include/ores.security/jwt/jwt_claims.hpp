@@ -64,6 +64,8 @@ struct storage_grant final {
      * @brief The operation allowed: get, put, delete or list.
      */
     std::string op;
+
+    friend bool operator==(const storage_grant&, const storage_grant&) = default;
 };
 
 [[nodiscard]] constexpr auto wire_fields(const storage_grant&) {

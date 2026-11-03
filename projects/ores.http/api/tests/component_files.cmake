@@ -22,6 +22,7 @@
 set(files
     "endpoint_registry_tests.cpp"
     "http_body_limit_tests.cpp"
+    "http_info_protocol_codec_roundtrip_tests.cpp"
     "http_metrics_tests.cpp"
     "http_request_tests.cpp"
     "http_response_tests.cpp"

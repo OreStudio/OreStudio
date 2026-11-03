@@ -55,4 +55,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/test_files.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/test_timeout_listener.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/two_parties.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/wire_roundtrip.hpp"
 )

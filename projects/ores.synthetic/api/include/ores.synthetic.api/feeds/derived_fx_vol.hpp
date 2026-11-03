@@ -181,9 +181,16 @@ struct derived_fx_day final {
  * Each day is derived from the returns that end on or before it, so a past day reads no
  * later fixing. A day with fewer returns than the minimum is left out, as is an expiry
  * whose window the returns up to its day do not cover, and a quote that is not finite.
- * The days come oldest first. Refuses a convention the derivation cannot quote.
+ * The days come oldest first. A day whose quotes could not be derived at all is named
+ * among the underived. Refuses a convention the derivation cannot quote.
  */
-ORES_SYNTHETIC_API_EXPORT std::expected<std::vector<derived_fx_day>, std::string>
+/// The days of a pair's history derived, and the days whose quotes could not be derived.
+struct derived_history final {
+    std::vector<derived_fx_day> days;
+    std::vector<std::chrono::year_month_day> underived;
+};
+
+ORES_SYNTHETIC_API_EXPORT std::expected<derived_history, std::string>
 derive_missing_days(const derived_fx_pair& pair,
                     const pair_returns& returns,
                     const refdata::domain::fx_option_convention& convention,

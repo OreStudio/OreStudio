@@ -17,6 +17,9 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
+#include <algorithm>
+#include <ranges>
+#include <string>
 #include <utility>
 
 namespace ores::synthetic::feed {
@@ -196,6 +199,13 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
             failures_.push_back(key + ": " + returns.error());
             continue;
         }
+        // A history already held whole needs no derivation: only a new day of fixings does.
+        const auto first = static_cast<std::size_t>(std::max(settings_.minimum_window, 1)) - 1;
+        const bool whole = std::ranges::all_of(
+            std::views::drop(returns->dates, static_cast<std::ptrdiff_t>(first)),
+            [&](const std::chrono::year_month_day d) { return held.contains(d); });
+        if (whole)
+            continue;
         const auto convention = readers_.convention(pair);
         if (!convention) {
             failures_.push_back(key + ": the convention: " + convention.error());
@@ -207,15 +217,22 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
             failures_.push_back(key + ": " + missing.error());
             continue;
         }
-        if (missing->empty())
+        // A day that cannot be derived is named once and not tried again until a restart,
+        // since its fixings will not change.
+        if (!missing->underived.empty()) {
+            failures_.push_back(key + ": " + std::to_string(missing->underived.size()) +
+                                " day(s) could not be derived");
+            held.insert(missing->underived.begin(), missing->underived.end());
+        }
+        if (missing->days.empty())
             continue;
-        if (const auto stored = store_->write(series_id, *missing); !stored) {
+        if (const auto stored = store_->write(series_id, missing->days); !stored) {
             failures_.push_back(key + ": the write: " + stored.error());
             continue;
         }
-        for (const auto& d : *missing)
+        for (const auto& d : missing->days)
             held.insert(d.day);
-        written += missing->size();
+        written += missing->days.size();
     }
     return written;
 }

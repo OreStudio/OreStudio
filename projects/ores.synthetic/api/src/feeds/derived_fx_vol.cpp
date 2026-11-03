@@ -243,7 +243,7 @@ derived_fx_ticks(const derived_fx_pair& pair,
     return out;
 }
 
-std::expected<std::vector<derived_fx_day>, std::string>
+std::expected<derived_history, std::string>
 derive_missing_days(const derived_fx_pair& pair,
                     const pair_returns& returns,
                     const refdata::domain::fx_option_convention& convention,
@@ -258,7 +258,7 @@ derive_missing_days(const derived_fx_pair& pair,
             return std::unexpected("the convention at " + std::string(e.label) + ": " + at.error());
         expiries.push_back({.label = std::string(e.label), .years = e.years, .convention = *at});
     }
-    std::vector<derived_fx_day> out;
+    derived_history out;
     const auto n = std::min(returns.returns.size(), returns.dates.size());
     const auto first = static_cast<std::size_t>(std::max(minimum_returns, 1)) - 1;
     for (std::size_t k = first; k < n; ++k) {
@@ -267,8 +267,10 @@ derive_missing_days(const derived_fx_pair& pair,
             continue;
         const auto derivation = qm::derive_fx_quotes(
             std::span<const double>(returns.returns.data(), k + 1), expiries, settings);
-        if (!derivation)
+        if (!derivation) {
+            out.underived.push_back(day);
             continue;
+        }
         derived_fx_day today{.day = day, .points = {}};
         for (const auto& expiry : derivation->expiries) {
             if (!expiry)
@@ -284,8 +286,10 @@ derive_missing_days(const derived_fx_pair& pair,
                                                  .label = std::string(derived_fx_labels[i])}),
                                             .value = values[i]});
         }
-        if (!today.points.empty())
-            out.push_back(std::move(today));
+        if (today.points.empty())
+            out.underived.push_back(day);
+        else
+            out.days.push_back(std::move(today));
     }
     return out;
 }

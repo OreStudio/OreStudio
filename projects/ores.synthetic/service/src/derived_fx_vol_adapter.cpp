@@ -30,6 +30,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <charconv>
 #include <format>
+#include <optional>
 #include <set>
 #include <span>
 #include <utility>
@@ -56,6 +57,14 @@ constexpr int stored_chunk_days = 120;
 /// The observations one write carries, well under the broker's megabyte.
 constexpr std::size_t write_batch = 1000;
 
+/// An id read from text, or nothing for text that is not one.
+std::optional<boost::uuids::uuid> uuid_of(const std::string& text) {
+    try {
+        return boost::uuids::string_generator{}(text);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
+}
 
 }
 
@@ -73,6 +82,8 @@ derived_fx_vol_adapter::derived_fx_vol_adapter(ores::nats::service::client& nats
     , provider_code_(std::move(provider_code))
     , feed_id_(feed_id)
     , timing_(timing)
+    // The readers and the store capture this and run only once the loop starts, after every
+    // member they use is built; feed_ is declared after all of them.
     , feed_(source_name_, provider_code_, make_readers(), {}, make_store()) {}
 
 derived_fx_vol_adapter::~derived_fx_vol_adapter() {
@@ -146,6 +157,9 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
             const auto party = system_party();
             if (!party)
                 return std::unexpected(party.error());
+            const auto party_id = uuid_of(*party);
+            if (!party_id)
+                return std::unexpected("the system party is not an id");
             const auto uri = feed::derived_fx_series_uri(pair);
             ores::marketdata::client::market_data_client md(svc_nats_);
             const auto series = md.list_series_of_provider(provider_code_);
@@ -157,7 +171,7 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
             const auto written = md.put_series(
                 {.id = boost::uuids::name_generator_sha1(feed::derived_fx_method_id())(uri + "|" +
                                                                                        *party),
-                 .party_id = boost::uuids::string_generator{}(*party),
+                 .party_id = *party_id,
                  .oresmd_uri = uri,
                  .provider_code = provider_code_,
                  .series_subclass = "volatility",
@@ -180,6 +194,8 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
             auto delegated = svc_nats_.with_delegation({});
             ores::marketdata::client::market_data_client md(delegated);
             std::set<std::chrono::year_month_day> held;
+            // A window holds the days from to - days + 1 to to, both included, so windows
+            // ending stored_chunk_days apart tile the history with no gap and no overlap.
             for (int back = 0; back < window_days; back += stored_chunk_days) {
                 const auto end = std::chrono::year_month_day{std::chrono::sys_days{to} -
                                                              std::chrono::days{back}};
@@ -202,8 +218,12 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
             const auto party = system_party();
             if (!party)
                 return std::unexpected(party.error());
-            const auto party_id = boost::uuids::string_generator{}(*party);
-            const auto series = boost::uuids::string_generator{}(series_id);
+            const auto party_id = uuid_of(*party);
+            const auto series = uuid_of(series_id);
+            if (!party_id || !series)
+                return std::unexpected("the party or the series is not an id");
+            // Writes go as the service itself, which holds the write grants; reads go
+            // delegated, as every read of the source does.
             ores::marketdata::client::market_data_client md(svc_nats_);
             boost::uuids::random_generator ids;
             std::vector<mm::market_observation_write> batch;
@@ -219,21 +239,23 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
                     return std::unexpected(stored.error());
                 return {};
             };
-            for (const auto& day : days)
-                for (const auto& point : day.points) {
+            // A batch ends only between days, so a write that fails leaves no day held in
+            // part, which the days held would then count as whole.
+            for (const auto& day : days) {
+                if (batch.size() + day.points.size() > write_batch)
+                    if (const auto r = flush(); !r)
+                        return r;
+                for (const auto& point : day.points)
                     batch.push_back({.id = ids(),
-                                     .party_id = party_id,
-                                     .series_id = series,
+                                     .party_id = *party_id,
+                                     .series_id = *series,
                                      .observation_datetime =
                                          std::chrono::sys_days{day.day} + std::chrono::hours(17),
                                      .oresmd_uri = point.coordinate,
                                      .value = std::format("{}", point.value),
                                      .source = provider_code_,
                                      .feed_id = feed_id_});
-                    if (batch.size() >= write_batch)
-                        if (const auto r = flush(); !r)
-                            return r;
-                }
+            }
             return flush();
         }};
 }

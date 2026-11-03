@@ -130,6 +130,15 @@ via its "Verifies task" field.
 | L2 | saveArrivals is the save, re-read and restart of any feed setting, and the Variance tab uses it too | ArrivalsPanel.tsx | Accept | Renamed saveFeedSettings, its outcome FeedSaveOutcome |
 | L3 | The factory and the feed each normalise the mixture's weights before taking its moments | process_factory.cpp, fx_spot_feed.cpp | Decline | Two short call sites in different components; a shared helper adds a public function for four lines |
 | L4 | The variance_model column had no SQL default, so a dataset publish that names only the columns it knows refused every feed | ores.synthetic.fx_spot_generation_config.org | Accept | Found by the provisioning smoke check; default 'constant' |
+| L5 | The FX and IR feed writes left out the arrival fields, which the BFF defaults, so saving the engine or the variance reset a feed to periodic arrivals | fxFeeds.tsx, irFeeds.tsx | Accept | The four arrival fields join both write lists; tests fail when one is dropped |
+| R1.1 | The fit builds an error string at every rejected simplex point | gjr_garch.cpp | Accept | gjr_garch_model::admissible, noexcept, checked first; a grid test holds it equal to make() |
+| R1.2 | An underflowed variance would freeze the feed; clamp it in roll() | gjr_garch_variance_process.cpp | Decline | next_variance is omega plus non-negative terms and omega is positive for every model make() builds, so the variance never falls below omega |
+| R1.3 | A non-finite day return would poison the variance silently | gjr_garch_variance_process.cpp | Accept | roll() throws, naming the close and the open; a test closes a day at zero |
+| R1.4 | The decorator removes the inner drift and the fit the sample mean; say why | gjr_garch_variance_process.cpp | Accept | Comment above the update: each removes the mean of the law it reads |
+| R1.5 | The Edgeworth term is used for one to three ticks a day | gjr_garch.cpp | Decline | A feed's day is ticks_per_hour times 24, so at least 24 ticks; one tick takes the exact value |
+| R1.6 | A negative gamma is unusual for FX; surface it or constrain it | gjr_garch.cpp | Decline | Either sign is admissible by design for FX, where a fall of the pair is a rise of its base; the start notice shows gamma |
+| R1.7 | The two mixture processes repeat the multiplier logic | gaussian_mixture_model_process.cpp | Decline | Two lines of scaling and one setter per class; a shared base adds a layer to two hot loops for little |
+| R1.8 | Confirm the SQL defaults match the C++ config defaults | fx_spot_generation_config | Accept, no change | Both are constant, 0.05, 0, 0.9 and 1826, from the same model |
 
 * Result
 

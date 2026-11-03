@@ -8,7 +8,7 @@
 #+filetags: :stamp_build_start_and_finish:sprint_29:v0:
 #+owner: marco
 #+branch: feature/stamp-build-start-and-finish
-#+pr:
+#+pr: 4419
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4419][#4419]] | [compass] Stamp the time a build starts and finishes |
 
 * Review
 

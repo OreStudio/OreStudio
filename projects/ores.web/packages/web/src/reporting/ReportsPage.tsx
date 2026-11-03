@@ -312,9 +312,7 @@ function useColumns(showParty: boolean): readonly ListColumn<ReportRowView>[] {
             sort: 'report_type',
             header: t('reporting.columns.reportType'),
             cell: (row) => (
-                <Tag tone={row.reportType === 'risk' ? 'accent' : 'neutral'}>
-                    {row.reportType}
-                </Tag>
+                <Tag tone={row.reportType === 'risk' ? 'accent' : 'neutral'}>{row.reportType}</Tag>
             ),
         },
         {

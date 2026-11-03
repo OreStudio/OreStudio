@@ -241,9 +241,10 @@ function list(codes: string[], parties = TWO_PARTIES): string {
                         : FIRST_PAGE,
                 ),
                 {
-                rows: ROWS,
-                total: ROWS.length,
-            });
+                    rows: ROWS,
+                    total: ROWS.length,
+                },
+            );
         },
     );
 }

@@ -4926,9 +4926,9 @@ const fr: SourceCatalogue = {
                 none: 'La variance de ce flux est constante, ou il n’a pas démarré d’un fixing, il n’a donc pas de calibration de variance.',
                 notStored:
                     'Un aperçu ajuste la variance et n’enregistre rien. Calibrez le flux pour enregistrer cette entrée et cet ajustement, puis revoyez-le ici.',
-                alpha: 'Alpha',
-                gamma: 'Gamma',
-                beta: 'Bêta',
+                alpha: 'Alpha (α)',
+                gamma: 'Gamma (γ)',
+                beta: 'Bêta (β)',
                 persistence: 'Persistance',
                 startingRatio: 'Premier jour / long terme',
                 starts: 'Départs',
@@ -6289,9 +6289,9 @@ const fr: SourceCatalogue = {
                 window: '{used} fixings sur {days} jours ont mesuré sa dispersion.',
                 variance: {
                     calibration: 'Calibration {id}, version {version}.',
-                    fitted: 'Variance quotidienne : GJR-GARCH ajusté sur {returns} rendements quotidiens, alpha {alpha}, gamma {gamma}, bêta {beta}, persistance {persistence}.',
+                    fitted: 'Variance quotidienne : GJR-GARCH ajusté sur {returns} rendements quotidiens, alpha (α) {alpha}, gamma (γ) {gamma}, bêta (β) {beta}, persistance {persistence}.',
                     authored:
-                        'Variance quotidienne : GJR-GARCH avec la forme saisie, alpha {alpha}, gamma {gamma}, bêta {beta}, persistance {persistence}.',
+                        'Variance quotidienne : GJR-GARCH avec la forme saisie, alpha (α) {alpha}, gamma (γ) {gamma}, bêta (β) {beta}, persistance {persistence}.',
                     firstDay:
                         'La variance du premier jour vaut {ratio} fois le niveau de long terme, tel que l’historique s’est terminé.',
                 },

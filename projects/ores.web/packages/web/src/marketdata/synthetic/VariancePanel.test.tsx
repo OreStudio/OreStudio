@@ -122,7 +122,7 @@ describe('the variance in the notice of where a run started', () => {
     it('says a fitted shape, the returns it read and how the first day stands', () => {
         const html = render(variance);
         expect(html).toContain('fitted from 1259 daily returns');
-        expect(html).toContain('alpha 0.061');
+        expect(html).toContain('alpha (α) 0.061');
         expect(html).toContain('persistence 0.984');
         expect(html).toContain('1.73 times the long-run level');
     });

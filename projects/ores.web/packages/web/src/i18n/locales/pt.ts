@@ -4889,9 +4889,9 @@ const pt: SourceCatalogue = {
                 none: 'A variância deste feed é constante, ou não arrancou de um fixing, por isso não tem calibração de variância.',
                 notStored:
                     'Uma pré-visualização ajusta a variância e não guarda nada. Calibre o feed para guardar esta entrada e este ajuste, e reveja-o aqui.',
-                alpha: 'Alfa',
-                gamma: 'Gama',
-                beta: 'Beta',
+                alpha: 'Alfa (α)',
+                gamma: 'Gama (γ)',
+                beta: 'Beta (β)',
                 persistence: 'Persistência',
                 startingRatio: 'Primeiro dia / longo prazo',
                 starts: 'Arranques',
@@ -6243,9 +6243,9 @@ const pt: SourceCatalogue = {
                 window: '{used} fixings em {days} dias mediram a sua dispersão.',
                 variance: {
                     calibration: 'Calibração {id}, versão {version}.',
-                    fitted: 'Variância diária: GJR-GARCH ajustado a {returns} retornos diários, alfa {alpha}, gama {gamma}, beta {beta}, persistência {persistence}.',
+                    fitted: 'Variância diária: GJR-GARCH ajustado a {returns} retornos diários, alfa (α) {alpha}, gama (γ) {gamma}, beta (β) {beta}, persistência {persistence}.',
                     authored:
-                        'Variância diária: GJR-GARCH com a forma definida, alfa {alpha}, gama {gamma}, beta {beta}, persistência {persistence}.',
+                        'Variância diária: GJR-GARCH com a forma definida, alfa (α) {alpha}, gama (γ) {gamma}, beta (β) {beta}, persistência {persistence}.',
                     firstDay:
                         'A variância do primeiro dia é {ratio} vezes o nível de longo prazo, tal como o histórico terminou.',
                 },

@@ -4857,9 +4857,9 @@ export const en: SourceCatalogue = {
                 none: "This feed's variance is constant, or it did not start from a fixing, so it has no variance calibration.",
                 notStored:
                     'A preview fits the variance and stores nothing. Calibrate the feed to store this input and this fit, then review it here.',
-                alpha: 'Alpha',
-                gamma: 'Gamma',
-                beta: 'Beta',
+                alpha: 'Alpha (α)',
+                gamma: 'Gamma (γ)',
+                beta: 'Beta (β)',
                 persistence: 'Persistence',
                 startingRatio: 'First day / long run',
                 starts: 'Starts',
@@ -6203,9 +6203,9 @@ export const en: SourceCatalogue = {
                 window: '{used} fixings over {days} days measured its spread.',
                 variance: {
                     calibration: 'Calibration {id}, version {version}.',
-                    fitted: 'Daily variance: GJR-GARCH fitted from {returns} daily returns, alpha {alpha}, gamma {gamma}, beta {beta}, persistence {persistence}.',
+                    fitted: 'Daily variance: GJR-GARCH fitted from {returns} daily returns, alpha (α) {alpha}, gamma (γ) {gamma}, beta (β) {beta}, persistence {persistence}.',
                     authored:
-                        'Daily variance: GJR-GARCH with the authored shape, alpha {alpha}, gamma {gamma}, beta {beta}, persistence {persistence}.',
+                        'Daily variance: GJR-GARCH with the authored shape, alpha (α) {alpha}, gamma (γ) {gamma}, beta (β) {beta}, persistence {persistence}.',
                     firstDay:
                         'The first day’s variance is {ratio} times the long-run level, as the history ended.',
                 },

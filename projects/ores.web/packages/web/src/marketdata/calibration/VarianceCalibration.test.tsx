@@ -66,6 +66,9 @@ describe('the evidence of a variance calibration', () => {
     it('shows the shape, its persistence, the fit and the input it came from', () => {
         const html = render(<VarianceCalibrationFacts variance={FIT} />);
         expect(html).toContain('Proposed');
+        expect(html).toContain('Alpha (α)');
+        expect(html).toContain('Gamma (γ)');
+        expect(html).toContain('Beta (β)');
         expect(html).toContain('0.0113');
         expect(html).toContain('0.0230');
         expect(html).toContain('0.9323');

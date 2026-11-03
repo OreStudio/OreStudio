@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 839D0CD2-7684-4580-8C60-AE68C9DAD478
+:END:
+#+title: Story: Stamp the time a build starts and finishes
+#+description: compass build prints and logs the wall-clock start and finish of a build, so a reader can tell when a build ran.
+#+type: story
+#+level: s2
+#+filetags: :compass:build:sprint_29:v0:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who reads a build's console output or its log can tell when the build started, when it ended, and how it ended.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-03                               |
+
+* Acceptance
+
+- compass build prints the start time after the parallel jobs line
+- compass build prints the finish time, the outcome and the elapsed time when the build ends
+- Both lines are in the build log
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9B740F2C-2692-4F13-A402-5E4027295C7F][Scaffold story: Stamp the time a build starts and finishes]] | DONE | 2026-11-03 | 2026-11-03 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F0859472-1ACE-4E08-A6AA-358234AA7BAA][Stamp the time a build starts and finishes]] | DONE | 2026-11-03 | 2026-11-03 | compass build prints and logs when a build started and when it finished, with its outcome and elapsed time. |
+
+* Decisions
+
+- Stamp the cmake path only. It is the output a person reads to see when a
+  build ran; the =--direct= emacs path is short and has its own log.
+- Write the finish line in =finally=, so a failed or interrupted build also
+  states when it ended.
+
+* Out of scope
+
+- Stamps on the =--direct= emacs path.

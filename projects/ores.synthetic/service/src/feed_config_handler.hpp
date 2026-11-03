@@ -461,14 +461,12 @@ public:
     }
 
 private:
-    // Resolves every feed of the class as a start would, or the one feed the request names, and
-    // starts none. A feed that cannot be built still appears, with the reason, so the class shows
-    // every feed it holds. An applied calibration writes what moved as a new version.
     // Each write claims the version it read, so a review that raced another is refused rather
     // than overwriting it. Approving supersedes before it approves, because the partial unique
-    // index admits one approval of a pair; a review that stops between the two leaves the pair
-    // with no approval and the feeds on the superseded one, and the same review run again
-    // completes it.
+    // index admits one approval of a pair, and then points the pair's feeds at it. Each step
+    // reads what is stored before it writes, so a review that stopped part way converges when it
+    // is sent again: an approval of a calibration already approved only points the feeds that
+    // still name another one.
     ores::synthetic::messaging::review_variance_calibration_response
     review(const ores::database::context& req_ctx,
            const ores::synthetic::messaging::review_variance_calibration_request& req) {
@@ -487,7 +485,8 @@ private:
             return resp;
         }
         const auto& c = found.front();
-        if (c.state != "proposed") {
+        const bool repoint_only = c.state == "approved" && req.decision == "approve";
+        if (c.state != "proposed" && !repoint_only) {
             resp.message = "Only a proposed calibration is reviewed; " + req.calibration_id +
                            " is " + c.state + ".";
             resp.state = c.state;
@@ -541,7 +540,9 @@ private:
             return resp;
         }
 
-        for (const auto& other : repo::variance_calibration_repository{}.read_latest(req_ctx)) {
+        for (const auto& other : repoint_only ?
+                                     std::vector<ores::synthetic::domain::variance_calibration>{} :
+                                     repo::variance_calibration_repository{}.read_latest(req_ctx)) {
             if (other.id == c.id || other.state != "approved" ||
                 other.base_currency_code != c.base_currency_code ||
                 other.quote_currency_code != c.quote_currency_code)
@@ -549,7 +550,8 @@ private:
             write_state(other, "superseded", "superseded by " + req.calibration_id);
             resp.superseded_id = boost::uuids::to_string(other.id);
         }
-        write_state(c, "approved", req.reason);
+        if (!repoint_only)
+            write_state(c, "approved", req.reason);
         resp.state = "approved";
 
         const ores::utility::domain::change_intent repoint{
@@ -585,6 +587,9 @@ private:
         return resp;
     }
 
+    // Resolves every feed of the class as a start would, or the one feed the request names, and
+    // starts none. A feed that cannot be built still appears, with the reason, so the class shows
+    // every feed it holds. An applied calibration writes what moved as a new version.
     ores::synthetic::messaging::calibrate_response
     calibrate_class(const ores::database::context& req_ctx,
                     const feed_kind& kind,

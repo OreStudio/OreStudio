@@ -294,58 +294,6 @@ resolve_fx_start_from(ores::nats::service::nats_client& auth_nats,
     return out;
 }
 
-struct feed_variance final {
-    ores::analytics::quant::math::gjr_garch_shape shape;
-    ores::marketdata::domain::variance_start record;
-};
-
-/**
- * The GJR-GARCH shape a feed runs: the one of the approved calibration its config names. A feed
- * fits nothing at start, so a calibration that is missing, no longer approved or has no shape
- * refuses the start and says why, rather than running a variance nobody reviewed.
- */
-std::expected<feed_variance, std::string>
-calibrated_variance(const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                    const std::optional<ores::synthetic::domain::variance_calibration>& calibration,
-                    const std::vector<ores::synthetic::domain::gmm_component>& components) {
-    if (!calibration)
-        return std::unexpected("it names no variance calibration that exists; approve a "
-                               "calibration of " +
-                               cfg.base_currency_code + "/" + cfg.quote_currency_code +
-                               " and the feed is pointed at it");
-    const auto& c = *calibration;
-    const auto id = boost::uuids::to_string(c.id);
-    if (c.state != "approved")
-        return std::unexpected(
-            "its variance calibration " + id + " is " + c.state +
-            (c.state_reason.empty() ? std::string() : " (" + c.state_reason + ")") +
-            ", not approved");
-    if (!c.alpha || !c.gamma || !c.beta)
-        return std::unexpected("its variance calibration " + id + " has no shape");
-    std::vector<mixture_component> mixture;
-    for (const auto& m : components)
-        mixture.push_back({.mean = m.mean, .stdev = m.stdev, .weight = m.weight});
-    const double p_minus = daily_p_minus(mixture, cfg.ticks_per_hour);
-    const ores::analytics::quant::math::gjr_garch_shape shape{
-        .alpha = *c.alpha, .gamma = *c.gamma, .beta = *c.beta};
-    const bool fitted = c.method != "authored";
-    return feed_variance{
-        .shape = shape,
-        .record = {.model = "gjr_garch",
-                   .calibration_id = id,
-                   .calibration_version = c.version,
-                   .fitted = fitted,
-                   .alpha = shape.alpha,
-                   .gamma = shape.gamma,
-                   .beta = shape.beta,
-                   .persistence = shape.alpha + shape.beta + shape.gamma * p_minus,
-                   .initial_ratio = c.starting_variance_ratio.value_or(1.0),
-                   .returns = c.returns_used,
-                   .note = fitted ? "Fitted from " + std::to_string(c.returns_used) +
-                                        " daily returns and approved: " + c.state_reason :
-                                    "An authored shape, approved: " + c.state_reason}};
-}
-
 } // namespace
 
 ORES_SYNTHETIC_API_EXPORT resolved_start

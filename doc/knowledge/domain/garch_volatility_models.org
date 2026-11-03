@@ -333,7 +333,7 @@ z_t = (x_t - m) / s       x_t drawn from the mixture, m its mean, s its standard
 epsilon_t = sigma_t * z_t
 #+end_example
 
-The two models then do separate work. The mixture gives the shape of a day's
+The two models then do separate work. The mixture gives the shape of a tick's
 shock: its fat tails, its asymmetry and the regimes its components stand for.
 The recursion gives the size of the shock as a function of the days before, which
 an independent mixture draw cannot. The skewed Student-t of Hansen (1994) would
@@ -349,9 +349,23 @@ standardisation, contributes the second moment of a normal truncated at zero:
 p_minus = sum_k w_k * [ (mu_k^2 + s_k^2) * Phi(-mu_k / s_k) - mu_k * s_k * phi(mu_k / s_k) ]
 #+end_example
 
-where =Phi= and =phi= are the standard normal distribution and density. The
-persistence =kappa= and the unconditional variance follow from it as in
-=* Stationarity=.
+where =Phi= and =phi= are the standard normal distribution and density.
+
+The recursion reacts to a day's shock, which is the sum of the day's =n= ticks
+and not one tick. Summing independent draws keeps the variance additive and thins
+the skewness =s= to =s / sqrt(n)=, so a day's shock is closer to normal than a
+tick's. The first Edgeworth term of the sum gives its =p_minus=:
+
+#+begin_example
+p_minus_day = 1/2 - s / (3 * sqrt(2 * pi) * sqrt(n))
+#+end_example
+
+which is one half for a symmetric mixture and tends to one half as =n= grows. A
+day of one tick takes the closed form above. The persistence =kappa= and the
+unconditional variance follow from =p_minus_day= as in =* Stationarity=. Taking
+the tick's =p_minus= instead overstates the asymmetry's share of the persistence
+for a skewed mixture, so variance targeting sets omega too low and the daily
+variance settles below its intended level.
 
 ** The sign of the asymmetry in FX
 
@@ -409,7 +423,8 @@ The model is native to =ores.analytics.quant=, with no QuantLib code.
 built by =make()=, which refuses a shape outside the admissible region, so a
 model in hand always has a positive variance and a finite long-run level; omega
 follows from the long-run variance. The same header holds the filter, the
-Gaussian cost, the mixture's closed-form =p_minus= (=negative_second_moment=) and
+Gaussian cost, the mixture's closed-form =p_minus= (=negative_second_moment=), its daily
+counterpart (=daily_negative_second_moment=) and
 =fit_gjr_garch=, which fits from several starts by the native simplex of
 =math/nelder_mead.hpp= and keeps the best.
 =service::gjr_garch_variance_process= wraps any process that honours

@@ -133,6 +133,19 @@ ORES_ANALYTICS_QUANT_EXPORT mixture_moments moments_of(const mixture& m);
  */
 ORES_ANALYTICS_QUANT_EXPORT double negative_second_moment(const mixture& m);
 
+/**
+ * @brief E[z^2 1{z < 0}] of a day's shock, the standardised sum of ticks_per_day
+ * independent draws of the mixture.
+ *
+ * A GJR-GARCH carried from day to day reacts to the day's shock, not to one tick's,
+ * and summing draws thins the mixture's skew as one over the square root of their
+ * count. The value follows the first Edgeworth term of the sum,
+ * 1/2 - skew / (3 sqrt(2 pi) sqrt(ticks_per_day)), held to [0, 1]. A day of one tick
+ * or fewer is one draw, so it takes negative_second_moment exactly.
+ */
+ORES_ANALYTICS_QUANT_EXPORT double daily_negative_second_moment(const mixture& m,
+                                                                double ticks_per_day);
+
 /// The starts a fit begins from, when the caller names none.
 ORES_ANALYTICS_QUANT_EXPORT std::vector<gjr_garch_shape> default_fit_starts();
 

@@ -329,7 +329,36 @@ TEST_CASE("the factory makes the mixture's daily law the GARCH long-run level",
                        0.25 * (9e-6 + (-0.0006 - mean) * (-0.0006 - mean));
     CHECK(g->model().long_run_variance() == Catch::Approx(var * 10.0).epsilon(1e-12));
     CHECK(g->daily_variance() == Catch::Approx(var * 10.0).epsilon(1e-12));
-    CHECK(g->model().p_minus() > 0.5);
+    const math::mixture normalised{
+        .means = {0.0002, -0.0006}, .stdevs = {0.001, 0.003}, .weights = {0.75, 0.25}};
+    CHECK(g->model().p_minus() ==
+          Catch::Approx(math::daily_negative_second_moment(normalised, 10.0)).epsilon(1e-12));
+    CHECK(g->model().p_minus() < math::negative_second_moment(normalised));
+}
+
+TEST_CASE("a skewed mixture with a leverage effect holds its long-run daily variance",
+          "[gjr_garch_variance]") {
+    constexpr double ticks_per_day = 10.0;
+    constexpr std::size_t days = 60'000;
+    auto p = service::process_factory::make_gjr_garch_process(
+        "arithmetic",
+        {0.0004, -0.0016},
+        {0.001, 0.003},
+        {0.8, 0.2},
+        1.0,
+        price_stream(31),
+        {.alpha = 0.03, .gamma = 0.15, .beta = 0.85},
+        ticks_per_day,
+        1.0);
+    std::vector<double> moves;
+    moves.reserve(days);
+    for (std::size_t d = 0; d < days; ++d) {
+        const double before = p->current();
+        p->next(ticks_per_day);
+        moves.push_back(p->current() - before);
+    }
+    const double long_run = 3.24e-6 * ticks_per_day;
+    CHECK(decorated_variance(moves) / long_run == Catch::Approx(1.0).epsilon(0.1));
 }
 
 TEST_CASE("the factory and the decorator refuse what they cannot honour", "[gjr_garch_variance]") {

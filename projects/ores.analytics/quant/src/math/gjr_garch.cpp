@@ -18,6 +18,7 @@
  */
 #include "ores.analytics.quant/math/gjr_garch.hpp"
 #include "ores.analytics.quant/math/nelder_mead.hpp"
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -132,6 +133,22 @@ double negative_second_moment(const mixture& m) {
             total += m.weights[k] * mu * mu;
     }
     return weight > 0.0 ? total / weight : 0.5;
+}
+
+double daily_negative_second_moment(const mixture& m, double ticks_per_day) {
+    if (!(ticks_per_day > 1.0))
+        return negative_second_moment(m);
+    const auto [mean, variance] = moments_of(m);
+    if (!(variance > 0.0))
+        return 0.5;
+    double third = 0.0;
+    for (std::size_t k = 0; k < m.means.size(); ++k) {
+        const double d = m.means[k] - mean;
+        third += m.weights[k] * (d * d * d + 3.0 * d * m.stdevs[k] * m.stdevs[k]);
+    }
+    const double daily_skew = third / (variance * std::sqrt(variance)) / std::sqrt(ticks_per_day);
+    const double p = 0.5 - daily_skew / (3.0 * std::sqrt(2.0 * std::numbers::pi));
+    return std::clamp(p, 0.0, 1.0);
 }
 
 std::vector<gjr_garch_shape> default_fit_starts() {

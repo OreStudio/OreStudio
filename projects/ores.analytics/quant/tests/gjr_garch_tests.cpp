@@ -178,6 +178,44 @@ TEST_CASE("p_minus of a skewed mixture matches its sample estimate", "[gjr_garch
     CHECK(std::abs(total / n - closed) < 3e-3);
 }
 
+TEST_CASE("p_minus of a day matches a sample of standardised daily sums", "[gjr_garch]") {
+    const mixture skewed{
+        .means = {0.0004, -0.0016}, .stdevs = {0.001, 0.003}, .weights = {0.8, 0.2}};
+    constexpr int ticks = 50;
+    const double daily = daily_negative_second_moment(skewed, ticks);
+    CHECK(daily > 0.5);
+    CHECK(daily < negative_second_moment(skewed) - 0.05);
+
+    const auto [mean, variance] = moments_of(skewed);
+    const double scale = std::sqrt(variance * ticks);
+    auto rng = price_stream(12);
+    std::discrete_distribution<int> pick(skewed.weights.begin(), skewed.weights.end());
+    double total = 0.0;
+    constexpr int days = 200'000;
+    for (int d = 0; d < days; ++d) {
+        double sum = 0.0;
+        for (int t = 0; t < ticks; ++t) {
+            const int k = pick(rng);
+            sum += std::normal_distribution<double>(skewed.means[k], skewed.stdevs[k])(rng) - mean;
+        }
+        const double z = sum / scale;
+        if (z < 0.0)
+            total += z * z;
+    }
+    CHECK(std::abs(total / days - daily) < 5e-3);
+}
+
+TEST_CASE("p_minus of a day is one tick's for a one-tick day and one half for a long one",
+          "[gjr_garch]") {
+    const mixture skewed{
+        .means = {0.0004, -0.0016}, .stdevs = {0.001, 0.003}, .weights = {0.8, 0.2}};
+    CHECK(daily_negative_second_moment(skewed, 1.0) == negative_second_moment(skewed));
+    CHECK(daily_negative_second_moment(skewed, 86'400.0) == Catch::Approx(0.5).margin(1e-3));
+    const mixture symmetric{
+        .means = {-0.002, 0.002}, .stdevs = {0.001, 0.001}, .weights = {0.5, 0.5}};
+    CHECK(daily_negative_second_moment(symmetric, 24.0) == Catch::Approx(0.5).epsilon(1e-12));
+}
+
 TEST_CASE("a component with no spread contributes its square only below the mean", "[gjr_garch]") {
     const mixture point_mass{.means = {-0.001, 0.001}, .stdevs = {0.0, 0.0}, .weights = {0.5, 0.5}};
     CHECK(negative_second_moment(point_mass) == Catch::Approx(0.5).epsilon(1e-12));

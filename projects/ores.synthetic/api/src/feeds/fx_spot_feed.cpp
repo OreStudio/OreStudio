@@ -321,7 +321,8 @@ feed_variance choose_feed_variance(ores::nats::service::nats_client& auth_nats,
     if (total_weight > 0.0)
         for (auto& w : per_tick.weights)
             w /= total_weight;
-    const double p_minus = qm::negative_second_moment(per_tick);
+    const double p_minus =
+        qm::daily_negative_second_moment(per_tick, cfg.ticks_per_hour * hours_per_market_day);
 
     daily_variance_choice choice{.shape = authored};
     if (cfg.price_source != "fixing" || !start.from_fixing || !start.fixing_date) {

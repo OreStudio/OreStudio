@@ -26,11 +26,11 @@ A backtest can read the derived FX volatility quotes of any past day from the st
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -98,9 +98,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-| R1.1 | A doc comment was left above the brace that closes the anonymous namespace | series_resolution.cpp | Accept | Removed; the header documents resolve_series |
-| R1.2 | The observation repository keeps includes the shared helpers made unused | observation_read_repository.cpp | Accept | charconv, cstdint and format removed |
-| R1.3 | days is echoed on a refusal | observation_reader.cpp | Accept, no change | As the fixing reader does; no TypeScript reader of the reply yet |
-| R1.4 | range_inverted names an empty window oddly | observation_reader.cpp | Decline | The codes match the fixing reader's, so both readers refuse alike |
-| R1.5 | Test the ceiling exactly and one past it | service_observation_reader_tests.cpp | Accept | A window of exactly 5,000 is read whole; 5,001 is refused |
-| R1.6 | Run the full gate before merge | PR | Decline | The user directed that only the checks a change needs are run |
+
+A backtest can read the derived FX volatility quotes of any past day from the store.
+
+- Marketdata reads the observations of a series over a window of days,
+  =get_observation_window=, every point each day with its coordinate, as the
+  fixing reader does for fixings, refusing a window above 3,660 days or one that
+  holds more than the 5,000 observations a reply carries (PR 4415). The fixing
+  reader's party scoping and ambiguity refusals are shared by both readers.
+- The derived source keeps each day's quotes as the observations of one
+  =fx_option= series per pair under its own provider, whose derivation kind is
+  =FX_VOL_DERIVATION=. On start it reads the days each series holds and derives
+  every other day the stored fixings cover, each from the returns on or before it;
+  afterwards it writes each new day. History is kept for every pair of its
+  universe, demanded or not. The market data client writes series and observations,
+  and the synthetic service may write both.
+- Derivation of FX volatility quotes from historical fixings states the durable
+  storage.
+- Tests: 17 reader test cases against the database, and 20 derived source test
+  cases, among them a past day derived from its returns alone, a history kept once
+  and then a day at a time, and no day the store holds written again.

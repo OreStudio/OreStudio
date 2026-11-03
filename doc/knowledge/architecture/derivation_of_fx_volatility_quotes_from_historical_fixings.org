@@ -58,24 +58,23 @@ source; nothing downstream changes, as
 [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]]
 describes for a live source.
 
-** Stored as quotes, not as fixings
+** Kept as observations, not as fixings
 
-The derived quotes are stored, and stored as what they are: quotes. They are
-items of the =fx_option= series, as a vendor's vol quotes are, so they take the
-quote path of
-[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]]:
-the ingest applies the age gate, and the tick table keeps them for its seven
-days. They do not enter =market_fixing=, which keeps fixings for good, because a
-derived quote is not a fixing, and because it needs no permanent copy: every
-derived quote can be computed again from the fixings it was derived from, which
-=market_fixing= does keep. The values a surface generator starts from are
-recorded with its calibration, so a start is traceable after its quotes have
-aged out.
+The derived quotes are kept for good, and kept as what they are: the observations
+of a quote series, not fixings. Each pair has one =fx_option= series of the derived
+provider, whose derivation kind says it is computed rather than observed, and each
+day's quotes are its observations at the end of that day, one for each expiry and
+strike label. An observation is stored with no retention and a correction is a new
+version of it, so a backtest reads any past day as it was published, through the
+market data service's window reader of a series' observations. They do not enter =market_fixing=, because a derived quote is not a fixing.
 
-The age gate has one consequence for the derived source. It publishes the
-current day's quotes only, after the day's fixings are in, and never a backfill
-of past days; a past day is recomputed from the fixings when it is needed, not
-replayed through the ingest.
+The derived source keeps its own history. On start it reads the days each series
+holds and derives every other day the stored fixings cover, each from the fixings
+on or before it, so a past day reads no later fixing; afterwards it writes each new
+day as the day's fixings arrive. It writes those days through the market data
+service rather than through the ingest, whose age gate admits the current day only.
+The quotes it publishes as ticks are the current day's, so a subscriber sees the
+same values the series keeps.
 
 ** Its own identity
 
@@ -100,8 +99,9 @@ as =EURUSD/1Y/25RR=, each mapped to the =fx_option= quote of the pair. =derived_
 in =ores.synthetic.api= reads each demanded pair's ECB fixings through the market data
 reader as the system party, takes a cross's returns as the difference of its two euro
 legs on the days both hold, reads the pair's =fx_option_convention= from refdata, and
-publishes each demanded quote not yet sent for the latest day its legs hold; the
-computation itself is the one =ores.analytics.quant= holds. The source reads no curves,
+publishes each demanded quote not yet sent for the latest day its legs hold; it keeps
+every day of every pair of its universe in the pair's series through the market data
+service; the computation itself is the one =ores.analytics.quant= holds. The source reads no curves,
 so it takes the spot as the forward: a quote under a forward delta or a forward ATM is
 read against a forward that ignores the rate differential, which grows with the expiry.
 

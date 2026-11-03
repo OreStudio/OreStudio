@@ -29,6 +29,36 @@ import { Button, Fact, Field, Notice, Tag, Textarea } from '../../ui/Primitives.
 export const garchText = (value: number | null | undefined): string =>
     value === null || value === undefined ? '' : value.toFixed(4);
 
+/**
+ * A shape's parameters as a table of name and value. Its names keep their case, so the
+ * Greek letter each one carries reads as written; a fact's caption would capitalise it.
+ */
+export function ParameterTable({
+    rows,
+}: {
+    readonly rows: readonly { readonly label: string; readonly value: string }[];
+}): ReactNode {
+    return (
+        <table className="w-full text-sm" data-parameter-table>
+            <tbody>
+                {rows.map((row) => (
+                    <tr key={row.label} className="border-b border-line-subtle last:border-b-0">
+                        <th
+                            scope="row"
+                            className="py-1.5 pr-4 text-left font-normal text-ink-muted"
+                        >
+                            {row.label}
+                        </th>
+                        <td className="py-1.5 text-right font-mono tabular-nums text-ink">
+                            {row.value}
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
+}
+
 const STATE_TONES: Readonly<Record<string, 'up' | 'down' | 'warn' | 'muted' | 'accent'>> = {
     approved: 'up',
     proposed: 'accent',
@@ -61,7 +91,9 @@ export function VarianceCalibrationFacts({
     readonly variance: VarianceCalibration;
 }): ReactNode {
     const { t } = useTranslation();
-    const fitted = variance.alpha !== null && variance.alpha !== undefined;
+    const shaped = variance.alpha !== null && variance.alpha !== undefined;
+    // An authored shape was written, not fitted, so it has no starts to agree or disagree.
+    const fitted = shaped && variance.method !== 'authored';
     return (
         <div className="space-y-4" data-variance-calibration>
             <div className="flex flex-wrap items-center gap-2">
@@ -75,38 +107,46 @@ export function VarianceCalibrationFacts({
                     <span className="text-sm text-ink-muted">{variance.state_reason}</span>
                 )}
             </div>
-            {fitted ? (
-                <dl className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                    <Fact
-                        label={t('marketdata.calibration.variance.alpha')}
-                        value={garchText(variance.alpha)}
+            {shaped ? (
+                <div className="grid gap-4 lg:grid-cols-2">
+                    <ParameterTable
+                        rows={[
+                            {
+                                label: t('marketdata.calibration.variance.alpha'),
+                                value: garchText(variance.alpha),
+                            },
+                            {
+                                label: t('marketdata.calibration.variance.gamma'),
+                                value: garchText(variance.gamma),
+                            },
+                            {
+                                label: t('marketdata.calibration.variance.beta'),
+                                value: garchText(variance.beta),
+                            },
+                            {
+                                label: t('marketdata.calibration.variance.persistence'),
+                                value: garchText(variance.persistence),
+                            },
+                        ]}
                     />
-                    <Fact
-                        label={t('marketdata.calibration.variance.gamma')}
-                        value={garchText(variance.gamma)}
-                    />
-                    <Fact
-                        label={t('marketdata.calibration.variance.beta')}
-                        value={garchText(variance.beta)}
-                    />
-                    <Fact
-                        label={t('marketdata.calibration.variance.persistence')}
-                        value={garchText(variance.persistence)}
-                    />
-                    <Fact
-                        label={t('marketdata.calibration.variance.startingRatio')}
-                        value={garchText(variance.starting_variance_ratio)}
-                    />
-                    <Fact
-                        label={t('marketdata.calibration.variance.starts')}
-                        value={t(
-                            variance.starts_agreed
-                                ? 'marketdata.calibration.variance.startsAgreed'
-                                : 'marketdata.calibration.variance.startsDisagreed',
-                            { starts: String(variance.starts) },
+                    <dl className="grid content-start gap-4 sm:grid-cols-2">
+                        <Fact
+                            label={t('marketdata.calibration.variance.startingRatio')}
+                            value={garchText(variance.starting_variance_ratio)}
+                        />
+                        {fitted && (
+                            <Fact
+                                label={t('marketdata.calibration.variance.starts')}
+                                value={t(
+                                    variance.starts_agreed
+                                        ? 'marketdata.calibration.variance.startsAgreed'
+                                        : 'marketdata.calibration.variance.startsDisagreed',
+                                    { starts: String(variance.starts) },
+                                )}
+                            />
                         )}
-                    />
-                </dl>
+                    </dl>
+                </div>
             ) : null}
             {fitted && !variance.starts_agreed && (
                 <Notice tone="warn">{t('marketdata.calibration.variance.disagreeWarning')}</Notice>

@@ -20,10 +20,16 @@
  */
 
 import type { ReactNode } from 'react';
-import type { FeedStart } from '../../api/client.js';
+import { Link } from 'react-router';
+import type { FeedStart, RecordRow } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { OresmdUrl } from '../../oresmd/OresmdUrl.js';
+import { show } from '../../refdata/records.js';
+import { calibrationFeedPath } from '../../shell/paths.js';
+import { Card, MeasureTile } from '../../ui/Card.js';
+import { Fact, Notice, Tag } from '../../ui/Primitives.js';
 import { formatDateTime } from '../../ui/Time.js';
+import { ParameterTable, garchText } from '../calibration/VarianceCalibration.js';
 
 /** A run's level in the pair's market convention: an inverted item is read as one over it. */
 export function levelOf(start: FeedStart): string {
@@ -34,199 +40,308 @@ export function levelOf(start: FeedStart): string {
     return (1 / raw).toPrecision(6);
 }
 
-function Section({
-    title,
-    children,
-}: {
-    readonly title: string;
-    readonly children: ReactNode;
-}): ReactNode {
-    return (
-        <section className="space-y-2">
-            <h3 className="text-sm font-medium text-ink">{title}</h3>
-            <div className="space-y-1 text-sm text-ink-muted">{children}</div>
-        </section>
-    );
-}
-
-/**
- * Where a run started, as plain text in sections: the level it took, in the pair's market
- * convention; the fixing that level came from; the window that measured its spread; and the
- * daily variance it runs, with the calibration that variance was approved as. A reader can
- * follow each number to its source.
- */
-export function FeedRunPanel({ start }: { readonly start: FeedStart }): ReactNode {
-    const { t, language } = useTranslation();
-    const received =
-        start.received_at === null || start.received_at === undefined
-            ? t('marketdata.fxFeeds.start.receivedUnknown')
-            : formatDateTime(start.received_at, language);
-    const date =
-        start.fixing_date === null || start.fixing_date === undefined
-            ? t('marketdata.fxFeeds.start.dateUnknown')
-            : start.fixing_date;
-    return (
-        <div className="space-y-6" data-feed-run>
-            <Section title={t('marketdata.fxFeeds.run.level')}>
-                {start.from_fixing ? (
-                    <>
-                        <p className="text-base font-medium tabular-nums text-ink">
-                            {levelOf(start)}
-                        </p>
-                        <p>
-                            {start.inverted
-                                ? t('marketdata.fxFeeds.run.levelInverted', {
-                                      provider: start.provider_code,
-                                      value: start.value,
-                                      date,
-                                      received,
-                                  })
-                                : t('marketdata.fxFeeds.start.fromFixing', {
-                                      provider: start.provider_code,
-                                      value: start.value,
-                                      date,
-                                      received,
-                                  })}
-                        </p>
-                    </>
-                ) : (
-                    <p>{t('marketdata.fxFeeds.start.fixedLevel')}</p>
-                )}
-                {start.note !== '' && <p>{start.note}</p>}
-            </Section>
-            {start.from_fixing && start.item !== '' && (
-                <Section title={t('marketdata.fxFeeds.run.source')}>
-                    <OresmdUrl uri={start.item} />
-                </Section>
-            )}
-            {start.from_fixing && (start.used > 0 || start.daily_spread != null) && (
-                <Section title={t('marketdata.fxFeeds.run.window')}>
-                    {start.used > 0 && (
-                        <p>
-                            {t('marketdata.fxFeeds.start.window', {
-                                used: String(start.used),
-                                days: String(start.window_days),
-                            })}
-                        </p>
-                    )}
-                    <FeedStartMeasures start={start} />
-                </Section>
-            )}
-            {start.variance !== null && start.variance !== undefined && (
-                <Section title={t('marketdata.fxFeeds.run.variance')}>
-                    <FeedStartVariance variance={start.variance} />
-                </Section>
-            )}
-        </div>
-    );
-}
-
-/** The decimals a GARCH parameter is read to: enough to tell one fit from another. */
-const shapeText = (value: number): string => value.toFixed(3);
-
-/**
- * How the run's daily variance started: the GJR-GARCH shape it carries, whether its
- * history fitted that shape or the authored one was kept, and how the first day's
- * variance stands against the long-run level.
- */
-export function FeedStartVariance({
-    variance,
-}: {
-    readonly variance: NonNullable<FeedStart['variance']>;
-}): ReactNode {
-    const { t } = useTranslation();
-    const shape = {
-        alpha: shapeText(variance.alpha),
-        gamma: shapeText(variance.gamma),
-        beta: shapeText(variance.beta),
-        persistence: shapeText(variance.persistence),
-    };
-    return (
-        <div data-feed-variance className="space-y-1">
-            {variance.calibration_id !== '' && (
-                <p>
-                    {t('marketdata.fxFeeds.start.variance.calibration', {
-                        id: variance.calibration_id,
-                        version: String(variance.calibration_version),
-                    })}
-                </p>
-            )}
-            <p>
-                {variance.fitted
-                    ? t('marketdata.fxFeeds.start.variance.fitted', {
-                          ...shape,
-                          returns: String(variance.returns),
-                      })
-                    : t('marketdata.fxFeeds.start.variance.authored', shape)}
-            </p>
-            {variance.fitted && (
-                <p>
-                    {t('marketdata.fxFeeds.start.variance.firstDay', {
-                        ratio: variance.initial_ratio.toFixed(2),
-                    })}
-                </p>
-            )}
-            {variance.note !== '' && <p>{variance.note}</p>}
-        </div>
-    );
-}
-
 export const percent = (value: number): string => `${(value * 100).toFixed(2)}%`;
 
+type Variance = NonNullable<FeedStart['variance']>;
+
 /**
- * What the window's fixings did. Only the volatility changes the calibration today,
+ * One feed's run on one tab, as fact cards: the level it started at and where that came
+ * from, what the fixing window measured, the daily variance it carries, and the calibration
+ * that variance was approved as. A stopped feed shows what its config names.
+ */
+export function FeedRunTab({
+    feed,
+    start,
+}: {
+    readonly feed: RecordRow;
+    readonly start: FeedStart | null | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const garch = show(feed['variance_model']) === 'gjr_garch';
+    const running = start !== null && start !== undefined;
+    return (
+        <div className="space-y-4" data-feed-run>
+            {!running && <Notice tone="info">{t('marketdata.fxFeeds.run.notRunning')}</Notice>}
+            <div className="grid gap-4 lg:grid-cols-2">
+                <div className="space-y-4">
+                    {running && (
+                        <LevelCard start={start} configured={show(feed['gmm_initial_price'])} />
+                    )}
+                    {running && start.from_fixing && <WindowCard start={start} />}
+                </div>
+                <div className="space-y-4">
+                    {show(feed['variance_model']) !== '' && (
+                        <VarianceCard garch={garch} variance={running ? start.variance : null} />
+                    )}
+                    {garch && (
+                        <CalibrationCard feed={feed} variance={running ? start.variance : null} />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function LevelCard({
+    start,
+    configured,
+}: {
+    readonly start: FeedStart;
+    readonly configured: string;
+}): ReactNode {
+    const { t, language } = useTranslation();
+    return (
+        <Card
+            title={t('marketdata.fxFeeds.run.level')}
+            aside={
+                <Tag tone={start.from_fixing ? 'up' : 'warn'} small>
+                    {t(
+                        start.from_fixing
+                            ? 'marketdata.fxFeeds.run.fromFixing'
+                            : 'marketdata.fxFeeds.run.configured',
+                    )}
+                </Tag>
+            }
+        >
+            <dl className="grid gap-4 sm:grid-cols-3">
+                <Fact label={t('marketdata.fxFeeds.run.levelValue')}>
+                    <span className="font-mono text-base font-semibold tabular-nums">
+                        {start.from_fixing ? levelOf(start) : configured || '—'}
+                    </span>
+                </Fact>
+                {start.from_fixing && (
+                    <>
+                        <Fact label={t('marketdata.fxFeeds.run.fixing')} value={start.value} />
+                        <Fact
+                            label={t('marketdata.fxFeeds.run.orientation')}
+                            value={t(
+                                start.inverted
+                                    ? 'marketdata.fxFeeds.run.inverted'
+                                    : 'marketdata.fxFeeds.run.direct',
+                            )}
+                        />
+                        <Fact
+                            label={t('marketdata.fxFeeds.run.provider')}
+                            value={start.provider_code}
+                        />
+                        <Fact
+                            label={t('marketdata.fxFeeds.run.fixingDate')}
+                            value={start.fixing_date ?? ''}
+                        />
+                        <Fact
+                            label={t('marketdata.fxFeeds.run.received')}
+                            value={
+                                start.received_at === null || start.received_at === undefined
+                                    ? ''
+                                    : formatDateTime(start.received_at, language)
+                            }
+                        />
+                    </>
+                )}
+            </dl>
+            {start.from_fixing && start.item !== '' && (
+                <Fact label={t('marketdata.fxFeeds.run.item')}>
+                    <OresmdUrl uri={start.item} />
+                </Fact>
+            )}
+            {start.note !== '' && <p className="text-xs text-ink-muted">{start.note}</p>}
+        </Card>
+    );
+}
+
+/**
+ * What the window's fixings measured. Only the volatility changes the calibration today,
  * since it scales the mixture; the rest are recorded for a later policy.
  */
-export function FeedStartMeasures({ start }: { readonly start: FeedStart }): ReactNode {
+function WindowCard({ start }: { readonly start: FeedStart }): ReactNode {
     const { t } = useTranslation();
-    const recorded: string[] = [];
+    const recorded: { label: string; value: string }[] = [];
     if (start.annual_drift != null) {
-        recorded.push(
-            t('marketdata.fxFeeds.start.measures.drift', { value: percent(start.annual_drift) }),
-        );
+        recorded.push({
+            label: t('marketdata.fxFeeds.run.drift'),
+            value: percent(start.annual_drift),
+        });
     }
     if (start.min_return != null && start.max_return != null) {
-        recorded.push(
-            t('marketdata.fxFeeds.start.measures.range', {
-                min: percent(start.min_return),
-                max: percent(start.max_return),
-            }),
-        );
+        recorded.push({
+            label: t('marketdata.fxFeeds.run.range'),
+            value: `${percent(start.min_return)} / ${percent(start.max_return)}`,
+        });
     }
     if (start.age_days != null) {
-        recorded.push(t('marketdata.fxFeeds.start.measures.age', { days: String(start.age_days) }));
+        recorded.push({
+            label: t('marketdata.fxFeeds.run.age'),
+            value: t('marketdata.fxFeeds.run.days', { days: String(start.age_days) }),
+        });
     }
     if (start.jumps != null) {
-        recorded.push(t('marketdata.fxFeeds.start.measures.jumps', { count: String(start.jumps) }));
+        recorded.push({ label: t('marketdata.fxFeeds.run.jumps'), value: String(start.jumps) });
     }
     for (const other of start.dispersion ?? []) {
-        recorded.push(
-            t('marketdata.fxFeeds.start.measures.dispersion', {
-                provider: other.provider_code,
-                bp: other.basis_points.toFixed(1),
-            }),
-        );
+        recorded.push({
+            label: t('marketdata.fxFeeds.run.dispersion', { provider: other.provider_code }),
+            value: `${other.basis_points.toFixed(1)} bp`,
+        });
     }
     return (
-        <div className="mt-2 space-y-1">
-            {start.daily_spread != null && start.hourly_spread != null && (
-                <p>
-                    {t('marketdata.fxFeeds.start.measures.volatility', {
-                        daily: percent(start.daily_spread),
-                        hourly: percent(start.hourly_spread),
-                    })}
-                </p>
-            )}
-            {recorded.length > 0 && (
+        <Card title={t('marketdata.fxFeeds.run.window')}>
+            <div className="grid gap-2 sm:grid-cols-3">
+                <MeasureTile
+                    label={t('marketdata.fxFeeds.run.fixings')}
+                    value={String(start.used)}
+                    sub={t('marketdata.fxFeeds.run.days', { days: String(start.window_days) })}
+                />
+                {start.daily_spread != null && (
+                    <MeasureTile
+                        label={t('marketdata.fxFeeds.run.dailyVolatility')}
+                        value={percent(start.daily_spread)}
+                        sub={t('marketdata.fxFeeds.run.used')}
+                    />
+                )}
+                {start.hourly_spread != null && (
+                    <MeasureTile
+                        label={t('marketdata.fxFeeds.run.hourlyVolatility')}
+                        value={percent(start.hourly_spread)}
+                        sub={t('marketdata.fxFeeds.run.used')}
+                    />
+                )}
+                {recorded.map((one) => (
+                    <MeasureTile
+                        key={one.label}
+                        label={one.label}
+                        value={one.value}
+                        sub={t('marketdata.fxFeeds.run.recorded')}
+                    />
+                ))}
+            </div>
+        </Card>
+    );
+}
+
+function VarianceCard({
+    garch,
+    variance,
+}: {
+    readonly garch: boolean;
+    readonly variance: Variance | null | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <Card
+            title={t('marketdata.fxFeeds.run.variance')}
+            aside={
+                <Tag tone="muted" small>
+                    {t(
+                        garch
+                            ? 'marketdata.fxFeeds.run.model.gjr_garch'
+                            : 'marketdata.fxFeeds.run.model.constant',
+                    )}
+                </Tag>
+            }
+        >
+            {!garch ? (
+                <p className="text-sm text-ink-muted">{t('marketdata.fxFeeds.run.constant')}</p>
+            ) : variance === null || variance === undefined ? (
+                <p className="text-sm text-ink-muted">{t('marketdata.fxFeeds.run.noShape')}</p>
+            ) : (
                 <>
-                    <p className="font-medium">{t('marketdata.fxFeeds.start.measures.recorded')}</p>
-                    <ul className="list-disc pl-5">
-                        {recorded.map((line) => (
-                            <li key={line}>{line}</li>
-                        ))}
-                    </ul>
+                    <ParameterTable
+                        rows={[
+                            {
+                                label: t('marketdata.calibration.variance.alpha'),
+                                value: garchText(variance.alpha),
+                            },
+                            {
+                                label: t('marketdata.calibration.variance.gamma'),
+                                value: garchText(variance.gamma),
+                            },
+                            {
+                                label: t('marketdata.calibration.variance.beta'),
+                                value: garchText(variance.beta),
+                            },
+                            {
+                                label: t('marketdata.calibration.variance.persistence'),
+                                value: garchText(variance.persistence),
+                            },
+                            ...(variance.fitted
+                                ? [
+                                      {
+                                          label: t('marketdata.calibration.variance.startingRatio'),
+                                          value: variance.initial_ratio.toFixed(2),
+                                      },
+                                  ]
+                                : []),
+                        ]}
+                    />
+                    <dl className="grid gap-4 sm:grid-cols-2">
+                        <Fact
+                            label={t('marketdata.fxFeeds.run.shape')}
+                            value={
+                                variance.fitted
+                                    ? t('marketdata.fxFeeds.run.fitted', {
+                                          returns: String(variance.returns),
+                                      })
+                                    : t('marketdata.calibration.variance.method.authored')
+                            }
+                        />
+                    </dl>
+                    {variance.note !== '' && (
+                        <p className="text-xs text-ink-muted">{variance.note}</p>
+                    )}
                 </>
             )}
-        </div>
+        </Card>
+    );
+}
+
+/**
+ * The calibration the run took its variance from, as a link to its page on the
+ * calibration screen. When the config names another calibration, a review approved a
+ * newer one after the run started, and a restart runs it.
+ */
+function CalibrationCard({
+    feed,
+    variance,
+}: {
+    readonly feed: RecordRow;
+    readonly variance: Variance | null | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const configured = show(feed['variance_calibration_id']);
+    const used = variance?.calibration_id ?? '';
+    const to = `${calibrationFeedPath(show(feed['asset_class_code']) || 'fx', show(feed['id']))}?tab=variance`;
+    const link = (id: string): ReactNode =>
+        id === '' ? (
+            '—'
+        ) : (
+            <Link className="font-mono text-xs text-accent hover:underline" to={to}>
+                {id}
+            </Link>
+        );
+    return (
+        <Card title={t('marketdata.fxFeeds.run.calibration')}>
+            <dl className="grid gap-4 sm:grid-cols-2">
+                {variance !== null && variance !== undefined && (
+                    <>
+                        <Fact label={t('marketdata.fxFeeds.run.calibrationRun')}>{link(used)}</Fact>
+                        <Fact
+                            label={t('marketdata.fxFeeds.run.version')}
+                            value={used === '' ? '' : String(variance.calibration_version)}
+                        />
+                    </>
+                )}
+                {used !== configured && (
+                    <Fact label={t('marketdata.fxFeeds.run.calibrationConfigured')}>
+                        {link(configured)}
+                    </Fact>
+                )}
+            </dl>
+            {variance !== null && variance !== undefined && used !== configured && (
+                <Notice tone="warn">{t('marketdata.fxFeeds.run.restartToApply')}</Notice>
+            )}
+            <Link className="text-sm text-accent hover:underline" to={to}>
+                {t('marketdata.fxFeeds.run.openCalibration')}
+            </Link>
+        </Card>
     );
 }

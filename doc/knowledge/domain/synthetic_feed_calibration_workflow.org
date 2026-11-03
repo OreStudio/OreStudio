@@ -106,10 +106,13 @@ later approval replaces it, and publishing again keeps the later one.
 The chain reads from a run to the calibration it names, to the input that
 calibration was fitted from, to the points of that input, to the fixings they
 were read from, and to the policy and its version they were read under; and from a
-calibration back to the feeds that name it. On screen, a feed's /This run/ tab
-states where the run started, its level in the pair's market convention first,
-and the calibration its variance came from; its /Variance/ tab shows the shape the
-running feed carries and opens its calibration. On the Calibration screen the
+calibration back to the feeds that name it. On screen, a feed's /Run/ tab holds
+the run in four cards: the start level in the pair's market convention, with the
+fixing, its provider and its orientation; what the fixing window measured; the
+daily variance, as a table of the GJR-GARCH parameters; and the calibration the run
+used, whose id links to the feed's calibration page. When the config names a newer
+calibration than the run used, the card says so and a restart runs it. On the
+Calibration screen the
 class list shows each feed's variance calibration and its state, and a feed's
 /Variance/ tab shows the whole calibration, its input and the review.
 

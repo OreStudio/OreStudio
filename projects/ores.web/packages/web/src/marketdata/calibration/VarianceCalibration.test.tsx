@@ -135,11 +135,16 @@ describe('the method of a variance calibration', () => {
                     used_count: 0,
                     window_days: 0,
                     window_end: '',
+                    starts: 0,
+                    starts_agreed: false,
                 }}
             />,
         );
         expect(html).toContain('Authored');
         expect(html).toContain('Approved');
+        expect(html).toContain('Alpha (α)');
+        expect(html).not.toContain('Starts');
+        expect(html).not.toContain('different optima');
         expect(html).not.toContain('Returns used');
         expect(html).not.toContain('Window');
     });

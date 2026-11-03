@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: E3778CAD-A176-4B6D-839F-3E8AB20AF28F
+:END:
+#+title: ores.refdata.fx_vol_surface_pillar
+#+description: Codegen entity model for the refdata fx_vol_surface_pillar table; one (expiry, strike label) quoted point of an FX volatility surface blueprint.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: fx_vol_surface_pillar
+#+entity_plural: fx_vol_surface_pillars
+#+entity_title: FX Volatility Surface Pillar
+#+brief: One (expiry, strike label) quoted point of an FX volatility surface blueprint.
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+One quoted point a surface's calibration reads: an expiry and a strike label, =ATM=,
+a risk reversal or butterfly at a delta, or a call or put at a delta, such as =25RR=
+or =10P=. Unlike a curve's pillars, a surface's pillars have no order the
+construction depends on, so a pillar is keyed by its point rather than by a
+sequence. Its quotes come from its sources in =fx_vol_surface_pillar_source=, one per
+contributor, each with the weight it carries in the calibration.
+
+=expiry_code= is a soft tenor reference, as the IR pillar's tenor codes are: the
+expiry is resolved to a date through the tenor machinery at the application layer.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-surrogate-lookup
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this pillar row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+Owning party (legal entity) this pillar's blueprint belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** blueprint_id
+:PROPERTIES:
+:type:       uuid
+:cpp_type:   boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:END:
+
+Parent =fx_vol_surface_blueprint= this pillar belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** expiry_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:END:
+
+The pillar's expiry as a tenor code, such as =1M= or =1Y= (references =tenor.code=).
+
+#+begin_src cpp :name generator
+std::string("1Y")
+#+end_src
+
+** strike_label
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:END:
+
+The pillar's strike label: =ATM=, or a delta from 1 to 99 with no leading zero
+followed by =RR=, =BF=, =C= or =P=, such as =25RR= or =10P=, as the =fx_option=
+series spells it. A delta of zero names no option, so =0C= and =05P= are refused.
+A label the pattern does not match gives a null substring, which a check would
+pass, so the test is coalesced to false.
+
+#+begin_src cpp :name generator
+std::string("25RR")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_fx_vol_surface_pillars_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+** Checks
+
+| expression                                                                                                                  |
+|-----------------------------------------------------------------------------------------------------------------------------|
+| "expiry_code" <> ''                                                                                                         |
+| "strike_label" = 'ATM' or coalesce(substring("strike_label" from '^[1-9][0-9]?([A-Z]+)$') in ('RR', 'BF', 'C', 'P'), false) |
+
+* Foreign keys
+
+** blueprint_id
+:PROPERTIES:
+:table:         ores_refdata_fx_vol_surface_blueprints_tbl
+:error_message: Invalid blueprint_id: %. No active fx_vol_surface_blueprint found with this id.
+:nullable:      false
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: pillar
+:entity_plural_short:   pillars
+:entity_singular_words: FX volatility surface pillar
+:entity_plural_words:   FX volatility surface pillars
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:4E6A70AD-E26F-49DF-B15F-EC01986F8FB6][FX Volatility Surface Blueprint]] -- the parent this pillar belongs to.
+- [[id:AD6023D7-EB3D-4406-979D-24CEF998837F][FX Volatility Surface Pillar Source]] -- the contributors' series this pillar reads.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

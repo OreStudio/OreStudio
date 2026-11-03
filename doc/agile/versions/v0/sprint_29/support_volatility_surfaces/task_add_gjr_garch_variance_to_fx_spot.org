@@ -105,6 +105,13 @@ task and name that file in the Command column.
 
 * Notes
 
+The fit at feed start that this task built, =choose_feed_variance= and the feed's
+own =garch_*= columns, is superseded by the decision that the variance is a
+stored, reviewed calibration. The model, the filter, the fit and the variance
+process stay; the tasks that capture inputs, fit, review and apply a calibration
+replace how a feed obtains its shape. See
+[[id:748305F3-48FD-4551-BD68-D269AF56292D][Apply an approved variance calibration to a feed]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -165,6 +165,15 @@
 \ir ./refdata_ir_curve_bootstrap_configs_notify_trigger_create.sql
 \ir ./refdata_ir_curve_bootstrap_pillars_create.sql
 \ir ./refdata_ir_curve_bootstrap_pillars_notify_trigger_create.sql
+
+-- FX volatility surface recipe: blueprint, then pillars, then their sources (FK);
+-- depends on currencies (validation function).
+\ir ./refdata_fx_vol_surface_blueprints_create.sql
+\ir ./refdata_fx_vol_surface_blueprints_notify_trigger_create.sql
+\ir ./refdata_fx_vol_surface_pillars_create.sql
+\ir ./refdata_fx_vol_surface_pillars_notify_trigger_create.sql
+\ir ./refdata_fx_vol_surface_pillar_sources_create.sql
+\ir ./refdata_fx_vol_surface_pillar_sources_notify_trigger_create.sql
 \ir ./refdata_derivation_kinds_notify_trigger_create.sql
 
 -- Party and counterparty tables

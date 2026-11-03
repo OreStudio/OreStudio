@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 213
+Tables: 216
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -4800,6 +4800,124 @@ package "refdata" #FFF3E0 {
     (ORE <Id> element).
     end note
 
+    entity ores_refdata_fx_vol_surface_blueprints_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * output_series_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * name : text
+        * base_currency_code : text
+        * quote_currency_code : text
+        * fx_option_convention_id : text <<FK>>
+        * smile_model : text
+        * expiry_interpolation : text
+        * output_expiries : text
+        * output_strikes : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_vol_surface_blueprints_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Surface Blueprint Table
+    Records *how* one FX volatility surface is built, as a named, inspectable recipe, the
+    surface's counterpart of the IR curve bootstrap config. Its pillars, in
+    fx_vol_surface_pillar, name the quotes the calibration reads; the blueprint states
+    what is done with them: the smile model fitted at each expiry, how the fitted
+    expiries are joined, the grid of expiries and strikes the surface is written on, and
+    the series it is written to. See
+    [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
+    output_series_id is a soft, cross-component reference into ores.marketdata's
+    market_series: the fx_vol_surface series the calibration alone writes. As for the
+    IR config, it is chosen and not minted, and it is the sole natural key, so exactly
+    one active blueprint, tenant-wide, writes any given surface series.
+    fx_option_convention_id names the pair's quoting convention in
+    fx_option_convention, a soft reference: its ATM type, delta type, butterfly style
+    and switch tenor decide what each pillar's quote means. smile_model and
+    expiry_interpolation are small, fixed vocabularies intrinsic to the record, held
+    by check constraints, as the IR config's curve_family_role is.
+    The output grid is two lists, the expiries as tenor codes and the strikes in the
+    oresmd strike grammar (ATM, DEL/Spot/Put/25, an absolute level), each separated
+    by commas: the grid is a property of the recipe, read whole by the calibration and
+    never addressed one point at a time, so it has no table of its own.
+    end note
+
+    entity ores_refdata_fx_vol_surface_pillar_sources_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * pillar_id : uuid <<FK>>
+        * market_series_id : uuid <<FK>>
+        * contributor_code : text
+        * weight : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_vol_surface_pillar_sources_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Surface Pillar Source Table
+    One contributor's quote of a pillar: the market series it is read from, and the
+    weight the contributor carries in the calibration. A pillar reads one series per
+    contributor, so a broker's quotes and the derived source's quotes of the same point
+    are two sources of one pillar, and a missing observation from one of them is not a
+    refusal by itself. See
+    [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]].
+    market_series_id is a soft reference to an fx_option quote series in
+    ores.marketdata, named by the caller from the series the party holds.
+    contributor_code names the provider whose series it is, as the series' own
+    provider_code does, so a reader sees the contributor without a cross-component
+    read.
+    end note
+
+    entity ores_refdata_fx_vol_surface_pillars_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * blueprint_id : uuid <<FK>>
+        * expiry_code : text
+        * strike_label : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_vol_surface_pillars_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Surface Pillar Table
+    One quoted point a surface's calibration reads: an expiry and a strike label, ATM,
+    a risk reversal or butterfly at a delta, or a call or put at a delta, such as 25RR
+    or 10P. Unlike a curve's pillars, a surface's pillars have no order the
+    construction depends on, so a pillar is keyed by its point rather than by a
+    sequence. Its quotes come from its sources in fx_vol_surface_pillar_source, one per
+    contributor, each with the weight it carries in the calibration.
+    expiry_code is a soft tenor reference, as the IR pillar's tenor codes are: the
+    expiry is resolved to a date through the tenor machinery at the application layer.
+    end note
+
     entity ores_refdata_fx_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -7509,6 +7627,8 @@ ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_
 ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_yield_reinterpretations_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_volatility_configs_tbl : "has"
+ores_refdata_fx_vol_surface_pillars_tbl ||--o{ ores_refdata_fx_vol_surface_pillar_sources_tbl : "has"
+ores_refdata_fx_vol_surface_blueprints_tbl ||--o{ ores_refdata_fx_vol_surface_pillars_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "has"
 ores_refdata_fx_volatility_configs_tbl ||--o{ ores_refdata_fx_volatility_smiles_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"

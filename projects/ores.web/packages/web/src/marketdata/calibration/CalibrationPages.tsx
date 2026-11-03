@@ -37,6 +37,7 @@ import {
     calibrationPath,
     calibrationPolicyPath,
 } from '../../shell/paths.js';
+import { Card, MeasureTile } from '../../ui/Card.js';
 import { Metric } from '../../ui/Metric.js';
 import {
     Button,
@@ -549,48 +550,6 @@ function Candidates({
                 ))}
             </tbody>
         </table>
-    );
-}
-
-/** A titled card, as every block of the feed page is drawn. */
-function Card({
-    title,
-    aside,
-    children,
-}: {
-    readonly title: string;
-    readonly aside?: ReactNode;
-    readonly children: ReactNode;
-}): ReactNode {
-    return (
-        <section className="card space-y-3 p-4">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="font-medium">{title}</h2>
-                {aside}
-            </header>
-            {children}
-        </section>
-    );
-}
-
-/** One figure of the measures: a small caption, the value, and a line beneath it. */
-function MeasureTile({
-    label,
-    value,
-    sub,
-}: {
-    readonly label: string;
-    readonly value: string;
-    readonly sub?: string;
-}): ReactNode {
-    return (
-        <div className="rounded-chip border border-line-subtle bg-surface-base px-2.5 py-2">
-            <span className="block font-mono text-[0.65rem] font-semibold uppercase tracking-wide text-ink-faint">
-                {label}
-            </span>
-            <span className="font-mono font-semibold tabular-nums">{value}</span>
-            {sub !== undefined && <span className="block text-xs text-ink-faint">{sub}</span>}
-        </div>
     );
 }
 

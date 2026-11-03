@@ -30,7 +30,6 @@ import { FeedPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { COMPONENTS, MixturePanel } from './MixturePanel.js';
 import { ArrivalsTab } from './ArrivalsPanel.js';
-import { VarianceTab } from './VariancePanel.js';
 import { TicksPanel } from './TicksPanel.js';
 
 const FEEDS = 'fx-feeds';
@@ -335,10 +334,6 @@ export const FX_FEED_KIND: FeedKind = {
                     }}
                 />
             ),
-        },
-        {
-            name: 'variance',
-            render: ({ feed }) => <VarianceTab feed={feed} />,
         },
         {
             name: 'ticks',

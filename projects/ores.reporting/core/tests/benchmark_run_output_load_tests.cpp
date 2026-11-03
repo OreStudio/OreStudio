@@ -108,7 +108,9 @@ TEST_CASE("load a large cube in blocks: read a block, insert it, read the next",
                 ++blocks;
             },
         .cashflows = [](auto&) {},
-        .text_values = [](auto&) {}};
+        .text_values =
+            [](auto&) {
+            }};
     run_output_outcome outcome;
     read_run_output(output_file{.name = "rawcube.csv", .body = body},
                     a_run_stamp(std::chrono::sys_days{std::chrono::year{2026} / 11 / 2}),

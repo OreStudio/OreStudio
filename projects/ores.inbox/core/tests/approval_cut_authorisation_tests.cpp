@@ -50,7 +50,7 @@ constexpr std::string_view cut_market_risk_decision = "inbox::approvals:decide_m
 
 /** A context carrying the permissions a caller's token states. */
 ores::database::context cut_holding_permissions(ores::testing::scoped_database_helper& h,
-                               std::vector<std::string> codes) {
+                                                std::vector<std::string> codes) {
     auto ctx = h.context().with_tenant(h.tenant_id(), acting(h).actor());
     return ctx.with_roles(std::move(codes));
 }

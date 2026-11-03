@@ -65,7 +65,8 @@ struct sample_probe_every_member {
     std::int16_t signed_small = 0;
     std::vector<std::uint8_t> bytes;
 
-    friend bool operator==(const sample_probe_every_member&, const sample_probe_every_member&) = default;
+    friend bool operator==(const sample_probe_every_member&,
+                           const sample_probe_every_member&) = default;
 };
 
 [[nodiscard]] constexpr auto wire_fields(const sample_probe_every_member&) {

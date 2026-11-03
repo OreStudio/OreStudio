@@ -43,8 +43,8 @@ namespace ores::reporting::service::app {
 class cut_authorisation_reconciler {
 private:
     [[nodiscard]] static auto& lg() {
-        static auto instance = ores::logging::make_logger(
-            "ores.reporting.service.app.cut_authorisation_reconciler");
+        static auto instance =
+            ores::logging::make_logger("ores.reporting.service.app.cut_authorisation_reconciler");
         return instance;
     }
 

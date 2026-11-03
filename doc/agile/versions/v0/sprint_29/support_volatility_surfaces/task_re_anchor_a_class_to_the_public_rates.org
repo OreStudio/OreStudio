@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A running synthetic market follows its own path after release and drifts from the real rates; bringing it back is a decision, not a side effect. An operator's Re-anchor on the Calibration screen restarts a class's feeds from the levels the latest calibration stored, ignoring their last stored spots, and records who re-anchored, when, the reason, and each feed's level before and after. Nothing else re-anchors a feed.
+A running synthetic market follows its own path after release and drifts from the real rates; bringing it back is a decision, not a side effect. An operator's Re-anchor on the Calibration screen writes each of a class's feed levels from its latest fixing, as a new version of the config with the operator's reason, and restarts the feeds from those levels without resuming from their last stored spots. The history shows each level before and after. Nothing else writes the level of a released class from a fixing.
 
 * Status
 
@@ -35,9 +35,9 @@ A running synthetic market follows its own path after release and drifts from th
 
 * Acceptance
 
-- Re-anchoring a class restarts each of its feeds from its calibrated level, and the feed's start record says it was re-anchored.
-- The re-anchor is recorded with who, when, the reason, and each feed's level before and after, and shows in the feed's history.
-- No restart, recalibration or approval moves a running feed's level; only a release or a re-anchor does.
+- Re-anchoring a class writes each feed's level from its latest fixing and restarts the feed from it, not from its last stored spot.
+- The re-anchor is a version of each feed's config with who, when, the reason and the level before and after, and shows in the feed's history.
+- The daily calibration of a released class leaves the level alone; only a restart, from the last stored spot, or a re-anchor writes it.
 
 * Plan
 

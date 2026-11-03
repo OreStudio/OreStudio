@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C1C77943-A2F6-42C9-8DB7-648F21DA4678
+:END:
+#+title: The starter FX spot dataset cannot publish
+#+description: synthetic.fx_spot_configs names provider 'ore', which is not a market data provider, so its publish fails on the provider check; no bundle carries it, so nothing exercises it. Either retire the dataset or move its two regimes (periodic EUR/USD, Hawkes GBP/USD) into a shipped feeds dataset.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

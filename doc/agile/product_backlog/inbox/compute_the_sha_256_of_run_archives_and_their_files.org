@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 669FB3A3-BD3B-4C7D-9384-B12B77E601AA
+:END:
+#+title: Compute the SHA-256 of a run's archives and the files in them
+#+description: The files of a run show no digest for the input package, the output archive or the files inside them. Compute the SHA-256 of each archive when it is stored and of each file when it is listed, so a person can check a download against the run.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:compute:storage:ore:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The Downloads tab of a run lists the input package, the files inside it, the
+output archive and the output files. Only the output files show a SHA-256, which
+the node writes into the output manifest when it fans the archive out. The input
+package (=ore_package.tar.gz=), each file inside it and the output archive
+(=<result>.tar.gz=) show none. Compute the digest of each archive once, when it
+is stored, and keep it where the run can read it: in a manifest beside the input
+package, as the output already has, or on the workunit and the result. A file
+inside the input package then takes its digest from that manifest rather than
+from the web server reading the archive.
+
+* Why
+
+A person who downloads a file of a run should be able to check it against the
+run, and an auditor should be able to show that the inputs a run read are the
+inputs it was given. The BFF reads the input package whole on every listing
+today, so computing digests there would cost a full read per page view; the
+digest belongs with the write.
+
+* References
+
+- =projects/ores.web/packages/bff/src/report-run-files.ts=, which sets =sha256=
+  to null for the input package, its files and the output archive.
+- [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]], the task that built the Downloads tab.
+
+* See also
+
+- [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]], the story it came from.

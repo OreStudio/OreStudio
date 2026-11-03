@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: feature/review-and-apply-variance-calibrations
-#+pr:
+#+pr: 4428
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4428][#4428]] | [synthetic] Review a variance calibration and run the approved one on a feed |
 
 * Review
 

@@ -272,8 +272,9 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", "[service]")
 
 TEST_CASE("a_booking_into_a_book_that_is_not_open_is_refused", "[service]") {
     fixture f;
-    const stated_book_rules frozen{book_rules_port::status::not_open,
-                                   book_rules_port::product_type::allows};
+    const stated_book_rules frozen{
+        book_rules_port::answer{.book_status = book_rules_port::status::not_open,
+                                .allowed = book_rules_port::product_type::allows}};
     auto request = f.request();
     const auto response = trade_operations_service(f.ctx, frozen).book_trade(request, {});
     CHECK(response.result.outcome == outcome::failed);
@@ -282,8 +283,9 @@ TEST_CASE("a_booking_into_a_book_that_is_not_open_is_refused", "[service]") {
 
 TEST_CASE("a_booking_of_a_product_type_the_book_does_not_allow_is_refused", "[service]") {
     fixture f;
-    const stated_book_rules narrow{book_rules_port::status::open,
-                                   book_rules_port::product_type::refuses};
+    const stated_book_rules narrow{
+        book_rules_port::answer{.book_status = book_rules_port::status::open,
+                                .allowed = book_rules_port::product_type::refuses}};
     const auto req = f.request();
 
     const auto response = trade_operations_service(f.ctx, narrow).book_trade(req, {});

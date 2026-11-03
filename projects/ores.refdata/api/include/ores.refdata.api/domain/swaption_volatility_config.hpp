@@ -40,13 +40,15 @@ namespace ores::refdata::domain {
  *
  * The settings of one SwaptionVolatility entry of a curveconfig.xml, one row
  * per curve_definition in the SwaptionVolatilities section: the surface's
- * dimension and volatility type, the option and swap tenors of its ATM matrix and
- * smile, and the swap indices it is built on. Its Report is a row of
+ * dimension and volatility type, the option and swap tenors of its ATM matrix,
+ * and the swap indices it is built on. Its Report is a row of
  * curve_report_configuration and its ParametricSmileConfiguration a row of
  * curve_parametric_smile.
  *
  * A ProxyConfig builds the surface from another one; it is one per entry, so
  * it is a row of swaption_proxy_config and the entry holds none of its fields.
+ * The smile grid of a Smile surface is a row of swaption_volatility_smile in
+ * the same way, so an ATM entry carries no smile columns.
  */
 struct swaption_volatility_config final {
     /**
@@ -144,21 +146,6 @@ struct swaption_volatility_config final {
      * @brief The swap index of the other swap tenors.
      */
     std::optional<std::string> swap_index_base;
-
-    /**
-     * @brief The option tenors of the smile, as ORE's comma separated text.
-     */
-    std::optional<std::string> smile_option_tenors;
-
-    /**
-     * @brief The swap tenors of the smile, as ORE's comma separated text.
-     */
-    std::optional<std::string> smile_swap_tenors;
-
-    /**
-     * @brief The strike spreads of the smile, as ORE's comma separated text.
-     */
-    std::optional<std::string> smile_spreads;
 
     /**
      * @brief The tag the surface's quotes are named with.

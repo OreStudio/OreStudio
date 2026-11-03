@@ -49,9 +49,6 @@ export interface SwaptionVolatilityConfigWrite {
     swap_tenors: string | null;
     short_swap_index_base: string | null;
     swap_index_base: string | null;
-    smile_option_tenors: string | null;
-    smile_swap_tenors: string | null;
-    smile_spreads: string | null;
     quote_tag: string | null;
 }
 

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :data-oriented-design:modeling:refdata:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/split-the-swaption-smile-and-the-inflation-seasonality
+#+pr: 4405
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
@@ -26,8 +26,9 @@ the first splits:
 
 - =swaption_volatility_config= carries =smile_option_tenors=,
   =smile_swap_tenors= and =smile_spreads=. They mean something only when
-  =dimension= is =Smile=. This is the reading the FX split made for
-  =fx_volatility_smile=, so the swaption smile becomes a part the same way.
+  =dimension= is =Smile=, and they are one block. This is the reading the FX
+  split made for =fx_volatility_smile=, so the swaption smile becomes a part the
+  same way.
 - =inflation_curve_config= carries =has_seasonality= with
   =seasonality_base_date= and =seasonality_frequency=. ORE's =seasonalityType=
   requires =BaseDate=, =Frequency= and =Factors= together, and the factors are
@@ -38,17 +39,17 @@ the first splits:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-02                               |
 
 * Acceptance
 
-- A swaption entry has a smile part only when its dimension is =Smile=, and the
-  import, the export and the insert trigger agree on that.
+- A swaption entry has a smile part only when it states a smile grid, and the
+  import and the export agree on that.
 - An inflation curve has a seasonality part with a required base date and
   frequency, or none. =has_seasonality= is gone.
 - The model, SQL, C++, TypeScript twins and fixtures move in one change, and the
@@ -58,9 +59,46 @@ the first splits:
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The two parts
+
+| Part | Key | Holds | Present when |
+|------+-----+-------+--------------|
+| =swaption_volatility_smile= | =swaption_volatility_config_id= | =smile_option_tenors=, =smile_swap_tenors=, =smile_spreads= | the entry states any smile list, whatever its dimension |
+| =inflation_seasonality= | =curve_definition_id=, as the factors are keyed | =base_date=, =frequency=, both required | the curve states a =Seasonality=; the schema makes it state =Factors= |
+
+The corpus decides the rules. Of 138 =SwaptionVolatility= entries, 33 are
+=Smile= and state all three lists, 100 are =ATM= and state none, 3 are =ATM= and
+state all three, and 2 state no dimension and no smile. The three are in
+=InitialMargin/Input/Dim2=, where the dimension was switched from =Smile= in a
+comment and the grid kept. ORE ignores that grid, but the document states it, so
+the part exists wherever a grid is stated and the dimension decides nothing. An
+earlier count read the commented =Dimension= and claimed no =ATM= entry had a
+grid; the import refused the =Dim2= document on that rule, and the corpus test
+caught it.
+
+Of 133 =InflationCurve= entries, 71 state a seasonality, and every one has its
+base date, frequency and factors. The XML reader already refuses a
+=Seasonality= with no =Factors= element, because the schema requires it. The
+element may hold no =Factor=, so a seasonality with no factor rows is legal and
+the export writes an empty =Factors=. The export refuses factor rows with no
+seasonality, which a document built in the store can hold. The code review
+caught the first version of this, which also refused a seasonality with no
+factors and so would not have written a document the import had accepted.
+
+** Where each rule is enforced
+
+The parts' presence is a statement of the projection, through the
+=document_part= index the curve entry split introduced, so a duplicate or an
+orphan is refused as for every other part. Neither owner has a construction
+column a trigger could read, so there is no insert trigger, as for the
+commodity parts.
+
+** The DQ path
+
+Both parts get an artefact table and a place in the publish list. Without one,
+the columns would leave the parents' artefacts and a staged dataset would
+lose the block. The FX smile and the two proxy parts have that gap today;
+it is captured.
 
 * Measurements
 
@@ -74,7 +112,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Swaption entry members, before and after | 21 and 18 | `python3 build/scripts/inventory_entity_columns.py` | `6f9b30f565` |
+| Inflation curve members, before and after | 20 and 17 | same | `6f9b30f565` |
+| Members of the two parts | smile 6, seasonality 5 | same | `6f9b30f565` |
+| Corpus swaption entries by dimension and smile lists | 33 Smile with all three, 3 ATM with all three, 100 ATM with none, 2 with neither | a scan of =external/ore/examples/**/*.xml= with comments removed | `6f9b30f565` |
+| Corpus inflation curves with a seasonality | 71 of 133, each with base date, frequency and factors | same | `6f9b30f565` |
+| Local checks without build, database and ctest | 57 of 57 after regenerating four stale files | `python3 build/scripts/local_checks.py --exclude-heavy` | `6f9b30f565` |
+| ore suite | 519596 assertions, 0 failures; the corpus round trips 89 documents | `./compass.sh test run -- -R ores.ore.core.tests` | working tree on `6f9b30f565` |
+| refdata suite | 522 cases, 6019 assertions, 0 failures, on a recreated database, after the last fix | `./compass.sh test run -- -R ores.refdata.core.tests` | working tree on `6f9b30f565` |
 
 * Notes
 
@@ -93,12 +138,42 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4405][#4405]] | [refdata,ore,sql] Split the swaption smile and the inflation seasonality |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the export refuses a seasonality with no factors, but =factorType= allows zero =Factor=, so an accepted =<Factors/>= would not write back | =curve_configuration_projection.cpp= | Accept | The export writes the empty element and still refuses factor rows with no seasonality; the test writes and reads such a seasonality back. |
+| 2 | Local review: misspell over the changed pages | models, task, captures | Accept | Clean. |
+| 3 | PR #4405, @claude 1: the import now requires BaseDate and Frequency in a Seasonality | projection | Decline | No change in what is accepted. =seasonalityType= makes both required, and the XML reader refuses a document that leaves out a required element before the projection runs, as it does for =Factors=. All 71 corpus seasonalities state both. |
+| 4 | PR #4405, @claude 2: the seasonality is pushed before its factors are read | projection | Decline | =map= builds the document locally and returns it only on success, so a refusal drops the whole of it. |
+| 5 | PR #4405, @claude 3: an empty smile element makes a part with empty text | projection | Decline | The entry read and wrote the same three fields with the same =text= and =set_optional_text= before the split, so empty and absent are kept apart as before; the corpus round trip holds. |
+| 6 | PR #4405, @claude 4: save, get and remove of the new parts are untested through the service | database tests | Accept | Save and get were covered, because the round trip tests write and read through the document service. Remove was not, anywhere. A new case removes a configuration with seasonalities and one with smile grids and checks both parts are gone. The refdata suite reran after the last fix. |
+| 7 | PR #4405, @claude 5: the wire change breaks old clients and stored payloads | protocol | Decline | The protocol has no version, the C++ and TypeScript twins move in this change, and nothing outside the tree reads it. Every split in this story changed the wire the same way. |
+| 8 | PR #4405, @claude 6: the volatility parts' DQ gap | capture | No change | Already captured, and not a regression of this change. |
 
 * Result
+
+Two parts replace a block each that the re-inventory found.
+=swaption_volatility_smile= holds the three smile lists, keyed by the swaption
+entry. =inflation_seasonality= holds the base date and frequency, both
+required, keyed by the curve definition as the factors are. =has_seasonality=
+is gone. The swaption entry goes from 21 members to 18, and the inflation curve
+from 20 to 17.
+
+The import fills each part where the document states the block. The export
+takes it from the part index, so a duplicate or an orphan is refused. The export
+also refuses factor rows with no seasonality. Both
+parts have a DQ artefact table and a place in the publish list, so a staged
+document keeps them.
+
+The wire change: the curve configuration document gains
+=swaption_volatility_smiles= and =inflation_seasonalities=, and the
+=swaption_volatility_config= and =inflation_curve_config= messages lose the
+moved fields.
+
+The corpus changed one rule. The first plan refused a smile on an entry that is
+not =Smile=, from a count that read a commented =Dimension=. Three =ATM=
+entries in the ORE examples keep a grid, and the corpus test refused their
+document. The part now exists wherever a grid is stated, as the FX smile does.

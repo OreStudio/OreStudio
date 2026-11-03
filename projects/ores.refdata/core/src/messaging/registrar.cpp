@@ -351,6 +351,7 @@
 #include "ores.refdata.core/messaging/inflation_curve_config_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_seasonality_factor_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_seasonality_factor_registrar.hpp"
+#include "ores.refdata.core/messaging/inflation_seasonality_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_swap_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/instrument_code_history_provider_registrar.hpp"
@@ -404,6 +405,7 @@
 #include "ores.refdata.core/messaging/swaption_proxy_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swaption_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swaption_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/swaption_volatility_smile_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_basis_swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_basis_swap_long_short_history_provider_registrar.hpp"
@@ -932,6 +934,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_default_curve_market_terms_history_provider(hist_registry);
         register_default_curve_transition_matrix_history_provider(hist_registry);
         register_default_curve_yield_reinterpretation_history_provider(hist_registry);
+        register_swaption_volatility_smile_history_provider(hist_registry);
+        register_inflation_seasonality_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "refdata", registrar_queue_group, ctx, verifier));

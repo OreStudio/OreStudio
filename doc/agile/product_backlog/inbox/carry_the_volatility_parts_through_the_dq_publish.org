@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 30E66BA0-85F1-4162-A2A3-1139A8B4C35D
+:END:
+#+title: Carry the volatility parts through the DQ publish
+#+description: fx_volatility_smile, cap_floor_proxy_config and swaption_proxy_config have no DQ artefact table and are not in the curve configuration publish list, while their entries are. A staged curve configuration that states an FX smile or a proxy publishes the entry without it, and nothing refuses. The swaption smile and the inflation seasonality got artefacts when they were split; these three did not.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:dq:curveconfig:bug:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Three volatility parts have no DQ artefact table: =fx_volatility_smile=,
+=cap_floor_proxy_config= and =swaption_proxy_config=. They are also not in the
+table list of =ores_refdata_publish_curve_configuration_from_dq_fn=. Their
+entries are in both. When they were split, the columns left the entries'
+artefact tables, and nothing took their place.
+
+* Why
+
+A staged curve configuration with an FX smile or a proxy publishes the entry
+without it, and nothing refuses the publish. No seed states these blocks today,
+so no data is lost yet. A dataset that does state one will lose it. The fix gives
+each part an artefact table, as the swaption smile and the inflation seasonality
+have, and adds them to the publish list and its test.
+
+* References
+
+- [[id:06F7D57F-82C7-440D-91D7-54EED11EBB85][Split the swaption smile and the inflation seasonality]], which found it.
+
+* See also
+
+-

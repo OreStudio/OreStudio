@@ -66,9 +66,6 @@ struct inflation_curve_config_entity {
     std::string frequency;
     std::optional<std::string> base_rate;
     std::optional<double> tolerance;
-    bool has_seasonality = false;
-    std::optional<std::string> seasonality_base_date;
-    std::optional<std::string> seasonality_frequency;
     std::optional<std::string> use_last_fixing_date;
     std::optional<std::string> interpolation_variable;
     std::optional<std::string> interpolation_method;
@@ -101,9 +98,6 @@ struct inflation_curve_config_entity {
                query_builder::bind("frequency", &e::frequency) |
                query_builder::bind("base_rate", &e::base_rate) |
                query_builder::bind("tolerance", &e::tolerance) |
-               query_builder::bind("has_seasonality", &e::has_seasonality) |
-               query_builder::bind("seasonality_base_date", &e::seasonality_base_date) |
-               query_builder::bind("seasonality_frequency", &e::seasonality_frequency) |
                query_builder::bind("use_last_fixing_date", &e::use_last_fixing_date) |
                query_builder::bind("interpolation_variable", &e::interpolation_variable) |
                query_builder::bind("interpolation_method", &e::interpolation_method) |

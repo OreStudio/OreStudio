@@ -2066,12 +2066,52 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.commodity_curve_bases.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['bases'],
+    },
+    'refdata.v1.commodity_curve_bases_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.commodity_curve_configs.list': {
         asOf: true,
         filter: ['id_one_of'],
         rows: ['commodity_curve_configs'],
     },
     'refdata.v1.commodity_curve_configs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_curve_cross_currencies.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['cross_currencies'],
+    },
+    'refdata.v1.commodity_curve_cross_currencies_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_curve_directs.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['directs'],
+    },
+    'refdata.v1.commodity_curve_directs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_curve_interpolations.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['interpolations'],
+    },
+    'refdata.v1.commodity_curve_interpolations_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -2956,6 +2996,26 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.default_curve_benchmarks.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['benchmarks'],
+    },
+    'refdata.v1.default_curve_benchmarks_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.default_curve_cds_terms.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['cds_terms'],
+    },
+    'refdata.v1.default_curve_cds_terms_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.default_curve_configs.list': {
         asOf: true,
         filter: ['id_one_of'],
@@ -2972,6 +3032,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['configurations'],
     },
     'refdata.v1.default_curve_configurations_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.default_curve_market_terms.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['market_terms'],
+    },
+    'refdata.v1.default_curve_market_terms_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.default_curve_transition_matrices.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['transition_matrices'],
+    },
+    'refdata.v1.default_curve_transition_matrices_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.default_curve_yield_reinterpretations.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['yield_reinterpretations'],
+    },
+    'refdata.v1.default_curve_yield_reinterpretations_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -3142,6 +3232,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['inflation_curve_configs'],
     },
     'refdata.v1.inflation_curve_configs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.inflation_seasonalities.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['inflation_seasonalities'],
+    },
+    'refdata.v1.inflation_seasonalities_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -3757,6 +3857,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['swaption_volatility_configs'],
     },
     'refdata.v1.swaption_volatility_configs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.swaption_volatility_smiles.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['swaption_volatility_smiles'],
+    },
+    'refdata.v1.swaption_volatility_smiles_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

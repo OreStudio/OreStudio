@@ -303,6 +303,10 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         definitionKey: 'curve_definition_id',
         entities: [
             {
+                entity: 'swaption_volatility_smile',
+                vector: 'swaption_volatility_smiles',
+            },
+            {
                 entity: 'swaption_proxy_config',
                 vector: 'swaption_proxy_configs',
             },
@@ -410,27 +414,27 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
             {
                 entity: 'swaption_volatility_config',
+                column: 'quote_tag',
+                ore: 'QuoteTag',
+                xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/QuoteTag',
+            },
+            {
+                entity: 'swaption_volatility_smile',
                 column: 'smile_option_tenors',
                 ore: 'SmileOptionTenors',
                 xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileOptionTenors',
             },
             {
-                entity: 'swaption_volatility_config',
+                entity: 'swaption_volatility_smile',
                 column: 'smile_swap_tenors',
                 ore: 'SmileSwapTenors',
                 xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileSwapTenors',
             },
             {
-                entity: 'swaption_volatility_config',
+                entity: 'swaption_volatility_smile',
                 column: 'smile_spreads',
                 ore: 'SmileSpreads',
                 xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileSpreads',
-            },
-            {
-                entity: 'swaption_volatility_config',
-                column: 'quote_tag',
-                ore: 'QuoteTag',
-                xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/QuoteTag',
             },
         ],
         blocks: [
@@ -1421,6 +1425,10 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         definitionKey: 'curve_definition_id',
         entities: [
             {
+                entity: 'inflation_seasonality',
+                vector: 'inflation_seasonalities',
+            },
+            {
                 entity: 'inflation_seasonality_factor',
                 vector: 'seasonality_factors',
             },
@@ -1524,8 +1532,8 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         blocks: [
             {
                 element: 'Seasonality',
-                presence: 'has_seasonality',
-                presenceEntity: '',
+                presence: '',
+                presenceEntity: 'inflation_seasonality',
             },
             {
                 element: 'Quotes',

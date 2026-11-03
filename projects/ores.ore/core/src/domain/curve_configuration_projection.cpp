@@ -68,9 +68,11 @@
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
+#include "ores.refdata.api/domain/inflation_seasonality.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
+#include "ores.refdata.api/domain/swaption_volatility_smile.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -528,6 +530,23 @@ struct document_part<refdata::domain::commodity_curve_basis> {
     static constexpr auto key = &refdata::domain::commodity_curve_basis::curve_definition_id;
     static constexpr std::string_view owner = "commodity curve";
     static constexpr std::string_view name = "basis configuration";
+};
+
+template <>
+struct document_part<refdata::domain::swaption_volatility_smile> {
+    static constexpr auto vector = &curve_configuration_document::swaption_volatility_smiles;
+    static constexpr auto key =
+        &refdata::domain::swaption_volatility_smile::swaption_volatility_config_id;
+    static constexpr std::string_view owner = "swaption volatility entry";
+    static constexpr std::string_view name = "smile grid";
+};
+
+template <>
+struct document_part<refdata::domain::inflation_seasonality> {
+    static constexpr auto vector = &curve_configuration_document::inflation_seasonalities;
+    static constexpr auto key = &refdata::domain::inflation_seasonality::curve_definition_id;
+    static constexpr std::string_view owner = "inflation curve";
+    static constexpr std::string_view name = "seasonality";
 };
 
 // The state one document's projection accumulates, so each segment element's
@@ -1006,12 +1025,17 @@ void import_inflation_curve(ores::refdata::messaging::curve_configuration_docume
     r.frequency = required_spelling(v, "Frequency");
     r.base_rate = v.text("BaseRate");
     r.tolerance = v.real("Tolerance");
-    r.has_seasonality = v.has("Seasonality");
     if (const auto seasonality = v.child("Seasonality"); seasonality) {
-        r.seasonality_base_date = seasonality->text("BaseDate");
-        r.seasonality_frequency = seasonality->spelling("Frequency");
+        const auto factors = seasonality->child("Factors");
+        refdata::domain::inflation_seasonality s;
+        s.id = curve_configuration_projection_new_uuid();
+        s.curve_definition_id = d.id;
+        s.base_date = required_text(*seasonality, "BaseDate");
+        s.frequency = required_spelling(*seasonality, "Frequency");
+        curve_configuration_projection_set_audit(s);
+        out.inflation_seasonalities.push_back(std::move(s));
         int factor_position = 0;
-        if (const auto factors = seasonality->child("Factors"); factors)
+        if (factors)
             for (const auto& f : factors->values("Factor")) {
                 refdata::domain::inflation_seasonality_factor sf;
                 sf.id = curve_configuration_projection_new_uuid();
@@ -2359,10 +2383,17 @@ void import_swaption_volatility(ores::refdata::messaging::curve_configuration_do
     r.swap_tenors = v.text("SwapTenors");
     r.short_swap_index_base = v.text("ShortSwapIndexBase");
     r.swap_index_base = v.text("SwapIndexBase");
-    r.smile_option_tenors = v.text("SmileOptionTenors");
-    r.smile_swap_tenors = v.text("SmileSwapTenors");
-    r.smile_spreads = v.text("SmileSpreads");
     r.quote_tag = v.text("QuoteTag");
+    if (v.has("SmileOptionTenors") || v.has("SmileSwapTenors") || v.has("SmileSpreads")) {
+        refdata::domain::swaption_volatility_smile smile;
+        smile.id = curve_configuration_projection_new_uuid();
+        smile.swaption_volatility_config_id = r.id;
+        smile.smile_option_tenors = v.text("SmileOptionTenors");
+        smile.smile_swap_tenors = v.text("SmileSwapTenors");
+        smile.smile_spreads = v.text("SmileSpreads");
+        curve_configuration_projection_set_audit(smile);
+        out.swaption_volatility_smiles.push_back(std::move(smile));
+    }
     if (const auto proxy = v.child("ProxyConfig"); proxy) {
         refdata::domain::swaption_proxy_config p;
         p.id = curve_configuration_projection_new_uuid();
@@ -2820,7 +2851,9 @@ using document_part_index = part_index<refdata::domain::curve_segment_convention
                                        refdata::domain::commodity_curve_interpolation,
                                        refdata::domain::commodity_curve_direct,
                                        refdata::domain::commodity_curve_cross_currency,
-                                       refdata::domain::commodity_curve_basis>;
+                                       refdata::domain::commodity_curve_basis,
+                                       refdata::domain::swaption_volatility_smile,
+                                       refdata::domain::inflation_seasonality>;
 
 void restore_convention(record_writer r,
                         const refdata::domain::curve_segment& s,
@@ -3097,8 +3130,12 @@ void export_inflation_curve(
     record_writer r,
     const refdata::domain::curve_definition& d,
     const refdata::domain::inflation_curve_config& v,
+    const refdata::domain::inflation_seasonality* seasonality,
     const std::vector<const refdata::domain::inflation_seasonality_factor*>& factors,
     const export_context& ctx) {
+    if (!seasonality && !factors.empty())
+        throw refusal("inflation curve " + d.curve_id +
+                      " has seasonality factors but no seasonality");
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     r.set_text("NominalTermStructure", v.nominal_term_structure);
@@ -3119,10 +3156,10 @@ void export_inflation_curve(
     r.set_spelling("Frequency", v.frequency, "frequency");
     r.set_optional_text("BaseRate", v.base_rate);
     r.set_optional_real("Tolerance", v.tolerance);
-    if (v.has_seasonality) {
+    if (seasonality) {
         auto season = r.child("Seasonality");
-        season.set_text("BaseDate", v.seasonality_base_date.value_or(""));
-        season.set_spelling("Frequency", v.seasonality_frequency.value_or(""), "frequency");
+        season.set_text("BaseDate", seasonality->base_date);
+        season.set_spelling("Frequency", seasonality->frequency, "frequency");
         auto list = season.child("Factors");
         for (const auto* f : factors)
             list.append_value("Factor", f->factor);
@@ -3459,6 +3496,7 @@ void export_swaption_volatility(record_writer r,
                                 const refdata::domain::curve_definition& d,
                                 const refdata::domain::swaption_volatility_config& v,
                                 const refdata::domain::swaption_proxy_config* proxy_config,
+                                const refdata::domain::swaption_volatility_smile* smile_grid,
                                 const refdata::domain::curve_report_configuration* report,
                                 const smile_export& smile) {
     r.set_text("CurveId", d.curve_id);
@@ -3493,9 +3531,11 @@ void export_swaption_volatility(record_writer r,
     r.set_optional_text("SwapTenors", v.swap_tenors);
     r.set_optional_text("ShortSwapIndexBase", v.short_swap_index_base);
     r.set_optional_text("SwapIndexBase", v.swap_index_base);
-    r.set_optional_text("SmileOptionTenors", v.smile_option_tenors);
-    r.set_optional_text("SmileSwapTenors", v.smile_swap_tenors);
-    r.set_optional_text("SmileSpreads", v.smile_spreads);
+    if (smile_grid) {
+        r.set_optional_text("SmileOptionTenors", smile_grid->smile_option_tenors);
+        r.set_optional_text("SmileSwapTenors", smile_grid->smile_swap_tenors);
+        r.set_optional_text("SmileSpreads", smile_grid->smile_spreads);
+    }
     r.set_optional_text("QuoteTag", v.quote_tag);
     if (report)
         export_report(r.child("Report"), *report);
@@ -4062,6 +4102,7 @@ curve_configuration_projection::document curve_configuration_projection::reverse
                 *d,
                 settings,
                 proxy,
+                parts.take<refdata::domain::swaption_volatility_smile>(settings.id),
                 report_of(*d),
                 smile_of(*d));
             continue;
@@ -4128,6 +4169,7 @@ curve_configuration_projection::document curve_configuration_projection::reverse
             export_inflation_curve(written.child("InflationCurves").append("InflationCurve"),
                                    *d,
                                    settings_of(inflation_by_definition, *d),
+                                   parts.take<refdata::domain::inflation_seasonality>(d->id),
                                    f == factors.end() ? none : f->second,
                                    ctx);
             continue;

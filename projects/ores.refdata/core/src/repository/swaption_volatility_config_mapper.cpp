@@ -64,9 +64,6 @@ swaption_volatility_config_mapper::map(const swaption_volatility_config_entity& 
     r.swap_tenors = v.swap_tenors;
     r.short_swap_index_base = v.short_swap_index_base;
     r.swap_index_base = v.swap_index_base;
-    r.smile_option_tenors = v.smile_option_tenors;
-    r.smile_swap_tenors = v.smile_swap_tenors;
-    r.smile_spreads = v.smile_spreads;
     r.quote_tag = v.quote_tag;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -105,9 +102,6 @@ swaption_volatility_config_mapper::map(const domain::swaption_volatility_config&
     r.swap_tenors = v.swap_tenors;
     r.short_swap_index_base = v.short_swap_index_base;
     r.swap_index_base = v.swap_index_base;
-    r.smile_option_tenors = v.smile_option_tenors;
-    r.smile_swap_tenors = v.smile_swap_tenors;
-    r.smile_spreads = v.smile_spreads;
     r.quote_tag = v.quote_tag;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

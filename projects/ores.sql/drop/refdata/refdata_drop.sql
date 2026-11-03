@@ -106,6 +106,8 @@
 \ir ./refdata_cap_floor_proxy_configs_drop.sql
 \ir ./refdata_cap_floor_volatility_configs_drop.sql
 \ir ./refdata_swaption_volatility_configs_notify_trigger_drop.sql
+\ir ./refdata_swaption_volatility_smiles_notify_trigger_drop.sql
+\ir ./refdata_swaption_volatility_smiles_drop.sql
 \ir ./refdata_swaption_proxy_configs_notify_trigger_drop.sql
 \ir ./refdata_swaption_proxy_configs_drop.sql
 \ir ./refdata_swaption_volatility_configs_drop.sql
@@ -181,6 +183,8 @@
 \ir ./refdata_default_curve_configs_drop.sql
 \ir ./refdata_inflation_seasonality_factors_notify_trigger_drop.sql
 \ir ./refdata_inflation_seasonality_factors_drop.sql
+\ir ./refdata_inflation_seasonalities_notify_trigger_drop.sql
+\ir ./refdata_inflation_seasonalities_drop.sql
 \ir ./refdata_inflation_curve_configs_notify_trigger_drop.sql
 \ir ./refdata_inflation_curve_configs_drop.sql
 \ir ./refdata_equity_curve_configs_notify_trigger_drop.sql

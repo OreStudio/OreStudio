@@ -61,9 +61,6 @@ generate_synthetic_swaption_volatility_config(utility::generation::generation_co
     r.swap_tenors = std::nullopt;
     r.short_swap_index_base = std::nullopt;
     r.swap_index_base = std::nullopt;
-    r.smile_option_tenors = std::nullopt;
-    r.smile_swap_tenors = std::nullopt;
-    r.smile_spreads = std::nullopt;
     r.quote_tag = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

@@ -174,6 +174,7 @@
 #include "ores.refdata.service/messaging/inflation_cap_floor_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_cap_floor_volatility_strikes_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_curve_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/inflation_seasonality_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_seasonality_factor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_swap_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/instrument_code_event_registrar.hpp"
@@ -217,6 +218,7 @@
 #include "ores.refdata.service/messaging/swap_index_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/swaption_proxy_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/swaption_volatility_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/swaption_volatility_smile_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_anchor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_basis_swap_long_short_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_basis_swap_pay_receive_event_registrar.hpp"
@@ -501,6 +503,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(
         register_swaption_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_swaption_proxy_config_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_swaption_volatility_smile_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_inflation_seasonality_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_tenor_basis_swap_long_short_event_mapping(event_source, event_bus, nats));
     subs.push_back(

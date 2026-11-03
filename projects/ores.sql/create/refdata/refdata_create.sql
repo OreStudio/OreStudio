@@ -407,6 +407,8 @@
 \ir ./refdata_equity_curve_configs_notify_trigger_create.sql
 \ir ./refdata_inflation_curve_configs_create.sql
 \ir ./refdata_inflation_curve_configs_notify_trigger_create.sql
+\ir ./refdata_inflation_seasonalities_create.sql
+\ir ./refdata_inflation_seasonalities_notify_trigger_create.sql
 \ir ./refdata_inflation_seasonality_factors_create.sql
 \ir ./refdata_inflation_seasonality_factors_notify_trigger_create.sql
 \ir ./refdata_default_curve_configs_create.sql
@@ -481,6 +483,8 @@
 \ir ./refdata_curve_parametric_smile_parameters_notify_trigger_create.sql
 \ir ./refdata_swaption_proxy_configs_create.sql
 \ir ./refdata_swaption_proxy_configs_notify_trigger_create.sql
+\ir ./refdata_swaption_volatility_smiles_create.sql
+\ir ./refdata_swaption_volatility_smiles_notify_trigger_create.sql
 \ir ./refdata_swaption_volatility_configs_create.sql
 \ir ./refdata_swaption_volatility_configs_notify_trigger_create.sql
 \ir ./refdata_cap_floor_proxy_configs_create.sql

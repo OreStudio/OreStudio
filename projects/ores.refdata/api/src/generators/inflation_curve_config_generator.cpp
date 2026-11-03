@@ -58,9 +58,6 @@ generate_synthetic_inflation_curve_config(utility::generation::generation_contex
     r.frequency = std::string("Monthly");
     r.base_rate = std::nullopt;
     r.tolerance = std::nullopt;
-    r.has_seasonality = false;
-    r.seasonality_base_date = std::nullopt;
-    r.seasonality_frequency = std::nullopt;
     r.use_last_fixing_date = std::nullopt;
     r.interpolation_variable = std::nullopt;
     r.interpolation_method = std::nullopt;

@@ -62,6 +62,16 @@ Decisions agreed with the user on 2026-11-03:
   of pillars, one quote tick per pillar on an oresmd series, a blueprint that
   builds the surface (SABR or SVI) with static no-arbitrage checks, then a
   candidate and a published set. Quotes are published, not model parameters.
+- Proposed on 2026-11-03, to confirm: a derived calibration source publishes
+  plausible starting ATM, RR and BF items from the spot fixings (realised
+  volatility for ATM, skewness for RR, excess kurtosis for BF, through a
+  Gram-Charlier smile, with the higher moments shrunk to authored priors). A
+  real vol source, if one is found, ranks above it and replaces it.
+- Proposed on 2026-11-03, to confirm: the surface is SSVI (or eSSVI). The state
+  processes are its parameters (ATM total variance per tenor, skew, curvature),
+  each held inside the no-arbitrage region, so every surface is free of static
+  arbitrage by construction. The generator prices ATM, RR and BF quotes from
+  the SSVI state; the blueprint fits SSVI back and checks it.
 
 Steps:
 

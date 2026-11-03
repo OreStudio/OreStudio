@@ -322,6 +322,11 @@ RULES = (
          BFF, COMPOSED, "reporting",
          "Each report definition with the row the list would draw for it and the reads that"
          " failed, so the answer says a run could not be checked rather than that it never ran."),
+    Rule("an ORE schema's contents",
+         ("exact", "GET /api/reporting/ore-files/:code/schema"),
+         BFF, COMPOSED, "reporting",
+         "One schema of one engine version: the file catalogue names the schema and the"
+         " stored versions supply its contents, so two collections are joined to answer."),
     Rule("the engine's documented groups",
          ("exact", "GET /api/reporting/engine-settings/documentation"),
          BFF, RESOURCE, "reporting",
@@ -1224,6 +1229,11 @@ VIEWS = {
         "each report definition with the row the list would draw and the reads that "
         "failed, so a failed read is not read as never having run",
         "ETag on the whole view, stale after 60 s"),
+    "an ORE schema's contents": (
+        "ores.reporting",
+        "the catalogue entry that is a schema with this code, and its stored contents "
+        "at the engine version asked for, two reads",
+        "no cache: the schema is read from the store per request"),
     "the synthetic folder tree": (
         "ores.synthetic",
         "the folders and the feeds under each, at any depth, with the count of each "

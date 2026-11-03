@@ -254,10 +254,7 @@ describe('GET /api/reporting/runs/:id', () => {
     });
 
     it('refuses an id that is not a uuid before any call goes out', async () => {
-        const { response, calls } = await get(
-            'application',
-            '/api/reporting/runs/nope',
-        );
+        const { response, calls } = await get('application', '/api/reporting/runs/nope');
 
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);
@@ -325,7 +322,11 @@ describe('GET /api/reporting/runs/:id/errors', () => {
                 total: 2,
                 errors: [
                     curve(ERROR, 'Failed to build curve.'),
-                    { ...curve('e0000000-0000-4000-8000-000000000002', 'Skipping Failed trade.'), scope_code: 'Analytics', cause: null },
+                    {
+                        ...curve('e0000000-0000-4000-8000-000000000002', 'Skipping Failed trade.'),
+                        scope_code: 'Analytics',
+                        cause: null,
+                    },
                 ],
             },
         });

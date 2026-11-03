@@ -424,12 +424,26 @@ async function readSchemaContents(
             versionSubjects.list_ore_file_versions_request,
             'versions',
             {
-                filter: { engine_version: engineVersion },
+                filter: {
+                    engine_version: engineVersion,
+                    engine_version_one_of: null,
+                    id_one_of: null,
+                    ore_file_code: null,
+                    ore_file_code_one_of: null,
+                },
                 as_of: null,
             },
         ),
         readAll<ListOreFilesResponse>(session, oreFileSubjects.list_ore_files_request, 'files', {
-            filter: { category_code: 'schemas' },
+            filter: {
+                category_code: 'schemas',
+                category_code_one_of: null,
+                code_one_of: null,
+                configuration_type_code: null,
+                configuration_type_code_one_of: null,
+                schema_ore_file_code: null,
+                schema_ore_file_code_one_of: null,
+            },
             as_of: null,
         }),
     ]);

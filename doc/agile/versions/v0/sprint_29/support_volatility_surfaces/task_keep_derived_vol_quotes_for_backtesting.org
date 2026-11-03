@@ -98,3 +98,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+| R1.1 | A doc comment was left above the brace that closes the anonymous namespace | series_resolution.cpp | Accept | Removed; the header documents resolve_series |
+| R1.2 | The observation repository keeps includes the shared helpers made unused | observation_read_repository.cpp | Accept | charconv, cstdint and format removed |
+| R1.3 | days is echoed on a refusal | observation_reader.cpp | Accept, no change | As the fixing reader does; no TypeScript reader of the reply yet |
+| R1.4 | range_inverted names an empty window oddly | observation_reader.cpp | Decline | The codes match the fixing reader's, so both readers refuse alike |
+| R1.5 | Test the ceiling exactly and one past it | service_observation_reader_tests.cpp | Accept | A window of exactly 5,000 is read whole; 5,001 is refused |
+| R1.6 | Run the full gate before merge | PR | Decline | The user directed that only the checks a change needs are run |

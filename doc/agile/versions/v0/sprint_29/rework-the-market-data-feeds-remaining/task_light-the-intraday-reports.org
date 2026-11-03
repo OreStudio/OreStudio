@@ -102,7 +102,13 @@ task and name that file in the Command column.
 | Run settings that say live | 46 of 46 | =select count(*) ... and market_data_type = 'live'= | uncommitted |
 | The cut a run minted | =fd636290-b0f8-4c3c-af9f-1a8f83ce16df=, badge =in_use= | [[file:./evidence/live_resolution_and_record.txt][the run's transcript]] | uncommitted |
 | Cut assembly and resolution suites | 58 assertions in 13 cases; 69 in 25 | =ores.reporting.core.tests "[cut_assembly]"= and ="[service][cut][resolution]"= | uncommitted |
-| Publish suites (pgTAP) | 8 tests in one file, 7 in the other | =pg_prove ... reporting_publish_cut_selection_test.sql ...= | uncommitted |
+| Publish suites (pgTAP) | 31 tests across three files, all passing | =pg_prove -d $DB ... reporting_publish_cut_selection_test.sql reporting_publish_report_bindings_test.sql reporting_publish_risk_report_configs_test.sql= | 83e06dfad8 |
+| Reporting suites | core 250 of 260 cases; service 10 of 10; shell reporting 762 of 762 | =ores.reporting.core.tests=, =ores.reporting.service.tests=, =ores.shell.reporting.tests= | 83e06dfad8 |
+| Core cases that fail | 10, every one a table this environment's schema lacks (=ores_reporting_ore_file*_tbl=, =ores_reporting_report_metrics_tbl=, run results) | as above | 83e06dfad8 |
+| SQL hygiene | 1921 files, 0 problems | =python3 projects/ores.sql/utility/check_sql_hygiene.py projects/ores.sql/create projects/ores.sql/populate projects/ores.sql/test= | c04f2b2a3b |
+| Codegen documentation | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | c04f2b2a3b |
+| Codegen and seed drift | none: regenerating writes nothing | =codegen.sh regenerate --component reporting --address ores.sql.schema=, then the two =generate_*.py= and =generate_sql.py= runs | c04f2b2a3b |
+| Org lint | filetags and generator markers valid; no dangling id links | =./compass.sh lint= | c04f2b2a3b |
 
 * Notes
 

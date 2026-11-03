@@ -57,6 +57,7 @@ struct calibration_policy_entity {
     std::string asset_class_code;
 
     int window_days = 90;
+    int variance_window_days = 1826;
     bool allow_inverse = true;
     std::string fallback_code = "keep_fixed";
     std::string modified_by;
@@ -77,6 +78,7 @@ struct calibration_policy_entity {
                query_builder::bind("version", &e::version) |
                query_builder::bind("asset_class_code", &e::asset_class_code) |
                query_builder::bind("window_days", &e::window_days) |
+               query_builder::bind("variance_window_days", &e::variance_window_days) |
                query_builder::bind("allow_inverse", &e::allow_inverse) |
                query_builder::bind("fallback_code", &e::fallback_code) |
                query_builder::bind("modified_by", &e::modified_by) |

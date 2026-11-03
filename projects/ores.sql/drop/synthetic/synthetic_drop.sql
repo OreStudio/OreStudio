@@ -37,6 +37,12 @@
 \ir ./synthetic_ir_curve_template_entries_drop.sql
 \ir ./synthetic_ir_curve_generation_configs_notify_trigger_drop.sql
 \ir ./synthetic_ir_curve_generation_configs_drop.sql
+\ir ./synthetic_variance_calibrations_notify_trigger_drop.sql
+\ir ./synthetic_variance_calibrations_drop.sql
+\ir ./synthetic_variance_calibration_input_points_notify_trigger_drop.sql
+\ir ./synthetic_variance_calibration_input_points_drop.sql
+\ir ./synthetic_variance_calibration_inputs_notify_trigger_drop.sql
+\ir ./synthetic_variance_calibration_inputs_drop.sql
 \ir ./synthetic_calibration_provider_orders_notify_trigger_drop.sql
 \ir ./synthetic_calibration_provider_orders_drop.sql
 \ir ./synthetic_calibration_policies_notify_trigger_drop.sql

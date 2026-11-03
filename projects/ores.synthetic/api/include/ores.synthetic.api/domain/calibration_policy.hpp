@@ -74,6 +74,13 @@ struct calibration_policy final {
     int window_days = 90;
 
     /**
+     * @brief The variance window, in days, of fixings a variance calibration's input is captured
+     * over: five years by default, so a GJR-GARCH fit sees several volatility regimes. Between 30
+     * and 3660.
+     */
+    int variance_window_days = 1826;
+
+    /**
      * @brief Whether a pair may be read from an item that quotes it the other way round, as 1/x.
      */
     bool allow_inverse = true;

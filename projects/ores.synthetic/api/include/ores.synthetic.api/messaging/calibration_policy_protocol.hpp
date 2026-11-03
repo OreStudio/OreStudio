@@ -51,6 +51,7 @@ struct calibration_policy_write {
     boost::uuids::uuid id;
     std::string asset_class_code;
     int window_days;
+    int variance_window_days;
     bool allow_inverse;
     std::string fallback_code;
 
@@ -392,6 +393,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.calibration_policies_e
         utility::codec::field{"id", &calibration_policy_write::id},
         utility::codec::field{"asset_class_code", &calibration_policy_write::asset_class_code},
         utility::codec::field{"window_days", &calibration_policy_write::window_days},
+        utility::codec::field{"variance_window_days",
+                              &calibration_policy_write::variance_window_days},
         utility::codec::field{"allow_inverse", &calibration_policy_write::allow_inverse},
         utility::codec::field{"fallback_code", &calibration_policy_write::fallback_code},
     };

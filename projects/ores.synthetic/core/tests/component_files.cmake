@@ -42,5 +42,8 @@ set(files
     "trade_generation_trade_type_eventing_integration_tests.cpp"
     "trade_population_tests.cpp"
     "trading_trade_population_writer_tests.cpp"
+    "variance_calibration_eventing_integration_tests.cpp"
+    "variance_calibration_input_eventing_integration_tests.cpp"
+    "variance_calibration_input_point_eventing_integration_tests.cpp"
     "yield_curve_process_type_eventing_integration_tests.cpp"
 )

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/model-the-variance-calibration-records
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Three versioned ores.synthetic records hold the whole audit trail: the input sna
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -37,13 +37,39 @@ Three versioned ores.synthetic records hold the whole audit trail: the input sna
 
 - The three entities are generated across SQL, domain, repository, protocol, shell and TypeScript, with history for each.
 - Checks on write: a calibration's shape is admissible (alpha, beta and alpha plus gamma not negative, persistence below one); its state is one of the four; an approved or rejected state carries a reason; a point that is not used carries a reason.
-- At most one approved calibration per pair, provider and method is current, by a unique index; an authored calibration is a record of method authored with no input.
+- At most one approved calibration per pair is current, by a unique index, so approving one supersedes the pair's earlier approval whatever its method; an authored calibration is a record of method authored with no input.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three =ores.synthetic= entities, system-tenant rows under the system party as the
+FX spot feeds are (profile =uuid-identified-lookup=, visible to every tenant), and
+one column on the calibration policy.
+
+- =variance_calibration_input=: one capture. Natural key: party, pair, fixing
+  URI, window end and window length, so a repeat over the same window is a new
+  version, not a second row. Columns: the pair; =fixing_uri= and =provider_code=
+  of the item read; =inverted=; =policy_id= and =policy_version= of the policy
+  it was read under; =window_days= and =window_end=; =point_count= and
+  =used_count=. Who and when are the temporal columns every row carries.
+- =variance_calibration_input_point=: one fixing date of an input, foreign key
+  to the input. Natural key: party, input, date. Columns: =fixing_date=;
+  =fixing_text= as stored; =fixing_value= and =log_return= (in market
+  convention, nullable: the first date has no return and an unreadable value
+  has neither); =used=; =exclusion_reason=, which a point not used must carry.
+- =variance_calibration=: one fit or authored shape. Columns: the pair, so the
+  approval index needs no join; =input_id= (nil for an authored shape, a check
+  ties the two); =method= (=gjr_garch_qmle= or =authored=) and
+  =method_version=; =alpha=, =gamma=, =beta=, =persistence=,
+  =long_run_variance=, =starting_variance_ratio=; =log_likelihood=,
+  =returns_used=, =starts=, =starts_agreed= (fit evidence, nullable or zero for
+  an authored shape); =state= (=proposed=, =approved=, =rejected=, =superseded=)
+  and =state_reason=. A rejected fit may be inadmissible, so the admissibility
+  check applies to the other three states only.
+- =calibration_policy.variance_window_days=, default 1826, between 30 and 3660,
+  the window the feed's own =garch_window_days= held.
+
+The capture, fit, review and application operations are later tasks; this task
+adds the records, their checks and their generated stack.
 
 * Measurements
 

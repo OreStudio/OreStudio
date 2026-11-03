@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 95D01BC0-1687-44A4-90C1-BF3385ED2E4B
+:END:
+#+title: Task: Run ctest in parallel in the gate
+#+description: The gate's ctest check took 1010s where a run at -j 4 took 682s; confirm the gate runs the suites one at a time and give it a job count.
+#+type: task
+#+level: s1
+#+filetags: :tooling:ci:local_checks:run_only_the_checks_a_change_needs:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The gate's ctest check runs the suites in parallel, with the resource locks the suites already declare.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The gate passes a job count to ctest
+- The ctest time in the gate report is measured before and after
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

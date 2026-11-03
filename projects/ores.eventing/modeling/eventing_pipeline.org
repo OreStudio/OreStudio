@@ -35,7 +35,7 @@ The diagram below shows these stages for a workunit change:
   │ ores.compute.service (server process)                               │
   │  postgres_event_source → event_bus                                  │
   │    workunit_event, entity_change_event                              │
-  │  → subscriber → nats.publish("compute.v1.workunits_events.updated") │
+  │  → subscriber → nats.publish("compute.v1.events.workunits.updated") │
   └───────────────────────────┬─────────────────────────────────────────┘
                               │  NATS publish/subscribe
   ┌───────────────────────────▼─────────────────────────────────────────┐
@@ -81,9 +81,9 @@ An entity's change event is addressed by three subjects, one per action:
 #+end_example
 
 Examples:
-- =refdata.v1.currencies_events.updated=
-- =compute.v1.workunits_events.created=
-- =iam.v1.accounts_events.deleted=
+- =refdata.v1.events.currencies.updated=
+- =compute.v1.events.workunits.created=
+- =iam.v1.events.accounts.deleted=
 
 The prefix, =refdata.v1.currencies_events=, is stated once in the event's
 =entity_event_traits=. A subscriber that wants one action subscribes to one

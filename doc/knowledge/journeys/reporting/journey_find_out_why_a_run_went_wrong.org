@@ -207,7 +207,7 @@ own record even after the definition changes.
 | Read the scopes | Read one scope | =reporting.v1.report_error_scopes.get= | exists |
 | Read the scopes | Read many scopes at once | =reporting.v1.report_error_scopes.get_many= | exists |
 | Read the definition | Read the report behind the run | =reporting.v1.report_definitions.get= | exists |
-| Watch the errors | Learn that a run gained errors | =reporting.v1.report_instances_events.updated= | exists |
+| Watch the errors | Learn that a run gained errors | =reporting.v1.events.report_instances.updated= | exists |
 | Watch the errors | Learn that an error row was written | (no event for =report_error_event=) | missing |
 | The failed step | Read why a run failed before the engine saw it | (no reporting read; the steps live in =ores.workflow=) | missing |
 | The screen itself | Read a run's errors from the browser | (no BFF route) | missing |

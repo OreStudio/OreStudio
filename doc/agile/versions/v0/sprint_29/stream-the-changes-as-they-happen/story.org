@@ -70,7 +70,7 @@ refetches the collection it draws. Keys can return as an optimisation when a
 per-entity decoder exists; the frame's event name is then unchanged.
 
 *The stream hears the broker, not the database.* The server subscribes to
-=*.v1.*_events.>= and turns what it hears into changes. It does not read the
+=*.v1.events.>= and turns what it hears into changes. It does not read the
 stores' notify channels itself, so a change published by another service process
 reaches a client of this one.
 

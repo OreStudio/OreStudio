@@ -43,7 +43,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
+          # Only scheduled runs compare history; manual and tag runs build directly.
+          fetch-depth: ${{ github.event_name == 'schedule' && '0' || '1' }}
       - name: Check if code changed since last successful run
         id: check
         env:

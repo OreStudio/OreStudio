@@ -25,6 +25,7 @@ title The states of a variance calibration
 proposed --> approved : a reviewer approves,\nwith a reason
 proposed --> rejected : a reviewer rejects,\nwith a reason
 approved --> superseded : a later calibration\nof the pair is approved
+proposed --> superseded : a later fit of the pair\nis approved first
 
 rejected --> [*]
 superseded --> [*]

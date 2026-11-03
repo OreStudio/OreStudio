@@ -121,6 +121,16 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "7655817a-2a61-50eb-a4f6-18831340d195",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "4d530e29-6251-5f8e-890a-9fcc52832b4c",
+    "role": "pricing",
+    "market_configuration_name": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
     "id": "c23ff1e2-12d4-5718-8777-0281927293b6",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -165,6 +175,16 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "configuration_id": "5cfa7a5b-d171-51d3-b507-4466f8a9709b",
+    "role": "pricing",
+    "market_configuration_name": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "85315978-da0c-51bf-8b42-78c5dc9d29b9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "6d7585e1-9152-53d8-9f12-d895137758f6",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -311,6 +331,16 @@
   },
   {
     "company_code": "acme_us",
+    "id": "d3dcc744-4100-593d-a0ea-58309a159760",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "a5ef1d7f-20d6-58e6-bab4-e6b04365b050",
+    "role": "pricing",
+    "market_configuration_name": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
     "id": "05aac4cc-4f3e-51be-b1d6-ff29e00c591b",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -445,6 +475,16 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "configuration_id": "de9bf174-b8b4-5de4-bf80-db41b5f28b71",
+    "role": "pricing",
+    "market_configuration_name": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "23572a9b-b1f2-5f70-815d-846a1d9ae5a3",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "902c604d-9dc1-5af4-94d4-ab9befc6f731",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1

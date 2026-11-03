@@ -41,7 +41,7 @@ import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { PATHS } from '../../shell/paths.js';
 import { Button, Notice } from '../../ui/Primitives.js';
 import { FeedStatus, RunOutcomeText, useFeedRuns } from './feedRuns.js';
-import { FeedRunPanel } from './feedStart.js';
+import { FeedRunTab } from './feedStart.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
 import type { FeedKind } from './feedKind.js';
 import { folderChain } from './feedTree.js';
@@ -120,9 +120,11 @@ function FeedBody({
     const mayRun = useHeld()(PERMISSION.feedsRun);
     const check = kind.useCheck();
     const parts = useFeedParts(kind, id);
+    // The kind of a page never changes, so this hook runs or does not on every render alike.
+    const related = kind.useRelated?.(feed) ?? [];
     const { tab, bar } = useRecordTabs({
         label: name,
-        tabs: ['details', 'run', ...kind.tabs.map((one) => one.name), 'history'],
+        tabs: ['details', 'calibration', ...kind.tabs.map((one) => one.name), 'history'],
     });
     const running = feed.running;
     const runs = useFeedRuns();
@@ -184,14 +186,7 @@ function FeedBody({
                 </Notice>
             )}
             {bar}
-            {tab === 'run' &&
-                (feed.start !== null && feed.start !== undefined ? (
-                    <FeedRunPanel start={feed.start} />
-                ) : (
-                    <p className="text-sm text-ink-muted">
-                        {t('marketdata.fxFeeds.run.notRunning')}
-                    </p>
-                ))}
+            {tab === 'calibration' && <FeedRunTab feed={feed} start={feed.start} />}
             {tab === 'details' && (
                 <RecordDetails specs={kind.fields} row={feed} extra={kind.extraDetails(feed, t)} />
             )}
@@ -206,7 +201,7 @@ function FeedBody({
                     feed={feed}
                     feedEntity={kind.entity}
                     subject={kind.historySubject}
-                    parts={parts}
+                    parts={[...parts, ...related]}
                     feedSpecs={kind.fields}
                     feedResource={kind.resource}
                     complete={kind.complete}

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 76DA87C7-0690-4729-8038-0EB2741BB4DF
+:END:
+#+title: The calibrate permission test times out when market data is stopped
+#+description: feed_config_calibrate_writes_only_with_the_write_permissions previews the FX class against the shared database; once it holds stored fixings the preview reads each feed's window from the market data service, which the gate stops, so the request times out. It passes in 1.7 s with market data up. Make the test independent of the shared database and the running services.
+#+type: capture
+#+level: cross
+#+filetags: :testing:synthetic:gate:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

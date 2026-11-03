@@ -630,6 +630,12 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     // BFF's lines for that request, so a failure on screen leads to its log lines.
     server.addHook('onSend', async (request, reply) => {
         reply.header('x-request-id', request.id);
+        // An answer to the API is the session's own record, read a moment ago:
+        // a browser that kept it would show the rows from before the change.
+        // A route that states its own lifetime keeps it.
+        if (request.url.startsWith('/api/') && reply.getHeader('cache-control') === undefined) {
+            reply.header('cache-control', 'private, no-store');
+        }
     });
 
     /*

@@ -3773,6 +3773,9 @@ export const en: SourceCatalogue = {
         'Generate the trades': 'Generate the trades',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.",
+        'Schedule the reports': 'Schedule the reports',
+        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.":
+            "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.",
         'Hand the tenant to its administrator': 'Hand the tenant to its administrator',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.",
@@ -4391,7 +4394,7 @@ export const en: SourceCatalogue = {
                 memberships: 'Memberships',
                 centres: 'Business centres',
                 counterparties: 'Counterparties',
-                run: 'This run',
+                calibration: 'Calibration',
                 arrivals: 'Arrivals',
                 variance: 'Variance',
                 behaviour: 'Price behaviour',
@@ -4846,7 +4849,25 @@ export const en: SourceCatalogue = {
                 runs: 'The calibration this feed runs',
                 runsNone: "The feed's variance is constant, or its config names no calibration.",
                 fresh: "This run's fit",
-                awaiting: 'new fit to review',
+                awaiting: 'waits for review',
+                waiting:
+                    '{count} GJR-GARCH fit(s) of this pair wait for review. The newest is calibration {id}, persistence {persistence}. A feed runs it only after a person approves it.',
+                reviewIt: 'Review it',
+                pairHistory: 'Calibrations of {pair}',
+                when: 'Last changed',
+                stateHeader: 'State',
+                reason: 'Reason',
+                chart: {
+                    title: 'Fitted daily volatility',
+                    volatility: 'Fitted volatility',
+                    move: "Size of the day's move",
+                    longRun: 'Long-run level {value}',
+                    label: "The daily volatility the GJR-GARCH fit expected over its input, and the size of each day's move",
+                    caption:
+                        "{days} daily returns from the stored input. Each day's volatility follows from the move before it under the calibration's alpha (α), gamma (γ) and beta (β).",
+                    disagrees:
+                        "The volatility recomputed from the stored points does not end at the calibration's stored first-day ratio. The input or the shape changed after the fit.",
+                },
                 fitRejected: 'fit rejected',
                 method: {
                     gjr_garch_qmle: 'Fitted',
@@ -4953,6 +4974,7 @@ export const en: SourceCatalogue = {
                 keptFixed: 'Kept a level',
                 refused: 'Refused',
                 overridden: 'Override the policy',
+                awaitingReview: 'Fits waiting for review',
             },
             filter: {
                 label: 'Show',
@@ -5091,6 +5113,25 @@ export const en: SourceCatalogue = {
                 save: 'Save the policy',
                 reset: 'Return to automatic',
                 coverage: 'Coverage',
+                approval: {
+                    title: 'Variance approval',
+                    mode: {
+                        auto: 'Approved by the policy',
+                        manual: 'Approved by a person',
+                    },
+                    leadAuto:
+                        'The policy approves each GJR-GARCH fit that passes the rules below, and a fit that fails them waits for a person. The rules change only with a new version of the policy.',
+                    leadManual:
+                        'A person approves every GJR-GARCH fit of the class; the policy approves none itself.',
+                    window: 'Variance window',
+                    days: '{days} days',
+                    minReturns: 'Fewest returns',
+                    starts: 'Starts',
+                    startsRequired: 'Must agree',
+                    startsAny: 'May disagree',
+                    persistence: 'Persistence range',
+                    reaction: 'Lowest reaction, alpha (α) + gamma (γ) / 2',
+                },
                 record: 'Calibration record',
             },
         },
@@ -5797,20 +5838,6 @@ export const en: SourceCatalogue = {
             restartFailed:
                 'Saved, but the restart failed: {message}. The feed runs on its old law until it starts again.',
         },
-        variance: {
-            title: 'Daily variance',
-            lead: 'Whether this feed’s daily variance is constant or follows a GJR-GARCH, so that calm and turbulent days cluster, and the reviewed calibration it runs.',
-            model: 'Variance model',
-            'model.constant': 'Constant — the mixture’s variance every day',
-            'model.gjr_garch': 'GJR-GARCH — a variance carried day to day',
-            calibration: 'Calibration',
-            calibrationNone: 'None',
-            running: 'What the running feed carries',
-            notRunning: 'The feed is not running.',
-            openCalibration: 'Open its calibration: the evidence and the review',
-            calibrationLead:
-                'A GJR-GARCH feed runs the approved calibration of its pair. Calibrations are captured, fitted and approved or rejected on the Calibration screen; approving one points the pair’s feeds at it.',
-        },
         market: {
             title: 'The market',
             views: {
@@ -6181,44 +6208,44 @@ export const en: SourceCatalogue = {
                     "Constant keeps the mixture's variance on every day. GJR-GARCH carries a variance from one day to the next, so calm and turbulent days cluster; it needs the geometric or arithmetic engine.",
             },
             run: {
-                level: 'Level',
-                levelInverted:
-                    'One over the {provider} fixing of {value} on {date}, received {received}: the item quotes the pair the other way round.',
-                source: 'Fixing item',
-                window: 'Window',
-                variance: 'Daily variance',
-                notRunning:
-                    'The feed is not running, so there is no run to describe. Start it to see where it starts.',
-            },
-            start: {
-                title: 'Where this run started',
-                fromFixing:
-                    'Started from the {provider} fixing of {value} on {date}, received {received}.',
-                dateUnknown: 'an unknown date',
-                receivedUnknown: 'at an unknown time',
-                fixedLevel:
-                    'No published fixing set the level, so the run kept its configured level.',
-                inverted:
-                    'The item quotes the pair the other way round, so its value was read as one over it.',
-                window: '{used} fixings over {days} days measured its spread.',
-                variance: {
-                    calibration: 'Calibration {id}, version {version}.',
-                    fitted: 'Daily variance: GJR-GARCH fitted from {returns} daily returns, alpha (α) {alpha}, gamma (γ) {gamma}, beta (β) {beta}, persistence {persistence}.',
-                    authored:
-                        'Daily variance: GJR-GARCH with the authored shape, alpha (α) {alpha}, gamma (γ) {gamma}, beta (β) {beta}, persistence {persistence}.',
-                    firstDay:
-                        'The first day’s variance is {ratio} times the long-run level, as the history ended.',
-                },
-                measures: {
-                    volatility:
-                        'Realised volatility {daily} daily, {hourly} hourly: this changed the calibration, since it scales the mixture.',
-                    recorded: 'Recorded for a later policy, not used today:',
-                    drift: 'Drift, annualised: {value}',
-                    range: 'Daily returns from {min} to {max}',
-                    age: 'The fixing is {days} day(s) old',
-                    jumps: 'Moves above three deviations: {count}',
-                    dispersion: '{provider} stands {bp} bp away',
-                },
+                level: 'Start level',
+                fromFixing: 'From a fixing',
+                configured: 'Configured level',
+                levelValue: 'Level, market convention',
+                fixing: 'Fixing',
+                orientation: 'Orientation',
+                inverted: 'Inverted',
+                direct: 'Direct',
+                provider: 'Provider',
+                fixingDate: 'Fixing date',
+                received: 'Received',
+                item: 'Fixing item',
+                window: 'Fixing window',
+                fixings: 'Fixings',
+                days: '{days} days',
+                dailyVolatility: 'Daily volatility',
+                hourlyVolatility: 'Hourly volatility',
+                used: 'Sets the spread',
+                recorded: 'Recorded only',
+                drift: 'Drift, annualised',
+                range: 'Daily return range',
+                age: 'Fixing age',
+                jumps: 'Moves above 3σ',
+                dispersion: 'Distance to {provider}',
+                variance: 'GJR-GARCH daily variance',
+                'model.gjr_garch': 'GJR-GARCH',
+                'model.constant': 'Constant',
+                constant: "The mixture's variance applies on every day.",
+                noShape: 'The feed is not running, so it carries no shape.',
+                shape: 'Shape',
+                fitted: 'Fitted, {returns} returns',
+                calibration: 'Calibration',
+                calibrationRun: 'Used by this run',
+                version: 'Version',
+                calibrationConfigured: 'Named by the config',
+                restartToApply: 'The config names a newer calibration. Restart the feed to run it.',
+                openCalibration: 'Open on the calibration page',
+                notRunning: 'The feed is not running. The cards show what its config names.',
             },
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
@@ -7637,6 +7664,8 @@ export const en: SourceCatalogue = {
         unread: '{cell} could not be read: {message}',
         filter: {
             allParties: 'All parties',
+            cut: 'Cut',
+            allCuts: 'All cuts',
         },
         tally: {
             label: 'Reports by the health of their latest run',
@@ -7646,12 +7675,25 @@ export const en: SourceCatalogue = {
             report: 'Report',
             party: 'Party',
             reportType: 'Type',
+            cut: 'Cut',
             schedule: 'Schedule',
             latestRun: 'Latest run started',
             duration: 'Duration',
             health: 'Health',
             errors: 'Errors',
             warnings: 'Warnings',
+        },
+        schedule: {
+            onDemand: 'On demand',
+        },
+        cut: {
+            LIVE: 'Live',
+            EOD: 'End of day',
+            SOD: 'Start of day',
+            IPV: 'Independent price verification',
+            FLASH: 'Flash',
+            EOM: 'Month end',
+            EOY: 'Year end',
         },
         health: {
             failed: 'Failed',

@@ -1,0 +1,92 @@
+# The Headline Position on the LIVE selection: the run, the cut it minted and the record read back
+#
+# Command (from the repository root):
+#   ./compass.sh shell -f doc/agile/versions/v0/sprint_29/rework-the-market-data-feeds-remaining/evidence/run_the_headline_position_live.ores
+#
+# Definition: 1801d67b-f5e3-41c4-b904-3ea8e5dabe42 (Headline Position, ACCOUK, cut_kind_code = LIVE)
+# Tenant:     ce8f9eaa-50c0-4c0e-a50d-13aacfab1174 (acme_corporation)
+
+## The shell session
+
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_eager_maxwell/doc/agile/versions/v0/sprint_29/rework-the-market-data-feeds-remaining/evidence/run_the_headline_position_live.ores
+> accounts set-default-party 0ac22244-4864-4a7d-bddc-8c8396e5bca6
+✓ Default party set to 'ACME Corporation UK plc'.
+> logout
+✓ Logged out successfully.
+> login tenant_admin@acme_corporation Secure-Password-123
+✓ Login successful!
+  User: tenant_admin
+  Tenant: Acme Corporation (ce8f9eaa-50c0-4c0e-a50d-13aacfab1174)
+  Party: ACME Corporation UK plc
+> report_operations resolve-cut 1801d67b-f5e3-41c4-b904-3ea8e5dabe42 2026-11-03 ACME-LONDON GBLO
+{"result":{"outcome":"ok","code":"","message":"","fields":[]},"cut_id":"","cut_label":"","cut_kind_code":"","cut_timepoint":"","cut_state":"","output_is_indicative":false,"refusal":"A body of kind LIVE cannot be fixed at 2026-11-03 13:19:47Z: the reference data version and the engine version could not be assembled."}
+> report_operations trigger-report-instance 1801d67b-f5e3-41c4-b904-3ea8e5dabe42 ce8f9eaa-50c0-4c0e-a50d-13aacfab1174 --covered_date 2026-11-03 --scope_code ACME-LONDON --business_centre_code GBLO
+{"result":{"outcome":"ok","code":"triggered","message":"Report instance 104d4a13-7b45-45aa-b6b1-309ff5779f9f created.","fields":[]},"report_instance_id":"104d4a13-7b45-45aa-b6b1-309ff5779f9f"}
+> report_operations list-cut-rows --kind_code LIVE --limit 5
+{"result":{"outcome":"ok","code":"","message":"","fields":[]},"rows":[{"cut_id":"1a63a3f5-60a3-4a4c-8350-86ced1feb428","label":"LIVE.ACME-LONDON.2026-11-03T13:19:47Z","state":"in_use","kind_code":"LIVE","kind_name":"Live cut","timepoint":"2026-11-03 13:19:47.400342Z","timepoint_timezone":"UTC","scope_code":"ACME-LONDON","business_centre_code":"GBLO","taken_by":"ores_eager_maxwell_reporting_service","taken_at":"2026-11-03 13:19:47.400342Z","approved_by":"","approved_at":"","refused_at":"","requires_authorisation":false,"output_is_indicative":true,"take_ordinal":4,"run_count":1,"superseded_by_id":""},{"cut_id":"fd636290-b0f8-4c3c-af9f-1a8f83ce16df","label":"LIVE.ACME-LONDON.2026-11-03T13:19:41Z","state":"superseded","kind_code":"LIVE","kind_name":"Live cut","timepoint":"2026-11-03 13:19:41.908648Z","timepoint_timezone":"UTC","scope_code":"ACME-LONDON","business_centre_code":"GBLO","taken_by":"ores_eager_maxwell_reporting_service","taken_at":"2026-11-03 13:19:41.908648Z","approved_by":"","approved_at":"","refused_at":"","requires_authorisation":false,"output_is_indicative":true,"take_ordinal":3,"run_count":1,"superseded_by_id":"1a63a3f5-60a3-4a4c-8350-86ced1feb428"},{"cut_id":"0debc8ce-1c58-497a-ac00-14cc72131c5d","label":"LIVE.ACME-LONDON.2026-11-03T13:19:06Z","state":"superseded","kind_code":"LIVE","kind_name":"Live cut","timepoint":"2026-11-03 13:19:06.610422Z","timepoint_timezone":"UTC","scope_code":"ACME-LONDON","business_centre_code":"GBLO","taken_by":"ores_eager_maxwell_reporting_service","taken_at":"2026-11-03 13:19:06.610422Z","approved_by":"","approved_at":"","refused_at":"","requires_authorisation":false,"output_is_indicative":true,"take_ordinal":2,"run_count":1,"superseded_by_id":"fd636290-b0f8-4c3c-af9f-1a8f83ce16df"},{"cut_id":"02c94c2d-0403-4a46-bfe0-4229c8988f04","label":"LIVE.ACME-LONDON.2026-11-03T13:17:35Z","state":"superseded","kind_code":"LIVE","kind_name":"Live cut","timepoint":"2026-11-03 13:17:35.015569Z","timepoint_timezone":"UTC","scope_code":"ACME-LONDON","business_centre_code":"GBLO","taken_by":"ores_eager_maxwell_reporting_service","taken_at":"2026-11-03 13:17:35.015569Z","approved_by":"","approved_at":"","refused_at":"","requires_authorisation":false,"output_is_indicative":true,"take_ordinal":1,"run_count":0,"superseded_by_id":"0debc8ce-1c58-497a-ac00-14cc72131c5d"}],"total":4}
+> accounts set-default-party 4bbab852-1592-4e42-80fb-9e7a2b24ae82
+✓ Default party set to 'Acme Corporation Plc'.
+> exit
+Bye!
+Script complete: 8 commands executed.
+
+
+## The cut the run minted, as the store holds it
+
+-[ RECORD 1 ]-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+kind_code               | LIVE
+scope_code              | ACME-LONDON
+business_centre_code    | GBLO
+timepoint               | 2026-11-03 13:19:47.400342+00
+take_ordinal            | 4
+taken_by                | ores_eager_maxwell_reporting_service
+reference_data_version  | 88 report configuration(s) in force, newest version 1 · 7 engine run settings in force, newest version 4
+engine_version          | 1.8.17.0
+code_version            | 
+market_data_snapshot_id | 
+deal_population_id      | 
+output_is_indicative    | t
+requires_authorisation  | f
+change_commentary       | Minted at the instant the run started, from the trade store held 503 deal(s) at the instant; no published set was in use, so the body names no market data snapshot; the reference data in force was 88 report configuration(s) in force, newest version 1 · 7 engine run settings in force, newest version 4; the run executes engine 1.8.17.0 and wrapper 1.0.0
+
+## The run's record, and where it stopped
+
+The run stops after it has recorded its cut, resolving the ORE files its
+configuration binds. The database of this environment was built from an older
+checkout than the one this branch carries: ores_reporting_file_types_tbl has no
+ore_file_code column here, and the reporting service selects it. That is a
+defect of the environment's schema and not of the definition, the cut or the
+run: the cut is minted and recorded, the instance names it, and the failure is
+recorded against the instance as its output message. The engine is never
+reached, so no figure is produced.
+
+-[ RECORD 1 ]--+---------------------------------------------------------------------------
+instance       | 104d4a13-7b45-45aa-b6b1-309ff5779f9f
+state          | failed
+cut_label      | LIVE.ACME-LONDON.2026-11-03T13:19:47Z
+cut_kind_code  | LIVE
+cut_timepoint  | 2026-11-03 13:19:47.400342+00
+output_message | Repository error: ores_q_32: ERROR:  column "ore_file_code" does not exist+
+               | LINE 1: ...alytic_type_code, ore_parameter, direction, kind, ore_file_c...+
+               |                                                              ^
+
+
+## What every intraday definition binds
+
+             name             | binding_types |                                                 types                                                 
+------------------------------+---------------+-------------------------------------------------------------------------------------------------------
+ Headline Position            |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Headline Position (EOD)      |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Intraday Change              |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Intraday Risk Monitor        |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Option Map                   |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Spike Map                    |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Spot Greeks                  |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Spot Greeks (EOD)            |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Spot Ladder                  |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Strike Map                   |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Trades Since Last In         |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Triple Vol Spot Ladder       |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+ Triple Vol Spot Ladder (EOD) |             6 | conventions, curve_configuration, engine_settings, pricing_engines, risk_report_config, todays_market
+(13 rows)
+

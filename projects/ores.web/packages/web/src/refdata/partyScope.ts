@@ -31,6 +31,19 @@ export const PARTY_COLUMN_ID = 'party';
 /** The id a list's party filter travels under in the address and in the page request. */
 export const PARTY_FILTER_ID = 'party';
 
+/** The value the party filter's "all parties" option writes. */
+export const ALL_PARTIES = 'all';
+
+/**
+ * The party a page is narrowed to, from its filters. The party filter opens on
+ * the party the account works in, so "all parties" is a value of its own and
+ * reads as no filter here.
+ */
+export function partyIdOf(filters: Readonly<Record<string, string>>): string | null {
+    const stated = filters[PARTY_FILTER_ID];
+    return stated === undefined || stated === '' || stated === ALL_PARTIES ? null : stated;
+}
+
 /**
  * What a list of party-scoped rows knows about the parties it may show.
  *
@@ -57,6 +70,9 @@ export function usePartyScope(words: { readonly label: string; readonly all: str
         return { several: false, filter: undefined, pending: false, error: parties.error.message };
     }
     const several = parties.data.parties.length > 1;
+    const current = parties.data.parties.find(
+        (party) => party.partyId === parties.data.defaultPartyId,
+    );
     return {
         several,
         filter: several
@@ -65,6 +81,8 @@ export function usePartyScope(words: { readonly label: string; readonly all: str
                   id: PARTY_FILTER_ID,
                   label: words.label,
                   all: words.all,
+                  allValue: ALL_PARTIES,
+                  ...(current === undefined ? {} : { defaultValue: current.partyId }),
                   choices: parties.data.parties.map((party) => ({
                       value: party.partyId,
                       label: party.name,

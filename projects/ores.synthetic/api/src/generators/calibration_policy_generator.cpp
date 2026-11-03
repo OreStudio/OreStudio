@@ -50,6 +50,12 @@ generate_synthetic_calibration_policy(utility::generation::generation_context& c
     r.asset_class_code = std::string("fx") + "-" + std::to_string(idx);
     r.window_days = faker::number::integer(30, 180);
     r.variance_window_days = 1826;
+    r.variance_approval_mode = std::string("manual");
+    r.variance_min_returns = 250;
+    r.variance_require_starts_agree = true;
+    r.variance_min_persistence = 0.80;
+    r.variance_max_persistence = 0.995;
+    r.variance_min_reaction = 0.01;
     r.allow_inverse = faker::number::integer(0, 1) == 1;
     r.fallback_code = std::string("keep_fixed");
     r.modified_by = modified_by;

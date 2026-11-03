@@ -1355,6 +1355,30 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::trade_authorisation_requests:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::books:read');
 
+    -- The trading desk runs reports on demand, so Trading may mint the run grant.
+    -- The grantor must hold every permission in the role it grants, and the run
+    -- token is narrowed to what the grantor holds, so the whole set is copied:
+    -- a subset would leave the run unable to write its batch and the market
+    -- data it produces. A trader cannot exceed the run: the token is still
+    -- narrowed, and the run's rows are scoped to its party by policy.
+    DECLARE
+        permission_code text;
+    BEGIN
+        FOR permission_code IN
+            SELECT perm.code
+            FROM ores_iam_role_permissions_tbl rp
+            JOIN ores_iam_roles_tbl r ON r.id = rp.role_id
+            JOIN ores_iam_permissions_tbl perm ON perm.id = rp.permission_id
+            WHERE r.name = 'ReportRun'
+              AND r.tenant_id = ores_utility_system_tenant_id_fn()
+              AND r.valid_to = ores_utility_infinity_timestamp_fn()
+              AND rp.valid_to = ores_utility_infinity_timestamp_fn()
+        LOOP
+            PERFORM ores_iam_role_permissions_assign_fn(
+                ores_utility_system_tenant_id_fn(), 'Trading', permission_code);
+        END LOOP;
+    END;
+
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::trade_summaries:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::trade_identifiers:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::trade_links:read');

@@ -8,6 +8,9 @@ Run from the repository root::
 
 Each mutation edits one generated file, so the test that must catch it is the
 generated case ores::dq::messaging::artefact_type_write in ores.dq.api.tests.
+
+Revert before you apply another mutation, or the two stack. The revert restores
+both files from git, so it also discards any other uncommitted edit to them.
 """
 import subprocess
 import sys
@@ -22,7 +25,7 @@ READ_MSGPACK = f"    return object::read_msgpack<{T}>(data);\n"
 
 
 def read_then(call, statement):
-    return call.replace("    return ", "    auto r = ").rstrip(";\n") + ";\n" + \
+    return call.replace("    return ", "    auto r = ").removesuffix(";\n") + ";\n" + \
         f"    {statement}\n    return r;\n"
 
 

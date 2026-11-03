@@ -125,6 +125,8 @@
 #include "ores.trading.core/messaging/trade_identifier_registrar.hpp"
 #include "ores.trading.core/messaging/trade_link_registrar.hpp"
 #include "ores.trading.core/messaging/trade_link_type_registrar.hpp"
+#include "ores.trading.api/messaging/blotter_protocol.hpp"
+#include "ores.trading.core/messaging/blotter_handler.hpp"
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
 #include "ores.trading.core/messaging/trade_party_role_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
@@ -233,6 +235,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
             export_trades_to_storage_request::nats_subject,
             queue_group,
             [toh](ores::nats::message msg) { toh->export_trades_to_storage(std::move(msg)); }));
+    }
+    {
+        // The blotter (hand-written handler, not codegen): one page of rows and
+        // one rail of counts, so the screen never reads the whole book to draw
+        // either.
+        auto bh = std::make_shared<blotter_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_blotter_rail_request::nats_subject, queue_group, [bh](ores::nats::message msg) {
+                bh->get_blotter_rail(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(
+            get_blotter_page_request::nats_subject, queue_group, [bh](ores::nats::message msg) {
+                bh->get_blotter_page(std::move(msg));
+            }));
     }
     append(register_trade_authorisation_request_handlers(nats, ctx, verifier));
     append(register_trade_booking_handlers(nats, ctx, verifier));

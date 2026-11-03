@@ -67,6 +67,7 @@ set(files
     "market_data_generation_config_protocol_codec_roundtrip_tests.cpp"
     "market_data_provider_codec_roundtrip_tests.cpp"
     "market_data_provider_protocol_codec_roundtrip_tests.cpp"
+    "market_regime_protocol_codec_roundtrip_tests.cpp"
     "simulate_fx_spot_paths_protocol_codec_roundtrip_tests.cpp"
     "trade_generation_book_codec_roundtrip_tests.cpp"
     "trade_generation_book_protocol_codec_roundtrip_tests.cpp"

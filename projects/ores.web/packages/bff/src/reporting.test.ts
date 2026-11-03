@@ -158,6 +158,7 @@ function definition(
         party_id: partyId,
         description: `${name} definition`,
         report_type: reportType,
+        cut_kind_code: 'LIVE',
         fsm_state_id: null,
         schedule_expression: '0 0 9 * * ?',
         concurrency_policy: 'forbid',
@@ -295,6 +296,7 @@ describe('the list of reports the parties run', () => {
             id: DAILY,
             name: 'ACME daily PnL',
             reportType: 'pnl',
+            cutKind: 'LIVE',
             partyId: PARTY,
             partyName: 'ACME Corporation',
             partyCode: 'ACMCOR',
@@ -364,6 +366,7 @@ describe('the list of reports the parties run', () => {
             id_one_of: null,
             party_id_one_of: null,
             search: null,
+            cut_kind_code: null,
         });
     });
 
@@ -943,6 +946,7 @@ describe('one report definition', () => {
                     id_one_of: [AUDIT_ELSEWHERE],
                     party_id_one_of: null,
                     search: null,
+                    cut_kind_code: null,
                 },
                 as_of: null,
             },

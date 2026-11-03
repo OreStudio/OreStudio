@@ -160,6 +160,7 @@ set(files
     "messaging/ir_curve_template_entry_protocol_codec.cpp"
     "messaging/market_data_generation_config_protocol_codec.cpp"
     "messaging/market_data_provider_protocol_codec.cpp"
+    "messaging/market_regime_protocol_codec.cpp"
     "messaging/simulate_fx_spot_paths_protocol_codec.cpp"
     "messaging/trade_generation_book_protocol_codec.cpp"
     "messaging/trade_generation_config_protocol_codec.cpp"

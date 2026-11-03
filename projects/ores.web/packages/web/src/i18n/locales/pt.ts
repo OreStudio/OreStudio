@@ -3802,6 +3802,9 @@ const pt: SourceCatalogue = {
         'Generate the trades': 'Gerar as transações',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',
+        'Schedule the reports': 'Agendar os relatórios',
+        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.":
+            'Agenda cada definição de relatório que cada parte que nomeia publica, como o administrador da execução, para que o catálogo dispare sem que uma pessoa atue. Um relatório cujo calendário é o marcador sob demanda fica para ser pedido à mão.',
         'Hand the tenant to its administrator': 'Entregar o inquilino ao seu administrador',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             'Inicia a execução de configuração do próprio inquilino, que corre como o administrador do inquilino e conclui o inquilino.',
@@ -4419,7 +4422,7 @@ const pt: SourceCatalogue = {
                 memberships: 'Pertenças',
                 centres: 'Centros de negócios',
                 counterparties: 'Contrapartes',
-                run: 'Esta execução',
+                calibration: 'Calibração',
                 arrivals: 'Chegadas',
                 variance: 'Variância',
                 behaviour: 'Comportamento do preço',
@@ -4878,7 +4881,25 @@ const pt: SourceCatalogue = {
                 runsNone:
                     'A variância do feed é constante, ou a sua configuração não nomeia calibração.',
                 fresh: 'O ajuste desta execução',
-                awaiting: 'novo ajuste a rever',
+                awaiting: 'aguarda revisão',
+                waiting:
+                    '{count} ajuste(s) GJR-GARCH deste par aguardam revisão. O mais recente é a calibração {id}, persistência {persistence}. Um feed só o usa depois de aprovado.',
+                reviewIt: 'Rever',
+                pairHistory: 'Calibrações de {pair}',
+                when: 'Última alteração',
+                stateHeader: 'Estado',
+                reason: 'Motivo',
+                chart: {
+                    title: 'Volatilidade diária ajustada',
+                    volatility: 'Volatilidade ajustada',
+                    move: 'Dimensão do movimento do dia',
+                    longRun: 'Nível de longo prazo {value}',
+                    label: 'A volatilidade diária esperada pelo ajuste GJR-GARCH sobre a sua entrada, e a dimensão de cada movimento diário',
+                    caption:
+                        '{days} retornos diários da entrada guardada. A volatilidade de cada dia decorre do movimento anterior segundo alpha (α), gamma (γ) e beta (β) da calibração.',
+                    disagrees:
+                        'A volatilidade recalculada a partir dos pontos guardados não termina no rácio do primeiro dia guardado. A entrada ou a forma mudou depois do ajuste.',
+                },
                 fitRejected: 'ajuste rejeitado',
                 method: {
                     gjr_garch_qmle: 'Ajustada',
@@ -4988,6 +5009,7 @@ const pt: SourceCatalogue = {
                 keptFixed: 'Nível mantido',
                 refused: 'Recusados',
                 overridden: 'Derrogam a política',
+                awaitingReview: 'Ajustes a aguardar revisão',
             },
             filter: {
                 label: 'Mostrar',
@@ -5129,6 +5151,25 @@ const pt: SourceCatalogue = {
                 save: 'Guardar a política',
                 reset: 'Voltar ao automático',
                 coverage: 'Cobertura',
+                approval: {
+                    title: 'Aprovação da variância',
+                    mode: {
+                        auto: 'Aprovado pela política',
+                        manual: 'Aprovado por uma pessoa',
+                    },
+                    leadAuto:
+                        'A política aprova cada ajuste GJR-GARCH que cumpre as regras abaixo, e um ajuste que falha aguarda uma pessoa. As regras só mudam com uma nova versão da política.',
+                    leadManual:
+                        'Uma pessoa aprova cada ajuste GJR-GARCH da classe; a política não aprova nenhum por si.',
+                    window: 'Janela de variância',
+                    days: '{days} dias',
+                    minReturns: 'Mínimo de retornos',
+                    starts: 'Pontos de partida',
+                    startsRequired: 'Têm de concordar',
+                    startsAny: 'Podem divergir',
+                    persistence: 'Intervalo de persistência',
+                    reaction: 'Reação mínima, alpha (α) + gamma (γ) / 2',
+                },
                 record: 'Registo da calibração',
             },
         },
@@ -5835,20 +5876,6 @@ const pt: SourceCatalogue = {
             restartFailed:
                 'Guardado, mas o reinício falhou: {message}. O feed corre com a sua lei antiga até voltar a arrancar.',
         },
-        variance: {
-            title: 'Variância diária',
-            lead: 'Se a variância diária deste feed é constante ou segue um GJR-GARCH, para que dias calmos e turbulentos se agrupem, e a calibração revista que ele usa.',
-            model: 'Modelo de variância',
-            'model.constant': 'Constante — a variância da mistura todos os dias',
-            'model.gjr_garch': 'GJR-GARCH — uma variância levada de um dia para o outro',
-            calibration: 'Calibração',
-            calibrationNone: 'Nenhuma',
-            running: 'O que o feed em execução usa',
-            notRunning: 'O feed não está a correr.',
-            openCalibration: 'Abrir a sua calibração: a evidência e a revisão',
-            calibrationLead:
-                'Um feed GJR-GARCH usa a calibração aprovada do seu par. As calibrações são capturadas, ajustadas e aprovadas ou rejeitadas no ecrã Calibração; aprovar uma aponta os feeds do par para ela.',
-        },
         market: {
             title: 'O mercado',
             views: {
@@ -6221,44 +6248,46 @@ const pt: SourceCatalogue = {
                     'Constante mantém a variância da mistura em todos os dias. GJR-GARCH transporta uma variância de um dia para o seguinte, de modo que os dias calmos e agitados se agrupam; precisa do motor geométrico ou aritmético.',
             },
             run: {
-                level: 'Nível',
-                levelInverted:
-                    'O inverso do fixing {provider} de {value} em {date}, recebido {received}: o item cota o par no sentido contrário.',
-                source: 'Item de fixing',
-                window: 'Janela',
-                variance: 'Variância diária',
+                level: 'Nível de partida',
+                fromFixing: 'De um fixing',
+                configured: 'Nível configurado',
+                levelValue: 'Nível, convenção de mercado',
+                fixing: 'Fixing',
+                orientation: 'Sentido',
+                inverted: 'Invertido',
+                direct: 'Direto',
+                provider: 'Fornecedor',
+                fixingDate: 'Data do fixing',
+                received: 'Recebido',
+                item: 'Item de fixing',
+                window: 'Janela de fixings',
+                fixings: 'Fixings',
+                days: '{days} dias',
+                dailyVolatility: 'Volatilidade diária',
+                hourlyVolatility: 'Volatilidade horária',
+                used: 'Define o spread',
+                recorded: 'Apenas registado',
+                drift: 'Deriva, anualizada',
+                range: 'Intervalo dos retornos diários',
+                age: 'Idade do fixing',
+                jumps: 'Movimentos acima de 3σ',
+                dispersion: 'Distância a {provider}',
+                variance: 'Variância diária GJR-GARCH',
+                'model.gjr_garch': 'GJR-GARCH',
+                'model.constant': 'Constante',
+                constant: 'A variância da mistura aplica-se todos os dias.',
+                noShape: 'O feed não está a correr, por isso não tem forma.',
+                shape: 'Forma',
+                fitted: 'Ajustada, {returns} retornos',
+                calibration: 'Calibração',
+                calibrationRun: 'Usada por esta execução',
+                version: 'Versão',
+                calibrationConfigured: 'Indicada pela configuração',
+                restartToApply:
+                    'A configuração indica uma calibração mais recente. Reinicie o feed para a usar.',
+                openCalibration: 'Abrir na página de calibração',
                 notRunning:
-                    'O feed não está a correr, por isso não há execução a descrever. Arranque-o para ver de onde parte.',
-            },
-            start: {
-                title: 'De onde arrancou esta execução',
-                fromFixing:
-                    'Arrancou do fixing {provider} de {value} de {date}, recebido em {received}.',
-                dateUnknown: 'uma data desconhecida',
-                receivedUnknown: 'uma hora desconhecida',
-                fixedLevel:
-                    'Nenhum fixing publicado fixou o nível, por isso a execução manteve o nível configurado.',
-                inverted:
-                    'O item cita o par ao contrário, por isso o valor foi lido como o seu inverso.',
-                window: '{used} fixings em {days} dias mediram a sua dispersão.',
-                variance: {
-                    calibration: 'Calibração {id}, versão {version}.',
-                    fitted: 'Variância diária: GJR-GARCH ajustado a {returns} retornos diários, alfa (α) {alpha}, gama (γ) {gamma}, beta (β) {beta}, persistência {persistence}.',
-                    authored:
-                        'Variância diária: GJR-GARCH com a forma definida, alfa (α) {alpha}, gama (γ) {gamma}, beta (β) {beta}, persistência {persistence}.',
-                    firstDay:
-                        'A variância do primeiro dia é {ratio} vezes o nível de longo prazo, tal como o histórico terminou.',
-                },
-                measures: {
-                    volatility:
-                        'Volatilidade realizada {daily} por dia, {hourly} por hora: esta mudou a calibração, pois ajusta a escala da mistura.',
-                    recorded: 'Registado para uma política futura, não usado hoje:',
-                    drift: 'Deriva anualizada: {value}',
-                    range: 'Retornos diários de {min} a {max}',
-                    age: 'O fixing tem {days} dia(s)',
-                    jumps: 'Movimentos acima de três desvios: {count}',
-                    dispersion: '{provider} está a {bp} pb',
-                },
+                    'O feed não está a correr. Os cartões mostram o que a sua configuração indica.',
             },
             removeWarning:
                 'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',
@@ -7691,6 +7720,8 @@ const pt: SourceCatalogue = {
         unread: 'Não foi possível ler {cell}: {message}',
         filter: {
             allParties: 'Todas as partes',
+            cut: 'Corte',
+            allCuts: 'Todos os cortes',
         },
         tally: {
             label: 'Relatórios segundo o estado da sua última execução',
@@ -7700,12 +7731,25 @@ const pt: SourceCatalogue = {
             report: 'Relatório',
             party: 'Parte',
             reportType: 'Tipo',
+            cut: 'Corte',
             schedule: 'Calendário',
             latestRun: 'Início da última execução',
             duration: 'Duração',
             health: 'Estado',
             errors: 'Erros',
             warnings: 'Avisos',
+        },
+        schedule: {
+            onDemand: 'A pedido',
+        },
+        cut: {
+            LIVE: 'Live',
+            EOD: 'Fim do dia',
+            SOD: 'Início do dia',
+            IPV: 'Verificação independente de preços',
+            FLASH: 'Flash',
+            EOM: 'Fim do mês',
+            EOY: 'Fim do ano',
         },
         health: {
             failed: 'Falhou',

@@ -54,6 +54,7 @@ using ores::iam::workflow::provision_tenant_workflow_type;
 using ores::iam::workflow::register_provision_party_workflow;
 using ores::iam::workflow::register_provision_tenant_workflow;
 using ores::iam::workflow::register_tenant_setup_workflow;
+using ores::iam::workflow::schedule_reports_step_kind;
 using ores::iam::workflow::start_tenant_setup_step_kind;
 using ores::iam::workflow::system_provision_step_kind;
 using ores::iam::workflow::tenant_setup_workflow_type;
@@ -419,6 +420,7 @@ TEST_CASE("every kind the catalogue declares has a runner in this build", "[work
     CHECK(is_executed_step_kind("attach_photos"));
     CHECK(is_executed_step_kind("subscribe_market_data"));
     CHECK(is_executed_step_kind("generate_trades"));
+    CHECK(is_executed_step_kind("schedule_reports"));
 
     CHECK_FALSE(is_executed_step_kind(complete_provisioning_step_kind));
     CHECK_FALSE(is_executed_step_kind(start_tenant_setup_step_kind));
@@ -444,6 +446,60 @@ TEST_CASE("the demo card's kinds become steps in the profile's order", "[workflo
     CHECK(steps[1].name == "attach_photos");
     CHECK(steps[2].name == "subscribe_market_data");
     CHECK(steps[3].name == complete_provisioning_step_kind);
+}
+
+TEST_CASE("the schedule step is a kind of the catalogue this build executes", "[workflow]") {
+    CHECK(is_declared_step_kind(schedule_reports_step_kind));
+    CHECK(is_executed_step_kind(schedule_reports_step_kind));
+    CHECK_FALSE(is_system_scoped_step_kind(schedule_reports_step_kind));
+
+    // A kind is code, so it states the words a screen shows for it and the
+    // budget it may run for; a step a screen shows no label for is a kind
+    // somebody added without saying what it does.
+    const auto words = ores::iam::workflow::words_for_step_kind(schedule_reports_step_kind);
+    CHECK_FALSE(words.label.empty());
+    CHECK_FALSE(words.description.empty());
+    CHECK(words.timeout.count() > 0);
+}
+
+TEST_CASE("the schedule step waits for the staff, which publish the catalogue", "[workflow]") {
+    const auto def = setup_definition();
+    const auto steps = def.build_steps(
+        request_json(
+            {declared("provision_party"),
+             declared("load_staff",
+                      R"({"parties":[{"name":"Acme Corporation Plc","bundles":["acme_group"]}]})"),
+             declared("schedule_reports", R"({"parties":["Acme Corporation Plc"]})")}),
+        tenant_id,
+        correlation_id);
+
+    const auto inputs_of = [&](const std::string& name) {
+        for (const auto& step : steps)
+            if (step.name == name)
+                return step.consumes;
+        return std::vector<std::string>{};
+    };
+
+    // A party's report definitions are published by the bundles the staff step
+    // names, so the schedule waits for the staff and not for the party alone.
+    CHECK(inputs_of("schedule_reports") == std::vector<std::string>{"load_staff"});
+    REQUIRE(steps.size() == 4);
+    CHECK(steps[2].name == "schedule_reports");
+    CHECK(steps[3].name == complete_provisioning_step_kind);
+}
+
+TEST_CASE("the demo profile's schedule step carries the parties and nothing else", "[workflow]") {
+    const auto def = setup_definition();
+    const auto arguments = R"({"parties":["Acme Corporation Plc","ACME Corporation UK plc"]})";
+    const auto steps = def.build_steps(
+        request_json({declared("schedule_reports", arguments)}), tenant_id, correlation_id);
+
+    REQUIRE(steps.size() == 2);
+    const auto command =
+        rfl::json::read<provision_tenant_step_command>(steps[0].build_command("", {}));
+    REQUIRE(command);
+    CHECK(command->kind == "schedule_reports");
+    CHECK(command->arguments_json == arguments);
 }
 
 TEST_CASE("a profile may not order a step a run appends", "[workflow]") {

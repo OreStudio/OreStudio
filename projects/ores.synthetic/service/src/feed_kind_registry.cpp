@@ -75,6 +75,12 @@ read_calibration_policy(const ores::database::context& ctx, const std::string& a
     out.variance_window_days = found->variance_window_days;
     out.allow_inverse = found->allow_inverse;
     out.fallback_code = found->fallback_code;
+    out.variance_approval = {.by_policy = found->variance_approval_mode == "auto",
+                             .min_returns = found->variance_min_returns,
+                             .require_starts_agree = found->variance_require_starts_agree,
+                             .min_persistence = found->variance_min_persistence,
+                             .max_persistence = found->variance_max_persistence,
+                             .min_reaction = found->variance_min_reaction};
     auto orders = repo::calibration_provider_order_repository{}.read_latest(sys_ctx);
     std::erase_if(orders, [&](const auto& o) { return o.policy_id != found->id; });
     std::ranges::sort(orders, {}, &ores::synthetic::domain::calibration_provider_order::rank);

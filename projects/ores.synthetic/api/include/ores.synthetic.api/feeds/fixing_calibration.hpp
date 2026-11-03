@@ -112,6 +112,20 @@ measure_window(const std::vector<double>& values, bool inverted);
 }
 
 /**
+ * @brief Who approves a class's variance calibrations, and the rules a fit must pass for the
+ * policy to approve it. With @c by_policy false a person approves every fit.
+ */
+struct variance_approval_rules final {
+    bool by_policy = false;
+    int min_returns = 250;
+    bool require_starts_agree = true;
+    double min_persistence = 0.80;
+    double max_persistence = 0.995;
+    /// The lowest average reaction to a move, alpha plus half of gamma.
+    double min_reaction = 0.01;
+};
+
+/**
  * @brief The class rule that derives a feed's fixing items.
  *
  * A policy states the window, whether an item may be read the other way round, and the
@@ -127,6 +141,7 @@ struct calibration_policy final {
     int variance_window_days = 1826;
     bool allow_inverse = true;
     std::string fallback_code = "keep_fixed";
+    variance_approval_rules variance_approval;
     /// Provider codes, lowest first. Empty means every provider, ordered by code.
     std::vector<std::string> provider_order;
 };

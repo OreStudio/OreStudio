@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.database/query_builder/execute.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/range_bound.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/trade_summary.hpp"
 #include "ores.trading.api/domain/trade_summary_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/trade_summary_protocol.hpp"
@@ -421,5 +423,334 @@ void trade_summary_repository::remove(context ctx, const std::vector<std::string
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing trade summaries.");
 }
 
+
+namespace {
+
+/**
+ * The filter as hand-written SQL states it: a clause and its text parameters.
+ *
+ * The generated condition binds binary parameters, which the text helper cannot
+ * take, so the rail renders the same fields itself. Every field the entity
+ * filter states is stated here, and the two move together: a field added to the
+ * filter and not to this is a rail that counts rows the page does not show.
+ */
+struct rendered_filter {
+    std::string sql;
+    std::vector<std::optional<std::string>> params;
+};
+
+rendered_filter
+render_trade_summary_filter(const std::optional<messaging::trade_summaries_filter>& filter) {
+    rendered_filter out;
+    if (!filter)
+        return out;
+
+    /*
+     * The clause states its placeholder as =?= and it is numbered here, so a
+     * field added in the middle moves every later placeholder with it. The
+     * helper binds by number, so a statement that mixed the two spellings would
+     * put the values against the wrong columns.
+     */
+    const auto add = [&out](const std::string& clause, std::optional<std::string> value) {
+        std::string numbered;
+        numbered.reserve(clause.size() + 4);
+        for (const char c : clause) {
+            if (c == '?')
+                numbered += "$" + std::to_string(out.params.size() + 1);
+            else
+                numbered += c;
+        }
+        out.sql += out.sql.empty() ? numbered : " and " + numbered;
+        out.params.push_back(std::move(value));
+    };
+    /*
+     * An array literal quotes an element with double quotes, and only with
+     * double quotes: a single-quoted element keeps its apostrophes and matches
+     * nothing. A backslash and a double quote inside the element are escaped,
+     * because both end the element otherwise.
+     */
+    const auto element = [](const std::string& v) {
+        std::string out = "\"";
+        for (const char c : v) {
+            if (c == '\\' || c == '"')
+                out += '\\';
+            out += c;
+        }
+        out += '"';
+        return out;
+    };
+    const auto text_array = [&element](const auto& values) {
+        std::string literal = "{";
+        bool first = true;
+        for (const auto& v : values) {
+            if (!first)
+                literal += ",";
+            literal += element(v);
+            first = false;
+        }
+        literal += "}";
+        return literal;
+    };
+
+    if (filter->row_kind)
+        add("t.row_kind = ?", *filter->row_kind);
+    if (filter->party_id)
+        add("t.party_id = ?::uuid", boost::uuids::to_string(*filter->party_id));
+    if (filter->counterparty_id)
+        add(*filter->counterparty_id ? "t.counterparty_id = ?::uuid" : "t.counterparty_id is null",
+            *filter->counterparty_id ?
+                std::optional(boost::uuids::to_string(**filter->counterparty_id)) :
+                std::nullopt);
+    if (filter->book_id)
+        add(*filter->book_id ? "t.book_id = ?::uuid" : "t.book_id is null",
+            *filter->book_id ? std::optional(boost::uuids::to_string(**filter->book_id)) :
+                               std::nullopt);
+    if (filter->instrument_type)
+        add("t.instrument_type = ?", *filter->instrument_type);
+    if (filter->status)
+        add(*filter->status ? "t.status = ?" : "t.status is null",
+            *filter->status ? *filter->status : std::nullopt);
+    if (filter->authorisation_status)
+        add("t.authorisation_status = ?", *filter->authorisation_status);
+    if (filter->trade_date)
+        add(*filter->trade_date ? "t.trade_date = ?::date" : "t.trade_date is null",
+            *filter->trade_date ? std::optional(ores::platform::time::datetime::to_iso8601_date(
+                                      **filter->trade_date)) :
+                                  std::nullopt);
+    if (filter->structure_id)
+        add(*filter->structure_id ? "t.structure_id = ?::uuid" : "t.structure_id is null",
+            *filter->structure_id ? std::optional(boost::uuids::to_string(**filter->structure_id)) :
+                                    std::nullopt);
+    if (filter->is_leg)
+        add("t.is_leg = ?::boolean", *filter->is_leg ? "true" : "false");
+
+    if (filter->id_one_of) {
+        std::vector<std::string> ids;
+        for (const auto& id : *filter->id_one_of)
+            ids.push_back(boost::uuids::to_string(id));
+        add("t.id::text = any(?::text[])", text_array(ids));
+    }
+    if (filter->row_kind_one_of)
+        add("t.row_kind = any(?::text[])", text_array(*filter->row_kind_one_of));
+    if (filter->party_id_one_of) {
+        std::vector<std::string> ids;
+        for (const auto& id : *filter->party_id_one_of)
+            ids.push_back(boost::uuids::to_string(id));
+        add("t.party_id::text = any(?::text[])", text_array(ids));
+    }
+    if (filter->counterparty_id_one_of) {
+        std::vector<std::string> ids;
+        for (const auto& id : *filter->counterparty_id_one_of)
+            ids.push_back(boost::uuids::to_string(id));
+        add("t.counterparty_id::text = any(?::text[])", text_array(ids));
+    }
+    if (filter->book_id_one_of) {
+        std::vector<std::string> ids;
+        for (const auto& id : *filter->book_id_one_of)
+            ids.push_back(boost::uuids::to_string(id));
+        add("t.book_id::text = any(?::text[])", text_array(ids));
+    }
+    if (filter->instrument_type_one_of)
+        add("t.instrument_type = any(?::text[])", text_array(*filter->instrument_type_one_of));
+    if (filter->status_one_of)
+        add("t.status = any(?::text[])", text_array(*filter->status_one_of));
+    if (filter->authorisation_status_one_of)
+        add("t.authorisation_status = any(?::text[])",
+            text_array(*filter->authorisation_status_one_of));
+    if (filter->trade_date_one_of) {
+        std::vector<std::string> dates;
+        for (const auto& d : *filter->trade_date_one_of)
+            dates.push_back(ores::platform::time::datetime::to_iso8601_date(d));
+        add("t.trade_date::text = any(?::text[])", text_array(dates));
+    }
+    if (filter->structure_id_one_of) {
+        std::vector<std::string> ids;
+        for (const auto& id : *filter->structure_id_one_of)
+            ids.push_back(boost::uuids::to_string(id));
+        add("t.structure_id::text = any(?::text[])", text_array(ids));
+    }
+    if (filter->is_leg_one_of) {
+        std::vector<std::string> flags;
+        for (const auto leg : *filter->is_leg_one_of)
+            flags.push_back(leg ? "true" : "false");
+        add("t.is_leg::text = any(?::text[])", text_array(flags));
+    }
+    if (filter->trade_date_from)
+        add("t.trade_date >= ?::date", *filter->trade_date_from);
+    if (filter->trade_date_to)
+        add("t.trade_date <= ?::date", *filter->trade_date_to);
+    if (filter->search && !filter->search->empty())
+        add("t.search_text ilike ?", "%" + *filter->search + "%");
+    return out;
+}
+
+}
+
+std::vector<std::pair<std::string, std::uint64_t>> trade_summary_repository::count_blotter_rail(
+    context ctx,
+    const std::string& dimension,
+    const std::optional<messaging::trade_summaries_filter>& filter) {
+    const auto rendered = render_trade_summary_filter(filter);
+    const auto tenant = ctx.tenant_id().to_string();
+    const auto tenant_placeholder = "$" + std::to_string(rendered.params.size() + 1) + "::uuid";
+    const std::string where = rendered.sql.empty() ?
+                                  "t.tenant_id = " + tenant_placeholder :
+                                  "(" + rendered.sql + ") and t.tenant_id = " + tenant_placeholder;
+
+    auto params = rendered.params;
+    params.push_back(tenant);
+
+    std::string sql;
+    if (dimension == "book") {
+        sql = "select coalesce(t.book_id::text, '') as node_id, count(*)::text as n"
+              " from ores_trading_trade_summaries_vw t where " +
+              where + " group by 1";
+    } else if (dimension == "counterparty") {
+        sql = "select coalesce(t.counterparty_id::text, '') as node_id, count(*)::text as n"
+              " from ores_trading_trade_summaries_vw t where " +
+              where + " group by 1";
+    } else if (dimension == "instrument_type") {
+        sql = "select coalesce(t.instrument_type, '') as node_id, count(*)::text as n"
+              " from ores_trading_trade_summaries_vw t where " +
+              where + " group by 1";
+    } else if (dimension == "status") {
+        sql = "select coalesce(t.status, '') as node_id, count(*)::text as n"
+              " from ores_trading_trade_summaries_vw t where " +
+              where + " group by 1";
+    } else if (dimension == "asset_class") {
+        sql = "select coalesce(c.asset_class, '') as node_id, count(*)::text as n"
+              " from ores_trading_trade_summaries_vw t"
+              " left join ores_refdata_instrument_codes_tbl c"
+              "   on c.name = t.instrument_type"
+              "  and c.valid_to = ores_utility_infinity_timestamp_fn()"
+              " where " +
+              where + " group by 1";
+    } else if (dimension == "portfolio") {
+        sql = "with recursive book_counts as ("
+              "  select t.book_id, count(*) as n from ores_trading_trade_summaries_vw t"
+              "  where " +
+              where +
+              " and t.book_id is not null group by 1"
+              "), ancestor as ("
+              "  select b.id as book_id, b.parent_portfolio_id as portfolio_id"
+              "  from ores_refdata_books_tbl b"
+              "  where b.valid_to = ores_utility_infinity_timestamp_fn()"
+              "  union"
+              "  select a.book_id, p.parent_portfolio_id from ancestor a"
+              "  join ores_refdata_portfolios_tbl p on p.id = a.portfolio_id"
+              "   and p.valid_to = ores_utility_infinity_timestamp_fn()"
+              ")"
+              " select a.portfolio_id::text as node_id, sum(bc.n)::text as n"
+              " from ancestor a join book_counts bc on bc.book_id = a.book_id"
+              " where a.portfolio_id is not null group by 1";
+    } else {
+        throw std::invalid_argument("The blotter has no rail for the dimension '" + dimension +
+                                    "'.");
+    }
+
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx, sql, params, lg(), "Counting the blotter's rail by " + dimension);
+
+    std::vector<std::pair<std::string, std::uint64_t>> counts;
+    counts.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 2 || !row[0] || !row[1])
+            continue;
+        counts.emplace_back(*row[0], static_cast<std::uint64_t>(std::stoull(*row[1])));
+    }
+    return counts;
+}
+
+namespace {
+
+/** The separator between a key's sort value and its row id, which no value holds. */
+constexpr char blotter_key_separator = '\x1f';
+
+/**
+ * The column a page is ordered by, and whether it descends.
+ *
+ * An empty field states the default order, which the stated direction reverses,
+ * as the list does. A field the list cannot sort by is refused here too, so the
+ * page and the list cannot disagree about what an order means.
+ */
+std::pair<std::string, bool> blotter_sort(trade_summary_repository& repo,
+                                          const ores::utility::domain::order& order) {
+    if (order.field.empty())
+        return {"trade_date", !order.descending};
+    if (!repo.is_sortable(order.field))
+        throw std::invalid_argument("A blotter page cannot be ordered by " + order.field + ".");
+    return {order.field, order.descending};
+}
+
+}
+
+std::string trade_summary_repository::blotter_page_key(const domain::trade_summary& row,
+                                                       const std::string& field) {
+    std::string value;
+    if (field == "trade_date" || field.empty()) {
+        value = row.trade_date ? ores::platform::time::datetime::to_iso8601_date(*row.trade_date) :
+                                 std::string{};
+    } else if (field == "status") {
+        value = row.status.value_or(std::string{});
+    } else if (field == "authorisation_status") {
+        value = row.authorisation_status;
+    } else if (field == "instrument_type") {
+        value = row.instrument_type;
+    } else if (field == "row_kind") {
+        value = row.row_kind;
+    } else {
+        throw std::invalid_argument("A blotter page cannot be ordered by " + field + ".");
+    }
+    return value + blotter_key_separator + boost::uuids::to_string(row.id);
+}
+
+std::vector<domain::trade_summary> trade_summary_repository::read_blotter_page(
+    context ctx,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::string& after,
+    const std::optional<messaging::trade_summaries_filter>& filter) {
+    namespace qb = ores::database::query_builder;
+
+    trade_summary_repository self;
+    const auto [field, descending] = blotter_sort(self, order);
+
+    /*
+     * The key is the sort column and the row id, both as text: a date spelled
+     * ISO, a uuid spelled canonically, and either compared the way the order
+     * places them. A row that states no value for the column sorts as the empty
+     * string, which is where =nulls last= would put it.
+     */
+    const auto sort_expression = "coalesce(" + field + "::text, '')";
+    const auto id_expression = "id::text";
+
+    auto where = qb::condition{"tenant_id = ?",
+                               {ores::database::pq::text_param(ctx.tenant_id().to_string())}};
+    if (const auto condition = trade_summary_filter_condition(filter))
+        where = std::move(where) && std::move(*condition);
+
+    if (!after.empty()) {
+        const auto at = after.find(blotter_key_separator);
+        if (at == std::string::npos)
+            throw std::invalid_argument("The blotter page key is not a key this service wrote.");
+        const auto value = after.substr(0, at);
+        const auto id = after.substr(at + 1);
+        where = std::move(where) && qb::condition{"(" + sort_expression + ", " + id_expression +
+                                                      ") " + (descending ? "<" : ">") + " (?, ?)",
+                                                  {ores::database::pq::text_param(value),
+                                                   ores::database::pq::text_param(id)}};
+    }
+
+    auto sorting = qb::order{{sort_expression, descending}, {id_expression, descending}};
+    auto statement =
+        qb::detail::select_sql<trade_summary_entity>(where, sorting, limit, std::nullopt);
+    /*
+     * The statement's text varies with the key and the filter, so it runs
+     * unnamed rather than as a prepared statement.
+     */
+    statement.variadic = true;
+    const auto rows = qb::detail::select<trade_summary_entity>(ctx, statement);
+    return trade_summary_mapper::map(rows);
+}
 
 }

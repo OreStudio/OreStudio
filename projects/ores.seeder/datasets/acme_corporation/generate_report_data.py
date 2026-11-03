@@ -17,10 +17,17 @@ named by its number in that page so a reviewer can find the reason for it.
 - D6: a report runs only with the reports it depends on. The core set keeps
   every prerequisite of every report in it.
 - D7: every trading entity runs Stressed VaR and P&L Attribution.
-- D8: only London runs the Vega and Volatility Surfaces reports.
+- D8: only London runs the Vega, Volatility Surfaces and option map reports.
 
-The report texts, schedules and concurrency policies come from
+The report texts, schedules, concurrency policies and cut selections come from
 report_catalogue.json, which holds the report definitions the platform seeds.
+
+A report the catalogue marks as running on both cycles is seeded as two
+definitions, because a definition states one cut selection and one selection is
+one kind of cut: the plain name selects the LIVE cut and runs during the day,
+and the same name with "(EOD)" selects the end of day cut and runs at the close.
+The two are separate definitions so their schedules, figures and audiences do
+not collide, and the run of one never replaces the record of the other.
 
 Usage:
     python3 generate_report_data.py
@@ -48,8 +55,11 @@ PLATFORM_REPORTS = {"System Health"}
 # consolidated basis. The entities that hold the positions file their own.
 CONSOLIDATED_REPORTS = {"Leverage Ratio", "Liquidity Coverage", "Large Exposures"}
 
-# D8: the option risk reports, which only the full-depth entity runs.
-OPTION_REPORTS = {"Vega", "Volatility Surfaces"}
+# D8: the option risk reports, which only the full-depth entity runs. The maps
+# and the triple vol ladder price the option surface, so they follow the same
+# rule the Vega and Volatility Surfaces reports do.
+OPTION_REPORTS = {"Vega", "Volatility Surfaces", "Triple Vol Spot Ladder",
+                  "Triple Vol Spot Ladder (EOD)", "Spike Map", "Strike Map", "Option Map"}
 
 # D6: what a report needs in the same entity, from the prerequisites its
 # catalogue text states. Stressed VaR is left out on purpose: its text names
@@ -62,6 +72,10 @@ PREREQUISITES = {
     "Delta and Gamma": {"NPV"},
     "Bucketed DV01": {"NPV"},
     "Vega": {"NPV", "Volatility Surfaces"},
+    "Spot Greeks": {"NPV"},
+    "Spot Greeks (EOD)": {"NPV"},
+    "Triple Vol Spot Ladder": {"NPV", "Volatility Surfaces"},
+    "Triple Vol Spot Ladder (EOD)": {"NPV", "Volatility Surfaces"},
 }
 
 
@@ -109,7 +123,9 @@ def check_prerequisites(company, records):
 
 def bindings(company, records):
     """Every definition binds the document of each type its entity holds, the run
-    settings and the engine settings its report needs. The risk report type requires all of them."""
+    settings and the engine settings its report needs. The risk report type requires all of them.
+    The run settings follow the cut the definition selects, so a report on the two
+    cycles binds two settings rows."""
     return [{
         "company_code": company,
         "version": 0,
@@ -119,7 +135,8 @@ def bindings(company, records):
     } for r in records for type_code, name in (
         [(t, documents.document_name(company, t)) for t in documents.DOCUMENT_NAMES]
         + [("pricing_engines", documents.pricing_for_report(company, r["name"]))]
-        + [("risk_report_config", risk.configuration_name(company, r["name"])),
+        + [("risk_report_config",
+            risk.configuration_name(company, r["name"], risk.market_data_type_of(r))),
            ("engine_settings", risk.engine_settings_name(company, r["name"]))])]
 
 

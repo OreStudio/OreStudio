@@ -963,6 +963,12 @@ RULES = (
          BFF, RESOURCE, "simulation",
          "Calibrates every feed of a class, or the one feed named, and writes each moved level"
          " and deviation as a new version of the feed config."),
+    Rule("the review of a variance calibration",
+         ("exact", "POST /api/synthetic/calibration/variance/:id/review"),
+         BFF, RESOURCE, "simulation",
+         "Approves or rejects one proposed GJR-GARCH calibration with the reviewer's reason;"
+         " approving supersedes the pair's earlier approval and older proposals and points the"
+         " pair's feeds at it."),
     Rule("the calibration policy of an asset class",
          ("regex", r"^(PUT|DELETE) /api/synthetic/calibration/:assetClass/policy$"),
          BFF, RESOURCE, "simulation",

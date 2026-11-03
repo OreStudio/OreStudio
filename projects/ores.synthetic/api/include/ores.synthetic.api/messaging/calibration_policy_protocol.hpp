@@ -52,6 +52,12 @@ struct calibration_policy_write {
     std::string asset_class_code;
     int window_days;
     int variance_window_days;
+    std::string variance_approval_mode;
+    int variance_min_returns;
+    bool variance_require_starts_agree;
+    double variance_min_persistence;
+    double variance_max_persistence;
+    double variance_min_reaction;
     bool allow_inverse;
     std::string fallback_code;
 
@@ -395,6 +401,18 @@ inline constexpr std::string_view deleted = "synthetic.v1.calibration_policies_e
         utility::codec::field{"window_days", &calibration_policy_write::window_days},
         utility::codec::field{"variance_window_days",
                               &calibration_policy_write::variance_window_days},
+        utility::codec::field{"variance_approval_mode",
+                              &calibration_policy_write::variance_approval_mode},
+        utility::codec::field{"variance_min_returns",
+                              &calibration_policy_write::variance_min_returns},
+        utility::codec::field{"variance_require_starts_agree",
+                              &calibration_policy_write::variance_require_starts_agree},
+        utility::codec::field{"variance_min_persistence",
+                              &calibration_policy_write::variance_min_persistence},
+        utility::codec::field{"variance_max_persistence",
+                              &calibration_policy_write::variance_max_persistence},
+        utility::codec::field{"variance_min_reaction",
+                              &calibration_policy_write::variance_min_reaction},
         utility::codec::field{"allow_inverse", &calibration_policy_write::allow_inverse},
         utility::codec::field{"fallback_code", &calibration_policy_write::fallback_code},
     };

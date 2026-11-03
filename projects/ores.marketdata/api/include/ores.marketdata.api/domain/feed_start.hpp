@@ -88,7 +88,7 @@ struct feed_start final {
     std::string provider_code;
     /// The provider's own id of the item, or empty when no mapping names it.
     std::string vendor_id;
-    /// The fixing's value as the publisher wrote it.
+    /// The fixing's value as the publisher wrote it, or the level a run kept when no fixing set it.
     ores::utility::decimal::decimal value;
     /// True when the item quotes the feed's pair the other way round.
     bool inverted = false;

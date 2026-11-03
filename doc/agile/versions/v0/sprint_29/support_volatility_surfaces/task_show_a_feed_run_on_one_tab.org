@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 4C7886D2-8D1E-4D5E-86A4-0D9B14E616A7
+:END:
+#+title: Task: Show a feed's run and its variance on one tab
+#+description: Merge the This run and Variance tabs of a feed into one tab of fact cards, with the calibration as a link to its page.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/show-a-feed-run-on-one-tab
+#+pr: 4432
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader sees, on one tab and without reading paragraphs, how the run started and what drives its variance. The tab holds fact cards in our usual style: the start level in market convention with the fixing, provider and orientation; the GJR-GARCH shape as a table of parameter, Greek letter and value with the persistence; and the calibration with its state, method and version, whose id links to the calibration page.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The feed screen has one tab in place of This run and Variance; no paragraph of running text remains on it.
+- The calibration id on the tab is a link that opens that calibration on the calibration page.
+- Component tests cover a run from a fixing, an inverted run, a run that kept its configured level, and a fixed-price feed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4432][#4432]] | [web] Show a feed's run and its variance on one tab |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| L1 | A fact caption is uppercase, so it turned α, γ and β into A, Γ and B, on the feed tab and on the calibration page | VarianceCalibration.tsx, feedStart.tsx | Accept | The shape is a table of parameter and value, in its own case, on both screens; a test asserts the letter |
+| L2 | A run that kept its configured level showed no level | feedStart.tsx | Accept | The card shows the config's initial price; tested |
+| L3 | An authored calibration showed "0, they disagree" and the weak-identification warning | VarianceCalibration.tsx | Accept | Starts and the warning show only for a fitted calibration; tested |
+| L4 | The calibration id links to the feed's calibration page, not to a page of its own | feedStart.tsx | Decline | No page of one calibration exists; the feed's Variance tab on the Calibration screen shows that calibration, its input and its review |
+| L5 | The mockup charts a daily variance stream and a Hawkes intensity | feedStart.tsx | Decline | A run stores no daily variance series, so a chart would draw invented data; it needs the series first |
+| L6 | Misspell flags French and Portuguese words | fr.ts, pt.ts | Decline | Existing lines, correct words (persistance, existant, sucess-); this change touches none |
+| R1.1 | An unknown or missing method counts as fitted | VarianceCalibration.tsx | Accept | Starts and the warning show only for method gjr_garch_qmle |
+| R1.2 | Two calibration ids link to the same page | feedStart.tsx | Decline | The user asked for the id as a link; the target tab shows the running and the configured calibration both |
+| R1.3 | An empty configured id raises a false restart warning | feedStart.tsx | Decline | A GJR-GARCH config must name a calibration (CHECK constraint), and the card shows only for GJR-GARCH |
+| R1.4 | The configured level may differ from the run's if the config changed | feedStart.tsx | Decline | A run that kept its level records no value; a config change restarts the feed, so the two agree |
+| R1.5 | The variance model is read twice | feedStart.tsx | Accept | One local |
+| R1.6 | Card renders an h2 under the page's own headings | Card.tsx | Decline | The calibration page drew its cards the same way; the move changes no heading |
+| R1.7 | Optional row spread inside the array; the GARCH rows are built twice | feedStart.tsx, VarianceCalibration.tsx | Accept | garchRows builds them once; the feed card pushes its optional row |
+| U1 | Name the tab after the calibration, and the variance card after GJR-GARCH | FeedScreens.tsx, locales | Accept | Tab id and label are calibration; the card is GJR-GARCH daily variance |
+
+* Result
+
+A feed's /Calibration/ tab replaces the /This run/ and /Variance/ tabs. It holds four
+cards in the calibration page's style: the start level in market convention, with
+the fixing, provider, orientation, date and item; the fixing window as tiles,
+each marked as setting the spread or recorded only; the daily variance as a table
+of Alpha (α), Gamma (γ), Beta (β) and persistence; and the calibration the run
+used, whose id links to the feed's calibration page. When the config names a newer
+calibration, the card names both and says a restart runs it. The card and tile
+components moved to =ui/Card.tsx= so both screens draw the same block.
+
+The same pass fixed the calibration page: the GARCH names kept their Greek
+letters, which the uppercase caption had turned into capitals, and an authored
+calibration no longer claims its starts disagree.
+
+| Check | Result |
+|-------+--------|
+| Web suite | 196 files, 2443 tests passed |
+| Run tab tests | 9 passed: fixing, inverted, configured level, Greek table and link, newer calibration, tiles, stopped, constant, no running text |
+| Screens | Screenshots of the AUD/USD Run tab and its calibration page, built bundle on prime_origin |

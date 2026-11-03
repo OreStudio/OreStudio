@@ -3817,6 +3817,9 @@ const fr: SourceCatalogue = {
         'Generate the trades': 'Générer les transactions',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Enregistre une configuration de génération de transactions pour chaque partie que le point de départ nomme, et écrit la population qu'il indique dans les livres propres de cette partie.",
+        'Schedule the reports': 'Planifier les rapports',
+        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.":
+            "Planifie chaque définition de rapport que chaque partie qu'il nomme publie, en tant qu'administrateur de l'exécution, afin que le catalogue se déclenche sans qu'une personne agisse. Un rapport dont le calendrier est l'espace réservé à la demande est laissé à une demande manuelle.",
         'Hand the tenant to its administrator': 'Remettre le locataire à son administrateur',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             "Démarre la propre exécution de configuration du locataire, qui s'exécute en tant qu'administrateur du locataire et termine le locataire.",
@@ -4453,7 +4456,7 @@ const fr: SourceCatalogue = {
                 memberships: 'Appartenances',
                 centres: 'Centres d’affaires',
                 counterparties: 'Contreparties',
-                run: 'Cette exécution',
+                calibration: 'Calibration',
                 arrivals: 'Arrivées',
                 variance: 'Variance',
                 behaviour: 'Comportement du prix',
@@ -4915,7 +4918,25 @@ const fr: SourceCatalogue = {
                 runsNone:
                     'La variance du flux est constante, ou sa configuration ne nomme aucune calibration.',
                 fresh: 'L’ajustement de cette exécution',
-                awaiting: 'nouvel ajustement à revoir',
+                awaiting: 'attend la revue',
+                waiting:
+                    '{count} ajustement(s) GJR-GARCH de cette paire attendent la revue. Le plus récent est la calibration {id}, persistance {persistence}. Un flux ne l’utilise qu’après son approbation.',
+                reviewIt: 'Le revoir',
+                pairHistory: 'Calibrations de {pair}',
+                when: 'Dernier changement',
+                stateHeader: 'État',
+                reason: 'Motif',
+                chart: {
+                    title: 'Volatilité quotidienne ajustée',
+                    volatility: 'Volatilité ajustée',
+                    move: 'Ampleur du mouvement du jour',
+                    longRun: 'Niveau de long terme {value}',
+                    label: 'La volatilité quotidienne attendue par l’ajustement GJR-GARCH sur son entrée, et l’ampleur de chaque mouvement quotidien',
+                    caption:
+                        '{days} rendements quotidiens de l’entrée stockée. La volatilité de chaque jour découle du mouvement précédent selon alpha (α), gamma (γ) et bêta (β) de la calibration.',
+                    disagrees:
+                        'La volatilité recalculée à partir des points stockés ne finit pas au ratio du premier jour stocké. L’entrée ou la forme a changé après l’ajustement.',
+                },
                 fitRejected: 'ajustement rejeté',
                 method: {
                     gjr_garch_qmle: 'Ajustée',
@@ -5027,6 +5048,7 @@ const fr: SourceCatalogue = {
                 keptFixed: 'Niveau gardé',
                 refused: 'Refusés',
                 overridden: 'Dérogent à la politique',
+                awaitingReview: 'Ajustements en attente de revue',
             },
             filter: {
                 label: 'Afficher',
@@ -5170,6 +5192,25 @@ const fr: SourceCatalogue = {
                 save: 'Enregistrer la politique',
                 reset: "Revenir à l'automatique",
                 coverage: 'Couverture',
+                approval: {
+                    title: 'Approbation de la variance',
+                    mode: {
+                        auto: 'Approuvé par la politique',
+                        manual: 'Approuvé par une personne',
+                    },
+                    leadAuto:
+                        'La politique approuve chaque ajustement GJR-GARCH qui respecte les règles ci-dessous, et un ajustement qui y échoue attend une personne. Les règles ne changent qu’avec une nouvelle version de la politique.',
+                    leadManual:
+                        'Une personne approuve chaque ajustement GJR-GARCH de la classe ; la politique n’en approuve aucun elle-même.',
+                    window: 'Fenêtre de variance',
+                    days: '{days} jours',
+                    minReturns: 'Rendements minimum',
+                    starts: 'Départs',
+                    startsRequired: 'Doivent concorder',
+                    startsAny: 'Peuvent diverger',
+                    persistence: 'Plage de persistance',
+                    reaction: 'Réaction minimale, alpha (α) + gamma (γ) / 2',
+                },
                 record: 'Registre du calibrage',
             },
         },
@@ -5877,20 +5918,6 @@ const fr: SourceCatalogue = {
             restartFailed:
                 'Enregistré, mais le redémarrage a échoué : {message}. Le flux tourne sur son ancienne loi jusqu’à son prochain démarrage.',
         },
-        variance: {
-            title: 'Variance quotidienne',
-            lead: 'Si la variance quotidienne de ce flux est constante ou suit un GJR-GARCH, pour que les jours calmes et agités se regroupent, et la calibration revue qu’il utilise.',
-            model: 'Modèle de variance',
-            'model.constant': 'Constante — la variance du mélange chaque jour',
-            'model.gjr_garch': 'GJR-GARCH — une variance portée d’un jour à l’autre',
-            calibration: 'Calibration',
-            calibrationNone: 'Aucune',
-            running: 'Ce que porte le flux en cours',
-            notRunning: 'Le flux ne tourne pas.',
-            openCalibration: 'Ouvrir sa calibration : les éléments et la revue',
-            calibrationLead:
-                'Un flux GJR-GARCH utilise la calibration approuvée de sa paire. Les calibrations sont capturées, ajustées, puis approuvées ou rejetées sur l’écran Calibration ; en approuver une y rattache les flux de la paire.',
-        },
         market: {
             title: 'Le marché',
             views: {
@@ -6268,43 +6295,46 @@ const fr: SourceCatalogue = {
                     'Constante garde la variance du mélange chaque jour. GJR-GARCH reporte une variance d’un jour au suivant, si bien que les jours calmes et agités se regroupent ; il demande le moteur géométrique ou arithmétique.',
             },
             run: {
-                level: 'Niveau',
-                levelInverted:
-                    'L’inverse du fixing {provider} de {value} du {date}, reçu {received} : l’élément cote la paire dans l’autre sens.',
-                source: 'Élément de fixing',
-                window: 'Fenêtre',
-                variance: 'Variance quotidienne',
+                level: 'Niveau de départ',
+                fromFixing: "D'un fixing",
+                configured: 'Niveau configuré',
+                levelValue: 'Niveau, convention de marché',
+                fixing: 'Fixing',
+                orientation: 'Sens',
+                inverted: 'Inversé',
+                direct: 'Direct',
+                provider: 'Fournisseur',
+                fixingDate: 'Date du fixing',
+                received: 'Reçu',
+                item: 'Élément de fixing',
+                window: 'Fenêtre de fixings',
+                fixings: 'Fixings',
+                days: '{days} jours',
+                dailyVolatility: 'Volatilité quotidienne',
+                hourlyVolatility: 'Volatilité horaire',
+                used: "Fixe l'écart",
+                recorded: 'Enregistré seulement',
+                drift: 'Dérive, annualisée',
+                range: 'Plage des rendements quotidiens',
+                age: 'Âge du fixing',
+                jumps: 'Mouvements au-delà de 3σ',
+                dispersion: 'Écart avec {provider}',
+                variance: 'Variance quotidienne GJR-GARCH',
+                'model.gjr_garch': 'GJR-GARCH',
+                'model.constant': 'Constante',
+                constant: 'La variance du mélange s’applique chaque jour.',
+                noShape: 'Le flux ne tourne pas, il ne porte donc aucune forme.',
+                shape: 'Forme',
+                fitted: 'Ajustée, {returns} rendements',
+                calibration: 'Calibration',
+                calibrationRun: 'Utilisée par cette exécution',
+                version: 'Version',
+                calibrationConfigured: 'Nommée par la configuration',
+                restartToApply:
+                    'La configuration nomme une calibration plus récente. Redémarrez le flux pour l’utiliser.',
+                openCalibration: 'Ouvrir sur la page de calibration',
                 notRunning:
-                    'Le flux ne tourne pas, il n’y a donc pas d’exécution à décrire. Démarrez-le pour voir d’où il part.',
-            },
-            start: {
-                title: "D'où part cette exécution",
-                fromFixing: 'Parti du fixing {provider} de {value} du {date}, reçu le {received}.',
-                dateUnknown: 'une date inconnue',
-                receivedUnknown: 'à une heure inconnue',
-                fixedLevel:
-                    "Aucun fixing publié n'a fixé le niveau, donc l'exécution a gardé son niveau configuré.",
-                inverted:
-                    "L'élément cite la paire dans l'autre sens, donc sa valeur a été lue comme son inverse.",
-                window: '{used} fixings sur {days} jours ont mesuré sa dispersion.',
-                variance: {
-                    calibration: 'Calibration {id}, version {version}.',
-                    fitted: 'Variance quotidienne : GJR-GARCH ajusté sur {returns} rendements quotidiens, alpha (α) {alpha}, gamma (γ) {gamma}, bêta (β) {beta}, persistance {persistence}.',
-                    authored:
-                        'Variance quotidienne : GJR-GARCH avec la forme saisie, alpha (α) {alpha}, gamma (γ) {gamma}, bêta (β) {beta}, persistance {persistence}.',
-                    firstDay:
-                        'La variance du premier jour vaut {ratio} fois le niveau de long terme, tel que l’historique s’est terminé.',
-                },
-                measures: {
-                    volatility:
-                        "Volatilité réalisée {daily} par jour, {hourly} par heure : elle a changé le calibrage, car elle met le mélange à l'échelle.",
-                    recorded: "Enregistré pour une politique future, non utilisé aujourd'hui :",
-                    drift: 'Dérive annualisée : {value}',
-                    range: 'Rendements journaliers de {min} à {max}',
-                    age: 'Le fixing date de {days} jour(s)',
-                    jumps: 'Mouvements au-delà de trois écarts : {count}',
-                    dispersion: '{provider} est à {bp} pb',
-                },
+                    'Le flux ne tourne pas. Les cartes montrent ce que nomme sa configuration.',
             },
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
@@ -7751,6 +7781,8 @@ const fr: SourceCatalogue = {
         unread: "{cell} n'a pas pu être lu : {message}",
         filter: {
             allParties: 'Toutes les parties',
+            cut: 'Coupure',
+            allCuts: 'Toutes les coupures',
         },
         tally: {
             label: 'Rapports selon l’état de leur dernière exécution',
@@ -7760,12 +7792,25 @@ const fr: SourceCatalogue = {
             report: 'Rapport',
             party: 'Partie',
             reportType: 'Type',
+            cut: 'Coupure',
             schedule: 'Calendrier',
             latestRun: 'Début de la dernière exécution',
             duration: 'Durée',
             health: 'État',
             errors: 'Erreurs',
             warnings: 'Avertissements',
+        },
+        schedule: {
+            onDemand: 'À la demande',
+        },
+        cut: {
+            LIVE: 'Live',
+            EOD: 'Fin de journée',
+            SOD: 'Début de journée',
+            IPV: 'Vérification indépendante des prix',
+            FLASH: 'Flash',
+            EOM: 'Fin de mois',
+            EOY: 'Fin d’année',
         },
         health: {
             failed: 'Échec',

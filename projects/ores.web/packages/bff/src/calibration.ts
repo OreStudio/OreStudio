@@ -28,6 +28,7 @@ import {
 } from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
 import {
     subjects as policySubjects,
+    type CalibrationPolicyWrite,
     type ListCalibrationPoliciesResponse,
 } from '@ores/wire-protocol/generated/synthetic/protocol/calibration_policy_protocol';
 import {
@@ -60,6 +61,12 @@ const calibrationPolicySchema = z.object({
     from_policy_row: z.boolean().default(false),
     window_days: z.int().default(0),
     variance_window_days: z.int().default(0),
+    variance_approval_mode: z.string().default('manual'),
+    variance_min_returns: z.int().default(0),
+    variance_require_starts_agree: z.boolean().default(false),
+    variance_min_persistence: z.number().default(0),
+    variance_max_persistence: z.number().default(0),
+    variance_min_reaction: z.number().default(0),
     allow_inverse: z.boolean().default(false),
     fallback_code: z.string().default(''),
     provider_order: z.array(z.string()).default([]),
@@ -135,10 +142,26 @@ export function calibrationCoverage(feeds: readonly CalibratedFeed[]) {
 }
 
 /** A class's policy row, as stored, when it has one. */
+/**
+ * The policy's fields the policy screen does not edit: the variance window and the approval
+ * rules. A save writes them back as they are stored, or as the column defaults for a class with
+ * no row, so editing the window or the order never resets them.
+ */
+const keptPolicyFields = {
+    variance_window_days: z.int().default(1826),
+    variance_approval_mode: z.enum(['manual', 'auto']).default('manual'),
+    variance_min_returns: z.int().default(250),
+    variance_require_starts_agree: z.boolean().default(true),
+    variance_min_persistence: z.number().default(0.8),
+    variance_max_persistence: z.number().default(0.995),
+    variance_min_reaction: z.number().default(0.01),
+};
+
 const policyRowSchema = z.looseObject({
     id: z.string(),
     version: z.int(),
     asset_class_code: z.string(),
+    ...keptPolicyFields,
 });
 
 const orderRowSchema = z.looseObject({
@@ -413,6 +436,7 @@ export function registerCalibrationRoutes(
 
         const existing = await policyRowOf(session, assetClass);
         const policyId = existing?.id ?? randomUUID();
+        const kept = existing ?? z.object(keptPolicyFields).parse({});
         ensure(
             await write(session, policySubjects.put_many_calibration_policies_request, {
                 intent: body.intent,
@@ -422,9 +446,16 @@ export function registerCalibrationRoutes(
                             id: policyId,
                             asset_class_code: assetClass,
                             window_days: body.window_days,
+                            variance_window_days: kept.variance_window_days,
+                            variance_approval_mode: kept.variance_approval_mode,
+                            variance_min_returns: kept.variance_min_returns,
+                            variance_require_starts_agree: kept.variance_require_starts_agree,
+                            variance_min_persistence: kept.variance_min_persistence,
+                            variance_max_persistence: kept.variance_max_persistence,
+                            variance_min_reaction: kept.variance_min_reaction,
                             allow_inverse: body.allow_inverse,
                             fallback_code: body.fallback_code,
-                        },
+                        } satisfies CalibrationPolicyWrite,
                         precondition:
                             body.version === null
                                 ? { kind: 'must_not_exist', version: null }

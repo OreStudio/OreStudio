@@ -37,6 +37,7 @@ using ores::iam::messaging::parse_market_data_arguments;
 using ores::iam::messaging::parse_photo_arguments;
 using ores::iam::messaging::parse_provision_party_arguments;
 using ores::iam::messaging::parse_publish_bundle_arguments;
+using ores::iam::messaging::parse_report_schedule_arguments;
 using ores::iam::messaging::parse_set_staff_passwords_arguments;
 using ores::iam::messaging::parse_staff_assignments;
 using ores::iam::messaging::parse_step_bundles;
@@ -62,6 +63,7 @@ TEST_CASE("the executor classifies each kind it executes into its own action", "
     CHECK(classify_step_kind("subscribe_market_data") ==
           provision_step_action::subscribe_market_data);
     CHECK(classify_step_kind("generate_trades") == provision_step_action::generate_trades);
+    CHECK(classify_step_kind("schedule_reports") == provision_step_action::schedule_reports);
     CHECK(classify_step_kind("complete_provisioning") ==
           provision_step_action::complete_provisioning);
     CHECK(classify_step_kind("start_tenant_setup") == provision_step_action::start_tenant_setup);
@@ -71,6 +73,29 @@ TEST_CASE("the executor refuses every kind it does not know", "[provision_step]"
     CHECK(classify_step_kind("publish_everything") == provision_step_action::refuse);
     CHECK(classify_step_kind("") == provision_step_action::refuse);
     CHECK(classify_step_kind("complete_provisioning_x") == provision_step_action::refuse);
+}
+
+TEST_CASE("a schedule step names the parties whose reports it schedules", "[provision_step]") {
+    const auto arguments = parse_report_schedule_arguments(
+        R"({"parties": ["Acme Corporation Plc", "ACME Corporation UK plc"]})");
+
+    CHECK(arguments.parties ==
+          std::vector<std::string>{"Acme Corporation Plc", "ACME Corporation UK plc"});
+}
+
+TEST_CASE("a schedule step that names no party is refused", "[provision_step]") {
+    CHECK_THROWS_WITH(parse_report_schedule_arguments("{}"),
+                      "The step names no 'parties' argument.");
+    CHECK_THROWS_WITH(parse_report_schedule_arguments(R"({"parties": []})"),
+                      "The step names no party in its 'parties' argument.");
+    CHECK_THROWS_WITH(parse_report_schedule_arguments(R"({"parties": [""]})"),
+                      "The step names an empty party in its 'parties' argument.");
+    // A party is a name, not an object: what to schedule is the catalogue's
+    // statement, so the row that carried a definition would be a second copy
+    // of it.
+    CHECK_THROWS_WITH(
+        parse_report_schedule_arguments(R"({"parties": [{"name": "Acme Corporation Plc"}]})"),
+        "The step's argument 'parties' is not a list of strings.");
 }
 
 TEST_CASE("a step's bundles are read in the order the step names them", "[provision_step]") {

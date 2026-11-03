@@ -1,0 +1,40 @@
+# The Headline Position as a party, on the LIVE selection, run through the shell.
+#
+# The definition selects the live cut and states the three facts a resolution
+# reads: the date the report covers, the scope, and the rates centre. The run
+# makes the same resolution the report's page draws, mints the body at the
+# instant it starts, records it on the instance, and then asks the engine to
+# price it. An environment with no published market data set mints the cut and
+# refuses at the engine, which is what this run shows.
+#
+# The run acts in the party the definition belongs to, because a run's consent
+# is its party's: the environment signs in as the Acme tenant's administrator,
+# whose default party is the group. The script therefore points the account at
+# the UK entity, signs in again so the new party is the session's, runs the
+# report, and puts the default party back.
+#
+# Run from the repository root:
+#   ./compass.sh shell -f doc/agile/versions/v0/sprint_29/rework-the-market-data-feeds-remaining/evidence/run_the_headline_position_live.ores
+
+# The UK entity: the Headline Position definition this script runs belongs to it.
+accounts set-default-party 0ac22244-4864-4a7d-bddc-8c8396e5bca6
+logout
+login tenant_admin@acme_corporation Secure-Password-123
+
+# The resolution the report's own page draws and the run makes: what the LIVE
+# selection resolves to right now. This operation writes nothing: a run states
+# the body, so the answer names the parts the caller's request did not state.
+report_operations resolve-cut 1801d67b-f5e3-41c4-b904-3ea8e5dabe42 2026-11-03 ACME-LONDON GBLO
+
+# The run: it resolves the same selection, assembles the body from the store,
+# mints the cut, records it on the instance and dispatches the workflow.
+report_operations trigger-report-instance 1801d67b-f5e3-41c4-b904-3ea8e5dabe42 ce8f9eaa-50c0-4c0e-a50d-13aacfab1174 --covered_date 2026-11-03 --scope_code ACME-LONDON --business_centre_code GBLO
+
+# The record the run made, read back through the service: each cut of the live
+# kind its party holds, with the state a reader sees drawn as its badge.
+report_operations list-cut-rows --kind_code LIVE --limit 5
+
+# The account's default party goes back to the group, which is where it started.
+accounts set-default-party 4bbab852-1592-4e42-80fb-9e7a2b24ae82
+
+exit

@@ -7418,6 +7418,16 @@ def split_keep_going(value, targets):
     return "0", [value, *targets]
 
 
+def _build_stamp(label, log=None):
+    """Print, and write to the build log, a build event's wall-clock time."""
+    line = f"🕒 {label}: {datetime.datetime.now().astimezone():%Y-%m-%d %H:%M:%S %Z}"
+    print(line)
+    if log is not None:
+        log.write(line + "\n")
+        log.flush()
+    return line
+
+
 def _cmake_cache_value(build_dir, key):
     """A value from the build directory's CMakeCache.txt, or "" without one."""
     cache = Path(build_dir) / "CMakeCache.txt"
@@ -7655,6 +7665,7 @@ def cmd_build(argv):
         source = "--jobs" if args.jobs is not None else f"build-lock slot '{slot_name}'"
         lock.announce()
     print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
+    started = None if args.dry_run else _build_stamp("Build started")
     build_cmd += ["-j", str(jobs)]
     if args.keep_going is not None:
         build_cmd += keep_going_args(build_dir, preset, int(args.keep_going))
@@ -7679,7 +7690,11 @@ def cmd_build(argv):
     if log_path is not None:
         print(f"📝 Build output: {log_path} (tail -f to follow)")
         log = open(log_path, "w")
+        if started is not None:
+            log.write(started + "\n")
 
+    start_time = time.monotonic()
+    outcome = "interrupted"
     try:
         for cmd in commands:
             print(f"🔨 {' '.join(cmd)}")
@@ -7696,7 +7711,9 @@ def cmd_build(argv):
             if rc != 0:
                 print(f"❌ Command failed with exit code {rc}: {' '.join(cmd)}",
                       file=sys.stderr)
+                outcome = f"failed, exit {rc}"
                 return rc
+        outcome = "succeeded"
         if not args.dry_run:
             problems = _check_publish_artifacts(build_dir)
             if problems:
@@ -7713,6 +7730,9 @@ def cmd_build(argv):
                       file=sys.stderr)
         return 0
     finally:
+        if started is not None:
+            took = datetime.timedelta(seconds=round(time.monotonic() - start_time))
+            _build_stamp(f"Build finished ({outcome}, took {took})", log)
         if log is not None:
             log.close()
         if lock is not None:

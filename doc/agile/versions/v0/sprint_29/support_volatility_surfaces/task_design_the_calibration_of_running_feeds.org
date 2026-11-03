@@ -16,26 +16,32 @@
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the
+[[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story.
+It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The story states what happens after provisioning: a feed resumes from its own last stored spot after any restart, takes a newly approved calibration at its next market day roll without a restart, and is re-anchored to the public rates only by an explicit, recorded operator act.
+The story states what happens after provisioning: a feed resumes from its own
+last stored spot after any restart, takes a newly approved calibration at its
+next market day roll without a restart, and is re-anchored to the public rates
+only by an explicit, recorded operator act.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | DONE                                   |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Nothing. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Nothing.                               |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
 
-- The story's Decisions record continuity across restarts, the calibration taken at the day roll, and the free-running level with an explicit re-anchor.
+- The story's Decisions record continuity across restarts, the calibration taken
+  at the day roll, and the free-running level with an explicit re-anchor.
 - The decisions and tasks that said a feed takes its calibration at its next start say the day roll.
 - Each piece is a task in the story's table, in the order it is built.
 
@@ -59,7 +65,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| AUD/USD starts after a restart | 15:22, 15:45 and 16:04 each at 0.702297 from IMF; 18:09 to 18:33 each at 0.697593 | =journalctl --user -u ores.synthetic.service-prime_origin.service= filtered on its start line; =evidence/design_running_feeds_restarts_2026-11-03.txt= | services built from 861167d734 and from the tree merged as 7eb8ddec0c |
+| AUD/USD starts after a restart | 15:22, 15:45 and 16:04 each at 0.702297 from IMF; 18:09 to 18:33 each at 0.697593 | =journalctl --user -u ores.synthetic.service-prime_origin.service= filtered on its start line; =evidence/design_running_feeds_restarts_2026-11-03.txt= | 15:22 to 16:04 on services built from 861167d734; 18:09 to 18:33 on the tree merged as 7eb8ddec0c |
 | Market speed | 1440, a market day per wall minute | the same journal, the =MARKET SPEED= line | the same |
 | Size of the jump at a restart | not measured | the stored ticks around the 18:22 to 18:33 restarts were not found by series URI in the time given; the database was recreated at 16:08, so the earlier restarts' ticks are gone | |
 
@@ -86,7 +92,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| R1.1 | The PR body says four tasks; the task says three | PR | Accept | The body says three; the story table lists three |
+| R1.2 | Status table alignment and an over-long Result line | task | Accept | Aligned and wrapped |
+| R1.3 | A re-anchor written while the service is down is overwritten by the next resume | resume task, story | Accept | A restart uses a spot only if stored after the config's current version |
+| R1.4 | No behaviour when the spot query fails | resume task, story | Accept | The feed does not start, and its error says why |
+| R1.5 | system.restart is not a deliverable | resume task | Accept | Seeded in the DQ change reasons populate script |
+| R1.6 | Restart versions may be noisy | resume task | Decline | One version per restart that moves the level is the evidence the user asked for, and the user accepted the volume |
+| R1.7 | The jump size was not measured | resume task | Decline | The resume task's acceptance measures the largest step after a restart |
+| R1.8 | Which build each restart ran on | task | Accept | Stated per window |
+| R1.9 | The branch is behind main | branch | Accept | Merged origin/main |
 
 * Result
 
@@ -99,6 +113,7 @@ takes a new calibration at its market day roll, not at its next start.
 Three tasks build it, placed after the release: resume a feed from its last
 stored spot, by writing the config's level from it as a new version, so each
 restart and its initial price show in the history; take a new calibration at the
-market day roll; and re-anchor a class to the public rates. The size of a restart's jump was not measured; the
+market day roll; and re-anchor a class to the public rates. The size of a
+restart's jump was not measured; the
 decisions rest on what the code and the journal show, that a restart begins at
 the fixing and reads no price the run had reached.

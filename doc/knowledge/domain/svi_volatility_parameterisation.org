@@ -26,6 +26,36 @@ expiry and keeps those inequalities. This note defines each form and states the
 conditions; the surfaces built on it are described in
 [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]].
 
+* Layperson's mental model
+
+Picture the smile of one expiry as a length of bendable wire shaped like a
+shallow bowl: its height is how expensive options are in general, and its two
+rising arms are how much dearer far-from-the-money options are. Raw SVI gives
+you five knobs to bend that wire: raise or lower the whole bowl ($a$), steepen
+both arms ($b$), tilt it so one arm rises faster than the other ($\rho$), slide
+it sideways ($m$), and round off its bottom ($\sigma$). Five knobs fit almost
+any smile. But nothing stops you bending the wire into a shape no real market
+could produce, with a kink that implies a negative probability, and when you
+bend one wire per expiry, nothing stops two of them from crossing.
+
+SSVI swaps the separate wires for one frame that holds them all. Each expiry
+still has its own height, its ATM total variance $\theta_t$, but every wire
+shares one tilt ($\rho$) and one stiffness ($\eta$), and the frame bends each
+wire from those few numbers. The frame comes with marks on its knobs: keep the
+heights rising with expiry and the tilt and stiffness inside their marked
+ranges, and no wire can kink or cross another, whatever values you pick inside
+the marks. That is what lets a generator turn the knobs continuously without
+ever producing an impossible surface.
+
+#+begin_src cpp
+// total implied variance at log-moneyness k, for an expiry whose ATM total variance is theta
+double ssvi_total_variance(double k, double theta, double rho, double eta) {
+    const double phi = eta / std::sqrt(theta);
+    const double x = phi * k + rho;
+    return 0.5 * theta * (1.0 + rho * phi * k + std::sqrt(x * x + 1.0 - rho * rho));
+}
+#+end_src
+
 * Detail
 
 ** Coordinates

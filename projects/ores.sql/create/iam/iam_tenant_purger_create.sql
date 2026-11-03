@@ -47,6 +47,7 @@ declare
     v_table text;
     v_rule text;
     v_rules text[];
+    v_column_type text;
     v_pass integer;
 begin
     v_system_tenant_id := ores_utility_system_tenant_id_fn();
@@ -116,26 +117,36 @@ begin
                 foreach v_rule in array v_rules loop
                     execute format('alter table %I disable rule %I', v_table, v_rule);
                 end loop;
-                -- Compared as text: the tenant column is a uuid in most tables
-                -- and text in the few that record an operator's tenant as the
-                -- string they presented, and one sweep covers both.
-                execute format('delete from %I where tenant_id::text = $1', v_table)
-                    using p_tenant_id::text;
+                -- The comparator follows the column's own type: a uuid
+                -- comparison reaches the tenant index, and only the few tables
+                -- that record an operator's tenant as the string they
+                -- presented are compared as text.
+                select c.data_type into v_column_type
+                from information_schema.columns c
+                where c.table_schema = 'public'
+                  and c.table_name = v_table
+                  and c.column_name = 'tenant_id';
+                if v_column_type = 'uuid' then
+                    execute format('delete from %I where tenant_id = $1', v_table)
+                        using p_tenant_id;
+                else
+                    execute format('delete from %I where tenant_id = $1', v_table)
+                        using p_tenant_id::text;
+                end if;
                 get diagnostics v_row_count = row_count;
                 v_deleted_count := v_deleted_count + v_row_count;
                 foreach v_rule in array v_rules loop
                     execute format('alter table %I enable rule %I', v_table, v_rule);
                 end loop;
             exception when foreign_key_violation then
-                -- The rules the failed attempt disabled are put back before the
-                -- table is retried: a disabled rule would let a later delete
-                -- remove a row that the table means to keep.
-                foreach v_rule in array v_rules loop
-                    execute format('alter table %I enable rule %I', v_table, v_rule);
-                end loop;
+                -- The block's own rollback puts the disabled rules back, so the
+                -- table is retried with the rules it started with.
                 v_blocked := v_blocked || v_table;
             end;
         end loop;
+        -- A pass that frees nothing ends the sweep: every table left is blocked
+        -- by a row this tenant does not own, and repeating it changes nothing.
+        exit when cardinality(v_blocked) = cardinality(v_pending);
         v_pending := v_blocked;
     end loop;
     perform set_config('ores.utility.allow_immutable_purge', 'off', true);
@@ -148,6 +159,12 @@ begin
         v_deleted_count, v_tenant_code, p_tenant_id;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- The sweep disables a table's rules and so runs as the owner, which bypasses
+-- the row-level policies. PostgreSQL grants execute to PUBLIC by default, so it
+-- is revoked and the application's read-write role is granted it by name.
+revoke execute on function ores_iam_purge_tenant_fn(uuid) from public;
+grant execute on function ores_iam_purge_tenant_fn(uuid) to :rw_role;
 
 -- -----------------------------------------------------------------------------
 -- Hard delete tenant records (bypasses soft-delete rule)
@@ -162,7 +179,14 @@ declare
     v_count integer;
 begin
     -- The system tenant is never removable, and this path bypasses both the
-    -- soft-delete rule and the table check, so it carries the guard itself.
+    -- soft-delete rule and the table check, so it carries the guard itself. It
+    -- also carries the context guard its caller carries: the function runs as
+    -- the owner, and only a session acting on the system tenant may ask for it.
+    if ores_iam_current_tenant_id_fn() != ores_utility_system_tenant_id_fn() then
+        raise exception 'Must be in system tenant context to hard delete tenants. Current tenant: %',
+            ores_iam_current_tenant_id_fn() using errcode = '42501';
+    end if;
+
     if ores_utility_system_tenant_id_fn() = any(p_tenant_ids) then
         raise exception 'Cannot hard delete the system tenant'
             using errcode = '42501';
@@ -181,6 +205,9 @@ begin
     return v_count;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+revoke execute on function ores_iam_hard_delete_tenants_fn(uuid[]) from public;
+grant execute on function ores_iam_hard_delete_tenants_fn(uuid[]) to :rw_role;
 
 -- -----------------------------------------------------------------------------
 -- Purge all test tenants

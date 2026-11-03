@@ -221,11 +221,13 @@ not on it: purging a tenant would have left its books, its allowed product types
 and its role grants behind. It is now a sweep of the catalogue — every public
 table that carries a tenant_id — so a table cannot be forgotten, and the new
 junctions are purged without the function naming them. Each table's delete rules
-are disabled around its own delete and put back even when the delete fails; the
-columns are compared as text, because two audit tables record the tenant as the
-string an operator presented; and the two functions are security definer, as a
-purge of every table is a privileged act that a caller with table rights alone
-cannot perform.
+are disabled around its own delete; the comparator follows the column's own
+type, so a uuid comparison still reaches the tenant index and only the two
+audit tables that record an operator's tenant as a string are compared as text;
+a pass that frees nothing ends the sweep; and the two functions are security
+definer, because disabling a table's rules is an owner's act. That privilege is
+not free, so execute is revoked from PUBLIC and granted to the read-write role
+by name, and both functions guard the system-tenant context themselves.
 
 A pgTAP suite, =test/iam_tenant_purge_test.sql=, proves it on a tenant that owns
 a book and its allowed types: it counts the tenant's rows across every table

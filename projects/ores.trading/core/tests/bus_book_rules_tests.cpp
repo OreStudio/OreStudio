@@ -129,10 +129,13 @@ TEST_CASE("the port asks as the caller and maps the book's rules", "[trading][bu
         CHECK(*observed.delegated == "Bearer the-callers-token");
     }
 
-    SECTION("a frozen book is not open") {
+    SECTION("a frozen book is not open, and its allowance is not read") {
         answer_status = "Frozen";
-        CHECK(port.of(book_id, "FxForward", "the-callers-token").book_status ==
-              book_rules_port::status::not_open);
+        answer_restricts = true;
+        const auto rules = port.of(book_id, "FxForward", "the-callers-token");
+        CHECK(rules.book_status == book_rules_port::status::not_open);
+        // A closed book takes no booking, so the junction is not asked about.
+        CHECK(observed.product_type_reads.load() == 0);
     }
 
     SECTION("a closed book is not open") {

@@ -3897,10 +3897,10 @@ begin
 
     insert into ores_refdata_book_product_types_tbl (
         book_id, tenant_id, product_type_code, version,
-        modified_by, change_reason_code, change_commentary
+        modified_by, performed_by, change_reason_code, change_commentary
     )
     select m.id, p_target_tenant_id, c.code, 0,
-        v_actor, 'system.external_data_import',
+        v_actor, current_user, 'system.external_data_import',
         'Published from organisation dataset'
     from published_book_map m
     cross join ores_trading_product_types_tbl c

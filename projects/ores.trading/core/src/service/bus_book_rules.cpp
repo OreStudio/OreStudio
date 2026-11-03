@@ -109,6 +109,11 @@ book_rules_port::answer bus_book_rules::of(const boost::uuids::uuid& book_id,
     answer result;
     result.book_status =
         book.book_status == std::string(open_status) ? status::open : status::not_open;
+    // A closed book takes no booking, so the caller refuses on the status alone
+    // and the junction is not read for it.
+    if (result.book_status != status::open) {
+        return result;
+    }
     if (!book.restricts_product_types) {
         result.allowed = product_type::allows;
         return result;

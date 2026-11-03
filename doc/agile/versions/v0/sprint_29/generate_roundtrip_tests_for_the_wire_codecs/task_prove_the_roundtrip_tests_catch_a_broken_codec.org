@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :codegen:codec:tests:generate_roundtrip_tests_for_the_wire_codecs:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/prove-the-roundtrip-tests-catch-a-broken-codec
+#+pr: 4421
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
@@ -26,11 +26,11 @@ Evidence that the generated tests detect a dropped member and a value the codec 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-02                               |
 
 * Acceptance
@@ -40,9 +40,17 @@ Evidence that the generated tests detect a dropped member and a value the codec 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Break the generated codec of one message, =ores::dq::messaging::artefact_type_write=,
+one way at a time with =evidence/mutate.py=, rebuild =ores.dq.api.tests= and run
+the generated case named by the type. The message has six string members, an
+optional string and an integer, so it can show each kind of fault. Each
+mutation edits one generated file and is reverted with =git checkout=.
+
+1. =drop-member=: remove =target_subject= from =wire_fields=.
+2. =json-loses-value=: the JSON read resets the optional =description=.
+3. =msgpack-loses-value=: the MessagePack read sets =display_order= to 0.
+4. =same-type-mixup=: the JSON read puts =code='s value in =name=, the case
+   the review of PR 4406 named (finding 3).
 
 * Measurements
 
@@ -56,9 +64,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Baseline | the case passes, 4 assertions | =ores.dq.api.tests 'ores::dq::messaging::artefact_type_write'= | =9d1e59ec0c= |
+| =drop-member= | the test does not compile: =wire_roundtrip.hpp:44= static assertion, "the type has a member its wire shape does not name"; =ores.dq.api.lib= builds | =evidence/mutation_drop_member.txt= | =9d1e59ec0c= |
+| =json-loses-value= | the case fails, 1 of 4 assertions: the JSON check on the sample value | =evidence/mutation_json_loses_value.txt= | =9d1e59ec0c= |
+| =msgpack-loses-value= | the case fails, 1 of 4 assertions: the MessagePack check on the sample value | =evidence/mutation_msgpack_loses_value.txt= | =9d1e59ec0c= |
+| =same-type-mixup= | the case passes, 4 of 4 assertions: not caught | =evidence/mutation_same_type_mixup.txt= | =9d1e59ec0c= |
+| After the revert | the case passes again, 4 assertions | =evidence/mutation_reverted.txt= | =9d1e59ec0c= |
 
 * Notes
+
+- The guard, not a test case, catches a dropped member, and only the test sees
+  it: the library compiles with the member missing from =wire_fields=.
+- A failed check prints ={?} == {?}=, because Catch2 has no way to print a
+  message. The check's message names the value (sample or default) and the
+  line names the format, so the failure is located, but not what differs.
+- =sample<std::string>(0)= is one fixed text, so every string member of a
+  sample holds the same value. The same holds for any two members of one type.
+  A codec that reads one member's key into another member of the same type
+  passes. A symmetric swap of two keys passes any roundtrip, whatever the
+  values; only the fixed-bytes tests can catch that.
 
 * Test Scenarios
 
@@ -75,12 +99,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4421][#4421]] | [codegen] Prove the roundtrip tests catch a broken codec |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR 4406 finding 1: nothing yet shows the tests fail on a broken codec | =evidence/= | Accept | This task: three of four mutations fail the generated case. |
+| 2 | PR 4406 finding 3: one sample index lets two members of one type mix | =sample.hpp= | Accept | Proven by =same-type-mixup=; fixed in Give each member of a sample its own value. |
+| 3 | PR 4406 finding 8: no test renders =message_codec_includes= | =test_protocol_roundtrip_tests_template.py= | Accept | Added; it fails when the include loop is removed. |
 
 * Result
+
+The generated test catches a dropped member at compile time, and a value the
+JSON read or the MessagePack read loses, each in the case named by the message's
+type. It does not catch a read that puts one member's value in another member of
+the same type, because the sample gives both the same value. After the revert
+the case passes again. Both acceptance bullets are met; the gap goes to a new
+task in this story, Give each member of a sample its own value.

@@ -362,6 +362,7 @@ leaves today's behaviour unchanged.
 :cpp_type:      std::string
 :nullable:      false
 :default_value: "constant"
+:default:       'constant'
 :END:
 
 How the feed's daily variance moves: "constant", the mixture's own variance on

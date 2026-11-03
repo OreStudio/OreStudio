@@ -54,7 +54,7 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "branching_ratio" double precision not null default 0.0,
     "decay" double precision not null default 1.0,
     "sensitivity" double precision not null default 1.0,
-    "variance_model" text not null,
+    "variance_model" text not null default 'constant',
     "garch_alpha" double precision not null default 0.05,
     "garch_gamma" double precision not null default 0.0,
     "garch_beta" double precision not null default 0.9,

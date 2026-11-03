@@ -24,7 +24,7 @@ import { api, type RecordRow } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { show } from '../../refdata/records.js';
 import { Button, Dialog, Fact, Field, Input, Notice, Select } from '../../ui/Primitives.js';
-import { saveArrivals } from './ArrivalsPanel.js';
+import { saveFeedSettings } from './ArrivalsPanel.js';
 
 const REASON_CODE = 'system.update';
 
@@ -211,7 +211,7 @@ export function VarianceDialog({
     const saveNow = async (): Promise<void> => {
         setSaving(true);
         setError(null);
-        const outcome = await saveArrivals({
+        const outcome = await saveFeedSettings({
             save: () => save(settings, { reasonCode: REASON_CODE, commentary: '' }),
             saved,
             restart: running && restartAfter ? restart : undefined,

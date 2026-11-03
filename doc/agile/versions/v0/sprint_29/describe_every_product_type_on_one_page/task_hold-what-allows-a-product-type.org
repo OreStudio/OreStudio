@@ -78,10 +78,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Product types in the catalogue | 121, all in the system tenant | =select count(*) from ores_trading_product_types_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | |
-| Codes a published book allows | 121 per book: 242 junction rows for the 2 books of the ACME group dataset | =pg_prove ... test/refdata_book_product_types_seed_test.sql= | |
-| Grants a provisioned tenant starts with | 31 roles x 121 codes | =select count(*) from ores_iam_roles_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | |
-| Books whose rule the booking path reads | one read of the book, and the junction only when it restricts | =projects/ores.trading/core/src/service/bus_book_rules.cpp= | |
+| Product types in the catalogue | 121, all in the system tenant | =select count(*) from ores_trading_product_types_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | 57de6412e8 |
+| Codes a published book allows | 121 per book: 242 junction rows for the 2 books of the ACME group dataset | =pg_prove ... test/refdata_book_product_types_seed_test.sql= | 57de6412e8 |
+| Grants a provisioned tenant starts with | 31 roles x 121 codes | =select count(*) from ores_iam_roles_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | 57de6412e8 |
+| Books whose rule the booking path reads | one read of the book, and the junction only when it restricts | =projects/ores.trading/core/src/service/bus_book_rules.cpp= | 57de6412e8 |
 
 * Notes
 
@@ -164,3 +164,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two junctions exist, are seeded where their rows are made, and the booking
+path enforces the book's rule.
+
+** What a reader can now see
+
+- A book lists the product types it allows, and a role lists the product types
+  it permits: =ores_refdata_book_product_types_tbl= and
+  =ores_iam_role_product_types_tbl=, both naming the catalogue by code.
+- An unrestricted book and one that allows nothing are told apart by
+  =restricts_product_types=, and a book published from a curated dataset states
+  its allowed set instead of leaving the question open.
+- A booking of a product type the book does not allow is refused with
+  =product_type_not_allowed=, and the message names the rule and the code.
+
+** How it is proved
+
+- A pgTAP suite, =test/refdata_book_product_types_seed_test.sql=, publishes the
+  ACME group books into a fixture party and checks all nine claims: the two
+  books, the 121 codes each allows, that nothing outside the catalogue is
+  allowed, the two flag readings, and the grants a provisioned tenant gets.
+- A C++ case books a trade into a book that refuses its type and asserts the
+  refusal, the code it carries, the rule its message names, and that no anchor
+  was written. Another asserts the port reads the junction only when the book
+  restricts, and asks as the caller.
+- The 98 ctest suites pass, the codegen suite passes 1861 tests, and every local
+  check passes.
+
+** What is left
+
+- The tenant purger does not delete either junction, as it does not delete the
+  books they point at. Closing that is a purge task, not this one.
+- Four marketdata pgTAP suites fail on a tree with no change from this task:
+  main's derived FX volatility catalogue adds a feed, a route, an adapter, a
+  supplier and the feed scopes that name them, and the four suites still assert
+  the counts from before it.

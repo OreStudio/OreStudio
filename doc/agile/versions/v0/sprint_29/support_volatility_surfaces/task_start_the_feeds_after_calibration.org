@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 813D806C-D1C5-4406-8AF1-1259C39E221A
 :END:
-#+title: Task: Start the synthetic feeds only after calibration
-#+description: Provisioning loads the public rates and calibrates the feeds when the backfill finishes, and the synthetic feeds start only when a person starts them, so the recorded spots have no jump from the authored level to the fixing.
+#+title: Task: Release the synthetic feeds after calibration
+#+description: The synthetic adapters serve no demand for an asset class until it is released, so every feed starts once, from its calibrated level, and the recorded spots have no jump.
 #+type: task
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The recorded spot series of every fixing-sourced feed is continuous from its first tick. Provisioning no longer starts the synthetic feeds. The official adapters load the public rates; when a provider's backfill finishes, the synthetic service runs an applied calibration of the feeds that read it, which sets each level and stores each GJR-GARCH input and proposed fit. A person reviews the fits and then starts the feeds, which start from the calibrated level.
+The recorded spot series of every fixing-sourced feed is continuous from its first tick. A seeded system route no longer starts a feed the moment its adapter is accepted: each asset class carries a release state, and the synthetic adapters of a class that is not released do not announce, so no demand reaches them. Releasing a class is an explicit act, recorded with who and when: an operator's "Start feeds" on the Calibration screen, or the release step a provisioning profile orders. A feed of a released class starts from the level its last calibration stored.
 
 * Status
 
@@ -35,10 +35,10 @@ The recorded spot series of every fixing-sourced feed is continuous from its fir
 
 * Acceptance
 
-- On a fresh provisioning, no synthetic feed publishes a tick before a person starts it.
-- When an official backfill finishes, an applied calibration runs once for the feeds whose items it serves, under system.calibration, and a second backfill of the same data changes nothing.
-- A feed started after that calibration records a start from its fixing, and its first stored spot is within the feed's spread of that fixing.
-- The calibration workflow note and the provisioning documentation state the order: load the public rates, calibrate, review, start.
+- On a fresh installation, no synthetic feed publishes a tick before its class is released.
+- Releasing a class starts its demanded feeds, and each fixing-sourced feed records a start from its fixing whose first stored spot is within the feed's spread of that fixing.
+- The release is recorded with who released the class and when, and the Calibration screen shows each class's release state.
+- The calibration workflow note and the provisioning documentation state the order: load the public rates, calibrate, approve, release.
 
 * Plan
 

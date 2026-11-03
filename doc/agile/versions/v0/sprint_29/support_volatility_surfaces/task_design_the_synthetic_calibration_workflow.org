@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 5398F1B5-F8C3-4D47-A48A-84D483FC5BE1
+:END:
+#+title: Task: Design the synthetic calibration workflow
+#+description: State in the story how provisioning loads the public rates, calibrates, approves within policy and releases the feeds, and name the tasks that build it.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/design-the-synthetic-calibration-workflow
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story states, with a flow diagram, the order a fresh installation follows: publish the system data, load the public rates, calibrate the feeds, approve each fit the class policy allows, tell the reviewer of the exceptions, and release the feeds. It records the decisions behind that order and names one task per piece.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The story's Decisions record the workflow, the approval by policy, the release gate and why there is no apply workflow.
+- A flow diagram shows the provisioning run, the calibration workflow and the release.
+- Each piece is a task in the story's table, in the order it is built.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story's Decisions record the design in four entries: calibration runs as a
+workflow after the public rates are loaded; a fit within the class policy's
+rules is approved by the policy; one review verb serves a person and the policy,
+with no apply workflow; and the synthetic feeds start only when their class is
+released. A flow diagram beside the story shows the provisioning runs, the
+calibration workflow and the release.
+
+The design is built by six tasks, in this order: approve a fit within the class
+policy's rules; load the public rates as a workflow step; run the synthetic
+calibration workflow; release the synthetic feeds after calibration (the earlier
+task to start the feeds after calibration, rewritten); calibrate in the
+provisioning system run; and recalibrate on a schedule.
+
+The evidence is the provisioning run of 2026-11-03 (feeds started at 16:09:57,
+IMF fixings stored at 16:10:03) and a preview of the FX class on the same day (13
+of 24 proposed fits pass the proposed rules).

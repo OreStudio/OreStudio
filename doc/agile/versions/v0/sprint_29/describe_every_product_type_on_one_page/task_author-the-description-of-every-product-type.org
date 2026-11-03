@@ -8,7 +8,7 @@
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
 #+branch: feature/author-the-description-of-every-product-type
-#+pr:
+#+pr: 4404
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4404][#4404]] | [trading] Describe every product type and name its source |
 
 * Review
 

@@ -34,6 +34,7 @@
 #include <array>
 #include <cstdint>
 #include <exception>
+#include <stdexcept>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -192,6 +193,14 @@ public:
             response.result.outcome = ores::utility::domain::outcome::ok;
             BOOST_LOG_SEV(blotter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
+        } catch (const std::invalid_argument& e) {
+            /*
+             * A key the service did not write, or an order it cannot sort by, is
+             * the caller's mistake and not the store's: it is answered as a bad
+             * request rather than as a fault.
+             */
+            BOOST_LOG_SEV(blotter_handler_lg(), warn) << msg.subject << ": " << e.what();
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(blotter_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_blotter_page_response failure;

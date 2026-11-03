@@ -269,3 +269,88 @@ TEST_CASE("a_blotter_page_starts_after_the_key_it_is_given", "[blotter][page]") 
         CHECK(row.id != first[1].id);
     }
 }
+
+TEST_CASE("a_blotter_rail_honours_a_list_of_values_in_its_filter", "[blotter][rail]") {
+    fixture f;
+    f.book(3, f.root_book_id);
+    f.book(2, f.child_book_id);
+
+    /*
+     * A list filter is the one the screen uses when a person selects more than
+     * one node, and it reaches the store as an array literal: an element that
+     * kept its quotes would match nothing, and the rail would answer zero rows
+     * without saying anything was wrong.
+     */
+    messaging::trade_summaries_filter filter;
+    filter.book_id_one_of = std::vector<boost::uuids::uuid>{f.root_book_id, f.child_book_id};
+
+    repository::trade_summary_repository summaries;
+    CHECK(summaries.count_blotter_rail(f.ctx, "book", filter).size() == 2);
+    CHECK(count_of(summaries.count_blotter_rail(f.ctx, "portfolio", filter),
+                   boost::uuids::to_string(f.root_portfolio_id)) == 5);
+}
+
+TEST_CASE("a_blotter_rail_honours_a_search", "[blotter][rail]") {
+    fixture f;
+    f.book(2, f.root_book_id);
+
+    repository::trade_summary_repository summaries;
+    const auto all = summaries.count_blotter_rail(f.ctx, "book", std::nullopt);
+    REQUIRE(count_of(all, boost::uuids::to_string(f.root_book_id)) == 2);
+
+    const auto rows = summaries.read_blotter_page(f.ctx, 1, {}, std::string{}, std::nullopt);
+    REQUIRE(rows.size() == 1);
+    const auto id = boost::uuids::to_string(rows.front().id);
+
+    messaging::trade_summaries_filter filter;
+    filter.search = id;
+
+    const auto found = summaries.count_blotter_rail(f.ctx, "book", filter);
+    CHECK(count_of(found, boost::uuids::to_string(f.root_book_id)) == 1);
+}
+
+TEST_CASE("a_blotter_page_and_its_rail_state_the_same_rows", "[blotter][page]") {
+    fixture f;
+    f.book(3, f.root_book_id);
+    f.book(2, f.child_book_id);
+
+    /*
+     * The hazard the model names: the page reads through the generated filter
+     * and the rail through its own rendering, so a field the two disagree about
+     * makes the rail count rows the page does not show. The two are measured
+     * against each other here, on the filter the screen uses for a node.
+     */
+    messaging::trade_summaries_filter filter;
+    filter.book_id = f.child_book_id;
+
+    repository::trade_summary_repository summaries;
+    const auto rows = summaries.read_blotter_page(f.ctx, 100, {}, std::string{}, filter);
+    const auto counts = summaries.count_blotter_rail(f.ctx, "book", filter);
+
+    CHECK(rows.size() == 2);
+    CHECK(count_of(counts, boost::uuids::to_string(f.child_book_id)) == rows.size());
+}
+
+TEST_CASE("every_order_a_page_accepts_states_a_key", "[blotter][page]") {
+    fixture f;
+    f.book(2, f.root_book_id);
+
+    repository::trade_summary_repository summaries;
+    const auto rows = summaries.read_blotter_page(f.ctx, 1, {}, std::string{}, std::nullopt);
+    REQUIRE(rows.size() == 1);
+
+    /*
+     * The page accepts the fields the summary states it can sort by, and the key
+     * states the value of the field it was asked for. A field one list knows and
+     * the other does not would pass the order check and fail when the key is
+     * built, so the two are exercised together here.
+     */
+    for (const std::string field :
+         {"row_kind", "instrument_type", "status", "authorisation_status", "trade_date"}) {
+        CHECK_FALSE(repository::trade_summary_repository::blotter_page_key(rows.front(), field)
+                        .empty());
+    }
+    CHECK_THROWS_AS(
+        repository::trade_summary_repository::blotter_page_key(rows.front(), "counterparty_id"),
+        std::invalid_argument);
+}

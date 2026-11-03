@@ -472,14 +472,29 @@ rendered_filter render_trade_summary_filter(
         out.sql += out.sql.empty() ? numbered : " and " + numbered;
         out.params.push_back(std::move(value));
     };
-    const auto quoted = [](const std::string& v) { return std::string("'") + v + "'"; };
-    const auto text_array = [&quoted](const auto& values) {
+    /*
+     * An array literal quotes an element with double quotes, and only with
+     * double quotes: a single-quoted element keeps its apostrophes and matches
+     * nothing. A backslash and a double quote inside the element are escaped,
+     * because both end the element otherwise.
+     */
+    const auto element = [](const std::string& v) {
+        std::string out = "\"";
+        for (const char c : v) {
+            if (c == '\\' || c == '"')
+                out += '\\';
+            out += c;
+        }
+        out += '"';
+        return out;
+    };
+    const auto text_array = [&element](const auto& values) {
         std::string literal = "{";
         bool first = true;
         for (const auto& v : values) {
             if (!first)
                 literal += ",";
-            literal += quoted(v);
+            literal += element(v);
             first = false;
         }
         literal += "}";
@@ -622,7 +637,7 @@ std::vector<std::pair<std::string, std::uint64_t>> trade_summary_repository::cou
               "  select b.id as book_id, b.parent_portfolio_id as portfolio_id"
               "  from ores_refdata_books_tbl b"
               "  where b.valid_to = ores_utility_infinity_timestamp_fn()"
-              "  union all"
+              "  union"
               "  select a.book_id, p.parent_portfolio_id from ancestor a"
               "  join ores_refdata_portfolios_tbl p on p.id = a.portfolio_id"
               "   and p.valid_to = ores_utility_infinity_timestamp_fn()"

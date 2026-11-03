@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: fix/accept-whole-numbers-as-doubles
-#+pr:
+#+pr: 4424
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4424][#4424]] | [utility] Read a whole number packed as an integer as a double |
 
 * Review
 

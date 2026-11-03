@@ -3176,6 +3176,43 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.fx_vol_surface_blueprints.list': {
+        asOf: true,
+        filter: [
+            'base_currency_code',
+            'quote_currency_code',
+            'id_one_of',
+            'base_currency_code_one_of',
+            'quote_currency_code_one_of',
+            'search',
+        ],
+        rows: ['blueprints'],
+    },
+    'refdata.v1.fx_vol_surface_blueprints_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.fx_vol_surface_pillar_sources.list': {
+        asOf: true,
+        filter: ['pillar_id', 'id_one_of', 'pillar_id_one_of'],
+        rows: ['pillar_sources'],
+    },
+    'refdata.v1.fx_vol_surface_pillar_sources_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.fx_vol_surface_pillars.list': {
+        asOf: true,
+        filter: ['blueprint_id', 'id_one_of', 'blueprint_id_one_of'],
+        rows: ['pillars'],
+    },
+    'refdata.v1.fx_vol_surface_pillars_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.fx_volatility_configs.list': {
         asOf: true,
         filter: ['id_one_of'],

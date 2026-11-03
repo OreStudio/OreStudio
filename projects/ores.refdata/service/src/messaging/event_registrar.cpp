@@ -168,6 +168,9 @@
 #include "ores.refdata.service/messaging/fra_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/future_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/fx_option_convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/fx_vol_surface_blueprint_event_registrar.hpp"
+#include "ores.refdata.service/messaging/fx_vol_surface_pillar_event_registrar.hpp"
+#include "ores.refdata.service/messaging/fx_vol_surface_pillar_source_event_registrar.hpp"
 #include "ores.refdata.service/messaging/fx_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/fx_volatility_smile_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ibor_index_convention_event_registrar.hpp"
@@ -182,9 +185,6 @@
 #include "ores.refdata.service/messaging/intraday_power_load_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ir_curve_bootstrap_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ir_curve_bootstrap_pillar_event_registrar.hpp"
-#include "ores.refdata.service/messaging/fx_vol_surface_blueprint_event_registrar.hpp"
-#include "ores.refdata.service/messaging/fx_vol_surface_pillar_event_registrar.hpp"
-#include "ores.refdata.service/messaging/fx_vol_surface_pillar_source_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ledger_feed_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/leg_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/monetary_nature_event_registrar.hpp"
@@ -484,7 +484,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_ir_curve_bootstrap_pillar_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_fx_vol_surface_blueprint_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_fx_vol_surface_pillar_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_fx_vol_surface_pillar_source_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_fx_vol_surface_pillar_source_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_netting_agreement_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_netting_set_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_netting_set_identifier_event_mapping(event_source, event_bus, nats));

@@ -26,11 +26,11 @@ A reader sees how every number of a run came to be. The This run tab states the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -41,9 +41,12 @@ A reader sees how every number of a run came to be. The This run tab states the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Put the variance calibration where a person already looks: a Variance column on
+the class's calibration list, a Variance tab on each feed's calibration page with
+the calibration the feed runs beside the run's new fit and the review, and on the
+feed screen a This run tab, in plain text, in place of the notice over every tab.
+Document the flow, with flowcharts, in a knowledge note the GARCH and sources
+notes link to.
 
 * Measurements
 
@@ -85,3 +88,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Calibration screen shows each feed's variance in a column: the calibration it
+runs, its state and persistence, and a mark when the run fitted a new one to
+review. A feed's calibration page has a Variance tab with two cards: the
+calibration the feed runs, read as stored with its input, and this run's fit, with
+its shape, persistence, starting ratio, starts and whether they agreed, returns,
+window, item, provider, orientation and ids, and approve and reject with a
+required reason. A preview reports a stored fit as stored, with its id, so the
+screen reviews it; a refused review is a conflict with the service's reason. The
+class list shows a start level in the pair's market convention, an inverted
+fixing beside it. On the feed screen, the This run tab replaces the notice over
+every tab and states the level first, then the fixing, the window and the daily
+variance with its calibration and version; the Variance tab shows the shape the
+running feed carries and opens its calibration.
+
+The flow is documented in
+[[id:5B561453-D754-466E-9234-5360AC611F02][Calibrating a synthetic feed: from fixings to a reviewed run]],
+with four PlantUML diagrams (the run, the states, an approval, the audit chain);
+the GARCH note and the calibration sources note link to it.
+
+Measured on the environment: the preview reports a current calibration for all 51
+feeds; the audit passes 9 of 9.
+The web suite passes 2445 tests and more, the BFF 1256 and more, the synthetic
+suites and the doc checks pass.
+

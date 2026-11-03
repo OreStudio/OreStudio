@@ -1,0 +1,326 @@
+:PROPERTIES:
+:ID: 0C87306E-9668-428B-93FD-D65FD9946DA9
+:END:
+#+title: Theta ladder Bump and Reprice
+#+description: The value change from moving the clock rather than a market, produced by the theta period the sensitivity configuration states.
+#+type: report
+#+level: cross
+#+filetags: :report:market-risk:greeks:sensitivity:eod:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+report_code: theta_ladder_bump_and_reprice
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Theta ladder Bump and Reprice. It answers how the value of a book changes when
+one day passes and nothing else moves, so a reader separates the value that
+time takes from the value a market move takes. The market risk function reads
+it when it checks a valuation it will carry into the next day, and the trading
+desk reads it when it holds an option position across a close. It runs at the
+close on the end of day cycle, and it leaves the engine's own output archive
+with =sensitivity.csv= and =scenario.csv= in it.
+
+* Purpose
+
+It answers what one period of time costs the book. Every other figure on a
+sensitivity run moves a market, and this one moves the clock. Theta period
+states the length of the period, and the engine values the book at the end of
+it with every market held still. The decision it feeds is whether a position
+pays for the time it takes, and how a book that holds options across a weekend
+will read on the next business day. A position that earns less in a day than
+its theta costs does not survive a quiet market, and this ladder is the page
+that says so.
+
+ThetaPeriod moves the clock rather than a market. The factor key the engine
+writes is =Theta//0/1D=, so a reader sees at once that the row is not a curve
+and not a surface. The period is the bucket list of the theta statement. Theta
+is therefore a ladder of its own, and it is not a rates ladder. A rates ladder
+bumps a curve at each tenor and reads the same =Delta= column. This ladder
+changes the valuation date and reads the value change that follows.
+
+* Audience
+
+The market risk function reads the ladder to check the value it carries into
+the next day. The trading desk reads it to decide whether a position pays for
+the time it takes.
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                |
+|--------------+------------------------------------------------------------------------------|
+| market-risk  | The value one period of time takes from the book, with no market move in it. |
+| trading-desk | What a position held across a close costs or earns in a day.                 |
+
+* Frequency
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value                  |
+|-----------+------------------------|
+| Cycle     | end of day             |
+| Frequency | scheduled, end of day  |
+| Batch     | none                   |
+| Owner     | market-risk            |
+
+The cycle is end of day. A ladder is read as the risk statement of record and
+compared across days. A live ladder would be priced against a body that is not
+reproducible, so the same row on two runs would not be the same figure. A
+theta figure also depends on the date it is taken from, so a run at the close
+is the one that a reader can compare with the run of the day before.
+
+The family seeds no intraday variant of any ladder. A live ladder would need a
+definition whose cut selection is =LIVE=, a run settings row whose market data
+type is =live=, and the same sensitivity configuration. The store seeds none
+of the three for this ladder.
+
+* Inputs
+
+- Trades selected by scope. The scope is the book or the portfolio that the
+  definition states, and the run prices the trades the gather step selects.
+- Market data for the valuation date. The =risk_report_config= row states the
+  market data type. This ladder is end of day, so the type is =eod= and the
+  valuation date is the weekday before the run date. Holiday calendars are not
+  consulted. The theta figure is the value change from that date forward by
+  the period the configuration states.
+- The six configuration documents the definition binds, one for each
+  configuration type. The types are =conventions=, =curve_configuration=,
+  =todays_market=, =pricing_engines=, =risk_report_config= and
+  =engine_settings=. A definition that omits one of the first five cannot run,
+  because ORE reads all of them before it prices.
+- The sensitivity configuration document, =sensitivity.xml=, which states
+  =ThetaPeriod=.
+
+* Outputs
+
+The run produces the engine's own output archive. The archive holds
+=sensitivity.csv= with a row for the theta factor and the =Delta= and =Gamma=
+columns, and =scenario.csv= with the scenario value behind it. The run records
+where the archive landed against the run instance.
+
+The tables that would carry the rows a reader queries are designed on
+[[file:../architecture/report_post_processing.org][Report post-processing]]
+and are not built. So a reader opens the CSV files in the archive, and the
+columns in the next section are the columns of those files.
+
+* Measures
+
+The values below are the ones the files carry. The definitions of the measures
+the catalogue names are on [[file:../domain/risk_reporting.org][Risk reporting]]
+and are not repeated here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure      | Meaning                                                              |
+|--------------+----------------------------------------------------------------------|
+| Base NPV     | Present value of the trade in the run's base currency, before the period. |
+| Delta        | The value change for one period of time. It is money per period, and the period is already inside it. |
+| Gamma        | The second order figure for the period, written when =ComputeGamma= is on. |
+| Theta        | The =Delta= column read on the =Theta//0/1D= factor, which is the value change for the stated period. |
+| Scenario NPV | The value of the trade one period later, as =scenario.csv= states it. |
+| Difference   | The later value less the base value, on the same row of =scenario.csv=. |
+
+* Columns and sections
+
+A reader places a theta figure by the factor key and by the period. The bucket
+column is the period, and it appears in the factor key itself.
+
+#+ATTR_HTML: :class hug-leading
+| Column          | File            | Role               | What it holds                                        |
+|-----------------+-----------------+--------------------+------------------------------------------------------|
+| TradeId         | sensitivity.csv | key                | The trade the row belongs to.                        |
+| IsPar           | sensitivity.csv | qualifier          | Whether the row states a par rate figure.            |
+| Factor_1        | sensitivity.csv | qualifier, bucket  | The risk factor key. On a theta row it is =Theta//0/1D=. |
+| ShiftSize_1     | sensitivity.csv | qualifier, bucket  | The shift or period applied to the first factor.     |
+| Factor_2        | sensitivity.csv | qualifier, bucket  | The second factor of a pair. Empty on a theta row.   |
+| ShiftSize_2     | sensitivity.csv | qualifier, bucket  | The shift applied to the second factor.              |
+| Currency        | sensitivity.csv | qualifier, bucket  | The currency of the figures on the row.              |
+| Base NPV        | sensitivity.csv | measure            | The value before the period.                         |
+| Delta           | sensitivity.csv | measure            | The first order figure, which is theta on the theta factor. |
+| Gamma           | sensitivity.csv | measure            | The second order figure.                             |
+| Currency(Trade) | sensitivity.csv | qualifier          | The currency of the trade.                           |
+| Base NPV(Trade) | sensitivity.csv | measure            | The value before the period, in the trade currency.  |
+| Delta(Trade)    | sensitivity.csv | measure            | The first order figure, in the trade currency.       |
+| Gamma(Trade)    | sensitivity.csv | measure            | The second order figure, in the trade currency.      |
+| Scenario        | sensitivity.csv | qualifier          | The scenario the row belongs to.                     |
+| TradeId         | scenario.csv    | key                | The trade the row belongs to.                        |
+| Factor          | scenario.csv    | key, bucket        | The factor that was shifted.                         |
+| Up/Down         | scenario.csv    | qualifier, bucket  | Which side of the shift the row states.              |
+| Base NPV        | scenario.csv    | measure            | The value before the period.                         |
+| ShiftSize_1     | scenario.csv    | qualifier, bucket  | The shift or period the row applies.                 |
+| ShiftSize_2     | scenario.csv    | qualifier, bucket  | The shift applied to the second factor.              |
+| Scenario NPV    | scenario.csv    | measure            | The value one period later.                          |
+| Difference      | scenario.csv    | measure            | The later value less the base value.                 |
+| Base Currency   | scenario.csv    | qualifier          | The currency the figures are expressed in.           |
+
+The theta factor key is written =Theta//0/1D=. A reader selects the rows whose
+=Factor_1= is that key and drops every other row, because the curve, the spot
+and the volatility rows belong to the other ladders of the family. The bucket
+is the period, and there is one of it in a run.
+
+* ORE configuration
+
+A definition of this report binds the =sensitivity= analytic. The analytic
+names the sensitivity configuration document, and that document is the one
+whose root is =SensitivityAnalysis=. ORE validates it against
+=external/ore/xsd/sensitivity.xsd=. The analytic element in the run document
+states the parameters below.
+
+#+begin_src xml
+<Analytic type="sensitivity">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="marketConfigFile">simulation.xml</Parameter>
+  <Parameter name="sensitivityConfigFile">sensitivity.xml</Parameter>
+  <Parameter name="recalibrateModels">Y</Parameter>
+  <Parameter name="parSensitivity">Y</Parameter>
+  <Parameter name="outputSensitivityThreshold">0.000001</Parameter>
+</Analytic>
+#+end_src
+
+The =SensitivityAnalysis= document carries one block for each group of risk
+factors. The groups are the discount curves, the index curves, the yield
+curves, the FX spots, the FX volatilities, the swaption volatilities, the cap
+and floor volatilities, the CDS volatilities, the default and credit curves,
+the equity spots and volatilities, the two inflation curve families, the two
+inflation cap and floor families, the dividend yields, the base correlations,
+the security spreads, the commodity curves and volatilities, the intraday
+power curves, the correlations and the bond future volatilities. It also
+carries four switches that are not factors, and this page uses =ThetaPeriod=,
+which is one of them.
+
+Every factor block states four things. =ShiftType= is =Relative=, =Absolute=
+or =EqualTo=. =ShiftSize= is a real, with an optional =key= for an alternative
+size. =ShiftScheme= is =Forward=, =Backward= or =Central=. The bucket list is
+one of =ShiftTenors=, =ShiftExpiries=, =ShiftStrikes=, =ShiftLossLevels= or
+=ShiftTerms=. =ShiftType= and =ShiftScheme= are enums in
+=external/ore/xsd/ore_types.xsd=.
+
+The fragment below is the FX volatility block of the shipped
+=external/ore/examples/MarketRisk/Input/sensitivity.xml=, trimmed to the first
+currency pair. It is a factor block, and the theta statement sits beside the
+factor blocks rather than inside one.
+
+#+begin_src xml
+<FxVolatilities>
+  <FxVolatility ccypair="USDEUR">
+    <ShiftType>Relative</ShiftType>
+    <ShiftSize>0.01</ShiftSize>
+    <ShiftScheme>Forward</ShiftScheme>
+    <ShiftExpiries>1Y,2Y,3Y,5Y</ShiftExpiries>
+    <ShiftStrikes/>
+  </FxVolatility>
+</FxVolatilities>
+#+end_src
+
+The theta statement in the same file is one line. The period it names is the
+bucket list of the theta statement, and the engine puts the period into the
+factor key.
+
+#+begin_src xml
+<ThetaPeriod>1D</ThetaPeriod>
+#+end_src
+
+The engine writes =sensitivity.csv= with the columns TradeId, IsPar, Factor_1,
+ShiftSize_1, Factor_2, ShiftSize_2, Currency, Base NPV, Delta, Gamma,
+Currency(Trade), Base NPV(Trade), Delta(Trade), Gamma(Trade) and Scenario. It
+writes =scenario.csv= with the columns TradeId, Factor, Up/Down, Base NPV,
+ShiftSize_1, ShiftSize_2, Scenario NPV, Difference and Base Currency. The
+factor key of the theta row is =Theta//0/1D=, so the period is readable on the
+row itself and a reader does not need the document to know it.
+
+The bump is a setting of the configuration and not the identity of the report.
+Two reports over one book that differ only in shift size differ only in the
+document they bind. A theta report configured for one day and a theta report
+configured for one week differ in =ThetaPeriod= and in nothing else. The store
+states no period for this ladder and no shift size for any ladder.
+
+* Parameters
+
+A definition of this report states the rows below. Where the store states no
+value, the column says so. A parameter is declared with its domain on
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]],
+and a configuration binds it on
+[[proj:projects/ores.reporting/modeling/ores.reporting.configuration_parameter.org][configuration parameter]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                       | Domain                     | Seeded value | Meaning                                                    |
+|---------------------------------+----------------------------+--------------+------------------------------------------------------------|
+| cut_kind_code                   | a kind of cut               | EOD          | The kind of cut the run mints when it starts.               |
+| scope                           | book or portfolio           | none stated  | The trade set the run reads.                               |
+| market_data_type                | live, eod or date           | eod          | The market data the run reads, and so the valuation date.  |
+| sensitivity.sensitivityConfigFile | a file in the file library | sensitivity.xml | The document that states the theta period.              |
+| sensitivity.recalibrateModels   | Y or N                      | Y            | Whether models are recalibrated before the period.          |
+| sensitivity.parSensitivity      | Y or N                      | Y            | Whether the figures are also written as par rate values.    |
+| sensitivity.outputSensitivityThreshold | a real                | 0.000001     | The size below which a figure is not written.              |
+| ThetaPeriod                     | a period                    | 1D           | The length of the period the run moves the clock by.         |
+| ComputeGamma                    | a switch                    | none stated  | Whether the engine writes the second order column.           |
+
+* A worked read
+
+1. Open =sensitivity.csv= from the run's output archive. Open
+   =scenario.csv= beside it, because it holds the values behind the columns.
+2. Keep the rows whose =Factor_1= is =Theta//0/1D=. Drop the rows for the
+   curves, the spots and the volatilities, which the other ladders read.
+3. Confirm that =Factor_2= is empty. A theta row names one factor, the clock.
+4. Read the period from the key, and check it against =ThetaPeriod= in the
+   configuration. A figure for one day and a figure for one week are not
+   comparable.
+5. Read the =Delta= column. That figure is theta, and it is the value change
+   for the stated period with every market held still. A negative figure says
+   the book loses that value as the time passes.
+6. Read the =Gamma= column if the configuration switches it on. It states how
+   the theta figure itself changes over the period.
+7. For one row you doubt, open =scenario.csv= on the same =TradeId= and the
+   same factor. Read =Scenario NPV= and =Difference=. The difference is the
+   value change for the period that row states.
+8. Check the valuation date of the two runs before you compare them. The theta
+   of a book that holds an option changes as the option approaches its expiry,
+   so a run on the day before an expiry reads differently from a run a week
+   earlier.
+9. Do not add a theta figure to a rates figure. The two ladders read the same
+   =Delta= column, and they describe different moves. One bumps a curve and
+   the other moves the clock.
+
+* What is not built
+
+- No mapper reads or writes a =SensitivityAnalysis= document. The document is
+  a name in a lookup and a row in the file library, not a modelled entity.
+- The run package carries only the four Setup documents, conventions, curve
+  configuration, today's market and pricing engines. An analytic document that
+  no owner exports never reaches the engine.
+- No volatility market data is seeded. The ACME dataset holds 420 seeded
+  quotes and all of them are =IR_SWAP/RATE/...=. so a volatility factor has nothing to shift, and no volatility
+  sensitivity can be computed until the store holds that data. A theta run over an option book needs a volatility, so this
+  ladder cannot be priced in the seeded environment.
+- No shift size is stated anywhere in the store, and no theta period is stated
+  for this ladder either. The document that would set it has no stored value
+  to read.
+- No stored shape holds a bucketed ladder. The bucket of this page is the
+  period, and no table holds a period as a key.
+- The result store is not built, so a reader opens the CSV files and no table
+  answers a query over them.
+
+* Test coverage
+
+The report has no smoke test of its own. The smoke test that proves the
+machinery without gathering anything is
+[[file:./report_sample_bundle_smoke_test.org][Sample bundle smoke test]].
+
+A test run of this ladder executes the whole pipeline from the gather step and
+records the run. It stops before the engine has a volatility to price, and the
+run package carries no analytic document either. So the report is exercised by
+the full-pipeline proof and not by a run that writes rows.
+
+* Related
+
+- [[file:./reports.org][Reports]], the inventory this page is listed in.
+- [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
+- [[file:../external/ore_output_formats.org][ORE output formats]], the columns of =sensitivity.csv= and =scenario.csv=.
+- [[file:./report_delta_ladder.org][Delta ladder Bump and Reprice]], the first order column read on a market factor.
+- [[file:./report_gamma_ladder.org][Gamma ladder Bump and Reprice]], the second order column on a market factor.
+- [[file:./report_rho_ladder.org][Rho ladder Bump and Reprice]], the rates ladder this page is not.
+- [[file:./report_cross_gamma_ladder.org][Cross-gamma ladder Bump and Reprice]], the rows that pair two factors of one risk class.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what the end of day cut holds.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
+- [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], the definition that states the cycle and the cut.
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine whose =sensitivity= analytic writes the two files.
+- [[https://www.opensourcerisk.org/][Open Source Risk]], the project home of the engine.

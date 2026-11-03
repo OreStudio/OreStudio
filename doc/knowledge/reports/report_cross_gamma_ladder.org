@@ -1,0 +1,345 @@
+:PROPERTIES:
+:ID: 2696A263-DDBF-4467-9CE3-9F951A653734
+:END:
+#+title: Cross-gamma ladder Bump and Reprice
+#+description: The curvature between two factors of the same risk class, read from the rows that name two factors and the scenario values behind them.
+#+type: report
+#+level: cross
+#+filetags: :report:market-risk:greeks:sensitivity:eod:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+report_code: cross_gamma_ladder_bump_and_reprice
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Cross-gamma ladder Bump and Reprice. It answers how the value of a book bends
+when two factors move together, so a reader sees the risk that two separate
+first order hedges leave behind. The market risk function reads it when it
+signs off a hedge set, and the trading desk reads it when it decides how much
+of two related positions to keep. It runs at the close on the end of day
+cycle, and it leaves the engine's own output archive with =sensitivity.csv=
+and =scenario.csv= in it.
+
+* Purpose
+
+It answers what the second order figure between two factors is. A first order
+figure states the value change for one bump of one factor. A second order
+figure states how that first order figure moves when a second factor moves.
+The decision it feeds is whether two first order hedges cover the book when
+the two markets move together, as rates of two currencies do. They do not
+cover it when the cross term is large, and this ladder is the page that says
+by how much.
+
+Cross gammas arrive in the rows that name two factors. A row with one factor
+states a figure for that factor alone. A row with both =Factor_1= and
+=Factor_2= populated states the figure for the pair, and this page reads those
+rows. The engine writes them into =sensitivity.csv= at engine version
+1.8.17.0. No =crossgamma.csv= is written at that version. The sensitivity
+configuration states a file name for cross gammas, and no writer reads it, so
+the paired rows in =sensitivity.csv= are the whole statement.
+
+* Audience
+
+The market risk function reads the ladder to test a hedge set against the case
+where two markets move together. The trading desk reads it to decide how much
+of each of two related positions to keep.
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                |
+|--------------+------------------------------------------------------------------------------|
+| market-risk  | Where a hedge set fails when two factors of one risk class move together.    |
+| trading-desk | How much of each of two related positions the book can keep.                 |
+
+* Frequency
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value                  |
+|-----------+------------------------|
+| Cycle     | end of day             |
+| Frequency | scheduled, end of day  |
+| Batch     | none                   |
+| Owner     | market-risk            |
+
+The cycle is end of day. A ladder is read as the risk statement of record and
+compared across days. A live ladder would be priced against a body that is not
+reproducible, so the same row on two runs would not be the same figure.
+
+The family seeds no intraday variant of any ladder. A live ladder would need a
+definition whose cut selection is =LIVE=, a run settings row whose market data
+type is =live=, and the same sensitivity configuration. The store seeds none
+of the three for this ladder.
+
+* Inputs
+
+- Trades selected by scope. The scope is the book or the portfolio that the
+  definition states, and the run prices the trades the gather step selects.
+- Market data for the valuation date. The =risk_report_config= row states the
+  market data type. This ladder is end of day, so the type is =eod= and the
+  valuation date is the weekday before the run date. Holiday calendars are not
+  consulted.
+- The six configuration documents the definition binds, one for each
+  configuration type. The types are =conventions=, =curve_configuration=,
+  =todays_market=, =pricing_engines=, =risk_report_config= and
+  =engine_settings=. A definition that omits one of the first five cannot run,
+  because ORE reads all of them before it prices.
+- The sensitivity configuration document, =sensitivity.xml=, which states the
+  shift, the pairs the engine writes and the =ComputeGamma= switch.
+
+* Outputs
+
+The run produces the engine's own output archive. The archive holds
+=sensitivity.csv= with the paired rows and the =Delta= and =Gamma= columns,
+and =scenario.csv= with the scenario value behind each of them. The run
+records where the archive landed against the run instance.
+
+The tables that would carry the rows a reader queries are designed on
+[[file:../architecture/report_post_processing.org][Report post-processing]]
+and are not built. So a reader opens the CSV files in the archive, and the
+columns in the next section are the columns of those files.
+
+* Measures
+
+The values below are the ones the files carry. The definitions of the measures
+the catalogue names are on [[file:../domain/risk_reporting.org][Risk reporting]]
+and are not repeated here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure      | Meaning                                                              |
+|--------------+----------------------------------------------------------------------|
+| Base NPV     | Present value of the trade in the run's base currency, before the shift. |
+| Delta        | The value change for one bump of one factor. It is money per shift, and the shift size is already inside it. |
+| Gamma        | The second order figure for one factor, written when =ComputeGamma= is on. |
+| Cross gamma  | The second order figure for a pair, on a row that names both factors.  |
+| Scenario NPV | The value of the trade under the shifted market, as =scenario.csv= states it. |
+| Difference   | The scenario value less the base value, on the same row of =scenario.csv=. |
+
+* Columns and sections
+
+A reader places a cross gamma by the two factors the row names and by the two
+shift sizes. The bucket columns are the ones that break each factor key into
+the parts a desk thinks in.
+
+#+ATTR_HTML: :class hug-leading
+| Column          | File            | Role               | What it holds                                        |
+|-----------------+-----------------+--------------------+------------------------------------------------------|
+| TradeId         | sensitivity.csv | key                | The trade the row belongs to.                        |
+| IsPar           | sensitivity.csv | qualifier          | Whether the row states a par rate figure.            |
+| Factor_1        | sensitivity.csv | qualifier, bucket  | The first factor key. Populated on a paired row.     |
+| ShiftSize_1     | sensitivity.csv | qualifier, bucket  | The shift applied to the first factor.               |
+| Factor_2        | sensitivity.csv | qualifier, bucket  | The second factor key. Populated on a paired row.    |
+| ShiftSize_2     | sensitivity.csv | qualifier, bucket  | The shift applied to the second factor.              |
+| Currency        | sensitivity.csv | qualifier, bucket  | The currency of the figures on the row.              |
+| Base NPV        | sensitivity.csv | measure            | The value before the shift.                          |
+| Delta           | sensitivity.csv | measure            | The first order figure for the row.                  |
+| Gamma           | sensitivity.csv | measure            | The second order figure for the row.                 |
+| Currency(Trade) | sensitivity.csv | qualifier          | The currency of the trade.                           |
+| Base NPV(Trade) | sensitivity.csv | measure            | The value before the shift, in the trade currency.   |
+| Delta(Trade)    | sensitivity.csv | measure            | The first order figure, in the trade currency.       |
+| Gamma(Trade)    | sensitivity.csv | measure            | The second order figure, in the trade currency.      |
+| Scenario        | sensitivity.csv | qualifier          | The scenario the row belongs to.                     |
+| TradeId         | scenario.csv    | key                | The trade the row belongs to.                        |
+| Factor          | scenario.csv    | key, bucket        | The factor that was shifted.                         |
+| Up/Down         | scenario.csv    | qualifier, bucket  | Which side of the shift the row states.              |
+| Base NPV        | scenario.csv    | measure            | The value before the shift.                          |
+| ShiftSize_1     | scenario.csv    | qualifier, bucket  | The shift applied to the first factor.               |
+| ShiftSize_2     | scenario.csv    | qualifier, bucket  | The shift applied to the second factor.              |
+| Scenario NPV    | scenario.csv    | measure            | The value under the shifted market.                  |
+| Difference      | scenario.csv    | measure            | The scenario value less the base value.              |
+| Base Currency   | scenario.csv    | qualifier          | The currency the figures are expressed in.           |
+
+The bucket columns of this page are the two factor keys. A rate factor key
+names the kind of curve and the curve. The shipped file writes them as
+=DiscountCurve/EUR= and =IndexCurve/EUR-EURIBOR-6M=, and the filter pairs are
+substrings of keys of that form. A reader groups the rows by the two curve
+names in the pair, and reads =Gamma= in each group.
+
+* ORE configuration
+
+A definition of this report binds the =sensitivity= analytic. The analytic
+names the sensitivity configuration document, and that document is the one
+whose root is =SensitivityAnalysis=. ORE validates it against
+=external/ore/xsd/sensitivity.xsd=. The analytic element in the run document
+states the parameters below.
+
+#+begin_src xml
+<Analytic type="sensitivity">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="marketConfigFile">simulation.xml</Parameter>
+  <Parameter name="sensitivityConfigFile">sensitivity.xml</Parameter>
+  <Parameter name="recalibrateModels">Y</Parameter>
+  <Parameter name="parSensitivity">Y</Parameter>
+  <Parameter name="outputSensitivityThreshold">0.000001</Parameter>
+</Analytic>
+#+end_src
+
+The =SensitivityAnalysis= document carries one block for each group of risk
+factors. The groups are the discount curves, the index curves, the yield
+curves, the FX spots, the FX volatilities, the swaption volatilities, the cap
+and floor volatilities, the CDS volatilities, the default and credit curves,
+the equity spots and volatilities, the two inflation curve families, the two
+inflation cap and floor families, the dividend yields, the base correlations,
+the security spreads, the commodity curves and volatilities, the intraday
+power curves, the correlations and the bond future volatilities. It also
+carries four switches that are not factors, and this page uses two of them,
+=ComputeGamma= and =CrossGammaFilter=.
+
+Every factor block states four things. =ShiftType= is =Relative=, =Absolute=
+or =EqualTo=. =ShiftSize= is a real, with an optional =key= for an alternative
+size. =ShiftScheme= is =Forward=, =Backward= or =Central=. The bucket list is
+one of =ShiftTenors=, =ShiftExpiries=, =ShiftStrikes=, =ShiftLossLevels= or
+=ShiftTerms=. =ShiftType= and =ShiftScheme= are enums in
+=external/ore/xsd/ore_types.xsd=.
+
+The fragment below is the EUR discount curve block of the shipped
+=external/ore/examples/MarketRisk/Input/sensitivity.xml=, trimmed to the four
+statements every factor block carries.
+
+#+begin_src xml
+<DiscountCurves>
+  <DiscountCurve ccy="EUR">
+    <ShiftType>Absolute</ShiftType>
+    <ShiftSize>0.0001</ShiftSize>
+    <ShiftSize key="IR_FD">0.001</ShiftSize>
+    <ShiftScheme>Forward</ShiftScheme>
+    <ShiftScheme key="IR_FD">Central</ShiftScheme>
+    <ShiftTenors>2W,1M,3M,6M,9M,1Y,2Y,3Y,4Y,5Y,7Y,10Y,15Y,20Y,25Y,30Y</ShiftTenors>
+  </DiscountCurve>
+</DiscountCurves>
+#+end_src
+
+The block shifts each tenor of the curve by one basis point absolute, on the
+forward scheme, with an override of 0.001 on the central scheme under the key
+=IR_FD=. The bucket list is the tenor list. The same file states the pairs
+that the filter keeps, and they are the pairs this ladder reads.
+
+#+begin_src xml
+<CrossGammaFilter>
+  <Pair>DiscountCurve/EUR,DiscountCurve/EUR</Pair>
+  <Pair>IndexCurve/EUR,IndexCurve/EUR</Pair>
+  <Pair>DiscountCurve/EUR,IndexCurve/EUR</Pair>
+</CrossGammaFilter>
+#+end_src
+
+A pair is a list of two substrings of factor keys. The first pair keeps the
+cross term of a discount curve against the same discount curve, the second
+keeps an index curve against itself, and the third joins a discount curve to
+an index curve. =ComputeGamma= is on in a configuration that produces this
+ladder, and the two switches together decide which rows the engine writes.
+
+The engine writes =sensitivity.csv= with the columns TradeId, IsPar, Factor_1,
+ShiftSize_1, Factor_2, ShiftSize_2, Currency, Base NPV, Delta, Gamma,
+Currency(Trade), Base NPV(Trade), Delta(Trade), Gamma(Trade) and Scenario. It
+writes =scenario.csv= with the columns TradeId, Factor, Up/Down, Base NPV,
+ShiftSize_1, ShiftSize_2, Scenario NPV, Difference and Base Currency. At engine
+version 1.8.17.0 no writer reads =sensitivity.crossGammaOutputFile=, so no
+=crossgamma.csv= appears in the archive. The evidence behind a paired row is
+=scenario.csv=. The scenario rows hold the base value, the shifted value and
+the difference for the factor the row names, so a reader can rebuild the
+figure from them.
+
+The bump is a setting of the configuration and not the identity of the report.
+Two reports over one book that differ only in shift size differ only in the
+document they bind. A 0.1 vol point bump means =ShiftSize= 0.1 on a surface
+stored in vol points, or =Absolute= 0.001 on a surface stored in decimals. The
+store seeds neither, and the store states no shift size at all today.
+
+* Parameters
+
+A definition of this report states the rows below. Where the store states no
+value, the column says so. A parameter is declared with its domain on
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]],
+and a configuration binds it on
+[[proj:projects/ores.reporting/modeling/ores.reporting.configuration_parameter.org][configuration parameter]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                       | Domain                     | Seeded value | Meaning                                                    |
+|---------------------------------+----------------------------+--------------+------------------------------------------------------------|
+| cut_kind_code                   | a kind of cut               | EOD          | The kind of cut the run mints when it starts.               |
+| scope                           | book or portfolio           | none stated  | The trade set the run reads.                               |
+| market_data_type                | live, eod or date           | eod          | The market data the run reads, and so the valuation date.  |
+| sensitivity.sensitivityConfigFile | a file in the file library | sensitivity.xml | The document that states the shifts and the pairs.      |
+| sensitivity.recalibrateModels   | Y or N                      | Y            | Whether models are recalibrated before the bump.            |
+| sensitivity.parSensitivity      | Y or N                      | Y            | Whether the figures are also written as par rate values.    |
+| sensitivity.outputSensitivityThreshold | a real                | 0.000001     | The size below which a figure is not written.              |
+| DiscountCurves.ShiftType        | Relative, Absolute, EqualTo | Absolute     | How the shift size is read against the curve.               |
+| DiscountCurves.ShiftSize        | a real                      | none stated  | The size of the bump.                                      |
+| DiscountCurves.ShiftScheme      | Forward, Backward, Central  | Forward      | Which side of the factor the bump is measured from.        |
+| DiscountCurves.ShiftTenors      | a list of periods           | sixteen tenors from 2W to 30Y | The tenors the bump lands on.              |
+| ComputeGamma                    | a switch                    | none stated  | Whether the engine writes the second order column.          |
+| CrossGammaFilter                | a list of pairs             | none stated  | Which pairs of factors the engine writes a cross term for.   |
+
+* A worked read
+
+1. Open =sensitivity.csv= from the run's output archive. Open
+   =scenario.csv= beside it, because it holds the values behind the columns.
+2. Keep the rows where =Factor_1= and =Factor_2= are both populated. A row
+   with one factor is a first order figure and belongs to another ladder.
+3. Read the two factor keys. This page reads the pairs of one risk class, as
+   the filter states them.
+4. Check the pair against the filter in the configuration. A pair the filter
+   does not name does not appear in the file.
+5. Read the tenor from the last part of each key, and group the rows by the
+   two curve names and by that tenor.
+6. Read the =Gamma= column in each group. That figure is the cross gamma. It
+   says how the first order figure of the second factor moves when the first
+   factor is bumped.
+7. Check =ShiftSize_1= and =ShiftSize_2=. A cross term is a figure for one
+   pair of shifts, and it is not comparable with a figure taken at another
+   pair.
+8. For one row you doubt, open =scenario.csv= on the same =TradeId=. Read
+   =Base NPV=, =Scenario NPV= and =Difference= for the factor the row names.
+   The difference is the value change for the shift that row states, and it is
+   the evidence behind the paired row.
+9. Compare two days only when the two runs bound the same sensitivity
+   configuration. A change of shift size, or a change of pair in the filter,
+   changes the rows the file carries.
+
+* What is not built
+
+- No mapper reads or writes a =SensitivityAnalysis= document. The document is
+  a name in a lookup and a row in the file library, not a modelled entity.
+- The run package carries only the four Setup documents, conventions, curve
+  configuration, today's market and pricing engines. An analytic document that
+  no owner exports never reaches the engine.
+- No volatility market data is seeded. The ACME dataset holds 420 seeded
+  quotes and all of them are =IR_SWAP/RATE/...=. so a volatility factor has nothing to shift, and no volatility
+  sensitivity can be computed until the store holds that data. The rate pairs of this ladder need no volatility, but the run
+  that would write them does not reach the engine either.
+- No shift size is stated anywhere in the store, so the document that would
+  set this ladder has no stored value to read.
+- No stored shape holds a pair of factors as a key. The paired row exists in
+  the CSV file and in no table.
+- No =crossgamma.csv= is written at engine version 1.8.17.0. A reader who
+  looks for that file finds nothing, and the paired rows in =sensitivity.csv=
+  are the statement.
+- The result store is not built, so a reader opens the CSV files and no table
+  answers a query over them.
+
+* Test coverage
+
+The report has no smoke test of its own. The smoke test that proves the
+machinery without gathering anything is
+[[file:./report_sample_bundle_smoke_test.org][Sample bundle smoke test]].
+
+A test run of this ladder executes the whole pipeline from the gather step and
+records the run. It stops before the engine prices, for the two reasons above.
+The run package carries no analytic document, and the dataset seeds no
+volatility market data. So the report is exercised by the full-pipeline proof
+and not by a run that writes rows.
+
+* Related
+
+- [[file:./reports.org][Reports]], the inventory this page is listed in.
+- [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
+- [[file:../external/ore_output_formats.org][ORE output formats]], the columns of =sensitivity.csv= and =scenario.csv=.
+- [[file:./report_gamma_ladder.org][Gamma ladder Bump and Reprice]], the second order figure for one factor.
+- [[file:./report_delta_ladder.org][Delta ladder Bump and Reprice]], the first order column of the same run.
+- [[file:./report_vanna_ladder.org][Vanna ladder Bump and Reprice]], the paired rows that join a spot to a volatility.
+- [[file:./report_rho_ladder.org][Rho ladder Bump and Reprice]], the curves bumped at each tenor with the two effects apart.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
+- [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], the definition that states the cycle and the cut.
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine whose =sensitivity= analytic writes the two files.
+- [[https://www.opensourcerisk.org/][Open Source Risk]], the project home of the engine.

@@ -1,0 +1,235 @@
+:PROPERTIES:
+:ID: 2A5A5552-F1A4-46CD-AF3A-ADB2BD0ACA5D
+:END:
+#+title: Spike Map
+#+description: Per currency pair, the concentration of option notional or theoretical value against expiry date and spot level, so a desk sees where barrier and digital risk piles up across time and spot.
+#+type: report
+#+level: cross
+#+filetags: :report:trading-desk:greeks:intraday:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+report_code: spike_map
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Spike Map. It answers where one currency pair's option notional and theoretical
+value concentrate across expiry date and spot level, so a trading desk sees where
+barrier and digital risk piles up in time and in spot. A person starts it on
+demand from the live cut, because the seeded schedule names a date that never
+occurs. The run leaves the engine's own output archive in storage, and a reader
+opens the CSV files in that archive, because the result store that would carry
+the grid is not built.
+
+* Purpose
+
+It answers where one currency pair's option book carries its largest
+concentration of notional, or of theoretical value, when the reader buckets the
+book by expiry date and by spot level. The answer feeds the decision a trader
+makes while quoting or hedging a barrier or a digital. The trader learns which
+expiry and which spot zone hold an exposure the desk did not intend, and can
+hedge it, reprice the next trade, or leave it in place.
+
+The catalogue states four modes. They are American notional, American
+theoretical value, European notional and European theoretical value. A mode
+names the book and the quantity together, so a reader who wants the notional of
+the American book reads one mode and a reader who wants the value of the
+European book reads another.
+
+The catalogue classifies the methodology as =audit-derived=. The report is
+derived from trade state and market data state, and it does not call the
+valuation engine to price a trade.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                          |
+|--------------+----------------------------------------------------------------------------------------|
+| trading-desk | Where a pair's barrier and digital exposure concentrates, so the desk hedges or reprices. |
+| market-risk  | The same concentration view, read beside the desk's own account of the pair.            |
+
+* Frequency
+
+Cycle =intraday=. The catalogue states the frequency as =on-demand= and
+=event-driven=. The seeded schedule expression is =0 0 31 2 *=, which names
+31 February, a date that never occurs, so the definition fires only when a
+person starts it. The concurrency policy is =skip=, so a firing that arrives
+while a run of the same definition is in flight does not start a second run. The
+report belongs to no ordered batch.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value                        |
+|-----------+------------------------------|
+| Cycle     | intraday                     |
+| Frequency | on-demand, event-driven      |
+| Batch     | none                         |
+| Owner     | trading-desk, market-risk    |
+
+The Owner row names the roles that read the report.
+
+* Inputs
+
+- Trades selected by scope. The scope shape is =book=, and the seeded run
+  settings read =Global Portfolio= for the entity, so a run covers the books
+  under that portfolio rather than one named book.
+- Six configuration bindings, one for each configuration type. They are
+  =conventions=, =curve_configuration=, =todays_market=, =pricing_engines=,
+  =risk_report_config= and =engine_settings=. A definition that omits one of the
+  first five cannot run, because the engine reads all of them before it prices.
+- The run settings row =Portfolio details - Global Portfolio=, which states the
+  base currency, the market data type =live=, the input and output paths and the
+  log file.
+- The analytic =portfolioDetails=, which is the only analytic the configuration
+  binds. It inspects the portfolio and prices no trade.
+
+* Outputs
+
+The run produces the engine's own output archive, and it records where that
+archive landed against the run instance. It also records the cut the run minted,
+with the cut's identity, its label, its kind and its instant. The archive holds
+=marketObjects.csv= and =riskFactors.csv=, the two files that =portfolioDetails=
+writes. The grid this report describes is in neither file. The result store that
+would carry it is designed on
+[[file:../architecture/report_post_processing.org][Report post-processing]] and
+is not built.
+
+* Measures
+
+The values below are the ones the business catalogue states this report carries.
+Their definitions belong to the measures catalogue on
+[[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]] and are not repeated here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure            | Meaning                                                                                     |
+|--------------------+---------------------------------------------------------------------------------------------|
+| Option notional    | The notional of the option trades in one expiry and spot bucket, for the mode in force.      |
+| Theoretical value  | The theoretical value of the option trades in one expiry and spot bucket, for the same mode. |
+| Concentration      | The size of one bucket against its neighbours, which is the quantity the reader scans for.   |
+
+* Columns and sections
+
+The definition binds one analytic, =portfolioDetails=, and that analytic writes
+two files. Both files hold names. Neither file holds a group of trades, a
+bucket, or a value.
+
+#+ATTR_HTML: :class hug-leading
+| Column           | What it holds                                                        |
+|------------------+----------------------------------------------------------------------|
+| MarketObjectType | The kind of market object the book reads. It is the key of the file.  |
+| MarketObjectName | The name of one market object of that kind.                          |
+
+#+ATTR_HTML: :class hug-leading
+| Column         | What it holds                                                          |
+|----------------+------------------------------------------------------------------------|
+| RiskFactorType | The kind of risk factor the book reads. It is the key of the file.     |
+| RiskFactorName | The name of one risk factor of that kind.                              |
+
+The report's shape is a grid, not a set of engine rows. Its axes are expiry
+date and spot level, and one grid exists for each currency pair. A cell holds
+the notional or the theoretical value of the trades in that bucket. Neither file
+holds a bucket or a value for a bucket, so the store does not hold the grid. The
+report post-processing design lists the tables that would hold it, and those
+tables are not built.
+
+* ORE configuration
+
+The run document is generated, not stored. The service builds it from the
+definition's bindings and the run settings, in
+[[proj:projects/ores.reporting/core/src/service/run_document_generator.cpp][run document generator]].
+The analytics appear in the configuration's display order, with their
+parameters. The fragment below is the shape the generator writes for the
+analytic, and it is trimmed from
+=external/ore/examples/Legacy/Example_74/Input/ore.xml=.
+
+#+begin_src xml
+<Analytic type="portfolioDetails">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="riskFactorFileName">riskFactors.csv</Parameter>
+  <Parameter name="marketObjectFileName">marketObjects.csv</Parameter>
+</Analytic>
+#+end_src
+
+The seeded ACME configuration binds =portfolioDetails= at display order 1 with
+=active= set to =Y=. It states no parameter row for the analytic, so the file
+names in the fragment are the sample's and not the seed's.
+
+* Parameters
+
+The table states the rows a definition of this report carries. The mechanism is
+on
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter            | Domain                | Seeded value                        | Meaning                                                                   |
+|----------------------+-----------------------+-------------------------------------+---------------------------------------------------------------------------|
+| cut_kind_code        | a kind of cut         | LIVE                                | The kind of cut the run mints when it starts. A LIVE cut is indicative.    |
+| schedule_expression  | a cron expression     | 0 0 31 2 *                          | When the definition fires. It names 31 February, so it never fires.        |
+| concurrency_policy   | skip or queue         | skip                                | What happens when a firing arrives during a run of the same definition.    |
+| scope_portfolio      | a portfolio of the party | Global Portfolio                 | The subtree the run reads.                                                |
+| base_currency        | ISO 4217 code         | the entity's, GBP for the UK entity | The currency the figures are expressed in.                               |
+| market_data_type     | live, eod or date     | live                                | The market data the run reads. A live run values the book at its start.    |
+| marketObjectFileName | a file name           | none seeded, the sample sets marketObjects.csv | The file that carries the market object names.                 |
+| riskFactorFileName   | a file name           | none seeded, the sample sets riskFactors.csv   | The file that carries the risk factor names.                   |
+
+* A worked read
+
+A person at the screen reads this report in the steps below. The two files
+=portfolioDetails= writes support the first three steps only, because the grid
+does not exist yet.
+
+1. Open the report instance and read the cut it minted. The label says
+   indicative, so the figures are a view taken between closes.
+2. Open the output archive and find the run's CSV files. They sit beside the
+   engine's log.
+3. Read the two files. They list the market objects and the risk factors the
+   book reads, one row for each kind and one row for each name.
+4. Once the grid exists, pick one currency pair. Read that pair as one table.
+   Expiry date runs down the page and spot level runs across it.
+5. Read a cell as the notional or the theoretical value of the options that
+   expire in that bucket at that spot zone, for the mode in force.
+6. Scan the table for the cell that stands above its neighbours. That cell is
+   the spike the report names.
+7. Read the American mode against the European mode to see whether the
+   concentration sits on one book or on both.
+8. Carry away the pair, the expiry and the spot zone. That triple is what the
+   trader acts on.
+
+* What is not built
+
+- The grid does not exist yet. No analytic writes a notional or a theoretical
+  value bucketed by expiry and spot, and the store has no place to hold the
+  grid. The definition binds =portfolioDetails=, which writes two name lists.
+- The ACME dataset holds no volatility market data. Its 420 seeded quotes are all
+  =IR_SWAP/RATE/...=. There is no =FX_OPTION/RATE_LNVOL= quote and no volatility
+  surface configuration. so a volatility factor has nothing to shift, and no volatility
+  sensitivity can be computed until the store holds that data.
+- The result store is not built, so a reader opens the CSV files in the archive
+  rather than a table of rows.
+- No seeded parameter selects one of the four modes, and no file the analytic
+  writes has a column for a mode.
+
+* Test coverage
+
+No substitute is defined for this report, so a test run executes every phase. It
+gathers trades and market data, assembles its own bundle, builds the run
+document, submits the work and collects what comes back. The run stops where the
+engine needs a volatility, and the refusal is recorded against the run instance.
+The analytic the definition binds is also exercised by the engine's own
+sample, =external/ore/examples/Legacy/Example_74=, which models this report's
+configuration and output. The task that lit the report is
+[[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]].
+
+* Related
+
+- [[file:./reports.org][Reports]] is the inventory this page is listed in.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]] carries the classification taxonomy and the measures catalogue.
+- [[file:./report_strike_map.org][Strike Map]] shows the same view bucketed by strike instead of expiry.
+- [[file:./report_option_map.org][Option Map]] shows the delta view beside the strike view.
+- [[file:./report_trades_since_last_in.org][Trades Since Last In]] is the other report on demand from the live cut.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] states the phases every run goes through.
+- [[file:../architecture/report_post_processing.org][Report post-processing]] designs the tables that would hold the grid.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]] states what a LIVE cut holds.
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] states the definition fields and the schedule.
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]] is the engine whose =portfolioDetails= analytic writes the two files.

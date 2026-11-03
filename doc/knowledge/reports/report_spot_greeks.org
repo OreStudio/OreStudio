@@ -1,0 +1,302 @@
+:PROPERTIES:
+:ID: 826BE0EC-E26D-478A-84C9-73A42021037F
+:END:
+#+title: Spot Greeks
+#+description: P&L and Delta at a grid of spot shift levels, read from the live cut, so a desk questions its directional risk while the day is still moving.
+#+type: report
+#+level: cross
+#+filetags: :report:trading-desk:greeks:intraday:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+report_code: spot_greeks
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Spot Greeks. It answers what happens to a book if spot moves by a given
+percentage, so a desk questions its directional risk while the day is still
+moving. The trading desk reads it and the market risk function reads it, on the
+book scope. It runs every fifteen minutes through the London trading day on
+weekdays, from the live cut, and a person may ask for one at any time. It leaves
+the engine's own output archive behind and records the cut its run minted. The
+result store that would carry the rows is not built, so a reader opens the CSV
+files in the archive.
+
+* Purpose
+
+It answers what the book is worth, and what its Delta is, at a grid of spot
+shift levels. The decision it feeds is the one a desk makes at the screen
+between two fixes. It is to hold the position, to trim it, or to hedge it,
+before the close states the figures that count.
+
+The catalogue describes the report as a grid, because the question a desk asks
+is not one number. The desk asks what the book does at each level of a move, and
+it reads the answer across the levels rather than at one of them. The section
+"What is not built" states how far the seeded definition carries that shape.
+
+A definition of this report binds analytics and configurations. The service
+builds the run document from those bindings and the run settings, and ORE prices
+the book from the generated document. No seed stores an =ore.xml=.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                       |
+|--------------+-------------------------------------------------------------------------------------|
+| trading-desk | The book's PV and Delta at each spot shift level, so the desk decides to hold, trim or hedge while the day moves. |
+| market-risk  | The same figures on the book scope, as an indicative view ahead of the authorised close. |
+
+* Frequency
+
+Cycle =intraday=. The definition is seeded with the expression
+=*/15 8-17 * * 1-5=, which fires it every fifteen minutes through the London
+trading day on weekdays, and a person may ask for one at any time. It is not a
+member of an ordered batch.
+
+The concurrency policy is =skip=. A firing that arrives while a run of the same
+definition is in flight is dropped, so the next run reads the market data of its
+own instant and not a queue of stale ones.
+
+The definition states =cut_kind_code= =LIVE=. A LIVE cut mints at the instant
+the run begins and carries the indicative label, so every figure on this report
+is known to be indicative.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value      |
+|-----------+------------|
+| Cycle     | intraday   |
+| Frequency | scheduled  |
+| Batch     | none       |
+| Owner     | market-risk |
+
+* Inputs
+
+- Trades selected by scope. The scope shape is =book=.
+- Market data at the instant the run starts. The run mints a LIVE cut, which
+  holds what the store held then.
+- The risk report configuration the definition binds, =Valuation and
+  sensitivities - Global Portfolio=. The row states the market data type =live=
+  and the base currency, which is the entity's, so GBP for the UK entity, USD for
+  the US entity and HKD for the HK entity.
+- The engine settings row the definition binds, through the =engine_settings=
+  configuration type.
+
+A definition binds six configuration documents, one per configuration type. The
+six codes are =conventions=, =curve_configuration=, =todays_market=,
+=pricing_engines=, =risk_report_config= and =engine_settings=. A definition that
+omits one of the first five cannot run, because ORE reads all of them before it
+prices.
+
+* Outputs
+
+The run produces the engine's own output archive. The archive holds the CSV
+artefacts of the two bound analytics: =npv.csv=, =sensitivity.csv= and
+=scenario.csv=. The run also records the cut it minted, with the cut's identity,
+its label, its kind and its instant.
+
+The rows a reader would query are a later phase. The result store is designed on
+[[file:../architecture/report_post_processing.org][Report post-processing]] and
+is not built, so a reader opens the CSV files in the archive.
+
+* Measures
+
+The set is the business catalogue's for this report. The definitions are on
+[[file:../domain/risk_reporting.org][Risk reporting]] and are not repeated here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure        | Meaning                                                             |
+|----------------+---------------------------------------------------------------------|
+| Daily P&L      | The change in NPV since the previous business day, per shift level.  |
+| MTD P&L        | NPV minus the previous month-end NPV, per shift level.               |
+| YTD P&L        | NPV minus the previous year-end NPV, per shift level.                |
+| P&L Impact     | The change in P&L that the shift explains.                           |
+| BS equivalents | The figure restated in basis points of the book, so a reader compares books of different size. |
+| PV             | Present value of the book, per shift level.                          |
+| Delta          | The change in value for the shift, in money.                         |
+| BS Delta       | The Delta restated in basis points of the book.                      |
+
+* Columns and sections
+
+The analytics write three files. The tables below state the columns of those
+files, as
+[[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] lists them. A
+(Base) column is in the run's base currency. A (Trade) column is in the trade's
+currency.
+
+=npv.csv= holds the net present value and notional of each trade.
+
+#+ATTR_HTML: :class hug-leading
+| Column           | Kind    | What it holds                                          |
+|------------------+---------+--------------------------------------------------------|
+| TradeId          | text    | The trade the row states.                              |
+| TradeType        | text    | The ORE product type of that trade.                    |
+| Maturity         | date    | The trade's maturity date.                             |
+| MaturityTime     | decimal | The time to maturity, in years.                        |
+| NPV              | decimal | The net present value, in the currency the row states.  |
+| NpvCurrency      | text    | The currency of the NPV column.                        |
+| NPV(Base)        | decimal | The same value in the run's base currency.             |
+| BaseCurrency     | text    | The run's base currency.                               |
+| Notional         | decimal | The trade notional.                                    |
+| NotionalCurrency | text    | The currency of the notional.                          |
+| Notional(Base)   | decimal | The notional in the run's base currency.               |
+| NettingSet       | text    | The netting set the trade sits in.                     |
+| CounterParty     | text    | The counterparty of the trade.                         |
+
+=sensitivity.csv= holds the sensitivities of each trade: Delta and Gamma for
+each factor, and cross gammas for factor pairs. The file has two header
+variants.
+
+#+ATTR_HTML: :class hug-leading
+| Column          | Kind    | What it holds                                              |
+|-----------------+---------+------------------------------------------------------------|
+| TradeId         | text    | The trade the row states.                                  |
+| IsPar           | text    | Whether the row is a par-rate figure.                      |
+| Factor_1        | text    | The risk factor key that was shifted.                      |
+| ShiftSize_1     | decimal | The size of the shift, in the factor's unit.               |
+| Factor_2        | text    | The second factor key, on a cross gamma row.               |
+| ShiftSize_2     | decimal | The size of the second shift.                              |
+| Currency        | text    | The currency the amounts are stated in.                    |
+| Base NPV        | decimal | The base valuation the shift was applied to.               |
+| Delta           | decimal | The value change for the shift, in money.                  |
+| Gamma           | decimal | The curvature of the value in the factor.                  |
+| Currency(Trade) | text    | The trade's own currency.                                  |
+| Base NPV(Trade) | decimal | The base valuation in the trade's currency.                |
+| Delta(Trade)    | decimal | The Delta in the trade's currency.                         |
+| Gamma(Trade)    | decimal | The Gamma in the trade's currency.                         |
+| Scenario        | text    | The label of the scenario the row belongs to.              |
+
+=scenario.csv= holds the value of each trade under each shifted factor.
+
+#+ATTR_HTML: :class hug-leading
+| Column        | Kind    | What it holds                                            |
+|---------------+---------+----------------------------------------------------------|
+| TradeId       | text    | The trade the row states.                                |
+| Factor        | text    | The risk factor key that was shifted.                    |
+| Up/Down       | text    | The direction of the shift.                              |
+| Base NPV      | decimal | The value before the shift.                              |
+| ShiftSize_1   | decimal | The size of the shift, in the factor's unit.             |
+| ShiftSize_2   | decimal | The size of the second shift, where a row has one.       |
+| Scenario NPV  | decimal | The value after the shift.                               |
+| Difference    | decimal | The change in value, which is the scenario value less the base value. |
+| Base Currency | text    | The run's base currency.                                 |
+
+* ORE configuration
+
+The configuration binds two analytics, in this order. The =npv= fragment is
+trimmed from =external/ore/examples/MarketRisk/Input/ore_pnl.xml= and the
+=sensitivity= fragment is trimmed from
+=external/ore/examples/MarketRisk/Input/ore_sensi.xml=.
+
+The base currency is the entity's, so the fragment shows GBP for the UK entity.
+The file states USD for its own sample.
+
+#+begin_src xml
+<Analytic type="npv">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="baseCurrency">GBP</Parameter>
+  <Parameter name="outputFileName">npv.csv</Parameter>
+</Analytic>
+<Analytic type="sensitivity">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="marketConfigFile">simulation.xml</Parameter>
+  <Parameter name="sensitivityConfigFile">sensitivity.xml</Parameter>
+  <Parameter name="scenarioOutputFile">scenario.csv</Parameter>
+  <Parameter name="sensitivityOutputFile">sensitivity.csv</Parameter>
+  <Parameter name="outputSensitivityThreshold">0.000001</Parameter>
+  <Parameter name="recalibrateModels">Y</Parameter>
+  <Parameter name="parSensitivity">Y</Parameter>
+</Analytic>
+#+end_src
+
+The =sensitivity= analytic reads its shift settings from the document that
+=sensitivityConfigFile= names. That document is not part of the run package the
+service builds, which carries only the four Setup documents.
+
+* Parameters
+
+A definition of this report states the rows below. The values are the seeded
+ones; the domains are the ones the engine and the classification taxonomy fix.
+The mechanism is on
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                              | Domain                | Seeded value       | Meaning                                                    |
+|----------------------------------------+-----------------------+--------------------+------------------------------------------------------------|
+| cut_kind_code                          | a kind of cut         | LIVE               | The kind of cut the run mints at the instant it starts.     |
+| market_data_type                       | live, eod or date     | live               | The market data the run reads.                              |
+| base_currency                          | ISO 4217 code         | the entity's       | The currency the figures are expressed in.                  |
+| npv.baseCurrency                       | ISO 4217 code         | the entity's       | The currency the valuation analytic states its NPV in.      |
+| sensitivity.sensitivityConfigFile      | a file in the library | sensitivity.xml    | The document that states the shifts.                        |
+| sensitivity.marketConfigFile           | a file in the library | simulation.xml     | The market configuration the bump run prices from.          |
+| sensitivity.recalibrateModels          | Y or N                | Y                  | Whether models are recalibrated before bumping.             |
+| sensitivity.outputSensitivityThreshold | a real                | 0.000001           | Rows below this size are left out of the sensitivity file.  |
+| sensitivity.parSensitivity             | Y or N                | Y                  | Whether par-rate sensitivities are written as well.         |
+
+* A worked read
+
+A person reads this report at the screen in the order below. No run has produced
+rows yet, so the steps name the files and the comparisons and quote no figure.
+
+1. Open the archive the run recorded and take =npv.csv= first. It states the book
+   at one market state, so it is the base the other two files refer to.
+2. In =npv.csv=, read the =NPV(Base)= column against the =TradeId= and
+   =NettingSet= columns. The sum over the rows is the value the desk carries.
+3. Open =sensitivity.csv= and read the =Factor_1= column to find the spot factors
+   the run shifted. The key names the factor and =ShiftSize_1= states how far it
+   moved.
+4. Read the =Delta= column on those rows. Delta is a value change and not a
+   derivative. It is money per shift, and the shift size is already inside it.
+5. Read the =Delta(Trade)= column beside it when the trade's own currency is not
+   the base currency. It states the same change in the trade's currency.
+6. Open =scenario.csv= and find the rows with the same =Factor= value. Read
+   =Base NPV=, =Scenario NPV= and =Difference= across one row. The difference is
+   the scenario value less the base value.
+7. Compare the =Difference= column with the =Delta= column of step 4 for the same
+   factor. The two agree to the printed precision, because both state the value
+   change for one shift.
+8. Compare the sum of step 2 with the =Base NPV= of the rows read in step 6. They
+   state one valuation. A reader who expects a grid of shift levels notices here
+   that the file carries one shift per factor and not a ladder.
+
+* What is not built
+
+- The spot shift grid the catalogue describes is a scenario grid, which is a
+  stress configuration. It is not the sensitivity analytic.
+- No ACME risk report configuration switches the stress analytic on. The seeded
+  definition therefore produces the sensitivity columns and not a per shift level
+  P&L grid.
+- The dataset holds no volatility market data. Its 420 seeded quotes are all
+  =IR_SWAP/RATE/...=, with no =FX_OPTION/RATE_LNVOL= quote and no volatility
+  surface configuration. so a volatility factor has nothing to shift, and no volatility
+  sensitivity can be computed until the store holds that data.
+- The result store is not built, so a reader opens the CSV files in the archive.
+- No mapper reads or writes a =SensitivityAnalysis= document. The document is a
+  name in a lookup and a row in the file library, not a modelled entity.
+
+* Test coverage
+
+The analytic type, the sensitivity configuration type and the file types are in
+the store. The cut resolution this report depends on is exercised by
+[[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the
+LIVE cut]].
+
+The pricing phase cannot produce a volatility figure in the seeded
+environment, because the store holds no volatility market data. A test run
+proves the gather, the cut and the generated run document, and it proves no
+volatility row. A reader who needs one supplies volatility market data first.
+
+* Related
+
+- [[file:./reports.org][Reports]], the inventory this page is listed in.
+- [[file:./report_spot_greeks_eod.org][Spot Greeks (EOD)]], the same analytic set on the end of day cut.
+- [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what a LIVE cut holds and what it does not.
+- [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], how the definition and its schedule are seated.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
+- [[file:../architecture/report_compute_handoff.org][Report compute handoff]], how the run reaches the grid.
+- [[file:../architecture/report_post_processing.org][Report post-processing]], the store that would hold the rows.
+- [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]]
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]]
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine whose =sensitivity= analytic produces these rows.

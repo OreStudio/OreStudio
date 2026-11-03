@@ -1,0 +1,295 @@
+:PROPERTIES:
+:ID: FD5EACF2-9CA1-498B-A298-6FC13549B711
+:END:
+#+title: Gamma ladder Bump and Reprice
+#+description: The second-order value change in one factor, the curvature a linear ladder misses, produced by the gamma column or a central shift.
+#+type: report
+#+level: cross
+#+filetags: :report:trading-desk:greeks:sensitivity:eod:
+#+created: 2026-11-03
++#+updated: 2026-11-03
+#+report_code: gamma_ladder_bump_and_reprice
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Gamma ladder Bump and Reprice. It states how the value change itself moves when
+one market factor moves, so a reader sees the curvature that a straight ladder
+cannot show. A desk uses it to ask whether a hedge holds when the market moves
+twice as far, and market risk uses it to size the error a linear view carries. It
+runs on the end of day cycle and leaves the engine's output archive in storage.
+The result store that would ingest the archive is not built yet, so the run
+records where the archive landed.
+
+* Purpose
+
+It answers a question about one factor at a time. As this factor moves, does the
+money-per-shift figure stay the same, or does it grow? A reader who knows only
+the first-order figure treats the answer as a straight line. This report states
+how far the line bends, and it states that bend at each bucket.
+
+The decision it feeds is the size of a hedge and the comfort taken from it. A
+book whose second-order figure is large needs a wider hedge than its first-order
+figure suggests, and a limit that reads only Delta will allow a position that
+moves more than the limit intends.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                    |
+|--------------+----------------------------------------------------------------------------------|
+| trading-desk | The curvature at each bucket, so the desk widens a hedge before the market moves. |
+| market-risk  | The size of the error a linear limit leaves out of its measure.                   |
+
+* Frequency
+
+Every ladder in this family is end of day. A ladder is read as the risk statement
+of record and compared across days, and a live ladder would be priced against a
+body that is not reproducible.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value        |
+|-----------+--------------|
+| Cycle     | eod          |
+| Frequency | scheduled    |
+| Batch     | none         |
+| Owner     | trading-desk |
+
+The definition selects the =EOD= cut, and the run settings row it binds states
+market data type =eod=. The run therefore values the portfolio at the weekday
+before the run date, and holiday calendars are not consulted.
+
+* Inputs
+
+- Trades selected by the definition's scope. The scope is a row of the definition
+  and the taxonomy fixes the shapes it accepts, on
+  [[file:../domain/risk_reporting.org][Risk reporting]].
+- Market data at the authorised end of day cut. The run records the cut it read
+  against the run instance, with its label, kind and instant.
+- The risk report configuration the definition binds. It switches on the
+  =sensitivity= analytic, states the base currency and names =sensitivity.xml= as
+  the =sensitivityConfigFile=. The analytic states =recalibrateModels= =Y=,
+  =outputSensitivityThreshold= =0.000001=, =parSensitivity= =Y= and
+  =marketConfigFile= =simulation.xml=.
+- A sensitivity document that switches gamma on, through =ComputeGamma= or
+  through a =Central= shift scheme. The shipped document sets neither for the FX
+  volatility blocks, so a gamma ladder needs a document a person writes. See
+  [[*What is not built][What is not built]].
+
+* Outputs
+
+The run produces the engine's own output archive and records where that archive
+landed against the run instance. The archive holds =sensitivity.csv=, which
+carries the =Gamma= column beside the =Delta= column, and =scenario.csv=, which
+carries the scenario value behind each row.
+
+The rows a reader would query in a table are a later phase. The result store is
+designed on [[file:../architecture/report_post_processing.org][Report post-processing]]
+and is not built yet.
+
+* Measures
+
+Gamma is =ComputeGamma= or a =Central= shift scheme. The first switch asks the
+engine for the second-order column. The second changes the arithmetic, because a
+central shift reprices the book on both sides of the base value and reads the
+curvature from the pair.
+
+=Delta= is a value change and not a derivative, and the same holds for the second
+order. The shift size is already inside the figure. A reader who wants the
+curvature for another size changes =ShiftSize= in the document and runs again.
+
+A cross gamma is =ComputeGamma= plus a =CrossGammaFilter= that lists pairs of
+factor keys as substrings. The engine writes a cross gamma into
+=sensitivity.csv= as a row with both =Factor_1= and =Factor_2= populated. At
+engine version 1.8.17.0 no writer reads
+=sensitivity.crossGammaOutputFile=, so =crossgamma.csv= never appears.
+
+#+ATTR_HTML: :class hug-leading
+| Measure      | Meaning                                                                    |
+|--------------+----------------------------------------------------------------------------|
+| Gamma        | The change in the money-per-shift figure as the factor moves again.        |
+| Delta        | The first-order figure from the same run, for comparison.                  |
+| Base NPV     | The value of the trade before the shift.                                   |
+| Scenario NPV | The value of the trade after the shift, from =scenario.csv=.               |
+
+* Columns and sections
+
+The reader opens the engine's CSV files, because the result store is not built.
+The tables below state the columns of the two files this report writes. The
+definitions are on
+[[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]].
+
+#+ATTR_HTML: :class hug-leading
+| Column           | Holds                                                                   |
+|------------------+-------------------------------------------------------------------------|
+| TradeId          | The trade the row belongs to.                                           |
+| IsPar            | Whether the row states a par sensitivity.                               |
+| Factor_1         | The key of the factor that was shifted, and the bucket the row sits in. |
+| ShiftSize_1      | The size of the shift on =Factor_1=, in the factor's own unit.          |
+| Factor_2         | The second factor of a cross row, and empty for a one-factor row.       |
+| ShiftSize_2      | The size of the shift on =Factor_2=.                                    |
+| Currency         | The currency the base value and the Greeks are stated in.               |
+| Base NPV         | The value of the trade before the shift.                                |
+| Delta            | The value change at the shift, in money.                                |
+| Gamma            | The second-order change, empty unless gamma is switched on.             |
+| Currency(Trade)  | The currency of the trade.                                             |
+| Base NPV(Trade)  | The trade's value in its own currency.                                  |
+| Delta(Trade)     | The trade's Delta in its own currency.                                  |
+| Gamma(Trade)     | The trade's Gamma in its own currency.                                  |
+| Scenario         | The label of the scenario the row belongs to.                           |
+
+#+ATTR_HTML: :class hug-leading
+| Column       | Holds                                                             |
+|--------------+-------------------------------------------------------------------|
+| TradeId      | The trade the row belongs to.                                     |
+| Factor       | The key of the factor that was shifted.                           |
+| Up/Down      | Which side of the base value the row states.                      |
+| Base NPV     | The value of the trade before the shift.                          |
+| ShiftSize_1  | The size of the shift on the factor.                              |
+| ShiftSize_2  | The size of a second shift, for a paired row.                     |
+| Scenario NPV | The value of the trade after the shift.                           |
+| Difference   | The change from the base value to the scenario value.             |
+| Base Currency| The base currency of the run.                                     |
+
+The buckets are the same as those of the
+[[file:./report_delta_ladder.org][Delta ladder]], because the two reports read one
+document and one run. A reader places a figure by the bucket columns. =Factor_1=
+carries the risk class and the bucket, and =ShiftSize_1= states the shift that
+produced the figure. A volatility factor states the pair, the strike and the
+expiry, as in =FxVolatility/<pair>/<strike>/<expiry>=. A swaption volatility adds
+the term, as in =SwaptionVolatility/<key>/<strike>/<expiry>/<term>=. A curve
+factor names the curve and the bucket, as in =IndexCurve/EUR-EURIBOR-6M/11/10Y=,
+and a discount curve factor starts =DiscountCurve/<ccy>=.
+
+* ORE configuration
+
+The mechanism has four parts. First, the generated run document carries an
+analytic of type =sensitivity=, and that analytic names =sensitivity.xml= through
+=sensitivityConfigFile=. Second, the root of that document is
+=SensitivityAnalysis=, and ORE validates it against
+=external/ore/xsd/sensitivity.xsd=. Third, the document carries one block for each
+group of risk factors, among them discount curves, index curves, FX spots, FX
+volatilities, swaption volatilities, cap and floor volatilities, credit curves and
+equity volatilities. Fourth, every factor block states =ShiftType=, =ShiftSize=,
+=ShiftScheme= and the bucket list, which is =ShiftTenors=, =ShiftExpiries=,
+=ShiftStrikes=, =ShiftLossLevels= or =ShiftTerms=.
+
+=ShiftType= is =Relative=, =Absolute= or =EqualTo=. =ShiftScheme= is =Forward=,
+=Backward= or =Central=. Both are enumerations in
+=external/ore/xsd/ore_types.xsd=. The document also carries switches that are not
+factors, and =ComputeGamma=, =CrossGammaFilter=, =ThetaPeriod= and the par
+conversion group are four of them.
+
+The fragment below is trimmed from
+=external/ore/examples/MarketRisk/Input/sensitivity.xml=. It shows the =Central=
+scheme the shipped file states for the alternative size keyed =IR_FD=.
+
+#+begin_src xml
+<DiscountCurve ccy="EUR">
+  <ShiftType>Absolute</ShiftType>
+  <ShiftSize>0.0001</ShiftSize>
+  <ShiftSize key="IR_FD">0.001</ShiftSize>
+  <ShiftScheme>Forward</ShiftScheme>
+  <ShiftScheme key="IR_FD">Central</ShiftScheme>
+  <ShiftTenors>2W,1M,3M,6M,9M,1Y,2Y,3Y,4Y,5Y,7Y,10Y,15Y,20Y,25Y,30Y</ShiftTenors>
+</DiscountCurve>
+#+end_src
+
+The shipped document sets no =ComputeGamma= element. A gamma ladder over the
+curves therefore reads the keyed =Central= scheme, and a gamma ladder over a
+surface needs a document that adds =ComputeGamma=.
+
+The engine writes =sensitivity.csv= with the columns the reader saw above, and it
+writes =scenario.csv= with the scenario value and the difference behind each
+figure.
+
+The bump is a setting of the configuration and not the identity of the report.
+Two reports over one book that differ only in shift size differ only in the
+document they bind. Nothing in the name of this report fixes a shift, and nothing
+in the engine knows a ladder by name.
+
+* Parameters
+
+A definition of this report states the rows below. The shift itself is not a
+parameter of the store, and no seed states a shift size anywhere.
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                        | Domain                        | Seeded value | Meaning                                                          |
+|----------------------------------+-------------------------------+--------------+------------------------------------------------------------------|
+| cut_kind_code                    | a kind of cut                 | EOD          | The kind of cut the run mints when it starts.                     |
+| market_data_type                 | live, eod or date             | eod          | The market data the run values the portfolio at.                  |
+| base_currency                    | ISO 4217 code                 | the entity's | The currency the figures are expressed in.                        |
+| sensitivity.sensitivityConfigFile| a name in the file library    | sensitivity.xml | The sensitivity document the analytic reads.                   |
+| sensitivity.recalibrateModels    | Y or N                        | Y            | Whether models are recalibrated before each shift.                |
+| sensitivity.outputSensitivityThreshold | a real                  | 0.000001     | The size below which a change is not written.                     |
+| sensitivity.sensitivityOutputFile| a file name                   | sensitivity.csv | The file the engine writes the rows to.                        |
+| ComputeGamma                     | present or absent             | absent in the shipped document | Whether the second-order column is computed.     |
+| ShiftScheme                      | Forward, Backward or Central  | Forward, with a Central key | The arithmetic the shift uses.                       |
+
+* A worked read
+
+1. Open the archive the run recorded and take =sensitivity.csv=.
+2. Keep the rows that state a figure in the =Gamma= column. A row with an empty
+   Gamma column carries no second-order figure.
+3. Choose one risk class and one bucket from the segments of =Factor_1=.
+4. Read =ShiftSize_1=. The gamma figure belongs to that shift, and it does not
+   carry to another size.
+5. Read the =Gamma= column together with the =Delta= column of the same row. The
+   pair states the line and its bend.
+6. Open =scenario.csv= and read the rows of one factor. The =Up/Down= column
+   states which side of the base value each row holds, and a central shift reads
+   both sides.
+7. Compare the gamma figure against the delta figure of the same bucket. A small
+   gamma against a large delta states a line that holds for the shift in the
+   document.
+8. Read the same bucket on the previous close. Two closes state whether the
+   curvature grew or shrank.
+9. Do not add gamma figures across buckets into one total without saying what the
+   total is for. A sum of curvatures is not a hedge.
+
+* What is not built
+
+- No mapper reads or writes a =SensitivityAnalysis= document. The document is a
+  name in a lookup and a row in the file library, and it is not a modelled
+  entity.
+- The run package carries only the four Setup documents, which are conventions,
+  curve configuration, today's market and pricing engines. An analytic document
+  that no owner exports never reaches the engine.
+- No volatility market data is seeded. The ACME dataset holds 420 quotes and all
+  of them are =IR_SWAP/RATE/...=. The engine therefore refuses at the point it
+  needs a volatility, and the run records that refusal.
+- No shift size is stated anywhere in the store. This matters more for gamma than
+  for delta, because a curvature belongs to one size and to no other.
+- No stored shape holds a bucketed ladder. The bucket is a segment of a factor
+  key in a CSV file.
+- The result store is not built, so no table carries the rows a reader queries.
+- No writer reads =sensitivity.crossGammaOutputFile= at engine version 1.8.17.0,
+  so a cross-gamma ladder reads rows of =sensitivity.csv= and no file of its own.
+
+* Test coverage
+
+The sensitivity configuration type is seeded with root =SensitivityAnalysis=, the
+parameter =sensitivityConfigFile= and the owner =ores.analytics=. The document and
+its two surface variants sit in the ORE file library with their descriptions, the
+schema is vendored as =sensitivity_schema=, and the worked configurations are
+vendored.
+
+No substitute is defined for this report, so a test run executes every phase and
+assembles its own bundle. The report is exercised by the full-pipeline proof and
+not by a smoke test. The machinery that proves a bundle without gathering one is
+[[file:./report_sample_bundle_smoke_test.org][Sample bundle smoke test]].
+
+* Related
+
+- [[file:./reports.org][Reports]], where this page is listed.
+- [[file:../domain/risk_reporting.org][Risk reporting]], which holds the classification taxonomy and the measures catalogue.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]], which states the columns of =sensitivity.csv= and =scenario.csv=.
+- [[file:./report_delta_ladder.org][Delta ladder Bump and Reprice]], which carries the first-order column over the same buckets.
+- [[file:./report_cross_gamma_ladder.org][Cross-gamma ladder Bump and Reprice]], which reads the rows that name two factors.
+- [[file:./report_volga_ladder.org][Volga ladder Bump and Reprice]], which reads gamma on a volatility factor.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], which states the phases every run goes through.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], which states what an end of day cut holds.
+- [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]], the task that lit the sibling reports.
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]]: the engine whose =ComputeGamma= switch writes the second-order column.

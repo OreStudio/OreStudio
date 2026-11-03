@@ -102,6 +102,38 @@ catalogue states this report carries; their definitions are on
 | VaR estimate       | Parametric value at risk at the stated quantile.                |
 | Limit utilisation  | How much of a limit the current position uses.                  |
 
+* Columns and sections
+
+The run binds three analytics, so the archive carries the files a reader uses
+and the intermediate file one analytic hands to another.
+
+=npv.csv=, written by the =npv= analytic, gives one row for each trade. A reader
+sums its =NPV(Base)= column over the book to obtain the PV measure. Its columns
+are =TradeId=, =TradeType=, =Maturity=, =MaturityTime=, =NPV=, =NpvCurrency=,
+=NPV(Base)=, =BaseCurrency=, =Notional=, =NotionalCurrency=, =Notional(Base)=,
+=NettingSet= and =CounterParty=.
+
+=sensitivity.csv=, written by the =sensitivity= analytic, gives one row for each
+trade and risk factor. The delta ladder is this file read by factor and summed
+over trades. Its columns are =TradeId=, =IsPar=, =Factor_1=, =ShiftSize_1=,
+=Factor_2=, =ShiftSize_2=, =Currency=, =Base NPV=, =Delta=, =Gamma=,
+=Currency(Trade)=, =Base NPV(Trade)=, =Delta(Trade)=, =Gamma(Trade)= and
+=Scenario=. A =Delta= is money per shift, and the shift is already inside it.
+
+=var.csv=, written by the =parametricVar= analytic, carries the VaR estimate and
+its breakdown by risk class. The analytic reads =sensitivity.csv= as its input,
+which is why the file type marks that file as an intermediate the run must
+produce before the estimate can be computed.
+
+=scenario.csv= holds the value of each trade in each shifted market, with
+columns =TradeId=, =Factor=, =Up/Down=, =Base NPV=, =ShiftSize_1=,
+=ShiftSize_2=, =Scenario NPV=, =Difference= and =Base Currency=. It is the
+evidence behind the =Delta= column.
+
+The top movers and the limit utilisation are not columns of any of these files.
+The catalogue states them as measures the report carries, and neither has a
+producing analytic in the seeded configuration.
+
 * ORE configuration
 
 The configuration binds three analytics, in this order. The fragment for
@@ -116,6 +148,8 @@ The configuration binds three analytics, in this order. The fragment for
 </Analytic>
 <Analytic type="sensitivity">
   <Parameter name="active">Y</Parameter>
+  <Parameter name="marketConfigFile">simulation.xml</Parameter>
+  <Parameter name="sensitivityConfigFile">sensitivity.xml</Parameter>
   <Parameter name="recalibrateModels">Y</Parameter>
   <Parameter name="outputSensitivityThreshold">0.000001</Parameter>
   <Parameter name="parSensitivity">Y</Parameter>
@@ -146,6 +180,46 @@ The mechanism is on
 | parametricVar.method       | an ORE method              | DeltaGammaNormal  | How the estimate is computed from the sensitivities.        |
 | parametricVar.breakdown    | Y or N                     | Y                 | Whether the risk classes are broken out.                    |
 | sensitivity.recalibrateModels | Y or N                  | Y                 | Whether models are recalibrated before bumping.             |
+| sensitivity.parSensitivity | Y or N                     | Y                 | Whether par-rate sensitivities are computed.                |
+| sensitivity.outputSensitivityThreshold | a real          | 0.000001          | The smallest figure the engine writes.                      |
+| sensitivity.sensitivityConfigFile | a file name          | sensitivity.xml   | The sensitivity configuration the analytic shifts from.     |
+| sensitivity.marketConfigFile | a file name              | simulation.xml    | The risk factor description the analytic shifts.            |
+
+* A worked read
+
+A reader opens this report when a book is moving and the answer cannot wait for
+the close.
+
+1. Open the latest run for the entity and the book. Read the run instance first.
+   It names the cut the run minted, and that cut says which body was priced.
+2. Take =npv.csv=, select the rows for the book and sum =NPV(Base)=. That is the
+   PV measure at the instant the run started.
+3. Compare with the previous run's total. Two monitors of one day compare as a
+   movement, because each priced a different body.
+4. Take =sensitivity.csv= and group by =Factor_1=. Sum =Delta= in each group.
+   Sort the groups by absolute total, and read the largest as the risk the desk
+   must decide about before the close.
+5. Read =var.csv= for the estimate at the stated quantile. The estimate is
+   computed from the sensitivities, so a change here follows a change in the
+   delta ladder.
+6. Decide: hold, trim or hedge now. Then read the
+   [[id:07F92413-794A-4855-B761-73CC3CAF03C6][close report]] after the market
+   shuts, for the figures that stand.
+
+* What is not built
+
+- The top movers and the limit utilisation have no producing analytic. The
+  catalogue states both as measures the report carries, and the run writes
+  neither.
+- The live cut is mintable only where the store answers the parts of a body, and
+  an environment with no published market data set mints the cut and then refuses
+  at the engine, because there is no snapshot to price from. The engine's refusal
+  is recorded against the run and against the cut it minted, so a reader is told
+  which of the two failed.
+- No volatility market data is seeded, so a volatility factor has nothing to
+  shift.
+- The result store is not built, so the rows a screen would query do not exist
+  and a reader opens the CSV files in the archive.
 
 * Test coverage
 
@@ -155,20 +229,17 @@ is exercised by the full-pipeline proof, not by a smoke test, and the cut
 resolution it relies on is exercised by the task that lit the intraday reports:
 [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]].
 
-Two limits are worth stating. The live cut is mintable only where the store
-answers the parts of a body, and an environment with no published market data set
-mints the cut and then refuses at the engine, because there is no snapshot to
-price from. The engine's refusal is recorded against the run and against the cut
-it minted, so a reader is told which of the two failed.
-
 * Related
 
-- [[file:./reports.org][Reports]] — the inventory this page is listed in.
-- [[file:../domain/risk_reporting.org][Risk reporting]] — the classification taxonomy and the measures catalogue.
-- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]] — what a LIVE cut holds and what it does not.
-- [[file:./report_headline_position.org][Headline Position]] — the shallow summary a reader opens first, and this report's sibling on the live cut.
-- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] — the phases every run goes through.
+- [[file:./reports.org][Reports]], the inventory this page is listed in.
+- [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what a LIVE cut holds and what it does not.
+- [[file:./report_headline_position.org][Headline Position]], the shallow summary a reader opens first, and this report's sibling on the live cut.
+- [[file:./report_intraday_change.org][Intraday Change]], what moved since a stated time, rather than where the risk sits now.
+- [[file:./report_spot_greeks.org][Spot Greeks]], the directional view this monitor's delta ladder points at.
+- [[file:./report_trades_since_last_in.org][Trades Since Last In]], the trades booked since a stated instant, when a move needs an explanation.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
 
 * See also
 
-- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]] — the valuation engine whose =parametricVar= analytic produces the estimate.
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine whose =parametricVar= analytic produces the estimate.

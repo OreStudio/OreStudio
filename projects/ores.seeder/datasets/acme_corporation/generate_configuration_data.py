@@ -214,10 +214,24 @@ ENTITY_CONFIGURATIONS = {
 # The configuration a report prefers. A report not named here runs on the official
 # numbers. An entity that does not hold the preferred configuration falls back to
 # the official one.
+#
+# A trading desk report that reads the live cut runs on the indicative engines, because
+# its figures are not booked and a slow calibration would delay the answer a desk wants
+# now. The oversight, regulatory, valuation, cashflow and close reports run on the
+# official engines. An engine set is named by what its numbers are worth and not by what
+# a report asks of it, so this table holds no entry for a close twin.
 DEFAULT_PRICING = "EOD Official"
 REPORT_PRICING = {
     "Intraday Risk Monitor": "Intraday Indicative",
     "Headline Position": "Intraday Indicative",
+    "Spot Greeks": "Intraday Indicative",
+    "Triple Vol Spot Ladder": "Intraday Indicative",
+    "Intraday Change": "Intraday Indicative",
+    "Spot Ladder": "Intraday Indicative",
+    "Spike Map": "Intraday Indicative",
+    "Strike Map": "Intraday Indicative",
+    "Option Map": "Intraday Indicative",
+    "Trades Since Last In": "Intraday Indicative",
     "Exposure": "XVA Overnight",
     "CVA/DVA/FVA": "XVA Overnight",
     "Model Calibration": "XVA Overnight",

@@ -7661,6 +7661,8 @@ export const en: SourceCatalogue = {
         unread: '{cell} could not be read: {message}',
         filter: {
             allParties: 'All parties',
+            cut: 'Cut',
+            allCuts: 'All cuts',
         },
         tally: {
             label: 'Reports by the health of their latest run',
@@ -7670,12 +7672,25 @@ export const en: SourceCatalogue = {
             report: 'Report',
             party: 'Party',
             reportType: 'Type',
+            cut: 'Cut',
             schedule: 'Schedule',
             latestRun: 'Latest run started',
             duration: 'Duration',
             health: 'Health',
             errors: 'Errors',
             warnings: 'Warnings',
+        },
+        schedule: {
+            onDemand: 'On demand',
+        },
+        cut: {
+            LIVE: 'Live',
+            EOD: 'End of day',
+            SOD: 'Start of day',
+            IPV: 'Independent price verification',
+            FLASH: 'Flash',
+            EOM: 'Month end',
+            EOY: 'Year end',
         },
         health: {
             failed: 'Failed',

@@ -86,6 +86,8 @@ export const reportRowViewSchema = z.object({
     id: z.string(),
     name: z.string(),
     reportType: z.string(),
+    /** The kind of cut the definition selects, or null when it selects none. */
+    cutKind: z.string().nullable(),
     partyId: z.string(),
     partyName: z.string(),
     partyCode: z.string().nullable(),

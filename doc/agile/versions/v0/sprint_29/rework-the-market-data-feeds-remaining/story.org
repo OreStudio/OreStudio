@@ -89,6 +89,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:A08B6E4B-45AD-4487-8134-41648A074F0A][Remove the committed session cookie]] | DONE | 2026-10-31 | 2026-10-31 | build/cj.txt holds a live curl session cookie and is tracked in git. |
 | [[id:95F9EEE9-0D19-4A59-BBEF-F1C6F18FD250][Build the cut take and its authorisation]] | DONE | 2026-10-31 | 2026-11-01 | The cut screens read only; the take flow, the body assembly and the approval request it raises are the next unit. |
 | [[id:45C1929E-9B92-489F-8E44-FA1819E5372D][Decide a cut's authorisation and apply it]] | DONE | 2026-11-01 | 2026-11-01 | The take raises the request; the inbox decides and the reporting side must stamp the authorisation. |
+| [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]] | STARTED | 2026-11-03 | | The intraday reports exist unconfigured or unselected; every definition has a NULL cut and the configs say eod. |
 
 * Decisions
 

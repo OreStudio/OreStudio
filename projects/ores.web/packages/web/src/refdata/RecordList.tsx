@@ -120,6 +120,17 @@ export type ListFilter =
           readonly id: string;
           readonly label: string;
           readonly all: string;
+          /**
+           * The value the filter starts at when the address names none. A party
+           * list uses it so the rows open on the party the person is working in.
+           */
+          readonly defaultValue?: string;
+          /**
+           * The value the "all" option writes. A filter whose default is a
+           * value needs one, or choosing "all" would delete the entry and fall
+           * back to the default.
+           */
+          readonly allValue?: string;
           readonly choices: readonly { readonly value: string; readonly label: string }[];
       }
     | { readonly kind: 'toggle'; readonly id: string; readonly label: string };
@@ -200,7 +211,11 @@ export function auditColumns<Row>(
  * the filter the list is applying rather than "all".
  */
 function strayChoice(filter: Extract<ListFilter, { kind: 'choice' }>, value: string | undefined) {
-    if (value === undefined || filter.choices.some((choice) => choice.value === value)) {
+    if (
+        value === undefined ||
+        value === filter.allValue ||
+        filter.choices.some((choice) => choice.value === value)
+    ) {
         return null;
     }
     return <option value={value}>{value}</option>;
@@ -245,7 +260,13 @@ export function useListState(filters: readonly ListFilter[] = []): {
         descending: params.get('desc') === '1',
         filters: Object.fromEntries(
             filters.flatMap((candidate) => {
-                const value = params.get(`f.${candidate.id}`) ?? '';
+                const stated = params.get(`f.${candidate.id}`) ?? '';
+                const value =
+                    stated !== ''
+                        ? stated
+                        : candidate.kind === 'choice'
+                          ? (candidate.defaultValue ?? '')
+                          : '';
                 return value === '' ? [] : [[candidate.id, value]];
             }),
         ),
@@ -565,7 +586,12 @@ export function RecordTable<Row>({
     const fromControl = (event: MouseEvent | KeyboardEvent): boolean =>
         event.target instanceof Element &&
         event.target.closest('a, button, input, select') !== null;
-    const narrowed = state.search !== '' || Object.keys(state.filters).length > 0;
+    const narrowed =
+        state.search !== '' ||
+        Object.entries(state.filters).some(([id, value]) => {
+            const filter = filters.find((candidate) => candidate.id === id);
+            return value !== '' && !(filter?.kind === 'choice' && filter.allValue === value);
+        });
     const clear = (): void => {
         setTyped('');
         state.clear();
@@ -598,10 +624,14 @@ export function RecordTable<Row>({
                         <div key={candidate.id} className="w-48 shrink-0">
                             <Select
                                 aria-label={candidate.label}
-                                value={state.filters[candidate.id] ?? ''}
+                                value={
+                                    state.filters[candidate.id] ??
+                                    candidate.defaultValue ??
+                                    ''
+                                }
                                 onChange={(event) => state.filter(candidate.id, event.target.value)}
                             >
-                                <option value="">{candidate.all}</option>
+                                <option value={candidate.allValue ?? ''}>{candidate.all}</option>
                                 {strayChoice(candidate, state.filters[candidate.id])}
                                 {candidate.choices.map((choice) => (
                                     <option key={choice.value} value={choice.value}>

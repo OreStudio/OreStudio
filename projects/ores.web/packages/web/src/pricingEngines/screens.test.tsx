@@ -378,7 +378,14 @@ function list(codes: string[], parties = TWO_PARTIES, query = ''): string {
         (client: QueryClient) => {
             client.setQueryData(['my-access'], accessOf(codes));
             client.setQueryData(MY_PARTIES_QUERY_KEY, parties);
-            client.setQueryData(pageKey({ key: 'pricing-engines' }, FIRST_PAGE), {
+            client.setQueryData(
+                pageKey(
+                    { key: 'pricing-engines' },
+                    parties.parties.length > 1
+                        ? { ...FIRST_PAGE, filters: { party: parties.defaultPartyId } }
+                        : FIRST_PAGE,
+                ),
+                {
                 rows: ROWS,
                 total: ROWS.length,
             });

@@ -7717,6 +7717,8 @@ const pt: SourceCatalogue = {
         unread: 'Não foi possível ler {cell}: {message}',
         filter: {
             allParties: 'Todas as partes',
+            cut: 'Corte',
+            allCuts: 'Todos os cortes',
         },
         tally: {
             label: 'Relatórios segundo o estado da sua última execução',
@@ -7726,12 +7728,25 @@ const pt: SourceCatalogue = {
             report: 'Relatório',
             party: 'Parte',
             reportType: 'Tipo',
+            cut: 'Corte',
             schedule: 'Calendário',
             latestRun: 'Início da última execução',
             duration: 'Duração',
             health: 'Estado',
             errors: 'Erros',
             warnings: 'Avisos',
+        },
+        schedule: {
+            onDemand: 'A pedido',
+        },
+        cut: {
+            LIVE: 'Live',
+            EOD: 'Fim do dia',
+            SOD: 'Início do dia',
+            IPV: 'Verificação independente de preços',
+            FLASH: 'Flash',
+            EOM: 'Fim do mês',
+            EOY: 'Fim do ano',
         },
         health: {
             failed: 'Falhou',

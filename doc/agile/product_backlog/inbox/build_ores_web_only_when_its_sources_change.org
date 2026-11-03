@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: E3B0E3C9-141A-4769-89F2-89D96F5D9C2E
+:END:
+#+title: Build ores.web only when its sources change
+#+description: The ores_web custom target has no output, so every build runs npm run build for about 20 seconds, even when nothing in ores.web changed.
+#+type: capture
+#+level: cross
+#+filetags: :build:cmake:web:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.web/CMakeLists.txt= declares =ores_web= as an
+=add_custom_target(ores_web ALL COMMAND npm run build ...)= with no output.
+Ninja always runs a target with no output, so every build runs the
+workspace build (=tsc --build= and =vite build=). Only the =npm ci= step
+has a stamp, and it runs only when =package.json= or =package-lock.json=
+changes. Give the build step the same shape: an =add_custom_command= with
+an =OUTPUT= stamp (or the =dist/= files), =DEPENDS= on the workspace
+sources found with a =CONFIGURE_DEPENDS= glob, and a target that depends
+on that stamp.
+
+* Why
+
+On 2026-11-03, a build in brave_hopper with no local changes ran no C++
+step, but it still spent about 20 seconds in this step (ninja log: 181 ms
+to 20,269 ms for =projects/ores.web/CMakeFiles/ores_web=). That is most of
+the time of a build with no work. The step also prints about 30 lines of
+npm and vite output on every build, which hides the useful lines of the
+build log.
+
+* References
+
+- =projects/ores.web/CMakeLists.txt=: the =ores_web= target and the
+  =npm ci= stamp beside it.
+- PR #4401: the deps log repair, after which builds with no changes do
+  no C++ work.
+
+* See also
+
+-

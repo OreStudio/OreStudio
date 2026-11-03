@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen:codec:tests:generate_roundtrip_tests_for_the_wire_codecs:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-the-roundtrip-test-for-protocol-messages
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Every generated protocol message gets a filled and a default roundtrip case in J
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

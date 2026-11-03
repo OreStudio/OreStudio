@@ -93,7 +93,7 @@ It is addressed at =synthetic.v1.variance_calibrations.put=.
 
 #+name: variance_calibrations-add
 #+begin_src ores-shell :tangle variance_calibrations-add.ores :exports none
-variance_calibrations add __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ 0 - - - - - - - 0 0 false __none__ __none__ system.new_record generated_script
+variance_calibrations add __none__ __none__ - __none__ 0 - - - - - - - 0 0 false __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -114,7 +114,7 @@ It is addressed at =synthetic.v1.variance_calibrations.put=.
 
 #+name: variance_calibrations-set
 #+begin_src ores-shell :tangle variance_calibrations-set.ores :exports none
-variance_calibrations set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ 0 - - - - - - - 0 0 false __none__ __none__ system.new_record generated_script
+variance_calibrations set 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ 0 - - - - - - - 0 0 false __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -135,7 +135,7 @@ It is addressed at =synthetic.v1.variance_calibrations.put_many=.
 
 #+name: variance_calibrations-put-many
 #+begin_src ores-shell :tangle variance_calibrations-put-many.ores :exports none
-variance_calibrations put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ 0 - - - - - - - 0 0 false __none__ __none__ system.new_record generated_script
+variance_calibrations put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ 0 - - - - - - - 0 0 false __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

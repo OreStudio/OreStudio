@@ -48,8 +48,8 @@ generate_synthetic_variance_calibration(utility::generation::generation_context&
     r.party_id = ctx.generate_uuid();
     r.base_currency_code = std::string("EUR");
     r.quote_currency_code = std::string("USD");
-    r.input_id = ctx.generate_uuid();
-    r.method = std::string("gjr_garch_qmle");
+    r.input_id = std::nullopt;
+    r.method = std::string("authored");
     r.method_version = 1;
     r.alpha = std::optional<double>(0.05);
     r.gamma = std::optional<double>(0.02);
@@ -58,9 +58,9 @@ generate_synthetic_variance_calibration(utility::generation::generation_context&
     r.long_run_variance = std::optional<double>(0.00004);
     r.starting_variance_ratio = std::optional<double>(1.0);
     r.log_likelihood = std::nullopt;
-    r.returns_used = faker::number::integer(0, 1300);
-    r.starts = faker::number::integer(0, 8);
-    r.starts_agreed = faker::datatype::boolean();
+    r.returns_used = 0;
+    r.starts = 0;
+    r.starts_agreed = false;
     r.state = std::string("proposed");
     r.state_reason = std::string("");
     r.modified_by = modified_by;

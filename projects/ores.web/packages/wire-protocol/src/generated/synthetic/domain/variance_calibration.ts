@@ -37,7 +37,7 @@ export interface VarianceCalibration {
     party_id: string;
     base_currency_code: string;
     quote_currency_code: string;
-    input_id: string;
+    input_id: string | null;
     method: string;
     method_version: number;
     alpha: number | null;

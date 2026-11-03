@@ -56,7 +56,7 @@ struct variance_calibration_entity {
     boost::uuids::uuid party_id;
     std::string base_currency_code;
     std::string quote_currency_code;
-    boost::uuids::uuid input_id;
+    std::optional<boost::uuids::uuid> input_id;
     std::string method;
     int method_version = 0;
     std::optional<double> alpha;

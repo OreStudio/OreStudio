@@ -52,7 +52,7 @@ struct variance_calibration_write {
     boost::uuids::uuid id;
     std::string base_currency_code;
     std::string quote_currency_code;
-    boost::uuids::uuid input_id;
+    std::optional<boost::uuids::uuid> input_id;
     std::string method;
     int method_version;
     std::optional<double> alpha;
@@ -99,7 +99,7 @@ struct variance_calibration_lookup {
 struct variance_calibrations_filter {
     std::optional<std::string> base_currency_code;
     std::optional<std::string> quote_currency_code;
-    std::optional<boost::uuids::uuid> input_id;
+    std::optional<std::optional<boost::uuids::uuid>> input_id;
     std::optional<std::string> method;
     std::optional<std::string> state;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;

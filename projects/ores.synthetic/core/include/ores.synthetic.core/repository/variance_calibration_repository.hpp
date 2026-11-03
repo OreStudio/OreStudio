@@ -125,6 +125,7 @@ public:
     std::optional<domain::variance_calibration>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Whether a list of variance calibrations can be ordered by a field.
      *

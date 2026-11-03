@@ -52,7 +52,13 @@ namespace ores::synthetic::domain {
  * stationarity bound, is stored as rejected with the reason, so the attempt is kept;
  * such a row may have no shape, so the shape is required, and admissible, in the
  * other three states only. Each bound is written so that a missing value or NaN
- * fails it: a check passes on null, and PostgreSQL orders NaN above every number.
+ * fails it: a check passes on null, and PostgreSQL orders NaN above every number. A
+ * value that is present is finite in every state, rejected included, so the audit
+ * trail holds no NaN. The evidence of a fit agrees with its method: an authored shape
+ * has no starts, returns or likelihood, and a fit that was not rejected has all three.
+ *
+ * The checks do not tie persistence to the three parameters, because p_minus is
+ * not stored; the fit that writes a calibration owns that equality.
  *
  * persistence is alpha + gamma p_minus + beta, with p_minus the share of the
  * daily return's variance that falls on negative days, so it is stored rather than
@@ -90,10 +96,11 @@ struct variance_calibration final {
     std::string quote_currency_code;
 
     /**
-     * @brief The variance_calibration_input this calibration was fitted from; the nil UUID for an
-     * authored calibration, which reads no input.
+     * @brief The variance_calibration_input this calibration was fitted from; absent for an
+     * authored calibration, which reads no input. A foreign key holds a fitted calibration to an
+     * input that exists.
      */
-    boost::uuids::uuid input_id;
+    std::optional<boost::uuids::uuid> input_id;
 
     /**
      * @brief How the shape was obtained: gjr_garch_qmle, variance targeting and Gaussian quasi

@@ -109,7 +109,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A rejected row may carry NaN or infinity in its shape | ores.synthetic.variance_calibration.org | Accepted | Every value present is finite in every state; the suggested =x = x= test passes NaN in PostgreSQL, so the bound is below infinity |
+| 2 | =persistence= is not tied to the parameters in SQL | ores.synthetic.variance_calibration.org | Accepted | =p_minus= is not stored, so the fit task owns the equality; recorded on that task |
+| 3 | Superseding on approval is not ordered by the schema | ores.synthetic.variance_calibration.org | Accepted | The review task must supersede first and approve second in one transaction; recorded on that task |
+| 4 | =input_id= has no foreign key | ores.synthetic.variance_calibration.org | Accepted | An authored row now has no input, not the nil UUID, so a nullable foreign key holds a fit to an input that exists |
+| 5 | =starts= and =starts_agreed= are not related | ores.synthetic.variance_calibration.org | Accepted | Agreement needs a start; an authored row has no starts, returns or likelihood, and a fit that is not rejected has all three |
+| 6 | Confirm the approval index, NaN and nil input cases are covered | synthetic_variance_calibration_checks_test.sql | Accepted | They were; five cases added for the new checks, 29 in all |
 
 * Result
 
@@ -130,8 +135,8 @@ calibration of a pair is current, by a partial unique index.
 Measured on a recreated database at this branch: =ores.synthetic.api.tests= (186
 calibration cases), =ores.shell.synthetic.tests= (102) and
 =ores.synthetic.core.tests=, with the three eventing round trips, pass;
-=synthetic_variance_calibration_checks_test.sql= passes 24 of 24, and the six
-other synthetic pgTAP files pass, 64 tests in all. A first run showed the
+=synthetic_variance_calibration_checks_test.sql= passes 29 of 29, and the six
+other synthetic pgTAP files pass, 69 tests in all. A first run showed the
 generator could not satisfy a natural key that held the validated currency codes,
 so the pair left the input's key; the fixing URI already names the pair.
 

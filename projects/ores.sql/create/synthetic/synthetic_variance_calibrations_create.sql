@@ -39,7 +39,13 @@
  * stationarity bound, is stored as rejected with the reason, so the attempt is kept;
  * such a row may have no shape, so the shape is required, and admissible, in the
  * other three states only. Each bound is written so that a missing value or NaN
- * fails it: a check passes on null, and PostgreSQL orders NaN above every number.
+ * fails it: a check passes on null, and PostgreSQL orders NaN above every number. A
+ * value that is present is finite in every state, rejected included, so the audit
+ * trail holds no NaN. The evidence of a fit agrees with its method: an authored shape
+ * has no starts, returns or likelihood, and a fit that was not rejected has all three.
+ *
+ * The checks do not tie persistence to the three parameters, because p_minus is
+ * not stored; the fit that writes a calibration owns that equality.
  *
  * persistence is alpha + gamma p_minus + beta, with p_minus the share of the
  * daily return's variance that falls on negative days, so it is stored rather than
@@ -53,7 +59,7 @@ create table if not exists "ores_synthetic_variance_calibrations_tbl" (
     "party_id" uuid not null,
     "base_currency_code" text not null,
     "quote_currency_code" text not null,
-    "input_id" uuid not null,
+    "input_id" uuid null,
     "method" text not null,
     "method_version" integer not null,
     "alpha" double precision null,
@@ -84,11 +90,14 @@ create table if not exists "ores_synthetic_variance_calibrations_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("base_currency_code" <> "quote_currency_code"),
     check ("method" in ('gjr_garch_qmle', 'authored')),
-    check (("method" = 'authored') = ("input_id" = ores_utility_nil_uuid_fn())),
+    check (("method" = 'authored') = ("input_id" is null)),
     check ("method_version" > 0),
     check ("state" in ('proposed', 'approved', 'rejected', 'superseded')),
     check ("state" not in ('approved', 'rejected', 'superseded') or "state_reason" <> ''),
-    check ("returns_used" >= 0 and "starts" >= 0),
+    check ("returns_used" >= 0 and "starts" >= 0 and (not "starts_agreed" or "starts" > 0)),
+    check ("method" <> 'authored' or ("starts" = 0 and "returns_used" = 0 and "log_likelihood" is null)),
+    check ("method" = 'authored' or "state" = 'rejected' or ("starts" > 0 and "returns_used" > 0 and "log_likelihood" is not null)),
+    check (coalesce("alpha", 0) < 'Infinity'::double precision and coalesce("gamma", 0) < 'Infinity'::double precision and coalesce("beta", 0) < 'Infinity'::double precision and coalesce("persistence", 0) < 'Infinity'::double precision and coalesce("long_run_variance", 0) < 'Infinity'::double precision and coalesce("starting_variance_ratio", 0) < 'Infinity'::double precision and coalesce("log_likelihood", 0) < 'Infinity'::double precision),
     check ("state" = 'rejected' or coalesce("alpha" >= 0 and "alpha" < 1 and "beta" >= 0 and "beta" < 1 and "alpha" + "gamma" >= 0 and "alpha" + "gamma" < 'Infinity'::double precision, false)),
     check ("state" = 'rejected' or coalesce("persistence" >= 0 and "persistence" < 1, false)),
     check ("state" = 'rejected' or coalesce("long_run_variance" > 0 and "long_run_variance" < 'Infinity'::double precision, false)),
@@ -120,6 +129,19 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate input_id (optional soft FK to ores_synthetic_variance_calibration_inputs_tbl)
+    if NEW.input_id is not null then
+        if not exists (
+            select 1 from ores_synthetic_variance_calibration_inputs_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.input_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid input_id: %. No active variance_calibration_input found with this id.', NEW.input_id
+                using errcode = '23503';
+        end if;
+    end if;
 
     -- Validate base_currency_code
     NEW.base_currency_code := ores_refdata_validate_currency_fn(NEW.tenant_id, NEW.base_currency_code);

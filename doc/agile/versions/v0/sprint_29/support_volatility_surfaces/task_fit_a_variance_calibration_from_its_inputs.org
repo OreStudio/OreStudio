@@ -61,6 +61,11 @@ task and name that file in the Command column.
 
 * Notes
 
+The schema does not tie =persistence= to =alpha=, =gamma= and =beta=, because
+=p_minus= is not stored (review of the records task, PR 4426). This task owns the
+equality: the fit writes =persistence= as =alpha + gamma p_minus + beta= from the
+mixture it fitted under, and a test checks it on every stored fit.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

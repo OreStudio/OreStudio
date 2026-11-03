@@ -36,7 +36,7 @@ export interface VarianceCalibrationWrite {
     id: string;
     base_currency_code: string;
     quote_currency_code: string;
-    input_id: string;
+    input_id: string | null;
     method: string;
     method_version: number;
     alpha: number | null;
@@ -71,7 +71,7 @@ export interface VarianceCalibrationLookup {
 export interface VarianceCalibrationsFilter {
     base_currency_code: string | null;
     quote_currency_code: string | null;
-    input_id: string | null;
+    input_id: string | null | null;
     method: string | null;
     state: string | null;
     id_one_of: string[] | null;

@@ -800,7 +800,7 @@ package "synthetic" #F9FBE7 {
         * party_id : uuid <<FK>>
         * base_currency_code : text
         * quote_currency_code : text
-        * input_id : uuid <<FK>>
+          input_id : uuid <<FK>>
         * method : text
         * method_version : integer
           alpha : double
@@ -842,7 +842,12 @@ package "synthetic" #F9FBE7 {
     stationarity bound, is stored as rejected with the reason, so the attempt is kept;
     such a row may have no shape, so the shape is required, and admissible, in the
     other three states only. Each bound is written so that a missing value or NaN
-    fails it: a check passes on null, and PostgreSQL orders NaN above every number.
+    fails it: a check passes on null, and PostgreSQL orders NaN above every number. A
+    value that is present is finite in every state, rejected included, so the audit
+    trail holds no NaN. The evidence of a fit agrees with its method: an authored shape
+    has no starts, returns or likelihood, and a fit that was not rejected has all three.
+    The checks do not tie persistence to the three parameters, because p_minus is
+    not stored; the fit that writes a calibration owns that equality.
     persistence is alpha + gamma p_minus + beta, with p_minus the share of the
     daily return's variance that falls on negative days, so it is stored rather than
     recomputed from the three parameters alone.
@@ -904,6 +909,7 @@ ores_synthetic_trade_generation_configs_tbl ||--o{ ores_synthetic_trade_generati
 ores_synthetic_trade_generation_configs_tbl ||--o{ ores_synthetic_trade_generation_counterparties_tbl : "has"
 ores_synthetic_trade_generation_configs_tbl ||--o{ ores_synthetic_trade_generation_trade_types_tbl : "has"
 ores_synthetic_variance_calibration_inputs_tbl ||--o{ ores_synthetic_variance_calibration_input_points_tbl : "has"
+ores_synthetic_variance_calibration_inputs_tbl ||--o{ ores_synthetic_variance_calibrations_tbl : "has"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.synthetic.puml"

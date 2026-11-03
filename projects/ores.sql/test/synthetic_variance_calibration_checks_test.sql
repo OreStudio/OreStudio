@@ -32,7 +32,7 @@
 
 begin;
 
-select plan(24);
+select plan(29);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -86,7 +86,10 @@ returns void as $$
         p_alpha, 0.02, case when p_alpha is null then null else 0.9 end, p_persistence,
         case when p_alpha is null then null else 0.00004 end,
         case when p_alpha is null then null else 1.0 end,
-        null, 0, 0, false, p_state, p_reason,
+        case when p_method = 'authored' or p_state = 'rejected' then null else -1234.5 end,
+        case when p_method = 'authored' or p_state = 'rejected' then 0 else 1250 end,
+        case when p_method = 'authored' or p_state = 'rejected' then 0 else 4 end,
+        p_method <> 'authored' and p_state <> 'rejected', p_state, p_reason,
         current_user, current_user, 'system.new_record', 'test');
 $$ language sql;
 
@@ -116,11 +119,11 @@ select throws_like($$select pg_temp.add_point(gen_random_uuid(), date '2026-09-0
 
 select lives_ok($$select pg_temp.add_calibration('USD', 'gjr_garch_qmle', '00000000-0000-0000-0000-00000000cb01', 0.05, 0.96, 'proposed', '')$$,
     'a proposed fit of a stored input is kept');
-select lives_ok($$select pg_temp.add_calibration('JPY', 'authored', ores_utility_nil_uuid_fn(), 0.05, 0.96, 'approved', 'the authored default')$$,
+select lives_ok($$select pg_temp.add_calibration('JPY', 'authored', null, 0.05, 0.96, 'approved', 'the authored default')$$,
     'an approved authored shape that names no input is kept');
 select throws_like($$select pg_temp.add_calibration('USD', 'authored', '00000000-0000-0000-0000-00000000cb01', 0.05, 0.96, 'proposed', '')$$,
     '%violates check constraint%', 'an authored shape that names an input is refused');
-select throws_like($$select pg_temp.add_calibration('USD', 'gjr_garch_qmle', ores_utility_nil_uuid_fn(), 0.05, 0.96, 'proposed', '')$$,
+select throws_like($$select pg_temp.add_calibration('USD', 'gjr_garch_qmle', null, 0.05, 0.96, 'proposed', '')$$,
     '%violates check constraint%', 'a fit that names no input is refused');
 select throws_like($$select pg_temp.add_calibration('USD', 'gjr_garch_qmle', '00000000-0000-0000-0000-00000000cb01', null, 0.96, 'proposed', '')$$,
     '%violates check constraint%', 'a proposed calibration with no shape is refused');
@@ -132,9 +135,22 @@ select lives_ok($$select pg_temp.add_calibration('USD', 'gjr_garch_qmle', '00000
     'a rejected attempt with no shape is kept with its reason');
 select throws_like($$select pg_temp.add_calibration('USD', 'gjr_garch_qmle', '00000000-0000-0000-0000-00000000cb01', null, null, 'rejected', '')$$,
     '%violates check constraint%', 'a rejection with no reason is refused');
+select throws_like($$select pg_temp.add_calibration('USD', 'gjr_garch_qmle', gen_random_uuid(), 0.05, 0.96, 'proposed', '')$$,
+    '%No active variance_calibration_input found%', 'a fit of an input that does not exist is refused');
+select throws_like($$select pg_temp.add_calibration('USD', 'gjr_garch_qmle', '00000000-0000-0000-0000-00000000cb01', 'NaN'::double precision, null, 'rejected', 'the fit diverged')$$,
+    '%violates check constraint%', 'a NaN kept in a rejected attempt is refused');
+select throws_like($$update ores_synthetic_variance_calibrations_tbl set starts = 3
+    where quote_currency_code = 'JPY' and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%violates check constraint%', 'an authored shape that claims simplex starts is refused');
+select throws_like($$update ores_synthetic_variance_calibrations_tbl set starts = 0, starts_agreed = true
+    where quote_currency_code = 'USD' and state = 'proposed' and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%violates check constraint%', 'starts that agree with no start run are refused');
+select throws_like($$update ores_synthetic_variance_calibrations_tbl set log_likelihood = null
+    where quote_currency_code = 'USD' and state = 'proposed' and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%violates check constraint%', 'a fit that is not rejected without its likelihood is refused');
 select lives_ok($$select pg_temp.add_calibration('USD', 'gjr_garch_qmle', '00000000-0000-0000-0000-00000000cb01', 0.05, 0.96, 'approved', 'reviewed')$$,
     'an approved fit of the pair is kept');
-select throws_like($$select pg_temp.add_calibration('USD', 'authored', ores_utility_nil_uuid_fn(), 0.05, 0.96, 'approved', 'a second approval')$$,
+select throws_like($$select pg_temp.add_calibration('USD', 'authored', null, 0.05, 0.96, 'approved', 'a second approval')$$,
     '%duplicate key%', 'a second current approval of the pair is refused, whatever its method');
 
 select is(

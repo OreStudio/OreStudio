@@ -102,7 +102,9 @@ std::optional<query_builder::condition> variance_calibration_filter_condition(
             "quote_currency_code", query_builder::filter_value(*filter->quote_currency_code)));
     if (filter->input_id)
         r.push_back(
-            query_builder::equals("input_id", query_builder::filter_value(*filter->input_id)));
+            *filter->input_id ?
+                query_builder::equals("input_id", query_builder::filter_value(**filter->input_id)) :
+                query_builder::is_null("input_id"));
     if (filter->method)
         r.push_back(query_builder::equals("method", query_builder::filter_value(*filter->method)));
     if (filter->state)
@@ -305,6 +307,7 @@ std::optional<domain::variance_calibration> variance_calibration_repository::rea
         return std::nullopt;
     return entities.front();
 }
+
 
 variance_calibration_repository::remove_status variance_calibration_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {

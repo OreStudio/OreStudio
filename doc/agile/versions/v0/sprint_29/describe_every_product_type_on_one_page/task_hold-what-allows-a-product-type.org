@@ -28,7 +28,7 @@ The page can answer which books allow a type and who may book one. Both answers 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
+| Now          | The two junctions are modelled and generated; the drops, permissions, seeds and the booking check remain. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-31                               |
@@ -43,9 +43,22 @@ The page can answer which books allow a type and who may book one. Both answers 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two junctions, and one column that decides which of them applies.
+
+- =ores_refdata_book_product_types_tbl= holds the product types a book allows,
+  and =ores_refdata_books_tbl.restricts_product_types= says whether the junction
+  is the allowed set or whether the book allows everything. An unrestricted book
+  keeps no rows, so the same absence of rows means "all" on one book and "none"
+  on another, and the flag is what tells them apart.
+- =ores_iam_role_product_types_tbl= holds the product types a role may book. A
+  blank junction permits nothing, which is the safe reading for an authority and
+  the opposite of a book.
+- Both name the catalogue by code, a soft reference: the catalogue belongs to the
+  trading component and a foreign key would point refdata and IAM at the trades.
+- The booking path reads the book's flag first, then the junction, and refuses
+  with the rule that refused it.
+- ACME seeds every book and role with all 121 types, which is the unrestricted
+  reading written as data so a later restriction has somewhere to start.
 
 * Measurements
 
@@ -62,6 +75,19 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** 2026-11-03 — the model decides the question the acceptance asks
+
+A book with no rows and a role with no rows mean opposite things, and that is the
+part worth stating rather than discovering: a book is a container a tenant
+configures, so a blank set is "nothing was restricted"; a role is an authority a
+tenant grants, so a blank set is "nothing was granted". The book carries a flag
+to say which; the role does not need one, because its junction is the grant.
+
+Both junctions name the catalogue by code rather than by a foreign key. The
+catalogue is the trading component's and the junctions belong to refdata and IAM,
+so a key would point the reference data at the trades; the same soft reference is
+what the instrument tables already use for a product type.
 
 * Test Scenarios
 

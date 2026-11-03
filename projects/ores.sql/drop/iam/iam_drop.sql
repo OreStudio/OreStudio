@@ -50,6 +50,8 @@
 \ir ./iam_account_role_drop.sql
 \ir ./iam_role_permissions_notify_trigger_drop.sql
 \ir ./iam_role_permission_drop.sql
+\ir ./iam_role_product_types_notify_trigger_drop.sql
+\ir ./iam_role_product_types_drop.sql
 \ir ./iam_roles_notify_trigger_drop.sql
 \ir ./iam_roles_drop.sql
 \ir ./iam_permissions_notify_trigger_drop.sql

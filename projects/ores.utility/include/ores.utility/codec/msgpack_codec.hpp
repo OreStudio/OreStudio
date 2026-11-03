@@ -222,15 +222,15 @@ struct msgpack_codec<double> {
 
     static double read(const msgpack_object& v) {
         switch (v.type) {
-        case MSGPACK_OBJECT_FLOAT32:
-        case MSGPACK_OBJECT_FLOAT64:
-            return v.via.f64;
-        case MSGPACK_OBJECT_POSITIVE_INTEGER:
-            return static_cast<double>(v.via.u64);
-        case MSGPACK_OBJECT_NEGATIVE_INTEGER:
-            return static_cast<double>(v.via.i64);
-        default:
-            throw std::invalid_argument("Not a number: the MessagePack value is not one");
+            case MSGPACK_OBJECT_FLOAT32:
+            case MSGPACK_OBJECT_FLOAT64:
+                return v.via.f64;
+            case MSGPACK_OBJECT_POSITIVE_INTEGER:
+                return static_cast<double>(v.via.u64);
+            case MSGPACK_OBJECT_NEGATIVE_INTEGER:
+                return static_cast<double>(v.via.i64);
+            default:
+                throw std::invalid_argument("Not a number: the MessagePack value is not one");
         }
     }
 };

@@ -210,7 +210,7 @@ export function VarianceReview({
     variance,
     onReviewed,
 }: {
-    readonly variance: VarianceCalibration;
+    readonly variance: Pick<VarianceCalibration, 'calibration_id' | 'state'>;
     readonly onReviewed: () => void;
 }): ReactNode {
     const { t } = useTranslation();

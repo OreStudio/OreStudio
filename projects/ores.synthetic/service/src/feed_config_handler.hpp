@@ -127,7 +127,8 @@ to_wire(const ores::marketdata::domain::feed_start& start) {
             .item = start.item,
             .provider_code = start.provider_code,
             .vendor_id = start.vendor_id,
-            .value = start.from_fixing ? start.value.to_string() : std::string{},
+            .value = start.from_fixing || !start.value.is_zero() ? start.value.to_string() :
+                                                                   std::string{},
             .inverted = start.inverted,
             .fixing_date = start.fixing_date,
             .received_at = start.received_at,
@@ -543,15 +544,25 @@ private:
             return resp;
         }
 
-        for (const auto& other : repoint_only ?
-                                     std::vector<ores::synthetic::domain::variance_calibration>{} :
-                                     repo::variance_calibration_repository{}.read_latest(req_ctx)) {
-            if (other.id == c.id || other.state != "approved" ||
-                other.base_currency_code != c.base_currency_code ||
+        int closed = 0;
+        // Approving again completes an approval that stopped part way, so it also closes what
+        // the first approval would have closed.
+        for (const auto& other : repo::variance_calibration_repository{}.read_latest(req_ctx)) {
+            if (other.id == c.id || other.base_currency_code != c.base_currency_code ||
                 other.quote_currency_code != c.quote_currency_code)
                 continue;
-            write_state(other, "superseded", "superseded by " + req.calibration_id);
-            resp.superseded_id = boost::uuids::to_string(other.id);
+            if (other.state == "approved") {
+                write_state(other, "superseded", "superseded by " + req.calibration_id);
+                resp.superseded_id = boost::uuids::to_string(other.id);
+            } else if (other.state == "proposed" && other.recorded_at < c.recorded_at) {
+                // An older fit of the pair can no longer be the one approved: approving it would
+                // replace a fit of later fixings. It is closed, so it does not wait for review.
+                write_state(other,
+                            "superseded",
+                            "superseded unreviewed by " + req.calibration_id +
+                                ", a later fit of the pair that was approved");
+                ++closed;
+            }
         }
         if (!repoint_only)
             write_state(c, "approved", req.reason);
@@ -584,6 +595,9 @@ private:
         }
         resp.success = true;
         resp.message = std::format("Approved; {} feed(s) now run it.", resp.repointed_feeds.size());
+        if (closed > 0)
+            resp.message +=
+                std::format(" {} older proposed fit(s) of the pair were superseded.", closed);
         BOOST_LOG_SEV(feed_config_handler_lg(), info)
             << "Variance calibration " << req.calibration_id << " approved; "
             << resp.repointed_feeds.size() << " feed(s) re-pointed";
@@ -673,9 +687,11 @@ private:
                                               .rank = tried.rank,
                                               .state = std::string(feed::to_string(tried.state)),
                                               .reason = tried.reason});
+                // The variance is fitted first so the level's commentary can name its outcome.
+                // Both read the mixture as the resolution read it, so the order moves no number.
+                calibrate_variance(req_ctx, in, resolved, policy, req.apply, one);
                 if (req.apply)
                     apply_calibration(req_ctx, in, resolved, one);
-                calibrate_variance(req_ctx, in, resolved, policy, req.apply, one);
             }
             resp.feeds.push_back(std::move(one));
         }
@@ -742,6 +758,8 @@ private:
                             src.window_days);
         words.pop_back();
         words += ".";
+        if (one.variance)
+            words += " " + variance_words(*one.variance);
         const ores::utility::domain::change_intent intent{.reason_code = "system.calibration",
                                                           .commentary = words};
         const auto claimed = [](int version) {
@@ -874,6 +892,24 @@ private:
         else
             report_stored_variance_calibration(req_ctx, in, policy, *src.fixing_date, p_minus, v);
         one.variance = std::move(v);
+    }
+
+    /// What a calibration run made of the feed's daily variance, as the feed's commentary says it.
+    static std::string
+    variance_words(const ores::synthetic::messaging::variance_calibration_summary& v) {
+        const auto id = v.calibration_id.substr(0, 8);
+        if (v.state == "proposed")
+            return std::format("GJR-GARCH daily variance fitted from {} of {} return(s), "
+                               "persistence {:.4f}: calibration {} waits for review.",
+                               v.used_count,
+                               v.point_count,
+                               v.persistence.value_or(0.0),
+                               id);
+        if (v.state == "rejected")
+            return "GJR-GARCH daily variance rejected: " + v.state_reason;
+        if (v.state == "failed")
+            return v.state_reason;
+        return std::format("GJR-GARCH calibration {} is {}.", id, v.state);
     }
 
     /// The ids a feed's variance records are stored under, named by what identifies each.
@@ -1010,10 +1046,30 @@ private:
         const precondition absent{.kind = precondition_kind::must_not_exist};
         const ores::utility::domain::change_intent intent{
             .reason_code = "system.calibration",
-            .commentary = std::format("Variance calibration of {} from the {} fixings of {}",
-                                      cfg.source_name,
-                                      v.provider_code,
-                                      v.item)};
+            .commentary = std::format(
+                "Captured {} {} fixing(s) of {} over {} day(s) to {:%F}, {} usable as returns, "
+                "for the GJR-GARCH fit of {}.",
+                v.point_count,
+                v.provider_code,
+                v.item,
+                policy.variance_window_days,
+                window_end,
+                v.used_count,
+                cfg.source_name)};
+        const ores::utility::domain::change_intent calibration_intent{
+            .reason_code = "system.calibration",
+            .commentary =
+                fit.fitted ?
+                    std::format(
+                        "GJR-GARCH fit of {} from {} return(s): alpha {:.4f}, gamma {:.4f}, "
+                        "beta {:.4f}, persistence {:.4f}. Proposed; it waits for review.",
+                        cfg.source_name,
+                        fit.returns_used,
+                        fit.alpha.value_or(0.0),
+                        fit.gamma.value_or(0.0),
+                        fit.beta.value_or(0.0),
+                        fit.persistence.value_or(0.0)) :
+                    std::format("GJR-GARCH fit of {} rejected: {}", cfg.source_name, fit.reason)};
         try {
             const bool input_stored = !repo::variance_calibration_input_repository{}
                                            .read_latest(req_ctx, boost::uuids::to_string(input_id))
@@ -1099,7 +1155,7 @@ private:
                                               .state = v.state,
                                               .state_reason = v.state_reason},
                                     .precondition = absent},
-                         .intent = intent});
+                         .intent = calibration_intent});
                 if (written.result.outcome != outcome::ok)
                     throw std::runtime_error("the calibration was not stored: " +
                                              written.result.message);

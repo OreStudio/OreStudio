@@ -214,7 +214,9 @@ struct sampler<std::chrono::year_month_day> {
         if (which < 2)
             return which == 0 ? year_month_day{year{2026}, month{3}, day{14}} :
                                 year_month_day{year{1999}, month{12}, day{31}};
-        return year_month_day{year{1900 + static_cast<int>(which % 8000)}, month{6}, day{15}};
+        // An instant is built from this date, and the clock's nanosecond count
+        // holds only the years 1678 to 2261, so the years stay inside them.
+        return year_month_day{year{2000 + static_cast<int>(which % 200)}, month{6}, day{15}};
     }
 };
 

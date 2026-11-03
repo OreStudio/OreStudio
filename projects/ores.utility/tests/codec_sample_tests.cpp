@@ -300,3 +300,13 @@ TEST_CASE("a type with its own text form samples through its sample texts", samp
     CHECK(sample<sample_probe_code>(1).text == "second");
     CHECK(ores::utility::codec::sample_unlike(sample_probe_code{"first"}).text == "second");
 }
+
+TEST_CASE("an instant sample survives its text form at any sample number", sample_tags) {
+    using clock_point = std::chrono::system_clock::time_point;
+    using form = ores::utility::codec::text_form<clock_point>;
+    for (std::size_t which = 0; which < 20000; which += 7) {
+        CAPTURE(which);
+        const auto v = sample<clock_point>(which);
+        REQUIRE(form::from_text(form::to_text(v)) == v);
+    }
+}

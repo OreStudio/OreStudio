@@ -29,6 +29,7 @@
 #include <map>
 #include <random>
 #include <set>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -347,4 +348,80 @@ TEST_CASE("a_quote_that_is_not_finite_is_left_out_of_the_ticks", derived_tags) {
 
 TEST_CASE("a_pair_names_its_option_convention_as_refdata_does", derived_tags) {
     CHECK(fx_option_convention_id({.base = "USD", .quote = "JPY"}) == "USD-JPY-FXOPTION");
+}
+
+TEST_CASE("a_pair_names_its_series_and_each_quote_as_the_catalogue_does", derived_tags) {
+    CHECK(derived_fx_series_uri({.base = "USD", .quote = "JPY"}) ==
+          "oresmd://fx/USD?type=series&instrument=fx_option&quote=rate_lnvol&ccy=JPY");
+    CHECK(derived_fx_quote_uri(
+              {.pair = {.base = "EUR", .quote = "USD"}, .expiry = "1Y", .label = "25RR"}) ==
+          "oresmd://fx/EUR?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=USD&expiry=1Y&"
+          "strike_label=25RR");
+}
+
+TEST_CASE("a_return_carries_the_day_it_ends_on", derived_tags) {
+    const dated_series usd{.dates = {derived_start,
+                                     year_month_day{sys_days{derived_start} + days{1}},
+                                     year_month_day{sys_days{derived_start} + days{4}}},
+                           .values = {1.10, 1.12, 1.09}};
+    const auto r = pair_log_returns(usd, std::nullopt);
+    REQUIRE(r);
+    CHECK(r->dates ==
+          std::vector<year_month_day>{year_month_day{sys_days{derived_start} + days{1}},
+                                      year_month_day{sys_days{derived_start} + days{4}}});
+}
+
+TEST_CASE("a_missing_day_is_derived_from_the_returns_up_to_it_and_no_later", derived_tags) {
+    const auto fixings = derived_fixings(400, 13);
+    const auto returns = pair_log_returns(fixings.at(ecb_fixing_item("USD")), std::nullopt);
+    REQUIRE(returns);
+    const auto convention = derived_convention("Spot", "Fwd");
+    const derived_fx_pair pair{.base = "EUR", .quote = "USD"};
+    const std::set<year_month_day> stored{returns->dates[300]};
+    const auto days = derive_missing_days(pair, *returns, convention, stored, {}, 250);
+    REQUIRE(days);
+    REQUIRE(days->size() == returns->returns.size() - 249 - 1);
+    CHECK(days->front().day == returns->dates[249]);
+    CHECK(days->back().day == returns->dates.back());
+    for (const auto& d : *days)
+        CHECK(d.day != returns->dates[300]);
+
+    const auto& on = (*days)[10];
+    const auto k = static_cast<std::size_t>(249 + 10);
+    REQUIRE(on.day == returns->dates[k]);
+    const std::vector<qm::fx_expiry> month{
+        {.label = "1M",
+         .years = 1.0 / 12.0,
+         .convention = *quote_convention_at(convention, 1.0 / 12.0)}};
+    const auto direct =
+        qm::derive_fx_quotes(std::span<const double>(returns->returns.data(), k + 1), month, {});
+    REQUIRE(direct);
+    REQUIRE(direct->expiries[0]);
+    const auto atm = derived_fx_quote_uri({.pair = pair, .expiry = "1M", .label = "ATM"});
+    bool found = false;
+    for (const auto& p : on.points)
+        if (p.coordinate == atm) {
+            CHECK(p.value == direct->expiries[0]->quotes.atm);
+            found = true;
+        }
+    CHECK(found);
+
+    const auto whole = qm::derive_fx_quotes(returns->returns, month, {});
+    CHECK(whole->expiries[0]->quotes.atm != direct->expiries[0]->quotes.atm);
+}
+
+TEST_CASE("a_day_whose_history_covers_no_long_expiry_quotes_only_the_short_ones", derived_tags) {
+    const auto fixings = derived_fixings(300, 17);
+    const auto returns = pair_log_returns(fixings.at(ecb_fixing_item("USD")), std::nullopt);
+    REQUIRE(returns);
+    const auto days = derive_missing_days(
+        {.base = "EUR", .quote = "USD"}, *returns, derived_convention("Spot", "Fwd"), {}, {}, 30);
+    REQUIRE(days);
+    REQUIRE_FALSE(days->empty());
+    for (const auto& p : days->front().points)
+        CHECK(p.coordinate.find("&expiry=1Y&") == std::string::npos);
+    bool year = false;
+    for (const auto& p : days->back().points)
+        year = year || p.coordinate.find("&expiry=1Y&") != std::string::npos;
+    CHECK(year);
 }

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 80EB8717-BCF9-4432-A340-E5560FA05E65
 :END:
-#+title: Two protocol headers have no TypeScript twin
-#+description: The protocol-twins check fails on main. The blotter model opts out because codegen cannot project a message type from another protocol, and the market regime protocol header has no model at all.
+#+title: Two protocol headers have no TypeScript twin (resolved)
+#+description: Resolved: the blotter takes the trade summaries filter, and the market regime has a model. The protocol-twins check fails on main. The blotter model opts out because codegen cannot project a message type from another protocol, and the market regime protocol header has no model at all.
 #+type: capture
 #+level: cross
 #+filetags: :codegen:typescript:gates:
@@ -21,6 +21,11 @@ The =protocol-twins= check requires a TypeScript twin for every protocol header,
 * Why
 
 The gate runs =protocol-twins= for every change in the modeling class, so the gate is red for all of those changes until both gaps are fixed. The gap came to light on the branch that moved the blotter subjects to the ops namespace.
+
+* Resolution
+
+- The blotter. =_TS_UTILITY_DOMAIN_TYPES= maps =ores::trading::messaging::trade_summaries_filter= to =TradeSummariesFilter= in the trade summary protocol module, as it already maps the ORE document. The opt-out is gone.
+- The market regime. =ores.synthetic.market_regime.org= models the protocol. The members and the defaults of the generated header are the same as the hand-written ones. Codegen also writes the codec, the roundtrip tests and the twin.
 
 * References
 

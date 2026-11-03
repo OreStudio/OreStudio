@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-derived-fx-vol-source
-#+pr:
+#+pr: 4411
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4411][#4411]] | [analytics] Derive FX volatility quotes from a pair's daily returns |
 
 * Review
 

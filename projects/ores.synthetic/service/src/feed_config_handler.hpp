@@ -622,12 +622,19 @@ private:
         calibrate_response resp;
         const auto class_policy = read_calibration_policy(req_ctx, asset_class_code);
         const auto policy = class_policy.value_or(feed::calibration_policy{});
-        resp.policy = {.from_policy_row = class_policy.has_value(),
-                       .window_days = policy.window_days,
-                       .variance_window_days = policy.variance_window_days,
-                       .allow_inverse = policy.allow_inverse,
-                       .fallback_code = policy.fallback_code,
-                       .provider_order = policy.provider_order};
+        resp.policy = {
+            .from_policy_row = class_policy.has_value(),
+            .window_days = policy.window_days,
+            .variance_window_days = policy.variance_window_days,
+            .variance_approval_mode = policy.variance_approval.by_policy ? "auto" : "manual",
+            .variance_min_returns = policy.variance_approval.min_returns,
+            .variance_require_starts_agree = policy.variance_approval.require_starts_agree,
+            .variance_min_persistence = policy.variance_approval.min_persistence,
+            .variance_max_persistence = policy.variance_approval.max_persistence,
+            .variance_min_reaction = policy.variance_approval.min_reaction,
+            .allow_inverse = policy.allow_inverse,
+            .fallback_code = policy.fallback_code,
+            .provider_order = policy.provider_order};
 
         const ores::marketdata::domain::system_market_clock clock;
         // Read once, on the first feed that resolves from a fixing: each feed would otherwise
@@ -878,7 +885,9 @@ private:
         v.point_count = static_cast<int>(points.size());
         v.used_count = static_cast<int>(std::ranges::count_if(points, &feed::variance_point::used));
         v.state = fit.fitted ? "proposed" : "rejected";
-        v.state_reason = fit.reason;
+        v.state_reason = fit.fitted ?
+                             waiting_reason(feed::evidence_of(fit), policy.variance_approval) :
+                             fit.reason;
         v.alpha = fit.alpha;
         v.gamma = fit.gamma;
         v.beta = fit.beta;
@@ -886,12 +895,69 @@ private:
         v.starting_variance_ratio = fit.starting_variance_ratio;
         v.starts = fit.starts;
         v.starts_agreed = fit.starts_agreed;
-        if (apply)
+        if (apply) {
             store_variance_calibration(
                 req_ctx, in, policy, *src.fixing_date, points, fit, p_minus, v);
-        else
+            approve_within_policy(req_ctx, in.config.asset_class_code, policy, v);
+        } else
             report_stored_variance_calibration(req_ctx, in, policy, *src.fixing_date, p_minus, v);
         one.variance = std::move(v);
+    }
+
+    /// How the reason of an approval by the class policy begins, so the feed's note can tell it.
+    static constexpr std::string_view policy_approval_prefix = "Approved by the";
+
+    /// Why a fitted shape waits, or that it passes the policy's rules, before anyone decides.
+    static std::string waiting_reason(const ores::synthetic::feed::fit_evidence& evidence,
+                                      const ores::synthetic::feed::variance_approval_rules& rules) {
+        namespace feed = ores::synthetic::feed;
+        if (!rules.by_policy)
+            return "Waits for a person's review: the class policy approves no fit itself.";
+        const auto failures = feed::approval_failures(evidence, rules);
+        if (failures.empty())
+            return "Passes the class policy's rules: " + feed::approval_evidence(evidence, rules) +
+                   ".";
+        std::string out = "Waits for review: ";
+        for (std::size_t i = 0; i < failures.size(); ++i)
+            out += (i == 0 ? "" : "; ") + failures[i];
+        return out + ".";
+    }
+
+    // The policy decides through the same review verb a person uses, so its approval supersedes,
+    // re-points and records exactly as theirs does, and names the policy and its version as the
+    // decider. A stored proposal is judged again on each applied run, so a repeat converges.
+    void approve_within_policy(const ores::database::context& req_ctx,
+                               const std::string& asset_class_code,
+                               const ores::synthetic::feed::calibration_policy& policy,
+                               ores::synthetic::messaging::variance_calibration_summary& v) {
+        namespace feed = ores::synthetic::feed;
+        if (!policy.variance_approval.by_policy || v.state != "proposed" ||
+            v.calibration_id.empty())
+            return;
+        const feed::fit_evidence evidence{.returns = v.used_count,
+                                          .starts_agreed = v.starts_agreed,
+                                          .alpha = v.alpha.value_or(0.0),
+                                          .gamma = v.gamma.value_or(0.0),
+                                          .persistence = v.persistence.value_or(0.0)};
+        if (!feed::approval_failures(evidence, policy.variance_approval).empty())
+            return;
+        const auto reason =
+            std::format("{} {} calibration policy {} version {}: {}.",
+                        policy_approval_prefix,
+                        asset_class_code,
+                        policy.id,
+                        policy.version,
+                        feed::approval_evidence(evidence, policy.variance_approval));
+        const auto decided = review(
+            req_ctx, {.calibration_id = v.calibration_id, .decision = "approve", .reason = reason});
+        if (!decided.success) {
+            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+                << "The policy did not approve " << v.calibration_id << ": " << decided.message;
+            v.state_reason = "Waits for review: the policy's approval failed: " + decided.message;
+            return;
+        }
+        v.state = "approved";
+        v.state_reason = reason;
     }
 
     /// What a calibration run made of the feed's daily variance, as the feed's commentary says it.
@@ -907,6 +973,13 @@ private:
                                id);
         if (v.state == "rejected")
             return "GJR-GARCH daily variance rejected: " + v.state_reason;
+        if (v.state == "approved" && v.state_reason.starts_with(policy_approval_prefix))
+            return std::format("GJR-GARCH daily variance fitted from {} of {} return(s), "
+                               "persistence {:.4f}: calibration {} approved by the class policy.",
+                               v.used_count,
+                               v.point_count,
+                               v.persistence.value_or(0.0),
+                               id);
         if (v.state == "failed")
             return v.state_reason;
         return std::format("GJR-GARCH calibration {} is {}.", id, v.state);

@@ -82,6 +82,29 @@ struct variance_fit final {
     bool starts_agreed = false;
 };
 
+/// What the approval rules judge a fit by, whether the fit is new or already stored.
+struct fit_evidence final {
+    int returns = 0;
+    bool starts_agreed = false;
+    double alpha = 0.0;
+    double gamma = 0.0;
+    double persistence = 0.0;
+};
+
+/// The evidence of a fitted shape; a rejected fit has none to judge.
+ORES_SYNTHETIC_API_EXPORT fit_evidence evidence_of(const variance_fit& fit);
+
+/**
+ * @brief The rules @p evidence fails, each as a reader would say it; empty when the policy may
+ * approve the fit.
+ */
+ORES_SYNTHETIC_API_EXPORT std::vector<std::string>
+approval_failures(const fit_evidence& evidence, const variance_approval_rules& rules);
+
+/// What a fit that passes the rules passed, for the reason the policy's approval records.
+ORES_SYNTHETIC_API_EXPORT std::string approval_evidence(const fit_evidence& evidence,
+                                                        const variance_approval_rules& rules);
+
 /// A market day of the feed's clock, in hours: FX trades round the clock on business days.
 inline constexpr double hours_per_market_day = 24.0;
 

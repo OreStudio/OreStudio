@@ -123,6 +123,13 @@ function calibration(over: Partial<Calibration> = {}): Calibration {
         policy: {
             from_policy_row: false,
             window_days: 90,
+            variance_window_days: 1826,
+            variance_approval_mode: 'manual',
+            variance_min_returns: 250,
+            variance_require_starts_agree: true,
+            variance_min_persistence: 0.8,
+            variance_max_persistence: 0.995,
+            variance_min_reaction: 0.01,
             allow_inverse: true,
             fallback_code: 'keep_fixed',
             provider_order: [],
@@ -278,6 +285,13 @@ describe('the calibration policy', () => {
                 policy: {
                     from_policy_row: true,
                     window_days: 60,
+                    variance_window_days: 1826,
+                    variance_approval_mode: 'manual',
+                    variance_min_returns: 250,
+                    variance_require_starts_agree: true,
+                    variance_min_persistence: 0.8,
+                    variance_max_persistence: 0.995,
+                    variance_min_reaction: 0.01,
                     allow_inverse: false,
                     fallback_code: 'refuse',
                     provider_order: ['ecb', 'imf'],
@@ -288,6 +302,26 @@ describe('the calibration policy', () => {
         expect(html).toContain('Save the policy');
         expect(html).toContain('Return to automatic');
         expect(html).toContain('Move imf up');
+    });
+
+    it('states that the policy approves fits within its rules, and the rules', () => {
+        const base = calibration();
+        const html = render(
+            '/market-data/calibration/fx/policy',
+            calibration({ policy: { ...base.policy, variance_approval_mode: 'auto' } }),
+        );
+        expect(html).toContain('data-variance-approval');
+        expect(html).toContain('Approved by the policy');
+        expect(html).toContain('1826 days');
+        expect(html).toContain('Must agree');
+        expect(html).toContain('0.8 – 0.995');
+        expect(html).toMatch(/<th[^>]*>Lowest reaction, alpha \(α\) \+ gamma \(γ\) \/ 2<\/th>/);
+    });
+
+    it('states that a person approves every fit in manual mode, with no rules', () => {
+        const html = render('/market-data/calibration/fx/policy', calibration());
+        expect(html).toContain('Approved by a person');
+        expect(html).not.toContain('Must agree');
     });
 });
 

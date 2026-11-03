@@ -264,6 +264,19 @@ struct calibration_policy_summary {
     int window_days = 0;
     /** @brief How many calendar days of fixings a variance calibration's input covers. */
     int variance_window_days = 0;
+    /** @brief manual, a person approves every variance fit; auto, the policy approves each fit that
+     * passes its rules. */
+    std::string variance_approval_mode;
+    /** @brief The fewest returns the policy approves a fit from. */
+    int variance_min_returns = 0;
+    /** @brief Whether the policy approves only a fit whose starts agree. */
+    bool variance_require_starts_agree = false;
+    /** @brief The lowest persistence the policy approves. */
+    double variance_min_persistence = 0.0;
+    /** @brief The highest persistence the policy approves. */
+    double variance_max_persistence = 0.0;
+    /** @brief The lowest average reaction, alpha plus half of gamma, the policy approves. */
+    double variance_min_reaction = 0.0;
     /** @brief True when an item that quotes the pair the other way round is read as one over it. */
     bool allow_inverse = false;
     /** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
@@ -666,6 +679,18 @@ struct review_variance_calibration_response {
         ::ores::utility::codec::field{"window_days", &calibration_policy_summary::window_days},
         ::ores::utility::codec::field{"variance_window_days",
                                       &calibration_policy_summary::variance_window_days},
+        ::ores::utility::codec::field{"variance_approval_mode",
+                                      &calibration_policy_summary::variance_approval_mode},
+        ::ores::utility::codec::field{"variance_min_returns",
+                                      &calibration_policy_summary::variance_min_returns},
+        ::ores::utility::codec::field{"variance_require_starts_agree",
+                                      &calibration_policy_summary::variance_require_starts_agree},
+        ::ores::utility::codec::field{"variance_min_persistence",
+                                      &calibration_policy_summary::variance_min_persistence},
+        ::ores::utility::codec::field{"variance_max_persistence",
+                                      &calibration_policy_summary::variance_max_persistence},
+        ::ores::utility::codec::field{"variance_min_reaction",
+                                      &calibration_policy_summary::variance_min_reaction},
         ::ores::utility::codec::field{"allow_inverse", &calibration_policy_summary::allow_inverse},
         ::ores::utility::codec::field{"fallback_code", &calibration_policy_summary::fallback_code},
         ::ores::utility::codec::field{"provider_order",

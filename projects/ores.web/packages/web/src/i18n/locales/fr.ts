@@ -5189,6 +5189,25 @@ const fr: SourceCatalogue = {
                 save: 'Enregistrer la politique',
                 reset: "Revenir à l'automatique",
                 coverage: 'Couverture',
+                approval: {
+                    title: 'Approbation de la variance',
+                    mode: {
+                        auto: 'Approuvé par la politique',
+                        manual: 'Approuvé par une personne',
+                    },
+                    leadAuto:
+                        'La politique approuve chaque ajustement GJR-GARCH qui respecte les règles ci-dessous, et un ajustement qui y échoue attend une personne. Les règles ne changent qu’avec une nouvelle version de la politique.',
+                    leadManual:
+                        'Une personne approuve chaque ajustement GJR-GARCH de la classe ; la politique n’en approuve aucun elle-même.',
+                    window: 'Fenêtre de variance',
+                    days: '{days} jours',
+                    minReturns: 'Rendements minimum',
+                    starts: 'Départs',
+                    startsRequired: 'Doivent concorder',
+                    startsAny: 'Peuvent diverger',
+                    persistence: 'Plage de persistance',
+                    reaction: 'Réaction minimale, alpha (α) + gamma (γ) / 2',
+                },
                 record: 'Registre du calibrage',
             },
         },

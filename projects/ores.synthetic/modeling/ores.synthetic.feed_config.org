@@ -534,6 +534,59 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief How many calendar days of fixings a variance calibration's input covers. */
 #+end_src
 
+*** variance_approval_mode
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief manual, a person approves every variance fit; auto, the policy approves each fit that passes its rules. */
+#+end_src
+
+*** variance_min_returns
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The fewest returns the policy approves a fit from. */
+#+end_src
+
+*** variance_require_starts_agree
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief Whether the policy approves only a fit whose starts agree. */
+#+end_src
+
+*** variance_min_persistence
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The lowest persistence the policy approves. */
+#+end_src
+
+*** variance_max_persistence
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The highest persistence the policy approves. */
+#+end_src
+
+*** variance_min_reaction
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The lowest average reaction, alpha plus half of gamma, the policy approves. */
+#+end_src
+
 *** allow_inverse
 :PROPERTIES:
 :cpp_type: bool

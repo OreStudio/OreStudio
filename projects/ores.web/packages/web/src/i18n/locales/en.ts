@@ -5110,6 +5110,25 @@ export const en: SourceCatalogue = {
                 save: 'Save the policy',
                 reset: 'Return to automatic',
                 coverage: 'Coverage',
+                approval: {
+                    title: 'Variance approval',
+                    mode: {
+                        auto: 'Approved by the policy',
+                        manual: 'Approved by a person',
+                    },
+                    leadAuto:
+                        'The policy approves each GJR-GARCH fit that passes the rules below, and a fit that fails them waits for a person. The rules change only with a new version of the policy.',
+                    leadManual:
+                        'A person approves every GJR-GARCH fit of the class; the policy approves none itself.',
+                    window: 'Variance window',
+                    days: '{days} days',
+                    minReturns: 'Fewest returns',
+                    starts: 'Starts',
+                    startsRequired: 'Must agree',
+                    startsAny: 'May disagree',
+                    persistence: 'Persistence range',
+                    reaction: 'Lowest reaction, alpha (α) + gamma (γ) / 2',
+                },
                 record: 'Calibration record',
             },
         },

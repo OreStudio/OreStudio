@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: 5F6C35FB-90B0-44B7-9991-38F5F3F67F0F
 :END:
-#+title: Delta ladder Bump and Reprice
+#+title: Bump and Reprice Delta ladder
 #+description: The first-order value change for one bumped factor at a time, read as money per shift rather than as a derivative of the price.
 #+type: report
 #+level: cross
 #+filetags: :report:trading-desk:greeks:sensitivity:eod:
 #+created: 2026-11-03
 #+updated: 2026-11-03
-#+report_code: delta_ladder_bump_and_reprice
+#+report_code: bump_and_reprice_delta_ladder
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Delta ladder Bump and Reprice. It states what the value of a book changes by
+Bump and Reprice Delta ladder. It states what the value of a book changes by
 when one market factor moves by one shift, and it states that change at each
 bucket of the factor. A desk uses it to choose a hedge and the size of that
 hedge, and market risk uses it at the close as the directional statement of
@@ -300,8 +300,8 @@ the environment and not about this report.
 - [[file:./reports.org][Reports]], where this page is listed.
 - [[file:../domain/risk_reporting.org][Risk reporting]], which holds the classification taxonomy and the measures catalogue.
 - [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]], which states the columns of =sensitivity.csv= and =scenario.csv=.
-- [[file:./report_gamma_ladder.org][Gamma ladder Bump and Reprice]], which carries the second-order column over the same buckets.
-- [[file:./report_dv01_ladder.org][DV01 ladder Bump and Reprice]], which reads the rate blocks as par values.
+- [[file:./report_gamma_ladder.org][Bump and Reprice Gamma ladder]], which carries the second-order column over the same buckets.
+- [[file:./report_dv01_ladder.org][Bump and Reprice DV01 ladder]], which reads the rate blocks as par values.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], which states the phases every run goes through.
 - [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], which states what an end of day cut holds.
 - [[file:../architecture/report_post_processing.org][Report post-processing]], which designs the result store this report waits for.

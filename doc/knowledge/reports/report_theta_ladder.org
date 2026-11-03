@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: 0C87306E-9668-428B-93FD-D65FD9946DA9
 :END:
-#+title: Theta ladder Bump and Reprice
+#+title: Bump and Reprice Theta ladder
 #+description: The value change from moving the clock rather than a market, produced by the theta period the sensitivity configuration states.
 #+type: report
 #+level: cross
 #+filetags: :report:market-risk:greeks:sensitivity:eod:
 #+created: 2026-11-03
 #+updated: 2026-11-03
-#+report_code: theta_ladder_bump_and_reprice
+#+report_code: bump_and_reprice_theta_ladder
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Theta ladder Bump and Reprice. It answers how the value of a book changes when
+Bump and Reprice Theta ladder. It answers how the value of a book changes when
 one day passes and nothing else moves, so a reader separates the value that
 time takes from the value a market move takes. The market risk function reads
 it when it checks a valuation it will carry into the next day, and the trading
@@ -312,10 +312,10 @@ the full-pipeline proof and not by a run that writes rows.
 - [[file:./reports.org][Reports]], the inventory this page is listed in.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../external/ore_output_formats.org][ORE output formats]], the columns of =sensitivity.csv= and =scenario.csv=.
-- [[file:./report_delta_ladder.org][Delta ladder Bump and Reprice]], the first order column read on a market factor.
-- [[file:./report_gamma_ladder.org][Gamma ladder Bump and Reprice]], the second order column on a market factor.
-- [[file:./report_rho_ladder.org][Rho ladder Bump and Reprice]], the rates ladder this page is not.
-- [[file:./report_cross_gamma_ladder.org][Cross-gamma ladder Bump and Reprice]], the rows that pair two factors of one risk class.
+- [[file:./report_delta_ladder.org][Bump and Reprice Delta ladder]], the first order column read on a market factor.
+- [[file:./report_gamma_ladder.org][Bump and Reprice Gamma ladder]], the second order column on a market factor.
+- [[file:./report_rho_ladder.org][Bump and Reprice Rho ladder]], the rates ladder this page is not.
+- [[file:./report_cross_gamma_ladder.org][Bump and Reprice Cross-gamma ladder]], the rows that pair two factors of one risk class.
 - [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what the end of day cut holds.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
 - [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], the definition that states the cycle and the cut.

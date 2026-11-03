@@ -236,7 +236,7 @@ resolution it relies on is exercised by the task that lit the intraday reports:
 - [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what a LIVE cut holds and what it does not.
 - [[file:./report_headline_position.org][Headline Position]], the shallow summary a reader opens first, and this report's sibling on the live cut.
 - [[file:./report_intraday_change.org][Intraday Change]], what moved since a stated time, rather than where the risk sits now.
-- [[file:./report_spot_greeks.org][Spot Greeks]], the directional view this monitor's delta ladder points at.
+- [[file:./report_spot_greeks.org][Bump and Reprice Spot Greeks]], the directional view this monitor's delta ladder points at.
 - [[file:./report_trades_since_last_in.org][Trades Since Last In]], the trades booked since a stated instant, when a move needs an explanation.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
 

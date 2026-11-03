@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: 4F1792D8-A563-4860-B230-AE337C4F6BB0
 :END:
-#+title: Surface vega ladder Bump and Reprice
+#+title: Bump and Reprice Surface vega ladder
 #+description: The value change at every strike of every expiry, one row for each surface point, when the whole volatility surface is bumped and the book repriced.
 #+type: report
 #+level: cross
 #+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:
 #+created: 2026-11-03
 #+updated: 2026-11-03
-#+report_code: surface_vega_ladder_bump_and_reprice
+#+report_code: bump_and_reprice_surface_vega_ladder
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Surface vega ladder Bump and Reprice. It shows the money the book gains or loses at
+Bump and Reprice Surface vega ladder. It shows the money the book gains or loses at
 every strike of every expiry when the volatility surface is shifted at each of those
 points and the book is repriced. A trading desk reads it to place a hedge at a named
 strike and expiry, and the market risk function reads it to check that the wings and
@@ -330,10 +330,10 @@ intraday reports,
 * Related
 
 - [[file:./reports.org][Reports]], the inventory this page is listed in.
-- [[file:./report_atm_vega_ladder.org][ATM vega ladder Bump and Reprice]], the same run with one point on each expiry.
-- [[file:./report_risk_reversal_vega_ladder.org][Risk-reversal vega ladder Bump and Reprice]], the slope of the smile, from two points of this run.
-- [[file:./report_butterfly_vega_ladder.org][Butterfly vega ladder Bump and Reprice]], the curvature of the smile, from three points of this run.
-- [[file:./report_three_pillar_vega_ladder.org][Three-pillar vega ladder Bump and Reprice]], the three components moved together.
+- [[file:./report_atm_vega_ladder.org][Bump and Reprice ATM vega ladder]], the same run with one point on each expiry.
+- [[file:./report_risk_reversal_vega_ladder.org][Bump and Reprice Risk-reversal vega ladder]], the slope of the smile, from two points of this run.
+- [[file:./report_butterfly_vega_ladder.org][Bump and Reprice Butterfly vega ladder]], the curvature of the smile, from three points of this run.
+- [[file:./report_three_pillar_vega_ladder.org][Bump and Reprice Three-pillar vega ladder]], the three components moved together.
 - [[file:../domain/fx_volatility_surface.org][FX Volatility Surface]], the surface these points sit on and its strike quoting.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.

@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: FD5EACF2-9CA1-498B-A298-6FC13549B711
 :END:
-#+title: Gamma ladder Bump and Reprice
+#+title: Bump and Reprice Gamma ladder
 #+description: The second-order value change in one factor, the curvature a linear ladder misses, produced by the gamma column or a central shift.
 #+type: report
 #+level: cross
 #+filetags: :report:trading-desk:greeks:sensitivity:eod:
 #+created: 2026-11-03
 +#+updated: 2026-11-03
-#+report_code: gamma_ladder_bump_and_reprice
+#+report_code: bump_and_reprice_gamma_ladder
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Gamma ladder Bump and Reprice. It states how the value change itself moves when
+Bump and Reprice Gamma ladder. It states how the value change itself moves when
 one market factor moves, so a reader sees the curvature that a straight ladder
 cannot show. A desk uses it to ask whether a hedge holds when the market moves
 twice as far, and market risk uses it to size the error a linear view carries. It
@@ -283,9 +283,9 @@ not by a smoke test. The machinery that proves a bundle without gathering one is
 - [[file:./reports.org][Reports]], where this page is listed.
 - [[file:../domain/risk_reporting.org][Risk reporting]], which holds the classification taxonomy and the measures catalogue.
 - [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]], which states the columns of =sensitivity.csv= and =scenario.csv=.
-- [[file:./report_delta_ladder.org][Delta ladder Bump and Reprice]], which carries the first-order column over the same buckets.
-- [[file:./report_cross_gamma_ladder.org][Cross-gamma ladder Bump and Reprice]], which reads the rows that name two factors.
-- [[file:./report_volga_ladder.org][Volga ladder Bump and Reprice]], which reads gamma on a volatility factor.
+- [[file:./report_delta_ladder.org][Bump and Reprice Delta ladder]], which carries the first-order column over the same buckets.
+- [[file:./report_cross_gamma_ladder.org][Bump and Reprice Cross-gamma ladder]], which reads the rows that name two factors.
+- [[file:./report_volga_ladder.org][Bump and Reprice Volga ladder]], which reads gamma on a volatility factor.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], which states the phases every run goes through.
 - [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], which states what an end of day cut holds.
 - [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]], the task that lit the sibling reports.

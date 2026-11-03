@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: D19FBAFA-E9D7-40B7-8EA2-A59AB15609E6
 :END:
-#+title: ATM vega ladder Bump and Reprice
+#+title: Bump and Reprice ATM vega ladder
 #+description: The value change at the at-the-money point of each expiry when the volatility is bumped and the book repriced, one row for each expiry bucket.
 #+type: report
 #+level: cross
 #+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:
 #+created: 2026-11-03
 #+updated: 2026-11-03
-#+report_code: atm_vega_ladder_bump_and_reprice
+#+report_code: bump_and_reprice_atm_vega_ladder
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-ATM vega ladder Bump and Reprice. It shows the money the book gains or loses at
+Bump and Reprice ATM vega ladder. It shows the money the book gains or loses at
 the at-the-money point of each expiry when the volatility there is shifted and
 the book is repriced. A trading desk reads it to place a vega hedge at a named
 expiry, and the market risk function reads it to see where the book's volatility
@@ -287,10 +287,10 @@ intraday reports,
 * Related
 
 - [[file:./reports.org][Reports]], the inventory this page is listed in.
-- [[file:./report_risk_reversal_vega_ladder.org][Risk-reversal vega ladder Bump and Reprice]], the ladder built from two of these points.
-- [[file:./report_butterfly_vega_ladder.org][Butterfly vega ladder Bump and Reprice]], the ladder built from three of these points.
-- [[file:./report_surface_vega_ladder.org][Surface vega ladder Bump and Reprice]], the same shift on every strike.
-- [[file:./report_three_pillar_vega_ladder.org][Three-pillar vega ladder Bump and Reprice]], the three components moved together.
+- [[file:./report_risk_reversal_vega_ladder.org][Bump and Reprice Risk-reversal vega ladder]], the ladder built from two of these points.
+- [[file:./report_butterfly_vega_ladder.org][Bump and Reprice Butterfly vega ladder]], the ladder built from three of these points.
+- [[file:./report_surface_vega_ladder.org][Bump and Reprice Surface vega ladder]], the same shift on every strike.
+- [[file:./report_three_pillar_vega_ladder.org][Bump and Reprice Three-pillar vega ladder]], the three components moved together.
 - [[file:../domain/fx_volatility_surface.org][FX Volatility Surface]], the surface these points sit on.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.

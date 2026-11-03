@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: F5288E4A-3F36-4FFB-992C-F1812E772232
 :END:
-#+title: Triple Vol Spot Ladder
+#+title: Bump and Reprice Triple Vol Spot Ladder
 #+description: Vega, Rega and Sega across every curve tenor at each spot shift level, so a desk reads vol and skew risk against a moving spot in one table, from the live cut.
 #+type: report
 #+level: cross
@@ -12,7 +12,7 @@
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Triple Vol Spot Ladder. It puts the three volatility Greeks of a book against
+Bump and Reprice Triple Vol Spot Ladder. It puts the three volatility Greeks of a book against
 every curve tenor at each spot shift level, so a desk reads vol and skew risk
 against a moving spot in one table. The trading desk reads it and the market risk
 function reads it, on the book scope. It runs every fifteen minutes through the
@@ -283,8 +283,8 @@ gather, the cut and the generated run document, and it proves no priced row.
 * Related
 
 - [[file:./reports.org][Reports]], the inventory this page is listed in.
-- [[file:./report_triple_vol_spot_ladder_eod.org][Triple Vol Spot Ladder (EOD)]], the same set on the end of day cut.
-- [[file:./report_spot_greeks.org][Spot Greeks]], the Delta view of spot risk on the same cut.
+- [[file:./report_triple_vol_spot_ladder_eod.org][Bump and Reprice Triple Vol Spot Ladder (EOD)]], the same set on the end of day cut.
+- [[file:./report_spot_greeks.org][Bump and Reprice Spot Greeks]], the Delta view of spot risk on the same cut.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../domain/fx_volatility_surface.org][FX Volatility Surface]], the smile identity a change of basis uses.
 - [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what a LIVE cut holds and what it does not.

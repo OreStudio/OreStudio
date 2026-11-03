@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8A3CF082-FDA8-4D54-9272-8388A9ED3A50
 :END:
-#+title: Risk-reversal vega ladder Bump and Reprice
+#+title: Bump and Reprice Risk-reversal vega ladder
 #+description: The call minus put value change at each expiry, derived from the surface points of one full-surface bump-and-reprice run, because ORE has no risk-reversal risk factor.
 #+type: report
 #+level: cross
@@ -12,7 +12,7 @@
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Risk-reversal vega ladder Bump and Reprice. It shows the value change of a call
+Bump and Reprice Risk-reversal vega ladder. It shows the value change of a call
 point minus the value change of a put point at each expiry, so a desk sees how the
 book answers to the skew of the surface and not only to its level. ORE has no
 risk-reversal risk factor, so the figure is derived from the surface points of one
@@ -313,10 +313,10 @@ intraday reports,
 * Related
 
 - [[file:./reports.org][Reports]], the inventory this page is listed in.
-- [[file:./report_atm_vega_ladder.org][ATM vega ladder Bump and Reprice]], the level of the smile, one point on each expiry.
-- [[file:./report_butterfly_vega_ladder.org][Butterfly vega ladder Bump and Reprice]], the curvature of the smile, from three points of the same run.
-- [[file:./report_surface_vega_ladder.org][Surface vega ladder Bump and Reprice]], the run this ladder reads, one row for each point.
-- [[file:./report_three_pillar_vega_ladder.org][Three-pillar vega ladder Bump and Reprice]], the three components moved together.
+- [[file:./report_atm_vega_ladder.org][Bump and Reprice ATM vega ladder]], the level of the smile, one point on each expiry.
+- [[file:./report_butterfly_vega_ladder.org][Bump and Reprice Butterfly vega ladder]], the curvature of the smile, from three points of the same run.
+- [[file:./report_surface_vega_ladder.org][Bump and Reprice Surface vega ladder]], the run this ladder reads, one row for each point.
+- [[file:./report_three_pillar_vega_ladder.org][Bump and Reprice Three-pillar vega ladder]], the three components moved together.
 - [[file:../domain/fx_volatility_surface.org][FX Volatility Surface]], where the smile identity and the point quoting are set out.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.

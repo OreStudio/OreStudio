@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: 225423E8-D86B-45E1-BA1B-CAC159647AA0
 :END:
-#+title: Vanna ladder Bump and Reprice
+#+title: Bump and Reprice Vanna ladder
 #+description: The curvature between spot and volatility, read from the paired-factor rows the engine writes when both factors of a pair are bumped.
 #+type: report
 #+level: cross
 #+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:
 #+created: 2026-11-03
 #+updated: 2026-11-03
-#+report_code: vanna_ladder_bump_and_reprice
+#+report_code: bump_and_reprice_vanna_ladder
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Vanna ladder Bump and Reprice. It answers how the vega of a book moves when
+Bump and Reprice Vanna ladder. It answers how the vega of a book moves when
 spot moves, so a reader sees the risk that a currency move turns into a
 volatility position. The trading desk reads it to keep a delta hedge stable
 across a spot move, and the market risk function reads it to question a book
@@ -323,10 +323,10 @@ full-pipeline proof and not by a run that writes rows.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../external/ore_output_formats.org][ORE output formats]], the columns of =sensitivity.csv= and =scenario.csv=.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]], the surface one factor of the pair belongs to.
-- [[file:./report_volga_ladder.org][Volga ladder Bump and Reprice]], the curvature within the volatility factor.
-- [[file:./report_cross_gamma_ladder.org][Cross-gamma ladder Bump and Reprice]], the rows that pair two factors of one risk class.
-- [[file:./report_delta_ladder.org][Delta ladder Bump and Reprice]], the first order column of the same run.
-- [[file:./report_atm_vega_ladder.org][ATM vega ladder Bump and Reprice]], the first order figure at one point of each expiry.
+- [[file:./report_volga_ladder.org][Bump and Reprice Volga ladder]], the curvature within the volatility factor.
+- [[file:./report_cross_gamma_ladder.org][Bump and Reprice Cross-gamma ladder]], the rows that pair two factors of one risk class.
+- [[file:./report_delta_ladder.org][Bump and Reprice Delta ladder]], the first order column of the same run.
+- [[file:./report_atm_vega_ladder.org][Bump and Reprice ATM vega ladder]], the first order figure at one point of each expiry.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
 - [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], the definition that states the cycle and the cut.
 

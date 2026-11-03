@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: 2696A263-DDBF-4467-9CE3-9F951A653734
 :END:
-#+title: Cross-gamma ladder Bump and Reprice
+#+title: Bump and Reprice Cross-gamma ladder
 #+description: The curvature between two factors of the same risk class, read from the rows that name two factors and the scenario values behind them.
 #+type: report
 #+level: cross
 #+filetags: :report:market-risk:greeks:sensitivity:eod:
 #+created: 2026-11-03
 #+updated: 2026-11-03
-#+report_code: cross_gamma_ladder_bump_and_reprice
+#+report_code: cross_bump_and_reprice_gamma_ladder
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Cross-gamma ladder Bump and Reprice. It answers how the value of a book bends
+Bump and Reprice Cross-gamma ladder. It answers how the value of a book bends
 when two factors move together, so a reader sees the risk that two separate
 first order hedges leave behind. The market risk function reads it when it
 signs off a hedge set, and the trading desk reads it when it decides how much
@@ -332,10 +332,10 @@ and not by a run that writes rows.
 - [[file:./reports.org][Reports]], the inventory this page is listed in.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../external/ore_output_formats.org][ORE output formats]], the columns of =sensitivity.csv= and =scenario.csv=.
-- [[file:./report_gamma_ladder.org][Gamma ladder Bump and Reprice]], the second order figure for one factor.
-- [[file:./report_delta_ladder.org][Delta ladder Bump and Reprice]], the first order column of the same run.
-- [[file:./report_vanna_ladder.org][Vanna ladder Bump and Reprice]], the paired rows that join a spot to a volatility.
-- [[file:./report_rho_ladder.org][Rho ladder Bump and Reprice]], the curves bumped at each tenor with the two effects apart.
+- [[file:./report_gamma_ladder.org][Bump and Reprice Gamma ladder]], the second order figure for one factor.
+- [[file:./report_delta_ladder.org][Bump and Reprice Delta ladder]], the first order column of the same run.
+- [[file:./report_vanna_ladder.org][Bump and Reprice Vanna ladder]], the paired rows that join a spot to a volatility.
+- [[file:./report_rho_ladder.org][Bump and Reprice Rho ladder]], the curves bumped at each tenor with the two effects apart.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
 - [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], the definition that states the cycle and the cut.
 

@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: 7E02BB05-E808-48BC-A916-6C41B761F82D
 :END:
-#+title: Volga ladder Bump and Reprice
+#+title: Bump and Reprice Volga ladder
 #+description: The curvature in volatility: the change in the vega figure when the volatility is bumped again, produced by the gamma column of a volatility-factor run.
 #+type: report
 #+level: cross
 #+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:
 #+created: 2026-11-03
 #+updated: 2026-11-03
-#+report_code: volga_ladder_bump_and_reprice
+#+report_code: bump_and_reprice_volga_ladder
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Volga ladder Bump and Reprice. It answers how the value of a book bends when
+Bump and Reprice Volga ladder. It answers how the value of a book bends when
 a volatility is moved, so a reader sees where a volatility position is convex
 before the surface moves. The trading desk reads it to size a volatility
 hedge, and the market risk function reads it to question a position whose
@@ -311,10 +311,10 @@ full-pipeline proof and not by a run that writes rows.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../external/ore_output_formats.org][ORE output formats]], the columns of =sensitivity.csv= and =scenario.csv=.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]], the surface this ladder bumps.
-- [[file:./report_delta_ladder.org][Delta ladder Bump and Reprice]], the first order column of the same run.
-- [[file:./report_gamma_ladder.org][Gamma ladder Bump and Reprice]], the second order column on the rate factors.
-- [[file:./report_vanna_ladder.org][Vanna ladder Bump and Reprice]], the paired rows of the same run.
-- [[file:./report_atm_vega_ladder.org][ATM vega ladder Bump and Reprice]], the first order figure at one point of each expiry.
+- [[file:./report_delta_ladder.org][Bump and Reprice Delta ladder]], the first order column of the same run.
+- [[file:./report_gamma_ladder.org][Bump and Reprice Gamma ladder]], the second order column on the rate factors.
+- [[file:./report_vanna_ladder.org][Bump and Reprice Vanna ladder]], the paired rows of the same run.
+- [[file:./report_atm_vega_ladder.org][Bump and Reprice ATM vega ladder]], the first order figure at one point of each expiry.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
 - [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], the definition that states the cycle and the cut.
 

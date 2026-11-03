@@ -55,11 +55,11 @@ ladder family, which the store can describe and cannot yet run.
 | [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]] | =headline_position= | LIVE | trading-desk, market-risk | The headline Greeks for a book or portfolio. |
 | [[id:07F92413-794A-4855-B761-73CC3CAF03C6][Headline Position (EOD)]] | =headline_position_eod= | EOD | market-risk, trading-desk | The same Greeks at the close, on the authorised cut. |
 | [[id:0744CB78-6EBF-4340-8885-837D0EEE6A95][Intraday Risk Monitor]] | =intraday_risk_monitor= | LIVE | trading-desk, market-risk | PV, the delta ladder, the top movers and limit use, between the closes. |
-| [[id:826BE0EC-E26D-478A-84C9-73A42021037F][Spot Greeks]] | =spot_greeks= | LIVE | trading-desk, market-risk | PV and Delta across a grid of spot shift levels. |
-| [[id:B845A078-591B-4F4B-8FF6-5FA606B2DBA8][Spot Greeks (EOD)]] | =spot_greeks_eod= | EOD | market-risk, trading-desk | The spot shift grid at the close. |
-| [[id:F5288E4A-3F36-4FFB-992C-F1812E772232][Triple Vol Spot Ladder]] | =triple_vol_spot_ladder= | LIVE | trading-desk, market-risk | Vega, Rega and Sega against a moving spot. |
-| [[id:84864DB2-3499-4B59-BDE3-14800CC2EA7D][Triple Vol Spot Ladder (EOD)]] | =triple_vol_spot_ladder_eod= | EOD | market-risk, trading-desk | The same ladder at the close, as the statement of record. |
-| [[id:DE8B8E26-DD38-4686-AE79-831083B0351C][Spot Ladder]] | =spot_ladder= | LIVE | trading-desk | The forward curve of a currency pair, tenor by tenor. |
+| [[id:826BE0EC-E26D-478A-84C9-73A42021037F][Bump and Reprice Spot Greeks]] | =spot_greeks= | LIVE | trading-desk, market-risk | PV and Delta across a grid of spot shift levels. |
+| [[id:B845A078-591B-4F4B-8FF6-5FA606B2DBA8][Bump and Reprice Spot Greeks (EOD)]] | =spot_greeks_eod= | EOD | market-risk, trading-desk | The spot shift grid at the close. |
+| [[id:F5288E4A-3F36-4FFB-992C-F1812E772232][Bump and Reprice Triple Vol Spot Ladder]] | =triple_vol_spot_ladder= | LIVE | trading-desk, market-risk | Vega, Rega and Sega against a moving spot. |
+| [[id:84864DB2-3499-4B59-BDE3-14800CC2EA7D][Bump and Reprice Triple Vol Spot Ladder (EOD)]] | =triple_vol_spot_ladder_eod= | EOD | market-risk, trading-desk | The same ladder at the close, as the statement of record. |
+| [[id:DE8B8E26-DD38-4686-AE79-831083B0351C][Bump and Reprice Spot Ladder]] | =spot_ladder= | LIVE | trading-desk | The forward curve of a currency pair, tenor by tenor. |
 | [[id:2A5A5552-F1A4-46CD-AF3A-ADB2BD0ACA5D][Spike Map]] | =spike_map= | LIVE | trading-desk, market-risk | Option notional against expiry date and spot level. |
 | [[id:454304DE-E361-4E35-9ABE-41800C751118][Strike Map]] | =strike_map= | LIVE | trading-desk | The same concentration view bucketed by strike. |
 | [[id:A952CB92-98B8-4F5A-B4AB-ECBBB9248521][Option Map]] | =option_map= | LIVE | trading-desk | Notional across delta, beside the strike view. |
@@ -71,7 +71,7 @@ The =Cut= column is the kind of cut the seeded definition selects, and it is the
 column that says what the report prices from. A report on both cycles is two
 definitions and not one: the plain name selects =LIVE= and runs during the day,
 and the same name with "(EOD)" selects =EOD= and runs at the close. Headline
-Position, Spot Greeks and Triple Vol Spot Ladder are seeded that way.
+Position, Bump and Reprice Spot Greeks and Bump and Reprice Triple Vol Spot Ladder are seeded that way.
 
 The pipeline that runs every row above is ordered by
 [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report Processing]], and the compute
@@ -89,19 +89,19 @@ and seeded nowhere; each page states why.
 #+ATTR_HTML: :class hug-leading
 | Report | Code | Cycle | Audience | What it produces |
 |--------+------+-------+----------+------------------|
-| [[id:D19FBAFA-E9D7-40B7-8EA2-A59AB15609E6][ATM vega ladder Bump and Reprice]] | =atm_vega_ladder_bump_and_reprice= | eod | trading-desk | The value change at the at-the-money point of each expiry. |
-| [[id:8A3CF082-FDA8-4D54-9272-8388A9ED3A50][Risk-reversal vega ladder Bump and Reprice]] | =risk_reversal_vega_ladder_bump_and_reprice= | eod | trading-desk | The call minus put change at each expiry, derived from surface points. |
-| [[id:AEAE5CC8-9F55-4F2A-91EC-8C1BBCAAAE5F][Butterfly vega ladder Bump and Reprice]] | =butterfly_vega_ladder_bump_and_reprice= | eod | trading-desk | The wing curvature at each expiry, derived from the same run. |
-| [[id:A6316CB6-8ADA-4A79-9AC2-B55F3A18DF47][Three-pillar vega ladder Bump and Reprice]] | =three_pillar_vega_ladder_bump_and_reprice= | eod | trading-desk | The three components together, which is the surface shifted with its shape held. |
-| [[id:4F1792D8-A563-4860-B230-AE337C4F6BB0][Surface vega ladder Bump and Reprice]] | =surface_vega_ladder_bump_and_reprice= | eod | trading-desk | The value change at every strike of every expiry. |
-| [[id:51B46B4E-1D7E-4ED6-8A49-8CD30F4D485B][DV01 ladder Bump and Reprice]] | =dv01_ladder_bump_and_reprice= | eod | market-risk | The money value of one basis point at each curve bucket, in par rates. |
-| [[id:C004FD5F-33F0-49D1-893D-9F66FC62342E][Rho ladder Bump and Reprice]] | =rho_ladder_bump_and_reprice= | eod | market-risk | The rate value change at each tenor, discount and projection apart. |
-| [[id:7E02BB05-E808-48BC-A916-6C41B761F82D][Volga ladder Bump and Reprice]] | =volga_ladder_bump_and_reprice= | eod | trading-desk | Gamma on the vol factor, the curvature in volatility. |
-| [[id:225423E8-D86B-45E1-BA1B-CAC159647AA0][Vanna ladder Bump and Reprice]] | =vanna_ladder_bump_and_reprice= | eod | trading-desk | The paired rows, one factor a spot and the other a volatility. |
-| [[id:5F6C35FB-90B0-44B7-9991-38F5F3F67F0F][Delta ladder Bump and Reprice]] | =delta_ladder_bump_and_reprice= | eod | trading-desk | The first-order value change, one factor at a time. |
-| [[id:FD5EACF2-9CA1-498B-A298-6FC13549B711][Gamma ladder Bump and Reprice]] | =gamma_ladder_bump_and_reprice= | eod | trading-desk | The curvature in one factor. |
-| [[id:2696A263-DDBF-4467-9CE3-9F951A653734][Cross-gamma ladder Bump and Reprice]] | =cross_gamma_ladder_bump_and_reprice= | eod | market-risk | The curvature between two factors of one risk class. |
-| [[id:0C87306E-9668-428B-93FD-D65FD9946DA9][Theta ladder Bump and Reprice]] | =theta_ladder_bump_and_reprice= | eod | market-risk | The value change from moving the clock rather than a market. |
+| [[id:D19FBAFA-E9D7-40B7-8EA2-A59AB15609E6][Bump and Reprice ATM vega ladder]] | =bump_and_reprice_atm_vega_ladder= | eod | trading-desk | The value change at the at-the-money point of each expiry. |
+| [[id:8A3CF082-FDA8-4D54-9272-8388A9ED3A50][Bump and Reprice Risk-reversal vega ladder]] | =risk_reversal_vega_ladder_bump_and_reprice= | eod | trading-desk | The call minus put change at each expiry, derived from surface points. |
+| [[id:AEAE5CC8-9F55-4F2A-91EC-8C1BBCAAAE5F][Bump and Reprice Butterfly vega ladder]] | =bump_and_reprice_butterfly_vega_ladder= | eod | trading-desk | The wing curvature at each expiry, derived from the same run. |
+| [[id:A6316CB6-8ADA-4A79-9AC2-B55F3A18DF47][Bump and Reprice Three-pillar vega ladder]] | =three_pillar_vega_ladder_bump_and_reprice= | eod | trading-desk | The three components together, which is the surface shifted with its shape held. |
+| [[id:4F1792D8-A563-4860-B230-AE337C4F6BB0][Bump and Reprice Surface vega ladder]] | =bump_and_reprice_surface_vega_ladder= | eod | trading-desk | The value change at every strike of every expiry. |
+| [[id:51B46B4E-1D7E-4ED6-8A49-8CD30F4D485B][Bump and Reprice DV01 ladder]] | =bump_and_reprice_dv01_ladder= | eod | market-risk | The money value of one basis point at each curve bucket, in par rates. |
+| [[id:C004FD5F-33F0-49D1-893D-9F66FC62342E][Bump and Reprice Rho ladder]] | =bump_and_reprice_rho_ladder= | eod | market-risk | The rate value change at each tenor, discount and projection apart. |
+| [[id:7E02BB05-E808-48BC-A916-6C41B761F82D][Bump and Reprice Volga ladder]] | =bump_and_reprice_volga_ladder= | eod | trading-desk | Gamma on the vol factor, the curvature in volatility. |
+| [[id:225423E8-D86B-45E1-BA1B-CAC159647AA0][Bump and Reprice Vanna ladder]] | =bump_and_reprice_vanna_ladder= | eod | trading-desk | The paired rows, one factor a spot and the other a volatility. |
+| [[id:5F6C35FB-90B0-44B7-9991-38F5F3F67F0F][Bump and Reprice Delta ladder]] | =bump_and_reprice_delta_ladder= | eod | trading-desk | The first-order value change, one factor at a time. |
+| [[id:FD5EACF2-9CA1-498B-A298-6FC13549B711][Bump and Reprice Gamma ladder]] | =bump_and_reprice_gamma_ladder= | eod | trading-desk | The curvature in one factor. |
+| [[id:2696A263-DDBF-4467-9CE3-9F951A653734][Bump and Reprice Cross-gamma ladder]] | =cross_bump_and_reprice_gamma_ladder= | eod | market-risk | The curvature between two factors of one risk class. |
+| [[id:0C87306E-9668-428B-93FD-D65FD9946DA9][Bump and Reprice Theta ladder]] | =bump_and_reprice_theta_ladder= | eod | market-risk | The value change from moving the clock rather than a market. |
 
 The family as a whole, what each ladder needs from the market data and what the
 store lacks, is on
@@ -128,7 +128,7 @@ platform does not yet run, are two different lists.
   a sensitivity one. No ACME risk report configuration switches a stress analytic
   on.
 - *The remaining catalogued reports have no page.* The catalogue on
-  [[file:../domain/risk_reporting.org][Risk reporting]] names Spot Ladder, All
+  [[file:../domain/risk_reporting.org][Risk reporting]] names Bump and Reprice Spot Ladder, All
   Crosses, Spot Vol Ladder for the base and quote currency, Trade Level Ladder
   for the premium currency, Vol Manipulation and IPV Explain. Each states a scope
   or a measure the seed has no configuration for: a cross of every currency pair,

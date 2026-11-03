@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: DE8B8E26-DD38-4686-AE79-831083B0351C
 :END:
-#+title: Spot Ladder
+#+title: Bump and Reprice Spot Ladder
 #+description: The full forward curve of a currency pair, every tenor's outright rate, read from the live cut rather than from a valuation, for a desk quoting and hedging at a named tenor.
 #+type: report
 #+level: cross
@@ -12,7 +12,7 @@
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Spot Ladder. It states the full forward curve of a currency pair, every tenor's
+Bump and Reprice Spot Ladder. It states the full forward curve of a currency pair, every tenor's
 outright rate, so a desk reads the whole curve while it quotes and hedges at a
 named tenor. The trading desk reads it, on the book scope, and its methodology is
 audit-derived. It holds a never firing schedule, so it is inactive until a person
@@ -232,7 +232,7 @@ definition records the refusal and not a priced book.
 * Related
 
 - [[file:./reports.org][Reports]], the inventory this page is listed in.
-- [[file:./report_spot_greeks.org][Spot Greeks]], the spot risk view of the same cut.
+- [[file:./report_spot_greeks.org][Bump and Reprice Spot Greeks]], the spot risk view of the same cut.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what a LIVE cut holds and what it does not.
 - [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], how the definition and its schedule are seated.

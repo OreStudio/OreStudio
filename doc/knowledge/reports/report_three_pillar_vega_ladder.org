@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: A6316CB6-8ADA-4A79-9AC2-B55F3A18DF47
 :END:
-#+title: Three-pillar vega ladder Bump and Reprice
+#+title: Bump and Reprice Three-pillar vega ladder
 #+description: The value change when the at-the-money, risk-reversal and butterfly components move together, which is the whole surface shifted while its shape is held.
 #+type: report
 +#+level: cross
@@ -12,7 +12,7 @@
 +#+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Three-pillar vega ladder Bump and Reprice. It states what the value of a book
+Bump and Reprice Three-pillar vega ladder. It states what the value of a book
 changes by when a volatility surface moves as one piece, with its shape held. A
 desk uses it to see the risk that survives a market-wide move in volatility, and
 market risk uses it to read volatility exposure without a view on skew. It runs on
@@ -290,10 +290,10 @@ not by a smoke test. The machinery that proves a bundle without gathering one is
 - [[file:./reports.org][Reports]], where this page is listed.
 - [[file:../domain/risk_reporting.org][Risk reporting]], which holds the classification taxonomy, the .1 Triple entry and the measures catalogue.
 - [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]], which states the columns of =sensitivity.csv= and =scenario.csv=.
-- [[file:./report_atm_vega_ladder.org][ATM vega ladder Bump and Reprice]], which places one shift on the at-the-money point.
-- [[file:./report_risk_reversal_vega_ladder.org][Risk-reversal vega ladder Bump and Reprice]], which reads the skew by change of basis.
-- [[file:./report_butterfly_vega_ladder.org][Butterfly vega ladder Bump and Reprice]], which reads the wing by change of basis.
-- [[file:./report_surface_vega_ladder.org][Surface vega ladder Bump and Reprice]], which places the same shift on every strike.
+- [[file:./report_atm_vega_ladder.org][Bump and Reprice ATM vega ladder]], which places one shift on the at-the-money point.
+- [[file:./report_risk_reversal_vega_ladder.org][Bump and Reprice Risk-reversal vega ladder]], which reads the skew by change of basis.
+- [[file:./report_butterfly_vega_ladder.org][Bump and Reprice Butterfly vega ladder]], which reads the wing by change of basis.
+- [[file:./report_surface_vega_ladder.org][Bump and Reprice Surface vega ladder]], which places the same shift on every strike.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]], which states the smile identity the change of basis uses.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], which states the phases every run goes through.
 

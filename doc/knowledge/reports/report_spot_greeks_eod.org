@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: B845A078-591B-4F4B-8FF6-5FA606B2DBA8
 :END:
-#+title: Spot Greeks (EOD)
+#+title: Bump and Reprice Spot Greeks (EOD)
 #+description: The spot shift grid at the close, priced from the day's authorised end of day cut: the authoritative statement of directional risk where the intraday definition states an indicative one.
 #+type: report
 #+level: cross
@@ -12,7 +12,7 @@
 #+startup: inlineimages
 
 This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
-Spot Greeks (EOD). It states the book's directional risk at the close, priced
+Bump and Reprice Spot Greeks (EOD). It states the book's directional risk at the close, priced
 from the day's authorised end of day cut, so the market risk function reads an
 authoritative figure where the intraday definition states an indicative one. It
 runs on the schedule at the close on weekdays, and a person may ask for one at
@@ -283,7 +283,7 @@ volatility row. A reader who needs one supplies volatility market data first.
 * Related
 
 - [[file:./reports.org][Reports]], the inventory this page is listed in.
-- [[file:./report_spot_greeks.org][Spot Greeks]], the same analytic set on the live cut.
+- [[file:./report_spot_greeks.org][Bump and Reprice Spot Greeks]], the same analytic set on the live cut.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
 - [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what a cut holds and what it does not.
 - [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], how the definition and its schedule are seated.

@@ -97,6 +97,9 @@
 #include "ores.refdata.core/messaging/instrument_code_registrar.hpp"
 #include "ores.refdata.core/messaging/ir_curve_bootstrap_config_registrar.hpp"
 #include "ores.refdata.core/messaging/ir_curve_bootstrap_pillar_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_blueprint_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_pillar_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_pillar_source_registrar.hpp"
 #include "ores.refdata.core/messaging/ledger_feed_type_registrar.hpp"
 #include "ores.refdata.core/messaging/leg_type_registrar.hpp"
 #include "ores.refdata.core/messaging/legal_entity_history_provider_registrar.hpp"
@@ -361,6 +364,9 @@
 #include "ores.refdata.core/messaging/intraday_power_load_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/ir_curve_bootstrap_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/ir_curve_bootstrap_pillar_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_blueprint_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_pillar_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_pillar_source_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/ledger_feed_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/leg_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/local_jurisdiction_history_provider_registrar.hpp"
@@ -530,6 +536,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_ibor_index_convention_handlers(nats, ctx, verifier));
     append(register_ir_curve_bootstrap_config_handlers(nats, ctx, verifier));
     append(register_ir_curve_bootstrap_pillar_handlers(nats, ctx, verifier));
+    append(register_fx_vol_surface_blueprint_handlers(nats, ctx, verifier));
+    append(register_fx_vol_surface_pillar_handlers(nats, ctx, verifier));
+    append(register_fx_vol_surface_pillar_source_handlers(nats, ctx, verifier));
     append(register_ledger_feed_type_handlers(nats, ctx, verifier));
     append(register_leg_type_handlers(nats, ctx, verifier));
     append(register_local_jurisdiction_handlers(nats, ctx, verifier));
@@ -826,6 +835,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_instrument_code_history_provider(hist_registry);
         register_ir_curve_bootstrap_config_history_provider(hist_registry);
         register_ir_curve_bootstrap_pillar_history_provider(hist_registry);
+        register_fx_vol_surface_blueprint_history_provider(hist_registry);
+        register_fx_vol_surface_pillar_history_provider(hist_registry);
+        register_fx_vol_surface_pillar_source_history_provider(hist_registry);
         register_party_contact_information_history_provider(hist_registry);
         register_party_country_history_provider(hist_registry);
         register_party_counterparty_history_provider(hist_registry);

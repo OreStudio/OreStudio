@@ -401,6 +401,14 @@
 \ir ./refdata_producer_kinds_drop.sql
 \ir ./refdata_source_kinds_drop.sql
 
+-- FX volatility surface recipe: sources, then pillars, then the blueprint they FK to.
+\ir ./refdata_fx_vol_surface_pillar_sources_notify_trigger_drop.sql
+\ir ./refdata_fx_vol_surface_pillar_sources_drop.sql
+\ir ./refdata_fx_vol_surface_pillars_notify_trigger_drop.sql
+\ir ./refdata_fx_vol_surface_pillars_drop.sql
+\ir ./refdata_fx_vol_surface_blueprints_notify_trigger_drop.sql
+\ir ./refdata_fx_vol_surface_blueprints_drop.sql
+
 -- IR curve bootstrap recipe: pillars before config (which they FK to).
 \ir ./refdata_ir_curve_bootstrap_pillars_notify_trigger_drop.sql
 \ir ./refdata_ir_curve_bootstrap_pillars_drop.sql

@@ -148,6 +148,9 @@
 #include "ores.shell/app/commands/refdata/intraday_power_load_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/ir_curve_bootstrap_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/ir_curve_bootstrap_pillar_commands.hpp"
+#include "ores.shell/app/commands/refdata/fx_vol_surface_blueprint_commands.hpp"
+#include "ores.shell/app/commands/refdata/fx_vol_surface_pillar_commands.hpp"
+#include "ores.shell/app/commands/refdata/fx_vol_surface_pillar_source_commands.hpp"
 #include "ores.shell/app/commands/refdata/ledger_feed_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/leg_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/legal_entity_commands.hpp"
@@ -365,6 +368,9 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     intraday_power_load_convention_commands::register_commands(root_menu, session);
     ir_curve_bootstrap_config_commands::register_commands(root_menu, session);
     ir_curve_bootstrap_pillar_commands::register_commands(root_menu, session);
+    fx_vol_surface_blueprint_commands::register_commands(root_menu, session);
+    fx_vol_surface_pillar_commands::register_commands(root_menu, session);
+    fx_vol_surface_pillar_source_commands::register_commands(root_menu, session);
     ledger_feed_type_commands::register_commands(root_menu, session);
     leg_type_commands::register_commands(root_menu, session);
     local_jurisdiction_commands::register_commands(root_menu, session);

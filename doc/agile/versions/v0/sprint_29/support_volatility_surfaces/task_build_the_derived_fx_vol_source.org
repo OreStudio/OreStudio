@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-derived-fx-vol-source
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,13 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A derived source publishes, once a day, the ATM, risk reversal and butterfly
+quotes of each catalogued FX pair it can infer from stored spot fixings, under
+its own identity, as quotes of the same =fx_option= items a vendor would quote.
+A surface generator can then start from them, and a vendor of the same items
+ranked above it replaces it with no change downstream.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,13 +39,39 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =ores.analytics.quant= computes the quotes natively: sample moments of daily
+  log returns, their shrinkage toward authored priors, the Gram-Charlier smile
+  of Backus, Foresi, Li and Wu held inside the region where it is a density, the
+  term scaling of the moments, and the quotes of an FX option convention at the
+  25 and 10 delta pillars, smile or broker butterfly, spot or forward delta,
+  premium-adjusted or not, delta-neutral or forward ATM.
+- The delta and ATM strike calculations reproduce QuantLib's black delta
+  calculator tests; the broker butterfly reprices the broker strangle on the
+  smile, as ORE's BF/RR surface test checks; the smile reproduces the paper's
+  pillar coefficients.
+- A derived adapter, hosted in the synthetic service under its own provider,
+  announces its items, answers demand and publishes the day's quotes after the
+  day's fixings, through the four adapter messages; its catalogue rows give the
+  system party a subscription and a route.
+- The derived quotes carry the derived provider's identity and no credit of the
+  publishers whose fixings fed them.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two pull requests, each verified on its own.
+
+1. The quant layer, pure and tested against QuantLib, ORE and the paper:
+   the normal quantile and a Brent root; Garman-Kohlhagen deltas and strikes
+   for the four delta types and the ATM types; the Gram-Charlier smile and the
+   quotes of a convention, with the broker butterfly solved so the broker
+   strangle reprices on the smile; return moments, shrinkage, the density
+   region and the term scaling; and one entry point from a series of fixings
+   and a set of expiries to the quotes.
+2. The adapter: a derived source in the synthetic service that reads fixings
+   through the market data reader and publishes the quotes; the provider, the
+   feed, the vendor instruments mapped to the =fx_option= items, the scopes,
+   the subscription and the route; the convention of each pair read from
+   =fx_option_convention=.
 
 * Measurements
 
@@ -80,6 +110,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result
+| L1 | The premium-adjusted call's peak search bracketed [-40, 40], where both ends underflow to zero, so Brent returned the end as a root | fx_delta.cpp | Accept | Bracket [-10, 10]; QuantLib's premium-adjusted call rows pass |
+| L2 | The density check read a 0.005 grid and let negatives of 7.5e-6 through at the region's edge | return_moments.cpp | Accept | The expansion is read at each root of its slope, solved by Brent |
+| L3 | The pillar loop chose its output by comparing a double to 0.25 | fx_smile_quotes.cpp | Accept | A table of pillars names each one's output fields |
+| L4 | gjr_garch.cpp kept a private normal cdf and density | gjr_garch.cpp | Accept | It uses math/normal.hpp |

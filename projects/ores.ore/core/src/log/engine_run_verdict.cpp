@@ -79,6 +79,21 @@ std::vector<std::string> error_messages(std::string_view engine_log) {
     return errors;
 }
 
+/**
+ * @brief What an event's cause names, which depends on its scope.
+ *
+ * The cause of an Analytics message is the analytic that was running and the
+ * cause of a Configuration message is the document, while a Curve or a Trade
+ * message names a curve.
+ */
+std::string_view cause_label(std::string_view scope) {
+    if (scope == "Analytics")
+        return "analytic";
+    if (scope == "Configuration")
+        return "configuration";
+    return "curve";
+}
+
 /** Whether a message says the same thing as one already collected. */
 bool restates(const std::vector<std::string>& failures, const std::string& message) {
     return std::ranges::any_of(failures, [&](const auto& failure) {
@@ -115,7 +130,7 @@ std::vector<std::string> explanations(std::string_view engine_log) {
                 text += ", " + type;
             text += ")";
         } else if (!event.cause.empty()) {
-            text += " (curve " + event.cause + ")";
+            text += " (" + std::string(cause_label(event.scope)) + " " + event.cause + ")";
         }
         if (!restates(reasons, text))
             reasons.push_back(std::move(text));

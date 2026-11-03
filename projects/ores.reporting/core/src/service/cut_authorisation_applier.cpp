@@ -63,8 +63,8 @@ struct unapplied_authorisation {
 };
 
 /** The instant a decision holds, at the precision the store keeps. */
-std::chrono::system_clock::time_point at_store_precision(
-    const std::chrono::system_clock::time_point& t) {
+std::chrono::system_clock::time_point
+at_store_precision(const std::chrono::system_clock::time_point& t) {
     return std::chrono::floor<std::chrono::microseconds>(t);
 }
 
@@ -78,8 +78,8 @@ std::chrono::system_clock::time_point at_store_precision(
 bool already_stamped(const domain::cut& cut, const unapplied_authorisation& decision) {
     if (decision.decision_code == approve_decision)
         return cut.approved_by == decision.decided_by && cut.approved_at &&
-               at_store_precision(*cut.approved_at) == decision.decided_at &&
-               !cut.refused_at && cut.refusal_comment.empty();
+               at_store_precision(*cut.approved_at) == decision.decided_at && !cut.refused_at &&
+               cut.refusal_comment.empty();
     return cut.refused_at && at_store_precision(*cut.refused_at) == decision.decided_at &&
            cut.refusal_comment == decision.comment && cut.approved_by.empty() && !cut.approved_at;
 }
@@ -92,7 +92,9 @@ bool already_stamped(const domain::cut& cut, const unapplied_authorisation& deci
  * states both. A refusal copies the reason as the decider wrote it, because the
  * cut's page shows that sentence and the remedy is a new take.
  */
-void stamp(domain::cut& cut, const unapplied_authorisation& decision, const std::string& actor) {
+void stamp_decision(domain::cut& cut,
+                    const unapplied_authorisation& decision,
+                    const std::string& actor) {
     if (decision.decision_code == approve_decision) {
         cut.approved_by = decision.decided_by;
         cut.approved_at = decision.decided_at;
@@ -157,11 +159,11 @@ int cut_authorisation_applier::apply() {
                 // The service account names the system as the writer; falling
                 // back to the decider hides that, so at least say so.
                 BOOST_LOG_SEV(lg(), warn)
-                    << "No service account on the apply context for request "
-                    << decision.request_id << "; the decider is recorded as the applier.";
+                    << "No service account on the apply context for request " << decision.request_id
+                    << "; the decider is recorded as the applier.";
             }
-            const auto applier = ctx.service_account().empty() ? decision.decided_by
-                                                               : ctx.service_account();
+            const auto applier =
+                ctx.service_account().empty() ? decision.decided_by : ctx.service_account();
 
             db::unit_of_work uow(ctx);
             const auto& uow_ctx = uow.ctx();
@@ -169,12 +171,12 @@ int cut_authorisation_applier::apply() {
             repository::cut_repository cuts;
             const auto held = cuts.read_latest(uow_ctx, decision.cut_id);
             if (held.empty())
-                throw std::runtime_error("no cut " + decision.cut_id +
-                                         " for request " + decision.request_id);
+                throw std::runtime_error("no cut " + decision.cut_id + " for request " +
+                                         decision.request_id);
 
             auto cut = held.front();
             if (!already_stamped(cut, decision)) {
-                stamp(cut, decision, decision.decided_by);
+                stamp_decision(cut, decision, decision.decided_by);
                 cut.performed_by = applier;
                 cuts.write(uow_ctx, cut);
             }
@@ -185,17 +187,17 @@ int cut_authorisation_applier::apply() {
             repository::cut_approval_detail_repository details;
             const auto details_held = details.read_latest(uow_ctx, decision.detail_id);
             if (details_held.empty())
-                throw std::runtime_error("no detail " + decision.detail_id +
-                                         " for request " + decision.request_id);
+                throw std::runtime_error("no detail " + decision.detail_id + " for request " +
+                                         decision.request_id);
             auto detail = details_held.front();
             detail.applied_by = applier;
             detail.applied_at = decision.decided_at;
             detail.modified_by = decision.decided_by;
             detail.performed_by = applier;
             detail.change_reason_code = "system.update";
-            detail.change_commentary = decision.decision_code == approve_decision
-                                           ? "Approved: the cut's authorisation is stamped"
-                                           : "Refused: the cut's refusal is stamped";
+            detail.change_commentary = decision.decision_code == approve_decision ?
+                                           "Approved: the cut's authorisation is stamped" :
+                                           "Refused: the cut's refusal is stamped";
             details.write(uow_ctx, detail);
 
             uow.commit();

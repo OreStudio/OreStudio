@@ -239,3 +239,19 @@ TEST_CASE("a verdict that names no analytic fails the run whatever else ran",
 
     CHECK_FALSE(outcome.succeeded);
 }
+
+TEST_CASE("an analytics failure names the analytic, not a curve",
+          "[ore][log][engine_run_verdict]") {
+    const auto log = line("ALERT",
+                          "StructuredMessage { \"category\": \"Error\", \"group\": \"Analytics\", "
+                          "\"message\": \"Boost assertion failed: px != 0\", \"sub_fields\": [ "
+                          "{ \"name\": \"analyticType\", \"value\": \"PRICING\" } ] }") +
+                     line("ALERT", "Error in ORE analytics: Failed to run analytics PRICING");
+
+    const auto outcome = judge_engine_run({"log.txt", "runtimes.csv"}, log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure.find("Boost assertion failed: px != 0 (analytic PRICING)") !=
+          std::string::npos);
+    CHECK(outcome.failure.find("(curve PRICING)") == std::string::npos);
+}

@@ -287,6 +287,26 @@ TEST_CASE("every start of the fit reaches the same optimum", "[gjr_garch]") {
     }
 }
 
+TEST_CASE("a well identified fit reports every start tried and agreeing", "[gjr_garch]") {
+    const auto truth = garch_model_of({.alpha = 0.06, .gamma = 0.04, .beta = 0.90}, 1e-4);
+    const auto series = simulate_garch_shocks(truth, 10'000, 5);
+    const auto fit = fit_gjr_garch(series, 0.5);
+    REQUIRE(fit.has_value());
+    CHECK(fit->starts_tried == static_cast<int>(default_fit_starts().size()));
+    CHECK(fit->starts_agreed);
+}
+
+TEST_CASE("starts that end in different basins do not agree", "[gjr_garch]") {
+    // Thirty returns of near white noise leave the likelihood flat, so the starts settle in
+    // different places, which the fit must report rather than hide behind the best one.
+    const auto truth = garch_model_of({.alpha = 0.01, .gamma = 0.0, .beta = 0.0}, 1e-4);
+    const auto series = simulate_garch_shocks(truth, 30, 1);
+    const auto fit = fit_gjr_garch(series, 0.5);
+    REQUIRE(fit.has_value());
+    CHECK_FALSE(fit->starts_agreed);
+    CHECK(fit->starts_tried == static_cast<int>(default_fit_starts().size()));
+}
+
 TEST_CASE("the fit targets the sample variance of the demeaned returns", "[gjr_garch]") {
     const auto truth = garch_model_of({.alpha = 0.05, .gamma = 0.0, .beta = 0.9}, 1e-4);
     auto series = simulate_garch_shocks(truth, 5'000, 3);

@@ -29,6 +29,7 @@
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
+#include "ores.synthetic.api/feeds/variance_calibration.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <charconv>
@@ -294,7 +295,6 @@ resolve_fx_start_from(ores::nats::service::nats_client& auth_nats,
 }
 
 /// FX trades round the clock on a business day, so a market day is twenty-four hours of ticks.
-constexpr double hours_per_market_day = 24.0;
 
 struct feed_variance final {
     ores::analytics::quant::math::gjr_garch_shape shape;

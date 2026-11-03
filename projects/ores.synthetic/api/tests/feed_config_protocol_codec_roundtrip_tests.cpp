@@ -76,6 +76,11 @@ TEST_CASE("ores::synthetic::messaging::candidate_outcome", "[codec][roundtrip][p
     ores::testing::check_wire_roundtrip<ores::synthetic::messaging::candidate_outcome>();
 }
 
+TEST_CASE("ores::synthetic::messaging::variance_calibration_summary",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::synthetic::messaging::variance_calibration_summary>();
+}
+
 TEST_CASE("ores::synthetic::messaging::calibrated_feed", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::synthetic::messaging::calibrated_feed>();
 }

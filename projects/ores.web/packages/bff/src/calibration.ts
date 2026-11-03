@@ -58,6 +58,7 @@ const assetClassSchema = z
 const calibrationPolicySchema = z.object({
     from_policy_row: z.boolean().default(false),
     window_days: z.int().default(0),
+    variance_window_days: z.int().default(0),
     allow_inverse: z.boolean().default(false),
     fallback_code: z.string().default(''),
     provider_order: z.array(z.string()).default([]),
@@ -73,6 +74,30 @@ const candidateOutcomeSchema = z.object({
     reason: z.string().default(''),
 });
 
+/** What a calibration run made of a feed's daily variance. */
+const varianceCalibrationSummarySchema = z.object({
+    input_id: z.string().default(''),
+    calibration_id: z.string().default(''),
+    state: z.string().default(''),
+    state_reason: z.string().default(''),
+    item: z.string().default(''),
+    provider_code: z.string().default(''),
+    inverted: z.boolean().default(false),
+    window_days: z.int().default(0),
+    window_end: z.string().default(''),
+    point_count: z.int().default(0),
+    used_count: z.int().default(0),
+    alpha: z.number().nullish(),
+    gamma: z.number().nullish(),
+    beta: z.number().nullish(),
+    persistence: z.number().nullish(),
+    starting_variance_ratio: z.number().nullish(),
+    starts: z.int().default(0),
+    starts_agreed: z.boolean().default(false),
+});
+
+export type VarianceCalibrationSummary = z.infer<typeof varianceCalibrationSummarySchema>;
+
 /** How one feed of the class resolved under the policy. */
 const calibratedFeedSchema = z.object({
     config_id: z.string(),
@@ -87,6 +112,7 @@ const calibratedFeedSchema = z.object({
     running: z.boolean().default(false),
     outcome: z.string().default(''),
     outcome_message: z.string().default(''),
+    variance: varianceCalibrationSummarySchema.nullish(),
 });
 
 export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;

@@ -197,6 +197,8 @@ std::expected<gjr_garch_fit, std::string> fit_gjr_garch(std::span<const double> 
 
     std::optional<gjr_garch_fit> best;
     int converged = 0;
+    std::vector<double> reached;
+    reached.reserve(starts.size());
     for (const auto& start : starts) {
         const auto result =
             nelder_mead<3>(cost_of, {start.alpha, start.gamma, start.beta}, {0.02, 0.02, 0.02});
@@ -208,12 +210,16 @@ std::expected<gjr_garch_fit, std::string> fit_gjr_garch(std::span<const double> 
             {.alpha = result.x[0], .gamma = result.x[1], .beta = result.x[2]}, variance, p_minus);
         if (!model)
             continue;
+        reached.push_back(result.value);
         if (!best || result.value < best->cost)
             best = gjr_garch_fit{.model = *model, .cost = result.value, .starts_converged = 0};
     }
     if (!best)
         return std::unexpected("no start of the GJR-GARCH fit reached an admissible point");
     best->starts_converged = converged;
+    best->starts_tried = static_cast<int>(starts.size());
+    best->starts_agreed = std::ranges::all_of(
+        reached, [&](double c) { return c - best->cost <= fit_starts_agreement; });
     return *best;
 }
 

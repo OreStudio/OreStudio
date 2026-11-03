@@ -280,6 +280,28 @@ wire_traits<ores::synthetic::messaging::candidate_outcome>::read_msgpack(
     return object::read_msgpack<ores::synthetic::messaging::candidate_outcome>(data);
 }
 
+std::string wire_traits<ores::synthetic::messaging::variance_calibration_summary>::write_json(
+    const ores::synthetic::messaging::variance_calibration_summary& v) {
+    return object::write_json(v);
+}
+
+ores::synthetic::messaging::variance_calibration_summary
+wire_traits<ores::synthetic::messaging::variance_calibration_summary>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::synthetic::messaging::variance_calibration_summary>(text);
+}
+
+std::string wire_traits<ores::synthetic::messaging::variance_calibration_summary>::write_msgpack(
+    const ores::synthetic::messaging::variance_calibration_summary& v) {
+    return object::write_msgpack(v);
+}
+
+ores::synthetic::messaging::variance_calibration_summary
+wire_traits<ores::synthetic::messaging::variance_calibration_summary>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::synthetic::messaging::variance_calibration_summary>(data);
+}
+
 std::string wire_traits<ores::synthetic::messaging::calibrated_feed>::write_json(
     const ores::synthetic::messaging::calibrated_feed& v) {
     return object::write_json(v);

@@ -487,6 +487,7 @@ describe('synthetic calibration', () => {
     const policy = {
         from_policy_row: true,
         window_days: 60,
+        variance_window_days: 730,
         allow_inverse: false,
         fallback_code: 'refuse',
         provider_order: ['ecb', 'boe'],
@@ -557,10 +558,52 @@ describe('synthetic calibration', () => {
         });
     });
 
+    it("passes a feed's variance calibration through to the browser", async () => {
+        const variance = {
+            input_id: '11111111-1111-4111-8111-111111111111',
+            calibration_id: '22222222-2222-4222-8222-222222222222',
+            state: 'proposed',
+            state_reason: '',
+            item: 'oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD',
+            provider_code: 'ecb',
+            inverted: false,
+            window_days: 1826,
+            window_end: '2026-11-02',
+            point_count: 280,
+            used_count: 279,
+            alpha: 0.011,
+            gamma: 0.023,
+            beta: 0.932,
+            persistence: 0.955,
+            starting_variance_ratio: 0.8,
+            starts: 4,
+            starts_agreed: true,
+        };
+        const { server, sessionId } = buildTestServer({
+            ...policyRows,
+            'synthetic.v1.ops.calibrate_feeds': {
+                success: true,
+                policy,
+                feeds: [
+                    {
+                        config_id: '33333333-3333-4333-8333-333333333333',
+                        source_name: 'synthetic.bloomberg.eurusd',
+                        start: { from_fixing: true, note: '' },
+                        variance,
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
+        expect(response.statusCode).toBe(200);
+        expect(response.json().feeds[0].variance).toEqual(variance);
+    });
+
     it('states the defaults, with no version, when the class has no policy row', async () => {
         const defaults = {
             from_policy_row: false,
             window_days: 90,
+            variance_window_days: 1826,
             allow_inverse: true,
             fallback_code: 'keep_fixed',
             provider_order: [],
@@ -579,6 +622,7 @@ describe('synthetic calibration', () => {
         const defaults = {
             from_policy_row: false,
             window_days: 90,
+            variance_window_days: 1826,
             allow_inverse: true,
             fallback_code: 'keep_fixed',
             provider_order: [],

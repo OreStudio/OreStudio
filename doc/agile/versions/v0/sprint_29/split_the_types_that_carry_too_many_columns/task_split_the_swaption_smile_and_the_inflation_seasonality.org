@@ -119,7 +119,7 @@ task and name that file in the Command column.
 | Corpus inflation curves with a seasonality | 71 of 133, each with base date, frequency and factors | same | `6f9b30f565` |
 | Local checks without build, database and ctest | 57 of 57 after regenerating four stale files | `python3 build/scripts/local_checks.py --exclude-heavy` | `6f9b30f565` |
 | ore suite | 519596 assertions, 0 failures; the corpus round trips 89 documents | `./compass.sh test run -- -R ores.ore.core.tests` | working tree on `6f9b30f565` |
-| refdata suite | 521 cases, 6012 assertions, 0 failures, on a recreated database | `./compass.sh test run -- -R ores.refdata.core.tests` | working tree on `6f9b30f565` |
+| refdata suite | 522 cases, 6019 assertions, 0 failures, on a recreated database, after the last fix | `./compass.sh test run -- -R ores.refdata.core.tests` | working tree on `6f9b30f565` |
 
 * Notes
 
@@ -146,6 +146,12 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the export refuses a seasonality with no factors, but =factorType= allows zero =Factor=, so an accepted =<Factors/>= would not write back | =curve_configuration_projection.cpp= | Accept | The export writes the empty element and still refuses factor rows with no seasonality; the test writes and reads such a seasonality back. |
 | 2 | Local review: misspell over the changed pages | models, task, captures | Accept | Clean. |
+| 3 | PR #4405, @claude 1: the import now requires BaseDate and Frequency in a Seasonality | projection | Decline | No change in what is accepted. =seasonalityType= makes both required, and the XML reader refuses a document that leaves out a required element before the projection runs, as it does for =Factors=. All 71 corpus seasonalities state both. |
+| 4 | PR #4405, @claude 2: the seasonality is pushed before its factors are read | projection | Decline | =map= builds the document locally and returns it only on success, so a refusal drops the whole of it. |
+| 5 | PR #4405, @claude 3: an empty smile element makes a part with empty text | projection | Decline | The entry read and wrote the same three fields with the same =text= and =set_optional_text= before the split, so empty and absent are kept apart as before; the corpus round trip holds. |
+| 6 | PR #4405, @claude 4: save, get and remove of the new parts are untested through the service | database tests | Accept | Save and get were covered, because the round trip tests write and read through the document service. Remove was not, anywhere. A new case removes a configuration with seasonalities and one with smile grids and checks both parts are gone. The refdata suite reran after the last fix. |
+| 7 | PR #4405, @claude 5: the wire change breaks old clients and stored payloads | protocol | Decline | The protocol has no version, the C++ and TypeScript twins move in this change, and nothing outside the tree reads it. Every split in this story changed the wire the same way. |
+| 8 | PR #4405, @claude 6: the volatility parts' DQ gap | capture | No change | Already captured, and not a regression of this change. |
 
 * Result
 

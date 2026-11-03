@@ -67,7 +67,52 @@ export function FeedStartNotice({ start }: { readonly start: FeedStart }): React
             )}
             {start.from_fixing && <FeedStartMeasures start={start} />}
             {start.note !== '' && <p>{start.note}</p>}
+            {start.variance !== null && start.variance !== undefined && (
+                <FeedStartVariance variance={start.variance} />
+            )}
         </Notice>
+    );
+}
+
+/** The decimals a GARCH parameter is read to: enough to tell one fit from another. */
+const shapeText = (value: number): string => value.toFixed(3);
+
+/**
+ * How the run's daily variance started: the GJR-GARCH shape it carries, whether its
+ * history fitted that shape or the authored one was kept, and how the first day's
+ * variance stands against the long-run level.
+ */
+export function FeedStartVariance({
+    variance,
+}: {
+    readonly variance: NonNullable<FeedStart['variance']>;
+}): ReactNode {
+    const { t } = useTranslation();
+    const shape = {
+        alpha: shapeText(variance.alpha),
+        gamma: shapeText(variance.gamma),
+        beta: shapeText(variance.beta),
+        persistence: shapeText(variance.persistence),
+    };
+    return (
+        <div data-feed-variance className="space-y-1">
+            <p>
+                {variance.fitted
+                    ? t('marketdata.fxFeeds.start.variance.fitted', {
+                          ...shape,
+                          returns: String(variance.returns),
+                      })
+                    : t('marketdata.fxFeeds.start.variance.authored', shape)}
+            </p>
+            {variance.fitted && (
+                <p>
+                    {t('marketdata.fxFeeds.start.variance.firstDay', {
+                        ratio: variance.initial_ratio.toFixed(2),
+                    })}
+                </p>
+            )}
+            {variance.note !== '' && <p>{variance.note}</p>}
+        </div>
     );
 }
 

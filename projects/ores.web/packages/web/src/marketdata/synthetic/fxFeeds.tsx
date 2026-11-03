@@ -30,6 +30,7 @@ import { FeedPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { COMPONENTS, MixturePanel } from './MixturePanel.js';
 import { ArrivalsTab } from './ArrivalsPanel.js';
+import { VarianceTab } from './VariancePanel.js';
 import { TicksPanel } from './TicksPanel.js';
 
 const FEEDS = 'fx-feeds';
@@ -38,6 +39,8 @@ const PROCESS_TYPES = ['geometric', 'arithmetic', 'ornstein_uhlenbeck'];
 const ARRIVAL_MODES = ['periodic', 'poisson', 'hawkes'] as const;
 
 const PRICE_SOURCES = ['fixed', 'fixing'];
+
+const VARIANCE_MODELS = ['constant', 'gjr_garch'];
 
 /**
  * The feed's own fields. The ORE key is derived from the pair and is not asked
@@ -114,6 +117,36 @@ const FEED_FIELDS: readonly FieldSpec[] = [
         help: 'marketdata.fxFeeds.help.sensitivity',
     },
     {
+        field: 'variance_model',
+        history: 'Variance Model',
+        kind: { kind: 'choice', options: VARIANCE_MODELS },
+        help: 'marketdata.fxFeeds.help.variance_model',
+    },
+    {
+        field: 'garch_alpha',
+        history: 'Garch Alpha',
+        kind: { kind: 'decimal' },
+        help: 'marketdata.fxFeeds.help.garch_alpha',
+    },
+    {
+        field: 'garch_gamma',
+        history: 'Garch Gamma',
+        kind: { kind: 'decimal' },
+        help: 'marketdata.fxFeeds.help.garch_gamma',
+    },
+    {
+        field: 'garch_beta',
+        history: 'Garch Beta',
+        kind: { kind: 'decimal' },
+        help: 'marketdata.fxFeeds.help.garch_beta',
+    },
+    {
+        field: 'garch_window_days',
+        history: 'Garch Window Days',
+        kind: { kind: 'int', min: 30, max: 3660 },
+        help: 'marketdata.fxFeeds.help.garch_window_days',
+    },
+    {
         field: 'price_source',
         history: 'Price Source',
         kind: { kind: 'choice', options: PRICE_SOURCES },
@@ -170,6 +203,11 @@ const FEED_WRITE_FIELDS = [
     'auto_start',
     'folder_id',
     'calibration_window_days',
+    'variance_model',
+    'garch_alpha',
+    'garch_gamma',
+    'garch_beta',
+    'garch_window_days',
 ] as const;
 
 /** The feed as written back with a change, such as a new engine. */
@@ -319,6 +357,34 @@ export const FX_FEED_KIND: FeedKind = {
                                         branching_ratio: ratio,
                                         decay,
                                         sensitivity,
+                                    }),
+                                    version: feed.version,
+                                },
+                            ],
+                            intent,
+                        );
+                    }}
+                />
+            ),
+        },
+        {
+            name: 'variance',
+            render: ({ feed, running, mayWrite }) => (
+                <VarianceTab
+                    feed={feed}
+                    mayWriteFeed={mayWrite}
+                    running={running === true}
+                    save={async (settings, intent) => {
+                        await api.saveSynthetic(
+                            FEEDS,
+                            [
+                                {
+                                    write: feedWrite(feed, {
+                                        variance_model: settings.model,
+                                        garch_alpha: settings.alpha,
+                                        garch_gamma: settings.gamma,
+                                        garch_beta: settings.beta,
+                                        garch_window_days: settings.windowDays,
                                     }),
                                     version: feed.version,
                                 },

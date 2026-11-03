@@ -19,7 +19,7 @@
 #ifndef ORES_ANALYTICS_QUANT_MATH_NORMAL_HPP
 #define ORES_ANALYTICS_QUANT_MATH_NORMAL_HPP
 
-#include <boost/math/special_functions/erf.hpp>
+#include "ores.analytics.quant/export.hpp"
 #include <cmath>
 #include <numbers>
 
@@ -41,9 +41,7 @@ inline double normal_cdf(double x) noexcept {
  * The C++ library has no inverse of erfc, so Boost.Math's is used:
  * x = -sqrt(2) erfc^-1(2 p). Boost raises an error at zero, one or outside.
  */
-inline double normal_quantile(double p) {
-    return -std::numbers::sqrt2 * boost::math::erfc_inv(2.0 * p);
-}
+ORES_ANALYTICS_QUANT_EXPORT double normal_quantile(double p);
 
 }
 

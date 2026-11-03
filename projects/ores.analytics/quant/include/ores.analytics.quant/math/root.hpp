@@ -26,13 +26,14 @@
 #include <exception>
 #include <expected>
 #include <limits>
+#include <stdexcept>
 #include <string>
 
 namespace ores::analytics::quant::math {
 
 /// The stopping rule of a root search.
 struct root_options final {
-    /// The bracket is narrow enough within this, absolutely, or a few ulps relatively.
+    /// The search stops when the bracket is at most this wide plus 4 ulps of its smaller end.
     double tolerance = 1e-14;
     int max_iterations = 200;
 };
@@ -52,10 +53,20 @@ find_root(F&& f, double lo, double hi, const root_options& options = {}) {
         return std::abs(a - b) <= options.tolerance + 4.0 * std::numeric_limits<double>::epsilon() *
                                                           std::min(std::abs(a), std::abs(b));
     };
+    // TOMS 748 does not check the values it reads, so a value that is not finite is
+    // raised here and becomes the reason, as Boost's own errors do.
+    const auto finite = [&](double x) {
+        const double y = f(x);
+        if (!std::isfinite(y))
+            throw std::domain_error("the function is not finite inside the bracket");
+        return y;
+    };
     try {
         auto iterations = static_cast<std::uintmax_t>(options.max_iterations);
-        const auto [a, b] = boost::math::tools::toms748_solve(f, lo, hi, close_enough, iterations);
-        if (iterations >= static_cast<std::uintmax_t>(options.max_iterations))
+        const auto [a, b] =
+            boost::math::tools::toms748_solve(finite, lo, hi, close_enough, iterations);
+        if (!close_enough(a, b) && a != b &&
+            iterations >= static_cast<std::uintmax_t>(options.max_iterations))
             return std::unexpected("the root search ran out of iterations");
         return 0.5 * (a + b);
     } catch (const std::exception& e) {

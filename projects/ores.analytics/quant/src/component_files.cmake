@@ -32,6 +32,7 @@ set(files
     "math/fx_vol_derivation.cpp"
     "math/gjr_garch.cpp"
     "math/mixture_tilt.cpp"
+    "math/normal.cpp"
     "math/psd_matrix.cpp"
     "math/rate_tree.cpp"
     "math/return_moments.cpp"

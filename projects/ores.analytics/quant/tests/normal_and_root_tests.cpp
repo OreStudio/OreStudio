@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <limits>
+#include <string>
 
 using namespace ores::analytics::quant::math;
 
@@ -97,4 +98,21 @@ TEST_CASE("a root search refuses a bracket without a sign change, and one out of
                           -100.0,
                           100.0,
                           root_options{.tolerance = 0.0, .max_iterations = 2}));
+}
+
+TEST_CASE("a root search finds a root where the function is flat", "[root]") {
+    const auto r = find_root([](double x) { return std::pow(x - 0.3, 5); }, -1.0, 1.0);
+    REQUIRE(r);
+    CHECK(*r == Catch::Approx(0.3).margin(1e-2));
+}
+
+TEST_CASE("a root search refuses a function that is not finite inside the bracket", "[root]") {
+    const auto r = find_root(
+        [](double x) {
+            return x > 0.2 && x < 0.4 ? std::numeric_limits<double>::quiet_NaN() : x - 0.3;
+        },
+        -1.0,
+        1.0);
+    REQUIRE_FALSE(r);
+    CHECK(r.error().find("not finite") != std::string::npos);
 }

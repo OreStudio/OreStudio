@@ -81,7 +81,7 @@ std::expected<double, std::string> fx_strike_from_delta(
     const double scaled = phi * delta / discount;
 
     if (!premium_adjusted(type)) {
-        if (!(scaled < 1.0))
+        if (!(scaled > 0.0 && scaled < 1.0))
             return std::unexpected("the delta is beyond what any strike reaches");
         const double d1 = phi * normal_quantile(scaled);
         return forward * std::exp(-d1 * stdev + 0.5 * stdev * stdev);

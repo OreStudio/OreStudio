@@ -18,6 +18,7 @@
  */
 #include "ores.analytics.quant/math/gjr_garch.hpp"
 #include "ores.analytics.quant/math/nelder_mead.hpp"
+#include "ores.analytics.quant/math/normal.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -32,14 +33,6 @@ namespace {
 
 /// The cost of a shape outside the admissible region, large enough that the simplex leaves it.
 constexpr double outside = 1e10;
-
-double normal_cdf(double x) {
-    return 0.5 * std::erfc(-x / std::numbers::sqrt2);
-}
-
-double normal_pdf(double x) {
-    return std::exp(-0.5 * x * x) / std::sqrt(2.0 * std::numbers::pi);
-}
 
 }
 

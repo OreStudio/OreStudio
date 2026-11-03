@@ -37,6 +37,13 @@ How do I build ORE Studio?
 target, not only the first one. =-k N= stops ninja after N failures, as ninja's
 own =-k= does; make takes no count.
 
+With ninja 1.13, a build first runs =ninja -t recompact= on the build
+directory. Ninja 1.13 cannot remove a damaged record from its deps log
+([[https://github.com/ninja-build/ninja/issues/2703][ninja#2703]]): each
+load stops at that record and drops all later records, so every build is a
+full one. The recompact writes the log again without the damaged record, in
+less than a second. Other ninja versions build directly.
+
 Friendly aliases: =site= → =deploy_site=, =manual= → =deploy_manual=,
 =org-roam-db-sync= → =org_roam_db_sync=; any raw cmake target is also
 accepted.

@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: feature/design-the-calibration-of-running-feeds
-#+pr:
+#+pr: 4437
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4437][#4437]] | [agile] Design the calibration of running feeds |
 
 * Review
 

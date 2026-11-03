@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-gjr-garch-variance-to-fx-spot
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,13 +20,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A synthetic FX spot feed can carry a GJR-GARCH variance from one market day to
+the next, so its volatility clusters across days and a fall can raise it more
+than a rise. The variance scales the feed's own GMM shock; the shape parameters
+are fitted from the pair's daily fixings, or authored where the history is too
+short. Native to =ores.analytics.quant=: no QuantLib code, QuantLib and ORE are a
+reference and a source of test expectations. See "Daily GJR-GARCH variance of
+synthetic FX spot" in Volatility clustering and GARCH models.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,13 +41,53 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =ores.analytics.quant= has a native GJR-GARCH model: validated parameters, the
+  recursion, the variance filter, the Gaussian quasi-likelihood, the mixture's
+  p_minus, and a quasi-maximum-likelihood fit with variance targeting.
+- Its tests at least match QuantLib's GARCH coverage: the calculation test
+  reproduces QuantLib's published values, the cost matches QuantLib's cost
+  function, and every start of the fit reaches the same optimum on a simulated
+  series whose parameters it recovers.
+- Any mixture process takes a volatility multiplier that scales its variance and
+  keeps its mean, and a GJR-GARCH decorator drives it day by day at O(1) cost
+  and no allocation per tick.
+- An FX spot config chooses a constant or a GJR-GARCH variance, carries authored
+  shape parameters, and a fixing feed fits them from its history at start; the
+  start record says which path it took and the values.
+- The FX feed screen edits the variance on a tab of its own, in the pattern of
+  the Arrivals tab, and shows what the running feed started with.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Data shapes, in =ores.analytics.quant/math/gjr_garch.hpp=:
+
+- =gjr_garch_shape= {alpha, gamma, beta}: the reaction and carry-over.
+- =gjr_garch_model= {shape, long_run_variance, p_minus}: built only through
+  =make_gjr_garch_model=, which refuses omega <= 0, alpha < 0, beta < 0,
+  alpha + gamma < 0 and persistence >= 1, so a model in hand is always valid.
+  omega is derived from the long-run variance (variance targeting).
+- Free functions over it: =next_variance= (the recursion, noexcept), =filter=,
+  =mean_cost= (QuantLib's Gaussian cost: the mean of log sigma2 + u2 / sigma2,
+  halved), =fit_gjr_garch= (multi-start Nelder-Mead over the shape, variance
+  targeted), and =negative_second_moment= of a standardised mixture in closed form.
+- =math/nelder_mead.hpp=: a native, deterministic, allocation-free-per-iteration
+  simplex minimiser, reusable by later calibrations.
+
+Process seam: =i_stochastic_process::set_volatility_multiplier= scales a law's
+variance and keeps its mean; the two mixture processes honour it. A decorator,
+=gjr_garch_variance_process=, wraps any process that honours it: it splits a step
+at the day boundary, sets the multiplier once a day, accumulates the day's log
+return and updates the variance at the roll. Per tick it adds one log and a
+multiply; per feed it holds a handful of doubles.
+
+Throughput checkpoint:
+- Blocking first steps: the math and its tests, then the seam, then the decorator.
+- Independent workstreams: the web tab is independent of the quant code once the
+  columns exist. n/a for parallel delegates: no Agent tool, one owner.
+- Shared mutable state: each feed owns its process; the decorator has no shared
+  state, so thousands of feeds share nothing.
+- Smallest safe decomposition: one PR, ordered commits (math, seam and decorator,
+  columns, feed wiring and start record, web tab).
 
 * Measurements
 

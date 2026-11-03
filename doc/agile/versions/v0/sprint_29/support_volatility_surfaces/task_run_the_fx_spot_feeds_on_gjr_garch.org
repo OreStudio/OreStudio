@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: feature/run-the-fx-spot-feeds-on-gjr-garch
-#+pr:
+#+pr: 4420
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4420][#4420]] | [synthetic] Run every FX spot feed on GJR-GARCH |
 
 * Review
 

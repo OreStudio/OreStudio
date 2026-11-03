@@ -79,3 +79,19 @@ def test_a_port_reached_transitively_is_accepted(tmp_path, monkeypatch, capsys):
                 {"boost-multiprecision": ["boost-math"], "boost-math": []},
                 ["math/special_functions.hpp"])
     assert run(root, monkeypatch) == 0
+
+
+def test_numeric_conversion_is_accepted_through_boost_graph(tmp_path, monkeypatch):
+    root = tree(tmp_path, ["boost-graph"],
+                {"boost-graph": ["boost-numeric-conversion"],
+                 "boost-numeric-conversion": []},
+                ["numeric/conversion/cast.hpp"])
+    assert run(root, monkeypatch) == 0
+
+
+def test_numeric_conversion_reports_its_actual_port_when_missing(
+        tmp_path, monkeypatch, capsys):
+    root = tree(tmp_path, ["boost-conversion"], {"boost-conversion": []},
+                ["numeric/conversion/cast.hpp"])
+    assert run(root, monkeypatch) == 1
+    assert 'add "boost-numeric-conversion" to vcpkg.json' in capsys.readouterr().err

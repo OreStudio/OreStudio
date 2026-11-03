@@ -66,6 +66,7 @@ NOT_LIBRARIES = {"pending"}
 PORT_FOR_INCLUDE = {
     "functional/hash": "boost-container-hash",
     "functional/hash_fwd": "boost-container-hash",
+    "numeric/conversion": "boost-numeric-conversion",
 }
 
 INCLUDE_RE = re.compile(r'#\s*include\s*[<"]boost/([a-z0-9_]+/[a-z0-9_/.]*)[>"]')

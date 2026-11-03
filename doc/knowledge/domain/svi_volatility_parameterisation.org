@@ -184,7 +184,11 @@ $\eta^2(1 + |\rho|) \le 4$, which holds for any $\rho$ when $\eta \le \sqrt{2}$.
 Condition 3 becomes $\eta\sqrt{\theta}\,(1 + |\rho|) < 4$, which, with
 $\eta \le \sqrt{2}$, holds whenever $\theta < 2$, that is whenever
 $\sigma_{ATM}\sqrt{t} < \sqrt{2}$. So the region is: $\theta_t$ rising in $t$,
-$|\rho| < 1$, $0 < \eta \le \sqrt{2}$, and total ATM variance below two. Remark
+$|\rho| < 1$, $0 < \eta \le \sqrt{2}$, and total ATM variance below two. The
+bound $\theta < 2$ is sufficient, not exact: it is condition 3 at the largest
+$\eta$ and $|\rho|$ allowed, and for a given pair the exact limit is
+$\theta < \left(4 / (\eta(1 + |\rho|))\right)^2$, which is looser whenever
+$\eta < \sqrt{2}$ or $|\rho| < 1$. Remark
 4.4 of the paper notes the general point behind the last bound: a power-law
 SSVI is free of static arbitrage only up to some maximum expiry.
 
@@ -194,8 +198,8 @@ A single $\rho$ ties the skew of every expiry to one number, which limits the
 term structures of risk reversal an SSVI surface can represent. Hendriks and
 Martini (2019) make $\rho$ a function of the expiry, the *extended SSVI*
 (eSSVI), and give necessary and sufficient conditions for that surface to be
-free of calendar spread arbitrage. The extension typically fits short expiries
-better. A later paper on a global parametrisation of eSSVI that keeps it free of
+free of calendar spread arbitrage. Its authors report that the extension can
+improve the accuracy of a calibration at short maturities. A later paper on a global parametrisation of eSSVI that keeps it free of
 arbitrage is listed below and has not been read in full.
 
 ** In ORE Studio
@@ -230,7 +234,9 @@ tenant's.
   [[https://arxiv.org/abs/2005.03340][arXiv:2005.03340]]. The complete
   characterisation of butterfly arbitrage in raw SVI.
 - Hendriks, S. and Martini, C. (2019). "The extended SSVI volatility surface."
-  /Journal of Computational Finance/, 22(5).
-  [[https://www.risk.net/journal-of-computational-finance/6555351/the-extended-ssvi-volatility-surface][risk.net]].
+  /Journal of Computational Finance/, 22(5), 25-39.
+  [[https://www.risk.net/journal-of-computational-finance/6555351/the-extended-ssvi-volatility-surface][risk.net]];
+  working paper (2017),
+  [[https://doi.org/10.2139/ssrn.2971502][doi:10.2139/ssrn.2971502]].
 - "No arbitrage global parametrization for the eSSVI volatility surface."
   [[https://arxiv.org/abs/2204.00312][arXiv:2204.00312]].

@@ -260,6 +260,22 @@ TEST_CASE("ores::reporting::messaging::cut_body_part", "[codec][roundtrip][proto
     ores::testing::check_wire_roundtrip<ores::reporting::messaging::cut_body_part>();
 }
 
+TEST_CASE("ores::reporting::messaging::cut_authorisation_subject", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::reporting::messaging::cut_authorisation_subject>();
+}
+
+TEST_CASE("ores::reporting::messaging::list_cut_authorisation_subjects_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::reporting::messaging::list_cut_authorisation_subjects_request>();
+}
+
+TEST_CASE("ores::reporting::messaging::list_cut_authorisation_subjects_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::reporting::messaging::list_cut_authorisation_subjects_response>();
+}
+
 TEST_CASE("ores::reporting::messaging::take_cut_response", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::reporting::messaging::take_cut_response>();
 }

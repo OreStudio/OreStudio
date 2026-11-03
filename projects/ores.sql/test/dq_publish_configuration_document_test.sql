@@ -42,7 +42,7 @@ select set_config('app.visible_party_ids',
 -- Every uuid column of the document tables other than the key, the tenant, the party, the
 -- reporting configuration and the ore parameter, which a publish resolves by name.
 -- Each refers to a row of the same document: a header, a collection, a curve definition,
--- a segment or an analytic.
+-- a segment, an entry whose part it keys or an analytic.
 select is(
     (select string_agg(distinct column_name, ' ' order by column_name)
      from information_schema.columns c
@@ -83,7 +83,7 @@ select is(
            'configuration_market_bindings']) t)),
     'commodity_price_segment_id configuration_analytic_id curve_configuration_id curve_definition_id curve_segment_id '
     'default_curve_configuration_id pricing_model_config_id pricing_model_product_id '
-    'todays_market_collection_id todays_market_config_id todays_market_configuration_id',
+    'swaption_volatility_config_id todays_market_collection_id todays_market_config_id todays_market_configuration_id',
     'every uuid key column of a document refers to a row of the same document');
 
 create temp table t_ctx on commit drop as

@@ -1,0 +1,174 @@
+:PROPERTIES:
+:ID: 0744CB78-6EBF-4340-8885-837D0EEE6A95
+:END:
+#+title: Intraday Risk Monitor
+#+description: The continuous risk view between the closes: PV, the delta ladder, the top movers and limit use for a book, priced from the live cut.
+#+type: report
+#+level: cross
+#+filetags: :report:trading-desk:intraday:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+report_code: intraday_risk_monitor
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Intraday Risk Monitor. It answers what a book's risk looks like while the day
+is still moving, so a desk head decides whether to cut a position before the
+close rather than the morning after. It runs on a thirty-minute schedule through
+the trading hours and on demand, and it prices from the live cut. It produces the
+engine's own output archive and records the cut its run minted; the result store
+that would ingest the archive is not built yet, so the run records where the
+archive landed and the body it priced from.
+
+* Purpose
+
+It answers what risk a book carries in the middle of the day, between the close
+that authorised yesterday and the close that will authorise today. The decision
+it feeds is the one a desk head makes at the screen: hold, trim, or hedge, now,
+against figures that are indicative and will be replaced by the close. It is the
+report that says whether another, deeper report is worth opening before then.
+
+Two facts make the answer usable. First, the figures are known to be indicative:
+the live cut copies the kind's indicative mark, so a reader knows the numbers
+will move. Second, the run records the body it priced from, so a reader of the
+result can say which instant it was, even though a rerun will not reproduce it.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                              |
+|--------------+----------------------------------------------------------------------------|
+| trading-desk | The book's position, its delta ladder and its largest movers, during the day. |
+| market-risk  | An early view of a limit being used up, hours before the close confirms it. |
+
+* Frequency
+
+Cycle =intraday=. Frequency =scheduled= and =on-demand=: the definition is seeded
+with the expression =*/30 8-17 * * 1-5=, which fires it every half hour through
+the London trading day on weekdays, and a person may ask for one at any time. It
+is not a member of the ten-report Market Risk EOD set.
+
+The concurrency policy is =queue=: a firing that arrives while a run of the same
+definition is in flight waits rather than being dropped, because a monitor that
+skips a half hour answers a question nobody asked.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value                                  |
+|-----------+----------------------------------------|
+| Cycle     | intraday                               |
+| Frequency | scheduled, on-demand                   |
+| Cut       | LIVE                                   |
+| Batch     | none                                   |
+| Owner     | market-risk                            |
+
+* Inputs
+
+- Trades selected by scope. The seeded definition reads the entity's whole
+  portfolio, =Global Portfolio= for a trading entity, because a monitor is run on
+  any book under it; the scope shape the catalogue allows is =book= or
+  =portfolio=.
+- Market data at the instant the run starts. The run mints a LIVE cut, which
+  holds what the store held then: the published sets in use, the trade
+  population, and the versions of the reference data and of the engine.
+- The risk report configuration the definition binds, =Intraday risk - Global
+  Portfolio=, which switches on the three analytics below and states the base
+  currency.
+
+* Outputs
+
+The run produces the engine's own output archive with this report's CSV
+artefacts, and it records where that archive landed against the run. It also
+records the cut the run minted: the cut's identity, its label, its kind and its
+instant. The rows a reader would query are a later phase; the result store is
+designed on [[file:../architecture/report_post_processing.org][Report post-processing]]
+and is not built yet.
+
+A LIVE result is reproducible only by naming its cut. Two runs of the monitor on
+one day are two bodies and two results, comparable as a movement and not as one
+figure computed twice.
+
+* Measures
+
+The set is the configuration's. The measures below are the ones the business
+catalogue states this report carries; their definitions are on
+[[file:../domain/risk_reporting.org][Risk reporting]] and are not repeated here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure            | Meaning                                                        |
+|--------------------+----------------------------------------------------------------|
+| PV                 | Present value of the scope at the instant.                     |
+| Delta ladder       | Delta by tenor bucket and currency pair, for the book.          |
+| Top movers         | The ten positions whose P&L moved most since the previous read. |
+| VaR estimate       | Parametric value at risk at the stated quantile.                |
+| Limit utilisation  | How much of a limit the current position uses.                  |
+
+* ORE configuration
+
+The configuration binds three analytics, in this order. The fragment for
+=parametricVar= is trimmed from
+=external/ore/examples/MarketRisk/Input/ore_parametricvar.xml=; the =npv= and
+=sensitivity= fragments are the shape every valuation document states.
+
+#+begin_src xml
+<Analytic type="npv">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="baseCurrency">GBP</Parameter>
+</Analytic>
+<Analytic type="sensitivity">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="recalibrateModels">Y</Parameter>
+  <Parameter name="outputSensitivityThreshold">0.000001</Parameter>
+  <Parameter name="parSensitivity">Y</Parameter>
+</Analytic>
+<Analytic type="parametricVar">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="quantiles">0.99</Parameter>
+  <Parameter name="method">DeltaGammaNormal</Parameter>
+  <Parameter name="breakdown">Y</Parameter>
+</Analytic>
+#+end_src
+
+* Parameters
+
+A definition of this report states the rows below. The values are the seeded
+ones; the domains are the ones the engine and the classification taxonomy fix.
+The mechanism is on
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                  | Domain                     | Seeded value      | Meaning                                                    |
+|----------------------------+----------------------------+-------------------+------------------------------------------------------------|
+| cut_kind_code              | a kind of cut              | LIVE              | The kind of cut the run mints at the instant it starts.     |
+| scope_portfolio            | a portfolio of the party   | Global Portfolio  | The subtree the run reads.                                  |
+| base_currency              | ISO 4217 code              | the entity's      | The currency the figures are expressed in.                  |
+| market_data_type           | live, eod or date          | live              | The market data the run reads.                              |
+| parametricVar.quantiles    | a quantile or a list       | 0.99              | The confidence level of the VaR estimate.                   |
+| parametricVar.method       | an ORE method              | DeltaGammaNormal  | How the estimate is computed from the sensitivities.        |
+| parametricVar.breakdown    | Y or N                     | Y                 | Whether the risk classes are broken out.                    |
+| sensitivity.recalibrateModels | Y or N                  | Y                 | Whether models are recalibrated before bumping.             |
+
+* Test coverage
+
+No substitute is defined for this report, so a test run of it executes every
+phase: it gathers trades and market data and assembles its own bundle. The report
+is exercised by the full-pipeline proof, not by a smoke test, and the cut
+resolution it relies on is exercised by the task that lit the intraday reports:
+[[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]].
+
+Two limits are worth stating. The live cut is mintable only where the store
+answers the parts of a body, and an environment with no published market data set
+mints the cut and then refuses at the engine, because there is no snapshot to
+price from. The engine's refusal is recorded against the run and against the cut
+it minted, so a reader is told which of the two failed.
+
+* Related
+
+- [[file:./reports.org][Reports]] — the inventory this page is listed in.
+- [[file:../domain/risk_reporting.org][Risk reporting]] — the classification taxonomy and the measures catalogue.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]] — what a LIVE cut holds and what it does not.
+- [[file:./report_headline_position.org][Headline Position]] — the shallow summary a reader opens first, and this report's sibling on the live cut.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] — the phases every run goes through.
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]] — the valuation engine whose =parametricVar= analytic produces the estimate.

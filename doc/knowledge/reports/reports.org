@@ -45,10 +45,17 @@ one report, the code its definitions and seeds refer to, and the page that
 describes it; a new report is a new page and a new row.
 
 #+ATTR_HTML: :class hug-leading
-| Report | Code | Cycle | Audience | What it produces |
-|--------+------+-------+----------+------------------|
-| [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]] | =headline_position= | intraday, eod | trading-desk, market-risk | The headline Greeks for a book or portfolio. |
-| [[id:DF1F4A61-319E-475D-B526-5DC6B62DCF3F][Sample bundle smoke test]] | =sample_bundle_smoke_test= | intraday | engineer, release check | A completed run and the engine's output archive; no measures. |
+| Report | Code | Cut | Audience | What it produces |
+|--------+------+-----+----------+------------------|
+| [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]] | =headline_position= | LIVE | trading-desk, market-risk | The headline Greeks for a book or portfolio. |
+| [[id:0744CB78-6EBF-4340-8885-837D0EEE6A95][Intraday Risk Monitor]] | =intraday_risk_monitor= | LIVE | trading-desk, market-risk | PV, the delta ladder, the top movers and limit use, between the closes. |
+| [[id:DF1F4A61-319E-475D-B526-5DC6B62DCF3F][Sample bundle smoke test]] | =sample_bundle_smoke_test= | LIVE | engineer, release check | A completed run and the engine's output archive; no measures. |
+
+The =Cut= column is the kind of cut the seeded definition selects, and it is the
+column that says what the report prices from. A report on both cycles is two
+definitions and not one: the plain name selects =LIVE= and runs during the day,
+and the same name with "(EOD)" selects =EOD= and runs at the close. Headline
+Position, Spot Greeks and Triple Vol Spot Ladder are seeded that way.
 
 The pipeline that runs every row above is ordered by
 [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report Processing]], and the compute
@@ -63,8 +70,20 @@ queue, and they do not agree with each other.
 - The business catalogue on
   [[file:../domain/risk_reporting.org][Risk reporting]] describes 22 market risk
   reports, each with its purpose, its measures and its five classification axes.
+  Nine of them now have a seeded definition, of which one, Headline Position, has
+  a page here. The other eight — Spot Ladder, Spot Greeks, Triple Vol Spot
+  Ladder, Spike Map, Strike Map, Option Map, Intraday Change and Trades Since
+  Last In — are defined and runnable, and the seed's own text is their only
+  description.
+- The ACME dataset's catalogue,
+  =projects/ores.seeder/datasets/acme_corporation/report_catalogue.json=, states 42
+  definitions. The 101 rows the four ACME parties hold are those definitions
+  filtered by tier and jurisdiction, so a party holds the reports it is
+  accountable for rather than the whole catalogue.
 - The seed =projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql=
-  creates 31 operational report definitions, all of type =risk=.
+  creates 31 operational report definitions for the generic provisioning path,
+  all of type =risk=. It is a second, older statement of the same catalogue, and
+  it does not yet carry the intraday reports or any cut selection.
 - The *report type* the seed registers is =risk= alone. A type is a row in
   =ores_reporting_report_types_tbl=, and that row also names the workflow that
   runs the report: =risk= names =report_execution_workflow=. =grid= is not a
@@ -76,6 +95,31 @@ Migrating a report out of a catalogue and into this folder is the point at which
 it acquires a purpose, an audience and a worked ORE configuration in one place.
 Until then, the catalogues above are the only description, and they disagree
 about how many reports there are.
+
+* What is not built
+
+The thirteen catalogued reports that have no definition are not missing by
+oversight; they are the work the catalogues name and the platform does not yet
+seed. They fall in three groups.
+
+- **The .1 family**: .1 ATM, .1 Triple, .1 Quad, .1 RR/STR and .1 Rate (Rho). A
+  0.1-unit bump series needs an analytic type per measure, and the platform binds
+  none today, so a definition of one would state a run that cannot execute. The
+  task that designs them is "Design the .1 and greek ladder reports", started in
+  sprint 29 on its own branch.
+- **The matrix reports**: Rho/Vol, Spot/Vol and Spot/Rho. Each states two bumped
+  inputs in one grid, which is a stress configuration rather than a sensitivity
+  one, and no ACME risk report configuration switches a stress analytic on.
+- **The remaining ladders and the explain report**: Spot Ladder — All Crosses,
+  Spot Vol Ladder — Base and Quote Currency, Trade Level Ladder — Premium
+  Currency, Vol Manipulation and IPV Explain. Each states a scope or a measure the
+  seed has no configuration for: a cross of every currency pair, a premium
+  currency bump, or an IPV cut whose market data the platform does not hold.
+
+The intraday reports that *are* seeded price from the live cut and stop at the
+engine where an environment holds no published market data set. That refusal is a
+fact about the environment and not about the definition: the cut mints, the run
+records it, and the engine declines to price a body with no snapshot in it.
 
 * Which entity runs which report
 

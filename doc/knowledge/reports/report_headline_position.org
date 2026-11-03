@@ -47,6 +47,12 @@ for it during the day; the schedule produces it at the close. It is not a member
 of the ten-report [[file:../domain/risk_reporting.org][Market Risk EOD set]], so
 nothing orders it after the market data cut.
 
+The two cycles are two seeded definitions, because a definition states one cut
+selection. =Headline Position= selects the LIVE cut and runs every ten minutes,
+and =Headline Position (EOD)= selects the end of day cut and runs at the close.
+They read one run settings document, so the two differ in the body they price
+from and in nothing else.
+
 #+ATTR_HTML: :class hug-leading
 | Field     | Value                        |
 |-----------+------------------------------|

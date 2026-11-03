@@ -84,8 +84,8 @@ Decisions agreed with the user on 2026-11-03:
   the quotes, inside the simulator adapter. The SSVI state is the latent "true
   market". Synthetic contributors observe it, each a provider of its own, and
   publish what a real broker feed carries: the pair's full delta ladder (5D,
-  10D, 15D, 25D, 35D as the pair quotes them), bid and ask, rounding to the
-  quote step, measurement noise that grows on the wings and at long tenors,
+  10D, 15D, 25D, 35D as the pair quotes them), mids rounded to the quote
+  step, measurement noise that grows on the wings and at long tenors,
   stale and missing points, rare outliers, and a persistent bias per
   contributor. Noise touches only what is published, never the state, so it
   does not feed back into the dynamics. Each contributor has a noise profile;
@@ -97,10 +97,10 @@ Decisions agreed with the user on 2026-11-03:
   nothing special: as for IR, where the clean pillar quotes and their bootstrap
   are the truth, the contributor whose profile is =none= is a provider like the
   others, and its quotes, constructed by the same build, are the true surface.
-  A tenant sees it only if the system routes that provider to it. Open: oresmd
-  has no bid or ask side for a quote today (its =side= field belongs to index
-  CDS options), so how a contributor's bid and ask are named is decided in the
-  pipeline note.
+  A tenant sees it only if the system routes that provider to it. Every quote
+  is a mid. Two-way pricing is a later level of work across the whole system,
+  once mid valuation is reliable for every product (agreed 2026-11-03); the
+  noise scale per point stands in for the width of the market until then.
 - Agreed on 2026-11-03: *surface construction* follows curve construction
   exactly. A surface blueprint names its output series; its build fits the
   tenant's chosen smile model to the quotes, checks it, and writes the fitted

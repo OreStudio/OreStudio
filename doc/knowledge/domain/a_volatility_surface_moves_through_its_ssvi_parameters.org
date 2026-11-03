@@ -283,12 +283,13 @@ the synthetic source without changing any consumer.
 *** The quotes are observations, not the surface
 
 The quotes above are the surface itself, sampled cleanly. A real broker feed
-is not like that: several contributors quote a fuller delta ladder, with bid
-and ask, noise, stale and missing points, and they disagree. A desk marks its
+is not like that: several contributors quote a fuller delta ladder, with
+noise, stale and missing points, and they disagree. A desk marks its
 own surface from those inputs. So the published quotes come from an
 *observation layer* inside the simulator adapter: the SSVI state is the latent
 true market, and synthetic contributors, each a provider, publish noisy
-observations of it. The noise never touches the state. A contributor whose
+observations of it. Every observation is a mid: valuation runs on mids, and
+two-way pricing is a later level of work for the whole system. The noise never touches the state. A contributor whose
 noise profile is =none= publishes the clean quotes, which is what the tests
 use. The layer is designed in the note on the surface pipeline.
 

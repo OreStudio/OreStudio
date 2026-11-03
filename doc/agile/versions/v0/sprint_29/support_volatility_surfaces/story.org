@@ -79,4 +79,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 
 * Out of scope
 
-- Nothing yet. The architecture task sets the scope.
+- Two-way pricing. Every quote, synthetic or real, is a mid, and valuation runs
+  on mids. Bid and ask, for every input and not only vol surfaces, are a later
+  level of work, taken up once mid valuation is reliable for every product.
+- The rest of the scope is set by the architecture task.

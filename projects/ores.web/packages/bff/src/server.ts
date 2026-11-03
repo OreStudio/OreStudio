@@ -71,6 +71,7 @@ import { registerGridAppVersionRoutes } from './grid-app-versions.js';
 import { registerGridReportRunRoutes } from './grid-report-runs.js';
 import { registerGridReportResultsRoutes } from './grid-report-results.js';
 import { registerGridDownloadRoutes } from './grid-downloads.js';
+import { registerReportRunFileRoutes } from './report-run-files.js';
 import { registerGridJobsRoutes } from './grid-jobs.js';
 import { registerOperationsRoutes } from './operations.js';
 import { registerRecordRoutes } from './records.js';
@@ -2725,6 +2726,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerGridReportRunRoutes(server, requireSession);
     registerGridReportResultsRoutes(server, requireSession);
     registerGridDownloadRoutes(server, requireSession);
+    registerReportRunFileRoutes(server, requireSession);
 
     /**
      * The reasons a write may carry.

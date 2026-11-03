@@ -32,6 +32,7 @@
 #include "ores.synthetic.api/domain/trade_generation_book_codec.hpp"
 #include "ores.synthetic.api/domain/trade_generation_config_codec.hpp"
 #include "ores.synthetic.api/domain/trade_generation_counterparty_codec.hpp"
+#include "ores.synthetic.api/domain/trade_generation_trade_type_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_type_codec.hpp"
 #include "ores.synthetic.api/generators/calibration_fallback_generator.hpp"
@@ -49,6 +50,7 @@
 #include "ores.synthetic.api/generators/trade_generation_book_generator.hpp"
 #include "ores.synthetic.api/generators/trade_generation_config_generator.hpp"
 #include "ores.synthetic.api/generators/trade_generation_counterparty_generator.hpp"
+#include "ores.synthetic.api/generators/trade_generation_trade_type_generator.hpp"
 #include "ores.synthetic.api/generators/yield_curve_process_parameter_definition_generator.hpp"
 #include "ores.synthetic.api/generators/yield_curve_process_type_generator.hpp"
 #include "ores.synthetic.api/messaging/convert_fx_mixture_protocol.hpp"
@@ -139,6 +141,8 @@ TEST_CASE("every synthetic domain type has reflect-cpp's bytes", codec_tags) {
         ores::synthetic::generators::generate_synthetic_trade_generation_config(ctx));
     same_bytes_as_reflect_cpp(
         ores::synthetic::generators::generate_synthetic_trade_generation_counterparty(ctx));
+    same_bytes_as_reflect_cpp(
+        ores::synthetic::generators::generate_synthetic_trade_generation_trade_type(ctx));
     same_bytes_as_reflect_cpp(
         ores::synthetic::generators::generate_synthetic_yield_curve_process_parameter_definition(
             ctx));

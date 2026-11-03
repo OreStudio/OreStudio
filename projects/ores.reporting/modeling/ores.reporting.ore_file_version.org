@@ -1,0 +1,234 @@
+:PROPERTIES:
+:ID: 662C6AAC-FC0B-4A33-A0BC-80BF8689F184
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.reporting.ore_file_version
+#+description: Codegen entity model for the reporting ore_file_version table. The contents of an ORE file as one engine version ships it.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: The contents of an ORE file as one engine version ships it.
+#+entity_singular: ore_file_version
+#+entity_plural: ore_file_versions
+#+entity_title: ORE File Version
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+The contents of an ORE file as one version of the ORE engine ships it. The engine
+ships some files itself, the XML schemas above all, and the schema of a version
+is the one a document of that version must validate against: a schema of another
+version may accept what the engine refuses, or refuse what it reads.
+
+One row holds one file at one engine version, with its digest and its size, so a
+run's page can hand a person the schema of the engine that ran it. A schema that
+includes others is complete only with them; the includes are read from the
+contents, which state them, so the two cannot disagree.
+
+The seed loads the files vendored in external/ore for the engine version their
+manifest states. A later engine version adds rows beside the earlier ones and
+replaces none of them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:profile:       uuid-identified-lookup
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate UUID identifying this file at this version.
+
+** ore_file_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:filterable:  true
+:END:
+
+The ORE file whose contents these are, for example conventions_schema.
+
+** engine_version
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:filterable:  true
+:no_generator_suffix: true
+:END:
+
+The version of the ORE engine that ships these contents, as the engine states
+it, for example 1.8.17.0.
+
+A version and not a word, so a synthetic value takes no uniqueness suffix: the
+row is made unique by the file it hangs off.
+
+#+begin_src cpp :name generator
+std::string("1.8.17.0")
+#+end_src
+
+** content
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The contents of the file, as the engine ships it.
+
+#+begin_src cpp :name generator
+std::string("<xs:schema/>")
+#+end_src
+
+** sha256
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The SHA-256 of the contents, in lower case hex.
+
+#+begin_src cpp :name generator
+std::string(64, 'a')
+#+end_src
+
+** bytes
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The size of the contents in bytes.
+
+#+begin_src cpp :name generator
+12
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_reporting_ore_file_versions_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "engine_version" ~ '^[0-9]+(\.[0-9]+)*$' |
+| "sha256" ~ '^[0-9a-f]{64}$' |
+| "bytes" = octet_length("content") |
+
+** Indexes
+
+| name                      | columns                                  | unique | current_only |
+|---------------------------+------------------------------------------+--------+--------------|
+| ore_file_versions_file_engine | tenant_id, ore_file_code, engine_version | true   | true         |
+
+A file has one content at one engine version: a second load of the same version
+rewrites the row rather than adding a copy.
+
+* Foreign keys
+
+** ore_file_code
+:PROPERTIES:
+:table:         ores_reporting_ore_files_tbl
+:target_column: code
+:parent_entity: ore_file
+:nullable:      false
+:list_by:       true
+:error_message: Invalid ore_file_code: %. No active ORE file found with this code.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: version
+:entity_plural_short:   versions
+:entity_singular_words: ORE file version
+:entity_plural_words:   ORE file versions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fv
+:END:
+
+** Table display
+
+| column         | header         |
+|----------------+----------------|
+| ore_file_code  | ORE File       |
+| engine_version | Engine Version |
+| bytes          | Size           |
+| modified_by    | Modified By    |
+| version        | Version        |
+
+** Presentation
+:PROPERTIES:
+:collection_name:         ore_file_versions
+:key_field:               id
+:delete_request_id_field: ids
+:save_request_item_field: ore_file_version
+:END:
+
+*** Detail fields
+
+| field          | label          | type      | is_key | is_required | placeholder       |
+|----------------+----------------+-----------+--------+-------------+-------------------|
+| ore_file_code  | ORE File       | line_edit |        | true        | e.g. conventions_schema |
+| engine_version | Engine Version | line_edit |        | true        | e.g. 1.8.17.0     |
+| sha256         | SHA-256        | line_edit |        | true        | Enter the digest  |
+| bytes          | Size           | spin_edit |        | true        | Enter the size    |
+
+*** Columns
+
+| enum_name     | field          | header         | type   | width |
+|---------------+----------------+----------------+--------+-------|
+| OreFileCode   | ore_file_code  | ORE File       | string | 220   |
+| EngineVersion | engine_version | Engine Version | string | 120   |
+| Bytes         | bytes          | Size           | int    | 100   |
+| Version       | version        | Version        | int    | 80    |
+| ModifiedBy    | modified_by    | Modified By    | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:8C08A192-DAA3-461A-8240-181C04CAE46E][ores.reporting.ore_file]] — the file whose contents these are.
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

@@ -523,6 +523,58 @@ wire_traits<ores::reporting::messaging::delete_many_file_types_response>::read_m
 }
 
 std::string
+wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_request>::write_json(
+    const ores::reporting::messaging::list_by_ore_file_code_file_types_request& v) {
+    return object::write_json(v);
+}
+
+ores::reporting::messaging::list_by_ore_file_code_file_types_request
+wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::reporting::messaging::list_by_ore_file_code_file_types_request>(
+        text);
+}
+
+std::string
+wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_request>::write_msgpack(
+    const ores::reporting::messaging::list_by_ore_file_code_file_types_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::reporting::messaging::list_by_ore_file_code_file_types_request
+wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<
+        ores::reporting::messaging::list_by_ore_file_code_file_types_request>(data);
+}
+
+std::string
+wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_response>::write_json(
+    const ores::reporting::messaging::list_by_ore_file_code_file_types_response& v) {
+    return object::write_json(v);
+}
+
+ores::reporting::messaging::list_by_ore_file_code_file_types_response
+wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::reporting::messaging::list_by_ore_file_code_file_types_response>(
+        text);
+}
+
+std::string
+wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_response>::write_msgpack(
+    const ores::reporting::messaging::list_by_ore_file_code_file_types_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::reporting::messaging::list_by_ore_file_code_file_types_response
+wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<
+        ores::reporting::messaging::list_by_ore_file_code_file_types_response>(data);
+}
+
+std::string
 wire_traits<ores::reporting::messaging::list_by_analytic_type_code_file_types_request>::write_json(
     const ores::reporting::messaging::list_by_analytic_type_code_file_types_request& v) {
     return object::write_json(v);

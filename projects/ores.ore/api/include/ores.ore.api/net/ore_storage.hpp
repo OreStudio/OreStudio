@@ -86,6 +86,22 @@ struct ore_storage {
     }
 
     /**
+     * @brief Object key for the log of what a run's package left out.
+     *
+     * The package leaves out a trade whose ORE XML it cannot write, and states
+     * why here as the canonical log CSV the run records its errors from. It sits
+     * outside the package prefix, because a reader of that prefix unpacks every
+     * object it finds there as a package.
+     *
+     * @param report_instance_id  UUID of the report instance.
+     * @return                    e.g. "ore/package_logs/{id}.csv"
+     */
+    static std::string package_log_key(std::string_view report_instance_id) {
+        return ores::storage::api::object_keys::make(
+            service, "package_logs", std::string(report_instance_id) + ".csv");
+    }
+
+    /**
      * @brief The file name of the package a run stores.
      */
     static constexpr std::string_view package_name = "ore_package.tar.gz";

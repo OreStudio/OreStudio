@@ -293,6 +293,14 @@ BEGIN
     -- the read to one run with the filter, and tenant isolation keeps another
     -- tenant's rows out. The read model is the screen's view of them.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::run_results:read');
+    -- A run's page names every file the run read and wrote by the ORE file it
+    -- is, and groups them by category. Both are reference data shared by the
+    -- tenant, so every member reads them.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_files:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_file_categories:read');
+    -- The schema of an XML file is downloaded from the contents of its ORE file at
+    -- the engine version that ran it, so every member reads those too.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_file_versions:read');
     -- The metrics of a run are read the same way, and by the same scoping.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_metrics:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_text_values:read');

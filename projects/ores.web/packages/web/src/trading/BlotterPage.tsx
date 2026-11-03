@@ -23,109 +23,17 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
-import { blotter, type BlotterNode, type BlotterRow, type BlotterView } from '../api/blotter.js';
+import { blotter, type BlotterRow, type BlotterView } from '../api/blotter.js';
 import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
 import { Button, cx, Select, Tag } from '../ui/Primitives.js';
 import { Tooltip } from '../ui/Tooltip.js';
 import { bookPath, counterpartyPath, PATHS, tradePath } from '../shell/paths.js';
 import { useAreaParts } from '../shell/AreaTrail.js';
+import { TreeRail } from '../ui/TreeRail.js';
 import { assetClassColour } from '../marketdata/assetClassColour.js';
 
 /** The sorts the read answers, in the order the table offers them. */
 const SORTS = ['trade_date', 'instrument_type', 'status', 'row_kind'] as const;
-
-/** The rail as a tree: each node's children, in the order the read stated them. */
-function childrenOf(nodes: readonly BlotterNode[]): ReadonlyMap<string, readonly BlotterNode[]> {
-    const children = new Map<string, BlotterNode[]>();
-    for (const node of nodes) {
-        if (node.id === '') {
-            continue;
-        }
-        children.set(node.parent, [...(children.get(node.parent) ?? []), node]);
-    }
-    return children;
-}
-
-/**
- * One node of the rail: its label and the number of rows placed under it, on the
- * same line, indented by its depth.
- *
- * A node with nothing under it is still drawn: a book nobody has booked to is a
- * fact about the party, not a row to hide.
- */
-function RailNode({
-    node,
-    depth,
-    selected,
-    onSelect,
-}: {
-    readonly node: BlotterNode;
-    readonly depth: number;
-    readonly selected: string;
-    readonly onSelect: (id: string) => void;
-}): ReactNode {
-    return (
-        <button
-            type="button"
-            onClick={() => {
-                onSelect(node.id === selected ? '' : node.id);
-            }}
-            aria-pressed={node.id === selected}
-            className={
-                node.id === selected
-                    ? 'flex w-full items-center justify-between gap-2 rounded px-2 py-1 text-left text-accent-bright bg-accent/10'
-                    : 'flex w-full items-center justify-between gap-2 rounded px-2 py-1 text-left hover:bg-surface-raised'
-            }
-            style={{ paddingLeft: `${0.5 + depth * 0.9}rem` }}
-        >
-            <span className="flex min-w-0 items-center gap-2">
-                {node.kind === 'instrument' ? (
-                    <span
-                        aria-hidden="true"
-                        className={cx(
-                            'size-2 shrink-0 rounded-sm',
-                            assetClassColour(node.id.replace('instrument:', '')).dot,
-                        )}
-                    />
-                ) : null}
-                <span className="truncate text-sm">{node.label}</span>
-            </span>
-            <span className="shrink-0 text-xs tabular-nums text-ink-muted">{node.count}</span>
-        </button>
-    );
-}
-
-function Rail({
-    nodes,
-    selected,
-    onSelect,
-}: {
-    readonly nodes: readonly BlotterNode[];
-    readonly selected: string;
-    readonly onSelect: (id: string) => void;
-}): ReactNode {
-    const children = useMemo(() => childrenOf(nodes), [nodes]);
-    const party = nodes.find((node) => node.id === '');
-    const walk = (parent: string, depth: number): ReactNode[] =>
-        (children.get(parent) ?? []).flatMap((node) => [
-            <RailNode
-                key={node.id}
-                node={node}
-                depth={depth}
-                selected={selected}
-                onSelect={onSelect}
-            />,
-            ...walk(node.id, depth + 1),
-        ]);
-    return (
-        <nav aria-label="rail" className="mt-2 flex flex-col gap-0.5">
-            {party === undefined ? null : (
-                <RailNode node={party} depth={0} selected={selected} onSelect={onSelect} />
-            )}
-            {walk('', 1)}
-        </nav>
-    );
-}
 
 /**
  * The blotter: the trades and structures a person may see, read by the grouping
@@ -356,7 +264,23 @@ export function BlotterPage(): ReactNode {
                         {t('trading.blotter.railLoading')}
                     </p>
                 ) : (
-                    <Rail nodes={nodes} selected={node} onSelect={setNode} />
+                    <TreeRail
+                        label="rail"
+                        nodes={nodes}
+                        selected={node}
+                        onSelect={setNode}
+                        marker={(one) =>
+                            one.kind === 'instrument' ? (
+                                <span
+                                    aria-hidden="true"
+                                    className={cx(
+                                        'size-2 shrink-0 rounded-sm',
+                                        assetClassColour(one.id.replace('instrument:', '')).dot,
+                                    )}
+                                />
+                            ) : null
+                        }
+                    />
                 )}
             </aside>
             <div className="min-w-0 flex-1">

@@ -54,7 +54,7 @@ ores::reporting::domain::report_metric make_metric(const std::string& instance_i
         .source = "npv.csv",
         .line = 2,
         .report_definition_id = boost::uuids::string_generator()(definition_id),
-        .family = "npv",
+        .family = "npv_report",
         .subject_type = "trade",
         .subject_id = "Swap_20y",
         .currency = currency,

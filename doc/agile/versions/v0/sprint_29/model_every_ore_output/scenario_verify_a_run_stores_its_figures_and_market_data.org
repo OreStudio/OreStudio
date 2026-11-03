@@ -1,0 +1,262 @@
+:PROPERTIES:
+:ID: A84F2177-C31C-426A-B81F-BD042E7E6961
+:END:
+#+title: Test Scenario: Verify a run stores its figures and the market it read
+#+description: Run Group Consolidated Exposure for Acme Corporation Plc and confirm that its NPV and SA-CCR figures, its run statistics and the FX quotes it read land as rows keyed by result, file and line, and that skipping a family stores none of its rows.
+#+type: test_scenario
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: swift_curie
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]] in [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+Done before the scenario reaches you, so Step 1 can assume it:
+
+- The branch =feature/verify-the-stored-outputs-end-to-end= is built and the
+  services run on that build. It carries the fix for the orphan commodity future
+  part, without which every report run fails before it stores anything.
+- The database was recreated from this branch's schema and the Acme Corporation
+  holding group provisioned with
+  =projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+- Group Consolidated Exposure for Acme Corporation Plc skips no family.
+
+The checks that read stored rows use =compass sql= from the root of this
+worktree, =/home/marco/Development/OreStudio/ores_dev_swift_curie=. Each command
+below reads the latest run of Group Consolidated Exposure for Acme Corporation Plc,
+so it needs no id copied from the screen.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]] |
+| Parent story  | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]]   |
+| Target screen | Web, http://localhost:20202: Reporting > Reports > Group Consolidated Exposure, its Run button, the run page it opens (/reporting/runs/<id>) with its Results, Errors and Downloads tabs, and the page of one file (/reporting/runs/<id>/files/<file>). Stored rows: =compass sql= in a terminal. |
+| Clients       |                                          |
+| State         | PENDING |
+
+What passes: a run of one report completes, its run page states its problems
+and its files, each file says what it is with the schema that validates it, and
+four families land where the story says, keyed by file and line. The NPV and SA-CCR figures and the run
+statistics are in reporting's metric table, and the FX quotes the run read are
+in marketdata's market input table. A family the report is set to skip stores no
+rows, and an unknown family name is refused.
+
+* Steps
+
+** Log in as the Acme tenant admin
+
+- Open http://localhost:20202 in a browser.
+- Log in as =tenant_admin@acme_corporation= with password =Secure-Password-123=.
+- Pass: the header shows the Acme Corporation tenant and the party Acme
+  Corporation Plc. If it asks for a party, choose Acme Corporation Plc.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the Group Consolidated Exposure report
+
+- Go to Reporting > Reports.
+- Open Group Consolidated Exposure whose party is Acme Corporation Plc (code
+  ACMCOR); other parties have a report of the same name.
+- Pass: the page shows the report, and the field "Families not stored" is
+  empty. Its help text says an empty list stores every family.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Run the report and wait
+
+- Press Run on the report page.
+- The browser moves to the run's page, /reporting/runs/<id>.
+- Wait until the run's state is Completed. A run takes about a minute.
+- Pass: the state is Completed, not Failed. A failure names its reason on the
+  page; record it under this step's Result.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** See the NPV results on the run
+
+- Stay on the run's page and look at its results panel.
+- Pass: the panel lists NPV results for the run's trades, with a currency for
+  each, and no error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** See the run's problems by scope, then one by one
+
+- Open the Errors tab of the run.
+- Pass: the Overview view shows a ring of the problems by scope and a table of
+  the errors and warnings in each scope, with a total. No label shows a raw key
+  such as reporting.run.errors.
+- Press a scope in the table, for example Trade.
+- Pass: the List view opens narrowed to that scope, says so above the table,
+  and offers "Show every scope". Each problem is its own row with its severity,
+  scope, subject and message, and a subject that is a trade links to the trade.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Find the run's files in their tree
+
+- Open the Downloads tab of the run.
+- Pass: a tree beside the table holds the run, its batch, the job, and the
+  job's input package and output, each with the number of files under it. The
+  run counts 25 files: 9 in the input package and 16 in the output.
+- Choose the input package in the tree.
+- Pass: the table narrows to the package and its files. Every row names its
+  ORE file: Input/ore.xml is Analytics, Input/market.txt is Market Data,
+  Input/portfolio.xml is Trade Data. No row says Not catalogued.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Open a file and download its schema
+
+- Press the row of Input/portfolio.xml.
+- Pass: the page names the file Trade Data, in the Trade Data category,
+  describes what the portfolio holds, and gives its format, typical name, the
+  names it is recognised by, the ORE version 1.8.17.0 and the parameter
+  setup.portfolioFile that names it.
+- Press "Download the schema and its includes" beside Trade Data Schema.
+- Pass: a zip named trade_data_schema-1.8.17.0.zip downloads, and it holds
+  input.xsd with every schema it includes, 24 files in all.
+- Press Download on the page.
+- Pass: the portfolio downloads, and it validates against the schema:
+  #+begin_src sh
+  xmllint --noout --schema input.xsd portfolio.xml
+  #+end_src
+  prints "portfolio.xml validates".
+- Go back and open the row of npv.csv.
+- Pass: the page names it NPV Report in Valuation Reports, offers no schema,
+  and names the parameter npv.outputFileName.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Check the figures by file and line
+
+- In a terminal, at the worktree root, run:
+  #+begin_src sh
+  ./compass.sh sql -- -c "with latest as (select i.id from ores_reporting_report_instances_tbl i join ores_reporting_report_definitions_tbl d on d.id = i.definition_id and d.valid_to > now() join ores_refdata_parties_tbl p on p.id = d.party_id and p.valid_to > now() where d.name = 'Group Consolidated Exposure' and p.short_code = 'ACMCOR' order by i.valid_from desc limit 1) select source, family, count(*) as figures, min(line), max(line) from ores_reporting_report_metrics_tbl where report_instance_id = (select id from latest) group by 1, 2 order by 1;"
+  #+end_src
+- Pass: four rows.
+  - =npv.csv=, family =npv_report=: 36 figures, lines 2 to 10.
+  - =saccr.csv=, family =saccr_report=: 2 figures, line 2.
+  - =pricingstats.csv=, family =pricing_stats=: about 219 figures.
+  - =runtimes.csv=, family =runtimes=: a few figures.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Check the market data it read
+
+- In the terminal, run:
+  #+begin_src sh
+  ./compass.sh sql -- -c "with latest as (select i.id from ores_reporting_report_instances_tbl i join ores_reporting_report_definitions_tbl d on d.id = i.definition_id and d.valid_to > now() join ores_refdata_parties_tbl p on p.id = d.party_id and p.valid_to > now() where d.name = 'Group Consolidated Exposure' and p.short_code = 'ACMCOR' order by i.valid_from desc limit 1) select source, family, datum_id, value, line from ores_marketdata_market_input_values_tbl where report_instance_id = (select id from latest) order by line;"
+  #+end_src
+- Pass: two rows from =marketdata.csv=, family =market_data_report=: =FX/RATE/EUR/USD=
+  on line 2 and =FX/RATE/GBP/USD= on line 3, each with a value near 1.17 and
+  1.36.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Set the report to skip SA-CCR
+
+- Go back to Reporting > Reports > Group Consolidated Exposure (ACMCOR).
+- Edit the report and set "Families not stored" to =saccr_report=.
+- Save it with any change reason the form offers.
+- Pass: after the save, the page shows =saccr_report= in "Families not stored".
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Run again and check SA-CCR
+
+- Press Run and wait until the new run is Completed.
+- In the terminal, rerun the command of "Check the figures by file and line".
+- Pass: the run is Completed, and the output has no =saccr.csv= row.
+  =npv.csv= still has 36 figures on lines 2 to 10.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Refuse an unknown family name
+
+- Edit the report again and set "Families not stored" to =sacr_report=, a misspelling.
+- Save, then press Run.
+- Pass: the run does not start, and the message says the report skips a family
+  that does not exist, naming =sacr_report=. A run that starts and completes is a
+  failure of this step.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Put the report back
+
+- Edit the report and clear "Families not stored", then save.
+- Pass: the field is empty again, so the report stores every family.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PENDING |
+| Completed at  |  |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

@@ -134,12 +134,12 @@ bool is_market_state(const output_family& family) {
     // trade's or a netting set's value under a shift or a sample, so they are
     // results and belong to the run's result tables.
     static const std::vector<std::string> codes = {"stress_scenarios",
-                                                   "scenariostatistics",
-                                                   "scenariodump",
-                                                   "todaysmarketcalibration",
-                                                   "marketdata",
-                                                   "fixings",
-                                                   "dividends"};
+                                                   "scenario_statistics",
+                                                   "scenario_dump",
+                                                   "todays_market_calibration",
+                                                   "market_data_report",
+                                                   "fixings_report",
+                                                   "dividends_report"};
     return std::ranges::find(codes, family.code) != codes.end();
 }
 

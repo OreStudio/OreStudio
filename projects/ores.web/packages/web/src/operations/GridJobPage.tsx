@@ -48,12 +48,12 @@ import {
     gridBatchPath,
     gridJobPath,
     gridNodePath,
-    gridReportRunPath,
+    reportRunPath,
     reportPath,
 } from '../shell/paths.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
-import { REPORT_RUN_QUERY_KEY } from './GridReportRunPage.js';
+import { reportRunKey } from '../reporting/ReportRunPage.js';
 import { Button, Detail, Input, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
 import {
@@ -708,8 +708,8 @@ function Lineage({
     const reportRef =
         batch !== undefined && UUID.test(batch.external_ref) ? batch.external_ref : null;
     const run = useQuery({
-        queryKey: [REPORT_RUN_QUERY_KEY, reportRef],
-        queryFn: () => api.gridReportRun(reportRef ?? ''),
+        queryKey: reportRunKey(reportRef ?? ''),
+        queryFn: () => api.reportRun(reportRef ?? ''),
         enabled: reportRef !== null,
         meta: QUIET,
     });
@@ -748,7 +748,7 @@ function Lineage({
                 {reported && reportRef !== null && (
                     <ChainNode
                         title={
-                            <PageLink to={gridReportRunPath(reportRef)}>
+                            <PageLink to={reportRunPath(reportRef)}>
                                 {run.data?.name ?? batch?.report_run_name ?? t(`${key}.reportRun`)}
                             </PageLink>
                         }

@@ -133,7 +133,7 @@ TEST_CASE("a market-state family the definition skips stores no rows and is name
     CHECK(outcome.scenario_values.empty());
     CHECK(outcome.skipped == std::vector<std::string>{"stress_scenarios.csv"});
     CHECK(outcome.calibration_values.size() == 1);
-    CHECK(outcome.families == std::vector<std::string>{"todaysmarketcalibration"});
+    CHECK(outcome.families == std::vector<std::string>{"todays_market_calibration"});
 }
 
 TEST_CASE("the quotes, fixings and dividends a run read are one value for each line",
@@ -150,11 +150,11 @@ TEST_CASE("the quotes, fixings and dividends a run read are one value for each l
         run);
 
     REQUIRE(outcome.refusals.empty());
-    CHECK(outcome.families == std::vector<std::string>{"marketdata", "dividends"});
+    CHECK(outcome.families == std::vector<std::string>{"market_data_report", "dividends_report"});
     REQUIRE(outcome.input_values.size() == 3);
 
     const auto& gbp = outcome.input_values[1];
-    CHECK(gbp.family == "marketdata");
+    CHECK(gbp.family == "market_data_report");
     CHECK(gbp.datum_id == "FX/RATE/GBP/USD");
     CHECK(gbp.value == 1.35);
     CHECK(gbp.line == 3);
@@ -163,7 +163,7 @@ TEST_CASE("the quotes, fixings and dividends a run read are one value for each l
     CHECK_FALSE(gbp.payment_date.has_value());
 
     const auto& dividend = outcome.input_values[2];
-    CHECK(dividend.family == "dividends");
+    CHECK(dividend.family == "dividends_report");
     CHECK(dividend.datum_id == "SP5");
     REQUIRE(dividend.payment_date.has_value());
     CHECK(*dividend.payment_date == std::chrono::sys_days{std::chrono::year{2026} / 4 / 1});

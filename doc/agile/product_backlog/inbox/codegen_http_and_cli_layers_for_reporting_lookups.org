@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 880CA232-0485-4426-832C-4964BEE7075F
+:END:
+#+title: Generate the HTTP and CLI layers of the ORE file entities
+#+description: ore_file, ore_file_category and ore_file_version were generated through every layer the codegen has a profile for; the HTTP endpoints and the CLI commands have none, so the entities have no HTTP or CLI surface. The entity skill marks both as codegen gaps to close with a profile, not by hand.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:reporting:gap:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The reporting entities ore_file, ore_file_category and ore_file_version were
+generated through every layer the codegen has a profile for: SQL, domain,
+repository, service, protocol, handlers, history, shell commands and wire types.
+The HTTP endpoints and the CLI commands have no codegen profile, so the three
+entities have no HTTP or CLI surface.
+
+* Why
+
+The entity skill counts an entity done only when every layer exists, and it
+says a layer without a profile is a gap to close with a profile, never by hand.
+Writing the two layers by hand for these entities would leave code the next
+regeneration cannot reproduce.
+
+* References
+
+- [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]], the task that generated the entities.
+- =projects/ores.reporting/modeling/ores.reporting.ore_file*.org=, the models.
+
+* See also
+
+- [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]], the story it came from.

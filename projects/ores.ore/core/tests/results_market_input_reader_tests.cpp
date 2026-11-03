@@ -41,7 +41,7 @@ std::string sample_of(const std::string& code) {
 }
 
 TEST_CASE("a quote keeps its date, its datum and its value", input_tags) {
-    const auto* family = family_named("marketdata");
+    const auto* family = family_named("market_data_report");
     REQUIRE(family != nullptr);
     CHECK(is_market_input_family(*family));
 
@@ -59,7 +59,7 @@ TEST_CASE("a quote keeps its date, its datum and its value", input_tags) {
 }
 
 TEST_CASE("a dividend keeps its payment date", input_tags) {
-    const auto* family = family_named("dividends");
+    const auto* family = family_named("dividends_report");
     REQUIRE(family != nullptr);
 
     const auto outcome =
@@ -75,7 +75,7 @@ TEST_CASE("a dividend keeps its payment date", input_tags) {
 }
 
 TEST_CASE("a fixing whose value is not a figure is refused by line", input_tags) {
-    const auto* family = family_named("fixings");
+    const auto* family = family_named("fixings_report");
     REQUIRE(family != nullptr);
 
     const auto outcome =
@@ -87,22 +87,22 @@ TEST_CASE("a fixing whose value is not a figure is refused by line", input_tags)
 }
 
 TEST_CASE("a family that is not a market input is refused", input_tags) {
-    const auto* family = family_named("npv");
+    const auto* family = family_named("npv_report");
     REQUIRE(family != nullptr);
     CHECK_FALSE(is_market_input_family(*family));
     CHECK_FALSE(read_market_inputs("#TradeId,NPV\n", *family).refusals.empty());
 }
 
 TEST_CASE("the checked-in market input samples read whole", input_tags) {
-    const auto quotes = read_market_inputs(sample_of("marketdata"), *family_named("marketdata"));
+    const auto quotes = read_market_inputs(sample_of("market_data_report"), *family_named("market_data_report"));
     REQUIRE(quotes.refusals.empty());
     CHECK(quotes.rows.size() == 830);
 
-    const auto fixings = read_market_inputs(sample_of("fixings"), *family_named("fixings"));
+    const auto fixings = read_market_inputs(sample_of("fixings_report"), *family_named("fixings_report"));
     REQUIRE(fixings.refusals.empty());
     CHECK(fixings.rows.size() == 5452);
 
-    const auto dividends = read_market_inputs(sample_of("dividends"), *family_named("dividends"));
+    const auto dividends = read_market_inputs(sample_of("dividends_report"), *family_named("dividends_report"));
     CHECK(dividends.refusals.empty());
     CHECK(dividends.rows.empty());
 }

@@ -252,4 +252,16 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
     return result;
 }
 
+domain::written_portfolio exporter::export_portfolio_leaving_out(
+    const std::vector<trading::messaging::trade_export_item>& items,
+    const trading::domain::instrument_batch& instruments,
+    const reference_curve_names& reference_curves) {
+    const auto document = portfolio_projection::reverse(items, instruments, reference_curves);
+    auto result = portfolio_projection::write_leaving_out(document);
+    for (const auto& refused : result.refused)
+        BOOST_LOG_SEV(lg(), warn) << "Left trade " << refused.trade_id << " (" << refused.trade_type
+                                  << ") out of the portfolio: " << refused.message;
+    return result;
+}
+
 }

@@ -544,6 +544,10 @@ parse_market_data_arguments(const std::string& arguments_json) {
  * that pinned a date would write a stale book every time it was used. The
  * count per book is optional too, and a run that states none takes the
  * generator's own.
+ *
+ * The trade types are optional. An entry that states none books every type of
+ * its asset class; one that states some books only those, because a party
+ * prices only some of the products of a class.
  */
 struct trade_generation_assignment {
     std::string party = {};
@@ -559,6 +563,7 @@ struct trade_generation_assignment {
     std::optional<std::uint64_t> seed = {};
     std::optional<std::uint32_t> trades_per_book = {};
     std::optional<std::uint32_t> structures_per_book = {};
+    std::vector<std::string> trade_type_codes = {};
 };
 
 /// The configs a generate_trades step records, in the order it records them.

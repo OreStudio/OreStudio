@@ -96,17 +96,17 @@ std::string cashflow_csv(const std::string& family_code,
 }
 
 TEST_CASE("a family is a cashflow family when its key names a payment", cashflow_tags) {
-    const auto* flows = family_named("flows");
+    const auto* flows = family_named("cashflow_report");
     REQUIRE(flows != nullptr);
     CHECK(is_cashflow_family(*flows));
 
-    const auto* npv = family_named("npv");
+    const auto* npv = family_named("npv_report");
     REQUIRE(npv != nullptr);
     CHECK_FALSE(is_cashflow_family(*npv));
 }
 
 TEST_CASE("flows states one row for each figure of each payment", cashflow_tags) {
-    const auto* family = family_named("flows");
+    const auto* family = family_named("cashflow_report");
     REQUIRE(family != nullptr);
 
     const auto outcome = read_cashflows(cashflow_sample_text(family->sample_file), *family);
@@ -130,10 +130,10 @@ TEST_CASE("flows states one row for each figure of each payment", cashflow_tags)
 
 TEST_CASE("a stressed payment states each figure as a base, a scenario and a difference",
           cashflow_tags) {
-    const auto* family = family_named("stresstest_flows");
+    const auto* family = family_named("stress_test_flows");
     REQUIRE(family != nullptr);
 
-    const auto csv = cashflow_csv("stresstest_flows",
+    const auto csv = cashflow_csv("stress_test_flows",
                                   {{"TradeId", "T1"},
                                    {"ScenarioLabel", "BASE"},
                                    {"CashflowNo", "1"},
@@ -168,10 +168,10 @@ TEST_CASE("a stressed payment states each figure as a base, a scenario and a dif
 }
 
 TEST_CASE("the qualifiers a payment states travel beside its figure", cashflow_tags) {
-    const auto* family = family_named("flows");
+    const auto* family = family_named("cashflow_report");
     REQUIRE(family != nullptr);
 
-    const auto csv = cashflow_csv("flows",
+    const auto csv = cashflow_csv("cashflow_report",
                                   {{"TradeId", "T1"},
                                    {"CashflowNo", "1"},
                                    {"LegNo", "0"},
@@ -194,10 +194,10 @@ TEST_CASE("the qualifiers a payment states travel beside its figure", cashflow_t
 }
 
 TEST_CASE("a payment that states no cashflow number is refused", cashflow_tags) {
-    const auto* family = family_named("flows");
+    const auto* family = family_named("cashflow_report");
     REQUIRE(family != nullptr);
 
-    const auto csv = cashflow_csv("flows", {{"TradeId", "T1"}, {"CashflowNo", ""}});
+    const auto csv = cashflow_csv("cashflow_report", {{"TradeId", "T1"}, {"CashflowNo", ""}});
     const auto outcome = read_cashflows(csv, *family);
 
     REQUIRE_FALSE(outcome.refusals.empty());
@@ -206,11 +206,11 @@ TEST_CASE("a payment that states no cashflow number is refused", cashflow_tags) 
 }
 
 TEST_CASE("a figure that is not a number is refused and the heading is named", cashflow_tags) {
-    const auto* family = family_named("flows");
+    const auto* family = family_named("cashflow_report");
     REQUIRE(family != nullptr);
 
     const auto csv =
-        cashflow_csv("flows", {{"TradeId", "T1"}, {"CashflowNo", "1"}, {"Amount", "not-a-figure"}});
+        cashflow_csv("cashflow_report", {{"TradeId", "T1"}, {"CashflowNo", "1"}, {"Amount", "not-a-figure"}});
     const auto outcome = read_cashflows(csv, *family);
 
     REQUIRE_FALSE(outcome.refusals.empty());
@@ -218,11 +218,11 @@ TEST_CASE("a figure that is not a number is refused and the heading is named", c
 }
 
 TEST_CASE("a null figure states nothing and is not a refusal", cashflow_tags) {
-    const auto* family = family_named("flows");
+    const auto* family = family_named("cashflow_report");
     REQUIRE(family != nullptr);
 
     const auto csv =
-        cashflow_csv("flows", {{"TradeId", "T1"}, {"CashflowNo", "1"}, {"Amount", "#N/A"}});
+        cashflow_csv("cashflow_report", {{"TradeId", "T1"}, {"CashflowNo", "1"}, {"Amount", "#N/A"}});
     const auto outcome = read_cashflows(csv, *family);
 
     CHECK(outcome.refusals.empty());
@@ -232,7 +232,7 @@ TEST_CASE("a null figure states nothing and is not a refusal", cashflow_tags) {
 }
 
 TEST_CASE("a cashflow family read in blocks hands over what it reads whole", cashflow_tags) {
-    const auto* family = family_named("flows");
+    const auto* family = family_named("cashflow_report");
     REQUIRE(family != nullptr);
     const auto csv = cashflow_sample_text(family->sample_file);
 

@@ -37,9 +37,8 @@ export interface FileType {
     analytic_type_code: string | null;
     ore_parameter: string;
     direction: string;
-    format: string;
-    xsd_file: string | null;
     kind: string;
+    ore_file_code: string;
     configuration_type_code: string | null;
     name_pattern: string;
     is_default: boolean;

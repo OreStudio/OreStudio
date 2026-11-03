@@ -36,6 +36,12 @@
 \ir ./reporting_report_type_configuration_type_create.sql
 \ir ./reporting_analytic_types_create.sql
 \ir ./reporting_analytic_types_notify_trigger_create.sql
+\ir ./reporting_ore_file_categories_create.sql
+\ir ./reporting_ore_file_categories_notify_trigger_create.sql
+\ir ./reporting_ore_files_create.sql
+\ir ./reporting_ore_files_notify_trigger_create.sql
+\ir ./reporting_ore_file_versions_create.sql
+\ir ./reporting_ore_file_versions_notify_trigger_create.sql
 \ir ./reporting_file_types_create.sql
 \ir ./reporting_file_types_notify_trigger_create.sql
 \ir ./reporting_configuration_analytics_create.sql

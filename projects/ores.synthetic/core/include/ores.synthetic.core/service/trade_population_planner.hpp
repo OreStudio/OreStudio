@@ -404,6 +404,10 @@ ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
 counterparty_scope_id_for(const boost::uuids::uuid& config_id,
                           const boost::uuids::uuid& counterparty_id);
 
+/// The id one trade type of a config carries.
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
+trade_type_scope_id_for(const boost::uuids::uuid& config_id, const std::string& trade_type_code);
+
 }
 
 #endif

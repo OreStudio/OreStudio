@@ -48,6 +48,7 @@ Keys this group states reach into:
 - ores_refdata_parties_tbl (refdata)
 - ores_refdata_portfolios_tbl (refdata)
 - ores_refdata_product_family_codes_tbl (refdata)
+- ores_synthetic_trade_generation_trade_types_tbl (synthetic)
 end note
 
 '

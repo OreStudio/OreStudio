@@ -1340,3 +1340,32 @@ TEST_CASE("a_planned_fx_variance_swap_ends_after_it_starts", "[trade_population]
     /* One per book: sixteen types in the cycle, two books in the scope. */
     CHECK(swaps == 2);
 }
+
+TEST_CASE("a_config_that_states_trade_types_books_only_those", "[trade_population]") {
+    auto scope = fx_scope();
+    scope.trade_type_codes = {"FxForward"};
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    for (const auto& slot : plan.slots)
+        CHECK(slot.trade_type_code == "FxForward");
+}
+
+TEST_CASE("the_stated_trade_types_keep_the_order_the_class_cycles", "[trade_population]") {
+    auto scope = bond_scope();
+    scope.trade_type_codes = {"CallableBond", "Bond"};
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE(plan.slots.size() >= 2u);
+    CHECK(plan.slots[0].trade_type_code == "Bond");
+    CHECK(plan.slots[1].trade_type_code == "CallableBond");
+}
+
+TEST_CASE("a_trade_type_the_class_does_not_book_is_refused", "[trade_population]") {
+    auto scope = fx_scope();
+    scope.trade_type_codes = {"Bond"};
+
+    REQUIRE_THROWS_AS(plan_of(scope), trade_population_error);
+}

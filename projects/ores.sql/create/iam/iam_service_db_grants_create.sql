@@ -55,6 +55,16 @@ begin
             'grant select, insert, update, delete on %I to %I',
             v_tbl, p_user);
     end loop;
+    -- A component's views are read models over its tables, so the service
+    -- that owns the tables reads them too. pg_tables does not list them.
+    for v_tbl in
+        select viewname
+        from pg_views
+        where schemaname = 'public'
+          and viewname like p_prefix || '%'
+    loop
+        execute format('grant select on %I to %I', v_tbl, p_user);
+    end loop;
 end $$;
 
 -- Helper: grant SELECT on every table whose name starts with p_prefix.

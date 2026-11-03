@@ -323,7 +323,11 @@ def risk_report_configs(definitions, portfolios):
                 "description": f"Run settings shared by {', '.join(sorted(reports))}.",
                 "configuration_id": configuration_id,
                 "base_currency": currency,
-                "market_data_type": "eod",
+                # The run date, not the previous close. The demo environment
+                # is used the day it is provisioned, and its synthetic feeds
+                # quote only from the moment they start, so a run that priced
+                # the previous close would find no quotes for it.
+                "market_data_type": "live",
                 "market_data_date": None,
                 **SETUP_CHOICES,
                 "scope_portfolio": scope_of(company, first),

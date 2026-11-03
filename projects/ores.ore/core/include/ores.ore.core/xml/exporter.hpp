@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
+#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
@@ -133,6 +134,18 @@ public:
     export_portfolio(const std::vector<trading::messaging::trade_export_item>& items,
                      const trading::domain::instrument_batch& instruments,
                      const reference_curve_names& reference_curves = {});
+
+    /**
+     * @brief Reconstructs an ORE portfolio XML as export_portfolio does, leaving
+     * out each trade whose XML cannot be written and naming it.
+     *
+     * A run prices what it can: one trade the writer refuses would otherwise
+     * refuse the whole portfolio, and with it every other trade of the run.
+     */
+    static domain::written_portfolio
+    export_portfolio_leaving_out(const std::vector<trading::messaging::trade_export_item>& items,
+                                 const trading::domain::instrument_batch& instruments,
+                                 const reference_curve_names& reference_curves = {});
 };
 
 }

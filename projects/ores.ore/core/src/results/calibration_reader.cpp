@@ -27,7 +27,7 @@ namespace ores::ore::results {
 using namespace ores::ore::results::output_csv;
 
 bool is_calibration_family(const output_family& family) {
-    return family.code == "todaysmarketcalibration";
+    return family.code == "todays_market_calibration";
 }
 
 calibration_read_outcome read_calibration(std::string_view csv, const output_family& family) {

@@ -182,6 +182,14 @@ struct trade_generation_scope final {
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**
+     * @brief The trade types the config books, from its trade type rows.
+     *
+     * Empty when the config states none, in which case the planner books every
+     * type of the asset class. A party prices only some products of a class, so
+     * its config narrows the class to those.
+     */
+    std::vector<std::string> trade_type_codes;
+    /**
      * @brief Every counterparty the tenant holds, from which the issuer of a
      * security is drawn. A security belongs to the tenant and not to a config,
      * so its issuer cannot depend on the counterparties one config scopes.

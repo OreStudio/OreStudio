@@ -20,8 +20,12 @@
 #include "ores.ore.core/log/engine_run_verdict.hpp"
 #include "ores.ore.core/log/engine_log.hpp"
 #include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <format>
+#include <optional>
+#include <ranges>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -75,6 +79,21 @@ std::vector<std::string> error_messages(std::string_view engine_log) {
     return errors;
 }
 
+/**
+ * @brief What an event's cause names, which depends on its scope.
+ *
+ * The cause of an Analytics message is the analytic that was running and the
+ * cause of a Configuration message is the document, while a Curve or a Trade
+ * message names a curve.
+ */
+std::string_view cause_label(std::string_view scope) {
+    if (scope == "Analytics")
+        return "analytic";
+    if (scope == "Configuration")
+        return "configuration";
+    return "curve";
+}
+
 /** Whether a message says the same thing as one already collected. */
 bool restates(const std::vector<std::string>& failures, const std::string& message) {
     return std::ranges::any_of(failures, [&](const auto& failure) {
@@ -111,7 +130,7 @@ std::vector<std::string> explanations(std::string_view engine_log) {
                 text += ", " + type;
             text += ")";
         } else if (!event.cause.empty()) {
-            text += " (curve " + event.cause + ")";
+            text += " (" + std::string(cause_label(event.scope)) + " " + event.cause + ")";
         }
         if (!restates(reasons, text))
             reasons.push_back(std::move(text));
@@ -134,6 +153,68 @@ std::vector<std::string> fatal_messages(std::string_view engine_log) {
             failures.push_back(event.message);
     }
     return failures;
+}
+
+/** The words ORE puts before the labels of the analytics that did not run. */
+constexpr std::string_view failed_labels_marker = "Failed to run analytics ";
+
+/** The words ORE logs as it starts each analytic, before its quoted label. */
+constexpr std::string_view started_label_marker = "run analytic with label '";
+
+/**
+ * @brief The labels of the analytics a verdict names, or nothing when one of
+ * the verdicts names none.
+ *
+ * ORE lists the analytics that failed, separated by commas. A verdict without
+ * that list, such as an input file it could not open, failed the whole run.
+ */
+std::optional<std::set<std::string>> failed_labels(const std::vector<std::string>& failures) {
+    std::set<std::string> labels;
+    for (const auto& failure : failures) {
+        const auto at = failure.find(failed_labels_marker);
+        if (at == std::string::npos)
+            return std::nullopt;
+        std::string_view list(failure);
+        list.remove_prefix(at + failed_labels_marker.size());
+        for (const auto part : std::views::split(list, ',')) {
+            std::string label(part.begin(), part.end());
+            std::erase_if(label, [](unsigned char c) { return std::isspace(c) != 0; });
+            if (!label.empty())
+                labels.insert(std::move(label));
+        }
+    }
+    return labels;
+}
+
+/** The labels of the analytics the engine started. */
+std::set<std::string> started_labels(std::string_view engine_log) {
+    std::set<std::string> labels;
+    for (const auto& event : engine_events(engine_log)) {
+        const auto at = event.message.find(started_label_marker);
+        if (at == std::string::npos)
+            continue;
+        const auto from = at + started_label_marker.size();
+        const auto to = event.message.find('\'', from);
+        if (to != std::string::npos && to > from)
+            labels.insert(event.message.substr(from, to - from));
+    }
+    return labels;
+}
+
+/**
+ * @brief Whether an analytic the engine started is not among those it says
+ * failed.
+ *
+ * ORE runs its analytics one after another, and each writes its reports as it
+ * finishes. One that fails does not undo the reports of another, so the run
+ * still has results worth keeping.
+ */
+bool another_analytic_ran(const std::vector<std::string>& failures, std::string_view engine_log) {
+    const auto failed = failed_labels(failures);
+    if (!failed)
+        return false;
+    return std::ranges::any_of(started_labels(engine_log),
+                               [&](const auto& label) { return !failed->contains(label); });
 }
 
 /** The trailing clause that names the errors, capped for readability. */
@@ -159,7 +240,16 @@ engine_run_outcome judge_engine_run(const std::vector<std::string>& output_file_
     // timing reports whether or not the analytic it was asked for ran, so the
     // files alone cannot tell a failed run from a working one, and a run that
     // wrote nothing but its log still states why.
+    // An analytic that failed leaves the reports of the others standing. The
+    // failure is still in the engine's log, which the run records as its
+    // errors, so keeping the rest hides nothing.
     const auto failures = fatal_messages(engine_log);
+    if (!failures.empty() && another_analytic_ran(failures, engine_log) &&
+        std::ranges::any_of(output_file_names, is_analytics)) {
+        outcome.succeeded = true;
+        return outcome;
+    }
+
     if (!failures.empty()) {
         auto reasons = failures;
         for (const auto& reason : explanations(engine_log)) {

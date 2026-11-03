@@ -38,7 +38,7 @@ const std::string heading = "#MarketObjectType,MarketObjectId,ResultId,ResultKey
 }
 
 TEST_CASE("a calibration keeps text as text and a double as a figure", calibration_tags) {
-    const auto* family = family_named("todaysmarketcalibration");
+    const auto* family = family_named("todays_market_calibration");
     REQUIRE(family != nullptr);
     CHECK(is_calibration_family(*family));
 
@@ -70,7 +70,7 @@ TEST_CASE("a calibration keeps text as text and a double as a figure", calibrati
 }
 
 TEST_CASE("a calibration double that is not a figure is refused by line", calibration_tags) {
-    const auto* family = family_named("todaysmarketcalibration");
+    const auto* family = family_named("todays_market_calibration");
     REQUIRE(family != nullptr);
 
     const auto outcome =
@@ -83,7 +83,7 @@ TEST_CASE("a calibration double that is not a figure is refused by line", calibr
 
 TEST_CASE("a calibration double the engine left empty has no figure and is not refused",
           calibration_tags) {
-    const auto* family = family_named("todaysmarketcalibration");
+    const auto* family = family_named("todays_market_calibration");
     REQUIRE(family != nullptr);
 
     const auto outcome = read_calibration(heading + "yieldCurve,USD1D,time,,,,double,\n", *family);
@@ -95,7 +95,7 @@ TEST_CASE("a calibration double the engine left empty has no figure and is not r
 }
 
 TEST_CASE("a calibration value that names no market object is refused", calibration_tags) {
-    const auto* family = family_named("todaysmarketcalibration");
+    const auto* family = family_named("todays_market_calibration");
     REQUIRE(family != nullptr);
 
     const auto outcome = read_calibration(heading + ",USD1D,currency,,,,string,USD\n", *family);
@@ -106,7 +106,7 @@ TEST_CASE("a calibration value that names no market object is refused", calibrat
 
 TEST_CASE("the checked-in calibration sample reads whole, one row for each line",
           calibration_tags) {
-    const auto* family = family_named("todaysmarketcalibration");
+    const auto* family = family_named("todays_market_calibration");
     REQUIRE(family != nullptr);
     const auto csv =
         ores::testing::read_file(ores::testing::project_root::resolve(family->sample_file));

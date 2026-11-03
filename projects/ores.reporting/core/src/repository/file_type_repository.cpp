@@ -88,6 +88,9 @@ file_type_filter_condition(const std::optional<messaging::file_types_filter>& fi
     if (!filter)
         return std::nullopt;
     std::vector<query_builder::condition> r;
+    if (filter->ore_file_code)
+        r.push_back(query_builder::equals("ore_file_code",
+                                          query_builder::filter_value(*filter->ore_file_code)));
     if (filter->analytic_type_code)
         r.push_back(
             *filter->analytic_type_code ?
@@ -111,6 +114,12 @@ file_type_filter_condition(const std::optional<messaging::file_types_filter>& fi
         for (const auto& v : *filter->code_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("code", std::move(values)));
+    }
+    if (filter->ore_file_code_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->ore_file_code_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("ore_file_code", std::move(values)));
     }
     if (filter->analytic_type_code_one_of) {
         std::vector<query_builder::value> values;
@@ -273,6 +282,56 @@ file_type_repository::read_at_version(context ctx, const std::string& code, std:
         return std::nullopt;
     return entities.front();
 }
+
+std::vector<domain::file_type> file_type_repository::read_latest_by_ore_file_code(
+    context ctx,
+    const std::string& ore_file_code,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::file_types_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest file types. ore_file_code: " << ore_file_code
+                               << " offset: " << offset << " limit: " << limit;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<file_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "ore_file_code"_c == ore_file_code &&
+                             "valid_to"_c == max) |
+        query_builder::offset(offset) | query_builder::limit(limit);
+
+    return query_builder::execute_ordered_read_query<file_type_entity, domain::file_type>(
+        ctx,
+        query,
+        file_type_list_order(order, {"code"}, false),
+        file_type_filter_condition(filter),
+        [](const auto& entities) { return file_type_mapper::map(entities); },
+        lg(),
+        "Reading latest file types by ore_file_code.");
+}
+
+std::uint32_t file_type_repository::get_total_type_count_by_ore_file_code(
+    context ctx,
+    const std::string& ore_file_code,
+    const std::optional<messaging::file_types_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active file types count. ore_file_code: "
+                               << ore_file_code;
+    static constexpr auto max = db_timestamp::max();
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<file_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "ore_file_code"_c == ore_file_code &&
+                             "valid_to"_c == max);
+
+    return query_builder::execute_count_query<file_type_entity>(
+        ctx,
+        query,
+        file_type_filter_condition(filter),
+        lg(),
+        "Counting file types by ore_file_code");
+}
+
 
 std::vector<domain::file_type> file_type_repository::read_latest_by_analytic_type_code(
     context ctx,

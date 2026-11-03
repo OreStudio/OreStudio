@@ -83,7 +83,11 @@ begin
          '', 'community', 10),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'synthetic', 0,
          'Synthetic simulator', 'internal',
-         'The simulator the synthetic runner drives.', '', 'platform team', 20);
+         'The simulator the synthetic runner drives.', '', 'platform team', 20),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'derived', 0,
+         'Derived source', 'internal',
+         'Our own computation over the fixings the store already holds; it fetches nothing.',
+         '', 'platform team', 30);
 end $$;
 
 -- Summary

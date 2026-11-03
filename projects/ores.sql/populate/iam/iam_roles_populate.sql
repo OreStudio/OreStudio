@@ -1151,6 +1151,8 @@ BEGIN
     -- A feed whose price source is "fixing" reads the latest public fixing, which is a tick
     -- class of its own on a table of its own, so the read is granted by its own name.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_fixings:read');
+    -- The derived source's universe is the vendor instruments the catalogue holds for it.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_data_vendor_instruments:read');
 
     -- ORE Import service: workflow management + delegated refdata/trading writes
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'ORE Import workflow domain service', false);

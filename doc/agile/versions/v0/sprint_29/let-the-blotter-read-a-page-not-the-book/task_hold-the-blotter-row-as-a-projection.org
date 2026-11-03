@@ -83,3 +83,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Abandoned
+
+A projection was built — the table, its indexes, a rebuild function, and a
+measurement of 6 to 11 ms against 260 to 320 ms from the view — and then closed
+without merging.
+
+It treated the symptom. The blotter row is an expression because the model has
+two spellings of "many trades as one" and neither is the row the screen shows.
+[[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]
+settles it: a structure is one deal whose legs are themselves trades, and this
+tree's =CompositeTrade= is that structure. So the row is a trade, its columns are
+its own facts, and nothing needs copying.
+
+The projection branch is deleted. [[id:7C1F0E52-9A44-4B31-8E6D-2F5C7A1B9D03][The
+blotter lists trades]] carries what replaces it.

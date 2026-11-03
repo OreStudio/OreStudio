@@ -274,10 +274,7 @@ package "synthetic" #F9FBE7 {
         * decay : double
         * sensitivity : double
         * variance_model : text
-        * garch_alpha : double
-        * garch_gamma : double
-        * garch_beta : double
-        * garch_window_days : integer
+          variance_calibration_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -899,6 +896,7 @@ ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_folders_
 ores_synthetic_fx_spot_generation_configs_tbl ||--o{ ores_synthetic_fx_spot_fixing_items_tbl : "has"
 ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
 ores_synthetic_folders_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
+ores_synthetic_variance_calibrations_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
 ores_synthetic_fx_spot_generation_configs_tbl ||--o{ ores_synthetic_gmm_components_tbl : "has"
 ores_synthetic_ir_curve_generation_configs_tbl ||--o{ ores_synthetic_config_process_parameter_values_tbl : "has"
 ores_synthetic_process_parameter_definitions_tbl ||--o{ ores_synthetic_config_process_parameter_values_tbl : "has"

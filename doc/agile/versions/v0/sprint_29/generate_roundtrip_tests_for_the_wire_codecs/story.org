@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :codegen:codec:tests:json:msgpack:sprint_29:v0:
 #+created: 2026-11-02
-#+updated: 2026-11-02
+#+updated: 2026-11-03
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -44,7 +44,7 @@ Every type the wire codec writes, from 621 opted-in models, has a generated test
 | [[id:99B5C1BC-70D3-4566-AFE2-69399D39BFE3][Give every generated protocol message a defaulted equality]] | DONE | 2026-11-02 | 2026-11-02 | Generate a defaulted operator== on every protocol message, so a roundtrip test can require the value it read to equal the value it wrote. |
 | [[id:50C06629-9008-4E1E-B511-38E59C66B30B][State a sample value for every wire member type]] | DONE | 2026-11-02 | 2026-11-02 | A C++ sampler gives every wire member type a non-default value, recurses through the wire_fields of nested types, and refuses a type it cannot sample at compile time. |
 | [[id:61A1685A-01D4-4E8A-8CA9-509B51446700][Generate the roundtrip test for entities, junctions and field groups]] | DONE | 2026-11-02 | 2026-11-02 | Add the ores.cpp.wire-codec.roundtrip_tests archetype and emit it for every opted-in domain entity, junction and field group. |
-| [[id:A7C7CC03-52C0-429E-9ACC-836A130556A0][Generate the roundtrip test for protocol messages]] | STARTED | 2026-11-03 | | Extend the roundtrip archetype to the messages of entities, junctions, operations and families. |
+| [[id:A7C7CC03-52C0-429E-9ACC-836A130556A0][Generate the roundtrip test for protocol messages]] | DONE | 2026-11-03 | 2026-11-03 | Extend the roundtrip archetype to the messages of entities, junctions, operations and families. |
 | [[id:1F9435DC-B993-4BF7-9E8D-1B7317741897][Prove the roundtrip tests catch a broken codec]] | BACKLOG | | | Break a generated codec on purpose in three ways and show a generated test fails each time. |
 | [[id:EFC2FDA7-146C-42EA-8F51-DA3EBBA6D599][Roll the roundtrip tests out to every codec component]] | ABANDONED | | 2026-11-02 | Regenerate every opted-in component with the roundtrip tests, build at four jobs, and fix what the tests find. |
 | [[id:C796BACD-607A-4A84-B5BE-6F6D2F16B3CB][Fold the hand-written roundtrip checks into the generated tests]] | BACKLOG | | | Delete the roundtrip parts of the hand-written codec tests that the generated tests now cover, and keep only the reflect-cpp byte comparisons. |
@@ -157,6 +157,11 @@ CHECK(object::read_json<list_objects_response>(object::write_json(v)) == v);
   reflect-cpp task deletes them.
 - *One file per model.* This is the codegen norm, as for the shell command
   tests. The unity build keeps the compile cost down.
+- *One case per protocol message, through a shared helper.* The protocol
+  headers hold about 14,500 messages, so a case per format and value would be
+  about 58,000 cases. =ores::testing::check_wire_roundtrip= states the checks
+  once, and its =INFO= names the value that failed. The generated files declare
+  no names, so they build as unity units.
 
 * Out of scope
 

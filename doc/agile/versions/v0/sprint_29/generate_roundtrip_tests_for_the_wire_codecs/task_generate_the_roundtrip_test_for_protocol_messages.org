@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
-#+updated: 2026-11-02
+#+updated: 2026-11-03
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Every generated protocol message gets a filled and a default roundtrip case in J
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
-| Now          | Tests generated for all 18 components; dq passes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Full build and test run.               |
-| Last touched | 2026-11-02                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
 
 * Acceptance
 
@@ -68,6 +68,8 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Protocol test files generated | 590 | =git status --short= after =compass codegen regenerate --all --address ores.cpp.wire-codec= | this branch |
 | dq protocol cases run, passed | 630, 630 | =compass test run -- -R ores.dq.api=, then the result XML | this branch |
+| Protocol cases run, passed, in all suites | 14,515, 14,515 | =compass test run -- -j 4=, then the =[protocol]= cases in the result XML | 25cc47cf6c |
+| Test suites passed | 98 of 98 | =compass test run=, the three failed suites rerun after =compass db recreate= | 25cc47cf6c |
 
 * Notes
 
@@ -95,3 +97,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The archetype =ores.cpp.wire-codec.protocol_roundtrip_tests= writes 590 test
+files across 18 components, one per protocol header, with one case per message.
+Each case calls =ores::testing::check_wire_roundtrip=, which requires the
+sample and the default value to roundtrip in JSON and in MessagePack, and the
+message's =wire_fields= to name every member. All 14,515 cases pass.
+
+The full build found one gap: =mint_storage_capability_request= holds a vector
+of =ores::security::jwt::storage_grant=, which had no equality. It now has a
+defaulted one. The branch also emits the entity roundtrip tests of nine refdata
+models that reached main after the entity task.
+
+The first full run failed 33 cases in three suites. 32 read tables that the
+database did not have, because it predated models from main; they pass after
+=compass db recreate=. One was a timed wait in the marketdata service ingest
+loop under =-j 4= load; it passes when the suite runs alone. Neither touches
+this change.

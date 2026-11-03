@@ -175,11 +175,21 @@ means, and which of them a configuration carries.
 ('convention.business_day_convention:Unadjusted', ..., 'Unadjusted', ..., null, ...),
 #+end_src
 
-The renderings are not curated: =projects/ores.sql/utility/ore_aliases.py= reads
-them from ORE's own reader and from the parser map that accepts them, so the set
-and the code state one thing while both exist. The file reads two sources because
-each answers a question the other cannot: the reader's table says which renderings
-mean one fact, and the parser map says which renderings a document may write.
+The renderings are data. =projects/ores.sql/utility/ore_renderings.json= states,
+for each table, the form a configuration holds and every rendering that means it.
+Two readers take that file: the value sets, through =ore_aliases.py=, and the C++
+reader, which converts with tables generated from it
+(=projects/ores.ore/core/src/domain/conventions_renderings.hpp=). A generated table
+is one statement that survives being compiled: the check fails when the committed
+header differs from the file, and when the reader states a table of its own.
+
+The parser map that accepts the renderings is a second source, and it answers a
+question the file cannot: which renderings a document may write. Two mismatches
+between the two are defects the reader cannot see, and the check named both while
+the sets were built: a rendering the parser accepts and the file omits is a
+document the engine reads and this store refuses, and a row the file holds that the
+parser never produces is a rule nothing can apply. One of each was found and
+corrected.
 
 The form a configuration holds is one of those renderings, so a document may write
 it. That is an invariant the generator enforces, and it is why the export needs no
@@ -188,21 +198,10 @@ state the fact twice. Four forms were the exception — =ACT/360 (incl. last)=,
 =ACT/365 (Canadian Bond)=, =ACT/365 (JGB)= and =Nearest= — and each took the
 spelling the schema states instead.
 
-Two mismatches between those sources are defects the reader cannot see, and the
-check named both while the sets were built: a rendering the parser accepts and the
-reader's table omits is a document the engine reads and this store refuses, and a
-row the reader holds that the parser never produces is a rule nothing can apply.
-One of each was found and corrected.
-
 * What is not settled
 
-Two gaps are known, and both are changes rather than open questions.
+One gap is known, and it is a change rather than an open question.
 
-- The rendering a write emits is still in code. The form a configuration holds is
-  not always a form a document may write — ORE writes =NEAREST= where the store
-  holds =Nearest= — so =day_counter_spellings= and =bdc_spelling= still state a
-  direction the value set does not. The same story carries that direction into
-  data, after which no compiled table holds a rendering.
 - A set code the tables do not hold admits every value
   (=…reporting_ore_parameter_value_validate_fn_create.sql:87=). A guard that
   cannot find a rule cannot refuse, so a dangling link is silent. The shell

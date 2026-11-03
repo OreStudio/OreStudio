@@ -67,10 +67,7 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
     r.decay = 1.0;
     r.sensitivity = 1.0;
     r.variance_model = std::string("constant");
-    r.garch_alpha = 0.05;
-    r.garch_gamma = 0.0;
-    r.garch_beta = 0.9;
-    r.garch_window_days = 1826;
+    r.variance_calibration_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

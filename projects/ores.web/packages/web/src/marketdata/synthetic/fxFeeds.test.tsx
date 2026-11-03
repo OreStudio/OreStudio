@@ -170,27 +170,21 @@ describe('the feed an engine change writes', () => {
         expect(write['ticks_per_hour']).toBe(3600);
         expect(write).not.toHaveProperty('version');
         expect(write).not.toHaveProperty('modified_by');
-        expect(Object.keys(write)).toHaveLength(23);
+        expect(Object.keys(write)).toHaveLength(20);
     });
 
-    it("keeps the feed's daily variance, so an engine change does not reset it", () => {
+    it("keeps the feed's daily variance and its calibration, so an engine change does not reset them", () => {
         const write = feedWrite(
             {
                 ...feed,
                 variance_model: 'gjr_garch',
-                garch_alpha: 0.07,
-                garch_gamma: -0.02,
-                garch_beta: 0.9,
-                garch_window_days: 900,
+                variance_calibration_id: '84902b7e-58f4-4127-86cb-129ebedabe95',
             },
             { process_type: 'arithmetic' },
         );
         expect(write).toMatchObject({
             variance_model: 'gjr_garch',
-            garch_alpha: 0.07,
-            garch_gamma: -0.02,
-            garch_beta: 0.9,
-            garch_window_days: 900,
+            variance_calibration_id: '84902b7e-58f4-4127-86cb-129ebedabe95',
         });
     });
 

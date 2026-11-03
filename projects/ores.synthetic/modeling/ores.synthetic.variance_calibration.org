@@ -208,7 +208,9 @@ std::optional<double>(0.96)
 :nullable: true
 :END:
 
-The unconditional daily variance the shape returns to, positive.
+The unconditional daily variance the history the shape was fitted to returns to,
+positive. Absent for an authored shape: a feed always takes its long-run level from
+its own mixture, so the level only describes the fit's data.
 
 #+begin_src cpp :name generator
 std::optional<double>(0.00004)
@@ -340,7 +342,7 @@ std::string("")
 | coalesce("alpha", 0) < 'Infinity'::double precision and coalesce("gamma", 0) < 'Infinity'::double precision and coalesce("beta", 0) < 'Infinity'::double precision and coalesce("persistence", 0) < 'Infinity'::double precision and coalesce("long_run_variance", 0) < 'Infinity'::double precision and coalesce("starting_variance_ratio", 0) < 'Infinity'::double precision and coalesce("log_likelihood", 0) < 'Infinity'::double precision |
 | "state" = 'rejected' or coalesce("alpha" >= 0 and "alpha" < 1 and "beta" >= 0 and "beta" < 1 and "alpha" + "gamma" >= 0 and "alpha" + "gamma" < 'Infinity'::double precision, false)                                                                                                                                                                                                                                                            |
 | "state" = 'rejected' or coalesce("persistence" >= 0 and "persistence" < 1, false)                                                                                                                                                                                                                                                                                                                                                               |
-| "state" = 'rejected' or coalesce("long_run_variance" > 0 and "long_run_variance" < 'Infinity'::double precision, false)                                                                                                                                                                                                                                                                                                                         |
+| "state" = 'rejected' or "method" = 'authored' or coalesce("long_run_variance" > 0 and "long_run_variance" < 'Infinity'::double precision, false)                                                                                                                                                                                                                                                                                                |
 | "state" = 'rejected' or coalesce("starting_variance_ratio" > 0 and "starting_variance_ratio" < 'Infinity'::double precision, false)                                                                                                                                                                                                                                                                                                             |
 
 ** Indexes

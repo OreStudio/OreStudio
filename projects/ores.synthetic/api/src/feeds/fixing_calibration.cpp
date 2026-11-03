@@ -221,43 +221,5 @@ calibration_change change_of(double stored_level,
     return out;
 }
 
-daily_variance_choice
-choose_daily_variance(const std::vector<double>& values,
-                      bool inverted,
-                      const ores::analytics::quant::math::gjr_garch_shape& authored,
-                      double p_minus) {
-    namespace qm = ores::analytics::quant::math;
-    daily_variance_choice out{.shape = authored};
-    std::vector<double> returns;
-    returns.reserve(values.size());
-    for (std::size_t i = 1; i < values.size(); ++i)
-        if (values[i] > 0.0 && values[i - 1] > 0.0) {
-            const double r = std::log(values[i] / values[i - 1]);
-            returns.push_back(inverted ? -r : r);
-        }
-    out.returns = static_cast<int>(returns.size());
-    if (out.returns < minimum_garch_returns) {
-        out.note = "The window holds " + std::to_string(out.returns) +
-                   " daily returns and a fit needs " + std::to_string(minimum_garch_returns) +
-                   ", so the authored shape is kept.";
-        return out;
-    }
-    const auto fit = qm::fit_gjr_garch(returns, p_minus);
-    if (!fit) {
-        out.note = "The fit failed, so the authored shape is kept: " + fit.error();
-        return out;
-    }
-    const double mean =
-        std::accumulate(returns.begin(), returns.end(), 0.0) / static_cast<double>(returns.size());
-    std::vector<double> shocks;
-    shocks.reserve(returns.size());
-    for (const double r : returns)
-        shocks.push_back(r - mean);
-    const auto variances = qm::filter(fit->model, shocks, fit->model.long_run_variance());
-    out.shape = fit->model.shape();
-    out.initial_ratio = variances.back() / fit->model.long_run_variance();
-    out.fitted = true;
-    return out;
-}
 
 }

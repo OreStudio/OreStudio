@@ -100,7 +100,7 @@ create table if not exists "ores_synthetic_variance_calibrations_tbl" (
     check (coalesce("alpha", 0) < 'Infinity'::double precision and coalesce("gamma", 0) < 'Infinity'::double precision and coalesce("beta", 0) < 'Infinity'::double precision and coalesce("persistence", 0) < 'Infinity'::double precision and coalesce("long_run_variance", 0) < 'Infinity'::double precision and coalesce("starting_variance_ratio", 0) < 'Infinity'::double precision and coalesce("log_likelihood", 0) < 'Infinity'::double precision),
     check ("state" = 'rejected' or coalesce("alpha" >= 0 and "alpha" < 1 and "beta" >= 0 and "beta" < 1 and "alpha" + "gamma" >= 0 and "alpha" + "gamma" < 'Infinity'::double precision, false)),
     check ("state" = 'rejected' or coalesce("persistence" >= 0 and "persistence" < 1, false)),
-    check ("state" = 'rejected' or coalesce("long_run_variance" > 0 and "long_run_variance" < 'Infinity'::double precision, false)),
+    check ("state" = 'rejected' or "method" = 'authored' or coalesce("long_run_variance" > 0 and "long_run_variance" < 'Infinity'::double precision, false)),
     check ("state" = 'rejected' or coalesce("starting_variance_ratio" > 0 and "starting_variance_ratio" < 'Infinity'::double precision, false))
 );
 

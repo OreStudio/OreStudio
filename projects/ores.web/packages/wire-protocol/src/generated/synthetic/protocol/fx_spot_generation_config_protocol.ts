@@ -53,10 +53,7 @@ export interface FxSpotGenerationConfigWrite {
     decay: number;
     sensitivity: number;
     variance_model: string;
-    garch_alpha: number;
-    garch_gamma: number;
-    garch_beta: number;
-    garch_window_days: number;
+    variance_calibration_id: string | null;
 }
 
 export interface FxSpotGenerationConfigChange {

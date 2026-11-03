@@ -178,13 +178,30 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief "constant" or "gjr_garch". */
 #+end_src
 
+*** calibration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The approved variance calibration the run took its shape from. */
+#+end_src
+
+*** calibration_version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The version of that calibration the run read. */
+#+end_src
+
 *** fitted
 :PROPERTIES:
 :cpp_type: bool
 :default: false
 :END:
 #+begin_src cpp :name comment
-/** @brief True when the shape was fitted from the item's fixings; false when it is the authored one. */
+/** @brief True when the calibration was fitted from fixings; false when it is an authored shape. */
 #+end_src
 
 *** alpha
@@ -947,4 +964,92 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /** @brief Every feed of the class, in source name order. */
+#+end_src
+
+** review_variance_calibration_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.review_variance_calibration
+:response: review_variance_calibration_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Approve or reject one proposed variance calibration, with the reviewer's reason.
+ *
+ * Approving supersedes the pair's earlier approval and points every feed of the pair that named
+ * it at the new one, each a new version of its config; rejecting leaves the feeds alone. Only a
+ * proposed calibration can be reviewed, and each decision is a new version of the calibration.
+ */
+#+end_src
+
+*** calibration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The proposed calibration to decide. */
+#+end_src
+
+*** decision
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief "approve" or "reject". */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why: kept as the calibration's state reason. Required. */
+#+end_src
+
+** review_variance_calibration_response
+#+begin_src cpp :name comment
+/**
+ * @brief What the review did: the calibration's new state, the approval it superseded, and the
+ * feeds it pointed at the new calibration.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the decision was written. */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why the decision was refused, or what it did. */
+#+end_src
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The calibration's state after the review. */
+#+end_src
+
+*** superseded_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The approval the new one superseded; empty when there was none. */
+#+end_src
+
+*** repointed_feeds
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The source names of the feeds now pointed at the approved calibration. */
 #+end_src

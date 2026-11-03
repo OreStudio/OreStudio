@@ -24,6 +24,7 @@ import { SYSTEM_TENANT_ID } from '@ores/wire-protocol';
 import {
     subjects as feedSubjects,
     type CalibrateRequest,
+    type ReviewVarianceCalibrationRequest,
 } from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
 import {
     subjects as policySubjects,
@@ -157,6 +158,13 @@ const policyBodySchema = z.object({
 });
 
 const removeBodySchema = z.object({ intent: intentSchema });
+
+const reviewBodySchema = z
+    .object({
+        decision: z.enum(['approve', 'reject']),
+        reason: z.string().trim().min(1).max(2000),
+    })
+    .strict();
 
 async function policyRowOf(session: LiveSession, assetClass: string) {
     const rows = await readAll<ListCalibrationPoliciesResponse>(
@@ -331,6 +339,40 @@ export function registerCalibrationRoutes(
             throw notFound(`No feed ${body.configId} calibrates in ${assetClass}.`);
         }
         return { assetClass, feeds: reply.feeds };
+    });
+
+    /**
+     * Approves or rejects one proposed variance calibration, with the reviewer's reason.
+     * Approving supersedes the pair's earlier approval and points the pair's GJR-GARCH feeds
+     * at the new calibration; the service refuses a calibration that is not proposed.
+     */
+    server.post('/api/synthetic/calibration/variance/:id/review', async (request) => {
+        const session = requireSession(request);
+        requireSystem(session);
+        const id = input(z.uuid(), (request.params as { id: string }).id);
+        const body = input(reviewBodySchema, request.body);
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.review_variance_calibration_request,
+            {
+                calibration_id: id,
+                decision: body.decision,
+                reason: body.reason,
+            } satisfies ReviewVarianceCalibrationRequest,
+            operationReplySchema.extend({
+                state: z.string().default(''),
+                superseded_id: z.string().default(''),
+                repointed_feeds: z.array(z.string()).default([]),
+            }),
+        );
+        if (!reply.success) {
+            throw upstreamFailure(reply.message);
+        }
+        return {
+            state: reply.state,
+            supersededId: reply.superseded_id,
+            repointedFeeds: reply.repointed_feeds,
+            message: reply.message,
+        };
     });
 
     /**

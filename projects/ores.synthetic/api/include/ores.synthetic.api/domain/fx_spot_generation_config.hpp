@@ -190,37 +190,19 @@ struct fx_spot_generation_config final {
     /**
      * @brief How the feed's daily variance moves: "constant", the mixture's own variance on every
      * day, or "gjr_garch", a GJR-GARCH(1,1) variance carried from one market day to the next that
-     * scales the mixture's shocks. "gjr_garch" needs an engine that can scale its law, geometric or
-     * arithmetic.
+     * scales the mixture's shocks, with the shape of the approved calibration the config names.
+     * "gjr_garch" needs an engine that can scale its law, geometric or arithmetic.
      */
     std::string variance_model = "constant";
 
     /**
-     * @brief For "gjr_garch": how strongly a day's move raises the next day's variance. At least
-     * zero. The authored value; a fixing feed with enough history fits its own at start and keeps
-     * this as the fallback.
+     * @brief For "gjr_garch": the approved variance_calibration the feed runs. Naming it here makes
+     * each change of calibration a new version of the config, so the feed's history shows when
+     * every calibration came into use; approving a later calibration of the pair re-points the
+     * feeds that named the earlier one. A feed whose calibration is no longer approved does not
+     * start, and says why.
      */
-    double garch_alpha = 0.05;
-
-    /**
-     * @brief For "gjr_garch": the extra reaction to a fall of the pair. Negative when a rise of the
-     * pair raises the variance more, as for a pair whose base currency is a safe haven; alpha +
-     * gamma is at least zero.
-     */
-    double garch_gamma = 0.0;
-
-    /**
-     * @brief For "gjr_garch": how much of a day's variance carries into the next. At least zero;
-     * with alpha and gamma it must leave the persistence below one, which the feed checks at start
-     * against its own mixture.
-     */
-    double garch_beta = 0.9;
-
-    /**
-     * @brief For "gjr_garch" on a fixing feed: how many days of the chosen item's fixings the fit
-     * reads, five years by default. Between 30 and 3660.
-     */
-    int garch_window_days = 1826;
+    std::optional<boost::uuids::uuid> variance_calibration_id;
 
     /**
      * @brief Username of the person who last modified this FX spot generation config.

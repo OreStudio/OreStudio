@@ -23,15 +23,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { FeedStart, RecordRow } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { FeedStartVariance } from './feedStart.js';
-import {
-    settingsOf,
-    VarianceDialog,
-    VariancePanel,
-    varianceProblems,
-    type VarianceSettings,
-} from './VariancePanel.js';
+import { VarianceTab } from './VariancePanel.js';
 
-const noSave = (): Promise<void> => Promise.resolve();
+const CALIBRATION = '84902b7e-58f4-4127-86cb-129ebedabe95';
 
 function feed(over: Record<string, unknown> = {}): RecordRow {
     return {
@@ -40,146 +34,39 @@ function feed(over: Record<string, unknown> = {}): RecordRow {
         source_name: 'synthetic.eurusd',
         process_type: 'geometric',
         variance_model: 'gjr_garch',
-        garch_alpha: 0.07,
-        garch_gamma: -0.03,
-        garch_beta: 0.88,
-        garch_window_days: 1500,
+        variance_calibration_id: CALIBRATION,
         ...over,
     } as unknown as RecordRow;
 }
 
-const garch: VarianceSettings = {
-    model: 'gjr_garch',
-    alpha: 0.05,
-    gamma: 0.02,
-    beta: 0.9,
-    windowDays: 1826,
-};
-
-function panel(row: RecordRow, mayWrite = true): string {
+function tab(row: RecordRow): string {
     return renderToStaticMarkup(
         <TranslationProvider>
-            <VariancePanel feed={row} mayWriteFeed={mayWrite} save={noSave} />
+            <VarianceTab feed={row} />
         </TranslationProvider>,
     );
 }
-
-function dialog(row: RecordRow, running = false): string {
-    return renderToStaticMarkup(
-        <TranslationProvider>
-            <VarianceDialog feed={row} running={running} save={noSave} onClose={() => undefined} />
-        </TranslationProvider>,
-    );
-}
-
-/** Whether the input that follows the given label is disabled. */
-function disabledAfter(html: string, label: string): boolean {
-    const at = html.indexOf(label);
-    if (at < 0) return false;
-    const input = html.indexOf('<input', at);
-    if (input < 0) return false;
-    const tag = html.slice(input, html.indexOf('>', input));
-    return /\sdisabled(=|\s|\/?>)/.test(tag);
-}
-
-describe('the rules a daily variance is held to before it is saved', () => {
-    it('lets a constant variance through whatever the shape says', () => {
-        expect(
-            varianceProblems({ ...garch, model: 'constant', alpha: -1 }, 'ornstein_uhlenbeck'),
-        ).toEqual([]);
-    });
-
-    it('accepts an admissible GJR-GARCH shape on an engine that can scale', () => {
-        expect(varianceProblems(garch, 'geometric')).toEqual([]);
-        expect(varianceProblems(garch, 'arithmetic')).toEqual([]);
-    });
-
-    it('refuses a GJR-GARCH variance on an engine that cannot scale its law', () => {
-        expect(varianceProblems(garch, 'ornstein_uhlenbeck')).toEqual(['engine']);
-    });
-
-    it('refuses each bound the table checks, and names it', () => {
-        expect(varianceProblems({ ...garch, alpha: -0.01 }, 'geometric')).toContain('alpha');
-        expect(varianceProblems({ ...garch, beta: -0.01 }, 'geometric')).toContain('beta');
-        expect(varianceProblems({ ...garch, gamma: -0.06 }, 'geometric')).toEqual(['gamma']);
-        expect(varianceProblems({ ...garch, windowDays: 29 }, 'geometric')).toEqual(['window']);
-        expect(varianceProblems({ ...garch, windowDays: 3661 }, 'geometric')).toEqual(['window']);
-        expect(varianceProblems({ ...garch, windowDays: 100.5 }, 'geometric')).toEqual(['window']);
-    });
-
-    it('allows a negative gamma down to minus alpha, the boundary the table allows', () => {
-        expect(varianceProblems({ ...garch, gamma: -0.05 }, 'geometric')).toEqual([]);
-    });
-});
-
-describe('a feed’s stored variance', () => {
-    it('reads the stored model and shape', () => {
-        expect(settingsOf(feed())).toEqual({
-            model: 'gjr_garch',
-            alpha: 0.07,
-            gamma: -0.03,
-            beta: 0.88,
-            windowDays: 1500,
-        });
-    });
-
-    it('falls back to the table’s defaults for a row written before the columns', () => {
-        const old = { id: 'feed-1', version: 1 } as unknown as RecordRow;
-        expect(settingsOf(old)).toEqual({
-            model: 'constant',
-            alpha: 0.05,
-            gamma: 0,
-            beta: 0.9,
-            windowDays: 1826,
-        });
-    });
-});
 
 describe('a feed’s variance tab', () => {
-    it('reads the model, the shape and the window, with no field to type in', () => {
-        const html = panel(feed());
+    it('names the model and the calibration a GJR-GARCH feed runs', () => {
+        const html = tab(feed());
         expect(html).toContain('Variance model');
         expect(html).toContain('GJR-GARCH');
-        expect(html).toContain('0.07');
-        expect(html).toContain('-0.03');
-        expect(html).toContain('0.88');
-        expect(html).toContain('1500');
-        expect(html).not.toContain('<input');
+        expect(html).toContain(CALIBRATION);
     });
 
-    it('reads no shape for a constant variance', () => {
-        const html = panel(feed({ variance_model: 'constant' }));
+    it('names no calibration for a constant variance', () => {
+        const html = tab(feed({ variance_model: 'constant', variance_calibration_id: null }));
         expect(html).toContain('Constant');
-        expect(html).not.toContain('0.88');
+        expect(html).not.toContain(CALIBRATION);
+        expect(html).toContain('None');
     });
 
-    it('offers Edit only to a caller who may write the feed', () => {
-        expect(panel(feed())).toMatch(/<button[^>]*>.*Edit<\/button>/);
-        expect(panel(feed(), false)).not.toContain('Edit</button>');
-    });
-});
-
-describe('the dialog that edits a feed’s variance', () => {
-    it('enables the shape for a GJR-GARCH variance', () => {
-        expect(disabledAfter(dialog(feed()), 'Beta')).toBe(false);
-    });
-
-    it('disables the shape under a constant variance and keeps its values', () => {
-        const html = dialog(feed({ variance_model: 'constant' }));
-        expect(disabledAfter(html, 'Beta')).toBe(true);
-        expect(html).toContain('0.88');
-    });
-
-    it('says why a GJR-GARCH variance cannot run on the mean-reverting engine', () => {
-        expect(dialog(feed({ process_type: 'ornstein_uhlenbeck' }))).toContain(
-            'needs the geometric or arithmetic engine',
-        );
-        expect(dialog(feed())).not.toContain('needs the geometric or arithmetic engine');
-    });
-
-    it('offers to restart a running feed, which keeps the variance it started with', () => {
-        expect(dialog(feed(), true)).toContain('Restart it to apply');
-        expect(dialog(feed(), false)).not.toContain('Restart it to apply');
+    it('offers nothing to type and nothing to edit, since the shape comes from a review', () => {
+        const html = tab(feed());
+        expect(html).not.toContain('<input');
+        expect(html).not.toContain('<button');
+        expect(html).toContain('Calibration screen');
     });
 });
 

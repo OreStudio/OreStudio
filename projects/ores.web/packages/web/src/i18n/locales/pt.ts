@@ -5782,27 +5782,14 @@ const pt: SourceCatalogue = {
         },
         variance: {
             title: 'Variância diária',
-            lead: 'Se a variância diária deste feed é constante ou segue um GJR-GARCH, para que os dias calmos e agitados se agrupem, e a forma de que parte.',
+            lead: 'Se a variância diária deste feed é constante ou segue um GJR-GARCH, para que dias calmos e turbulentos se agrupem, e a calibração revista que ele usa.',
             model: 'Modelo de variância',
             'model.constant': 'Constante — a variância da mistura todos os dias',
-            'model.gjr_garch': 'GJR-GARCH — uma variância transportada dia a dia',
-            alpha: 'Alfa',
-            alphaHelp:
-                'Quanto o movimento de um dia eleva a variância do dia seguinte. Pelo menos zero.',
-            gamma: 'Gama',
-            gammaHelp: 'A reação adicional a uma queda do par; alfa mais gama é pelo menos zero.',
-            beta: 'Beta',
-            betaHelp: 'Quanto da variância de um dia passa para o seguinte. Pelo menos zero.',
-            window: 'Histórico, dias',
-            windowHelp:
-                'Os dias de fixings que um feed com fixing usa para ajustar a sua forma, de 30 a 3660.',
-            fitted: 'Um feed que parte de um fixing ajusta a sua própria forma a esse histórico, e mantém estes valores quando o histórico é curto demais. O ponto de partida da execução diz qual usou.',
-            engine: 'Uma variância GJR-GARCH escala a mistura, por isso precisa do motor geométrico ou aritmético. Mude primeiro o motor no separador Comportamento do preço.',
-            editTitle: 'Editar a variância diária de {feed}',
-            runningNote: 'O feed corre com a variância com que arrancou.',
-            restart: 'Reiniciá-lo para aplicar',
-            restartFailed:
-                'Guardado, mas o reinício falhou: {message}. O feed corre com a variância antiga até voltar a arrancar.',
+            'model.gjr_garch': 'GJR-GARCH — uma variância levada de um dia para o outro',
+            calibration: 'Calibração',
+            calibrationNone: 'Nenhuma',
+            calibrationLead:
+                'Um feed GJR-GARCH usa a calibração aprovada do seu par. As calibrações são capturadas, ajustadas e aprovadas ou rejeitadas no ecrã Calibração; aprovar uma aponta os feeds do par para ela.',
         },
         market: {
             title: 'O mercado',
@@ -6174,14 +6161,6 @@ const pt: SourceCatalogue = {
                     'A janela própria do fluxo, de 2 a 180 dias, em vez da política da sua classe. Deixe vazio para seguir a política.',
                 variance_model:
                     'Constante mantém a variância da mistura em todos os dias. GJR-GARCH transporta uma variância de um dia para o seguinte, de modo que os dias calmos e agitados se agrupam; precisa do motor geométrico ou aritmético.',
-                garch_alpha:
-                    'Só GJR-GARCH: quanto o movimento de um dia eleva a variância do dia seguinte. Pelo menos zero.',
-                garch_gamma:
-                    'Só GJR-GARCH: a reação adicional a uma queda do par. Negativo quando uma subida eleva mais a variância; alfa mais gama é pelo menos zero.',
-                garch_beta:
-                    'Só GJR-GARCH: quanto da variância de um dia passa para o seguinte. Pelo menos zero.',
-                garch_window_days:
-                    'Só GJR-GARCH: quantos dias de fixings um feed com fixing usa para ajustar a sua forma, de 30 a 3660. Cinco anos por omissão.',
             },
             start: {
                 title: 'De onde arrancou esta execução',

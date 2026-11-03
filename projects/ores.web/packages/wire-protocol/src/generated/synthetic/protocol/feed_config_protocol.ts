@@ -87,7 +87,11 @@ export interface ProviderDispersion {
 export interface VarianceStart {
     /** @brief "constant" or "gjr_garch". */
     model: string;
-    /** @brief True when the shape was fitted from the item's fixings; false when it is the authored one. */
+    /** @brief The approved variance calibration the run took its shape from. */
+    calibration_id: string;
+    /** @brief The version of that calibration the run read. */
+    calibration_version: number;
+    /** @brief True when the calibration was fitted from fixings; false when it is an authored shape. */
     fitted: boolean;
     /** @brief The reaction to a day's move. */
     alpha: number;
@@ -325,11 +329,45 @@ export interface CalibrateResponse {
     feeds: CalibratedFeed[];
 }
 
+/**
+ * @brief Approve or reject one proposed variance calibration, with the reviewer's reason.
+ *
+ * Approving supersedes the pair's earlier approval and points every feed of the pair that named
+ * it at the new one, each a new version of its config; rejecting leaves the feeds alone. Only a
+ * proposed calibration can be reviewed, and each decision is a new version of the calibration.
+ */
+export interface ReviewVarianceCalibrationRequest {
+    /** @brief The proposed calibration to decide. */
+    calibration_id: string;
+    /** @brief "approve" or "reject". */
+    decision: string;
+    /** @brief Why: kept as the calibration's state reason. Required. */
+    reason: string;
+}
+
+/**
+ * @brief What the review did: the calibration's new state, the approval it superseded, and the
+ * feeds it pointed at the new calibration.
+ */
+export interface ReviewVarianceCalibrationResponse {
+    /** @brief True when the decision was written. */
+    success: boolean;
+    /** @brief Why the decision was refused, or what it did. */
+    message: string;
+    /** @brief The calibration's state after the review. */
+    state: string;
+    /** @brief The approval the new one superseded; empty when there was none. */
+    superseded_id: string;
+    /** @brief The source names of the feeds now pointed at the approved calibration. */
+    repointed_feeds: string[];
+}
+
 export const subjects = {
     start_feed_request: 'synthetic.v1.ops.start_feed',
     stop_feed_request: 'synthetic.v1.ops.stop_feed',
     list_feeds_request: 'synthetic.v1.feed_configs.list',
     calibrate_request: 'synthetic.v1.ops.calibrate_feeds',
+    review_variance_calibration_request: 'synthetic.v1.ops.review_variance_calibration',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -341,4 +379,5 @@ export const requiresSession = {
     stop_feed_request: true,
     list_feeds_request: true,
     calibrate_request: true,
+    review_variance_calibration_request: true,
 } as const;

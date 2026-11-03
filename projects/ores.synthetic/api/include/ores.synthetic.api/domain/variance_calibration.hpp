@@ -135,7 +135,9 @@ struct variance_calibration final {
     std::optional<double> persistence;
 
     /**
-     * @brief The unconditional daily variance the shape returns to, positive.
+     * @brief The unconditional daily variance the history the shape was fitted to returns to,
+     * positive. Absent for an authored shape: a feed always takes its long-run level from its own
+     * mixture, so the level only describes the fit's data.
      */
     std::optional<double> long_run_variance;
 

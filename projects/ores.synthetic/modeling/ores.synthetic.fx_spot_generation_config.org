@@ -367,78 +367,29 @@ leaves today's behaviour unchanged.
 
 How the feed's daily variance moves: "constant", the mixture's own variance on
 every day, or "gjr_garch", a GJR-GARCH(1,1) variance carried from one market day
-to the next that scales the mixture's shocks. "gjr_garch" needs an engine that
-can scale its law, geometric or arithmetic.
+to the next that scales the mixture's shocks, with the shape of the approved
+calibration the config names. "gjr_garch" needs an engine that can scale its law,
+geometric or arithmetic.
 
 #+begin_src cpp :name generator
 std::string("constant")
 #+end_src
 
-** garch_alpha
+** variance_calibration_id
 :PROPERTIES:
-:type:          double precision
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.05
-:default:       0.05
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
 :END:
 
-For "gjr_garch": how strongly a day's move raises the next day's variance. At
-least zero. The authored value; a fixing feed with enough history fits its own
-at start and keeps this as the fallback.
+For "gjr_garch": the approved =variance_calibration= the feed runs. Naming it here
+makes each change of calibration a new version of the config, so the feed's
+history shows when every calibration came into use; approving a later calibration
+of the pair re-points the feeds that named the earlier one. A feed whose
+calibration is no longer approved does not start, and says why.
 
 #+begin_src cpp :name generator
-0.05
-#+end_src
-
-** garch_gamma
-:PROPERTIES:
-:type:          double precision
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.0
-:default:       0.0
-:END:
-
-For "gjr_garch": the extra reaction to a fall of the pair. Negative when a rise
-of the pair raises the variance more, as for a pair whose base currency is a
-safe haven; alpha + gamma is at least zero.
-
-#+begin_src cpp :name generator
-0.0
-#+end_src
-
-** garch_beta
-:PROPERTIES:
-:type:          double precision
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.9
-:default:       0.9
-:END:
-
-For "gjr_garch": how much of a day's variance carries into the next. At least
-zero; with alpha and gamma it must leave the persistence below one, which the
-feed checks at start against its own mixture.
-
-#+begin_src cpp :name generator
-0.9
-#+end_src
-
-** garch_window_days
-:PROPERTIES:
-:type:          integer
-:cpp_type:      int
-:nullable:      false
-:default_value: 1826
-:default:       1826
-:END:
-
-For "gjr_garch" on a fixing feed: how many days of the chosen item's fixings the
-fit reads, five years by default. Between 30 and 3660.
-
-#+begin_src cpp :name generator
-1826
+std::nullopt
 #+end_src
 
 * Artefact columns
@@ -566,7 +517,9 @@ How the daily variance moves: constant or gjr_garch.
 :default: 0.05
 :END:
 
-For gjr_garch: the reaction to a day's move.
+For gjr_garch: the reaction to a day's move. The four GARCH columns are the
+authored shape the publish installs as the pair's approved calibration, when the
+pair has none; the live config names that calibration instead of holding them.
 
 ** garch_gamma
 :PROPERTIES:
@@ -627,11 +580,8 @@ For gjr_garch: the days of fixings the fit reads.
 | "gmm_initial_price" > 0                                |
 | "calibration_window_days" is null or "calibration_window_days" between 2 and 180 |
 | "variance_model" in ('constant', 'gjr_garch')       |
-| "garch_alpha" >= 0                                    |
-| "garch_beta" >= 0                                     |
-| "garch_alpha" + "garch_gamma" >= 0                    |
-| "garch_window_days" between 30 and 3660               |
 | "variance_model" <> 'gjr_garch' or "process_type" in ('geometric', 'arithmetic') |
+| "variance_model" <> 'gjr_garch' or "variance_calibration_id" is not null |
 
 * Foreign keys
 
@@ -646,6 +596,13 @@ For gjr_garch: the days of fixings the fit reads.
 :PROPERTIES:
 :table:         ores_synthetic_folders_tbl
 :error_message: Invalid folder_id: %. No active folder found with this id.
+:nullable:      true
+:END:
+
+** variance_calibration_id
+:PROPERTIES:
+:table:         ores_synthetic_variance_calibrations_tbl
+:error_message: Invalid variance_calibration_id: %. No active variance_calibration found with this id.
 :nullable:      true
 :END:
 

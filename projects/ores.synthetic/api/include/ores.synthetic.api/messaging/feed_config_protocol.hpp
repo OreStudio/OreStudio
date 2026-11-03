@@ -133,8 +133,12 @@ struct provider_dispersion {
 struct variance_start {
     /** @brief "constant" or "gjr_garch". */
     std::string model;
-    /** @brief True when the shape was fitted from the item's fixings; false when it is the authored
-     * one. */
+    /** @brief The approved variance calibration the run took its shape from. */
+    std::string calibration_id;
+    /** @brief The version of that calibration the run read. */
+    int calibration_version = 0;
+    /** @brief True when the calibration was fitted from fixings; false when it is an authored
+     * shape. */
     bool fitted = false;
     /** @brief The reaction to a day's move. */
     double alpha = 0.0;
@@ -418,6 +422,54 @@ struct calibrate_response {
 };
 
 /**
+ * @brief Approve or reject one proposed variance calibration, with the reviewer's reason.
+ *
+ * Approving supersedes the pair's earlier approval and points every feed of the pair that named
+ * it at the new one, each a new version of its config; rejecting leaves the feeds alone. Only a
+ * proposed calibration can be reviewed, and each decision is a new version of the calibration.
+ */
+struct review_variance_calibration_request {
+    using response_type = struct review_variance_calibration_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.review_variance_calibration";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The proposed calibration to decide. */
+    std::string calibration_id;
+    /** @brief "approve" or "reject". */
+    std::string decision;
+    /** @brief Why: kept as the calibration's state reason. Required. */
+    std::string reason;
+
+    friend bool operator==(const review_variance_calibration_request&,
+                           const review_variance_calibration_request&) = default;
+};
+
+/**
+ * @brief What the review did: the calibration's new state, the approval it superseded, and the
+ * feeds it pointed at the new calibration.
+ */
+struct review_variance_calibration_response {
+    /** @brief True when the decision was written. */
+    bool success = false;
+    /** @brief Why the decision was refused, or what it did. */
+    std::string message;
+    /** @brief The calibration's state after the review. */
+    std::string state;
+    /** @brief The approval the new one superseded; empty when there was none. */
+    std::string superseded_id;
+    /** @brief The source names of the feeds now pointed at the approved calibration. */
+    std::vector<std::string> repointed_feeds;
+
+    friend bool operator==(const review_variance_calibration_response&,
+                           const review_variance_calibration_response&) = default;
+};
+
+/**
  * @brief The members of start_feed_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -503,6 +555,8 @@ struct calibrate_response {
 [[nodiscard]] constexpr auto wire_fields(const variance_start&) {
     return std::tuple{
         ::ores::utility::codec::field{"model", &variance_start::model},
+        ::ores::utility::codec::field{"calibration_id", &variance_start::calibration_id},
+        ::ores::utility::codec::field{"calibration_version", &variance_start::calibration_version},
         ::ores::utility::codec::field{"fitted", &variance_start::fitted},
         ::ores::utility::codec::field{"alpha", &variance_start::alpha},
         ::ores::utility::codec::field{"gamma", &variance_start::gamma},
@@ -725,6 +779,43 @@ struct calibrate_response {
     };
 }
 
+/**
+ * @brief The members of review_variance_calibration_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const review_variance_calibration_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"calibration_id",
+                                      &review_variance_calibration_request::calibration_id},
+        ::ores::utility::codec::field{"decision", &review_variance_calibration_request::decision},
+        ::ores::utility::codec::field{"reason", &review_variance_calibration_request::reason},
+    };
+}
+
+/**
+ * @brief The members of review_variance_calibration_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const review_variance_calibration_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &review_variance_calibration_response::success},
+        ::ores::utility::codec::field{"message", &review_variance_calibration_response::message},
+        ::ores::utility::codec::field{"state", &review_variance_calibration_response::state},
+        ::ores::utility::codec::field{"superseded_id",
+                                      &review_variance_calibration_response::superseded_id},
+        ::ores::utility::codec::field{"repointed_feeds",
+                                      &review_variance_calibration_response::repointed_feeds},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -889,6 +980,34 @@ struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::calibra
     static ores::synthetic::messaging::calibrate_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::synthetic::messaging::calibrate_response& v);
     static ores::synthetic::messaging::calibrate_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::review_variance_calibration_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::review_variance_calibration_request& v);
+    static ores::synthetic::messaging::review_variance_calibration_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::review_variance_calibration_request& v);
+    static ores::synthetic::messaging::review_variance_calibration_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::review_variance_calibration_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::review_variance_calibration_response& v);
+    static ores::synthetic::messaging::review_variance_calibration_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::review_variance_calibration_response& v);
+    static ores::synthetic::messaging::review_variance_calibration_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

@@ -43,6 +43,7 @@
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/variance_calibration_repository.hpp"
 #include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -212,6 +213,18 @@ feed_kind make_fx_spot_kind() {
                 if (fx.calibration_window_days)
                     policy.window_days = *fx.calibration_window_days;
 
+                // The calibration a GJR-GARCH feed names is a system row, read as stored; the
+                // feed decides at start whether it is approved.
+                std::optional<ores::synthetic::domain::variance_calibration> calibration;
+                if (fx.variance_calibration_id) {
+                    const auto found =
+                        ores::synthetic::repository::variance_calibration_repository{}.read_latest(
+                            ores::database::service::tenant_context::with_system_tenant(ctx),
+                            boost::uuids::to_string(*fx.variance_calibration_id));
+                    if (!found.empty())
+                        calibration = found.front();
+                }
+
                 // The feed quotes the pair in the notation of the adapter's provider, so a feed
                 // started by hand publishes the same ids the demand set names.
                 std::optional<feed::adapter_target> target;
@@ -221,12 +234,13 @@ feed_kind make_fx_spot_kind() {
                         return {.input = std::nullopt, .skip_reason = written.error()};
                     target = std::move(*written);
                 }
-                return {.input =
-                            feed::feed_build_input{fx_spot_feed_build_input{fx,
-                                                                            std::move(components),
-                                                                            std::move(target),
-                                                                            std::move(fixing_items),
-                                                                            std::move(policy)}},
+                return {.input = feed::feed_build_input{fx_spot_feed_build_input{
+                            fx,
+                            std::move(components),
+                            std::move(target),
+                            std::move(fixing_items),
+                            std::move(policy),
+                            std::move(calibration)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));

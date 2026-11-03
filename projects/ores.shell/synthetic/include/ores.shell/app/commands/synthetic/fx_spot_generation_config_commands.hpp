@@ -90,8 +90,7 @@ public:
      * @brief add <config_id> <base_currency_code> <quote_currency_code> <source_name> <oresmd_uri>
      * <price_source> <calibration_window_days> <gmm_initial_price> <ticks_per_hour> <process_type>
      * <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode> <branching_ratio>
-     * <decay> <sensitivity> <variance_model> <garch_alpha> <garch_gamma> <garch_beta>
-     * <garch_window_days> <reason> <commentary>
+     * <decay> <sensitivity> <variance_model> <variance_calibration_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -101,8 +100,8 @@ public:
      * @brief set <id> <config_id> <base_currency_code> <quote_currency_code> <source_name>
      * <oresmd_uri> <price_source> <calibration_window_days> <gmm_initial_price> <ticks_per_hour>
      * <process_type> <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode>
-     * <branching_ratio> <decay> <sensitivity> <variance_model> <garch_alpha> <garch_gamma>
-     * <garch_beta> <garch_window_days> <reason> <commentary> [--version <n>]
+     * <branching_ratio> <decay> <sensitivity> <variance_model> <variance_calibration_id> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -112,8 +111,8 @@ public:
      * @brief put-many --count <n> <id> <config_id> <base_currency_code> <quote_currency_code>
      * <source_name> <oresmd_uri> <price_source> <calibration_window_days> <gmm_initial_price>
      * <ticks_per_hour> <process_type> <enabled> <auto_start> <folder_id> <asset_class_code>
-     * <arrival_mode> <branching_ratio> <decay> <sensitivity> <variance_model> <garch_alpha>
-     * <garch_gamma> <garch_beta> <garch_window_days> <reason> <commentary>
+     * <arrival_mode> <branching_ratio> <decay> <sensitivity> <variance_model>
+     * <variance_calibration_id> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

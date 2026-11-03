@@ -250,9 +250,9 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   daily recalibration that needed a restart would add one more. Decision: a feed of a released class that
   has a stored spot resumes from it. The feed config's level is the process's
   stored initial state, and a start always reads it: calibration writes it from
-  the fixing, and a restart first writes it from the feed's last stored spot, as
-  a new version under its own change reason whose commentary names the spot's
-  price and time, so the history shows every restart and the price it began at.
+  the fixing, and a restart first writes it from the feed's last stored mid, read
+  from the series the feed publishes into, as a new version under
+  system.restart whose commentary names the spot's price and time, so the history shows every restart and the price it began at.
   A feed with no stored spot keeps the level its calibration wrote. A running
   feed takes a newly approved calibration, and a recalibrated spread, at its next
   market day roll, where the GJR-GARCH process already updates its variance and

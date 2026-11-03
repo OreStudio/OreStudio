@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The recorded spot series of a feed is continuous across every restart. The feed config's level is the process's stored initial state, and every start reads it. Before a feed of a released class starts, the synthetic service queries the feed's last stored spot; if one exists and differs from the config's level, it writes the level as a new version of the config, under its own change reason, with a commentary naming the spot's price and time, and the feed starts from it. So the feed's History tab shows each restart and the price it began at, with no record type of its own. A feed with no stored spot keeps the level its calibration wrote. The GJR-GARCH variance restarts at the calibration's first-day ratio, a step in volatility and not in price.
+The recorded spot series of a feed is continuous across every restart. The feed config's level is the process's stored initial state, and every start reads it. Before a feed of a released class starts, the synthetic service queries the feed's last stored spot, the mid, which is the only coordinate a synthetic FX spot publishes, read from the series the feed itself publishes into rather than from a subscribing party's copy; if one exists and differs from the config's level, it writes the level as a new version of the config, under the new change reason system.restart, with a commentary naming the spot's price and time, and the feed starts from it. So the feed's History tab shows each restart and the price it began at, with no record type of its own. A feed with no stored spot keeps the level its calibration wrote. The GJR-GARCH variance restarts at the calibration's first-day ratio, a step in volatility and not in price.
 
 * Status
 
@@ -36,7 +36,7 @@ The recorded spot series of a feed is continuous across every restart. The feed 
 * Acceptance
 
 - A feed restarted after it has run starts within one tick's move of its last stored spot.
-- The restart writes the config's level from that spot as a new version under its own change reason, and the feed's History tab shows the entry with the spot's price and time.
+- The restart writes the config's level from that spot as a new version under system.restart, and the feed's History tab shows the entry with the spot's price and time; a service restart writes one such version per running feed whose level moved.
 - A feed whose last stored spot equals its level writes no version; a feed with no stored spot starts from the level its calibration wrote.
 - Restarting the synthetic service leaves no step in any feed's stored series larger than the feed's largest tick move.
 

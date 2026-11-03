@@ -25,6 +25,7 @@
 #include <charconv>
 #include <cmath>
 #include <cstddef>
+#include <format>
 #include <numbers>
 #include <numeric>
 #include <optional>
@@ -90,6 +91,47 @@ double daily_p_minus(const std::vector<mixture_component>& components, int ticks
         for (auto& w : per_tick.weights)
             w /= total;
     return qm::daily_negative_second_moment(per_tick, ticks_per_hour * hours_per_market_day);
+}
+
+fit_evidence evidence_of(const variance_fit& fit) {
+    return {.returns = fit.returns_used,
+            .starts_agreed = fit.starts_agreed,
+            .alpha = fit.alpha.value_or(0.0),
+            .gamma = fit.gamma.value_or(0.0),
+            .persistence = fit.persistence.value_or(0.0)};
+}
+
+std::vector<std::string> approval_failures(const fit_evidence& evidence,
+                                           const variance_approval_rules& rules) {
+    std::vector<std::string> out;
+    if (evidence.returns < rules.min_returns)
+        out.push_back(
+            std::format("{} returns, fewer than {}", evidence.returns, rules.min_returns));
+    if (rules.require_starts_agree && !evidence.starts_agreed)
+        out.push_back("its starts disagree");
+    if (evidence.persistence < rules.min_persistence ||
+        evidence.persistence > rules.max_persistence)
+        out.push_back(std::format("persistence {:.4f} outside {:.3g} to {:.3g}",
+                                  evidence.persistence,
+                                  rules.min_persistence,
+                                  rules.max_persistence));
+    const double reaction = evidence.alpha + evidence.gamma / 2.0;
+    if (reaction < rules.min_reaction)
+        out.push_back(std::format("reaction {:.4g} below {:.3g}", reaction, rules.min_reaction));
+    return out;
+}
+
+std::string approval_evidence(const fit_evidence& evidence, const variance_approval_rules& rules) {
+    return std::format("{} returns of at least {}, {}persistence {:.4f} within {:.3g} to {:.3g}, "
+                       "reaction {:.4f} of at least {:.3g}",
+                       evidence.returns,
+                       rules.min_returns,
+                       rules.require_starts_agree ? "starts agree, " : "",
+                       evidence.persistence,
+                       rules.min_persistence,
+                       rules.max_persistence,
+                       evidence.alpha + evidence.gamma / 2.0,
+                       rules.min_reaction);
 }
 
 variance_fit fit_variance(const std::vector<variance_point>& points, double p_minus) {

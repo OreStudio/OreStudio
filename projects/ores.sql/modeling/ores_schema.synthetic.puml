@@ -81,6 +81,12 @@ package "synthetic" #F9FBE7 {
         * asset_class_code : text
         * window_days : integer
         * variance_window_days : integer
+        * variance_approval_mode : text
+        * variance_min_returns : integer
+        * variance_require_starts_agree : boolean
+        * variance_min_persistence : double
+        * variance_max_persistence : double
+        * variance_min_reaction : double
         * allow_inverse : boolean
         * fallback_code : text
         * modified_by : text

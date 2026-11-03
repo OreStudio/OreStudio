@@ -27,6 +27,11 @@
  * level kept when no publisher fixes a pair. Every FX feed derives its
  * candidates from this order; no feed is seeded with items of its own.
  *
+ * The policy approves variance calibrations itself (auto mode): a fit from at
+ * least 250 returns whose starts agree, with a persistence from 0.80 to 0.995
+ * and an average reaction, alpha plus half of gamma, of at least 0.01, is
+ * approved, and the fits that fail these rules wait for a person.
+ *
  * This script is idempotent: it inserts the policy only when the class has
  * none, and the order only when the policy has none. The order is seeded
  * whole or not at all, so a provider added to the list below reaches a fresh
@@ -50,10 +55,14 @@ begin
         v_policy_id := gen_random_uuid();
         insert into ores_synthetic_calibration_policies_tbl (
             id, tenant_id, version, asset_class_code, window_days, allow_inverse,
-            fallback_code, modified_by, performed_by, change_reason_code, change_commentary
+            fallback_code, variance_approval_mode, variance_min_returns,
+            variance_require_starts_agree, variance_min_persistence,
+            variance_max_persistence, variance_min_reaction,
+            modified_by, performed_by, change_reason_code, change_commentary
         )
         values (
             v_policy_id, v_tenant_id, 0, 'fx', 90, true, 'keep_fixed',
+            'auto', 250, true, 0.80, 0.995, 0.01,
             current_user, current_user, 'system.initial_load',
             'Initial population of the FX calibration policy'
         );

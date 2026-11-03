@@ -283,3 +283,90 @@ TEST_CASE("a feed refuses to start on no calibration, another pair's, an unappro
     REQUIRE_FALSE(empty.has_value());
     CHECK(empty.error().find("has no shape") != std::string::npos);
 }
+
+TEST_CASE("a fit within every rule passes, and the evidence states each check",
+          variance_calibration_tags) {
+    const variance_approval_rules rules{.by_policy = true};
+    // EUR/USD's fit of 2026-11-03.
+    const fit_evidence eurusd{.returns = 280,
+                              .starts_agreed = true,
+                              .alpha = 0.0114,
+                              .gamma = 0.0229,
+                              .persistence = 0.9551};
+
+    CHECK(approval_failures(eurusd, rules).empty());
+    CHECK(approval_evidence(eurusd, rules) ==
+          "280 returns of at least 250, starts agree, persistence 0.9551 within 0.8 to 0.995, "
+          "reaction 0.0229 of at least 0.01");
+}
+
+TEST_CASE("each rule a fit fails is named", variance_calibration_tags) {
+    const variance_approval_rules rules{.by_policy = true};
+    const fit_evidence pass{.returns = 280,
+                            .starts_agreed = true,
+                            .alpha = 0.0114,
+                            .gamma = 0.0229,
+                            .persistence = 0.9551};
+
+    auto few = pass;
+    few.returns = 249;
+    CHECK(approval_failures(few, rules) == std::vector<std::string>{"249 returns, fewer than 250"});
+
+    auto disagree = pass;
+    disagree.starts_agreed = false;
+    CHECK(approval_failures(disagree, rules) == std::vector<std::string>{"its starts disagree"});
+
+    // EUR/GBP, near a unit root, and EUR/CHF, barely persistent, on 2026-11-03.
+    auto high = pass;
+    high.persistence = 0.9987;
+    CHECK(approval_failures(high, rules) ==
+          std::vector<std::string>{"persistence 0.9987 outside 0.8 to 0.995"});
+    auto low = pass;
+    low.persistence = 0.3616;
+    CHECK(approval_failures(low, rules) ==
+          std::vector<std::string>{"persistence 0.3616 outside 0.8 to 0.995"});
+
+    // USD/CHF on 2026-11-03: alpha and gamma of about 1e-11, a variance that does not react.
+    auto flat = pass;
+    flat.alpha = 2.74e-12;
+    flat.gamma = 2.96e-11;
+    CHECK(approval_failures(flat, rules) ==
+          std::vector<std::string>{"reaction 1.754e-11 below 0.01"});
+
+    auto many = disagree;
+    many.persistence = 1.0;
+    CHECK(approval_failures(many, rules).size() == 2);
+}
+
+TEST_CASE("a policy that does not require agreeing starts passes a fit whose starts disagree",
+          variance_calibration_tags) {
+    const variance_approval_rules rules{.by_policy = true, .require_starts_agree = false};
+    const fit_evidence disagree{.returns = 280,
+                                .starts_agreed = false,
+                                .alpha = 0.0114,
+                                .gamma = 0.0229,
+                                .persistence = 0.9551};
+    CHECK(approval_failures(disagree, rules).empty());
+    CHECK(approval_evidence(disagree, rules).find("starts agree") == std::string::npos);
+}
+
+TEST_CASE("the evidence of a fit is its shape, and a rejected fit has none",
+          variance_calibration_tags) {
+    variance_fit fit;
+    fit.fitted = true;
+    fit.alpha = 0.05;
+    fit.gamma = 0.02;
+    fit.persistence = 0.96;
+    fit.returns_used = 300;
+    fit.starts_agreed = true;
+    const auto e = evidence_of(fit);
+    CHECK(e.returns == 300);
+    CHECK(e.starts_agreed);
+    CHECK(e.alpha == 0.05);
+    CHECK(e.gamma == 0.02);
+    CHECK(e.persistence == 0.96);
+
+    const auto none = evidence_of(variance_fit{});
+    CHECK(none.persistence == 0.0);
+    CHECK_FALSE(approval_failures(none, variance_approval_rules{}).empty());
+}

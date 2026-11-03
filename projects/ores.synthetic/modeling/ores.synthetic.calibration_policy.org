@@ -93,6 +93,103 @@ regimes. Between 30 and 3660.
 1826
 #+end_src
 
+** variance_approval_mode
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "manual"
+:default:       'manual'
+:END:
+
+Who approves a variance calibration of the class: =manual=, a person approves
+every fit; =auto=, the policy approves each fit that passes the rules below,
+and a person sees only the fits that fail them.
+
+#+begin_src cpp :name generator
+std::string("manual")
+#+end_src
+
+** variance_min_returns
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 250
+:default:       250
+:END:
+
+The fewest daily returns a fit may be approved from by the policy. At least
+250, the fewest a fit is made from at all.
+
+#+begin_src cpp :name generator
+250
+#+end_src
+
+** variance_require_starts_agree
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: true
+:default:       true
+:END:
+
+Whether the policy approves only a fit whose starting points all ended at the
+same optimum; a fit whose starts disagree is weakly identified by its history.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** variance_min_persistence
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.80
+:default:       0.80
+:END:
+
+The lowest persistence, alpha plus gamma times p_minus plus beta, the policy
+approves.
+
+#+begin_src cpp :name generator
+0.80
+#+end_src
+
+** variance_max_persistence
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.995
+:default:       0.995
+:END:
+
+The highest persistence the policy approves: below one, since a persistence near
+one keeps every shock for ever.
+
+#+begin_src cpp :name generator
+0.995
+#+end_src
+
+** variance_min_reaction
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.01
+:default:       0.01
+:END:
+
+The lowest average reaction, alpha plus half of gamma, the policy approves: a
+fit whose variance hardly reacts to a move is not one to run unseen.
+
+#+begin_src cpp :name generator
+0.01
+#+end_src
+
 ** allow_inverse
 :PROPERTIES:
 :type:          boolean
@@ -139,6 +236,12 @@ std::string("keep_fixed")
 |------------------------------------------------------------|
 | "window_days" between 2 and 180                            |
 | "variance_window_days" between 30 and 3660                 |
+| "variance_approval_mode" in ('manual', 'auto')             |
+| "variance_min_returns" between 250 and 100000              |
+| "variance_min_persistence" >= 0                            |
+| "variance_max_persistence" < 1                             |
+| "variance_min_persistence" <= "variance_max_persistence"   |
+| "variance_min_reaction" >= 0                               |
 
 * Validation function
 :PROPERTIES:

@@ -26,12 +26,12 @@ The page can answer which books allow a type and who may book one. Both answers 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Modelled, generated, dropped, permitted, seeded and enforced. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review the pull request, then merge. |
-| Last touched | 2026-10-31                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
 
 * Acceptance
 

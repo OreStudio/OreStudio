@@ -1029,7 +1029,7 @@ def generate_report_definitions_populate(company, reports, bindings):
         f"{sql_str(r['name'])}, {sql_str(r['description'])}, {sql_str(r['report_type'])}, "
         f"{sql_str(r['schedule_expression'])}, {sql_str(r['concurrency_policy'])}, "
         f"{r['display_order']}, {sql_str(r['tier'])}, {sql_str(r['applicable_jurisdiction'])}, "
-        f"{sql_str(r['regulatory_book_type'])})"
+        f"{sql_str(r['regulatory_book_type'])}, {sql_str(r.get('cut_kind_code'))})"
         for r in reports]
     script = netting_artefact_script(
         company, "report_definitions", "Report Definitions",
@@ -1037,7 +1037,7 @@ def generate_report_definitions_populate(company, reports, bindings):
         "ores_dq_report_definitions_artefact_tbl",
         ["id", "version", "name", "description", "report_type", "schedule_expression",
          "concurrency_policy", "display_order", "tier", "applicable_jurisdiction",
-         "regulatory_book_type"],
+         "regulatory_book_type", "cut_kind_code"],
         rows)
     binding_rows = ",\n".join(
         "        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, "

@@ -70,6 +70,17 @@ ANALYTICS = {
     "P&L Attribution": ["npv", "pnl_explain"],
     "Intraday Risk Monitor": ["npv", "sensitivity", "parametric_var"],
     "Headline Position": ["npv", "sensitivity"],
+    "Headline Position (EOD)": ["npv", "sensitivity"],
+    "Spot Greeks": ["npv", "sensitivity"],
+    "Spot Greeks (EOD)": ["npv", "sensitivity"],
+    "Triple Vol Spot Ladder": ["sensitivity"],
+    "Triple Vol Spot Ladder (EOD)": ["sensitivity"],
+    "Spot Ladder": ["portfolio_details"],
+    "Spike Map": ["portfolio_details"],
+    "Strike Map": ["portfolio_details"],
+    "Option Map": ["portfolio_details"],
+    "Intraday Change": ["npv"],
+    "Trades Since Last In": ["portfolio_details"],
 }
 
 # The name of each set of analytics, for the name of the configuration.

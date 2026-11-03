@@ -30,11 +30,11 @@ ranked above it replaces it with no change downstream.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -128,3 +128,28 @@ via its "Verifies task" field.
 | R2.4 | The test tag moved from brent to root | tests | Accept, no change | Nothing filters or cites either tag |
 | R2.5 | normal.hpp puts Boost's erf header in every includer | normal.hpp | Accept | The quantile is defined in normal.cpp; the header keeps the std one-liners |
 | R2.6 | The tolerance comment is hard to read | root.hpp | Accept | Reworded |
+| L5 | The adapter held its feed's lock while it read fixings over NATS, and the demand callback takes the same lock on the NATS thread | derived_fx_vol_adapter.cpp | Accept | The lock guards the pending demand alone; the universe is set once before ready_ is released, so an answer reads it while the loop refreshes |
+| L6 | A pair list in the adapter would repeat the one in the catalogue | derived_fx_vol_adapter.cpp | Accept | The universe is the provider's vendor instruments, read through a new market_data_client::list_vendor_instruments |
+| L7 | The synthetic service could not read vendor instruments | iam_roles_populate.sql | Accept | SyntheticService gains marketdata::market_data_vendor_instruments:read |
+
+* Result
+
+A derived source now publishes, once a day, the ATM, 25 and 10 delta risk reversal
+and butterfly quotes of ten FX pairs at eight expiries from 1W to 2Y, inferred from
+the ECB reference fixings the store holds, under its own provider =derived= and as
+quotes of the same =fx_option= items a vendor would quote.
+
+- =ores.analytics.quant= computes the quotes natively, over std and Boost.Math where
+  they supply a routine: the moments and their shrinkage, the Gram-Charlier smile of
+  Backus, Foresi, Li and Wu held inside its density region, the term scaling, and the
+  quotes of a convention, spot or forward, premium-adjusted or not, smile or broker
+  butterfly (PRs 4411 and 4412). The tests reproduce QuantLib's delta calculator
+  tables and ORE's broker butterfly check; 597 quant test cases pass.
+- The synthetic service hosts =derived_fx_vol_adapter= for the session
+  =derived-local=; =derived_fx_vol_feed= reads each demanded pair's euro legs, takes a
+  cross's returns as their difference, reads the pair's =fx_option_convention= and
+  publishes the latest day it has not sent. 9 tests cover the notation, the legs,
+  the convention across the switch tenor, the ticks and the feed's lifecycle.
+- The catalogue gains the supplier, adapter module, session, provider, feed, 400
+  vendor instruments mapped to their items, their scopes, and the system party's
+  subscription and route; the synthetic service may read vendor instruments.

@@ -88,6 +88,21 @@ each source in
 [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]],
 and how the values are computed is described there too.
 
+** In the code
+
+The derived source is the provider =derived=, served through the feed
+=derived-fx-vol= of the session =derived-local=, whose adapter module =derived= the
+synthetic service runs; =marketdata_derived_catalogue_populate.sql= holds its rows.
+The synthetic service starts =derived_fx_vol_adapter= for each feed of that session
+beside the simulator. Its universe is the vendor instruments the catalogue holds for
+the provider, one for each pair, expiry and label in the source's own notation, such
+as =EURUSD/1Y/25RR=, each mapped to the =fx_option= quote of the pair. =derived_fx_vol_feed=
+in =ores.synthetic.api= reads each demanded pair's ECB fixings through the market data
+reader as the system party, takes a cross's returns as the difference of its two euro
+legs on the days both hold, reads the pair's =fx_option_convention= from refdata, and
+publishes the quotes of the latest day it has not sent; the computation itself is the
+one =ores.analytics.quant= holds.
+
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.

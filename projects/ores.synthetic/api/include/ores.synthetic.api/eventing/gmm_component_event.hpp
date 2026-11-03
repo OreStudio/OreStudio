@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::synthetic::messaging::gmm_component_event> {
-    static constexpr std::string_view subject_prefix = "synthetic.v1.gmm_components_events";
+    static constexpr std::string_view subject_prefix = "synthetic.v1.events.gmm_components";
 
     static ores::synthetic::messaging::gmm_component_event
     from_notification(const entity_event_notification& notification) {

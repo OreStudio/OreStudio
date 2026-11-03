@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::dq::messaging::coding_scheme_authority_type_event> {
-    static constexpr std::string_view subject_prefix = "dq.v1.coding_scheme_authority_types_events";
+    static constexpr std::string_view subject_prefix = "dq.v1.events.coding_scheme_authority_types";
 
     static ores::dq::messaging::coding_scheme_authority_type_event
     from_notification(const entity_event_notification& notification) {

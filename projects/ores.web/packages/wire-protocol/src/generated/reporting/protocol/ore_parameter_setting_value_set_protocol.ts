@@ -214,7 +214,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'reporting.v1.ore_parameter_setting_value_sets_events.created',
-    updated: 'reporting.v1.ore_parameter_setting_value_sets_events.updated',
-    deleted: 'reporting.v1.ore_parameter_setting_value_sets_events.deleted',
+    created: 'reporting.v1.events.ore_parameter_setting_value_sets.created',
+    updated: 'reporting.v1.events.ore_parameter_setting_value_sets.updated',
+    deleted: 'reporting.v1.events.ore_parameter_setting_value_sets.deleted',
 } as const;

@@ -371,11 +371,11 @@ struct get_trade_generation_counterparty_version_response {
  */
 namespace trade_generation_counterparty_event_subjects {
 inline constexpr std::string_view created =
-    "synthetic.v1.trade_generation_counterparties_events.created";
+    "synthetic.v1.events.trade_generation_counterparties.created";
 inline constexpr std::string_view updated =
-    "synthetic.v1.trade_generation_counterparties_events.updated";
+    "synthetic.v1.events.trade_generation_counterparties.updated";
 inline constexpr std::string_view deleted =
-    "synthetic.v1.trade_generation_counterparties_events.deleted";
+    "synthetic.v1.events.trade_generation_counterparties.deleted";
 }
 /**
  * @brief The members of trade_generation_counterparty_key, named as the wire names them and in the

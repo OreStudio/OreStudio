@@ -358,9 +358,9 @@ struct get_delivery_count_version_response {
  * of them.
  */
 namespace delivery_count_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.delivery_counts_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.delivery_counts_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.delivery_counts_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.delivery_counts.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.delivery_counts.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_counts.deleted";
 }
 /**
  * @brief The members of delivery_count_key, named as the wire names them and in the order

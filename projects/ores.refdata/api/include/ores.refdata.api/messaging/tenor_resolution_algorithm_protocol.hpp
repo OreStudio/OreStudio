@@ -361,9 +361,9 @@ struct get_tenor_resolution_algorithm_version_response {
  * of them.
  */
 namespace tenor_resolution_algorithm_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.tenor_resolution_algorithms_events.created";
-inline constexpr std::string_view updated = "refdata.v1.tenor_resolution_algorithms_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.tenor_resolution_algorithms_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.tenor_resolution_algorithms.created";
+inline constexpr std::string_view updated = "refdata.v1.events.tenor_resolution_algorithms.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.tenor_resolution_algorithms.deleted";
 }
 /**
  * @brief The members of tenor_resolution_algorithm_key, named as the wire names them and in the

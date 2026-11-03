@@ -353,9 +353,9 @@ struct get_instrument_code_version_response {
  * of them.
  */
 namespace instrument_code_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.instrument_codes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.instrument_codes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.instrument_codes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.instrument_codes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.instrument_codes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.instrument_codes.deleted";
 }
 /**
  * @brief The members of instrument_code_key, named as the wire names them and in the order

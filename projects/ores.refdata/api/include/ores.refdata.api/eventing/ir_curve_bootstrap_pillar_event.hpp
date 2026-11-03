@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::ir_curve_bootstrap_pillar_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.ir_curve_bootstrap_pillars_events";
+        "refdata.v1.events.ir_curve_bootstrap_pillars";
 
     static ores::refdata::messaging::ir_curve_bootstrap_pillar_event
     from_notification(const entity_event_notification& notification) {

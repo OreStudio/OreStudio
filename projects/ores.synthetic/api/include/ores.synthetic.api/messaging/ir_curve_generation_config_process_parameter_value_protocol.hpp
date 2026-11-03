@@ -406,11 +406,11 @@ struct get_ir_curve_generation_config_process_parameter_value_version_response {
  */
 namespace ir_curve_generation_config_process_parameter_value_event_subjects {
 inline constexpr std::string_view created =
-    "synthetic.v1.ir_curve_generation_config_process_parameter_values_events.created";
+    "synthetic.v1.events.ir_curve_generation_config_process_parameter_values.created";
 inline constexpr std::string_view updated =
-    "synthetic.v1.ir_curve_generation_config_process_parameter_values_events.updated";
+    "synthetic.v1.events.ir_curve_generation_config_process_parameter_values.updated";
 inline constexpr std::string_view deleted =
-    "synthetic.v1.ir_curve_generation_config_process_parameter_values_events.deleted";
+    "synthetic.v1.events.ir_curve_generation_config_process_parameter_values.deleted";
 }
 /**
  * @brief The members of ir_curve_generation_config_process_parameter_value_key, named as the wire

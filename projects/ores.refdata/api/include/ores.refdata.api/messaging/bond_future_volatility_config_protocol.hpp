@@ -377,11 +377,11 @@ struct get_bond_future_volatility_config_version_response {
  */
 namespace bond_future_volatility_config_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.bond_future_volatility_configs_events.created";
+    "refdata.v1.events.bond_future_volatility_configs.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.bond_future_volatility_configs_events.updated";
+    "refdata.v1.events.bond_future_volatility_configs.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.bond_future_volatility_configs_events.deleted";
+    "refdata.v1.events.bond_future_volatility_configs.deleted";
 }
 /**
  * @brief The members of bond_future_volatility_config_key, named as the wire names them and in the

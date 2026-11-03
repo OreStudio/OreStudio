@@ -371,11 +371,11 @@ struct get_curve_segment_tenor_basis_curves_version_response {
  */
 namespace curve_segment_tenor_basis_curves_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.curve_segment_tenor_basis_curves_events.created";
+    "refdata.v1.events.curve_segment_tenor_basis_curves.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.curve_segment_tenor_basis_curves_events.updated";
+    "refdata.v1.events.curve_segment_tenor_basis_curves.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.curve_segment_tenor_basis_curves_events.deleted";
+    "refdata.v1.events.curve_segment_tenor_basis_curves.deleted";
 }
 /**
  * @brief The members of curve_segment_tenor_basis_curves_key, named as the wire names them and in

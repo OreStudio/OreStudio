@@ -155,9 +155,9 @@ struct get_many_login_info_response {
  * of them.
  */
 namespace login_info_event_subjects {
-inline constexpr std::string_view created = "iam.v1.login_info_events.created";
-inline constexpr std::string_view updated = "iam.v1.login_info_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.login_info_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.login_info.created";
+inline constexpr std::string_view updated = "iam.v1.events.login_info.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
 }
 /**
  * @brief The members of login_info_key, named as the wire names them and in the order

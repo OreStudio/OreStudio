@@ -382,9 +382,9 @@ struct get_variance_calibration_version_response {
  * of them.
  */
 namespace variance_calibration_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.variance_calibrations_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.variance_calibrations_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.variance_calibrations_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.variance_calibrations.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.variance_calibrations.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibrations.deleted";
 }
 /**
  * @brief The members of variance_calibration_key, named as the wire names them and in the order

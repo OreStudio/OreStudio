@@ -3034,12 +3034,15 @@ SPEC_VERSIONS_VERBS = ("list", "get")
 
 
 def entity_event_prefix(component: str, plural: str) -> str:
-    """``iam.v1.tenants_events`` -- the collection one entity's events share.
+    """``iam.v1.events.tenants`` -- the collection one entity's events share.
 
-    The prefix names the events collection, and the action is the last
-    segment, so one payload is addressed by three subjects.
+    The events namespace is a segment of its own, because a NATS wildcard is a
+    whole token: an events collection spelled ``tenants_events`` cannot be
+    addressed by ``*_events``, and a subscriber that wants every event of every
+    component would have to hear every request as well. With the namespace in
+    place, ``*.v1.events.>`` hears the events and nothing else.
     """
-    return f"{component}.v1.{plural}_events"
+    return f"{component}.v1.events.{plural}"
 
 
 def entity_events(component: str, plural: str) -> list[dict[str, Any]]:
@@ -3063,17 +3066,18 @@ def request_subject(component: str, plural: str, verb: str) -> str:
 
 
 def event_subject(component: str, plural: str, action: str) -> str:
-    """``iam.v1.tenants_events.created`` -- an announcement, not an operation.
+    """``iam.v1.events.tenants.created`` -- an announcement, not an operation.
 
-    The resource segment names the events collection rather than the resource,
-    in the ``{resource}_{collection}`` form a sub-resource uses, so the subject
-    still has four segments and still sits inside its component's namespace.
+    The namespace takes the resource's place, so an event has five segments and
+    the collection is a token a subscriber can name. That is the whole reason
+    the namespace exists: the collection cannot be wildcarded when it is a
+    suffix of another token.
     """
     if action not in SPEC_EVENT_ACTIONS:
         raise ValueError(
             f"{action!r} is not an event action; "
             f"expected one of {SPEC_EVENT_ACTIONS}")
-    return f"{component}.v1.{plural}_events.{action}"
+    return f"{entity_event_prefix(component, plural)}.{action}"
 
 
 def versions_subject(component: str, plural: str, verb: str) -> str:

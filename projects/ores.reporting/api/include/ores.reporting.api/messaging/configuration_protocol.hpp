@@ -382,9 +382,9 @@ struct get_configuration_version_response {
  * of them.
  */
 namespace configuration_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.configurations_events.created";
-inline constexpr std::string_view updated = "reporting.v1.configurations_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.configurations_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.configurations.created";
+inline constexpr std::string_view updated = "reporting.v1.events.configurations.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.configurations.deleted";
 }
 /**
  * @brief The members of configuration_key, named as the wire names them and in the order

@@ -352,9 +352,9 @@ struct get_activity_category_version_response {
  * of them.
  */
 namespace activity_category_event_subjects {
-inline constexpr std::string_view created = "trading.v1.activity_categories_events.created";
-inline constexpr std::string_view updated = "trading.v1.activity_categories_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.activity_categories_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.activity_categories.created";
+inline constexpr std::string_view updated = "trading.v1.events.activity_categories.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.activity_categories.deleted";
 }
 /**
  * @brief The members of activity_category_key, named as the wire names them and in the order

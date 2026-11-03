@@ -361,9 +361,9 @@ struct get_curve_segment_pillar_rule_version_response {
  * of them.
  */
 namespace curve_segment_pillar_rule_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.curve_segment_pillar_rules_events.created";
-inline constexpr std::string_view updated = "refdata.v1.curve_segment_pillar_rules_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.curve_segment_pillar_rules_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.curve_segment_pillar_rules.created";
+inline constexpr std::string_view updated = "refdata.v1.events.curve_segment_pillar_rules.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pillar_rules.deleted";
 }
 /**
  * @brief The members of curve_segment_pillar_rule_key, named as the wire names them and in the

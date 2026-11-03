@@ -418,11 +418,11 @@ struct get_credit_simulation_matrix_row_config_version_response {
  */
 namespace credit_simulation_matrix_row_config_event_subjects {
 inline constexpr std::string_view created =
-    "analytics.v1.credit_simulation_matrix_row_configs_events.created";
+    "analytics.v1.events.credit_simulation_matrix_row_configs.created";
 inline constexpr std::string_view updated =
-    "analytics.v1.credit_simulation_matrix_row_configs_events.updated";
+    "analytics.v1.events.credit_simulation_matrix_row_configs.updated";
 inline constexpr std::string_view deleted =
-    "analytics.v1.credit_simulation_matrix_row_configs_events.deleted";
+    "analytics.v1.events.credit_simulation_matrix_row_configs.deleted";
 }
 /**
  * @brief The members of credit_simulation_matrix_row_config_key, named as the wire names them and

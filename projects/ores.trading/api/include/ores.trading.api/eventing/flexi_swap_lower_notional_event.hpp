@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::trading::messaging::flexi_swap_lower_notional_event> {
     static constexpr std::string_view subject_prefix =
-        "trading.v1.flexi_swap_lower_notionals_events";
+        "trading.v1.events.flexi_swap_lower_notionals";
 
     static ores::trading::messaging::flexi_swap_lower_notional_event
     from_notification(const entity_event_notification& notification) {

@@ -337,9 +337,9 @@ struct get_role_version_response {
  * of them.
  */
 namespace role_event_subjects {
-inline constexpr std::string_view created = "iam.v1.roles_events.created";
-inline constexpr std::string_view updated = "iam.v1.roles_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.roles_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.roles.created";
+inline constexpr std::string_view updated = "iam.v1.events.roles.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.roles.deleted";
 }
 /**
  * @brief The members of role_key, named as the wire names them and in the order

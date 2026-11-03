@@ -209,7 +209,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.cds_volatility_configs_events.created',
-    updated: 'refdata.v1.cds_volatility_configs_events.updated',
-    deleted: 'refdata.v1.cds_volatility_configs_events.deleted',
+    created: 'refdata.v1.events.cds_volatility_configs.created',
+    updated: 'refdata.v1.events.cds_volatility_configs.updated',
+    deleted: 'refdata.v1.events.cds_volatility_configs.deleted',
 } as const;

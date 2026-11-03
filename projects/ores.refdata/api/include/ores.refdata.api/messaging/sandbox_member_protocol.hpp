@@ -413,9 +413,9 @@ struct get_sandbox_member_version_response {
  * of them.
  */
 namespace sandbox_member_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.sandbox_members_events.created";
-inline constexpr std::string_view updated = "refdata.v1.sandbox_members_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.sandbox_members_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.sandbox_members.created";
+inline constexpr std::string_view updated = "refdata.v1.events.sandbox_members.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.sandbox_members.deleted";
 }
 /**
  * @brief The members of sandbox_member_key, named as the wire names them and in the order

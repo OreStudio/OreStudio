@@ -385,9 +385,9 @@ struct get_swap_leg_amount_version_response {
  * of them.
  */
 namespace swap_leg_amount_event_subjects {
-inline constexpr std::string_view created = "trading.v1.swap_leg_amounts_events.created";
-inline constexpr std::string_view updated = "trading.v1.swap_leg_amounts_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.swap_leg_amounts_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.swap_leg_amounts.created";
+inline constexpr std::string_view updated = "trading.v1.events.swap_leg_amounts.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_amounts.deleted";
 }
 /**
  * @brief The members of swap_leg_amount_key, named as the wire names them and in the order

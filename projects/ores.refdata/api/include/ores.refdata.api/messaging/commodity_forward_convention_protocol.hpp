@@ -368,11 +368,11 @@ struct get_commodity_forward_convention_version_response {
  */
 namespace commodity_forward_convention_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.commodity_forward_conventions_events.created";
+    "refdata.v1.events.commodity_forward_conventions.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.commodity_forward_conventions_events.updated";
+    "refdata.v1.events.commodity_forward_conventions.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.commodity_forward_conventions_events.deleted";
+    "refdata.v1.events.commodity_forward_conventions.deleted";
 }
 /**
  * @brief The members of commodity_forward_convention_key, named as the wire names them and in the

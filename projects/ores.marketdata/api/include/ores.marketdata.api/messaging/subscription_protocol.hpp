@@ -354,9 +354,9 @@ struct get_subscription_version_response {
  * of them.
  */
 namespace subscription_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.subscriptions_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.subscriptions_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.subscriptions_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.subscriptions.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.subscriptions.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.subscriptions.deleted";
 }
 /**
  * @brief The members of subscription_key, named as the wire names them and in the order

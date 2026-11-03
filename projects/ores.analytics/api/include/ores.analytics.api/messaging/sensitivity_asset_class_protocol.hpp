@@ -362,9 +362,9 @@ struct get_sensitivity_asset_class_version_response {
  * of them.
  */
 namespace sensitivity_asset_class_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.sensitivity_asset_classes_events.created";
-inline constexpr std::string_view updated = "analytics.v1.sensitivity_asset_classes_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.sensitivity_asset_classes_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.sensitivity_asset_classes.created";
+inline constexpr std::string_view updated = "analytics.v1.events.sensitivity_asset_classes.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_asset_classes.deleted";
 }
 /**
  * @brief The members of sensitivity_asset_class_key, named as the wire names them and in the order

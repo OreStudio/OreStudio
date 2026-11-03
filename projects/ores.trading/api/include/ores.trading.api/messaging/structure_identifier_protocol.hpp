@@ -390,9 +390,9 @@ struct get_structure_identifier_version_response {
  * of them.
  */
 namespace structure_identifier_event_subjects {
-inline constexpr std::string_view created = "trading.v1.structure_identifiers_events.created";
-inline constexpr std::string_view updated = "trading.v1.structure_identifiers_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.structure_identifiers_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.structure_identifiers.created";
+inline constexpr std::string_view updated = "trading.v1.events.structure_identifiers.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.structure_identifiers.deleted";
 }
 /**
  * @brief The members of structure_identifier_key, named as the wire names them and in the order

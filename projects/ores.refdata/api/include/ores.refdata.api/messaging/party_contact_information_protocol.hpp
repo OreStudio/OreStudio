@@ -402,9 +402,9 @@ struct get_party_contact_information_version_response {
  * of them.
  */
 namespace party_contact_information_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.party_contact_informations_events.created";
-inline constexpr std::string_view updated = "refdata.v1.party_contact_informations_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.party_contact_informations_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.party_contact_informations.created";
+inline constexpr std::string_view updated = "refdata.v1.events.party_contact_informations.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.party_contact_informations.deleted";
 }
 /**
  * @brief The members of party_contact_information_key, named as the wire names them and in the

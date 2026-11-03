@@ -378,9 +378,9 @@ struct get_workunit_version_response {
  * of them.
  */
 namespace workunit_event_subjects {
-inline constexpr std::string_view created = "compute.v1.workunits_events.created";
-inline constexpr std::string_view updated = "compute.v1.workunits_events.updated";
-inline constexpr std::string_view deleted = "compute.v1.workunits_events.deleted";
+inline constexpr std::string_view created = "compute.v1.events.workunits.created";
+inline constexpr std::string_view updated = "compute.v1.events.workunits.updated";
+inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted";
 }
 /**
  * @brief The members of workunit_key, named as the wire names them and in the order

@@ -377,11 +377,11 @@ struct get_default_curve_yield_reinterpretation_version_response {
  */
 namespace default_curve_yield_reinterpretation_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.default_curve_yield_reinterpretations_events.created";
+    "refdata.v1.events.default_curve_yield_reinterpretations.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.default_curve_yield_reinterpretations_events.updated";
+    "refdata.v1.events.default_curve_yield_reinterpretations.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.default_curve_yield_reinterpretations_events.deleted";
+    "refdata.v1.events.default_curve_yield_reinterpretations.deleted";
 }
 /**
  * @brief The members of default_curve_yield_reinterpretation_key, named as the wire names them and

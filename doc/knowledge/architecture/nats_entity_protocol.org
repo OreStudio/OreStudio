@@ -12,8 +12,8 @@
 * Summary
 
 Every common, entity-related message that crosses the bus has the same shape. A
-subject has four segments -- component, version, resource, verb -- and its
-resource is a plural noun. A request carries the operation's parameters and its
+subject has four segments -- component, version, resource, verb -- or five when
+it announces a change, and its resource is a plural noun. A request carries the operation's parameters and its
 keys; a response carries one result, and the data the operation produced when
 the outcome is =ok=.
 
@@ -61,19 +61,20 @@ Four things are outside it and keep their own homes:
 
 ** Subject grammar
 
-Every subject has exactly four dot-separated segments, and the second is always
-the literal =v1= rather than a variable. The first and the last differ according
-to whether the subject performs an operation or announces one:
+Every subject has four dot-separated segments, or five when it announces a
+change, and the second is always the literal =v1= rather than a variable. The
+first and the last differ according to whether the subject performs an operation
+or announces one:
 
 #+begin_example
 {component}.v1.{resource}.{verb}            -- a request
-{component}.v1.{resource}_events.{action}   -- an event
+{component}.v1.events.{collection}.{action} -- an event
 #+end_example
 
-Each segment is lower snake_case. All four are mandatory: a subject with three
-segments, or with five, does not belong to this protocol. The resource segment
-is a plural noun, and an event's resource segment names the events collection
-in the same ={resource}_{collection}= form a sub-resource uses.
+Each segment is lower snake_case and every segment is mandatory: a request has
+four, an event five. The resource segment is a plural noun. An event carries the
+=events= namespace in the resource's place, so the collection is a token of its
+own, and the collection is a plural noun too.
 
 *** The component namespace
 
@@ -906,13 +907,13 @@ A change to an entity is announced as an event, and events are a separate
 namespace from request/reply.
 
 #+begin_example
-{component}.v1.{resource}_events.{action}
+{component}.v1.events.{collection}.{action}
 #+end_example
 
-An event subject has the same four segments as a request and stays inside its
-component's namespace. Its resource segment names the events collection rather
-than the resource, and its last segment is the action -- =created=, =updated= or
-=deleted= -- which is an action and not a verb because an event reports what
+An event subject takes one segment more than a request and stays inside its
+component's namespace. Its namespace segment is the literal =events=, the
+collection follows it, and its last segment is the action -- =created=,
+=updated= or =deleted= -- which is an action and not a verb because an event reports what
 happened and no caller asked for it.
 
 Every event carries:
@@ -933,7 +934,7 @@ event {
 An event belongs to a tenant, and to a party when the row it announces belongs
 to one. Neither travels in the payload, because the payload is business data and
 a message never states its own tenancy. Neither travels in the subject, because
-the subject names the collection and keeps the four segments of the grammar.
+the subject names the collection and keeps the grammar's segments.
 Both travel in the envelope, in two headers:
 
 | Header | Value |

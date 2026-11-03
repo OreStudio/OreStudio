@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'dq.v1.data_domains_events.created',
-    updated: 'dq.v1.data_domains_events.updated',
-    deleted: 'dq.v1.data_domains_events.deleted',
+    created: 'dq.v1.events.data_domains.created',
+    updated: 'dq.v1.events.data_domains.updated',
+    deleted: 'dq.v1.events.data_domains.deleted',
 } as const;

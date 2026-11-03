@@ -355,9 +355,9 @@ struct get_notification_channel_version_response {
  * of them.
  */
 namespace notification_channel_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.notification_channels_events.created";
-inline constexpr std::string_view updated = "inbox.v1.notification_channels_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.notification_channels_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.notification_channels.created";
+inline constexpr std::string_view updated = "inbox.v1.events.notification_channels.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.notification_channels.deleted";
 }
 /**
  * @brief The members of notification_channel_key, named as the wire names them and in the order

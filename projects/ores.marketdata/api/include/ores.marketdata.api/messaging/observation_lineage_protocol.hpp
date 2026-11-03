@@ -364,9 +364,9 @@ struct get_observation_lineage_version_response {
  * of them.
  */
 namespace observation_lineage_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.observation_lineages_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.observation_lineages_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.observation_lineages.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.observation_lineages.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.observation_lineages.deleted";
 }
 /**
  * @brief The members of observation_lineage_key, named as the wire names them and in the order

@@ -363,11 +363,11 @@ struct get_ore_parameter_value_domain_version_response {
  */
 namespace ore_parameter_value_domain_event_subjects {
 inline constexpr std::string_view created =
-    "reporting.v1.ore_parameter_value_domains_events.created";
+    "reporting.v1.events.ore_parameter_value_domains.created";
 inline constexpr std::string_view updated =
-    "reporting.v1.ore_parameter_value_domains_events.updated";
+    "reporting.v1.events.ore_parameter_value_domains.updated";
 inline constexpr std::string_view deleted =
-    "reporting.v1.ore_parameter_value_domains_events.deleted";
+    "reporting.v1.events.ore_parameter_value_domains.deleted";
 }
 /**
  * @brief The members of ore_parameter_value_domain_key, named as the wire names them and in the

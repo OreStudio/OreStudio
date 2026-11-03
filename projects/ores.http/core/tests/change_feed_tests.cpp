@@ -48,7 +48,7 @@ TEST_CASE("a_subject_names_its_component_collection_and_action", "[change_feed]"
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that an event subject is read from its end";
 
-    const auto address = parse_entity_event_subject("iam.v1.tenant_types_events.created");
+    const auto address = parse_entity_event_subject("iam.v1.events.tenant_types.created");
 
     REQUIRE(address.has_value());
     REQUIRE(address->component == "iam");
@@ -62,7 +62,7 @@ TEST_CASE("the_deployment_prefix_in_front_of_a_subject_is_ignored", "[change_fee
     BOOST_LOG_SEV(lg, info) << "Testing that a prefixed subject still parses";
 
     const auto address =
-        parse_entity_event_subject("ores.dev.local.trading.v1.fx_spot_trades_events.updated");
+        parse_entity_event_subject("ores.dev.local.trading.v1.events.fx_spot_trades.updated");
 
     REQUIRE(address.has_value());
     REQUIRE(address->component == "trading");
@@ -76,10 +76,11 @@ TEST_CASE("a_subject_that_is_not_an_entity_event_is_refused", "[change_feed]") {
 
     // A command subject, an events collection with no action, and a version that is
     // not one.
-    REQUIRE(!parse_entity_event_subject("iam.v1.tenant_types_events"));
-    REQUIRE(!parse_entity_event_subject("iam.v1.tenant_types.created"));
-    REQUIRE(!parse_entity_event_subject("iam.x1.tenant_types_events.created"));
-    REQUIRE(!parse_entity_event_subject("iam.v1._events.created"));
+    REQUIRE(!parse_entity_event_subject("iam.v1.tenant_types.list"));
+    REQUIRE(!parse_entity_event_subject("iam.v1.tenant_types_events.created"));
+    REQUIRE(!parse_entity_event_subject("iam.x1.events.tenant_types.created"));
+    REQUIRE(!parse_entity_event_subject("iam.v1.ops.provision_tenant_step"));
+    REQUIRE(!parse_entity_event_subject("iam.v1.events.tenant_types"));
     REQUIRE(!parse_entity_event_subject(""));
 }
 
@@ -90,7 +91,7 @@ TEST_CASE("an_event_records_the_collection_its_tenant_and_its_party", "[change_f
     change_coalescer coalescer;
     change_feed feed(coalescer);
 
-    REQUIRE(feed.notify(entity_event("iam.v1.tenant_types_events.created", "acme", "ops")));
+    REQUIRE(feed.notify(entity_event("iam.v1.events.tenant_types.created", "acme", "ops")));
 
     const auto frames = coalescer.drain();
     REQUIRE(frames.size() == 1);
@@ -107,8 +108,8 @@ TEST_CASE("an_event_of_one_collection_from_two_tenants_is_two_changes", "[change
     change_coalescer coalescer;
     change_feed feed(coalescer);
 
-    feed.notify(entity_event("iam.v1.tenant_types_events.created", "acme", ""));
-    feed.notify(entity_event("iam.v1.tenant_types_events.created", "globex", ""));
+    feed.notify(entity_event("iam.v1.events.tenant_types.created", "acme", ""));
+    feed.notify(entity_event("iam.v1.events.tenant_types.created", "globex", ""));
 
     const auto frames = coalescer.drain();
     REQUIRE(frames.size() == 2);
@@ -123,7 +124,7 @@ TEST_CASE("an_event_with_no_tenant_records_nothing", "[change_feed]") {
     change_coalescer coalescer;
     change_feed feed(coalescer);
 
-    REQUIRE(!feed.notify(entity_event("iam.v1.tenant_types_events.created", "", "ops")));
+    REQUIRE(!feed.notify(entity_event("iam.v1.events.tenant_types.created", "", "ops")));
     REQUIRE(coalescer.pending() == 0);
 }
 

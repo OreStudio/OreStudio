@@ -362,11 +362,11 @@ struct get_series_classification_rule_version_response {
  */
 namespace series_classification_rule_event_subjects {
 inline constexpr std::string_view created =
-    "marketdata.v1.series_classification_rules_events.created";
+    "marketdata.v1.events.series_classification_rules.created";
 inline constexpr std::string_view updated =
-    "marketdata.v1.series_classification_rules_events.updated";
+    "marketdata.v1.events.series_classification_rules.updated";
 inline constexpr std::string_view deleted =
-    "marketdata.v1.series_classification_rules_events.deleted";
+    "marketdata.v1.events.series_classification_rules.deleted";
 }
 /**
  * @brief The members of series_classification_rule_key, named as the wire names them and in the

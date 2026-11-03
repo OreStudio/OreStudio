@@ -348,9 +348,9 @@ struct get_hold_reason_version_response {
  * of them.
  */
 namespace hold_reason_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.hold_reasons_events.created";
-inline constexpr std::string_view updated = "inbox.v1.hold_reasons_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.hold_reasons.created";
+inline constexpr std::string_view updated = "inbox.v1.events.hold_reasons.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.hold_reasons.deleted";
 }
 /**
  * @brief The members of hold_reason_key, named as the wire names them and in the order

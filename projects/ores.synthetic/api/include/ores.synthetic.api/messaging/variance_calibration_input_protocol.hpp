@@ -375,11 +375,11 @@ struct get_variance_calibration_input_version_response {
  */
 namespace variance_calibration_input_event_subjects {
 inline constexpr std::string_view created =
-    "synthetic.v1.variance_calibration_inputs_events.created";
+    "synthetic.v1.events.variance_calibration_inputs.created";
 inline constexpr std::string_view updated =
-    "synthetic.v1.variance_calibration_inputs_events.updated";
+    "synthetic.v1.events.variance_calibration_inputs.updated";
 inline constexpr std::string_view deleted =
-    "synthetic.v1.variance_calibration_inputs_events.deleted";
+    "synthetic.v1.events.variance_calibration_inputs.deleted";
 }
 /**
  * @brief The members of variance_calibration_input_key, named as the wire names them and in the

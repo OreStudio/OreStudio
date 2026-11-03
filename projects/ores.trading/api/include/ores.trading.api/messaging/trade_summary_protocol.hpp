@@ -179,9 +179,9 @@ struct get_many_trade_summaries_response {
  * of them.
  */
 namespace trade_summary_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trade_summaries_events.created";
-inline constexpr std::string_view updated = "trading.v1.trade_summaries_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trade_summaries_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trade_summaries.created";
+inline constexpr std::string_view updated = "trading.v1.events.trade_summaries.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trade_summaries.deleted";
 }
 /**
  * @brief The members of trade_summary_key, named as the wire names them and in the order

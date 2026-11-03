@@ -214,7 +214,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.inflation_cap_floor_volatility_strikes_events.created',
-    updated: 'refdata.v1.inflation_cap_floor_volatility_strikes_events.updated',
-    deleted: 'refdata.v1.inflation_cap_floor_volatility_strikes_events.deleted',
+    created: 'refdata.v1.events.inflation_cap_floor_volatility_strikes.created',
+    updated: 'refdata.v1.events.inflation_cap_floor_volatility_strikes.updated',
+    deleted: 'refdata.v1.events.inflation_cap_floor_volatility_strikes.deleted',
 } as const;

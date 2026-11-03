@@ -357,9 +357,9 @@ struct get_concurrency_policy_version_response {
  * of them.
  */
 namespace concurrency_policy_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.concurrency_policies_events.created";
-inline constexpr std::string_view updated = "reporting.v1.concurrency_policies_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.concurrency_policies_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.concurrency_policies.created";
+inline constexpr std::string_view updated = "reporting.v1.events.concurrency_policies.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_policies.deleted";
 }
 /**
  * @brief The members of concurrency_policy_key, named as the wire names them and in the order

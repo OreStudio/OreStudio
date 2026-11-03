@@ -354,9 +354,9 @@ struct get_instrument_strike_version_response {
  * of them.
  */
 namespace instrument_strike_event_subjects {
-inline constexpr std::string_view created = "trading.v1.instrument_strikes_events.created";
-inline constexpr std::string_view updated = "trading.v1.instrument_strikes_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.instrument_strikes_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.instrument_strikes.created";
+inline constexpr std::string_view updated = "trading.v1.events.instrument_strikes.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.instrument_strikes.deleted";
 }
 /**
  * @brief The members of instrument_strike_key, named as the wire names them and in the order

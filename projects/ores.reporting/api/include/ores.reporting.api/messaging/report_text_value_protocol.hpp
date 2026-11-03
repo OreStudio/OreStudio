@@ -303,9 +303,9 @@ struct delete_many_report_text_values_response {
  * of them.
  */
 namespace report_text_value_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.report_text_values_events.created";
-inline constexpr std::string_view updated = "reporting.v1.report_text_values_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.report_text_values_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.report_text_values.created";
+inline constexpr std::string_view updated = "reporting.v1.events.report_text_values.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.report_text_values.deleted";
 }
 /**
  * @brief The members of report_text_value_key, named as the wire names them and in the order

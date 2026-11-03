@@ -282,9 +282,9 @@ struct delete_many_market_fixings_response {
  * of them.
  */
 namespace market_fixing_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.market_fixings_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.market_fixings_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.market_fixings_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.market_fixings.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.market_fixings.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.market_fixings.deleted";
 }
 /**
  * @brief The members of market_fixing_key, named as the wire names them and in the order

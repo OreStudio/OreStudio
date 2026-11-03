@@ -238,7 +238,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'trading.v1.balance_guaranteed_swap_tranche_notionals_events.created',
-    updated: 'trading.v1.balance_guaranteed_swap_tranche_notionals_events.updated',
-    deleted: 'trading.v1.balance_guaranteed_swap_tranche_notionals_events.deleted',
+    created: 'trading.v1.events.balance_guaranteed_swap_tranche_notionals.created',
+    updated: 'trading.v1.events.balance_guaranteed_swap_tranche_notionals.updated',
+    deleted: 'trading.v1.events.balance_guaranteed_swap_tranche_notionals.deleted',
 } as const;

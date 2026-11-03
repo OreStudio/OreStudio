@@ -369,9 +369,9 @@ struct get_synthetic_cdo_instrument_version_response {
  * of them.
  */
 namespace synthetic_cdo_instrument_event_subjects {
-inline constexpr std::string_view created = "trading.v1.synthetic_cdo_instruments_events.created";
-inline constexpr std::string_view updated = "trading.v1.synthetic_cdo_instruments_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.synthetic_cdo_instruments_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.synthetic_cdo_instruments.created";
+inline constexpr std::string_view updated = "trading.v1.events.synthetic_cdo_instruments.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.synthetic_cdo_instruments.deleted";
 }
 /**
  * @brief The members of synthetic_cdo_instrument_key, named as the wire names them and in the order

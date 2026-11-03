@@ -368,11 +368,11 @@ struct get_ore_parameter_setting_value_set_version_response {
  */
 namespace ore_parameter_setting_value_set_event_subjects {
 inline constexpr std::string_view created =
-    "reporting.v1.ore_parameter_setting_value_sets_events.created";
+    "reporting.v1.events.ore_parameter_setting_value_sets.created";
 inline constexpr std::string_view updated =
-    "reporting.v1.ore_parameter_setting_value_sets_events.updated";
+    "reporting.v1.events.ore_parameter_setting_value_sets.updated";
 inline constexpr std::string_view deleted =
-    "reporting.v1.ore_parameter_setting_value_sets_events.deleted";
+    "reporting.v1.events.ore_parameter_setting_value_sets.deleted";
 }
 /**
  * @brief The members of ore_parameter_setting_value_set_key, named as the wire names them and in

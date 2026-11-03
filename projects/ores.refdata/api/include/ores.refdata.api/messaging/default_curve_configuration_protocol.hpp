@@ -368,11 +368,11 @@ struct get_default_curve_configuration_version_response {
  */
 namespace default_curve_configuration_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.default_curve_configurations_events.created";
+    "refdata.v1.events.default_curve_configurations.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.default_curve_configurations_events.updated";
+    "refdata.v1.events.default_curve_configurations.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.default_curve_configurations_events.deleted";
+    "refdata.v1.events.default_curve_configurations.deleted";
 }
 /**
  * @brief The members of default_curve_configuration_key, named as the wire names them and in the

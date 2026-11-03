@@ -375,9 +375,9 @@ struct get_cut_gap_version_response {
  * of them.
  */
 namespace cut_gap_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.cut_gaps_events.created";
-inline constexpr std::string_view updated = "reporting.v1.cut_gaps_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.cut_gaps_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.cut_gaps.created";
+inline constexpr std::string_view updated = "reporting.v1.events.cut_gaps.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.cut_gaps.deleted";
 }
 /**
  * @brief The members of cut_gap_key, named as the wire names them and in the order

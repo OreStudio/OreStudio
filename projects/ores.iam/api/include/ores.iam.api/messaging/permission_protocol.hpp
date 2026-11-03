@@ -275,9 +275,9 @@ struct delete_many_permissions_response {
  * of them.
  */
 namespace permission_event_subjects {
-inline constexpr std::string_view created = "iam.v1.permissions_events.created";
-inline constexpr std::string_view updated = "iam.v1.permissions_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.permissions_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.permissions.created";
+inline constexpr std::string_view updated = "iam.v1.events.permissions.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
 }
 /**
  * @brief The members of permission_key, named as the wire names them and in the order

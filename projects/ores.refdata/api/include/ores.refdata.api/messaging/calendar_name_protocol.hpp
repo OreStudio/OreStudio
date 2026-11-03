@@ -346,9 +346,9 @@ struct get_calendar_name_version_response {
  * of them.
  */
 namespace calendar_name_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.calendar_names_events.created";
-inline constexpr std::string_view updated = "refdata.v1.calendar_names_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.calendar_names_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.calendar_names.created";
+inline constexpr std::string_view updated = "refdata.v1.events.calendar_names.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.calendar_names.deleted";
 }
 /**
  * @brief The members of calendar_name_key, named as the wire names them and in the order

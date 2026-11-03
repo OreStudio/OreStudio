@@ -345,9 +345,9 @@ struct get_reporting_regime_version_response {
  * of them.
  */
 namespace reporting_regime_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.reporting_regimes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.reporting_regimes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.reporting_regimes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.reporting_regimes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.reporting_regimes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes.deleted";
 }
 /**
  * @brief The members of reporting_regime_key, named as the wire names them and in the order

@@ -301,9 +301,9 @@ struct get_cut_approval_detail_version_response {
  * of them.
  */
 namespace cut_approval_detail_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.cut_approval_details_events.created";
-inline constexpr std::string_view updated = "reporting.v1.cut_approval_details_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.cut_approval_details_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.cut_approval_details.created";
+inline constexpr std::string_view updated = "reporting.v1.events.cut_approval_details.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_details.deleted";
 }
 /**
  * @brief The members of cut_approval_detail_key, named as the wire names them and in the order

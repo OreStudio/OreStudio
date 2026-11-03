@@ -352,9 +352,9 @@ struct get_change_reason_version_response {
  * of them.
  */
 namespace change_reason_event_subjects {
-inline constexpr std::string_view created = "dq.v1.change_reasons_events.created";
-inline constexpr std::string_view updated = "dq.v1.change_reasons_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.change_reasons_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.change_reasons.created";
+inline constexpr std::string_view updated = "dq.v1.events.change_reasons.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.change_reasons.deleted";
 }
 /**
  * @brief The members of change_reason_key, named as the wire names them and in the order

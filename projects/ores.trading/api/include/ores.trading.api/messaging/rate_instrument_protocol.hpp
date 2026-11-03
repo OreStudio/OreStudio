@@ -352,9 +352,9 @@ struct get_rate_instrument_version_response {
  * of them.
  */
 namespace rate_instrument_event_subjects {
-inline constexpr std::string_view created = "trading.v1.rate_instruments_events.created";
-inline constexpr std::string_view updated = "trading.v1.rate_instruments_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.rate_instruments_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.rate_instruments.created";
+inline constexpr std::string_view updated = "trading.v1.events.rate_instruments.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.rate_instruments.deleted";
 }
 /**
  * @brief The members of rate_instrument_key, named as the wire names them and in the order

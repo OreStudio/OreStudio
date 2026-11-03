@@ -352,9 +352,9 @@ struct get_business_centre_version_response {
  * of them.
  */
 namespace business_centre_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.business_centres_events.created";
-inline constexpr std::string_view updated = "refdata.v1.business_centres_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.business_centres_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.business_centres.created";
+inline constexpr std::string_view updated = "refdata.v1.events.business_centres.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.deleted";
 }
 /**
  * @brief The members of business_centre_key, named as the wire names them and in the order

@@ -356,9 +356,9 @@ struct get_equity_basket_constituent_version_response {
  * of them.
  */
 namespace equity_basket_constituent_event_subjects {
-inline constexpr std::string_view created = "trading.v1.equity_basket_constituents_events.created";
-inline constexpr std::string_view updated = "trading.v1.equity_basket_constituents_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.equity_basket_constituents_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.equity_basket_constituents.created";
+inline constexpr std::string_view updated = "trading.v1.events.equity_basket_constituents.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.equity_basket_constituents.deleted";
 }
 /**
  * @brief The members of equity_basket_constituent_key, named as the wire names them and in the

@@ -392,11 +392,11 @@ struct get_yield_curve_process_parameter_definition_version_response {
  */
 namespace yield_curve_process_parameter_definition_event_subjects {
 inline constexpr std::string_view created =
-    "synthetic.v1.yield_curve_process_parameter_definitions_events.created";
+    "synthetic.v1.events.yield_curve_process_parameter_definitions.created";
 inline constexpr std::string_view updated =
-    "synthetic.v1.yield_curve_process_parameter_definitions_events.updated";
+    "synthetic.v1.events.yield_curve_process_parameter_definitions.updated";
 inline constexpr std::string_view deleted =
-    "synthetic.v1.yield_curve_process_parameter_definitions_events.deleted";
+    "synthetic.v1.events.yield_curve_process_parameter_definitions.deleted";
 }
 /**
  * @brief The members of yield_curve_process_parameter_definition_key, named as the wire names them

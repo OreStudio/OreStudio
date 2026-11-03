@@ -347,9 +347,9 @@ struct get_feed_version_response {
  * of them.
  */
 namespace feed_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.feeds_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.feeds_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.feeds_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.feeds.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.feeds.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.feeds.deleted";
 }
 /**
  * @brief The members of feed_key, named as the wire names them and in the order

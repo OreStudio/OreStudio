@@ -222,9 +222,9 @@ struct get_adapter_version_response {
  * of them.
  */
 namespace adapter_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.adapters_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.adapters_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.adapters.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.adapters.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.adapters.deleted";
 }
 /**
  * @brief The members of adapter_key, named as the wire names them and in the order

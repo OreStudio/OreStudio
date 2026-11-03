@@ -349,9 +349,9 @@ struct get_badge_severity_version_response {
  * of them.
  */
 namespace badge_severity_event_subjects {
-inline constexpr std::string_view created = "dq.v1.badge_severities_events.created";
-inline constexpr std::string_view updated = "dq.v1.badge_severities_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.badge_severities_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.badge_severities.created";
+inline constexpr std::string_view updated = "dq.v1.events.badge_severities.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.badge_severities.deleted";
 }
 /**
  * @brief The members of badge_severity_key, named as the wire names them and in the order

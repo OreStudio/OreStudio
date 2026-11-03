@@ -375,9 +375,9 @@ struct get_trade_generation_config_version_response {
  * of them.
  */
 namespace trade_generation_config_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.trade_generation_configs_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.trade_generation_configs_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.trade_generation_configs_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.trade_generation_configs.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.trade_generation_configs.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generation_configs.deleted";
 }
 /**
  * @brief The members of trade_generation_config_key, named as the wire names them and in the order

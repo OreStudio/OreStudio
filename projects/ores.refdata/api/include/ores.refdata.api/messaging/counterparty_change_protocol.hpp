@@ -265,9 +265,9 @@ struct get_counterparty_change_version_response {
  * of them.
  */
 namespace counterparty_change_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.counterparty_changes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.counterparty_changes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.counterparty_changes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.counterparty_changes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.counterparty_changes.deleted";
 }
 /**
  * @brief The members of counterparty_change_key, named as the wire names them and in the order

@@ -367,11 +367,11 @@ struct get_fx_vol_surface_pillar_source_version_response {
  */
 namespace fx_vol_surface_pillar_source_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.fx_vol_surface_pillar_sources_events.created";
+    "refdata.v1.events.fx_vol_surface_pillar_sources.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.fx_vol_surface_pillar_sources_events.updated";
+    "refdata.v1.events.fx_vol_surface_pillar_sources.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.fx_vol_surface_pillar_sources_events.deleted";
+    "refdata.v1.events.fx_vol_surface_pillar_sources.deleted";
 }
 /**
  * @brief The members of fx_vol_surface_pillar_source_key, named as the wire names them and in the

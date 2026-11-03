@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::analytics::messaging::pricing_model_product_event> {
-    static constexpr std::string_view subject_prefix = "analytics.v1.pricing_model_products_events";
+    static constexpr std::string_view subject_prefix = "analytics.v1.events.pricing_model_products";
 
     static ores::analytics::messaging::pricing_model_product_event
     from_notification(const entity_event_notification& notification) {

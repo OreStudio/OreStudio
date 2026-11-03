@@ -361,11 +361,11 @@ struct get_curve_configuration_section_version_response {
  */
 namespace curve_configuration_section_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.curve_configuration_sections_events.created";
+    "refdata.v1.events.curve_configuration_sections.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.curve_configuration_sections_events.updated";
+    "refdata.v1.events.curve_configuration_sections.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.curve_configuration_sections_events.deleted";
+    "refdata.v1.events.curve_configuration_sections.deleted";
 }
 /**
  * @brief The members of curve_configuration_section_key, named as the wire names them and in the

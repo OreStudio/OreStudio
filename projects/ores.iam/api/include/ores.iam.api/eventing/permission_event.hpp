@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::iam::messaging::permission_event> {
-    static constexpr std::string_view subject_prefix = "iam.v1.permissions_events";
+    static constexpr std::string_view subject_prefix = "iam.v1.events.permissions";
 
     static ores::iam::messaging::permission_event
     from_notification(const entity_event_notification& notification) {

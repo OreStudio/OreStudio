@@ -356,9 +356,9 @@ struct get_payment_frequency_version_response {
  * of them.
  */
 namespace payment_frequency_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.payment_frequencies_events.created";
-inline constexpr std::string_view updated = "refdata.v1.payment_frequencies_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.payment_frequencies_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.payment_frequencies.created";
+inline constexpr std::string_view updated = "refdata.v1.events.payment_frequencies.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequencies.deleted";
 }
 /**
  * @brief The members of payment_frequency_key, named as the wire names them and in the order

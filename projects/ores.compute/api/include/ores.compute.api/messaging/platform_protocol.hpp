@@ -346,9 +346,9 @@ struct get_platform_version_response {
  * of them.
  */
 namespace platform_event_subjects {
-inline constexpr std::string_view created = "compute.v1.platforms_events.created";
-inline constexpr std::string_view updated = "compute.v1.platforms_events.updated";
-inline constexpr std::string_view deleted = "compute.v1.platforms_events.deleted";
+inline constexpr std::string_view created = "compute.v1.events.platforms.created";
+inline constexpr std::string_view updated = "compute.v1.events.platforms.updated";
+inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted";
 }
 /**
  * @brief The members of platform_key, named as the wire names them and in the order

@@ -208,7 +208,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.swaption_proxy_configs_events.created',
-    updated: 'refdata.v1.swaption_proxy_configs_events.updated',
-    deleted: 'refdata.v1.swaption_proxy_configs_events.deleted',
+    created: 'refdata.v1.events.swaption_proxy_configs.created',
+    updated: 'refdata.v1.events.swaption_proxy_configs.updated',
+    deleted: 'refdata.v1.events.swaption_proxy_configs.deleted',
 } as const;

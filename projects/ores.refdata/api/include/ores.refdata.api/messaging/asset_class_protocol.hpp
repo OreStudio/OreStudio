@@ -342,9 +342,9 @@ struct get_asset_class_version_response {
  * of them.
  */
 namespace asset_class_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.asset_classes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.asset_classes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.asset_classes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.asset_classes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.asset_classes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.asset_classes.deleted";
 }
 /**
  * @brief The members of asset_class_key, named as the wire names them and in the order

@@ -382,9 +382,9 @@ struct get_portfolio_version_response {
  * of them.
  */
 namespace portfolio_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.portfolios_events.created";
-inline constexpr std::string_view updated = "refdata.v1.portfolios_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.portfolios_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.portfolios.created";
+inline constexpr std::string_view updated = "refdata.v1.events.portfolios.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.deleted";
 }
 /**
  * @brief The members of portfolio_key, named as the wire names them and in the order

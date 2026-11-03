@@ -372,11 +372,11 @@ struct get_ore_parameter_value_set_catalogue_version_response {
  */
 namespace ore_parameter_value_set_catalogue_event_subjects {
 inline constexpr std::string_view created =
-    "reporting.v1.ore_parameter_value_set_catalogues_events.created";
+    "reporting.v1.events.ore_parameter_value_set_catalogues.created";
 inline constexpr std::string_view updated =
-    "reporting.v1.ore_parameter_value_set_catalogues_events.updated";
+    "reporting.v1.events.ore_parameter_value_set_catalogues.updated";
 inline constexpr std::string_view deleted =
-    "reporting.v1.ore_parameter_value_set_catalogues_events.deleted";
+    "reporting.v1.events.ore_parameter_value_set_catalogues.deleted";
 }
 /**
  * @brief The members of ore_parameter_value_set_catalogue_key, named as the wire names them and in

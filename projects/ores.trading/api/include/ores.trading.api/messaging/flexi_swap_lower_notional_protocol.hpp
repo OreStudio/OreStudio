@@ -396,9 +396,9 @@ struct get_flexi_swap_lower_notional_version_response {
  * of them.
  */
 namespace flexi_swap_lower_notional_event_subjects {
-inline constexpr std::string_view created = "trading.v1.flexi_swap_lower_notionals_events.created";
-inline constexpr std::string_view updated = "trading.v1.flexi_swap_lower_notionals_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.flexi_swap_lower_notionals_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.flexi_swap_lower_notionals.created";
+inline constexpr std::string_view updated = "trading.v1.events.flexi_swap_lower_notionals.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_notionals.deleted";
 }
 /**
  * @brief The members of flexi_swap_lower_notional_key, named as the wire names them and in the

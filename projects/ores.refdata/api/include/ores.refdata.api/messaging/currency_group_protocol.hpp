@@ -349,9 +349,9 @@ struct get_currency_group_version_response {
  * of them.
  */
 namespace currency_group_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.currency_groups_events.created";
-inline constexpr std::string_view updated = "refdata.v1.currency_groups_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.currency_groups_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.currency_groups.created";
+inline constexpr std::string_view updated = "refdata.v1.events.currency_groups.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.currency_groups.deleted";
 }
 /**
  * @brief The members of currency_group_key, named as the wire names them and in the order

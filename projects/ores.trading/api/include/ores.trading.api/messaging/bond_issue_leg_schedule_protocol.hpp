@@ -369,9 +369,9 @@ struct get_bond_issue_leg_schedule_version_response {
  * of them.
  */
 namespace bond_issue_leg_schedule_event_subjects {
-inline constexpr std::string_view created = "trading.v1.bond_issue_leg_schedules_events.created";
-inline constexpr std::string_view updated = "trading.v1.bond_issue_leg_schedules_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.bond_issue_leg_schedules_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.bond_issue_leg_schedules.created";
+inline constexpr std::string_view updated = "trading.v1.events.bond_issue_leg_schedules.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.bond_issue_leg_schedules.deleted";
 }
 /**
  * @brief The members of bond_issue_leg_schedule_key, named as the wire names them and in the order

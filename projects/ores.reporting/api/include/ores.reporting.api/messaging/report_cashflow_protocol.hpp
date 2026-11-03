@@ -307,9 +307,9 @@ struct delete_many_report_cashflows_response {
  * of them.
  */
 namespace report_cashflow_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.report_cashflows_events.created";
-inline constexpr std::string_view updated = "reporting.v1.report_cashflows_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.report_cashflows_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.report_cashflows.created";
+inline constexpr std::string_view updated = "reporting.v1.events.report_cashflows.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflows.deleted";
 }
 /**
  * @brief The members of report_cashflow_key, named as the wire names them and in the order

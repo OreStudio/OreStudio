@@ -207,7 +207,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'dq.v1.fsm_transitions_events.created',
-    updated: 'dq.v1.fsm_transitions_events.updated',
-    deleted: 'dq.v1.fsm_transitions_events.deleted',
+    created: 'dq.v1.events.fsm_transitions.created',
+    updated: 'dq.v1.events.fsm_transitions.updated',
+    deleted: 'dq.v1.events.fsm_transitions.deleted',
 } as const;

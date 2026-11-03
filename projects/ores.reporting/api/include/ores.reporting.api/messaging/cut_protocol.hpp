@@ -255,9 +255,9 @@ struct get_cut_version_response {
  * of them.
  */
 namespace cut_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.cuts_events.created";
-inline constexpr std::string_view updated = "reporting.v1.cuts_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.cuts_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.cuts.created";
+inline constexpr std::string_view updated = "reporting.v1.events.cuts.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
 }
 /**
  * @brief The members of cut_key, named as the wire names them and in the order

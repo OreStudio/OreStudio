@@ -365,9 +365,9 @@ struct get_ir_curve_template_entry_version_response {
  * of them.
  */
 namespace ir_curve_template_entry_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.ir_curve_template_entries_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.ir_curve_template_entries_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.ir_curve_template_entries_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.ir_curve_template_entries.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.ir_curve_template_entries.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_template_entries.deleted";
 }
 /**
  * @brief The members of ir_curve_template_entry_key, named as the wire names them and in the order

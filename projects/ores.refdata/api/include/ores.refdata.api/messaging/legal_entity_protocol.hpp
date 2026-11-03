@@ -350,9 +350,9 @@ struct get_legal_entity_version_response {
  * of them.
  */
 namespace legal_entity_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.legal_entities_events.created";
-inline constexpr std::string_view updated = "refdata.v1.legal_entities_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.legal_entities_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.legal_entities.created";
+inline constexpr std::string_view updated = "refdata.v1.events.legal_entities.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.deleted";
 }
 /**
  * @brief The members of legal_entity_key, named as the wire names them and in the order

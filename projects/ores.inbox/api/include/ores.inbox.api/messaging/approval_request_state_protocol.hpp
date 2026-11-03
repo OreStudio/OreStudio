@@ -358,9 +358,9 @@ struct get_approval_request_state_version_response {
  * of them.
  */
 namespace approval_request_state_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.approval_request_states_events.created";
-inline constexpr std::string_view updated = "inbox.v1.approval_request_states_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.approval_request_states_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.approval_request_states.created";
+inline constexpr std::string_view updated = "inbox.v1.events.approval_request_states.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.approval_request_states.deleted";
 }
 /**
  * @brief The members of approval_request_state_key, named as the wire names them and in the order

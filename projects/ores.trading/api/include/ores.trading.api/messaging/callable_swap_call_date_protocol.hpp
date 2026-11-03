@@ -391,9 +391,9 @@ struct get_callable_swap_call_date_version_response {
  * of them.
  */
 namespace callable_swap_call_date_event_subjects {
-inline constexpr std::string_view created = "trading.v1.callable_swap_call_dates_events.created";
-inline constexpr std::string_view updated = "trading.v1.callable_swap_call_dates_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.callable_swap_call_dates_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.callable_swap_call_dates.created";
+inline constexpr std::string_view updated = "trading.v1.events.callable_swap_call_dates.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_call_dates.deleted";
 }
 /**
  * @brief The members of callable_swap_call_date_key, named as the wire names them and in the order

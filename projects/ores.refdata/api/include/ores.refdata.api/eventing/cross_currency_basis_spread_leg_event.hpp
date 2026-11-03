@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::cross_currency_basis_spread_leg_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.cross_currency_basis_spread_legs_events";
+        "refdata.v1.events.cross_currency_basis_spread_legs";
 
     static ores::refdata::messaging::cross_currency_basis_spread_leg_event
     from_notification(const entity_event_notification& notification) {

@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::synthetic::messaging::yield_curve_process_type_event> {
     static constexpr std::string_view subject_prefix =
-        "synthetic.v1.yield_curve_process_types_events";
+        "synthetic.v1.events.yield_curve_process_types";
 
     static ores::synthetic::messaging::yield_curve_process_type_event
     from_notification(const entity_event_notification& notification) {

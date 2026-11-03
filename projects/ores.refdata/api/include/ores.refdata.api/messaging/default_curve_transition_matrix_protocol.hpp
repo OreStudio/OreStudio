@@ -368,11 +368,11 @@ struct get_default_curve_transition_matrix_version_response {
  */
 namespace default_curve_transition_matrix_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.default_curve_transition_matrices_events.created";
+    "refdata.v1.events.default_curve_transition_matrices.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.default_curve_transition_matrices_events.updated";
+    "refdata.v1.events.default_curve_transition_matrices.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.default_curve_transition_matrices_events.deleted";
+    "refdata.v1.events.default_curve_transition_matrices.deleted";
 }
 /**
  * @brief The members of default_curve_transition_matrix_key, named as the wire names them and in

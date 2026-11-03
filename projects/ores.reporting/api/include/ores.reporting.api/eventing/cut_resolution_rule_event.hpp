@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::reporting::messaging::cut_resolution_rule_event> {
-    static constexpr std::string_view subject_prefix = "reporting.v1.cut_resolution_rules_events";
+    static constexpr std::string_view subject_prefix = "reporting.v1.events.cut_resolution_rules";
 
     static ores::reporting::messaging::cut_resolution_rule_event
     from_notification(const entity_event_notification& notification) {

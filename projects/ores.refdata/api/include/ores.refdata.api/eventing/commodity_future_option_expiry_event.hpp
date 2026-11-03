@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::commodity_future_option_expiry_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.commodity_future_option_expiries_events";
+        "refdata.v1.events.commodity_future_option_expiries";
 
     static ores::refdata::messaging::commodity_future_option_expiry_event
     from_notification(const entity_event_notification& notification) {

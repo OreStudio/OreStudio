@@ -405,11 +405,11 @@ struct get_tenor_basis_swap_pay_receive_version_response {
  */
 namespace tenor_basis_swap_pay_receive_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.tenor_basis_swap_pay_receives_events.created";
+    "refdata.v1.events.tenor_basis_swap_pay_receives.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.tenor_basis_swap_pay_receives_events.updated";
+    "refdata.v1.events.tenor_basis_swap_pay_receives.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.tenor_basis_swap_pay_receives_events.deleted";
+    "refdata.v1.events.tenor_basis_swap_pay_receives.deleted";
 }
 /**
  * @brief The members of tenor_basis_swap_pay_receive_key, named as the wire names them and in the

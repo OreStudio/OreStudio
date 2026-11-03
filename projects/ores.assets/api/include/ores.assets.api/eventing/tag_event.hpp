@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::assets::messaging::tag_event> {
-    static constexpr std::string_view subject_prefix = "assets.v1.tags_events";
+    static constexpr std::string_view subject_prefix = "assets.v1.events.tags";
 
     static ores::assets::messaging::tag_event
     from_notification(const entity_event_notification& notification) {

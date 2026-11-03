@@ -101,7 +101,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'dq.v1.lei_bic_events.created',
-    updated: 'dq.v1.lei_bic_events.updated',
-    deleted: 'dq.v1.lei_bic_events.deleted',
+    created: 'dq.v1.events.lei_bic.created',
+    updated: 'dq.v1.events.lei_bic.updated',
+    deleted: 'dq.v1.events.lei_bic.deleted',
 } as const;

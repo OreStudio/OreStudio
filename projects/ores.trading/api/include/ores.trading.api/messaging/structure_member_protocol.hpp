@@ -352,9 +352,9 @@ struct get_structure_member_version_response {
  * of them.
  */
 namespace structure_member_event_subjects {
-inline constexpr std::string_view created = "trading.v1.structure_members_events.created";
-inline constexpr std::string_view updated = "trading.v1.structure_members_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.structure_members_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.structure_members.created";
+inline constexpr std::string_view updated = "trading.v1.events.structure_members.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.structure_members.deleted";
 }
 /**
  * @brief The members of structure_member_key, named as the wire names them and in the order

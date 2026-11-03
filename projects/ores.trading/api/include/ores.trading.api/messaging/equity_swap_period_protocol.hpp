@@ -350,9 +350,9 @@ struct get_equity_swap_period_version_response {
  * of them.
  */
 namespace equity_swap_period_event_subjects {
-inline constexpr std::string_view created = "trading.v1.equity_swap_periods_events.created";
-inline constexpr std::string_view updated = "trading.v1.equity_swap_periods_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.equity_swap_periods_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.equity_swap_periods.created";
+inline constexpr std::string_view updated = "trading.v1.events.equity_swap_periods.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_periods.deleted";
 }
 /**
  * @brief The members of equity_swap_period_key, named as the wire names them and in the order

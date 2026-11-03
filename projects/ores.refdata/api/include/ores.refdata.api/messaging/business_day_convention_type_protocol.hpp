@@ -363,11 +363,11 @@ struct get_business_day_convention_type_version_response {
  */
 namespace business_day_convention_type_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.business_day_convention_types_events.created";
+    "refdata.v1.events.business_day_convention_types.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.business_day_convention_types_events.updated";
+    "refdata.v1.events.business_day_convention_types.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.business_day_convention_types_events.deleted";
+    "refdata.v1.events.business_day_convention_types.deleted";
 }
 /**
  * @brief The members of business_day_convention_type_key, named as the wire names them and in the

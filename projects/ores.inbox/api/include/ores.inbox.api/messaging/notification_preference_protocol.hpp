@@ -392,9 +392,9 @@ struct get_notification_preference_version_response {
  * of them.
  */
 namespace notification_preference_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.notification_preferences_events.created";
-inline constexpr std::string_view updated = "inbox.v1.notification_preferences_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.notification_preferences_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.notification_preferences.created";
+inline constexpr std::string_view updated = "inbox.v1.events.notification_preferences.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.notification_preferences.deleted";
 }
 /**
  * @brief The members of notification_preference_key, named as the wire names them and in the order

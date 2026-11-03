@@ -348,9 +348,9 @@ struct get_code_domain_version_response {
  * of them.
  */
 namespace code_domain_event_subjects {
-inline constexpr std::string_view created = "dq.v1.code_domains_events.created";
-inline constexpr std::string_view updated = "dq.v1.code_domains_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.code_domains_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.code_domains.created";
+inline constexpr std::string_view updated = "dq.v1.events.code_domains.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.code_domains.deleted";
 }
 /**
  * @brief The members of code_domain_key, named as the wire names them and in the order

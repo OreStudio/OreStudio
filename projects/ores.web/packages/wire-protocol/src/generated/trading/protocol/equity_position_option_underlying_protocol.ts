@@ -241,7 +241,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'trading.v1.equity_position_option_underlyings_events.created',
-    updated: 'trading.v1.equity_position_option_underlyings_events.updated',
-    deleted: 'trading.v1.equity_position_option_underlyings_events.deleted',
+    created: 'trading.v1.events.equity_position_option_underlyings.created',
+    updated: 'trading.v1.events.equity_position_option_underlyings.updated',
+    deleted: 'trading.v1.events.equity_position_option_underlyings.deleted',
 } as const;

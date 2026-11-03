@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::workflow::messaging::workflow_plan_step_event> {
-    static constexpr std::string_view subject_prefix = "workflow.v1.workflow_plan_steps_events";
+    static constexpr std::string_view subject_prefix = "workflow.v1.events.workflow_plan_steps";
 
     static ores::workflow::messaging::workflow_plan_step_event
     from_notification(const entity_event_notification& notification) {

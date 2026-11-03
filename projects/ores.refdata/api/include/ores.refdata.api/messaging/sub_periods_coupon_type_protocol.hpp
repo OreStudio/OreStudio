@@ -358,9 +358,9 @@ struct get_sub_periods_coupon_type_version_response {
  * of them.
  */
 namespace sub_periods_coupon_type_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.sub_periods_coupon_types_events.created";
-inline constexpr std::string_view updated = "refdata.v1.sub_periods_coupon_types_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.sub_periods_coupon_types_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.sub_periods_coupon_types.created";
+inline constexpr std::string_view updated = "refdata.v1.events.sub_periods_coupon_types.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.sub_periods_coupon_types.deleted";
 }
 /**
  * @brief The members of sub_periods_coupon_type_key, named as the wire names them and in the order

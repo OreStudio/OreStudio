@@ -171,7 +171,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'marketdata.v1.market_fixings_events.created',
-    updated: 'marketdata.v1.market_fixings_events.updated',
-    deleted: 'marketdata.v1.market_fixings_events.deleted',
+    created: 'marketdata.v1.events.market_fixings.created',
+    updated: 'marketdata.v1.events.market_fixings.updated',
+    deleted: 'marketdata.v1.events.market_fixings.deleted',
 } as const;

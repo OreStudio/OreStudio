@@ -348,9 +348,9 @@ struct get_party_status_version_response {
  * of them.
  */
 namespace party_status_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.party_statuses_events.created";
-inline constexpr std::string_view updated = "refdata.v1.party_statuses_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.party_statuses_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.party_statuses.created";
+inline constexpr std::string_view updated = "refdata.v1.events.party_statuses.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.party_statuses.deleted";
 }
 /**
  * @brief The members of party_status_key, named as the wire names them and in the order

@@ -359,9 +359,9 @@ struct get_sensitivity_template_version_response {
  * of them.
  */
 namespace sensitivity_template_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.sensitivity_templates_events.created";
-inline constexpr std::string_view updated = "analytics.v1.sensitivity_templates_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.sensitivity_templates_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.sensitivity_templates.created";
+inline constexpr std::string_view updated = "analytics.v1.events.sensitivity_templates.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_templates.deleted";
 }
 /**
  * @brief The members of sensitivity_template_key, named as the wire names them and in the order

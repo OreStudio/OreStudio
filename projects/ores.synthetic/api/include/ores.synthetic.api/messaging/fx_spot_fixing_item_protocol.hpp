@@ -363,9 +363,9 @@ struct get_fx_spot_fixing_item_version_response {
  * of them.
  */
 namespace fx_spot_fixing_item_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.fx_spot_fixing_items_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.fx_spot_fixing_items_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.fx_spot_fixing_items_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.fx_spot_fixing_items.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.fx_spot_fixing_items.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.fx_spot_fixing_items.deleted";
 }
 /**
  * @brief The members of fx_spot_fixing_item_key, named as the wire names them and in the order

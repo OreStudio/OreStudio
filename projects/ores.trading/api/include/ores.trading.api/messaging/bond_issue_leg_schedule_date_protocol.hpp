@@ -361,11 +361,11 @@ struct get_bond_issue_leg_schedule_date_version_response {
  */
 namespace bond_issue_leg_schedule_date_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.bond_issue_leg_schedule_dates_events.created";
+    "trading.v1.events.bond_issue_leg_schedule_dates.created";
 inline constexpr std::string_view updated =
-    "trading.v1.bond_issue_leg_schedule_dates_events.updated";
+    "trading.v1.events.bond_issue_leg_schedule_dates.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.bond_issue_leg_schedule_dates_events.deleted";
+    "trading.v1.events.bond_issue_leg_schedule_dates.deleted";
 }
 /**
  * @brief The members of bond_issue_leg_schedule_date_key, named as the wire names them and in the

@@ -155,9 +155,9 @@ struct get_many_lei_entities_response {
  * of them.
  */
 namespace lei_entity_event_subjects {
-inline constexpr std::string_view created = "dq.v1.lei_entities_events.created";
-inline constexpr std::string_view updated = "dq.v1.lei_entities_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.lei_entities_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.lei_entities.created";
+inline constexpr std::string_view updated = "dq.v1.events.lei_entities.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.lei_entities.deleted";
 }
 /**
  * @brief The members of lei_entity_key, named as the wire names them and in the order

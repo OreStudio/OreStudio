@@ -378,11 +378,11 @@ struct get_inflation_cap_floor_volatility_strikes_version_response {
  */
 namespace inflation_cap_floor_volatility_strikes_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.inflation_cap_floor_volatility_strikes_events.created";
+    "refdata.v1.events.inflation_cap_floor_volatility_strikes.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.inflation_cap_floor_volatility_strikes_events.updated";
+    "refdata.v1.events.inflation_cap_floor_volatility_strikes.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.inflation_cap_floor_volatility_strikes_events.deleted";
+    "refdata.v1.events.inflation_cap_floor_volatility_strikes.deleted";
 }
 /**
  * @brief The members of inflation_cap_floor_volatility_strikes_key, named as the wire names them

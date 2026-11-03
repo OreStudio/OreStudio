@@ -353,9 +353,9 @@ struct get_gmm_component_version_response {
  * of them.
  */
 namespace gmm_component_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.gmm_components_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.gmm_components_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.gmm_components_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.gmm_components.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.gmm_components.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.deleted";
 }
 /**
  * @brief The members of gmm_component_key, named as the wire names them and in the order

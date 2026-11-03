@@ -26,40 +26,40 @@ transport details.
 Each entity declares the canonical verbs =list=, =get=, =get_many=, =put=,
 =put_many=, =delete= and =delete_many= under =iam.v1.<resource>.=; a versioned
 table adds =iam.v1.<resource>_versions.list= and =.get=; an eventing entity adds
-=iam.v1.<resource>_events.created=, =.updated= and =.deleted=. A read-only
+=iam.v1.events.<resource>.created=, =.updated= and =.deleted=. A read-only
 entity declares no writes.
 
 | Subject family | Owning protocol header | Carries |
 |----------------+------------------------+---------|
 | =iam.v1.accounts.*= | =account_protocol.hpp= | =list=, =get=, =get_many= (the entity is read-only) |
 | =iam.v1.accounts_versions.*= | =account_protocol.hpp= | =list=, =get= |
-| =iam.v1.accounts_events.*= | =account_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.accounts.*= | =account_protocol.hpp= | =created=, =updated=, =deleted= |
 | =iam.v1.account_contact_informations.*= | =account_contact_information_protocol.hpp= | the seven canonical verbs plus =list_by_account_id= |
 | =iam.v1.account_contact_informations_versions.*= | =account_contact_information_protocol.hpp= | =list=, =get= |
-| =iam.v1.account_contact_informations_events.*= | =account_contact_information_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.account_contact_informations.*= | =account_contact_information_protocol.hpp= | =created=, =updated=, =deleted= |
 | =iam.v1.account-contact-informations.*= | =account_contact_information_protocol.hpp= | =publish-from-dq= (the one family whose resource segment is hyphenated) |
 | =iam.v1.account_parties.*= | =account_party_protocol.hpp= | the seven canonical verbs plus =list_by_account_id= (junction: no versions, no events) |
 | =iam.v1.account_types.*= | =account_type_protocol.hpp= | the seven canonical verbs |
 | =iam.v1.account_types_versions.*= | =account_type_protocol.hpp= | =list=, =get= |
-| =iam.v1.account_types_events.*= | =account_type_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.account_types.*= | =account_type_protocol.hpp= | =created=, =updated=, =deleted= |
 | =iam.v1.login_info.*= | =login_info_protocol.hpp= | =list=, =get=, =get_many= (the entity is read-only) |
-| =iam.v1.login_info_events.*= | =login_info_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.login_info.*= | =login_info_protocol.hpp= | =created=, =updated=, =deleted= |
 | =iam.v1.permissions.*= | =permission_protocol.hpp= | the seven canonical verbs |
-| =iam.v1.permissions_events.*= | =permission_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.permissions.*= | =permission_protocol.hpp= | =created=, =updated=, =deleted= |
 | =iam.v1.roles.*= | =role_protocol.hpp= | the seven canonical verbs |
 | =iam.v1.roles_versions.*= | =role_protocol.hpp= | =list=, =get= |
-| =iam.v1.roles_events.*= | =role_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.roles.*= | =role_protocol.hpp= | =created=, =updated=, =deleted= |
 | =iam.v1.sessions.*= | =session_protocol.hpp= | the seven canonical verbs |
-| =iam.v1.sessions_events.*= | =session_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.sessions.*= | =session_protocol.hpp= | =created=, =updated=, =deleted= |
 | =iam.v1.tenants.*= | =tenant_protocol.hpp= | the seven canonical verbs |
 | =iam.v1.tenants_versions.*= | =tenant_protocol.hpp= | =list=, =get= |
-| =iam.v1.tenants_events.*= | =tenant_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.tenants.*= | =tenant_protocol.hpp= | =created=, =updated=, =deleted= |
 | =iam.v1.tenant_statuses.*= | =tenant_status_protocol.hpp= | the seven canonical verbs |
 | =iam.v1.tenant_statuses_versions.*= | =tenant_status_protocol.hpp= | =list=, =get= |
-| =iam.v1.tenant_statuses_events.*= | =tenant_status_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.tenant_statuses.*= | =tenant_status_protocol.hpp= | =created=, =updated=, =deleted= |
 | =iam.v1.tenant_types.*= | =tenant_type_protocol.hpp= | the seven canonical verbs |
 | =iam.v1.tenant_types_versions.*= | =tenant_type_protocol.hpp= | =list=, =get= |
-| =iam.v1.tenant_types_events.*= | =tenant_type_protocol.hpp= | =created=, =updated=, =deleted= |
+| =iam.v1.events.tenant_types.*= | =tenant_type_protocol.hpp= | =created=, =updated=, =deleted= |
 
 * Operation subject families
 

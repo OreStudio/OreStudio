@@ -352,9 +352,9 @@ struct get_crm_driver_pair_version_response {
  * of them.
  */
 namespace crm_driver_pair_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.crm_driver_pairs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.crm_driver_pairs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.crm_driver_pairs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.crm_driver_pairs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.crm_driver_pairs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.crm_driver_pairs.deleted";
 }
 /**
  * @brief The members of crm_driver_pair_key, named as the wire names them and in the order

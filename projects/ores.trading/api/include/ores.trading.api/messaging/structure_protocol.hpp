@@ -344,9 +344,9 @@ struct get_structure_version_response {
  * of them.
  */
 namespace structure_event_subjects {
-inline constexpr std::string_view created = "trading.v1.structures_events.created";
-inline constexpr std::string_view updated = "trading.v1.structures_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.structures_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.structures.created";
+inline constexpr std::string_view updated = "trading.v1.events.structures.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.structures.deleted";
 }
 /**
  * @brief The members of structure_key, named as the wire names them and in the order

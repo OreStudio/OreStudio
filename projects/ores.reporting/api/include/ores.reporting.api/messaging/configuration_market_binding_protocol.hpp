@@ -404,11 +404,11 @@ struct get_configuration_market_binding_version_response {
  */
 namespace configuration_market_binding_event_subjects {
 inline constexpr std::string_view created =
-    "reporting.v1.configuration_market_bindings_events.created";
+    "reporting.v1.events.configuration_market_bindings.created";
 inline constexpr std::string_view updated =
-    "reporting.v1.configuration_market_bindings_events.updated";
+    "reporting.v1.events.configuration_market_bindings.updated";
 inline constexpr std::string_view deleted =
-    "reporting.v1.configuration_market_bindings_events.deleted";
+    "reporting.v1.events.configuration_market_bindings.deleted";
 }
 /**
  * @brief The members of configuration_market_binding_key, named as the wire names them and in the

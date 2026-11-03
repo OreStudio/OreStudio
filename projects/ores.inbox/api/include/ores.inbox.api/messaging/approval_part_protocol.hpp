@@ -350,9 +350,9 @@ struct get_approval_part_version_response {
  * of them.
  */
 namespace approval_part_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.approval_parts_events.created";
-inline constexpr std::string_view updated = "inbox.v1.approval_parts_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.approval_parts_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.approval_parts.created";
+inline constexpr std::string_view updated = "inbox.v1.events.approval_parts.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.deleted";
 }
 /**
  * @brief The members of approval_part_key, named as the wire names them and in the order

@@ -355,9 +355,9 @@ struct get_composite_input_version_response {
  * of them.
  */
 namespace composite_input_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.composite_inputs_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.composite_inputs_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.composite_inputs_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.composite_inputs.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.composite_inputs.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inputs.deleted";
 }
 /**
  * @brief The members of composite_input_key, named as the wire names them and in the order

@@ -357,9 +357,9 @@ struct get_equity_underlying_version_response {
  * of them.
  */
 namespace equity_underlying_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.equity_underlyings_events.created";
-inline constexpr std::string_view updated = "refdata.v1.equity_underlyings_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.equity_underlyings.created";
+inline constexpr std::string_view updated = "refdata.v1.events.equity_underlyings.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlyings.deleted";
 }
 /**
  * @brief The members of equity_underlying_key, named as the wire names them and in the order

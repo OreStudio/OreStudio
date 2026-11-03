@@ -383,9 +383,9 @@ struct get_notification_version_response {
  * of them.
  */
 namespace notification_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.notifications_events.created";
-inline constexpr std::string_view updated = "inbox.v1.notifications_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.notifications_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.notifications.created";
+inline constexpr std::string_view updated = "inbox.v1.events.notifications.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.notifications.deleted";
 }
 /**
  * @brief The members of notification_key, named as the wire names them and in the order

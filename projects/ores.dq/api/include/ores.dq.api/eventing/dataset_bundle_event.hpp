@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::dq::messaging::dataset_bundle_event> {
-    static constexpr std::string_view subject_prefix = "dq.v1.dataset_bundles_events";
+    static constexpr std::string_view subject_prefix = "dq.v1.events.dataset_bundles";
 
     static ores::dq::messaging::dataset_bundle_event
     from_notification(const entity_event_notification& notification) {

@@ -367,11 +367,11 @@ struct get_curve_segment_discount_ratio_version_response {
  */
 namespace curve_segment_discount_ratio_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.curve_segment_discount_ratios_events.created";
+    "refdata.v1.events.curve_segment_discount_ratios.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.curve_segment_discount_ratios_events.updated";
+    "refdata.v1.events.curve_segment_discount_ratios.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.curve_segment_discount_ratios_events.deleted";
+    "refdata.v1.events.curve_segment_discount_ratios.deleted";
 }
 /**
  * @brief The members of curve_segment_discount_ratio_key, named as the wire names them and in the

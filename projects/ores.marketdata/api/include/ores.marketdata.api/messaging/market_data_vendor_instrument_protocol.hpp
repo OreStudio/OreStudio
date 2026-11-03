@@ -380,11 +380,11 @@ struct get_market_data_vendor_instrument_version_response {
  */
 namespace market_data_vendor_instrument_event_subjects {
 inline constexpr std::string_view created =
-    "marketdata.v1.market_data_vendor_instruments_events.created";
+    "marketdata.v1.events.market_data_vendor_instruments.created";
 inline constexpr std::string_view updated =
-    "marketdata.v1.market_data_vendor_instruments_events.updated";
+    "marketdata.v1.events.market_data_vendor_instruments.updated";
 inline constexpr std::string_view deleted =
-    "marketdata.v1.market_data_vendor_instruments_events.deleted";
+    "marketdata.v1.events.market_data_vendor_instruments.deleted";
 }
 /**
  * @brief The members of market_data_vendor_instrument_key, named as the wire names them and in the

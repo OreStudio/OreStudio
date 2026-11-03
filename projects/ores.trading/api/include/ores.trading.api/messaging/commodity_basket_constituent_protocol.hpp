@@ -398,11 +398,11 @@ struct get_commodity_basket_constituent_version_response {
  */
 namespace commodity_basket_constituent_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.commodity_basket_constituents_events.created";
+    "trading.v1.events.commodity_basket_constituents.created";
 inline constexpr std::string_view updated =
-    "trading.v1.commodity_basket_constituents_events.updated";
+    "trading.v1.events.commodity_basket_constituents.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.commodity_basket_constituents_events.deleted";
+    "trading.v1.events.commodity_basket_constituents.deleted";
 }
 /**
  * @brief The members of commodity_basket_constituent_key, named as the wire names them and in the

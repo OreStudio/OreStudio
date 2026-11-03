@@ -355,9 +355,9 @@ struct get_cap_floor_instrument_version_response {
  * of them.
  */
 namespace cap_floor_instrument_event_subjects {
-inline constexpr std::string_view created = "trading.v1.cap_floor_instruments_events.created";
-inline constexpr std::string_view updated = "trading.v1.cap_floor_instruments_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.cap_floor_instruments_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.cap_floor_instruments.created";
+inline constexpr std::string_view updated = "trading.v1.events.cap_floor_instruments.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.cap_floor_instruments.deleted";
 }
 /**
  * @brief The members of cap_floor_instrument_key, named as the wire names them and in the order

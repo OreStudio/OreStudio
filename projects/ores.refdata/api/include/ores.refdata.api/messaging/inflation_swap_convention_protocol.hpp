@@ -374,9 +374,9 @@ struct get_inflation_swap_convention_version_response {
  * of them.
  */
 namespace inflation_swap_convention_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.inflation_swap_conventions_events.created";
-inline constexpr std::string_view updated = "refdata.v1.inflation_swap_conventions_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.inflation_swap_conventions_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.inflation_swap_conventions.created";
+inline constexpr std::string_view updated = "refdata.v1.events.inflation_swap_conventions.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.inflation_swap_conventions.deleted";
 }
 /**
  * @brief The members of inflation_swap_convention_key, named as the wire names them and in the

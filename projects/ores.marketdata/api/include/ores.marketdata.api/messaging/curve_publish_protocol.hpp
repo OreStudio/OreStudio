@@ -264,9 +264,9 @@ struct get_curve_publish_version_response {
  * of them.
  */
 namespace curve_publish_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.curve_publishes_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.curve_publishes_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.curve_publishes_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.curve_publishes.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.curve_publishes.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishes.deleted";
 }
 /**
  * @brief The members of curve_publish_key, named as the wire names them and in the order

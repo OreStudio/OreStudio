@@ -350,9 +350,9 @@ struct get_system_setting_version_response {
  * of them.
  */
 namespace system_setting_event_subjects {
-inline constexpr std::string_view created = "variability.v1.system_settings_events.created";
-inline constexpr std::string_view updated = "variability.v1.system_settings_events.updated";
-inline constexpr std::string_view deleted = "variability.v1.system_settings_events.deleted";
+inline constexpr std::string_view created = "variability.v1.events.system_settings.created";
+inline constexpr std::string_view updated = "variability.v1.events.system_settings.updated";
+inline constexpr std::string_view deleted = "variability.v1.events.system_settings.deleted";
 }
 /**
  * @brief The members of system_setting_key, named as the wire names them and in the order

@@ -394,9 +394,9 @@ struct get_todays_market_config_version_response {
  * of them.
  */
 namespace todays_market_config_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.todays_market_configs_events.created";
-inline constexpr std::string_view updated = "analytics.v1.todays_market_configs_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.todays_market_configs_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.todays_market_configs.created";
+inline constexpr std::string_view updated = "analytics.v1.events.todays_market_configs.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_configs.deleted";
 }
 /**
  * @brief The members of todays_market_config_key, named as the wire names them and in the order

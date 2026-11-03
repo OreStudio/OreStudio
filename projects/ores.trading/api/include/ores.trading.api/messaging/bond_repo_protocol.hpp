@@ -344,9 +344,9 @@ struct get_bond_repo_version_response {
  * of them.
  */
 namespace bond_repo_event_subjects {
-inline constexpr std::string_view created = "trading.v1.bond_repos_events.created";
-inline constexpr std::string_view updated = "trading.v1.bond_repos_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.bond_repos_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.bond_repos.created";
+inline constexpr std::string_view updated = "trading.v1.events.bond_repos.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.deleted";
 }
 /**
  * @brief The members of bond_repo_key, named as the wire names them and in the order

@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::curve_volatility_delta_surface_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.curve_volatility_delta_surfaces_events";
+        "refdata.v1.events.curve_volatility_delta_surfaces";
 
     static ores::refdata::messaging::curve_volatility_delta_surface_event
     from_notification(const entity_event_notification& notification) {

@@ -344,9 +344,9 @@ struct get_country_version_response {
  * of them.
  */
 namespace country_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.countries_events.created";
-inline constexpr std::string_view updated = "refdata.v1.countries_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.countries_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.countries.created";
+inline constexpr std::string_view updated = "refdata.v1.events.countries.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.countries.deleted";
 }
 /**
  * @brief The members of country_key, named as the wire names them and in the order

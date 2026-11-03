@@ -209,7 +209,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'scheduler.v1.job_definitions_events.created',
-    updated: 'scheduler.v1.job_definitions_events.updated',
-    deleted: 'scheduler.v1.job_definitions_events.deleted',
+    created: 'scheduler.v1.events.job_definitions.created',
+    updated: 'scheduler.v1.events.job_definitions.updated',
+    deleted: 'scheduler.v1.events.job_definitions.deleted',
 } as const;

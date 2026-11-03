@@ -361,9 +361,9 @@ struct get_yield_curve_process_type_version_response {
  * of them.
  */
 namespace yield_curve_process_type_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.yield_curve_process_types_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.yield_curve_process_types_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.yield_curve_process_types_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.yield_curve_process_types.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.yield_curve_process_types.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_process_types.deleted";
 }
 /**
  * @brief The members of yield_curve_process_type_key, named as the wire names them and in the order

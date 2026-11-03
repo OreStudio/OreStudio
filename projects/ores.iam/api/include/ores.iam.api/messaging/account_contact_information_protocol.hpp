@@ -424,9 +424,9 @@ struct publish_account_contact_informations_from_dq_request {
  * of them.
  */
 namespace account_contact_information_event_subjects {
-inline constexpr std::string_view created = "iam.v1.account_contact_informations_events.created";
-inline constexpr std::string_view updated = "iam.v1.account_contact_informations_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.account_contact_informations_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.account_contact_informations.created";
+inline constexpr std::string_view updated = "iam.v1.events.account_contact_informations.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.account_contact_informations.deleted";
 }
 /**
  * @brief The members of account_contact_information_key, named as the wire names them and in the

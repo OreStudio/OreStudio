@@ -339,9 +339,9 @@ struct get_catalog_version_response {
  * of them.
  */
 namespace catalog_event_subjects {
-inline constexpr std::string_view created = "dq.v1.catalogs_events.created";
-inline constexpr std::string_view updated = "dq.v1.catalogs_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.catalogs_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.catalogs.created";
+inline constexpr std::string_view updated = "dq.v1.events.catalogs.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.catalogs.deleted";
 }
 /**
  * @brief The members of catalog_key, named as the wire names them and in the order

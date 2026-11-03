@@ -160,9 +160,9 @@ struct get_many_delivery_outcome_types_response {
  * of them.
  */
 namespace delivery_outcome_type_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.delivery_outcome_types_events.created";
-inline constexpr std::string_view updated = "inbox.v1.delivery_outcome_types_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.delivery_outcome_types_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.delivery_outcome_types.created";
+inline constexpr std::string_view updated = "inbox.v1.events.delivery_outcome_types.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_types.deleted";
 }
 /**
  * @brief The members of delivery_outcome_type_key, named as the wire names them and in the order

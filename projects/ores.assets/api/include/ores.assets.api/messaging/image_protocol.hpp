@@ -340,9 +340,9 @@ struct get_image_version_response {
  * of them.
  */
 namespace image_event_subjects {
-inline constexpr std::string_view created = "assets.v1.images_events.created";
-inline constexpr std::string_view updated = "assets.v1.images_events.updated";
-inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
+inline constexpr std::string_view created = "assets.v1.events.images.created";
+inline constexpr std::string_view updated = "assets.v1.events.images.updated";
+inline constexpr std::string_view deleted = "assets.v1.events.images.deleted";
 }
 /**
  * @brief The members of image_key, named as the wire names them and in the order

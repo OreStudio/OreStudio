@@ -388,9 +388,9 @@ struct get_calendar_exception_version_response {
  * of them.
  */
 namespace calendar_exception_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.calendar_exceptions_events.created";
-inline constexpr std::string_view updated = "refdata.v1.calendar_exceptions_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.calendar_exceptions.created";
+inline constexpr std::string_view updated = "refdata.v1.events.calendar_exceptions.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.calendar_exceptions.deleted";
 }
 /**
  * @brief The members of calendar_exception_key, named as the wire names them and in the order

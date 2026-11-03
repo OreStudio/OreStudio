@@ -388,9 +388,9 @@ struct get_seed_profile_step_version_response {
  * of them.
  */
 namespace seed_profile_step_event_subjects {
-inline constexpr std::string_view created = "iam.v1.seed_profile_steps_events.created";
-inline constexpr std::string_view updated = "iam.v1.seed_profile_steps_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.seed_profile_steps_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.seed_profile_steps.created";
+inline constexpr std::string_view updated = "iam.v1.events.seed_profile_steps.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.deleted";
 }
 /**
  * @brief The members of seed_profile_step_key, named as the wire names them and in the order

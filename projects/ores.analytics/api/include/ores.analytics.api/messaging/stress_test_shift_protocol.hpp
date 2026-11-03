@@ -361,9 +361,9 @@ struct get_stress_test_shift_version_response {
  * of them.
  */
 namespace stress_test_shift_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.stress_test_shifts_events.created";
-inline constexpr std::string_view updated = "analytics.v1.stress_test_shifts_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.stress_test_shifts_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.stress_test_shifts.created";
+inline constexpr std::string_view updated = "analytics.v1.events.stress_test_shifts.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shifts.deleted";
 }
 /**
  * @brief The members of stress_test_shift_key, named as the wire names them and in the order

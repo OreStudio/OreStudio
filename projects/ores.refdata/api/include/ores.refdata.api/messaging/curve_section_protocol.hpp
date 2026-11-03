@@ -347,9 +347,9 @@ struct get_curve_section_version_response {
  * of them.
  */
 namespace curve_section_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.curve_sections_events.created";
-inline constexpr std::string_view updated = "refdata.v1.curve_sections_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.curve_sections_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.curve_sections.created";
+inline constexpr std::string_view updated = "refdata.v1.events.curve_sections.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.deleted";
 }
 /**
  * @brief The members of curve_section_key, named as the wire names them and in the order

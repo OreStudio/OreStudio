@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::inflation_cap_floor_volatility_config_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.inflation_cap_floor_volatility_configs_events";
+        "refdata.v1.events.inflation_cap_floor_volatility_configs";
 
     static ores::refdata::messaging::inflation_cap_floor_volatility_config_event
     from_notification(const entity_event_notification& notification) {

@@ -356,9 +356,9 @@ struct get_product_family_code_version_response {
  * of them.
  */
 namespace product_family_code_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.product_family_codes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.product_family_codes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.product_family_codes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.product_family_codes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.product_family_codes.deleted";
 }
 /**
  * @brief The members of product_family_code_key, named as the wire names them and in the order

@@ -342,9 +342,9 @@ struct get_batch_version_response {
  * of them.
  */
 namespace batch_event_subjects {
-inline constexpr std::string_view created = "compute.v1.batches_events.created";
-inline constexpr std::string_view updated = "compute.v1.batches_events.updated";
-inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
+inline constexpr std::string_view created = "compute.v1.events.batches.created";
+inline constexpr std::string_view updated = "compute.v1.events.batches.updated";
+inline constexpr std::string_view deleted = "compute.v1.events.batches.deleted";
 }
 /**
  * @brief The members of batch_key, named as the wire names them and in the order

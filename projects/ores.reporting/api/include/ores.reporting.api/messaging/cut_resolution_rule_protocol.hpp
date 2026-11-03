@@ -358,9 +358,9 @@ struct get_cut_resolution_rule_version_response {
  * of them.
  */
 namespace cut_resolution_rule_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.cut_resolution_rules_events.created";
-inline constexpr std::string_view updated = "reporting.v1.cut_resolution_rules_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.cut_resolution_rules_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.cut_resolution_rules.created";
+inline constexpr std::string_view updated = "reporting.v1.events.cut_resolution_rules.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_rules.deleted";
 }
 /**
  * @brief The members of cut_resolution_rule_key, named as the wire names them and in the order

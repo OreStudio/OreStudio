@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::refdata::messaging::calendar_rule_event> {
-    static constexpr std::string_view subject_prefix = "refdata.v1.calendar_rules_events";
+    static constexpr std::string_view subject_prefix = "refdata.v1.events.calendar_rules";
 
     static ores::refdata::messaging::calendar_rule_event
     from_notification(const entity_event_notification& notification) {

@@ -205,7 +205,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.rounding_types_events.created',
-    updated: 'refdata.v1.rounding_types_events.updated',
-    deleted: 'refdata.v1.rounding_types_events.deleted',
+    created: 'refdata.v1.events.rounding_types.created',
+    updated: 'refdata.v1.events.rounding_types.updated',
+    deleted: 'refdata.v1.events.rounding_types.deleted',
 } as const;

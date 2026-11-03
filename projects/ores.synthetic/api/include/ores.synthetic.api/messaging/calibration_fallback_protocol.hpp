@@ -358,9 +358,9 @@ struct get_calibration_fallback_version_response {
  * of them.
  */
 namespace calibration_fallback_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.calibration_fallbacks_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.calibration_fallbacks_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.calibration_fallbacks_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.calibration_fallbacks.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.calibration_fallbacks.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fallbacks.deleted";
 }
 /**
  * @brief The members of calibration_fallback_key, named as the wire names them and in the order

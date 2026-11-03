@@ -384,9 +384,9 @@ struct get_business_unit_version_response {
  * of them.
  */
 namespace business_unit_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.business_units_events.created";
-inline constexpr std::string_view updated = "refdata.v1.business_units_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.business_units_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.business_units.created";
+inline constexpr std::string_view updated = "refdata.v1.events.business_units.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.business_units.deleted";
 }
 /**
  * @brief The members of business_unit_key, named as the wire names them and in the order

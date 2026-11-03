@@ -349,9 +349,9 @@ struct get_tenant_status_version_response {
  * of them.
  */
 namespace tenant_status_event_subjects {
-inline constexpr std::string_view created = "iam.v1.tenant_statuses_events.created";
-inline constexpr std::string_view updated = "iam.v1.tenant_statuses_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.tenant_statuses_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.tenant_statuses.created";
+inline constexpr std::string_view updated = "iam.v1.events.tenant_statuses.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.tenant_statuses.deleted";
 }
 /**
  * @brief The members of tenant_status_key, named as the wire names them and in the order

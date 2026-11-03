@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::analytics::messaging::credit_simulation_matrix_config_event> {
     static constexpr std::string_view subject_prefix =
-        "analytics.v1.credit_simulation_matrix_configs_events";
+        "analytics.v1.events.credit_simulation_matrix_configs";
 
     static ores::analytics::messaging::credit_simulation_matrix_config_event
     from_notification(const entity_event_notification& notification) {

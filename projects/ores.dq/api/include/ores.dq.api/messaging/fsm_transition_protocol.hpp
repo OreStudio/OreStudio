@@ -350,9 +350,9 @@ struct get_fsm_transition_version_response {
  * of them.
  */
 namespace fsm_transition_event_subjects {
-inline constexpr std::string_view created = "dq.v1.fsm_transitions_events.created";
-inline constexpr std::string_view updated = "dq.v1.fsm_transitions_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.fsm_transitions_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.fsm_transitions.created";
+inline constexpr std::string_view updated = "dq.v1.events.fsm_transitions.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.deleted";
 }
 /**
  * @brief The members of fsm_transition_key, named as the wire names them and in the order

@@ -364,11 +364,11 @@ struct get_pricing_model_engine_pair_version_response {
  */
 namespace pricing_model_engine_pair_event_subjects {
 inline constexpr std::string_view created =
-    "analytics.v1.pricing_model_engine_pairs_events.created";
+    "analytics.v1.events.pricing_model_engine_pairs.created";
 inline constexpr std::string_view updated =
-    "analytics.v1.pricing_model_engine_pairs_events.updated";
+    "analytics.v1.events.pricing_model_engine_pairs.updated";
 inline constexpr std::string_view deleted =
-    "analytics.v1.pricing_model_engine_pairs_events.deleted";
+    "analytics.v1.events.pricing_model_engine_pairs.deleted";
 }
 /**
  * @brief The members of pricing_model_engine_pair_key, named as the wire names them and in the

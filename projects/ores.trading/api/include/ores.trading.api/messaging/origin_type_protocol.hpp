@@ -346,9 +346,9 @@ struct get_origin_type_version_response {
  * of them.
  */
 namespace origin_type_event_subjects {
-inline constexpr std::string_view created = "trading.v1.origin_types_events.created";
-inline constexpr std::string_view updated = "trading.v1.origin_types_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.origin_types_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.origin_types.created";
+inline constexpr std::string_view updated = "trading.v1.events.origin_types.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.origin_types.deleted";
 }
 /**
  * @brief The members of origin_type_key, named as the wire names them and in the order

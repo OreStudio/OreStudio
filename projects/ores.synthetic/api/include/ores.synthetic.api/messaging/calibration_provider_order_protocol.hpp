@@ -367,11 +367,11 @@ struct get_calibration_provider_order_version_response {
  */
 namespace calibration_provider_order_event_subjects {
 inline constexpr std::string_view created =
-    "synthetic.v1.calibration_provider_orders_events.created";
+    "synthetic.v1.events.calibration_provider_orders.created";
 inline constexpr std::string_view updated =
-    "synthetic.v1.calibration_provider_orders_events.updated";
+    "synthetic.v1.events.calibration_provider_orders.updated";
 inline constexpr std::string_view deleted =
-    "synthetic.v1.calibration_provider_orders_events.deleted";
+    "synthetic.v1.events.calibration_provider_orders.deleted";
 }
 /**
  * @brief The members of calibration_provider_order_key, named as the wire names them and in the

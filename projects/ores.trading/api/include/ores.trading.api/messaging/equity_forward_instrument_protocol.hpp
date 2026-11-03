@@ -367,9 +367,9 @@ struct get_equity_forward_instrument_version_response {
  * of them.
  */
 namespace equity_forward_instrument_event_subjects {
-inline constexpr std::string_view created = "trading.v1.equity_forward_instruments_events.created";
-inline constexpr std::string_view updated = "trading.v1.equity_forward_instruments_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.equity_forward_instruments_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.equity_forward_instruments.created";
+inline constexpr std::string_view updated = "trading.v1.events.equity_forward_instruments.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.equity_forward_instruments.deleted";
 }
 /**
  * @brief The members of equity_forward_instrument_key, named as the wire names them and in the

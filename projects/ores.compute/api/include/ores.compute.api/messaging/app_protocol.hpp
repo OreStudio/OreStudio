@@ -333,9 +333,9 @@ struct get_apps_version_response {
  * of them.
  */
 namespace app_event_subjects {
-inline constexpr std::string_view created = "compute.v1.apps_events.created";
-inline constexpr std::string_view updated = "compute.v1.apps_events.updated";
-inline constexpr std::string_view deleted = "compute.v1.apps_events.deleted";
+inline constexpr std::string_view created = "compute.v1.events.apps.created";
+inline constexpr std::string_view updated = "compute.v1.events.apps.updated";
+inline constexpr std::string_view deleted = "compute.v1.events.apps.deleted";
 }
 /**
  * @brief The members of app_key, named as the wire names them and in the order

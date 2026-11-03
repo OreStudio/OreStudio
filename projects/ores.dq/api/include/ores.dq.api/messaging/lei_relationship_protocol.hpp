@@ -158,9 +158,9 @@ struct get_many_lei_relationships_response {
  * of them.
  */
 namespace lei_relationship_event_subjects {
-inline constexpr std::string_view created = "dq.v1.lei_relationships_events.created";
-inline constexpr std::string_view updated = "dq.v1.lei_relationships_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.lei_relationships_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.lei_relationships.created";
+inline constexpr std::string_view updated = "dq.v1.events.lei_relationships.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.deleted";
 }
 /**
  * @brief The members of lei_relationship_key, named as the wire names them and in the order

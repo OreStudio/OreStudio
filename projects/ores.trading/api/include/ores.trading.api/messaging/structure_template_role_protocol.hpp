@@ -352,9 +352,9 @@ struct get_structure_template_role_version_response {
  * of them.
  */
 namespace structure_template_role_event_subjects {
-inline constexpr std::string_view created = "trading.v1.structure_template_roles_events.created";
-inline constexpr std::string_view updated = "trading.v1.structure_template_roles_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.structure_template_roles_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.structure_template_roles.created";
+inline constexpr std::string_view updated = "trading.v1.events.structure_template_roles.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.structure_template_roles.deleted";
 }
 /**
  * @brief The members of structure_template_role_key, named as the wire names them and in the order

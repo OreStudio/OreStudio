@@ -357,9 +357,9 @@ struct get_ore_file_category_version_response {
  * of them.
  */
 namespace ore_file_category_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.ore_file_categories_events.created";
-inline constexpr std::string_view updated = "reporting.v1.ore_file_categories_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.ore_file_categories_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.ore_file_categories.created";
+inline constexpr std::string_view updated = "reporting.v1.events.ore_file_categories.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.ore_file_categories.deleted";
 }
 /**
  * @brief The members of ore_file_category_key, named as the wire names them and in the order

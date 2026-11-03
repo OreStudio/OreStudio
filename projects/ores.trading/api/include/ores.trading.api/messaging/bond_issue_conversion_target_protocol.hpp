@@ -356,11 +356,11 @@ struct get_bond_issue_conversion_target_version_response {
  */
 namespace bond_issue_conversion_target_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.bond_issue_conversion_targets_events.created";
+    "trading.v1.events.bond_issue_conversion_targets.created";
 inline constexpr std::string_view updated =
-    "trading.v1.bond_issue_conversion_targets_events.updated";
+    "trading.v1.events.bond_issue_conversion_targets.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.bond_issue_conversion_targets_events.deleted";
+    "trading.v1.events.bond_issue_conversion_targets.deleted";
 }
 /**
  * @brief The members of bond_issue_conversion_target_key, named as the wire names them and in the

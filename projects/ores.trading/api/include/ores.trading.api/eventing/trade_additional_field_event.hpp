@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::trading::messaging::trade_additional_field_event> {
-    static constexpr std::string_view subject_prefix = "trading.v1.trade_additional_fields_events";
+    static constexpr std::string_view subject_prefix = "trading.v1.events.trade_additional_fields";
 
     static ores::trading::messaging::trade_additional_field_event
     from_notification(const entity_event_notification& notification) {

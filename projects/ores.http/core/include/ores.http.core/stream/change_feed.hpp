@@ -41,11 +41,15 @@ struct entity_event_address final {
     std::string action;
 };
 
+/// The token that names the events namespace in a subject.
+inline constexpr std::string_view events_namespace = "events";
+
 /**
  * @brief Reads a component, a collection and an action out of an event subject.
  *
- * A subject is the component, the schema version, the events collection and the
- * action: @c iam.v1.tenant_types_events.created. It is read from the right, because
+ * A subject is the component, the schema version, the events namespace, the
+ * collection and the action: @c iam.v1.events.tenant_types.created. It is read from
+ * the right, because
  * the delivered subject carries the deployment's prefix in front of it and the
  * prefix's length is the deployment's business.
  *
@@ -61,14 +65,12 @@ parse_entity_event_subject(std::string_view subject);
  * One subscription for the whole process: a component that a later model adds is
  * heard without this string changing. It is relative, so the transport prefixes it.
  *
- * The pattern cannot name the events collections. A NATS wildcard is a whole token,
- * so =*_events= is a literal token that matches nothing, and the first version of
- * this constant stated exactly that and heard nothing at all. The collection is
- * therefore filtered in the parse rather than in the pattern, and every versioned
- * subject of every component arrives here. The cost is one more copy of each
- * request, and it goes away when the events collection becomes its own token.
+ * The namespace is a token of its own, so the pattern names it and hears nothing
+ * else. A NATS wildcard is a whole token: a collection spelled =tenants_events=
+ * cannot be addressed by =*_events=, which is why the namespace exists and why the
+ * first version of this constant heard nothing at all.
  */
-inline constexpr std::string_view all_entity_events = "*.v1.>";
+inline constexpr std::string_view all_entity_events = "*.v1.events.>";
 
 /**
  * @brief Turns what the stores announce into changes for the coalescer.

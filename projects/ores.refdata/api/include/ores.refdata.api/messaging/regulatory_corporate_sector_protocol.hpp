@@ -355,11 +355,11 @@ struct get_regulatory_corporate_sector_version_response {
  */
 namespace regulatory_corporate_sector_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.regulatory_corporate_sectors_events.created";
+    "refdata.v1.events.regulatory_corporate_sectors.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.regulatory_corporate_sectors_events.updated";
+    "refdata.v1.events.regulatory_corporate_sectors.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.regulatory_corporate_sectors_events.deleted";
+    "refdata.v1.events.regulatory_corporate_sectors.deleted";
 }
 /**
  * @brief The members of regulatory_corporate_sector_key, named as the wire names them and in the

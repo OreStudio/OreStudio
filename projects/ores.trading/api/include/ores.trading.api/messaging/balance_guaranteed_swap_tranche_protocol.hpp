@@ -408,11 +408,11 @@ struct get_balance_guaranteed_swap_tranche_version_response {
  */
 namespace balance_guaranteed_swap_tranche_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.balance_guaranteed_swap_tranches_events.created";
+    "trading.v1.events.balance_guaranteed_swap_tranches.created";
 inline constexpr std::string_view updated =
-    "trading.v1.balance_guaranteed_swap_tranches_events.updated";
+    "trading.v1.events.balance_guaranteed_swap_tranches.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.balance_guaranteed_swap_tranches_events.deleted";
+    "trading.v1.events.balance_guaranteed_swap_tranches.deleted";
 }
 /**
  * @brief The members of balance_guaranteed_swap_tranche_key, named as the wire names them and in

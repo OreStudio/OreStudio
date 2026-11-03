@@ -209,7 +209,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.curve_segment_extrapolations_events.created',
-    updated: 'refdata.v1.curve_segment_extrapolations_events.updated',
-    deleted: 'refdata.v1.curve_segment_extrapolations_events.deleted',
+    created: 'refdata.v1.events.curve_segment_extrapolations.created',
+    updated: 'refdata.v1.events.curve_segment_extrapolations.updated',
+    deleted: 'refdata.v1.events.curve_segment_extrapolations.deleted',
 } as const;

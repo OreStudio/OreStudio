@@ -358,9 +358,9 @@ struct get_inflation_seasonality_version_response {
  * of them.
  */
 namespace inflation_seasonality_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.inflation_seasonalities_events.created";
-inline constexpr std::string_view updated = "refdata.v1.inflation_seasonalities_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.inflation_seasonalities_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.inflation_seasonalities.created";
+inline constexpr std::string_view updated = "refdata.v1.events.inflation_seasonalities.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasonalities.deleted";
 }
 /**
  * @brief The members of inflation_seasonality_key, named as the wire names them and in the order

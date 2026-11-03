@@ -6662,6 +6662,49 @@ _PRODUCT_FAMILIES = frozenset({
 _PRODUCT_CONSTRUCTIONS = frozenset({"native", "scripted", "container"})
 
 
+def _trade_type_descriptions(path: Path, doc, codes: list[str]) -> dict[str, dict[str, str]]:
+    """The prose a product type is read with: its description and its source.
+
+    Every catalogue code states one row in the ``* Descriptions`` table, keyed by
+    the code. A code with no row, or a row missing any of the three columns, is a
+    product type a reader cannot be told about, so it fails codegen rather than
+    seeding an empty string.
+    """
+    section = _section(doc.root, "Descriptions")
+    if not section or not section.tables:
+        raise ValueError(f"{path.name}: no * Descriptions table.")
+    raw = _parse_org_table_rows(section)
+    found: dict[str, dict[str, str]] = {}
+    for r in raw:
+        code = (r.get("code") or "").strip()
+        if not code:
+            continue
+        entry = {
+            column: " ".join((r.get(column) or "").split()).replace("'", "''")
+            for column in ("description", "source", "source_ref")
+        }
+        blank = [name for name, value in entry.items() if not value]
+        if blank:
+            raise ValueError(
+                f"{path.name}: product type {code} states no {', '.join(blank)} "
+                "in its * Descriptions row.")
+        if code in found:
+            raise ValueError(
+                f"{path.name}: product type {code} is described twice.")
+        found[code] = entry
+    missing = [code for code in codes if code not in found]
+    if missing:
+        raise ValueError(
+            f"{path.name}: no description for product type(s): "
+            f"{', '.join(missing)}.")
+    extra = sorted(set(found) - set(codes))
+    if extra:
+        raise ValueError(
+            f"{path.name}: a description names product type(s) the * Trade "
+            f"types table does not state: {', '.join(extra)}.")
+    return found
+
+
 def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     """Load the trade-type catalogue into the shape its readers want.
 
@@ -6758,6 +6801,12 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     if repeated:
         raise ValueError(
             f"{path.name}: duplicate trade type code(s): {', '.join(repeated)}")
+    descriptions = _trade_type_descriptions(path, doc, codes)
+    for row in rows:
+        entry = descriptions[row["code"]]
+        row["description_sql"] = entry["description"]
+        row["source_sql"] = entry["source"]
+        row["source_ref_sql"] = entry["source_ref"]
     for index, row in enumerate(rows):
         row["comma"] = "" if index == len(rows) - 1 else ","
 

@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 7B05023B-4C6D-40D9-83EF-5C1226FD867C
+:END:
+#+title: Test Scenario: Verify grouping completes a structure
+#+description: Walk the grouping screen end to end on drafts: book two deals as drafts, group them, and confirm one structure whose every leg is live and the queue holds a request per leg.
+#+type: test_scenario
+#+level: s1
+#+filetags: :complete-a-structure-from-a-screen:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: jolly_knuth
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+* Before you start
+
+- *The code under test is on main.* This branch only carries this document; the grouping route, the completion and the draft booking are all merged.
+- *The environment is ready.* Built, the services up (=compass services status=), and Acme provisioned, which leaves the queue empty and the picker full.
+- *The database must be in sync.* =compass db status= states it; if it has drifted, =compass services stop= then =compass db recreate -y -k=, and provision again.
+- The two drafts the scenario books face one counterparty, because a structure's legs share one and the screen refuses a mixed pair.
+
+* Scenario Info
+
+| Field         | Value |
+|---------------+-------|
+| Verifies task | [[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the completion]] |
+| Parent story  | [[id:0D751AB7-2621-43F4-86C5-0F0AF0ABD221][Complete a structure from a screen]] |
+| Target screen | Group trades — =/trading/structures/group= |
+| Clients       |       |
+| State         | PENDING |
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Open http://127.0.0.1:20802.
+- Sign in as =tenant_admin@acme_corporation= / =Secure-Password-123=.
+- Choose party *ACME Corporation UK plc* when the tenant asks for one.
+- Passes when the home page greets *Welcome* by name and the status bar names tenant *Acme Corporation* and party *ACME Corporation UK plc*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Book the first deal as a draft
+
+- Open =/trading/trades/new= (Book a trade).
+- Fill it as usual: an open book of the UK entity, a counterparty, today's trade date, an issue from the list, and a notional such as =1000000=.
+- In *Draft reason*, choose *The deal is a leg of a structure that is not complete*.
+- Press *Book*.
+- Passes when the trade opens on its own page and the blotter states it as *draft*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Book the second deal as a draft
+
+- Book another trade the same way, with the *same counterparty* as the first and the same draft reason.
+- Passes when both drafts are in the blotter.
+- Open =/operations/authorisation-queue=: it shows no rows. A draft waits, it does not ask.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Open the grouping screen
+
+- Go to =/trading/structures/group= (or follow *Group trades* from the Trading area).
+- Passes when the screen offers a kind, a counterparty filter, a chosen count reading *No trade chosen yet*, and a picker of ungrouped trades.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Pick the two drafts and group them
+
+- Filter the counterparty to the one the two drafts face, and tick both drafts in the picker.
+- Press *Group trades*.
+- Passes when the new structure's page opens with a =PKG-…= reference and the Members tab lists both drafts as legs.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Confirm both legs are live
+
+- Open =/trading= and find the two trades.
+- Passes when each states *live* rather than *draft*, and the row names the structure it belongs to.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Confirm each draft asked Operations once
+
+- Open =/operations/authorisation-queue=.
+- Passes when exactly two rows are present, one per leg, each *Awaiting authorisation* and named by the deal's reference.
+- The queue was empty before the grouping, so both requests came from the completion taking the drafts live.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Confirm the grouping cannot be repeated
+
+- Return to =/trading/structures/group=.
+- Passes when neither draft is offered any more: a trade is a leg of one structure at a time.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field        | Value |
+|--------------+-------|
+| Status       |       |
+| Completed at |       |
+| Branch       |       |
+| Commit       |       |
+| Worktree     |       |
+
+* Notes

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/author-the-description-of-every-product-type
+#+pr: 4404
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -26,11 +26,11 @@ Every product type states what it is in prose a person can read before booking i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -43,9 +43,21 @@ Every product type states what it is in prose a person can read before booking i
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The descriptions already exist, scattered: 103 of the 121 types are named by a
+domain note that states a one-line description and the ORE guide file it was
+written from. The work is to collect them into the catalogue, write the ones no
+note names, and make an empty description impossible to seed.
+
+- Add a `* Descriptions` table to the catalogue model: one row per code, with
+  the prose, the document and the file inside it.
+- Teach the loader to read it, and to refuse a catalogue code with no row, a
+  row missing any of the three columns, and a row for a code the catalogue does
+  not state.
+- Emit the three columns in the seed.
+- Write the eighteen types no note names, from the ORE example trades and the
+  guide chapter that documents their structure.
+- Prove it: the codegen suite, a recreated database whose 121 rows all carry a
+  description and a source, and the catalogue's own page reading them.
 
 * Measurements
 
@@ -59,9 +71,30 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Types described | 121, all with a source | =select count(*) from ores_trading_product_types_tbl where description <> '' and source_ref <> ''= |  |
+| Descriptions written by us | 18, the types no domain note names | the `* Descriptions` table of the catalogue model |  |
+| Catalogue loader tests | 16, five of them new for the description rules | =pytest projects/ores.codegen/tests/test_trade_type_catalogue.py= |  |
+| Descriptions naming a model, an engine or a pair | 0 | a scan of the `* Descriptions` table |  |
 
 * Notes
+
+** 2026-11-02 — every type is described and sourced
+
+One hundred and three of the descriptions are the domain notes', collected into
+the catalogue: the note already stated the one sentence and the guide file, and
+the catalogue is where a reader now finds them. The semicolon clause the notes
+end on, "ORE's <name> product", is dropped, because the page states the code
+beside the sentence and the tail said the name twice.
+
+Eighteen types no note names. Their sentences are written here from the ORE
+example trades under `external/ore/examples/Products/` and from the guide
+chapter that documents their structure, and each names that chapter as its
+source. Where a chapter documents several structures, the description says which
+of them this type is.
+
+The seed cannot carry an empty description again: codegen refuses a catalogue
+code with no description row, a row missing its source, and a description of a
+code the catalogue does not state. The suite states each of those as a test.
 
 * Test Scenarios
 
@@ -78,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4404][#4404]] | [trading] Describe every product type and name its source |
 
 * Review
 
@@ -87,3 +120,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 121 product types state what they are, in one sentence, and name the
+document the sentence was written from.
+
+The catalogue holds the prose in its `* Descriptions` table: one row per code,
+with the description, the document and the file inside it. Codegen refuses a
+catalogue code with no row, a row missing any of the three columns, and a row
+for a code the catalogue does not state, so the seed cannot carry an empty
+description again. Five tests state those rules, and one asserts that every type
+in the catalogue is described and sourced.
+
+One hundred and three descriptions are the domain notes', collected into the
+catalogue; the tail each note ends on, "ORE's <name> product", is dropped because
+the page states the code beside the sentence. Eighteen types no note names are
+written from the ORE example trades and the guide chapter that documents their
+structure, and each names that chapter.
+
+The database recreates at =5469f5b0de= with 121 rows, all carrying a
+description, a source and a source reference. The gates: 51 local checks, 77
+pgTAP suites, and the codegen suite at 1846 tests. The C++ suites need the
+build, which adds the nine roundtrip test files the regeneration created.
+
+Two defects main carried were fixed on the way, because the gate renders every
+component when the generator changes: the physical-space inventory and the list
+request descriptors were stale, nine wire-codec roundtrip tests were never
+committed, and the reporting element map still named the commodity curve table
+the curve split replaced.

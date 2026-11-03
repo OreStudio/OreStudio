@@ -88,8 +88,9 @@ struct fx_vol_surface_pillar_source final {
     std::string contributor_code;
 
     /**
-     * @brief The weight this contributor's quote carries in the calibration, positive; the weights
-     * of a pillar's sources are relative, so their scale does not matter.
+     * @brief The weight this contributor's quote carries in the calibration, positive and finite;
+     * the weights of a pillar's sources are relative, so their scale does not matter. PostgreSQL
+     * orders NaN above every number, so the bound below infinity refuses NaN as well.
      */
     double weight = 1.0;
 

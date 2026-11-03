@@ -58,7 +58,7 @@ create table if not exists "ores_refdata_fx_vol_surface_pillars_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("expiry_code" <> ''),
-    check ("strike_label" = 'ATM' or substring("strike_label" from '^[0-9]{1,2}([A-Z]+)$') in ('RR', 'BF', 'C', 'P'))
+    check ("strike_label" = 'ATM' or coalesce(substring("strike_label" from '^[1-9][0-9]?([A-Z]+)$') in ('RR', 'BF', 'C', 'P'), false))
 );
 
 -- Composite natural key: unique combination for active records

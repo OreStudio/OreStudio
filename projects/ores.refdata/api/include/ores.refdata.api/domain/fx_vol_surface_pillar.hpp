@@ -78,8 +78,10 @@ struct fx_vol_surface_pillar final {
     std::string expiry_code;
 
     /**
-     * @brief The pillar's strike label: ATM, or a delta of one or two digits followed by RR, BF, C
-     * or P, such as 25RR or 10P, as the fx_option series spells it.
+     * @brief The pillar's strike label: ATM, or a delta from 1 to 99 with no leading zero followed
+     * by RR, BF, C or P, such as 25RR or 10P, as the fx_option series spells it. A delta of zero
+     * names no option, so 0C and 05P are refused. A label the pattern does not match gives a null
+     * substring, which a check would pass, so the test is coalesced to false.
      */
     std::string strike_label;
 

@@ -62,7 +62,7 @@ create table if not exists "ores_refdata_fx_vol_surface_pillar_sources_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("contributor_code" <> ''),
-    check ("weight" > 0)
+    check ("weight" > 0 and "weight" < 'Infinity'::double precision)
 );
 
 -- Composite natural key: unique combination for active records

@@ -93,8 +93,11 @@ std::string("1Y")
 :natural_key: true
 :END:
 
-The pillar's strike label: =ATM=, or a delta of one or two digits followed by =RR=,
-=BF=, =C= or =P=, such as =25RR= or =10P=, as the =fx_option= series spells it.
+The pillar's strike label: =ATM=, or a delta from 1 to 99 with no leading zero
+followed by =RR=, =BF=, =C= or =P=, such as =25RR= or =10P=, as the =fx_option=
+series spells it. A delta of zero names no option, so =0C= and =05P= are refused.
+A label the pattern does not match gives a null substring, which a check would
+pass, so the test is coalesced to false.
 
 #+begin_src cpp :name generator
 std::string("25RR")
@@ -111,10 +114,10 @@ std::string("25RR")
 
 ** Checks
 
-| expression                                                                                                  |
-|-------------------------------------------------------------------------------------------------------------|
-| "expiry_code" <> ''                                                                                         |
-| "strike_label" = 'ATM' or substring("strike_label" from '^[0-9]{1,2}([A-Z]+)$') in ('RR', 'BF', 'C', 'P') |
+| expression                                                                                                                  |
+|-----------------------------------------------------------------------------------------------------------------------------|
+| "expiry_code" <> ''                                                                                                         |
+| "strike_label" = 'ATM' or coalesce(substring("strike_label" from '^[1-9][0-9]?([A-Z]+)$') in ('RR', 'BF', 'C', 'P'), false) |
 
 * Foreign keys
 

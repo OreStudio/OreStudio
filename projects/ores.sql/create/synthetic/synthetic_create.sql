@@ -37,6 +37,12 @@
 \ir ./synthetic_calibration_policies_notify_trigger_create.sql
 \ir ./synthetic_calibration_provider_orders_create.sql
 \ir ./synthetic_calibration_provider_orders_notify_trigger_create.sql
+\ir ./synthetic_variance_calibration_inputs_create.sql
+\ir ./synthetic_variance_calibration_inputs_notify_trigger_create.sql
+\ir ./synthetic_variance_calibration_input_points_create.sql
+\ir ./synthetic_variance_calibration_input_points_notify_trigger_create.sql
+\ir ./synthetic_variance_calibrations_create.sql
+\ir ./synthetic_variance_calibrations_notify_trigger_create.sql
 
 -- IR curve generation: yield_curve_process_types before the config that
 -- FK-validates against it; parameter definitions after the process types

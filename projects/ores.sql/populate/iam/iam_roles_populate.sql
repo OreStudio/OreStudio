@@ -414,6 +414,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::ir_curve_generation_configs:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::folders:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::fx_spot_generation_configs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::variance_calibration_inputs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::variance_calibration_input_points:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::variance_calibrations:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::ir_curve_generation_configs:write');
     -- The curve the desk sees evolve, and the slices it reads through: the
     -- *Watch a curve or surface evolve* journey states the series read, and

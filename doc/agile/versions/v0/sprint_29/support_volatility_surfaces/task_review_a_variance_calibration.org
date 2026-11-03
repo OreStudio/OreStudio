@@ -61,6 +61,11 @@ task and name that file in the Command column.
 
 * Notes
 
+The partial unique index allows one approved calibration of a pair, so approving
+must supersede the earlier approval first and approve the new one second, both in
+one transaction (review of the records task, PR 4426). A test approves a second
+calibration of a pair and checks both rows' states after the change.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

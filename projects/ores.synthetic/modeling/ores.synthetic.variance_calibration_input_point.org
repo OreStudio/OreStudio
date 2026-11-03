@@ -1,0 +1,234 @@
+:PROPERTIES:
+:ID: BEEFE7C7-3B6A-4204-A110-A0DE54345194
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.synthetic.variance_calibration_input_point
+#+description: Codegen entity model for the synthetic variance_calibration_input_point table; one fixing date of a variance calibration input, used or left out with its reason.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: variance_calibration_input_point
+#+entity_plural: variance_calibration_input_points
+#+entity_title: Variance Calibration Input Point
+#+brief: One fixing date of a variance calibration input, used or left out with its reason.
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+One fixing date of a =variance_calibration_input=: the fixing as it was stored, the
+number read from it, and the daily log return it gives in the pair's market
+convention. A point the fit may not use is kept with the reason, such as a value
+that is not a number, so the input states every date the window held and not only
+the ones that counted.
+
+=log_return= is the return from the previous used point to this one, after the
+inversion the input names. The first used point has no return, and a point whose
+value cannot be read has neither a value nor a return.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this point.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party, the input's.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** input_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable:  true
+:END:
+
+The =variance_calibration_input= this point belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** fixing_date
+:PROPERTIES:
+:type:        date
+:cpp_type:    std::chrono::year_month_day
+:nullable:    false
+:natural_key: true
+:sortable:    true
+:END:
+
+The fixing date.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())}
+#+end_src
+
+** fixing_text
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The fixing exactly as the store held it, before it was read as a number.
+
+#+begin_src cpp :name generator
+std::string("1.0850")
+#+end_src
+
+** fixing_value
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The fixing read as a number, in the item's own convention; absent when the text is
+not a number.
+
+#+begin_src cpp :name generator
+std::optional<double>(1.085)
+#+end_src
+
+** log_return
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The daily log return to this point in the pair's market convention; absent for the
+first used point and for a point that was not read.
+
+#+begin_src cpp :name generator
+std::optional<double>(0.001)
+#+end_src
+
+** used
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: true
+:END:
+
+Whether the fit may use this point's return.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** exclusion_reason
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+Why the point is not used, such as "the value is not a number" or "the first
+point has no return"; empty when it is used.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_variance_calibration_input_points_tbl
+:END:
+
+** Checks
+
+| expression                                                                        |
+|-----------------------------------------------------------------------------------|
+| ("used" and "exclusion_reason" = '') or (not "used" and "exclusion_reason" <> '') |
+| not "used" or "log_return" is not null                                            |
+| "fixing_value" is not null or not "used"                                          |
+
+* Foreign keys
+
+** input_id
+:PROPERTIES:
+:table:         ores_synthetic_variance_calibration_inputs_tbl
+:error_message: Invalid input_id: %. No active variance_calibration_input found with this id.
+:nullable:      false
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: variance_calibration_input_point
+:entity_plural_short:   variance_calibration_input_points
+:entity_singular_words: variance calibration input point
+:entity_plural_words:   variance calibration input points
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column           | header     |
+|------------------+------------|
+| fixing_date      | Date       |
+| fixing_text      | Fixing     |
+| log_return       | Return     |
+| used             | Used       |
+| exclusion_reason | Left Out   |
+| version          | Version    |
+
+* See also
+
+- [[id:97E3E3C7-98D2-4DDC-B062-8F04CA2850E5][Variance Calibration Input]] -- the input this point belongs to.

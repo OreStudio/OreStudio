@@ -1788,6 +1788,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_fixing_items:read',   'View the FX fixings a feed may start from');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_fixing_items:write',  'Create and modify the FX fixings a feed may start from');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_fixing_items:delete', 'Delete the FX fixings a feed may start from');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_inputs:read',   'View variance calibration inputs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_inputs:write',  'Create and modify variance calibration inputs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_inputs:delete', 'Delete variance calibration inputs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:read',   'View variance calibration input points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:write',  'Create and modify variance calibration input points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:delete', 'Delete variance calibration input points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:read',   'View variance calibrations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:write',  'Create and modify variance calibrations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:delete', 'Delete variance calibrations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_generation_configs:read',   'View IR curve generation configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_generation_configs:write',  'Create and modify IR curve generation configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_generation_configs:delete', 'Delete IR curve generation configs');

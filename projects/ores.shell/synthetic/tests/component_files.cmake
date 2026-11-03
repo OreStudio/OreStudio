@@ -35,6 +35,9 @@ set(files
     "trade_generation_config_commands_tests.cpp"
     "trade_generation_counterparty_commands_tests.cpp"
     "trade_generation_trade_type_commands_tests.cpp"
+    "variance_calibration_commands_tests.cpp"
+    "variance_calibration_input_commands_tests.cpp"
+    "variance_calibration_input_point_commands_tests.cpp"
     "yield_curve_process_parameter_definition_commands_tests.cpp"
     "yield_curve_process_type_commands_tests.cpp"
 )

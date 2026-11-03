@@ -231,3 +231,57 @@ TEST_CASE("a preview's taking identity names the instant it will record and no i
     REQUIRE(row.state == "closed");
     REQUIRE(row.snapshot_note.find("the press records") != std::string::npos);
 }
+
+// A run that mints its own body has no person to read a gap and no take to
+// authorise, so it states what the store answered and where a reference does not
+// exist. The note is what the minted cut records, which is the decision these
+// cases pin.
+
+using ores::reporting::service::body_of_facts;
+
+TEST_CASE("a run's body states the parts the store answers and notes the ones it does not",
+          "[cut_assembly]") {
+
+    auto lg(ores::logging::make_logger(test_suite));
+    const auto body = body_of_facts(a_full_store());
+
+    CHECK_FALSE(body.market_data_snapshot_id.has_value());
+    CHECK_FALSE(body.deal_population_id.has_value());
+    REQUIRE(body.reference_data_version.has_value());
+    CHECK(body.engine_version == std::optional<std::string>("1.8.17.0"));
+    CHECK(body.note.find("the trade store held 1284 deal(s)") != std::string::npos);
+    CHECK(body.note.find("7 published set(s) were in use") != std::string::npos);
+    CHECK(body.note.find("engine 1.8.17.0 and wrapper 1.0.0") != std::string::npos);
+}
+
+TEST_CASE("a run with no published set says so in the body's note", "[cut_assembly]") {
+
+    auto lg(ores::logging::make_logger(test_suite));
+    auto facts = a_full_store();
+    facts.market_data_set_count = 0;
+    facts.market_data_candidate_count = 0;
+    facts.market_data_as_of = std::string();
+
+    const auto body = body_of_facts(facts);
+
+    CHECK(body.note.find("no published set was in use") != std::string::npos);
+}
+
+TEST_CASE("a read that answered nothing is stated in the body's note, not invented",
+          "[cut_assembly]") {
+
+    auto lg(ores::logging::make_logger(test_suite));
+    cut_body_facts facts;
+    facts.deals_refusal = "trading.v1.trades.list could not be reached";
+    facts.market_data_refusal = "marketdata.v1.ops.list_published_curves answered 403";
+    facts.reference_data_refusal = "nothing names the reporting configuration in force";
+    facts.engine_refusal = "no app version recorded";
+
+    const auto body = body_of_facts(facts);
+
+    CHECK_FALSE(body.reference_data_version.has_value());
+    CHECK_FALSE(body.engine_version.has_value());
+    CHECK(body.note.find("trading.v1.trades.list could not be reached") != std::string::npos);
+    CHECK(body.note.find("answered 403") != std::string::npos);
+    CHECK(body.note.find("no app version recorded") != std::string::npos);
+}

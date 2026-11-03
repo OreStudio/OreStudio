@@ -23,6 +23,7 @@
 #include "ores.reporting.api/domain/cut_kind.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/service/cut_resolution_plan.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -170,6 +171,21 @@ struct cut_assembly {
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_assembly
 assemble_cut_body(const domain::cut_kind& kind, const cut_body_facts& facts);
+
+/**
+ * @brief The body a run mints, from what the store answered about it.
+ *
+ * A run that mints its own body has no person to read a gap and no take to
+ * authorise: it prices what the store holds at the instant it starts, and the
+ * engine refuses afterwards where a part the store answered cannot price. So
+ * this answers the body from the parts the store answered, and says in the
+ * body's note which parts those were and what each held. The note is what the
+ * minted cut records, because a cut whose snapshot column is empty and whose
+ * note is too would have no record of what it fixed.
+ *
+ * @param facts What each read answered.
+ */
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_body body_of_facts(const cut_body_facts& facts);
 
 }
 

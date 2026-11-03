@@ -71,6 +71,16 @@ struct cut_selection {
  *
  * An empty member states a part the assembly could not fill, which is what a
  * LIVE run's refusal names.
+ *
+ * Two of the parts are references the store does not always materialise: the
+ * trade store answers how many deals it held at the instant but keeps no copy
+ * of the population, and market data answers which published sets were in use
+ * but fixes no snapshot of its own. Those references are therefore absent from
+ * a minted body and stated in @ref note instead, which is the rule the hand
+ * take already follows: a body it took records the account, the party and the
+ * instant and says the rest as its note. The parts the store does answer, the
+ * versions of the reference data and of the engine the run executes, are named
+ * and are what a run refuses for.
  */
 struct cut_body {
     std::optional<boost::uuids::uuid> market_data_snapshot_id;
@@ -78,6 +88,15 @@ struct cut_body {
     std::optional<std::string> reference_data_version;
     std::optional<std::string> engine_version;
     std::optional<std::string> code_version;
+
+    /**
+     * @brief The parts of the body the assembly answered, in the words a person
+     * reads, or empty where the assembly answered none.
+     *
+     * Written onto the minted cut as its commentary, so the record of what the
+     * run priced from is a sentence rather than an empty set of columns.
+     */
+    std::string note;
 };
 
 /**

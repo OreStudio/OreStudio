@@ -22,6 +22,7 @@
 #include "ores.analytics.quant/service/processes/arithmetic_gaussian_mixture_model_process.hpp"
 #include "ores.analytics.quant/service/processes/cox_ingersoll_ross_process.hpp"
 #include "ores.analytics.quant/service/processes/gaussian_mixture_model_process.hpp"
+#include "ores.analytics.quant/service/processes/gjr_garch_variance_process.hpp"
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
 #include "ores.analytics.quant/service/processes/ornstein_uhlenbeck_process.hpp"
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
@@ -65,6 +66,56 @@ process_factory::make_process(const std::string& process_type,
     // process_type should log around this call.
     return std::make_unique<gaussian_mixture_model_process>(
         std::move(means), std::move(stdevs), std::move(weights), initial_price, std::move(stream));
+}
+
+std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>
+process_factory::make_gjr_garch_process(const std::string& process_type,
+                                        std::vector<double> means,
+                                        std::vector<double> stdevs,
+                                        std::vector<double> weights,
+                                        double initial_price,
+                                        math::rng_stream stream,
+                                        const math::gjr_garch_shape& shape,
+                                        double ticks_per_day,
+                                        double initial_variance_ratio) {
+    if (process_type != "geometric" && process_type != "arithmetic")
+        throw std::invalid_argument("process_factory::make_gjr_garch_process: the engine '" +
+                                    process_type +
+                                    "' cannot scale its volatility; use geometric or arithmetic");
+    if (!(ticks_per_day > 0.0) || !std::isfinite(ticks_per_day))
+        throw std::invalid_argument(
+            "process_factory::make_gjr_garch_process: ticks_per_day must be positive and finite");
+    if (!(initial_variance_ratio > 0.0) || !std::isfinite(initial_variance_ratio))
+        throw std::invalid_argument("process_factory::make_gjr_garch_process: the initial "
+                                    "variance ratio must be positive and finite");
+
+    double total_weight = 0.0;
+    for (const double w : weights)
+        total_weight += w;
+    math::mixture per_tick{.means = means, .stdevs = stdevs, .weights = weights};
+    if (total_weight > 0.0)
+        for (auto& w : per_tick.weights)
+            w /= total_weight;
+    const auto moments = math::moments_of(per_tick);
+    const auto measure =
+        process_type == "geometric" ? return_measure::log_return : return_measure::increment;
+    const daily_variance_frame frame{.ticks_per_day = ticks_per_day,
+                                     .inner_daily_variance = moments.variance * ticks_per_day,
+                                     .inner_daily_drift = moments.mean * ticks_per_day,
+                                     .measure = measure};
+    const auto model = math::gjr_garch_model::make(
+        shape, frame.inner_daily_variance, math::negative_second_moment(per_tick));
+    if (!model)
+        throw std::invalid_argument("process_factory::make_gjr_garch_process: " + model.error());
+
+    auto inner = make_process(process_type,
+                              std::move(means),
+                              std::move(stdevs),
+                              std::move(weights),
+                              initial_price,
+                              std::move(stream));
+    return std::make_unique<gjr_garch_variance_process>(
+        std::move(inner), *model, frame, initial_variance_ratio * frame.inner_daily_variance);
 }
 
 std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process>

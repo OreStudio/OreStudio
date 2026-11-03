@@ -86,6 +86,25 @@ public:
     virtual void set_tail_tilt(double /*tilt*/) {}
 
     /**
+     * @brief Scale the law's dispersion about its mean by a factor, from the next step on.
+     *
+     * The variance of every step is multiplied by the square of the factor and the
+     * mean is kept, so a daily variance model can set how large a day's moves are
+     * without moving the drift. One is the law as configured. A process that cannot
+     * scale its law refuses any other factor rather than ignoring it, because a
+     * caller that set one relies on it.
+     */
+    virtual void set_volatility_multiplier(double multiplier) {
+        if (multiplier != 1.0)
+            throw std::invalid_argument("this process cannot scale its volatility");
+    }
+
+    /// Whether set_volatility_multiplier() accepts a factor other than one.
+    virtual bool supports_volatility_multiplier() const {
+        return false;
+    }
+
+    /**
      * @brief The largest step, in the law's own time unit, this process can be
      * stepped by without its scheme's error dominating.
      *

@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/gjr_garch.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include <cstdint>
 #include <memory>
@@ -67,6 +68,32 @@ public:
                  double initial_price,
                  math::rng_stream stream,
                  double dt = 1.0);
+
+    /**
+     * @brief Build a mixture price process whose daily variance follows a GJR-GARCH(1,1).
+     *
+     * The mixture is built as make_process() builds it and wrapped in a
+     * gjr_garch_variance_process. The mixture's own daily variance is the GARCH
+     * long-run variance, so the volatility a feed is calibrated to is the level the
+     * GARCH variance reverts to, and p_minus is the mixture's own.
+     *
+     * @param process_type "geometric" or "arithmetic"; any other engine cannot scale
+     *        its law and is refused.
+     * @param ticks_per_day Nominal ticks in a market day.
+     * @param initial_variance_ratio The first day's variance over the long-run level.
+     * @throws std::invalid_argument for an engine that cannot scale, parameters
+     *         make_process() refuses, or a shape outside the admissible region.
+     */
+    static std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>
+    make_gjr_garch_process(const std::string& process_type,
+                           std::vector<double> means,
+                           std::vector<double> stdevs,
+                           std::vector<double> weights,
+                           double initial_price,
+                           math::rng_stream stream,
+                           const math::gjr_garch_shape& shape,
+                           double ticks_per_day,
+                           double initial_variance_ratio = 1.0);
 
     /**
      * @brief Build a short-rate process that also exposes the model's

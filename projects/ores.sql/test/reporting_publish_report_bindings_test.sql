@@ -147,8 +147,8 @@ select results_eq(
       from ores_reporting_publish_report_definitions_from_dq_fn(
           (select id from t_definitions), ores_utility_system_tenant_id_fn(), 'upsert',
           jsonb_build_object('party_id', (select party_id::text from t_ctx))) p$$,
-    $$values ('skipped'::text, 0::bigint)$$,
-    'a repeat publish adds nothing');
+    $$values ('skipped'::text, 3::bigint)$$,
+    'a repeat publish adds nothing, and says how many staged bindings it applied to nothing');
 
 select * from finish();
 rollback;

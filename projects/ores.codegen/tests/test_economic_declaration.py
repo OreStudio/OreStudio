@@ -255,6 +255,12 @@ def _catalogue_in(tmp_path, entity_text, digest_rows, shared_rows=""):
 |------+------+--------+--------------+---------+-------------+---------------+------------|
 | Swap | Swap | swap   | native       | interest_rates! | false | false | widget |
 
+* Descriptions
+
+| code | description | source | source_ref |
+|------+-------------+--------+------------|
+| Swap | A swap. | ORE User Guide | swap.tex |
+
 * Digest
 
 ** Instrument components

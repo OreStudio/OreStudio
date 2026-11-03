@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:fx:volatility:ore:
 #+created: 2026-05-25
-#+updated: 2026-05-25
+#+updated: 2026-11-03
 
 The FX volatility surface is the primary market data input for pricing and
 risk-managing FX options in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. It is a two-dimensional function of
@@ -17,6 +17,34 @@ surface construction. For the generic concept of volatility and implied vol
 this page assumes, see [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]]. For how vol surfaces interact with pricing
 configuration see [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]].
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Layperson's mental model
+
+Think of the price of insurance against a currency moving, written as a
+landscape. One direction is how long the cover lasts, the /expiry/; the other is
+how far the currency must move before the cover pays, the /strike/, which FX
+measures in /delta/. The height at each spot is the volatility the market
+charges for that cover. The landscape is the surface.
+
+Nobody surveys the whole landscape. The market plants a few stakes at each
+expiry and reads three numbers off them. The *ATM* volatility is the height in
+the middle of the valley. The *risk reversal* (RR) says which side of the valley
+rises faster, the side where the currency falls or the side where it rises. The
+*butterfly* or strangle (BF) says how steeply both sides rise compared with the
+middle. Everything between the stakes is filled in by a smile model.
+
+Two things make this harder than it sounds. Surveyors disagree about where a
+stake stands: the same "25 delta" is a slightly different strike depending on
+whether the delta is measured against spot or forward and whether it counts the
+premium, so a number means nothing without its convention. And brokers quote the
+butterfly as the price of a whole strangle rather than as one height, so turning
+their butterfly into heights takes a calculation, not just arithmetic.
+
+#+begin_src cpp
+// the 25-delta call and put vols from the three quotes, in the smile convention
+double call_vol = atm + bf + 0.5 * rr;
+double put_vol  = atm + bf - 0.5 * rr;
+#+end_src
 
 * Overview
 
@@ -70,6 +98,22 @@ $$\sigma_{STR}^{25\Delta} = \frac{\sigma_{call}^{25\Delta} + \sigma_{put}^{25\De
 The strangle captures the /curvature/ of the smile — how "fat" the wings are
 relative to the centre. A positive strangle means OTM options are more
 expensive than ATM, as is typical in FX.
+
+The formula above is the *smile* butterfly, and with it the call and put
+volatilities follow from the quotes directly:
+
+$$\sigma_{call} = \sigma_{ATM} + \sigma_{BF} + \tfrac{1}{2}\sigma_{RR}, \qquad \sigma_{put} = \sigma_{ATM} + \sigma_{BF} - \tfrac{1}{2}\sigma_{RR}$$
+
+Brokers usually quote the *market* (or broker) strangle instead. Its quote
+$\tilde{\sigma}_{BF}$ prices a strangle at the single volatility
+$\sigma_{ATM} + \tilde{\sigma}_{BF}$, struck where that volatility puts the
+25-delta call and put, and those strikes are not the strikes of the vanilla
+25-delta options the risk reversal refers to. Recovering the call and put
+volatilities from a market strangle therefore needs a smile and a numerical
+solve: the smile must reproduce the ATM and risk reversal volatilities and the
+market strangle's price at once (Healy, 2025, equations 5 to 12; Clark, 2011).
+The two conventions give different numbers for the same surface, so a quote is
+read only together with the pair's butterfly style.
 
 ** The Three-Pillar Parameterisation
 
@@ -158,6 +202,18 @@ sensitivity (up/down), vol adjustments, RR infinite flag, vol swap adjustments,
 and standard deviation weighting. These are model parameters rather than market
 observables. In [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] these appear as entries in the =EngineData= XML
 configuration.
+
+** SVI and SSVI
+
+SVI writes the total implied variance of one expiry as a five-parameter function
+of log-moneyness, and SSVI restricts it to a surface described by the ATM total
+variance of each expiry, one skew parameter $\rho$ and a curvature function.
+The three FX pillars map onto SSVI as they map onto SABR: ATM onto the ATM total
+variance, RR onto $\rho$, and STR onto the curvature. What SSVI adds is that the
+conditions excluding calendar spread and butterfly arbitrage across the whole
+surface are explicit inequalities on its parameters, where SABR fitted expiry by
+expiry carries no condition between expiries. The forms and the conditions are
+in [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]].
 
 ** Black-Scholes (Flat Vol)
 
@@ -287,3 +343,18 @@ ORE Studio will need to model vol surface configurations as domain entities (see
 * See also
 
 - [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]] — completes: a smile model whose arbitrage conditions are stated on its parameters.
+- [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Paper summary: accounting for biases in Black-Scholes]] — completes: the ATM, RR and STR pillars expressed through the skewness and kurtosis of the return distribution.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] — exemplifies: how the system carries a surface from quotes to a published set.
+
+** Further reading
+
+- Healy, J. (2025). "Counterexamples for FX Options Interpolations - Part II."
+  [[https://arxiv.org/abs/2512.19625][arXiv:2512.19625]]. The smile and broker
+  conventions for the risk reversal and butterfly, and the solve for the
+  market strangle.
+- Reiswich, D. and Wystup, U. (2009). "FX volatility smile construction." CPQF
+  Working Paper 20.
+  [[https://econpapers.repec.org/RePEc:zbw:cpqfwp:20][EconPapers]].
+- Clark, I. J. (2011). /Foreign Exchange Option Pricing: A Practitioner's
+  Guide/. Wiley. The market strangle solve; cited through Healy (2025).

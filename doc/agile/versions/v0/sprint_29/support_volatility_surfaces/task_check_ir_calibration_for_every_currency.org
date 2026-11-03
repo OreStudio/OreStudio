@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: E9F41943-12D6-47AB-BA60-6FC0931F1A99
+:END:
+#+title: Task: Check that IR calibration is set up for every supported currency
+#+description: Check, currency by currency, that each synthetic IR curve feed has a public calibration source, a calibration policy and a stored history, and set up or record what is missing.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every supported currency's synthetic IR curve starts from public data, or the gap is stated. Today only FX has a calibration policy: the seed in synthetic_calibration_policies_populate.sql covers FX alone, while the IR curve configs cover about twenty currencies. The public curve sources documented so far are the US Treasury par curve, SOFR, SONIA and the ECB's euro short-term rate. For each supported currency, find its overnight rate or par curve publisher, read its terms, and set up the source, the policy and the history, or record why not.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- A table lists every currency an IR curve config supports, with its public source, the state of that source's terms, its calibration policy and its stored history.
+- Every currency with a usable public source has a calibration policy, and its IR curve feed starts from the latest published value.
+- Every currency without one keeps a stated fixed level, and the reason is recorded in the calibration sources note.
+- The calibration screen shows the IR coverage, as it shows the FX coverage.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

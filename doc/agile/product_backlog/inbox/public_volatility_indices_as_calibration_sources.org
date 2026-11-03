@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 71A65CAC-B138-4FCB-A3E8-AF5D0913FD19
+:END:
+#+title: Use the free public volatility indices as calibration source…
+#+description: Use the free public volatility indices as calibration sources for the vol surfaces of other asset classes. FX has no free implied vol source (checked 2026-11-03 in the task Document the volatility surface architecture), but some asset classes have a published index. FRED carries Cboe indices such as VIX (VIXCLS, equity), and Cboe also publishes indices for oil, gold, emerging markets and longer equity horizons; check which FRED carries today and which are discontinued. Each FRED Cboe series is marked Copyrighted: Citation Required, and its storage terms are unread, so read Cboe's and FRED's terms before any fetcher stores a value. The ICE BofA indices on FRED, MOVE among them, forbid reproduction without ICE's written permission and keep only three years of observations, so they are out. An index is a single implied vol level, so at best it sets the ATM level of one tenor; the shape still comes from the derived calibration source. A fetcher for FRED needs an API key, which the public sources adapter keeps under its secrets.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:structure_note:volatility:
 #+created: 2026-09-10
-#+updated: 2026-09-10
+#+updated: 2026-11-03
 
 * Summary
 
@@ -55,6 +55,12 @@ and the quoting conventions that make FX different from equities. This is
 the cluster's centre of gravity; everything after it is either a constraint
 on the surface or a consequence of it.
 
+[[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]] —
+read after the surface, as one of its smile models. It earns its place in the
+sequence for SSVI, the form whose freedom from arbitrage is a set of
+inequalities on its parameters, which the next section's conditions make
+concrete.
+
 ** What the surface must satisfy
 
 [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage
@@ -75,6 +81,13 @@ driver and derived pattern applied to surfaces, for the case where one
 surface is generated deterministically from another rather than quoted in
 its own right.
 
+The synthetic generator gives a driver surface dynamics of its own: an SSVI
+surface whose parameters follow bounded mean-reverting processes, correlated
+with spot. That method is in the option vol surface section of
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]],
+which belongs to the synthetic generation cluster rather than this one; read it
+here only when the question is how a surface is made to move.
+
 ** What is traded on it
 
 [[id:D3DF8CDD-2BD9-44BC-B805-D06C8A6C2074][Variance and Volatility
@@ -86,11 +99,13 @@ to it.
 ** The papers, when the question is method
 # aside
 
-Two research notes sit alongside rather than in the sequence. Reach for
+Four research notes sit alongside rather than in the sequence. Reach for
 them when the question is how to do something rather than what it is.
 
 - [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Arbitrage-free surface interpolation]] — interpolating a surface without violating the conditions above.
 - [[id:3F849D36-022B-49CC-AD71-791481F36581][GJR-GARCH and neural option pricing]] — combining the realised-volatility model with a learned pricer.
+- [[id:3C43D0CC-3E74-45CA-BC85-A2303D0ADEDC][Arbitrage-free SVI volatility surfaces]] — the SSVI family and the proof that its conditions exclude static arbitrage.
+- [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Accounting for biases in Black-Scholes]] — the smile implied by the skewness and kurtosis of returns.
 
 * What this cluster does not cover
 

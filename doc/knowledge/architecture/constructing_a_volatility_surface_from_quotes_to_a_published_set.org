@@ -1,0 +1,260 @@
+:PROPERTIES:
+:ID: 53D14F31-EE32-493E-BBEB-140AA4906BE4
+:END:
+#+title: Constructing a volatility surface: from quotes to a published set
+#+description: The target state of volatility surface construction: a blueprint and its pillars, the quotes they read, the calibration that turns quotes into a surface, the checks, the candidate and its publication.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:volatility:calibration:publish:oresmd:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+* Summary
+
+This document describes the target state of volatility surface construction in
+ORE Studio. A surface is not observed in the market; contributors quote a sparse
+ladder of points, and a calibration fits a smile model to those quotes so that a
+valuation can read a volatility at any expiry and strike. The document follows
+that construction from the blueprint that states the recipe, to the pillars that
+name the market series they read, to the calibration that produces the surface,
+to the candidate it writes, and to the publication that makes the set
+authoritative. It states what the identification system and the lineage records
+have to hold at each step, and it names the changes that reach the target. It is
+the counterpart, step for step, of
+[[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]],
+and it differs from it only where a surface differs from a curve.
+
+* The problem: a surface is not observed
+
+A valuation needs the volatility of each option it prices, at that option's
+expiry and strike. The market does not quote that volatility. It quotes, for a
+pair, an ATM volatility, risk reversals and butterflies at a few deltas and a few
+expiries, under conventions of the pair, and different contributors quote
+different numbers for the same point. A surface is the function of expiry and
+strike implied by those quotes under a smile model and a set of conventions. The
+construction is therefore an inference, and it is a decision: which
+contributors, which expiries and deltas, which smile model, which interpolation
+across expiries.
+
+Two consequences follow, as they do for a curve. The surface is derived, so its
+identity must say so: a calibrated point is a datum of a calibrated surface
+series, not an observation of a contributor's quote. And the inference must be
+recorded, so a point can be traced to the quotes it was calibrated to and to the
+version of the recipe that calibrated it.
+
+* The recipe: the blueprint and its pillars
+
+A blueprint is a named recipe. It states the party, the pair, the smile model,
+the interpolation across expiries, the output grid of expiries and strikes, and
+the output series the surface will be written to. It refers to the pair's
+quoting convention in =fx_option_convention= (its ATM type, its delta type, its
+butterfly style and the expiry at which the long-term conventions take over),
+and to the =fx_volatility_config= and =fx_volatility_smile= that describe the
+surface to ORE. The concepts are in
+[[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] and
+[[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]].
+
+Its pillars are the quoted points the inference uses. A pillar states an expiry
+and a strike label: =ATM=, a risk reversal or a butterfly at a delta, or a call or
+a put at a delta. Unlike a curve's pillars, a surface's pillars have no order the
+construction depends on; each pillar names one series per contributor it reads,
+with the weight that contributor carries in the calibration.
+
+Two rules belong to the recipe rather than to the engine. The smile model sets
+how many pillars each expiry needs: SSVI and SABR need an ATM, a risk reversal and
+a butterfly at one delta at least, and a five-point spline needs two deltas. And
+the conventions decide what a quote means: a butterfly read in the smile
+convention and the same number read as a broker strangle are different surfaces.
+Both are part of what the blueprint decides, and both are checked before any
+quote is read.
+
+* The inputs: named series, the as-of and the dates
+
+In the target state a pillar names the market series its quote comes from. The
+series is an observed quote series, an oresmd URI such as
+=oresmd://fx/EUR?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=USD&expiry=1Y&strike_label=25RR=,
+and the pillar holds a soft reference to one such series per contributor, as
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+requires. The identity of the input is deliberately not the identity of the
+output: the quote is observed and the surface point is inferred, and the two
+must remain distinguishable.
+
+At an as-of, the compute reads the observation of each named series at that
+instant. The pillar's expiry and strike label are the datum's coordinates. The
+expiry is resolved to a date through the reference data, as a curve's tenor is
+([[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]),
+and each strike label is resolved to a strike through the pair's delta and ATM
+conventions and the forward to the expiry, which the compute reads from the
+published curves of the two currencies.
+
+A missing observation is not a refusal by itself, because contributors are
+expected to leave points out. A pillar with no observation from any of its
+contributors is reported, and an expiry left without the pillars its smile model
+needs is refused before the calibration begins, with the pillars and series it
+could not read named.
+
+* The calibration: from quotes to a surface
+
+The engine calibrates the smile model to all the quotes at once. A curve's solve
+has an order, because one pillar's factor feeds the next, and that order is what
+makes its method a bootstrap; a surface's quotes have no such order, so its method
+is a calibration: the model's parameters minimise the weighted squared difference
+between the quotes and the volatilities the model gives at the pillars' strikes.
+For SSVI the parameters are the ATM total variance of each expiry, the skew and
+the curvature; for SABR they are fitted expiry by expiry. A butterfly quoted as a
+broker strangle enters the calibration as the price of the strangle at its own
+strikes rather than as a smile volatility, as
+[[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] explains.
+
+Between the expiries the blueprint's interpolation applies, in total variance so
+that the interpolated surface stays free of calendar arbitrage where the
+calibrated expiries are. The calibrated surface is then sampled on the
+blueprint's output grid, which is what the candidate holds. The engine sits
+beside the curve engine in =projects/ores.analytics/quant=.
+
+* The checks
+
+Two kinds of check run, where a curve has one.
+
+The first kind runs before the quotes are read, because each is a property of
+the recipe and none needs the market.
+
+1. Every expiry has the pillars its smile model needs.
+2. The expiries are in strictly increasing order and the output grid lies
+   within them, or the blueprint states its extrapolation.
+3. Every strike label is one the pair's convention can resolve.
+4. The blueprint names a quoting convention and the convention names a butterfly
+   style.
+
+The second kind runs on the calibrated surface, because a calibration, unlike a
+bootstrap, can reproduce its quotes and still admit arbitrage.
+
+5. Total variance does not fall with expiry at any strike of the grid, so the
+   surface has no calendar spread arbitrage.
+6. The density implied at each expiry is non-negative, so the surface has no
+   butterfly arbitrage. For SSVI the four conditions of
+   [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]]
+   are checked on the parameters; for other models the density is checked on
+   the grid
+   ([[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage Conditions]]).
+7. The calibration error of each pillar is recorded, and a pillar beyond the
+   blueprint's tolerance is reported.
+
+The first kind is a property of the blueprint and is held against its version,
+as the curve's checks are in the target state. The second kind is a property of
+one calibration and is held against the candidate.
+
+* The candidate
+
+The calibration produces a surface. The compute writes it as observations of the
+blueprint's output series, dated at the as-of, with each grid point's expiry and
+strike in the datum identity. The output series is a calibrated surface series,
+so the identity says the points are inferred rather than observed; the blueprint
+is the only writer of that series. The series is described in
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]].
+
+Every point carries a lineage record naming the source series the pillars read,
+the contributors' weights, and the version of the blueprint that produced it, so
+the inference is recorded, not merely performed. The result is the candidate: it
+exists, it is traceable, and it is not authoritative. A candidate is not
+consumable by a report; the published state is what makes a set authoritative,
+and the next section is that act.
+
+* The hand-off to publication
+
+The candidate becomes authoritative in the three acts that make a curve
+authoritative: the maker raises a publish naming the blueprint and the as-of, a
+second person decides under the four-eyes rule, and the publish applies the
+approved request once, stamps the publisher and the instant, ends the set it
+replaces and sends the notice.
+
+The published set is what the rest of the system consumes. The report references
+it through its market binding, as
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve]]
+describes for a curve; the screens read it; a candidate never reaches either. The
+ORE export writes the published grid as ORE volatility quotes at the boundary,
+with the =fx_volatility_config= that describes the grid, and ORE interpolates
+between the grid points by its own rules. The grid therefore has to be fine
+enough that ORE's surface reproduces the calibrated one at the strikes a trade
+needs. The trader's side is
+[[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]],
+[[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]],
+[[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] and
+[[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]],
+with the publish journeys the curve shares.
+
+* The changes that reach the target
+
+Six changes remain, and each is a change to a named part of the system.
+
+The first is the surface blueprint. No record states a surface's recipe today;
+the refdata entities =fx_volatility_config= and =fx_volatility_smile= describe a
+surface to ORE, and the blueprint is the record that adds the pillars, their
+series, the contributors' weights, the smile model and the output series.
+
+The second is the calibration operation. A request that names the blueprint and
+the as-of and a response that carries the calibrated points and the error per
+pillar, the =marketdata.v1.surface.calibrate= subject the calibrate journey
+names, with the engine behind it.
+
+The third is the validation operation. Both kinds of check run in the service,
+the first held against the blueprint's version and the second against the
+candidate, so a caller that is not a screen is held to the same rule.
+
+The fourth is the calibrated surface series. oresmd needs the instrument type
+whose identity names a calibrated FX volatility surface, created as part of the
+blueprint's lifecycle as a curve's output series is.
+
+The fifth is the surface and slice reads, which the slices journey needs and
+which read the published set rather than the quotes.
+
+The sixth is the synthetic surface feed, which publishes into the series the
+pillars name, through the contributors of
+[[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
+
+Surfaces of other asset classes are not changes to this construction: an equity
+or commodity surface quotes by strike or moneyness and an IR cube adds the swap
+tenor, and each is a blueprint and a template of its own over the same steps.
+
+* Conclusion
+
+In the target state a surface is constructed, not observed, and the construction
+is recorded rather than merely performed. The blueprint states the recipe, the
+pillars name the series they read, the calibration infers the surface under the
+conventions, the checks hold the recipe to its own rules and the surface to the
+absence of arbitrage, the candidate names the source series and the version that
+produced it, and the publication makes the set authoritative for the report. The
+identity system distinguishes the quote from the point; the lineage records
+connect them; and the published set is the single object the rest of the system
+consumes. Every step is the curve's, and the two differences, calibration in the
+place of a bootstrap and a check of the result as well as of the recipe, are the
+two ways a surface differs from a curve.
+
+* References
+
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]]
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]]
+- [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]]
+- [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage Conditions]]
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]
+- [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]]
+- [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]]
+- [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]]
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]]
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]]
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]]
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]]
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]]
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]
+
+* Patterns used
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] -- the calibration is a call that reads the quotes and answers the calibrated points and their errors.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] -- a republish over the same series and as-of converges on the same natural key rather than duplicating the points.
+- [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] -- the construction reads refdata's recipe and conventions and market data's observations, and each component owns its own store.

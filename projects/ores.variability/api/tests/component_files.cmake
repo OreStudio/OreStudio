@@ -23,5 +23,7 @@ set(files
     "codec_wire_bytes_tests.cpp"
     "domain_system_setting_tests.cpp"
     "main.cpp"
+    "operations_protocol_codec_roundtrip_tests.cpp"
     "system_setting_codec_roundtrip_tests.cpp"
+    "system_setting_protocol_codec_roundtrip_tests.cpp"
 )

@@ -25,7 +25,12 @@ set(files
     "domain_image_tests.cpp"
     "domain_tag_tests.cpp"
     "image_codec_roundtrip_tests.cpp"
+    "image_operations_protocol_codec_roundtrip_tests.cpp"
+    "image_protocol_codec_roundtrip_tests.cpp"
     "image_tag_codec_roundtrip_tests.cpp"
+    "image_tag_protocol_codec_roundtrip_tests.cpp"
     "main.cpp"
+    "publish_operation_protocol_codec_roundtrip_tests.cpp"
     "tag_codec_roundtrip_tests.cpp"
+    "tag_protocol_codec_roundtrip_tests.cpp"
 )

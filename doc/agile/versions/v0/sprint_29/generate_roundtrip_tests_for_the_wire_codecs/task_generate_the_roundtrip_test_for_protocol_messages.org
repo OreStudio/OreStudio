@@ -28,9 +28,9 @@ Every generated protocol message gets a filled and a default roundtrip case in J
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
-| Now          | Not yet started.                       |
+| Now          | Tests generated for all 18 components; dq passes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Full build and test run.               |
 | Last touched | 2026-11-02                               |
 
 * Acceptance
@@ -40,9 +40,19 @@ Every generated protocol message gets a filled and a default roundtrip case in J
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- A new archetype, =ores.cpp.wire-codec.protocol_roundtrip_tests=, writes one
+  test file per protocol header, beside the entity roundtrip tests. It follows
+  the protocol codec unit section by section: entity, junction, operation and
+  family, with operations and families only where the codec is generated.
+- One case per message, named by its qualified type. There are 590 headers
+  with about 13,500 messages, so four cases per message would be about 54,000
+  cases. The case calls =ores::testing::check_wire_roundtrip=, which states
+  the member-count guard and the four checks once, so the generated files
+  declare no names and build as unity units without clashes.
+- The tests include the same codec headers as the codec unit, and the envelope
+  shapes in =ores.utility/domain/protocol_codec.hpp=. The dq pilot failed to
+  compile without that header: =result=, =order=, =precondition= and
+  =change_intent= had no sample.
 
 * Measurements
 
@@ -56,7 +66,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Protocol test files generated | 590 | =git status --short= after =compass codegen regenerate --all --address ores.cpp.wire-codec= | this branch |
+| dq protocol cases run, passed | 630, 630 | =compass test run -- -R ores.dq.api=, then the result XML | this branch |
 
 * Notes
 

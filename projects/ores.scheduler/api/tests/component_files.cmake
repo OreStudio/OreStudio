@@ -23,5 +23,7 @@ set(files
     "codec_cron_expression_tests.cpp"
     "domain_cron_expression_tests.cpp"
     "job_definition_codec_roundtrip_tests.cpp"
+    "job_definition_protocol_codec_roundtrip_tests.cpp"
     "main.cpp"
+    "scheduling_operations_protocol_codec_roundtrip_tests.cpp"
 )

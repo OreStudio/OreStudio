@@ -187,6 +187,32 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    std::vector<std::pair<std::string, std::uint64_t>>
+    count_blotter_rail(context ctx,
+                       const std::string& dimension,
+                       const std::optional<messaging::trade_summaries_filter>& filter);
+
+    /**
+     * @brief One page of blotter rows, starting after @p after.
+     *
+     * The page is keyed rather than offset: the caller states the key of the last
+     * row it was given, and the store starts after it. Every page then costs what
+     * the first costs, which an offset cannot promise.
+     */
+    std::vector<domain::trade_summary>
+    read_blotter_page(context ctx,
+                      std::uint32_t limit,
+                      const ores::utility::domain::order& order,
+                      const std::string& after,
+                      const std::optional<messaging::trade_summaries_filter>& filter);
+
+    /**
+     * @brief The key a page starts after, given its last row.
+     *
+     * The caller does not read it: it is the sort value and the row id together, so
+     * a page can start after a row the order places between two values of its own.
+     */
+    static std::string blotter_page_key(const domain::trade_summary& row, const std::string& field);
 
 private:
     /**

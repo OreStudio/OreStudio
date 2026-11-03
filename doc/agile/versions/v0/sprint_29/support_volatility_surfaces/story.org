@@ -19,14 +19,14 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | STARTED                                |
-| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The architecture is documented.        |
-| Waiting on    | Nothing.                               |
-| Next          | Add the GARCH variance to FX spot.     |
-| Last touched  | 2026-11-03                             |
+| Field         | Value                                                                |
+|---------------+----------------------------------------------------------------------|
+| State         | STARTED                                                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]               |
+| Now           | The variance calibration workflow is documented and its tasks named. |
+| Waiting on    | Nothing.                                                             |
+| Next          | Model the variance calibration records.                              |
+| Last touched  | 2026-11-03                                                           |
 
 * Acceptance
 
@@ -49,6 +49,14 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:886DD1DB-7FFD-4EB0-9BE7-D7A5F1C1BEBD][Calibrate a volatility surface from its quotes]] | BACKLOG | | | The marketdata.v1.surface.calibrate operation and its engine, with the recipe and result checks run in the service, writing a candidate with lineage; see Constructing a volatility surface: from quotes to a published set. |
 | [[id:780C7570-E322-4B2F-833A-C352D4A95B84][Read a published surface and its slices]] | BACKLOG | | | The surface and slice reads the slices journey needs, over the published set rather than the quotes; see Constructing a volatility surface: from quotes to a published set. |
 | [[id:DF6A9912-BD6C-4AD7-B8F7-28DD8C58466F][Run the FX spot feeds on GJR-GARCH]] | DONE | 2026-11-03 | 2026-11-03 | Publish every FX spot generation column from DQ and seed every system FX spot feed with the GJR-GARCH variance. |
+| [[id:42A03AA2-E010-4AC3-B97A-8070BCE8D831][Document the variance calibration workflow]] | DONE | 2026-11-03 | 2026-11-03 | State the GJR-GARCH variance as a calibration of three stored stages, inputs, fit and review, and application, and name the tasks that build it. |
+| [[id:F41343F6-3CD8-4903-9E58-F5871DF61B32][Model the variance calibration records]] | BACKLOG | | | Codegen entities for a stored GJR-GARCH calibration input, its dated points, and the calibration fitted from it, with the class policy's variance window. |
+| [[id:24E25E0E-E12D-463C-B70D-E4851380B94A][Capture the inputs of a variance calibration]] | BACKLOG | | | An operation that reads a pair's fixings under its class policy and stores them as a calibration input, without fitting anything. |
+| [[id:59412E3C-F6A0-45D0-8823-C949F6FBB8A8][Fit a variance calibration from its inputs]] | BACKLOG | | | An operation that fits GJR-GARCH to one stored input and stores the result as a proposed calibration, with the evidence a reviewer needs. |
+| [[id:E7A79AFD-FD48-43F6-9A6F-9E1D522469C6][Review a variance calibration]] | BACKLOG | | | Approve or reject a proposed calibration with a reason; approving one supersedes the pair's earlier approval. |
+| [[id:748305F3-48FD-4551-BD68-D269AF56292D][Apply an approved variance calibration to a feed]] | BACKLOG | | | An FX spot feed names the approved calibration it runs; the feed no longer fits at start, and its start record names the calibration it used. |
+| [[id:764B5B0A-9B8E-4C6F-A5D1-0BD6D8F18C68][Show the calibration chain of a feed]] | BACKLOG | | | Replace the start banner with a This run tab in plain text, and add a Calibration tab that shows inputs, fits and reviews, linked both ways. |
+| [[id:ACF60CC6-3DB4-44C4-9059-B8D58180E7AB][Run the derived source in the system tenant]] | BACKLOG | | | Fix the three defects of the derived FX volatility source that a live run showed: an unknown derivation kind, no conventions in the system tenant, and stale pgTAP counts. |
 
 * Decisions
 
@@ -64,6 +72,20 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]]
   and "The daily variance" in
   [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][Market volatility channel]].
+- *The GJR-GARCH variance is a stored, reviewed calibration, not a fit at feed
+  start* (2026-11-03). Context: a feed fitted alpha, gamma and beta from its own
+  window of fixings each time it started, kept the result only in that run's
+  start record, and used it with no review, so a user could not see where the
+  values came from, compare them across runs, or refuse a bad fit such as a
+  negative gamma. Decision: the calibration has three stored and versioned
+  stages. A capture stores the inputs, read under the class policy; a fit reads
+  one stored input and stores a proposed calibration; a person approves or
+  rejects it with a reason. A feed names the approved calibration it runs, and
+  its start record names the calibration used. Consequences: the window and the
+  provider order belong to the class policy, not to the feed; the feed's own
+  GARCH columns and the fit at start are removed; an authored shape is a
+  calibration of method authored and is reviewed like any other; history shows
+  every stage from the fixings to the run.
 - *A surface is SSVI and moves through its parameters; the MDN is abandoned*
   (2026-11-03). Context: the MDN is not available, does not cover IR, and makes
   the surface a function of spot variance only. Decision: the surface is SSVI

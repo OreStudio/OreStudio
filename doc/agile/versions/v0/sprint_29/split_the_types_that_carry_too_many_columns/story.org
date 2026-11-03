@@ -53,7 +53,7 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
 | [[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][Re-inventory what the splits leave]] | DONE | 2026-11-02 | 2026-11-02 | Once the split tasks are done, re-run the inventory and read what is left: the six types the first inventory marked group, any type the splits moved across the threshold, and whether the C1202 the story started from still reproduces. |
 | [[id:DB2C3AFB-777A-405F-A208-B97B25B9C93C][Model the volatility smile configuration and the moneyness surface]] | DONE | 2026-10-31 | 2026-10-31 | The volatility split leaves three things out: ParametricSmileConfiguration, which both surface types state as an optional element and no part carries; the moneyness surface, which has no part and which the projection refuses; and a shell address for each of the ten parts, whose permissions are seeded with no caller. |
 | [[id:0393A6B0-A31E-4375-9BE4-8B7CFC4B0208][Every report run fails on an orphan commodity future part]] | DONE | 2026-11-02 | 2026-11-02 | Since the conventions split, building a run's input refuses with 'Commodity future part commodity_future_averaging_terms names no commodity future convention' on a freshly provisioned Acme tenant, so no report runs. |
-| [[id:06F7D57F-82C7-440D-91D7-54EED11EBB85][Split the swaption smile and the inflation seasonality]] | BACKLOG | | | The re-inventory found two refdata blocks that exist only for one value of the entry: the swaption entry's three smile columns, which mean something only when Dimension is Smile, and the inflation curve's has_seasonality flag with its base date and frequency, whose factors are already their own rows. |
+| [[id:06F7D57F-82C7-440D-91D7-54EED11EBB85][Split the swaption smile and the inflation seasonality]] | DONE | 2026-11-02 | 2026-11-03 | The re-inventory found two refdata blocks that exist only for one value of the entry: the swaption entry's three smile columns, which mean something only when Dimension is Smile, and the inflation curve's has_seasonality flag with its base date and frequency, whose factors are already their own rows. |
 
 * Decisions
 
@@ -89,6 +89,11 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
   two legs each with their own terms are two parts. The rule is the "One
   component per row" check on [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][the
   data-oriented design page]].
+- *A part follows what the document states, 2026-11-03.* A block's part exists
+  where the document states the block, not where the owner's setting says the
+  block is read. ORE ignores a swaption smile grid on an ATM surface, but three
+  ORE examples keep one, and a projection that refused them would not round
+  trip ORE's own documents. The FX smile already worked this way.
 - *The C1202 was the query builder, 2026-11-02.* After the splits MSVC stopped
   on 12-column entities, so width was never the cause. The query builder's
   growing tuple was, and 6feebec946 replaced it. The story's rule that no split

@@ -61,8 +61,8 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   tanh of an OU process and its curvature a bounded logistic of an OU process,
   so every emitted surface is free of static arbitrage; the shocks are
   correlated with spot. Consequences: the generator prices quotes from the
-  state in the pair's own convention, the blueprint fits SSVI back and checks
-  it, and a fitted surface still needs an identity of its own. See
+  state in the pair's own convention, a tenant's blueprint fits the smile model
+  it chooses and checks it, and a fitted surface still needs an identity of its own. See
   [[id:3C5FA141-16E5-4505-A36D-F6C29AE7679B][A volatility surface moves through its SSVI parameters]].
 - *A derived source supplies the starting surface* (2026-11-03). Context: no
   free public source of FX implied volatilities was found. Decision: a

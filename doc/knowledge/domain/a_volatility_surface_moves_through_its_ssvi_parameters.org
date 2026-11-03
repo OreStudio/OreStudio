@@ -280,6 +280,18 @@ strangle when the style is =Broker=. A synthetic quote and a vendor quote of
 the same point then mean the same thing, which is what lets a vendor replace
 the synthetic source without changing any consumer.
 
+*** The quotes are observations, not the surface
+
+The quotes above are the surface itself, sampled cleanly. A real broker feed
+is not like that: several contributors quote a fuller delta ladder, with bid
+and ask, noise, stale and missing points, and they disagree. A desk marks its
+own surface from those inputs. So the published quotes come from an
+*observation layer* inside the simulator adapter: the SSVI state is the latent
+true market, and synthetic contributors, each a provider, publish noisy
+observations of it. The noise never touches the state. A contributor whose
+noise profile is =none= publishes the clean quotes, which is what the tests
+use. The layer is designed in the note on the surface pipeline.
+
 *** What oresmd already names, and what it does not
 
 The identity covers the quotes. The FX row of the schema
@@ -314,7 +326,8 @@ A curve blueprint names its pillars, its interpolation and its conventions, and
 a bootstrap inverts the quotes into discount factors, checks them, and writes a
 candidate that publication makes authoritative. A surface blueprint names its
 tenors, its strike labels, its delta and ATM conventions and its smile model
-(SSVI here; SABR or a spline are options), as
+(SSVI, SABR, a spline or Vanna-Volga: the tenant chooses, and SSVI in the
+generator does not constrain the choice), as
 [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][User Journey: Author a surface's framework]]
 describes. Its build fits the model to the quotes, checks the four conditions
 above and the checks of

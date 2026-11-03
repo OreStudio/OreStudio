@@ -4878,7 +4878,25 @@ const pt: SourceCatalogue = {
                 runsNone:
                     'A variância do feed é constante, ou a sua configuração não nomeia calibração.',
                 fresh: 'O ajuste desta execução',
-                awaiting: 'novo ajuste a rever',
+                awaiting: 'aguarda revisão',
+                waiting:
+                    '{count} ajuste(s) GJR-GARCH deste par aguardam revisão. O mais recente é a calibração {id}, persistência {persistence}. Um feed só o usa depois de aprovado.',
+                reviewIt: 'Rever',
+                pairHistory: 'Calibrações de {pair}',
+                when: 'Última alteração',
+                stateHeader: 'Estado',
+                reason: 'Motivo',
+                chart: {
+                    title: 'Volatilidade diária ajustada',
+                    volatility: 'Volatilidade ajustada',
+                    move: 'Dimensão do movimento do dia',
+                    longRun: 'Nível de longo prazo {value}',
+                    label: 'A volatilidade diária esperada pelo ajuste GJR-GARCH sobre a sua entrada, e a dimensão de cada movimento diário',
+                    caption:
+                        '{days} retornos diários da entrada guardada. A volatilidade de cada dia decorre do movimento anterior segundo alpha (α), gamma (γ) e beta (β) da calibração.',
+                    disagrees:
+                        'A volatilidade recalculada a partir dos pontos guardados não termina no rácio do primeiro dia guardado. A entrada ou a forma mudou depois do ajuste.',
+                },
                 fitRejected: 'ajuste rejeitado',
                 method: {
                     gjr_garch_qmle: 'Ajustada',
@@ -4988,6 +5006,7 @@ const pt: SourceCatalogue = {
                 keptFixed: 'Nível mantido',
                 refused: 'Recusados',
                 overridden: 'Derrogam a política',
+                awaitingReview: 'Ajustes a aguardar revisão',
             },
             filter: {
                 label: 'Mostrar',

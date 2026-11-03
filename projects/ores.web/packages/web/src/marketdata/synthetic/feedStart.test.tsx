@@ -109,6 +109,7 @@ describe('a feed’s run tab', () => {
         const html = render({
             ...START,
             from_fixing: false,
+            value: '',
             item: '',
             provider_code: '',
             fixing_date: null,
@@ -122,6 +123,24 @@ describe('a feed’s run tab', () => {
         expect(html).toContain('The config names no fixing item.');
         expect(html).not.toContain('Fixing window');
         expect(html).not.toContain('Fixing date');
+    });
+
+    it('shows the level a kept run started at, not the config’s later level', () => {
+        const html = render(
+            {
+                ...START,
+                from_fixing: false,
+                item: '',
+                provider_code: '',
+                value: '0.7196',
+                fixing_date: null,
+                received_at: null,
+                note: '',
+            },
+            feed({ gmm_initial_price: 0.7022965095863474 }),
+        );
+        expect(html).toContain('0.7196');
+        expect(html).not.toContain('0.7022965');
     });
 
     it('shows the GJR-GARCH shape with its Greek letters, and links the calibration by its id', () => {

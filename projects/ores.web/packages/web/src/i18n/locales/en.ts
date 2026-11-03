@@ -4846,7 +4846,25 @@ export const en: SourceCatalogue = {
                 runs: 'The calibration this feed runs',
                 runsNone: "The feed's variance is constant, or its config names no calibration.",
                 fresh: "This run's fit",
-                awaiting: 'new fit to review',
+                awaiting: 'waits for review',
+                waiting:
+                    '{count} GJR-GARCH fit(s) of this pair wait for review. The newest is calibration {id}, persistence {persistence}. A feed runs it only after a person approves it.',
+                reviewIt: 'Review it',
+                pairHistory: 'Calibrations of {pair}',
+                when: 'Last changed',
+                stateHeader: 'State',
+                reason: 'Reason',
+                chart: {
+                    title: 'Fitted daily volatility',
+                    volatility: 'Fitted volatility',
+                    move: "Size of the day's move",
+                    longRun: 'Long-run level {value}',
+                    label: "The daily volatility the GJR-GARCH fit expected over its input, and the size of each day's move",
+                    caption:
+                        "{days} daily returns from the stored input. Each day's volatility follows from the move before it under the calibration's alpha (α), gamma (γ) and beta (β).",
+                    disagrees:
+                        "The volatility recomputed from the stored points does not end at the calibration's stored first-day ratio. The input or the shape changed after the fit.",
+                },
                 fitRejected: 'fit rejected',
                 method: {
                     gjr_garch_qmle: 'Fitted',
@@ -4953,6 +4971,7 @@ export const en: SourceCatalogue = {
                 keptFixed: 'Kept a level',
                 refused: 'Refused',
                 overridden: 'Override the policy',
+                awaitingReview: 'Fits waiting for review',
             },
             filter: {
                 label: 'Show',

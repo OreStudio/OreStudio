@@ -4915,7 +4915,25 @@ const fr: SourceCatalogue = {
                 runsNone:
                     'La variance du flux est constante, ou sa configuration ne nomme aucune calibration.',
                 fresh: 'L’ajustement de cette exécution',
-                awaiting: 'nouvel ajustement à revoir',
+                awaiting: 'attend la revue',
+                waiting:
+                    '{count} ajustement(s) GJR-GARCH de cette paire attendent la revue. Le plus récent est la calibration {id}, persistance {persistence}. Un flux ne l’utilise qu’après son approbation.',
+                reviewIt: 'Le revoir',
+                pairHistory: 'Calibrations de {pair}',
+                when: 'Dernier changement',
+                stateHeader: 'État',
+                reason: 'Motif',
+                chart: {
+                    title: 'Volatilité quotidienne ajustée',
+                    volatility: 'Volatilité ajustée',
+                    move: 'Ampleur du mouvement du jour',
+                    longRun: 'Niveau de long terme {value}',
+                    label: 'La volatilité quotidienne attendue par l’ajustement GJR-GARCH sur son entrée, et l’ampleur de chaque mouvement quotidien',
+                    caption:
+                        '{days} rendements quotidiens de l’entrée stockée. La volatilité de chaque jour découle du mouvement précédent selon alpha (α), gamma (γ) et bêta (β) de la calibration.',
+                    disagrees:
+                        'La volatilité recalculée à partir des points stockés ne finit pas au ratio du premier jour stocké. L’entrée ou la forme a changé après l’ajustement.',
+                },
                 fitRejected: 'ajustement rejeté',
                 method: {
                     gjr_garch_qmle: 'Ajustée',
@@ -5027,6 +5045,7 @@ const fr: SourceCatalogue = {
                 keptFixed: 'Niveau gardé',
                 refused: 'Refusés',
                 overridden: 'Dérogent à la politique',
+                awaitingReview: 'Ajustements en attente de revue',
             },
             filter: {
                 label: 'Afficher',

@@ -60,6 +60,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:64F0A193-A749-4B94-99C6-78CCFC9C45AD][Read whole numbers as doubles on the wire]] | DONE | | 2026-11-03 | Fix the MessagePack reader refusing a whole number packed as an integer for a double field, which broke the Price behaviour tab. |
 | [[id:4C7886D2-8D1E-4D5E-86A4-0D9B14E616A7][Show a feed's run and its variance on one tab]] | DONE | 2026-11-03 | 2026-11-03 | Merge the This run and Variance tabs of a feed into one tab of fact cards, with the calibration as a link to its page. |
 | [[id:813D806C-D1C5-4406-8AF1-1259C39E221A][Start the synthetic feeds only after calibration]] | BACKLOG | | | Provisioning loads the public rates and calibrates the feeds when the backfill finishes, and the synthetic feeds start only when a person starts them, so the recorded spots have no jump from the authored level to the fixing. |
+| [[id:7B0EED43-9012-4A09-AAC0-1059E375F4D0][Show the variance calibration's history and its review state]] | DONE | 2026-11-03 | 2026-11-03 | A feed's history shows every variance calibration record of its pair, before and after approval; the feed and calibration screens say when a fit waits for review; and the fit is plotted from its stored points. |
 
 * Decisions
 

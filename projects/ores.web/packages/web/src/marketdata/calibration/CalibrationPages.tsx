@@ -66,6 +66,14 @@ import {
     VarianceStateTag,
 } from './VarianceCalibration.js';
 import {
+    AwaitingReview,
+    FittedVolatility,
+    ParameterHistory,
+    orderByWindow,
+    usePairCalibrations,
+    usePairInputs,
+} from './varianceRecords.js';
+import {
     CALIBRATED_CLASSES,
     FILTERS,
     calibrationEntries,
@@ -143,8 +151,14 @@ function PolicyLine({ calibration }: { readonly calibration: Calibration }): Rea
 function Coverage({ calibration }: { readonly calibration: Calibration }): ReactNode {
     const { t } = useTranslation();
     const c = calibration.coverage;
+    const waiting = new Set(
+        calibration.feeds
+            .map((feed) => feed.variance)
+            .filter((v) => v?.state === 'proposed' && v.calibration_id !== '')
+            .map((v) => v?.calibration_id),
+    ).size;
     return (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
             <Metric value={String(c.total)} label={t('marketdata.calibration.coverage.total')} />
             <Metric
                 value={String(c.fromFixing)}
@@ -164,6 +178,11 @@ function Coverage({ calibration }: { readonly calibration: Calibration }): React
             <Metric
                 value={String(c.overridden)}
                 label={t('marketdata.calibration.coverage.overridden')}
+            />
+            <Metric
+                value={String(waiting)}
+                label={t('marketdata.calibration.coverage.awaitingReview')}
+                tone={waiting > 0 ? 'warn' : 'neutral'}
             />
         </div>
     );
@@ -458,6 +477,7 @@ function VarianceCell({
         fresh !== null &&
         fresh !== undefined &&
         fresh.state === 'proposed' &&
+        fresh.calibration_id !== '' &&
         fresh.calibration_id !== (runs?.calibration_id ?? '');
     return (
         <Link className="flex flex-wrap items-center gap-1 hover:underline" to={to}>
@@ -475,7 +495,7 @@ function VarianceCell({
                 </>
             )}
             {awaiting && (
-                <Tag tone="accent" small>
+                <Tag tone="warn" small>
                     {t('marketdata.calibration.variance.awaiting')}
                 </Tag>
             )}
@@ -1188,6 +1208,14 @@ export function CalibrationFeedPage(): ReactNode {
                     <p className="text-sm text-ink-muted">
                         {t('marketdata.calibration.variance.lead')}
                     </p>
+                    <PairVariance
+                        feed={feed}
+                        onReviewed={() => {
+                            void refresh();
+                            void client.invalidateQueries({ queryKey: ['records'] });
+                            void client.invalidateQueries({ queryKey: ['history'] });
+                        }}
+                    />
                     <Card title={t('marketdata.calibration.variance.runs')}>
                         {feed.current_variance === null || feed.current_variance === undefined ? (
                             <p className="text-sm text-ink-muted">
@@ -1210,14 +1238,6 @@ export function CalibrationFeedPage(): ReactNode {
                                         {t('marketdata.calibration.variance.notStored')}
                                     </Notice>
                                 )}
-                                <VarianceReview
-                                    variance={feed.variance}
-                                    onReviewed={() => {
-                                        void refresh();
-                                        void client.invalidateQueries({ queryKey: ['records'] });
-                                        void client.invalidateQueries({ queryKey: ['history'] });
-                                    }}
-                                />
                             </div>
                         )}
                     </Card>
@@ -1248,6 +1268,104 @@ export function CalibrationFeedPage(): ReactNode {
             )}
             {failure !== null && <Notice tone="error">{failure.message}</Notice>}
         </div>
+    );
+}
+
+/**
+ * The pair's stored variance calibrations: a notice while a fit waits for review, the
+ * volatility the newest fit expected over its input, and every calibration of the pair over
+ * time with its state, so a reader sees what happened before and after each approval.
+ */
+function PairVariance({
+    feed,
+    onReviewed,
+}: {
+    readonly feed: CalibratedFeed;
+    readonly onReviewed: () => void;
+}): ReactNode {
+    const { t, language } = useTranslation();
+    const calibrations = usePairCalibrations(feed.base_currency_code, feed.quote_currency_code);
+    const inputs = usePairInputs(feed.base_currency_code, feed.quote_currency_code);
+    const windowEnd = new Map(
+        (inputs.data ?? []).map((row) => [String(row['id']), String(row['window_end'] ?? '')]),
+    );
+    // A fit is placed by the fixings it read to, since its last change may be a later
+    // decision; an authored shape read no fixings and comes first.
+    const rows = orderByWindow(calibrations.data ?? [], windowEnd);
+    const fitted = rows.filter((c) => c.method === 'gjr_garch_qmle');
+    const newest =
+        fitted.findLast((c) => c.state === 'proposed') ??
+        fitted.find((c) => c.state === 'approved') ??
+        fitted[fitted.length - 1];
+    if (rows.length === 0) {
+        return null;
+    }
+    return (
+        <>
+            <AwaitingReview calibrations={rows} />
+            {newest !== undefined && (
+                <Card
+                    title={t('marketdata.calibration.variance.chart.title')}
+                    aside={<VarianceStateTag state={newest.state} />}
+                >
+                    <FittedVolatility calibration={newest} />
+                    <VarianceReview
+                        variance={{ calibration_id: newest.id, state: newest.state }}
+                        onReviewed={onReviewed}
+                    />
+                </Card>
+            )}
+            <Card
+                title={t('marketdata.calibration.variance.pairHistory', {
+                    pair: `${feed.base_currency_code}/${feed.quote_currency_code}`,
+                })}
+            >
+                <ParameterHistory calibrations={rows} />
+                <table className="w-full text-sm" data-pair-calibrations>
+                    <thead>
+                        <tr className="text-left text-xs text-ink-faint">
+                            <th className="py-1 pr-3 font-normal">
+                                {t('marketdata.calibration.variance.when')}
+                            </th>
+                            <th className="py-1 pr-3 font-normal">
+                                {t('marketdata.calibration.variance.stateHeader')}
+                            </th>
+                            <th className="py-1 pr-3 font-normal">
+                                {t('marketdata.calibration.variance.calibrationId')}
+                            </th>
+                            <th className="py-1 pr-3 text-right font-normal">
+                                {t('marketdata.calibration.variance.persistence')}
+                            </th>
+                            <th className="py-1 font-normal">
+                                {t('marketdata.calibration.variance.reason')}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.toReversed().map((c) => (
+                            <tr key={c.id} className="border-t border-line-subtle align-top">
+                                <td className="py-1.5 pr-3 whitespace-nowrap text-ink-muted">
+                                    {formatDateTime(c.recorded_at, language)}
+                                </td>
+                                <td className="py-1.5 pr-3 whitespace-nowrap">
+                                    <VarianceStateTag state={c.state} />{' '}
+                                    <Tag tone="muted" small>
+                                        {t(`marketdata.calibration.variance.method.${c.method}`)}
+                                    </Tag>
+                                </td>
+                                <td className="py-1.5 pr-3 font-mono text-xs">
+                                    {c.id.slice(0, 8)}
+                                </td>
+                                <td className="py-1.5 pr-3 text-right font-mono tabular-nums">
+                                    {garchText(c.persistence)}
+                                </td>
+                                <td className="py-1.5 text-ink-muted">{c.state_reason}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </Card>
+        </>
     );
 }
 

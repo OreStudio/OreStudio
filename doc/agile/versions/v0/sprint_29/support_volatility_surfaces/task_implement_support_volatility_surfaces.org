@@ -100,7 +100,10 @@ Decisions agreed with the user on 2026-11-03:
   A tenant sees it only if the system routes that provider to it. Every quote
   is a mid. Two-way pricing is a later level of work across the whole system,
   once mid valuation is reliable for every product (agreed 2026-11-03); the
-  noise scale per point stands in for the width of the market until then.
+  noise scale per point stands in for the width of the market until then. The
+  observation layer is where two-way pricing will attach: a contributor will
+  publish a bid and an ask around the mid it already publishes, so the mid
+  path does not change.
 - Agreed on 2026-11-03: *surface construction* follows curve construction
   exactly. A surface blueprint names its output series; its build fits the
   tenant's chosen smile model to the quotes, checks it, and writes the fitted

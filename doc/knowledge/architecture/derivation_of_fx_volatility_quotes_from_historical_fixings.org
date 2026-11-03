@@ -100,8 +100,10 @@ as =EURUSD/1Y/25RR=, each mapped to the =fx_option= quote of the pair. =derived_
 in =ores.synthetic.api= reads each demanded pair's ECB fixings through the market data
 reader as the system party, takes a cross's returns as the difference of its two euro
 legs on the days both hold, reads the pair's =fx_option_convention= from refdata, and
-publishes the quotes of the latest day it has not sent; the computation itself is the
-one =ores.analytics.quant= holds.
+publishes each demanded quote not yet sent for the latest day its legs hold; the
+computation itself is the one =ores.analytics.quant= holds. The source reads no curves,
+so it takes the spot as the forward: a quote under a forward delta or a forward ATM is
+read against a forward that ignores the rate differential, which grows with the expiry.
 
 * See also
 

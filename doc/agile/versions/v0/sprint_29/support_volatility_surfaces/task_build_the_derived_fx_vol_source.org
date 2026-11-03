@@ -154,3 +154,9 @@ quotes of the same =fx_option= items a vendor would quote.
 - The catalogue gains the supplier, adapter module, session, provider, feed, 400
   vendor instruments mapped to their items, their scopes, and the system party's
   subscription and route; the synthetic service may read vendor instruments.
+| R3.1 | A pair already sent for its day did not send an id demanded later, until the next fixing day | derived_fx_vol_feed.cpp | Accept | The last day sent is kept per vendor id; a refresh sends each demanded id behind its pair's latest day; a test demands one id, refreshes, demands a second, and sees only the second sent |
+| R3.2 | A demand replaces the earlier one | derived_fx_vol_feed.cpp | Accept, no change | The service computes the adapter's whole demand from the catalogue on every send (adapter_supervisor::send_demand), as the official adapter also assumes |
+| R3.3 | Every expiry is derived though one quote is demanded | derived_fx_vol_feed.cpp | Accept | Only the expiries of the ids still owed are derived |
+| R3.4 | A client is built per fixings read | derived_fx_vol_adapter.cpp | Decline | At most twenty reads an hour, and the client wraps a reference |
+| R3.5 | A fixing that does not parse is dropped without a word | derived_fx_vol_adapter.cpp | Accept | The count is logged with the item |
+| R3.6 | The convention id format is written in the adapter; a non-finite quote would go out as nan; the spot stands for the forward | derived_fx_vol.cpp, derivation note | Accept | fx_option_convention_id is shared and tested; derived_fx_ticks leaves a non-finite quote out, tested; the note states the forward's bias |

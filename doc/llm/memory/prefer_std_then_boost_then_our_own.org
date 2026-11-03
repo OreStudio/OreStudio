@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: E5C4B503-99A8-4D53-A2C7-7F791A6F5199
+:END:
+#+title: Use std first, then Boost, and write our own only when neither has it
+#+description: Library code before hand-written code: std, then Boost, then our own; and write in their style.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :cpp:boost:std:analytics:memory:feedback:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+Before writing a numerical or general-purpose routine, look for it in the C++ standard library, then in Boost, such as Boost.Math distributions, special functions, root finding, polynomial roots and statistics. Write our own only when neither has it, as for a Nelder-Mead simplex or FX delta conventions. Code we do write follows the std and Boost style: snake_case, value types with free functions, ranges or spans for input, and std::expected for a refusal.
+
+*Why:* In the derived FX quotes work, a hand-written normal quantile (AS 241), a Brent root and sample moments duplicated what std::erfc, boost::math::erfc_inv, toms748_solve, cubic_roots and boost::math::statistics already give. The user asked for std first, Boost second, and our own last.
+
+*How to apply:* When a change adds math or a general helper, name the std or Boost facility that covers it, or say why none does, before writing it. A thin wrapper is fine where it turns Boost's errors into std::expected. QuantLib stays a reference for ideas and tests, never a dependency.

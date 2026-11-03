@@ -30,11 +30,11 @@ IR curve bootstrap config and its pillars.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -61,10 +61,6 @@ IR curve bootstrap config and its pillars.
 Follow the IR curve bootstrap config and pillar: model the three entities in
 =ores.refdata=, generate them, and add the recipe's checks. The calibration that
 reads a blueprint, the surface reads and any screen are later tasks.
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
 
 * Measurements
 
@@ -106,3 +102,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three entities are modelled in =ores.refdata= and generated across SQL, domain,
+repository, protocol, shell and TypeScript. The blueprint keeps its output series as
+the sole natural key and its name unique per party. A pillar is keyed by its
+blueprint, expiry and strike label, and a source by its pillar and series. The
+checks on write hold the strike label grammar, a positive weight and two different
+currencies. The tables, permissions, roles, handlers, event mappings and shell
+commands are registered, and the list requests are regenerated.
+
+Measured at 4aaadaf83f on a recreated database with Acme provisioned:
+=ores.refdata.core.tests= passed, and the generated shell tests for the three
+entities passed, 144 assertions in 51 test cases.

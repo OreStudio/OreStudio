@@ -77,7 +77,7 @@ public:
         , verifier_(std::move(verifier)) {}
 
     /**
-     * @brief Serves trading.v1.blotter.rail.
+     * @brief Serves trading.v1.ops.get_blotter_rail.
      */
     void get_blotter_rail(ores::nats::message msg) {
         using ores::service::messaging::decode;
@@ -141,7 +141,7 @@ public:
     }
 
     /**
-     * @brief Serves trading.v1.blotter.page.
+     * @brief Serves trading.v1.ops.get_blotter_page.
      */
     void get_blotter_page(ores::nats::message msg) {
         using ores::service::messaging::decode;

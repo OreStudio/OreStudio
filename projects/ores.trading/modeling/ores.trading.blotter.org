@@ -95,7 +95,7 @@ a projection later, and this contract does not move when that changes.
 
 ** get_blotter_rail_request
 :PROPERTIES:
-:subject:  trading.v1.blotter.rail
+:subject:  trading.v1.ops.get_blotter_rail
 :response: get_blotter_rail_response
 :END:
 
@@ -154,7 +154,7 @@ a projection later, and this contract does not move when that changes.
 
 ** get_blotter_page_request
 :PROPERTIES:
-:subject:  trading.v1.blotter.page
+:subject:  trading.v1.ops.get_blotter_page
 :response: get_blotter_page_response
 :END:
 

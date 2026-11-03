@@ -71,7 +71,7 @@ struct blotter_rail_node {
  */
 struct get_blotter_rail_request {
     using response_type = struct get_blotter_rail_response;
-    static constexpr std::string_view nats_subject = "trading.v1.blotter.rail";
+    static constexpr std::string_view nats_subject = "trading.v1.ops.get_blotter_rail";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -109,7 +109,7 @@ struct get_blotter_rail_response {
  */
 struct get_blotter_page_request {
     using response_type = struct get_blotter_page_response;
-    static constexpr std::string_view nats_subject = "trading.v1.blotter.page";
+    static constexpr std::string_view nats_subject = "trading.v1.ops.get_blotter_page";
     /**
      * @brief Whether the caller must have established a session first.
      *

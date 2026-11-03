@@ -38,6 +38,24 @@ The generator prices the clean quotes from its state once a step, as
 describes, and each contributor turns them into its own. An observation is
 computed and published, and nothing of it returns to the state.
 
+** The generator
+
+A surface generator joins the simulator by the edits of
+[[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]]: a codegen
+entity model for its config, a builder registered under the kind
+="fx_vol_surface"= in the generator factory, a permission and its grant, and
+catalogue rows for each contributor's vendor ids. The runner, the subject
+builders, the adapter contract and the ingest loop need no edit
+([[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]]).
+
+Its config holds child rows, as
+[[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]]
+does: the pair; template rows, one per expiry and strike label; process
+parameter rows against a parameter vocabulary; correlation rows between the
+shocks, spot included; and contributor rows, each naming a provider and a noise
+profile. Its starting quotes come by rank from a real vol source or from
+[[id:099697A6-8526-48E0-A63D-DB3932C06468][the derived source]].
+
 ** Why the layer exists
 
 A curve's quotes are its pillars, and the IR curve producer publishes them
@@ -47,7 +65,7 @@ with points missing and numbers that disagree, and a desk constructs its own
 surface from them. A generator that published its clean surface would test none
 of that construction. The layer gives a tenant the inputs a desk receives and
 leaves the construction to the tenant's surface blueprint, as
-[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]]
+[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]
 describes.
 
 ** Every quote is a mid
@@ -81,6 +99,6 @@ requires, so a real vendor replaces a contributor by a change of route.
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]] — completes: stale values, gaps and bad ticks per contributor and per point, where that note's fault injection works per generator.
-- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]] — completes: the step between the generator and the quotes in that path.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] — completes: the construction a tenant performs on the quotes the contributors publish.
 - [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]] — exemplifies: noise that lives entirely behind the seam.
 - [[id:478EFA03-AB47-4286-A3CE-583C7438632D][User Journey: Adjust a curve or surface by hand]] — answers: what a trader's hand marks correct, which a clean feed would leave nothing to correct.

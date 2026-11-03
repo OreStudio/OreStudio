@@ -290,7 +290,7 @@ surface identity in the place of =curve_id=, with the axes =expiry= and
 already use, so a grid point is a delta of a call or a put, or an absolute
 strike. The series is created with the surface blueprint and written only by
 its calibration, as
-[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]]
+[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]
 describes.
 
 *** What the grammar does not hold

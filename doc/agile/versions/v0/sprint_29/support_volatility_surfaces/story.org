@@ -97,7 +97,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   and a four-eyes publish to a report. Decision: a surface takes the same path;
   its method is a calibration where a curve's is a bootstrap, and its output
   is a calibrated surface series with an identity of its own. See
-  [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]].
+  [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
 - *Five years of public fixings ship as a static DQ snapshot* (2026-11-03).
   Context: every environment backfilled its window from the publishers' API.
   Decision: DQ holds a five-year snapshot refreshed by hand, and the adapter

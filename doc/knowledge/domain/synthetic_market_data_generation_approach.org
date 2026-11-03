@@ -970,7 +970,7 @@ begins.
 - [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]] — completes: the surface the option vol generator evolves, and its no-arbitrage region.
 - [[id:3C43D0CC-3E74-45CA-BC85-A2303D0ADEDC][Paper summary: arbitrage-free SVI volatility surfaces]] — the source of the bounds the state processes respect.
 - [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][Market volatility channel]] — completes: the intraday volatility the daily GJR-GARCH variance is spread over.
-- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]] — completes: how a generated surface reaches a tenant and a report.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] — completes: how a generated surface reaches a tenant and a report.
 - [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P and Q]] — the P/Q distinction underpinning the measure bridge in [[#measure-bridge][the P-to-Q measure bridge]].
 - [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered interest parity]] — the CIP formula and arbitrage argument behind constraint 1.
 - [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — calendar-spread, butterfly, and put-call parity; QuantLib detection; Dupire local vol implications.

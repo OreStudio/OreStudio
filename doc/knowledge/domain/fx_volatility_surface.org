@@ -18,6 +18,34 @@ this page assumes, see [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]]. 
 configuration see [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]].
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
+* Layperson's mental model
+
+Think of the price of insurance against a currency moving, written as a
+landscape. One direction is how long the cover lasts, the /expiry/; the other is
+how far the currency must move before the cover pays, the /strike/, which FX
+measures in /delta/. The height at each spot is the volatility the market
+charges for that cover. The landscape is the surface.
+
+Nobody surveys the whole landscape. The market plants a few stakes at each
+expiry and reads three numbers off them. The *ATM* volatility is the height in
+the middle of the valley. The *risk reversal* (RR) says which side of the valley
+rises faster, the side where the currency falls or the side where it rises. The
+*butterfly* or strangle (BF) says how steeply both sides rise compared with the
+middle. Everything between the stakes is filled in by a smile model.
+
+Two things make this harder than it sounds. Surveyors disagree about where a
+stake stands: the same "25 delta" is a slightly different strike depending on
+whether the delta is measured against spot or forward and whether it counts the
+premium, so a number means nothing without its convention. And brokers quote the
+butterfly as the price of a whole strangle rather than as one height, so turning
+their butterfly into heights takes a calculation, not just arithmetic.
+
+#+begin_src cpp
+// the 25-delta call and put vols from the three quotes, in the smile convention
+double call_vol = atm + bf + 0.5 * rr;
+double put_vol  = atm + bf - 0.5 * rr;
+#+end_src
+
 * Overview
 
 An FX volatility surface is a two-dimensional function of implied Black-Scholes
@@ -317,7 +345,7 @@ ORE Studio will need to model vol surface configurations as domain entities (see
 - [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]] — completes: a smile model whose arbitrage conditions are stated on its parameters.
 - [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Paper summary: accounting for biases in Black-Scholes]] — completes: the ATM, RR and STR pillars expressed through the skewness and kurtosis of the return distribution.
-- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]] — exemplifies: how the system carries a surface from quotes to a published set.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] — exemplifies: how the system carries a surface from quotes to a published set.
 
 ** Further reading
 

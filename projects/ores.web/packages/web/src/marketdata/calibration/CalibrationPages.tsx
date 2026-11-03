@@ -61,6 +61,7 @@ import { formatDateTime } from '../../ui/Time.js';
 import { CalibrationRun, useCalibrationRun } from './CalibrationRun.js';
 import {
     garchText,
+    ParameterTable,
     VarianceCalibrationFacts,
     VarianceReview,
     VarianceStateTag,
@@ -1369,6 +1370,68 @@ function PairVariance({
     );
 }
 
+/**
+ * How the class's variance calibrations are approved: by a person, or by the policy within
+ * its rules. The rules change only with a new version of the policy, so the page states them.
+ */
+function VarianceApproval({ policy }: { readonly policy: Calibration['policy'] }): ReactNode {
+    const { t } = useTranslation();
+    const automatic = policy.variance_approval_mode === 'auto';
+    return (
+        <section className="card space-y-3 p-4" data-variance-approval>
+            <header className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="font-medium">{t('marketdata.calibration.policy.approval.title')}</h2>
+                <Tag tone={automatic ? 'up' : 'muted'} small>
+                    {t(
+                        `marketdata.calibration.policy.approval.mode.${automatic ? 'auto' : 'manual'}`,
+                    )}
+                </Tag>
+            </header>
+            <p className="text-sm text-ink-muted">
+                {t(
+                    automatic
+                        ? 'marketdata.calibration.policy.approval.leadAuto'
+                        : 'marketdata.calibration.policy.approval.leadManual',
+                )}
+            </p>
+            <ParameterTable
+                rows={[
+                    {
+                        label: t('marketdata.calibration.policy.approval.window'),
+                        value: t('marketdata.calibration.policy.approval.days', {
+                            days: String(policy.variance_window_days),
+                        }),
+                    },
+                    ...(automatic
+                        ? [
+                              {
+                                  label: t('marketdata.calibration.policy.approval.minReturns'),
+                                  value: String(policy.variance_min_returns),
+                              },
+                              {
+                                  label: t('marketdata.calibration.policy.approval.starts'),
+                                  value: t(
+                                      policy.variance_require_starts_agree
+                                          ? 'marketdata.calibration.policy.approval.startsRequired'
+                                          : 'marketdata.calibration.policy.approval.startsAny',
+                                  ),
+                              },
+                              {
+                                  label: t('marketdata.calibration.policy.approval.persistence'),
+                                  value: `${String(policy.variance_min_persistence)} – ${String(policy.variance_max_persistence)}`,
+                              },
+                              {
+                                  label: t('marketdata.calibration.policy.approval.reaction'),
+                                  value: String(policy.variance_min_reaction),
+                              },
+                          ]
+                        : []),
+                ]}
+            />
+        </section>
+    );
+}
+
 /** A class's policy: the window, the inverse rule, the provider order and the fallback. */
 export function CalibrationPolicyPage(): ReactNode {
     const { t } = useTranslation();
@@ -1655,6 +1718,7 @@ export function CalibrationPolicyPage(): ReactNode {
                 )}
                 {failure !== null && <Notice tone="error">{failure.message}</Notice>}
             </section>
+            <VarianceApproval policy={p} />
             <section className="space-y-3">
                 <h2 className="font-medium">{t('marketdata.calibration.policy.coverage')}</h2>
                 <Coverage calibration={data} />

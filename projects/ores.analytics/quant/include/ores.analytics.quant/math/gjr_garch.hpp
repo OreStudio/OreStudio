@@ -157,12 +157,23 @@ ORES_ANALYTICS_QUANT_EXPORT double daily_negative_second_moment(const mixture& m
 /// The starts a fit begins from, when the caller names none.
 ORES_ANALYTICS_QUANT_EXPORT std::vector<gjr_garch_shape> default_fit_starts();
 
+/// Two starts agree when their costs differ by no more than this, per observation.
+inline constexpr double fit_starts_agreement = 1e-6;
+
 /// The model that fits a series best, with its cost and how the search ended.
 struct gjr_garch_fit final {
     gjr_garch_model model;
     double cost;
     /// How many of the starts converged; the best is taken over all of them.
     int starts_converged;
+    /// How many starts the search ran from.
+    int starts_tried = 0;
+    /**
+     * True when every start that reached an admissible point reached the best cost, within
+     * fit_starts_agreement. Starts that end in different basins say the optimum is not well
+     * identified, which a reviewer should see before trusting the shape.
+     */
+    bool starts_agreed = false;
 };
 
 /**

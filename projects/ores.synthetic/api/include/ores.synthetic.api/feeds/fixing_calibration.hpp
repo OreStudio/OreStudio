@@ -119,7 +119,12 @@ measure_window(const std::vector<double>& values, bool inverted);
  * is the automatic default when no policy row exists.
  */
 struct calibration_policy final {
+    /// The policy row this was read from and its version; empty when no row exists.
+    std::string id;
+    int version = 0;
     int window_days = 90;
+    /// The days of fixings a variance calibration's input covers.
+    int variance_window_days = 1826;
     bool allow_inverse = true;
     std::string fallback_code = "keep_fixed";
     /// Provider codes, lowest first. Empty means every provider, ordered by code.

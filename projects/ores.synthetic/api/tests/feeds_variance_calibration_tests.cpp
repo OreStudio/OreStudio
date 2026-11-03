@@ -1,0 +1,162 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.synthetic.api/feeds/fixing_calibration.hpp"
+#include "ores.synthetic.api/feeds/variance_calibration.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <cmath>
+#include <format>
+#include <random>
+#include <string>
+#include <vector>
+
+namespace {
+
+const std::string variance_calibration_tags("[feeds][variance_calibration]");
+
+using Catch::Approx;
+using namespace ores::synthetic::feed;
+
+std::chrono::year_month_day variance_day(int offset) {
+    using namespace std::chrono;
+    return year_month_day{sys_days{2020y / January / 1} + days{offset}};
+}
+
+std::vector<std::chrono::year_month_day> variance_days(std::size_t n) {
+    std::vector<std::chrono::year_month_day> out;
+    for (std::size_t i = 0; i < n; ++i)
+        out.push_back(variance_day(static_cast<int>(i)));
+    return out;
+}
+
+/// Fixings of a pair whose daily log returns follow a GJR-GARCH(1,1) with normal shocks.
+std::vector<std::string> gjr_garch_fixings(
+    double alpha, double gamma, double beta, double long_run, std::size_t n, unsigned seed) {
+    std::mt19937 rng(seed);
+    std::normal_distribution<double> z(0.0, 1.0);
+    const double omega = long_run * (1.0 - alpha - gamma / 2.0 - beta);
+    double variance = long_run;
+    double level = 1.1;
+    std::vector<std::string> out{std::format("{:.10f}", level)};
+    for (std::size_t i = 1; i < n; ++i) {
+        const double shock = std::sqrt(variance) * z(rng);
+        level *= std::exp(shock);
+        out.push_back(std::format("{:.10f}", level));
+        variance = omega + (alpha + (shock < 0.0 ? gamma : 0.0)) * shock * shock + beta * variance;
+    }
+    return out;
+}
+
+}
+
+TEST_CASE("every date of the window is a point and a bad value is kept with its reason",
+          variance_calibration_tags) {
+    const std::vector<std::string> texts{"abc", "1.10", "-1", "1.21", "n/a", "1.331"};
+    const auto points = capture_variance_points(variance_days(texts.size()), texts, false);
+    REQUIRE(points.size() == texts.size());
+    CHECK_FALSE(points[0].used);
+    CHECK(points[0].exclusion_reason == "the value is not a number");
+    CHECK_FALSE(points[0].value);
+    CHECK_FALSE(points[1].used);
+    CHECK(points[1].exclusion_reason == "the first readable point has no return");
+    CHECK(points[2].exclusion_reason == "the value is not positive");
+    CHECK(points[3].used);
+    CHECK(points[3].exclusion_reason.empty());
+    // The return skips the value that could not be used, so it runs from 1.10 to 1.21.
+    CHECK(*points[3].log_return == Approx(std::log(1.1)).epsilon(1e-12));
+    CHECK_FALSE(points[4].used);
+    CHECK(points[5].used);
+    CHECK(*points[5].log_return == Approx(std::log(1.1)).epsilon(1e-12));
+    CHECK(points[5].date == variance_day(5));
+}
+
+TEST_CASE("an inverted item's returns are the pair's in market convention",
+          variance_calibration_tags) {
+    const std::vector<std::string> texts{"1.0", "1.1"};
+    const auto direct = capture_variance_points(variance_days(2), texts, false);
+    const auto inverted = capture_variance_points(variance_days(2), texts, true);
+    CHECK(*direct[1].log_return == Approx(std::log(1.1)).epsilon(1e-12));
+    CHECK(*inverted[1].log_return == Approx(-std::log(1.1)).epsilon(1e-12));
+    CHECK(inverted[1].text == "1.1");
+    CHECK(*inverted[1].value == Approx(1.1));
+}
+
+TEST_CASE("an input too short to fit is rejected with its reason and no shape",
+          variance_calibration_tags) {
+    const auto texts = gjr_garch_fixings(0.05, 0.04, 0.9, 4e-5, 100, 3);
+    const auto points = capture_variance_points(variance_days(texts.size()), texts, false);
+    const auto fit = fit_variance(points, 0.5);
+    CHECK_FALSE(fit.fitted);
+    CHECK(fit.returns_used == 99);
+    CHECK(fit.reason == "the input holds 99 daily returns and a fit needs " +
+                            std::to_string(minimum_garch_returns));
+    CHECK_FALSE(fit.alpha);
+    CHECK_FALSE(fit.persistence);
+    CHECK_FALSE(fit.log_likelihood);
+}
+
+TEST_CASE("a fit recovers the shape that drew the fixings and states its evidence",
+          variance_calibration_tags) {
+    const auto texts = gjr_garch_fixings(0.05, 0.08, 0.86, 4e-5, 8'000, 17);
+    const auto points = capture_variance_points(variance_days(texts.size()), texts, false);
+    const double p_minus = 0.5;
+    const auto fit = fit_variance(points, p_minus);
+    REQUIRE(fit.fitted);
+    CHECK(fit.reason.empty());
+    CHECK(fit.returns_used == 7'999);
+    CHECK(std::abs(*fit.alpha - 0.05) < 0.03);
+    CHECK(std::abs(*fit.gamma - 0.08) < 0.04);
+    CHECK(std::abs(*fit.beta - 0.86) < 0.04);
+    // The persistence a calibration stores is the one its parameters make under p_minus.
+    CHECK(*fit.persistence == Approx(*fit.alpha + *fit.gamma * p_minus + *fit.beta).epsilon(1e-12));
+    CHECK(*fit.persistence < 1.0);
+    CHECK(*fit.long_run_variance > 0.0);
+    CHECK(*fit.starting_variance_ratio > 0.0);
+    CHECK(std::isfinite(*fit.log_likelihood));
+    CHECK(fit.starts > 0);
+    CHECK(fit.starts_agreed);
+}
+
+TEST_CASE("the same input always gives the same fit", variance_calibration_tags) {
+    const auto texts = gjr_garch_fixings(0.04, 0.05, 0.9, 4e-5, 1'500, 29);
+    const auto points = capture_variance_points(variance_days(texts.size()), texts, false);
+    const auto first = fit_variance(points, 0.5);
+    const auto second = fit_variance(points, 0.5);
+    REQUIRE(first.fitted);
+    CHECK(*first.alpha == *second.alpha);
+    CHECK(*first.gamma == *second.gamma);
+    CHECK(*first.beta == *second.beta);
+    CHECK(*first.log_likelihood == *second.log_likelihood);
+}
+
+TEST_CASE("an inverted item fits the asymmetry with the pair's sign", variance_calibration_tags) {
+    // The fixings are drawn with falls exciting the variance; read inverted, those falls are
+    // the pair's rises, so the pair's own gamma must not keep the item's sign.
+    const auto texts = gjr_garch_fixings(0.03, 0.12, 0.84, 4e-5, 8'000, 41);
+    const auto direct =
+        fit_variance(capture_variance_points(variance_days(texts.size()), texts, false), 0.5);
+    const auto inverted =
+        fit_variance(capture_variance_points(variance_days(texts.size()), texts, true), 0.5);
+    REQUIRE(direct.fitted);
+    REQUIRE(inverted.fitted);
+    CHECK(*direct.gamma > 0.05);
+    CHECK(*inverted.gamma < *direct.gamma);
+}

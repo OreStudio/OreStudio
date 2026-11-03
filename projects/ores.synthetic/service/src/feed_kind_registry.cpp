@@ -68,7 +68,10 @@ read_calibration_policy(const ores::database::context& ctx, const std::string& a
         return std::nullopt;
 
     feed::calibration_policy out;
+    out.id = boost::uuids::to_string(found->id);
+    out.version = found->version;
     out.window_days = found->window_days;
+    out.variance_window_days = found->variance_window_days;
     out.allow_inverse = found->allow_inverse;
     out.fallback_code = found->fallback_code;
     auto orders = repo::calibration_provider_order_repository{}.read_latest(sys_ctx);

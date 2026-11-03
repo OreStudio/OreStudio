@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/capture-the-inputs-of-a-variance-calibration
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ A person, or a scheduled run, asks for the inputs of one pair or of a whole asse
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -41,9 +41,10 @@ A person, or a scheduled run, asks for the inputs of one pair or of a whole asse
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Fold the capture and the fit into the class calibration run, =calibrate_feeds=,
+as the story's decision states: the run already resolves each feed's item under
+the class policy, so it reads that item's variance window, captures the points,
+fits them, and, when applied, stores the records.
 
 * Measurements
 
@@ -85,3 +86,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The class calibration run captures the input of each GJR-GARCH feed it resolves
+from a fixing, rather than a =capture_variance_inputs= operation of its own (see
+the story's decision). =capture_variance_points= turns the policy's variance window
+of the resolved item into points: each fixing kept as stored, its value, its log
+return in the pair's market convention, and a reason for a point left out. An
+applied run stores the input and its points once, under ids named by the party,
+item and window, so a repeat stores nothing new.
+
+Measured on a recreated database with Acme provisioned: an applied FX run stored 28
+inputs and 7408 points, 28 of them the first points that have no return; a second
+applied run left 28 and 7408 rows across all versions. The inputs hold 241 to 279
+returns each: this environment has about a year of fixings per pair, not the five
+the window asks for. =feeds_variance_calibration_tests.cpp= covers the reasons,
+the market-convention sign of an inverted item, and a return across a skipped
+point.

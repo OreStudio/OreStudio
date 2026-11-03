@@ -12,7 +12,7 @@
 #+brief: feed start, stop and list operations.
 #+filetags: :model:operation:synthetic:
 #+created: 2026-10-09
-#+updated: 2026-10-09
+#+updated: 2026-11-03
 
 The controls that start, stop and list the running feeds.
 
@@ -508,6 +508,15 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief How many calendar days of fixings measure the spread. */
 #+end_src
 
+*** variance_window_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many calendar days of fixings a variance calibration's input covers. */
+#+end_src
+
 *** allow_inverse
 :PROPERTIES:
 :cpp_type: bool
@@ -588,6 +597,164 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /** @brief Why the candidate was chosen, skipped or not reached. */
+#+end_src
+
+** variance_calibration_summary
+#+begin_src cpp :name comment
+/**
+ * @brief What a calibration run made of a feed's daily variance: the input it captured and the
+ * calibration it fitted from it, stored when the run is applied.
+ */
+#+end_src
+
+*** input_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The stored input; empty when the run was not applied. */
+#+end_src
+
+*** calibration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The stored calibration; empty when the run was not applied. */
+#+end_src
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief "proposed" when the fit was made, "rejected" when it could not be. */
+#+end_src
+
+*** state_reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why the fit was rejected; empty for a proposed one. */
+#+end_src
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The fixing item the input was read from. */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The provider of that item. */
+#+end_src
+
+*** inverted
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the item quotes the pair the other way round. */
+#+end_src
+
+*** window_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The window the input covers, in calendar days, from the policy. */
+#+end_src
+
+*** window_end
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The last date of the window, as YYYY-MM-DD. */
+#+end_src
+
+*** point_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The fixing dates the window held. */
+#+end_src
+
+*** used_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The points whose return the fit used. */
+#+end_src
+
+*** alpha
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The fitted reaction to a day's move; absent when rejected. */
+#+end_src
+
+*** gamma
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The fitted extra reaction to a fall; absent when rejected. */
+#+end_src
+
+*** beta
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The fitted weight of yesterday's variance; absent when rejected. */
+#+end_src
+
+*** persistence
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief alpha + gamma p_minus + beta; absent when rejected. */
+#+end_src
+
+*** starting_variance_ratio
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The first day's variance over the long-run level; absent when rejected. */
+#+end_src
+
+*** starts
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many starts the fit ran from. */
+#+end_src
+
+*** starts_agreed
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when every start reached the same optimum. */
 #+end_src
 
 ** calibrated_feed
@@ -698,6 +865,14 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /** @brief The words of the outcome: the change written, or why nothing was written. */
+#+end_src
+
+*** variance
+:PROPERTIES:
+:cpp_type: std::optional<variance_calibration_summary>
+:END:
+#+begin_src cpp :name comment
+/** @brief The variance calibration of a GJR-GARCH feed that starts from a fixing; absent otherwise. */
 #+end_src
 
 ** calibrate_request

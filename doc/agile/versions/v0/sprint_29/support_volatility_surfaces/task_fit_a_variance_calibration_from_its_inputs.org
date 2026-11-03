@@ -26,11 +26,11 @@ Fitting reads only a stored input, never the live fixings, so the same input alw
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -41,9 +41,10 @@ Fitting reads only a stored input, never the live fixings, so the same input alw
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Fold the capture and the fit into the class calibration run, =calibrate_feeds=,
+as the story's decision states: the run already resolves each feed's item under
+the class policy, so it reads that item's variance window, captures the points,
+fits them, and, when applied, stores the records.
 
 * Measurements
 
@@ -90,3 +91,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The same run fits each captured input with =fit_variance=, which reads only the
+points, so the same input gives the same fit; an applied run stores the result as
+a proposed calibration, or a rejected one with its reason, named by its input and
+the method version, and never rewrites one that exists. The fit states its
+evidence: the shape, the persistence computed under the feed's daily =p_minus=
+(tested equal to =alpha + gamma p_minus + beta=), the long-run and starting
+variance, the likelihood, the starts tried and whether they agreed, which the
+analytics fit now reports.
+
+Measured on the same run: 25 proposed and 3 rejected (241, 247 and 248 returns
+against the minimum of 250). Several proposed fits sit at a boundary with
+disagreeing starts, such as NZD/USD, USD/TRY and EUR/JPY: a year of data identifies
+the shape weakly, which is what the review is for. The analytics tests show the
+starts agree on a well identified series and disagree on thirty returns of near
+white noise; the synthetic tests cover recovery, determinism, rejection and the
+inverted sign.

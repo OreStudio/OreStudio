@@ -36,9 +36,18 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
+#include "ores.synthetic.api/feeds/variance_calibration.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
+#include "ores.synthetic.core/repository/variance_calibration_input_repository.hpp"
+#include "ores.synthetic.core/repository/variance_calibration_repository.hpp"
 #include "ores.synthetic.core/service/fx_spot_generation_config_service.hpp"
 #include "ores.synthetic.core/service/gmm_component_service.hpp"
+#include "ores.synthetic.core/service/variance_calibration_input_point_service.hpp"
+#include "ores.synthetic.core/service/variance_calibration_input_service.hpp"
+#include "ores.synthetic.core/service/variance_calibration_service.hpp"
+#include <boost/uuid/name_generator_sha1.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <format>
 #include <memory>
@@ -403,6 +412,7 @@ private:
         const auto policy = class_policy.value_or(feed::calibration_policy{});
         resp.policy = {.from_policy_row = class_policy.has_value(),
                        .window_days = policy.window_days,
+                       .variance_window_days = policy.variance_window_days,
                        .allow_inverse = policy.allow_inverse,
                        .fallback_code = policy.fallback_code,
                        .provider_order = policy.provider_order};
@@ -466,6 +476,7 @@ private:
                                               .reason = tried.reason});
                 if (req.apply)
                     apply_calibration(req_ctx, in, resolved, one);
+                calibrate_variance(req_ctx, in, resolved, policy, req.apply, one);
             }
             resp.feeds.push_back(std::move(one));
         }
@@ -609,6 +620,193 @@ private:
         one.outcome = "updated";
         one.outcome_message = words;
         BOOST_LOG_SEV(feed_config_handler_lg(), info) << one.source_name << ": " << words;
+    }
+
+    // The daily variance of a GJR-GARCH feed is calibrated from the item the feed resolved to:
+    // its window of fixings becomes an input, and the input a fitted or rejected calibration.
+    // A preview reports both and stores nothing. An applied run stores each record once, under
+    // an id named by what identifies it, so a repeat converges on the same records and never
+    // reopens a calibration that a person has decided.
+    void calibrate_variance(const ores::database::context& req_ctx,
+                            const ores::synthetic::feed::fx_spot_feed_build_input& in,
+                            const ores::synthetic::feed::resolved_start& resolved,
+                            const ores::synthetic::feed::calibration_policy& policy,
+                            bool apply,
+                            ores::synthetic::messaging::calibrated_feed& one) {
+        using namespace ores::synthetic::messaging;
+        namespace feed = ores::synthetic::feed;
+        const auto& src = resolved.source;
+        if (in.config.variance_model != "gjr_garch" || resolved.refused || !src.from_fixing ||
+            !src.fixing_date)
+            return;
+
+        variance_calibration_summary v{.item = src.item,
+                                       .provider_code = src.provider_code,
+                                       .inverted = src.inverted,
+                                       .window_days = policy.variance_window_days,
+                                       .window_end = std::format("{:%F}", *src.fixing_date)};
+        auto delegated = auth_nats_.with_delegation({});
+        const auto window =
+            ores::marketdata::client::market_data_client(delegated).get_fixing_window(
+                {.item = src.item,
+                 .provider_code = src.provider_code,
+                 .party_id = boost::uuids::to_string(in.config.party_id),
+                 .to = *src.fixing_date,
+                 .days = policy.variance_window_days});
+        if (!window) {
+            v.state = "rejected";
+            v.state_reason = "the fixings could not be read: " + window.error();
+            one.variance = std::move(v);
+            return;
+        }
+        const auto points =
+            feed::capture_variance_points(window->dates, window->values, src.inverted);
+        std::vector<feed::mixture_component> components;
+        for (const auto& c : in.components)
+            components.push_back({.mean = c.mean, .stdev = c.stdev, .weight = c.weight});
+        const auto fit =
+            feed::fit_variance(points, feed::daily_p_minus(components, in.config.ticks_per_hour));
+
+        v.point_count = static_cast<int>(points.size());
+        v.used_count = static_cast<int>(std::ranges::count_if(points, &feed::variance_point::used));
+        v.state = fit.fitted ? "proposed" : "rejected";
+        v.state_reason = fit.reason;
+        v.alpha = fit.alpha;
+        v.gamma = fit.gamma;
+        v.beta = fit.beta;
+        v.persistence = fit.persistence;
+        v.starting_variance_ratio = fit.starting_variance_ratio;
+        v.starts = fit.starts;
+        v.starts_agreed = fit.starts_agreed;
+        if (apply)
+            store_variance_calibration(req_ctx, in, policy, *src.fixing_date, points, fit, v);
+        one.variance = std::move(v);
+    }
+
+    // The namespace the ids of variance calibration records are named under.
+    static const boost::uuids::uuid& variance_calibration_namespace() {
+        static const auto ns =
+            boost::uuids::string_generator{}("5d4c7f0e-2a31-4f6b-9c1e-8b7a6f3d2e10");
+        return ns;
+    }
+
+    void
+    store_variance_calibration(const ores::database::context& req_ctx,
+                               const ores::synthetic::feed::fx_spot_feed_build_input& in,
+                               const ores::synthetic::feed::calibration_policy& policy,
+                               std::chrono::year_month_day window_end,
+                               const std::vector<ores::synthetic::feed::variance_point>& points,
+                               const ores::synthetic::feed::variance_fit& fit,
+                               ores::synthetic::messaging::variance_calibration_summary& v) {
+        using namespace ores::synthetic::messaging;
+        using ores::utility::domain::outcome;
+        using ores::utility::domain::precondition;
+        using ores::utility::domain::precondition_kind;
+        namespace repo = ores::synthetic::repository;
+        namespace svc = ores::synthetic::service;
+        namespace feed = ores::synthetic::feed;
+        const boost::uuids::name_generator_sha1 name(variance_calibration_namespace());
+        const auto& cfg = in.config;
+        const auto party = boost::uuids::to_string(cfg.party_id);
+        const auto input_id = name(std::format(
+            "input|{}|{}|{:%F}|{}", party, v.item, window_end, policy.variance_window_days));
+        const auto calibration_id = name(std::format("calibration|{}|gjr_garch_qmle|{}",
+                                                     boost::uuids::to_string(input_id),
+                                                     feed::variance_fit_method_version));
+        const precondition absent{.kind = precondition_kind::must_not_exist};
+        const ores::utility::domain::change_intent intent{
+            .reason_code = "system.calibration",
+            .commentary = std::format("Variance calibration of {} from the {} fixings of {}",
+                                      cfg.source_name,
+                                      v.provider_code,
+                                      v.item)};
+        try {
+            if (repo::variance_calibration_input_repository{}
+                    .read_latest(req_ctx, boost::uuids::to_string(input_id))
+                    .empty()) {
+                const auto written =
+                    svc::variance_calibration_input_service(req_ctx).put_variance_calibration_input(
+                        {.change = {.write = {.id = input_id,
+                                              .fixing_uri = v.item,
+                                              .window_end = window_end,
+                                              .window_days = policy.variance_window_days,
+                                              .base_currency_code = cfg.base_currency_code,
+                                              .quote_currency_code = cfg.quote_currency_code,
+                                              .provider_code = v.provider_code,
+                                              .inverted = v.inverted,
+                                              .policy_id =
+                                                  policy.id.empty() ?
+                                                      boost::uuids::uuid{} :
+                                                      boost::uuids::string_generator{}(policy.id),
+                                              .policy_version = policy.version,
+                                              .point_count = v.point_count,
+                                              .used_count = v.used_count},
+                                    .precondition = absent},
+                         .intent = intent});
+                if (written.result.outcome != outcome::ok)
+                    throw std::runtime_error("the input was not stored: " + written.result.message);
+                put_many_variance_calibration_input_points_request request{.intent = intent};
+                for (const auto& p : points)
+                    request.changes.push_back(
+                        {.write = {.id = name(std::format("point|{}|{:%F}",
+                                                          boost::uuids::to_string(input_id),
+                                                          p.date)),
+                                   .input_id = input_id,
+                                   .fixing_date = p.date,
+                                   .fixing_text = p.text,
+                                   .fixing_value = p.value,
+                                   .log_return = p.log_return,
+                                   .used = p.used,
+                                   .exclusion_reason = p.exclusion_reason},
+                         .precondition = absent});
+                const auto stored = svc::variance_calibration_input_point_service(req_ctx)
+                                        .put_many_variance_calibration_input_points(request);
+                if (stored.result.outcome != outcome::ok)
+                    throw std::runtime_error("the points were not stored: " +
+                                             stored.result.message);
+            }
+            v.input_id = boost::uuids::to_string(input_id);
+
+            const auto existing = repo::variance_calibration_repository{}.read_latest(
+                req_ctx, boost::uuids::to_string(calibration_id));
+            if (!existing.empty()) {
+                v.state = existing.front().state;
+                v.state_reason = existing.front().state_reason;
+            } else {
+                const auto written =
+                    svc::variance_calibration_service(req_ctx).put_variance_calibration(
+                        {.change = {.write = {.id = calibration_id,
+                                              .base_currency_code = cfg.base_currency_code,
+                                              .quote_currency_code = cfg.quote_currency_code,
+                                              .input_id = input_id,
+                                              .method = "gjr_garch_qmle",
+                                              .method_version = feed::variance_fit_method_version,
+                                              .alpha = fit.alpha,
+                                              .gamma = fit.gamma,
+                                              .beta = fit.beta,
+                                              .persistence = fit.persistence,
+                                              .long_run_variance = fit.long_run_variance,
+                                              .starting_variance_ratio =
+                                                  fit.starting_variance_ratio,
+                                              .log_likelihood = fit.log_likelihood,
+                                              .returns_used = fit.returns_used,
+                                              .starts = fit.starts,
+                                              .starts_agreed = fit.starts_agreed,
+                                              .state = v.state,
+                                              .state_reason = v.state_reason},
+                                    .precondition = absent},
+                         .intent = intent});
+                if (written.result.outcome != outcome::ok)
+                    throw std::runtime_error("the calibration was not stored: " +
+                                             written.result.message);
+            }
+            v.calibration_id = boost::uuids::to_string(calibration_id);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+                << "Variance calibration of " << cfg.source_name << " was not stored: " << e.what();
+            v.state_reason =
+                std::string("The variance calibration was not stored: ") + client_message(e);
+        }
     }
 
     // Auth gate shared by every verb; the per-kind permission check happens

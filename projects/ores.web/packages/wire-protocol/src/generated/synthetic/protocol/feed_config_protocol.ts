@@ -82,6 +82,30 @@ export interface ProviderDispersion {
 }
 
 /**
+ * @brief How a feed's daily variance started: the model, and whether history fitted it.
+ */
+export interface VarianceStart {
+    /** @brief "constant" or "gjr_garch". */
+    model: string;
+    /** @brief True when the shape was fitted from the item's fixings; false when it is the authored one. */
+    fitted: boolean;
+    /** @brief The reaction to a day's move. */
+    alpha: number;
+    /** @brief The extra reaction to a fall of the pair. */
+    gamma: number;
+    /** @brief The carry-over of a day's variance. */
+    beta: number;
+    /** @brief alpha + beta + gamma times the mixture's p_minus, below one. */
+    persistence: number;
+    /** @brief The first day's variance over the long-run level: above one when history ended turbulent. */
+    initial_ratio: number;
+    /** @brief How many daily returns the fit read; zero when nothing was fitted. */
+    returns: number;
+    /** @brief Why the authored shape was kept, when it was. */
+    note: string;
+}
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * The record belongs to the run, not to the config: a feed that stops and
@@ -126,6 +150,8 @@ export interface FeedStart {
     jumps: number | null;
     /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
     dispersion: ProviderDispersion[];
+    /** @brief How the daily variance started, for a feed whose variance is modelled. */
+    variance: VarianceStart | null;
 }
 
 /**

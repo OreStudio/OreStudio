@@ -40,6 +40,30 @@ struct provider_dispersion final {
 };
 
 /**
+ * @brief How a feed's daily variance started.
+ *
+ * A feed whose variance follows a GJR-GARCH records its shape, whether the shape was
+ * fitted from the item's fixings or is the authored one, and the first day's variance
+ * against the long-run level, so a person can see why a feed opened calm or turbulent.
+ */
+struct variance_start final {
+    /// "constant" or "gjr_garch".
+    std::string model;
+    bool fitted = false;
+    double alpha = 0.0;
+    double gamma = 0.0;
+    double beta = 0.0;
+    /// alpha + beta + gamma times the mixture's p_minus, below one.
+    double persistence = 0.0;
+    /// The first day's variance over the long-run level.
+    double initial_ratio = 1.0;
+    /// The daily returns the fit read; zero when nothing was fitted.
+    int returns = 0;
+    /// Why the authored shape was kept, when it was.
+    std::string note;
+};
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * A feed that starts from a published value records the one it took: the item, the
@@ -91,6 +115,8 @@ struct feed_start final {
     std::vector<provider_dispersion> dispersion;
     /// Why the feed kept its fixed level, or why its spread was not measured.
     std::string note;
+    /// How the daily variance started, for a feed whose variance is modelled.
+    std::optional<variance_start> variance;
 };
 
 }

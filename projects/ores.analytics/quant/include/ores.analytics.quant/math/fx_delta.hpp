@@ -60,7 +60,8 @@ struct fx_market final {
 ORES_ANALYTICS_QUANT_EXPORT double
 black_forward_price(option_side side, double forward, double strike, double stdev) noexcept;
 
-/// The delta of an option at a strike and a total stdev, in the stated form.
+/// The delta of an option at a strike and a positive total stdev, in the stated form; NaN at a
+/// stdev that is not positive, where a delta jumps.
 ORES_ANALYTICS_QUANT_EXPORT double fx_delta(fx_delta_type type,
                                             option_side side,
                                             const fx_market& market,

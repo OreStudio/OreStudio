@@ -128,6 +128,8 @@ TEST_CASE("the Gram-Charlier region holds the normal and the edges Jondeau and R
     CHECK_FALSE(is_gram_charlier_density({.skewness = 0.0, .excess_kurtosis = -0.1}));
     CHECK_FALSE(is_gram_charlier_density({.skewness = 0.1, .excess_kurtosis = 0.0}));
     CHECK_FALSE(is_gram_charlier_density({.skewness = 1.5, .excess_kurtosis = 2.4}));
+    // Negative far out, beyond any fixed window: about -0.13 near z = -30.
+    CHECK_FALSE(is_gram_charlier_density({.skewness = 0.001, .excess_kurtosis = 0.0001}));
 }
 
 TEST_CASE("a shape outside the region is held on its edge with the kurtosis kept",
@@ -145,8 +147,9 @@ TEST_CASE("a shape outside the region is held on its edge with the kurtosis kept
         CHECK(expansion_minimum(held) > -1e-6);
         CHECK(held.excess_kurtosis == std::clamp(outside.excess_kurtosis, 0.0, 4.0));
         CHECK(held.skewness * outside.skewness >= 0.0);
-        CHECK_FALSE(is_gram_charlier_density(
-            {.skewness = held.skewness * 1.01, .excess_kurtosis = held.excess_kurtosis}));
+        if (held.skewness != 0.0)
+            CHECK_FALSE(is_gram_charlier_density(
+                {.skewness = held.skewness * 1.01, .excess_kurtosis = held.excess_kurtosis}));
     }
 }
 
@@ -231,4 +234,10 @@ TEST_CASE("an expiry longer than the history is refused alone, naming itself",
     REQUIRE_FALSE(d->expiries[1].has_value());
     CHECK(d->expiries[1].error().starts_with("2Y: "));
     CHECK_FALSE(derive_fx_quotes(std::vector<double>{0.01, -0.01, 0.02}, expiries, {}));
+    const std::vector<fx_expiry> absurd{
+        {.label = "1E9Y", .years = 1e9, .convention = derivation_convention()}};
+    const auto far = derive_fx_quotes(returns, absurd, {});
+    REQUIRE(far);
+    CHECK_FALSE(far->expiries[0].has_value());
+    CHECK_FALSE(derive_fx_quotes(returns, expiries, {.trading_days_per_year = 0.0}));
 }

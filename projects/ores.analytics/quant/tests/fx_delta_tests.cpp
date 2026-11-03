@@ -165,6 +165,11 @@ TEST_CASE("a premium-adjusted call takes the strike above its largest delta", "[
         fx_delta_type::premium_adjusted_forward, option_side::call, m, s, 0.95));
 }
 
+TEST_CASE("a delta at no volatility is undefined rather than infinite", "[fx_delta]") {
+    const fx_market m{.spot = 1.0, .domestic_discount = 1.0, .foreign_discount = 1.0};
+    CHECK(std::isnan(fx_delta(fx_delta_type::spot, option_side::call, m, 0.0, 1.1)));
+}
+
 TEST_CASE("a delta of the wrong sign or beyond reach is refused", "[fx_delta]") {
     const fx_market m{.spot = 1.0, .domestic_discount = 1.0, .foreign_discount = 0.98};
     CHECK_FALSE(fx_strike_from_delta(fx_delta_type::forward, option_side::call, m, 0.1, -0.25));

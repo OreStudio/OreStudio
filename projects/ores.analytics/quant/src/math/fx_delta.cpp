@@ -21,6 +21,7 @@
 #include "ores.analytics.quant/math/normal.hpp"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace ores::analytics::quant::math {
 
@@ -57,6 +58,8 @@ double fx_delta(fx_delta_type type,
                 const fx_market& market,
                 double stdev,
                 double strike) noexcept {
+    if (!(stdev > 0.0))
+        return std::numeric_limits<double>::quiet_NaN();
     const double phi = sign_of(side);
     const double forward = market.forward();
     const double d1 = d1_of(forward, strike, stdev);

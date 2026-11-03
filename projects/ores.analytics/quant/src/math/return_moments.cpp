@@ -21,14 +21,15 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <initializer_list>
+#include <utility>
 
 namespace ores::analytics::quant::math {
 
 namespace {
 
-/// The reach of the z axis the density check scans; past it the leading term decides.
-constexpr double scan_reach = 12.0;
-constexpr double scan_step = 0.05;
+/// How far below zero rounding may leave a minimum that is zero, as at the region's edge.
+constexpr double density_tolerance = 1e-12;
 
 /// The steps of the bisection that scales a skewness back into the region.
 constexpr int scaling_steps = 60;
@@ -68,6 +69,9 @@ std::expected<return_moments, std::string> moments_of(std::span<const double> re
     m2 /= n;
     m3 /= n;
     m4 /= n;
+    // A constant series leaves only rounding residue once demeaned, of the order of
+    // epsilon squared times its mean squared, so a spread below a part in 10^24 of the
+    // mean's square, or below 10^-30 absolutely, is no spread.
     if (!std::isfinite(m2) || !(m2 > 1e-30 + 1e-24 * mean * mean))
         return std::unexpected("the returns have no spread");
     return return_moments{.count = static_cast<int>(returns.size()),
@@ -95,25 +99,31 @@ bool is_gram_charlier_density(const return_shape& shape) noexcept {
         return false;
     if (shape.excess_kurtosis < 0.0 || shape.excess_kurtosis > 4.0)
         return false;
-    // The expansion is lowest at a root of its slope, a cubic with at most three, so
-    // each sign change of the slope is solved and the expansion read there.
-    double z = -scan_reach;
-    double before = slope_at(shape, z);
-    if (expansion_at(shape, z) < 0.0)
-        return false;
-    while (z < scan_reach) {
-        const double next = z + scan_step;
-        const double after = slope_at(shape, next);
-        if ((before > 0.0) != (after > 0.0) || after == 0.0) {
-            const auto root = brent_root(
-                [&](double x) { return slope_at(shape, x); }, z, next, {.tolerance = 1e-13});
-            if (root && expansion_at(shape, *root) < 0.0)
-                return false;
-        }
-        z = next;
-        before = after;
+    const double s = shape.skewness;
+    const double k = shape.excess_kurtosis;
+    // With no kurtosis the expansion is a cubic, negative somewhere unless it has no skew.
+    if (k == 0.0)
+        return s == 0.0;
+    // The expansion rises without bound both ways, so it is lowest at a root of its slope
+    // k z^3 / 6 + s z^2 / 2 - k z / 2 - s / 2. The slope turns where its own slope
+    // k z^2 / 2 + s z - k / 2 is zero, which splits the line into three pieces on each of
+    // which the slope is monotone and has at most one root, and Cauchy's bound
+    // 1 + max(3, 3 |s| / k) holds every root, so it closes the two outer pieces.
+    const double root_of_discriminant = std::sqrt(s * s + k * k);
+    const double turn_low = (-s - root_of_discriminant) / k;
+    const double turn_high = (-s + root_of_discriminant) / k;
+    const double bound = 1.0 + std::max(3.0, 3.0 * std::abs(s) / k);
+    const auto slope = [&](double z) {
+        return slope_at(shape, z);
+    };
+    for (const auto& [lo, hi] : {std::pair{-bound, turn_low},
+                                 std::pair{turn_low, turn_high},
+                                 std::pair{turn_high, bound}}) {
+        const auto root = brent_root(slope, lo, hi, {.tolerance = 1e-14});
+        if (root && expansion_at(shape, *root) < -density_tolerance)
+            return false;
     }
-    return expansion_at(shape, scan_reach) >= 0.0;
+    return true;
 }
 
 return_shape hold_in_gram_charlier_region(const return_shape& shape) noexcept {

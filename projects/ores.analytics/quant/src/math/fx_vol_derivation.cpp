@@ -19,13 +19,23 @@
 #include "ores.analytics.quant/math/fx_vol_derivation.hpp"
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 namespace ores::analytics::quant::math {
+
+namespace {
+
+/// The longest expiry quoted: past it no history held covers the window.
+constexpr double maximum_years = 50.0;
+
+}
 
 std::expected<fx_derivation, std::string>
 derive_fx_quotes(std::span<const double> daily_log_returns,
                  std::span<const fx_expiry> expiries,
                  const fx_derivation_settings& settings) {
+    if (!(settings.trading_days_per_year > 0.0) || !std::isfinite(settings.trading_days_per_year))
+        return std::unexpected("the trading days in a year must be positive and finite");
     const auto moments = moments_of(daily_log_returns);
     if (!moments)
         return std::unexpected(moments.error());
@@ -33,9 +43,11 @@ derive_fx_quotes(std::span<const double> daily_log_returns,
         .moments = *moments, .shape = shrink(*moments, settings.prior), .expiries = {}};
     out.expiries.reserve(expiries.size());
     for (const auto& expiry : expiries) {
-        if (!(expiry.years > 0.0)) {
+        if (!(expiry.years > 0.0) || !(expiry.years <= maximum_years)) {
             out.expiries.emplace_back(std::unexpect,
-                                      expiry.label + ": the expiry must be positive");
+                                      expiry.label + ": the expiry must be positive and at most " +
+                                          std::to_string(static_cast<int>(maximum_years)) +
+                                          " years");
             continue;
         }
         const double days = expiry.years * settings.trading_days_per_year;

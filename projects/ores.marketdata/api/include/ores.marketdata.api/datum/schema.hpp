@@ -109,10 +109,11 @@ enum class field : std::uint8_t {
     dst,
     rating_name,
     from_rating,
-    to_rating
+    to_rating,
+    surface_id
 };
 
-inline constexpr std::size_t field_count = 61;
+inline constexpr std::size_t field_count = 62;
 
 /// Which of the value types a field holds.
 enum class value_kind : std::uint8_t { text, term, decimal, strike, code, strike_label };
@@ -159,6 +160,7 @@ constexpr value_kind kind_of(field f) {
         case field::rating_name:
         case field::from_rating:
         case field::to_rating:
+        case field::surface_id:
             return value_kind::text;
         case field::term:
         case field::fwd_start:
@@ -396,6 +398,8 @@ inline constexpr std::array shape_profile{id(f::quote_name),
                                           id_or_none(f::dst)};
 inline constexpr std::array cpr{id(f::security_id)};
 inline constexpr std::array rating{id(f::rating_name), at(f::from_rating), at(f::to_rating)};
+inline constexpr std::array fx_vol_surface{
+    id(f::unit_ccy), id(f::ccy), id(f::surface_id), at(f::expiry), at(f::strike)};
 
 using t = instrument_type;
 
@@ -484,7 +488,17 @@ inline constexpr std::array<schema_row, instrument_type_count> schema{{
      field::quote_name},
     {detail::t::cpr, detail::cpr, asset_class::security, field::security_id},
     {detail::t::rating, detail::rating, asset_class::rating, field::rating_name},
+    {detail::t::fx_vol_surface, detail::fx_vol_surface, asset_class::fx, field::unit_ccy},
 }};
+
+static_assert(
+    [] {
+        for (std::size_t i = 0; i < schema.size(); ++i)
+            if (static_cast<std::size_t>(schema[i].type) != i)
+                return false;
+        return true;
+    }(),
+    "the schema holds one row per instrument type, in the enum's order");
 
 /// The row for @p t.
 constexpr const schema_row& schema_of(instrument_type t) {
@@ -546,6 +560,7 @@ inline constexpr std::array<std::string_view, instrument_type_count> titles{{
     "{subject} shape profile",
     "{subject} CPR",
     "{subject} rating",
+    "{subject}/{ccy} {surface_id} FX volatility surface",
 }};
 
 /// The title of series of type @p t, with its braces unfilled.

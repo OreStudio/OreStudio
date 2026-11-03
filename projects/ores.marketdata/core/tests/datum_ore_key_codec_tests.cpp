@@ -577,6 +577,9 @@ std::map<std::string, expected> ore_view(const market_datum& d) {
             v["fromRating"] = exact(str(d, fl::from_rating));
             v["toRating"] = exact(str(d, fl::to_rating));
             break;
+        case it::fx_vol_surface:
+            // oresmd's own type: ORE has no datum to compare it with.
+            break;
         case it::shape_profile:
             v["quoteName"] = exact(str(d, fl::quote_name));
             v["deliveryDate"] = exact(ore_date(str(d, fl::delivery_date)));
@@ -744,7 +747,7 @@ TEST_CASE("every_ore_instrument_and_quote_type_is_modelled_and_read",
     }
 
     const auto instruments = catalogue_enum("instrument_types.txt");
-    CHECK(instruments.size() == instrument_type_count);
+    CHECK(instruments.size() == ore_instrument_type_count);
     for (const auto& m : instruments) {
         INFO("ORE instrument type: " << m.name);
         CHECK(instrument_type_named(m.name));

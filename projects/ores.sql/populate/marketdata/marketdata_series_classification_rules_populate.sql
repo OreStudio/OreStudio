@@ -62,6 +62,9 @@ values
     (ores_utility_system_tenant_id_fn(), 'fx_option', '', 'datum', 0, 'literal', 'fx', 'volatility',
      'A volatility quoted per currency pair, expiry and strike, which measures the class rather than quoting its level.',
      current_user, current_user, 'system.initial_load', 'Initial population of series classification rules'),
+    (ores_utility_system_tenant_id_fn(), 'fx_vol_surface', '', 'datum', 0, 'literal', 'fx', 'volatility',
+     'A calibrated volatility surface of a currency pair, a grid of expiry and strike its blueprint writes from the quotes it was fitted to.',
+     current_user, current_user, 'system.initial_load', 'Initial population of series classification rules'),
 
     -- ─── RATES: curves ───────────────────────────────────────────────────────
     (ores_utility_system_tenant_id_fn(), 'discount', '', 'datum', 0, 'literal', 'interest_rates', 'yield',

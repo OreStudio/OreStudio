@@ -103,6 +103,7 @@ struct market_series_identity_entity {
     std::optional<std::string> seniority;
     std::optional<std::string> side;
     std::optional<std::string> source;
+    std::optional<std::string> surface_id;
     std::optional<std::string> tenor;
     std::optional<std::string> term;
     std::optional<std::string> time_unit;
@@ -165,6 +166,7 @@ struct market_series_identity_entity {
                query_builder::bind("security_id", &e::security_id) |
                query_builder::bind("seniority", &e::seniority) |
                query_builder::bind("side", &e::side) | query_builder::bind("source", &e::source) |
+               query_builder::bind("surface_id", &e::surface_id) |
                query_builder::bind("tenor", &e::tenor) | query_builder::bind("term", &e::term) |
                query_builder::bind("time_unit", &e::time_unit) |
                query_builder::bind("underlying_name", &e::underlying_name) |

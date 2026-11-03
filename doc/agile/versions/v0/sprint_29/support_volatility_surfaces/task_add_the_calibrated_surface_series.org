@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-calibrated-surface-series
+#+pr: 4417
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -20,22 +20,31 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+oresmd can name a calibrated FX volatility surface as a series of its own, separate
+from the =fx_option= quotes it is calibrated to, as a bootstrapped curve's
+=discount= series is separate from its swap quotes. A blueprint creates the series
+and its calibration alone writes it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
 
--
+- An instrument type =fx_vol_surface=, named by the pair and a =surface_id=, with
+  the axes =expiry= and =strike=, reads and writes as an oresmd URI.
+- It is oresmd's own type, after ORE's: the ORE key grammar neither reads nor
+  writes it.
+- A series of it is classified as an FX volatility and its identity keeps its
+  =surface_id=.
+- The oresmd note names it.
 
 * Plan
 
@@ -74,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4417][#4417]] | [marketdata] Name a calibrated FX volatility surface as a series of its own |
 
 * Review
 
@@ -83,3 +92,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+oresmd names a calibrated FX volatility surface:
+=oresmd://fx/EUR?type=series&instrument=fx_vol_surface&quote=rate_lnvol&ccy=USD&surface_id=EURUSD_BROKER=,
+whose points add =expiry= and =strike=, a delta, an ATM or an absolute level.
+
+- =fx_vol_surface= is the first of oresmd's own instrument types, after ORE's 45;
+  =is_ore_type= tells them apart, the ORE key codec refuses to write it and never
+  reads it, and a compile-time check holds the schema to one row per type in order.
+- The field =surface_id= is an identity field; the series identity keeps it in a
+  column of its own, and the FX identity view shows it.
+- A series of the type is classified as FX volatility.
+- The oresmd note names the type, its field and its URI.
+- Tests: 64 datum, codec, classification and identity test cases pass, three of
+  them new.

@@ -108,6 +108,7 @@ create table if not exists "ores_marketdata_market_series_identity_tbl" (
     "seniority" text null,
     "side" text null,
     "source" text null,
+    "surface_id" text null,
     "tenor" text null,
     "term" text null,
     "time_unit" text null,

@@ -653,6 +653,7 @@ package "marketdata" #E3F2FD {
           seniority : text
           side : text
           source : text
+          surface_id : text <<FK>>
           tenor : text
           term : text
           time_unit : text

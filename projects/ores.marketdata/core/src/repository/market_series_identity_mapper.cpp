@@ -98,6 +98,7 @@ market_series_identity_mapper::map(const market_series_identity_entity& v) {
     r.seniority = v.seniority.value_or("");
     r.side = v.side.value_or("");
     r.source = v.source.value_or("");
+    r.surface_id = v.surface_id.value_or("");
     r.tenor = v.tenor.value_or("");
     r.term = v.term.value_or("");
     r.time_unit = v.time_unit.value_or("");
@@ -167,6 +168,7 @@ market_series_identity_mapper::map(const domain::market_series_identity& v) {
     r.seniority = v.seniority.empty() ? std::nullopt : std::optional(v.seniority);
     r.side = v.side.empty() ? std::nullopt : std::optional(v.side);
     r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
+    r.surface_id = v.surface_id.empty() ? std::nullopt : std::optional(v.surface_id);
     r.tenor = v.tenor.empty() ? std::nullopt : std::optional(v.tenor);
     r.term = v.term.empty() ? std::nullopt : std::optional(v.term);
     r.time_unit = v.time_unit.empty() ? std::nullopt : std::optional(v.time_unit);

@@ -18,6 +18,8 @@
  *
  */
 #include "datum_catalogue.hpp"
+#include "ores.marketdata.api/datum/ore_types.hpp"
+#include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.platform/filesystem/file.hpp"
@@ -445,4 +447,49 @@ TEST_CASE("the_sql_seed_spelling_of_an_fx_spot_uri_is_the_codecs",
           "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
     CHECK(oresmd_uri_codec::write(*d) ==
           "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+}
+
+TEST_CASE("a_calibrated_fx_surface_is_a_series_of_its_own_with_expiry_and_strike_axes",
+          "[marketdata][datum][oresmd_uri_codec]") {
+    const std::string series =
+        "oresmd://fx/EUR?type=series&instrument=fx_vol_surface&quote=rate_lnvol"
+        "&ccy=USD&surface_id=EURUSD_BROKER";
+    const auto s = oresmd_uri_codec::read(series);
+    REQUIRE(s.has_value());
+    CHECK(s->is_series());
+    CHECK(s->type() == ores::marketdata::datum::instrument_type::fx_vol_surface);
+    CHECK(oresmd_uri_codec::write(*s) == series);
+
+    const std::string point =
+        "oresmd://fx/EUR?type=quote&instrument=fx_vol_surface&quote=rate_lnvol"
+        "&ccy=USD&surface_id=EURUSD_BROKER&expiry=1Y&strike=DEL/Spot/Put/25";
+    const auto p = oresmd_uri_codec::read(point);
+    REQUIRE(p.has_value());
+    CHECK_FALSE(p->is_series());
+    CHECK(oresmd_uri_codec::write(*p) == point);
+
+    CHECK_FALSE(oresmd_uri_codec::read(
+        "oresmd://fx/EUR?type=series&instrument=fx_vol_surface&quote=rate_lnvol&ccy=USD"
+        "&surface_id=EURUSD_BROKER&expiry=1Y"));
+}
+
+TEST_CASE("a_calibrated_fx_surface_has_no_ore_key", "[marketdata][datum][oresmd_uri_codec]") {
+    const auto point = oresmd_uri_codec::read(
+        "oresmd://fx/EUR?type=quote&instrument=fx_vol_surface&quote=rate_lnvol&ccy=USD"
+        "&surface_id=EURUSD_BROKER&expiry=1Y&strike=ATM");
+    REQUIRE(point.has_value());
+    const auto key = ore_key_codec::write(*point);
+    REQUIRE_FALSE(key.has_value());
+    CHECK(key.error().find("ORE has no market datum") != std::string::npos);
+    CHECK_FALSE(ore_key_codec::read("FX_VOL_SURFACE/RATE_LNVOL/EUR/USD/EURUSD_BROKER/1Y/ATM"));
+}
+
+TEST_CASE("the_schema_holds_oresmds_own_types_after_ores",
+          "[marketdata][datum][oresmd_uri_codec]") {
+    using ores::marketdata::datum::instrument_type;
+    using ores::marketdata::datum::is_ore_type;
+    CHECK(is_ore_type(instrument_type::rating));
+    CHECK_FALSE(is_ore_type(instrument_type::fx_vol_surface));
+    CHECK(ores::marketdata::datum::schema_of(instrument_type::fx_vol_surface).type ==
+          instrument_type::fx_vol_surface);
 }

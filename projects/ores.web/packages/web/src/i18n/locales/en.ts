@@ -7608,6 +7608,9 @@ export const en: SourceCatalogue = {
             errors: 'Errors',
             warnings: 'Warnings',
         },
+        schedule: {
+            onDemand: 'On demand',
+        },
         cut: {
             LIVE: 'Live',
             EOD: 'End of day',

@@ -254,13 +254,25 @@ function ProblemCount({ value }: { readonly value: number | null }): ReactNode {
     return <>{formatCount(value, language)}</>;
 }
 
+/**
+ * The expression a definition carries when it runs only when a person asks.
+ * The scheduler needs one, and one that never fires is the statement that the
+ * report is on demand; the row says so rather than drawing a date that never
+ * comes.
+ */
+const ON_DEMAND_SCHEDULE = '0 0 31 2 *';
+
 /** The schedule the definition runs on, in words, with the next fire when the scheduler states one. */
 function ScheduleCell({ row }: { readonly row: ReportRowView }): ReactNode {
     const { t } = useTranslation();
     return (
         <span className="flex flex-col gap-1">
             <span className="text-xs">
-                <CronValue expression={row.scheduleExpression} />
+                {row.scheduleExpression === ON_DEMAND_SCHEDULE ? (
+                    t('reporting.schedule.onDemand')
+                ) : (
+                    <CronValue expression={row.scheduleExpression} />
+                )}
             </span>
             {row.nextFireAt !== null && (
                 <span className="text-xs text-ink-faint">

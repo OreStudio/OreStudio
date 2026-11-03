@@ -7722,6 +7722,9 @@ const fr: SourceCatalogue = {
             errors: 'Erreurs',
             warnings: 'Avertissements',
         },
+        schedule: {
+            onDemand: 'À la demande',
+        },
         cut: {
             LIVE: 'Live',
             EOD: 'Fin de journée',

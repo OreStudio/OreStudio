@@ -7662,6 +7662,9 @@ const pt: SourceCatalogue = {
             errors: 'Erros',
             warnings: 'Avisos',
         },
+        schedule: {
+            onDemand: 'A pedido',
+        },
         cut: {
             LIVE: 'Live',
             EOD: 'Fim do dia',

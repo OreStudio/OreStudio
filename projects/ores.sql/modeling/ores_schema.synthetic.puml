@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: synthetic
-Tables: 18
+Tables: 21
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -80,6 +80,7 @@ package "synthetic" #F9FBE7 {
         * version : integer
         * asset_class_code : text
         * window_days : integer
+        * variance_window_days : integer
         * allow_inverse : boolean
         * fallback_code : text
         * modified_by : text
@@ -711,6 +712,141 @@ package "synthetic" #F9FBE7 {
     [[id:2E13AC47-E3F0-4485-AA4D-BC6E9CD1980B][Trade Generation Book]] uses for the book scope.
     end note
 
+    entity ores_synthetic_variance_calibration_input_points_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * input_id : uuid <<FK>>
+        * fixing_date : date
+        * fixing_text : text
+          fixing_value : double
+          log_return : double
+        * used : boolean
+        * exclusion_reason : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_variance_calibration_input_points_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Variance Calibration Input Point Table
+    One fixing date of a variance_calibration_input: the fixing as it was stored, the
+    number read from it, and the daily log return it gives in the pair's market
+    convention. A point the fit may not use is kept with the reason, such as a value
+    that is not a number, so the input states every date the window held and not only
+    the ones that counted.
+    log_return is the return from the previous used point to this one, after the
+    inversion the input names. The first used point has no return, and a point whose
+    value cannot be read has neither a value nor a return.
+    end note
+
+    entity ores_synthetic_variance_calibration_inputs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * fixing_uri : text
+        * window_end : date
+        * window_days : integer
+        * provider_code : text
+        * inverted : boolean
+        * policy_id : uuid <<FK>>
+        * policy_version : integer
+        * point_count : integer
+        * used_count : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_variance_calibration_inputs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Variance Calibration Input Table
+    One capture of the data a variance calibration reads: the item that was read for a
+    pair, under which calibration policy, over which window, and whether its value was
+    inverted to reach the pair's market convention. Each fixing date of the window is
+    a variance_calibration_input_point, kept whether it was used or not, so a reader
+    can see every number a fit saw. A fit reads only a stored input, never the live
+    fixings, so the same input always gives the same fit. See "A calibration is stored
+    and reviewed before a feed runs it" in
+    [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]].
+    Who captured the input and when are the performed_by and valid_from every row
+    carries. A capture over the same window of the same item is a new version of the
+    input, not a second input, by the natural key.
+    end note
+
+    entity ores_synthetic_variance_calibrations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * input_id : uuid <<FK>>
+        * method : text
+        * method_version : integer
+          alpha : double
+          gamma : double
+          beta : double
+          persistence : double
+          long_run_variance : double
+          starting_variance_ratio : double
+          log_likelihood : double
+        * returns_used : integer
+        * starts : integer
+        * starts_agreed : boolean
+        * state : text
+        * state_reason : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_variance_calibrations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Variance Calibration Table
+    One GJR-GARCH shape of a pair's daily variance and the evidence a reviewer judges
+    it by. A fitted calibration names the variance_calibration_input it was fitted
+    from and the version of the method that fitted it; an authored one names no input
+    and is reviewed like any other. A feed runs only a calibration that is approved,
+    and names it. See "A calibration is stored and reviewed before a feed runs it" in
+    [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]].
+    A calibration is proposed when it is stored. A person approves or rejects it and
+    states why in state_reason; approving one makes the pair's earlier approval
+    superseded in the same change, so one approved calibration of a pair is current.
+    Each decision is a new version of the row, so its history shows who decided what
+    and when. A fit that could not be made, for too few returns or a shape at the
+    stationarity bound, is stored as rejected with the reason, so the attempt is kept;
+    such a row may have no shape, so the shape is required, and admissible, in the
+    other three states only. Each bound is written so that a missing value or NaN
+    fails it: a check passes on null, and PostgreSQL orders NaN above every number.
+    persistence is alpha + gamma p_minus + beta, with p_minus the share of the
+    daily return's variance that falls on negative days, so it is stored rather than
+    recomputed from the three parameters alone.
+    end note
+
     entity ores_synthetic_yield_curve_process_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -766,6 +902,7 @@ ores_synthetic_ir_curve_generation_configs_tbl ||--o{ ores_synthetic_ir_curve_te
 ores_synthetic_trade_generation_configs_tbl ||--o{ ores_synthetic_trade_generation_books_tbl : "has"
 ores_synthetic_trade_generation_configs_tbl ||--o{ ores_synthetic_trade_generation_counterparties_tbl : "has"
 ores_synthetic_trade_generation_configs_tbl ||--o{ ores_synthetic_trade_generation_trade_types_tbl : "has"
+ores_synthetic_variance_calibration_inputs_tbl ||--o{ ores_synthetic_variance_calibration_input_points_tbl : "has"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.synthetic.puml"

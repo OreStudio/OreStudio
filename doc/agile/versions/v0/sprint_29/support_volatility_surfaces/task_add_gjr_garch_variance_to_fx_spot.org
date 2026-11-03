@@ -126,7 +126,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| L1 | The model took p_minus from one tick's mixture, but the recursion reacts to a day's shock, the sum of the day's ticks, which is nearer normal; for a skewed mixture with a leverage effect the daily variance settled at 0.56 of its level | process_factory.cpp, fx_spot_feed.cpp | Accept | daily_negative_second_moment gives the day's p_minus from the first Edgeworth term; both callers use it; a test of the long-run daily variance fails under the old value |
+| L2 | saveArrivals is the save, re-read and restart of any feed setting, and the Variance tab uses it too | ArrivalsPanel.tsx | Accept | Renamed saveFeedSettings, its outcome FeedSaveOutcome |
+| L3 | The factory and the feed each normalise the mixture's weights before taking its moments | process_factory.cpp, fx_spot_feed.cpp | Decline | Two short call sites in different components; a shared helper adds a public function for four lines |
+| L4 | The variance_model column had no SQL default, so a dataset publish that names only the columns it knows refused every feed | ores.synthetic.fx_spot_generation_config.org | Accept | Found by the provisioning smoke check; default 'constant' |
 
 * Result
 
@@ -136,7 +139,7 @@ fixing history or authored, and the FX feed screen edits it on a Variance tab.
 - =ores.analytics.quant= gained a native GJR-GARCH model, a Nelder-Mead simplex, a
   volatility multiplier on the two mixture processes and a decorator that drives
   it day by day. No QuantLib code is used.
-- Tests: 555 quant test cases pass. They reproduce QuantLib's GARCH calculation
+- Tests: 558 quant test cases pass. They reproduce QuantLib's GARCH calculation
   values to 1e-6, match QuantLib's Garch11 cost ported as an independent
   expectation to 1e-13, and repeat its calibration and initial-guess tests with
   our own random numbers. A deliberate flip of the GJR indicator is caught by

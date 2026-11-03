@@ -31,8 +31,8 @@
  * presence replaces the flag, and its base date and frequency are required.
  *
  * The factors stay rows of inflation_seasonality_factor, keyed by the same
- * curve entry. The export refuses factors with no seasonality and a seasonality
- * with no factors, as the schema does.
+ * curve entry. The export refuses factors with no seasonality. ORE allows a
+ * seasonality whose Factors holds no Factor, so the part does not require one.
  *
  * A curve entry holds at most one row of this part, so the generated table adds
  * the unique index on the live rows of (tenant_id, curve_definition_id).

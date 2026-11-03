@@ -839,11 +839,17 @@ TEST_CASE("a_swaption_smile_and_an_inflation_seasonality_are_parts_their_entry_s
         refused(changed, "has seasonality factors but no seasonality");
     }
     {
+        // ORE's Factors may hold no Factor, so a seasonality with none writes
+        // an empty Factors element rather than being refused.
         auto changed = mapped;
         auto p = season;
         p.curve_definition_id = plain;
         changed.inflation_seasonalities.push_back(p);
-        refused(changed, "has a seasonality but no factors");
+        const auto written =
+            curve_configuration_projection::write(curve_configuration_projection::reverse(changed));
+        const auto again = curve_configuration_projection::map(read_document(written));
+        CHECK(again.inflation_seasonalities.size() == 2);
+        CHECK(again.seasonality_factors.size() == 2);
     }
 
     const auto refused_at_import = [](const std::string& document, const std::string& reason) {

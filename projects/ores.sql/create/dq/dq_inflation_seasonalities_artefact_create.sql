@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- ORE's seasonalityType requires BaseDate, Frequency and Factors together. The inflation curve held them as has_seasonality and two nullable columns, which could say a curve has a seasonality with no base date. A row of this part is the seasonality: it exists only where the curve states one, so its presence replaces the flag, and its base date and frequency are required. The factors stay rows of inflation_seasonality_factor, keyed by the same curve entry. The export refuses factors with no seasonality and a seasonality with no factors, as the schema does. A curve entry holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_definition_id). - Artefact Table
+-- ORE's seasonalityType requires BaseDate, Frequency and Factors together. The inflation curve held them as has_seasonality and two nullable columns, which could say a curve has a seasonality with no base date. A row of this part is the seasonality: it exists only where the curve states one, so its presence replaces the flag, and its base date and frequency are required. The factors stay rows of inflation_seasonality_factor, keyed by the same curve entry. The export refuses factors with no seasonality. ORE allows a seasonality whose Factors holds no Factor, so the part does not require one. A curve entry holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_definition_id). - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_inflation_seasonalities_artefact_tbl" (

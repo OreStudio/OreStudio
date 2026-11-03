@@ -3136,8 +3136,6 @@ void export_inflation_curve(
     if (!seasonality && !factors.empty())
         throw refusal("inflation curve " + d.curve_id +
                       " has seasonality factors but no seasonality");
-    if (seasonality && factors.empty())
-        throw refusal("inflation curve " + d.curve_id + " has a seasonality but no factors");
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     r.set_text("NominalTermStructure", v.nominal_term_structure);

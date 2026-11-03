@@ -78,9 +78,12 @@ caught it.
 
 Of 133 =InflationCurve= entries, 71 state a seasonality, and every one has its
 base date, frequency and factors. The XML reader already refuses a
-=Seasonality= with no =Factors=, because the schema requires them. The export
-refuses factors with no seasonality and a seasonality with no factors, which a
-document built in the store can hold.
+=Seasonality= with no =Factors= element, because the schema requires it. The
+element may hold no =Factor=, so a seasonality with no factor rows is legal and
+the export writes an empty =Factors=. The export refuses factor rows with no
+seasonality, which a document built in the store can hold. The code review
+caught the first version of this, which also refused a seasonality with no
+factors and so would not have written a document the import had accepted.
 
 ** Where each rule is enforced
 
@@ -115,7 +118,7 @@ task and name that file in the Command column.
 | Corpus swaption entries by dimension and smile lists | 33 Smile with all three, 3 ATM with all three, 100 ATM with none, 2 with neither | a scan of =external/ore/examples/**/*.xml= with comments removed | `6f9b30f565` |
 | Corpus inflation curves with a seasonality | 71 of 133, each with base date, frequency and factors | same | `6f9b30f565` |
 | Local checks without build, database and ctest | 57 of 57 after regenerating four stale files | `python3 build/scripts/local_checks.py --exclude-heavy` | `6f9b30f565` |
-| ore suite | 519595 assertions, 0 failures; the corpus round trips 89 documents | `./compass.sh test run -- -R ores.ore.core.tests` | working tree on `6f9b30f565` |
+| ore suite | 519596 assertions, 0 failures; the corpus round trips 89 documents | `./compass.sh test run -- -R ores.ore.core.tests` | working tree on `6f9b30f565` |
 | refdata suite | 521 cases, 6012 assertions, 0 failures, on a recreated database | `./compass.sh test run -- -R ores.refdata.core.tests` | working tree on `6f9b30f565` |
 
 * Notes
@@ -154,7 +157,7 @@ from 20 to 17.
 
 The import fills each part where the document states the block. The export
 takes it from the part index, so a duplicate or an orphan is refused. The export
-also refuses factors with no seasonality and a seasonality with no factors. Both
+also refuses factor rows with no seasonality. Both
 parts have a DQ artefact table and a place in the publish list, so a staged
 document keeps them.
 

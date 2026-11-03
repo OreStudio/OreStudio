@@ -9,20 +9,32 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_SYNTHETIC_API_MESSAGING_MARKET_REGIME_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_MARKET_REGIME_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -33,8 +45,16 @@ namespace ores::synthetic::messaging {
 struct get_market_regime_request {
     using response_type = struct get_market_regime_response;
     static constexpr std::string_view nats_subject = "synthetic.v1.ops.get_market_regime";
-    /// @brief Whether the caller's session is required: it is, so the read is attributable.
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_market_regime_request&,
+                           const get_market_regime_request&) = default;
 };
 
 /**
@@ -48,6 +68,8 @@ struct market_regime_sample {
     /** @brief The ticks a second every running feed's law asked for then: the market's lambda(t).
      */
     double intensity = 0.0;
+
+    friend bool operator==(const market_regime_sample&, const market_regime_sample&) = default;
 };
 
 /**
@@ -98,17 +120,23 @@ struct get_market_regime_response {
     /** @brief The pace of an active market; the calm pace follows from it. Zero when not reported.
      */
     double active_multiplier = 0.0;
+
+    friend bool operator==(const get_market_regime_response&,
+                           const get_market_regime_response&) = default;
 };
 
-/**
- * @brief Pin the market state, or hand it back to the chain.
- */
 /**
  * @brief Reads the scheduler's recent decisions and its own numbers.
  */
 struct get_market_trace_request {
     using response_type = struct get_market_trace_response;
     static constexpr std::string_view nats_subject = "synthetic.v1.ops.get_market_trace";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
     static constexpr bool requires_session = true;
     /** @brief One feed's events and the market's, or every event when empty. */
     std::string source_name;
@@ -116,6 +144,9 @@ struct get_market_trace_request {
     double seconds = 120.0;
     /** @brief The most events to return; the newest are kept. */
     std::uint32_t limit = 5000;
+
+    friend bool operator==(const get_market_trace_request&,
+                           const get_market_trace_request&) = default;
 };
 
 /** @brief One decision of the scheduler's loop. */
@@ -141,6 +172,8 @@ struct market_trace_event {
     double pace = 1.0;
     /** @brief "calm" or "active", after the decision. */
     std::string state;
+
+    friend bool operator==(const market_trace_event&, const market_trace_event&) = default;
 };
 
 /** @brief One running feed and the state of its arrival law now. */
@@ -161,6 +194,8 @@ struct market_series_state {
     double branching_ratio = 0.0;
     /** @brief For a Hawkes law: the decay, per unit of operational time; zero otherwise. */
     double decay = 0.0;
+
+    friend bool operator==(const market_series_state&, const market_series_state&) = default;
 };
 
 struct get_market_trace_response {
@@ -181,6 +216,9 @@ struct get_market_trace_response {
     std::vector<market_trace_event> events;
     /** @brief Every running feed and its law now, in name order. */
     std::vector<market_series_state> series_states;
+
+    friend bool operator==(const get_market_trace_response&,
+                           const get_market_trace_response&) = default;
 };
 
 /**
@@ -190,11 +228,20 @@ struct get_market_trace_response {
 struct get_market_history_request {
     using response_type = struct get_market_history_response;
     static constexpr std::string_view nats_subject = "synthetic.v1.ops.get_market_history";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
     static constexpr bool requires_session = true;
     /** @brief "second" or "tenth". */
     std::string resolution = "second";
     /** @brief How far back to read, in seconds of the run. */
     double seconds = 3600.0;
+
+    friend bool operator==(const get_market_history_request&,
+                           const get_market_history_request&) = default;
 };
 
 /** @brief One slot of the history. */
@@ -206,6 +253,8 @@ struct market_history_bin {
     double pace = 0.0;
     /** @brief The share of the slot the market was active. */
     double active_share = 0.0;
+
+    friend bool operator==(const market_history_bin&, const market_history_bin&) = default;
 };
 
 struct get_market_history_response {
@@ -217,17 +266,32 @@ struct get_market_history_response {
     std::vector<std::string> groups;
     /** @brief The slots with a tick or a reading in them, oldest first. */
     std::vector<market_history_bin> bins;
+
+    friend bool operator==(const get_market_history_response&,
+                           const get_market_history_response&) = default;
 };
 
+/**
+ * @brief Pin the market state, or hand it back to the chain.
+ */
 struct pin_market_regime_request {
     using response_type = struct pin_market_regime_response;
     static constexpr std::string_view nats_subject = "synthetic.v1.ops.pin_market_regime";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
     static constexpr bool requires_session = true;
     /**
      * @brief What to force: "auto" hands control back to the chain, "calm" and
      * "active" pin that state.
      */
     std::string mode;
+
+    friend bool operator==(const pin_market_regime_request&,
+                           const pin_market_regime_request&) = default;
 };
 
 /**
@@ -257,6 +321,9 @@ struct pin_market_regime_response {
     double calm_rate = 0.0;
     double tail_loading = 0.0;
     double active_multiplier = 0.0;
+
+    friend bool operator==(const pin_market_regime_response&,
+                           const pin_market_regime_response&) = default;
 };
 
 /**
@@ -267,8 +334,14 @@ struct pin_market_regime_response {
  * names the number. The reply is the regime after the request, as a pin replies.
  */
 struct configure_market_request {
-    using response_type = pin_market_regime_response;
+    using response_type = struct pin_market_regime_response;
     static constexpr std::string_view nats_subject = "synthetic.v1.ops.configure_market";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
     static constexpr bool requires_session = true;
     /** @brief How often a calm market turns active, per second. */
     double wake_rate = 0.0;
@@ -282,8 +355,426 @@ struct configure_market_request {
     double speed = 0.0;
     /** @brief How far activity tilts a price's shape toward its tails; zero is off. */
     double tail_loading = 0.0;
+
+    friend bool operator==(const configure_market_request&,
+                           const configure_market_request&) = default;
 };
 
+/**
+ * @brief The members of get_market_regime_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_regime_request&) {
+    return std::tuple{};
 }
+
+/**
+ * @brief The members of market_regime_sample, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_regime_sample&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"at", &market_regime_sample::at},
+        ::ores::utility::codec::field{"heat", &market_regime_sample::heat},
+        ::ores::utility::codec::field{"intensity", &market_regime_sample::intensity},
+    };
+}
+
+/**
+ * @brief The members of get_market_regime_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_regime_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_market_regime_response::success},
+        ::ores::utility::codec::field{"message", &get_market_regime_response::message},
+        ::ores::utility::codec::field{"state", &get_market_regime_response::state},
+        ::ores::utility::codec::field{"multiplier", &get_market_regime_response::multiplier},
+        ::ores::utility::codec::field{"pinned", &get_market_regime_response::pinned},
+        ::ores::utility::codec::field{"heat", &get_market_regime_response::heat},
+        ::ores::utility::codec::field{"jump", &get_market_regime_response::jump},
+        ::ores::utility::codec::field{"decay", &get_market_regime_response::decay},
+        ::ores::utility::codec::field{"samples", &get_market_regime_response::samples},
+        ::ores::utility::codec::field{"pace", &get_market_regime_response::pace},
+        ::ores::utility::codec::field{"tau", &get_market_regime_response::tau},
+        ::ores::utility::codec::field{"population_rate",
+                                      &get_market_regime_response::population_rate},
+        ::ores::utility::codec::field{"loop_gain", &get_market_regime_response::loop_gain},
+        ::ores::utility::codec::field{"run_seed", &get_market_regime_response::run_seed},
+        ::ores::utility::codec::field{"speed", &get_market_regime_response::speed},
+        ::ores::utility::codec::field{"wake_rate", &get_market_regime_response::wake_rate},
+        ::ores::utility::codec::field{"calm_rate", &get_market_regime_response::calm_rate},
+        ::ores::utility::codec::field{"tail_loading", &get_market_regime_response::tail_loading},
+        ::ores::utility::codec::field{"active_multiplier",
+                                      &get_market_regime_response::active_multiplier},
+    };
+}
+
+/**
+ * @brief The members of get_market_trace_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_trace_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"source_name", &get_market_trace_request::source_name},
+        ::ores::utility::codec::field{"seconds", &get_market_trace_request::seconds},
+        ::ores::utility::codec::field{"limit", &get_market_trace_request::limit},
+    };
+}
+
+/**
+ * @brief The members of market_trace_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_trace_event&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"kind", &market_trace_event::kind},
+        ::ores::utility::codec::field{"source_name", &market_trace_event::source_name},
+        ::ores::utility::codec::field{"at", &market_trace_event::at},
+        ::ores::utility::codec::field{"tau", &market_trace_event::tau},
+        ::ores::utility::codec::field{"operational_gap", &market_trace_event::operational_gap},
+        ::ores::utility::codec::field{"wall_gap", &market_trace_event::wall_gap},
+        ::ores::utility::codec::field{"compensated_gap", &market_trace_event::compensated_gap},
+        ::ores::utility::codec::field{"heat", &market_trace_event::heat},
+        ::ores::utility::codec::field{"multiplier", &market_trace_event::multiplier},
+        ::ores::utility::codec::field{"pace", &market_trace_event::pace},
+        ::ores::utility::codec::field{"state", &market_trace_event::state},
+    };
+}
+
+/**
+ * @brief The members of market_series_state, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_series_state&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"source_name", &market_series_state::source_name},
+        ::ores::utility::codec::field{"mode", &market_series_state::mode},
+        ::ores::utility::codec::field{"rate", &market_series_state::rate},
+        ::ores::utility::codec::field{"sensitivity", &market_series_state::sensitivity},
+        ::ores::utility::codec::field{"effective_rate", &market_series_state::effective_rate},
+        ::ores::utility::codec::field{"phase", &market_series_state::phase},
+        ::ores::utility::codec::field{"excess", &market_series_state::excess},
+        ::ores::utility::codec::field{"branching_ratio", &market_series_state::branching_ratio},
+        ::ores::utility::codec::field{"decay", &market_series_state::decay},
+    };
+}
+
+/**
+ * @brief The members of get_market_trace_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_trace_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_market_trace_response::success},
+        ::ores::utility::codec::field{"message", &get_market_trace_response::message},
+        ::ores::utility::codec::field{"run_seed", &get_market_trace_response::run_seed},
+        ::ores::utility::codec::field{"ticks_per_second",
+                                      &get_market_trace_response::ticks_per_second},
+        ::ores::utility::codec::field{"heap_size", &get_market_trace_response::heap_size},
+        ::ores::utility::codec::field{"lateness_seconds",
+                                      &get_market_trace_response::lateness_seconds},
+        ::ores::utility::codec::field{"max_lateness_seconds",
+                                      &get_market_trace_response::max_lateness_seconds},
+        ::ores::utility::codec::field{"series", &get_market_trace_response::series},
+        ::ores::utility::codec::field{"events", &get_market_trace_response::events},
+        ::ores::utility::codec::field{"series_states", &get_market_trace_response::series_states},
+    };
+}
+
+/**
+ * @brief The members of get_market_history_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_history_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"resolution", &get_market_history_request::resolution},
+        ::ores::utility::codec::field{"seconds", &get_market_history_request::seconds},
+    };
+}
+
+/**
+ * @brief The members of market_history_bin, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_history_bin&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"at", &market_history_bin::at},
+        ::ores::utility::codec::field{"counts", &market_history_bin::counts},
+        ::ores::utility::codec::field{"pace", &market_history_bin::pace},
+        ::ores::utility::codec::field{"active_share", &market_history_bin::active_share},
+    };
+}
+
+/**
+ * @brief The members of get_market_history_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_history_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_market_history_response::success},
+        ::ores::utility::codec::field{"message", &get_market_history_response::message},
+        ::ores::utility::codec::field{"slot_seconds", &get_market_history_response::slot_seconds},
+        ::ores::utility::codec::field{"groups", &get_market_history_response::groups},
+        ::ores::utility::codec::field{"bins", &get_market_history_response::bins},
+    };
+}
+
+/**
+ * @brief The members of pin_market_regime_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pin_market_regime_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"mode", &pin_market_regime_request::mode},
+    };
+}
+
+/**
+ * @brief The members of pin_market_regime_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pin_market_regime_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &pin_market_regime_response::success},
+        ::ores::utility::codec::field{"message", &pin_market_regime_response::message},
+        ::ores::utility::codec::field{"state", &pin_market_regime_response::state},
+        ::ores::utility::codec::field{"multiplier", &pin_market_regime_response::multiplier},
+        ::ores::utility::codec::field{"pinned", &pin_market_regime_response::pinned},
+        ::ores::utility::codec::field{"heat", &pin_market_regime_response::heat},
+        ::ores::utility::codec::field{"jump", &pin_market_regime_response::jump},
+        ::ores::utility::codec::field{"decay", &pin_market_regime_response::decay},
+        ::ores::utility::codec::field{"samples", &pin_market_regime_response::samples},
+        ::ores::utility::codec::field{"pace", &pin_market_regime_response::pace},
+        ::ores::utility::codec::field{"tau", &pin_market_regime_response::tau},
+        ::ores::utility::codec::field{"population_rate",
+                                      &pin_market_regime_response::population_rate},
+        ::ores::utility::codec::field{"loop_gain", &pin_market_regime_response::loop_gain},
+        ::ores::utility::codec::field{"run_seed", &pin_market_regime_response::run_seed},
+        ::ores::utility::codec::field{"speed", &pin_market_regime_response::speed},
+        ::ores::utility::codec::field{"wake_rate", &pin_market_regime_response::wake_rate},
+        ::ores::utility::codec::field{"calm_rate", &pin_market_regime_response::calm_rate},
+        ::ores::utility::codec::field{"tail_loading", &pin_market_regime_response::tail_loading},
+        ::ores::utility::codec::field{"active_multiplier",
+                                      &pin_market_regime_response::active_multiplier},
+    };
+}
+
+/**
+ * @brief The members of configure_market_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const configure_market_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"wake_rate", &configure_market_request::wake_rate},
+        ::ores::utility::codec::field{"calm_rate", &configure_market_request::calm_rate},
+        ::ores::utility::codec::field{"jump", &configure_market_request::jump},
+        ::ores::utility::codec::field{"decay", &configure_market_request::decay},
+        ::ores::utility::codec::field{"speed", &configure_market_request::speed},
+        ::ores::utility::codec::field{"tail_loading", &configure_market_request::tail_loading},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_market_regime_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_market_regime_request& v);
+    static ores::synthetic::messaging::get_market_regime_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_market_regime_request& v);
+    static ores::synthetic::messaging::get_market_regime_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::market_regime_sample> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::market_regime_sample& v);
+    static ores::synthetic::messaging::market_regime_sample read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::market_regime_sample& v);
+    static ores::synthetic::messaging::market_regime_sample
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_market_regime_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_market_regime_response& v);
+    static ores::synthetic::messaging::get_market_regime_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_market_regime_response& v);
+    static ores::synthetic::messaging::get_market_regime_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::get_market_trace_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_market_trace_request& v);
+    static ores::synthetic::messaging::get_market_trace_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::get_market_trace_request& v);
+    static ores::synthetic::messaging::get_market_trace_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::market_trace_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::market_trace_event& v);
+    static ores::synthetic::messaging::market_trace_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::market_trace_event& v);
+    static ores::synthetic::messaging::market_trace_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::market_series_state> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::market_series_state& v);
+    static ores::synthetic::messaging::market_series_state read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::market_series_state& v);
+    static ores::synthetic::messaging::market_series_state
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_market_trace_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_market_trace_response& v);
+    static ores::synthetic::messaging::get_market_trace_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_market_trace_response& v);
+    static ores::synthetic::messaging::get_market_trace_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_market_history_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_market_history_request& v);
+    static ores::synthetic::messaging::get_market_history_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_market_history_request& v);
+    static ores::synthetic::messaging::get_market_history_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::market_history_bin> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::market_history_bin& v);
+    static ores::synthetic::messaging::market_history_bin read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::market_history_bin& v);
+    static ores::synthetic::messaging::market_history_bin
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_market_history_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_market_history_response& v);
+    static ores::synthetic::messaging::get_market_history_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_market_history_response& v);
+    static ores::synthetic::messaging::get_market_history_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::pin_market_regime_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::pin_market_regime_request& v);
+    static ores::synthetic::messaging::pin_market_regime_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::pin_market_regime_request& v);
+    static ores::synthetic::messaging::pin_market_regime_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::pin_market_regime_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::pin_market_regime_response& v);
+    static ores::synthetic::messaging::pin_market_regime_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::pin_market_regime_response& v);
+    static ores::synthetic::messaging::pin_market_regime_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::configure_market_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::configure_market_request& v);
+    static ores::synthetic::messaging::configure_market_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::configure_market_request& v);
+    static ores::synthetic::messaging::configure_market_request
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

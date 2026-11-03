@@ -25,7 +25,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | The architecture is documented.        |
 | Waiting on    | Nothing.                               |
-| Next          | Seed the fixings history.              |
+| Next          | Add the GARCH variance to FX spot.     |
 | Last touched  | 2026-11-03                             |
 
 * Acceptance
@@ -39,7 +39,6 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 |------+-------+-------+-----+-------------|
 | [[id:F2F684E4-FD35-4C78-85CF-E6299995EE5A][Scaffold story: Support volatility surfaces]] | DONE | 2026-11-03 | 2026-11-03 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6B682F27-6C29-4954-A355-39E27E7197B7][Document the volatility surface architecture]] | DONE | 2026-11-03 | 2026-11-03 | Integrate the volatility surface analysis into the knowledge base as linked notes, and name the tasks of the arc from it. |
-| [[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]] | BACKLOG | | | A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today. |
 | [[id:E9F41943-12D6-47AB-BA60-6FC0931F1A99][Check that IR calibration is set up for every supported currency]] | BACKLOG | | | Check, currency by currency, that each synthetic IR curve feed has a public calibration source, a calibration policy and a stored history, and set up or record what is missing. |
 | [[id:D5A1A642-5982-4B7F-A0F9-4D0921FC8D91][Keep the derived FX volatility quotes for backtesting]] | BACKLOG | | | Store each day's derived ATM, RR and BF quotes for good, as fixings are, so a backtest can read years of them; today they age out of the tick table after seven days. |
 | [[id:FC6463DC-6901-477D-83A5-6D49761DCE2A][Add the daily GJR-GARCH variance to the synthetic FX spot]] | BACKLOG | | | A process that scales each standardised GMM shock by a GJR-GARCH variance updated at the FX day roll, calibrated from five years of fixings; see Daily GJR-GARCH variance of synthetic FX spot in Volatility clustering and GARCH models. |
@@ -111,10 +110,15 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   Decision: DQ holds a five-year snapshot refreshed by hand, and the adapter
   fills each item's gap from its latest stored fixing to today. Consequences:
   the load on Frankfurter drops to one small request per item per new
-  environment, and every provider in the snapshot must allow redistribution.
+  environment, and every provider in the snapshot must allow redistribution. The
+  work is [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]].
 
 * Out of scope
 
+- The fixings history. Years of daily fixings in every environment are
+  [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]], a story of
+  its own: this story works from the adapter's shorter window without it, with
+  the priors of the derived quotes dominating and weak butterflies.
 - Two-way pricing. Every quote, synthetic or real, is a mid, and valuation runs
   on mids. Bid and ask, for every input and not only vol surfaces, are a later
   level of work, taken up once mid valuation is reliable for every product.

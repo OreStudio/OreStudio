@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/keep-derived-vol-quotes-for-backtesting
+#+pr: 4415
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -26,7 +26,7 @@ A backtest can read the derived FX volatility quotes of any past day from the st
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,21 @@ A backtest can read the derived FX volatility quotes of any past day from the st
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The store already has a durable, versioned home for a series' values at a coordinate:
+=market_observations=, a hypertable with no retention, whose corrections are kept as
+versions by its soft-update trigger, under a =market_series= whose =derivation_kind=
+says whether the series is observed or derived. Ticks, the seven-day table, are the
+only short-lived store. So the derived quotes take that home rather than a new one.
+
+1. Marketdata: a window reader of a series' observations, as the fixing reader is for
+   fixings: an item, its provider, a party, an end day and a number of days, answered
+   with each coordinate's value at each observation time.
+2. The derived source: one =market_series= per pair under the provider =derived= with
+   the derivation kind =FX_VOL_DERIVATION=, and the day's quotes written as its
+   observations at the end of their day. On start it fills each past day the stored
+   fixings cover and the store does not yet hold, each day derived only from the
+   fixings up to it.
+3. The derivation note states the durable storage.
 
 * Measurements
 
@@ -77,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4415][#4415]] | [marketdata] Read the observations of a series over a window of days |
 
 * Review
 
@@ -86,3 +98,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+| R1.1 | A doc comment was left above the brace that closes the anonymous namespace | series_resolution.cpp | Accept | Removed; the header documents resolve_series |
+| R1.2 | The observation repository keeps includes the shared helpers made unused | observation_read_repository.cpp | Accept | charconv, cstdint and format removed |
+| R1.3 | days is echoed on a refusal | observation_reader.cpp | Accept, no change | As the fixing reader does; no TypeScript reader of the reply yet |
+| R1.4 | range_inverted names an empty window oddly | observation_reader.cpp | Decline | The codes match the fixing reader's, so both readers refuse alike |
+| R1.5 | Test the ceiling exactly and one past it | service_observation_reader_tests.cpp | Accept | A window of exactly 5,000 is read whole; 5,001 is refused |
+| R1.6 | Run the full gate before merge | PR | Decline | The user directed that only the checks a change needs are run |

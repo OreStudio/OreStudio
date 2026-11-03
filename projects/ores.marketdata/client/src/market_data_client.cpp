@@ -199,6 +199,17 @@ market_data_client::get_fixing_window(const messaging::get_fixing_window_request
     return std::move(*resp);
 }
 
+std::expected<messaging::get_observation_window_response, std::string>
+market_data_client::get_observation_window(
+    const messaging::get_observation_window_request& request) {
+    auto resp = send(nats_, request);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
+    return std::move(*resp);
+}
+
 std::expected<std::vector<domain::market_observation>, std::string>
 market_data_client::list_observations(const std::string& series_id) {
     auto id = parse_series_id(series_id);

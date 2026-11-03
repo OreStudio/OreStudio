@@ -23,7 +23,9 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
+#include "ores.marketdata.api/messaging/observation_read_operations_protocol.hpp"
 #include "ores.marketdata.core/service/fixing_reader.hpp"
+#include "ores.marketdata.core/service/observation_reader.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -31,6 +33,7 @@
 #include "ores.service/service/request_context.hpp"
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::marketdata::messaging {
 
@@ -59,21 +62,31 @@ public:
 
     void get_fixing(ores::nats::message msg) {
         handle<get_fixing_request, get_fixing_response>(
-            std::move(msg), [](const auto& ctx, const auto& req) {
+            std::move(msg), fixings_read, [](const auto& ctx, const auto& req) {
                 return service::fixing_reader::latest(ctx, req);
             });
     }
 
     void get_fixing_window(ores::nats::message msg) {
         handle<get_fixing_window_request, get_fixing_window_response>(
-            std::move(msg), [](const auto& ctx, const auto& req) {
+            std::move(msg), fixings_read, [](const auto& ctx, const auto& req) {
                 return service::fixing_reader::window(ctx, req);
             });
     }
 
+    void get_observation_window(ores::nats::message msg) {
+        handle<get_observation_window_request, get_observation_window_response>(
+            std::move(msg), observations_read, [](const auto& ctx, const auto& req) {
+                return service::observation_reader::window(ctx, req);
+            });
+    }
+
 private:
+    static constexpr std::string_view fixings_read = "marketdata::market_fixings:read";
+    static constexpr std::string_view observations_read = "marketdata::market_observations:read";
+
     template <typename Request, typename Response, typename Read>
-    void handle(ores::nats::message msg, Read read) {
+    void handle(ores::nats::message msg, std::string_view permission, Read read) {
         using namespace ores::logging;
         using ores::service::messaging::error_reply;
         auto req_ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -81,8 +94,7 @@ private:
             error_reply(nats_, msg, req_ctx.error());
             return;
         }
-        if (!ores::service::messaging::has_permission(*req_ctx,
-                                                      "marketdata::market_fixings:read")) {
+        if (!ores::service::messaging::has_permission(*req_ctx, std::string(permission))) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }

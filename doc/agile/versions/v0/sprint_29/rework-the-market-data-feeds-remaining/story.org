@@ -91,6 +91,14 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:45C1929E-9B92-489F-8E44-FA1819E5372D][Decide a cut's authorisation and apply it]] | DONE | 2026-11-01 | 2026-11-01 | The take raises the request; the inbox decides and the reporting side must stamp the authorisation. |
 | [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]] | STARTED | 2026-11-03 | | The intraday reports exist unconfigured or unselected; every definition has a NULL cut and the configs say eod. |
 | [[id:9271AE36-7C6F-4193-A4B0-CCCB3A4DA76E][Schedule the catalogue when Acme is provisioned]] | DONE | 2026-11-03 | 2026-11-03 | A provisioned Acme ticks nothing: the catalogue states schedules but no one schedules the reports. The provisioner should, as the run's administrator, with its own credentials. |
+| [[id:C744E1F5-AFAA-4147-9F42-87A3909934F8][Design the .1 and greek ladder reports]] | STARTED | 2026-11-03 | | The .1 family and the wider greek ladders are prose only; research ORE and design the reports before seeding. |
+| [[id:8A951C62-4081-4CF1-9051-862533FA17B9][Bind a sensitivity configuration to a report definition]] | BACKLOG | | | A sensitivity run must name the factors it shifts: bind a SensitivityAnalysis document into the configuration slot a report definition already has for it. |
+| [[id:D168771B-BC57-46D7-93B5-F9FA10A4A4B7][Seed the sensitivity shift families]] | BACKLOG | | | One sensitivity document per risk class, with the shift sizes a desk reads as the .1 and the basis-point families selected by key. |
+| [[id:FABF9F45-2B9B-4844-9200-DEFECB81CC69][Build the rates delta and gamma ladders]] | BACKLOG | | | The bucketed delta and gamma report over the discount, index and yield curves: one figure per curve and tenor, read from the sensitivity report. |
+| [[id:AFA116AA-0FF8-4FA0-88B4-1DF2F26022F5][Build the par-rate DV01 and theta ladders]] | BACKLOG | | | The two ladders whose whole result is one figure per trade: the par-rate DV01 from the par conversion, and theta from the clock. |
+| [[id:3DD3449A-CF81-458D-BE3D-07951A1E0EC2][Build the .1 ATM and surface vol ladders]] | BACKLOG | | | The .1 ATM ladder shifts one point per expiry; the .1 surface ladder shifts every configured strike. Both are the same report over two sensitivity documents. |
+| [[id:0C0F9826-403E-4C62-B03F-050888E9F88B][Derive the risk reversal and strangle ladders]] | BACKLOG | | | The engine has no risk reversal factor, so the RR and STR ladders are a change of basis over the surface-point deltas of the surface run. |
+| [[id:CC276A2C-4676-4DE3-8114-C496CAB0C082][Build the cross-gamma ladder]] | BACKLOG | | | The cross terms are present in the sensitivity report as rows with two factors; crossgamma.csv has no writer at 1.8.17.0, so the ladder reads the rows. |
 
 * Decisions
 

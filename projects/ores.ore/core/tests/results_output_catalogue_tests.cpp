@@ -113,7 +113,8 @@ TEST_CASE("a family names the parameter that writes it, or says the engine does"
 }
 
 TEST_CASE("a family states every heading its sample states", catalogue_tags) {
-    for (const auto& code : {"npv_report", "cashflow_report", "curves_report", "trade_exposure_report"}) {
+    for (const auto& code :
+         {"npv_report", "cashflow_report", "curves_report", "trade_exposure_report"}) {
         const auto* family = family_named(code);
         REQUIRE(family != nullptr);
         INFO("the family is " << code);
@@ -196,8 +197,11 @@ TEST_CASE("npv states its figures as measures and its context as qualifiers", ca
 }
 
 TEST_CASE("a configuration-driven family says its measures are open", catalogue_tags) {
-    for (const auto& code :
-         {"curves_report", "var_report", "dim_regression", "stress_scenarios", "scenario_statistics"}) {
+    for (const auto& code : {"curves_report",
+                             "var_report",
+                             "dim_regression",
+                             "stress_scenarios",
+                             "scenario_statistics"}) {
         const auto* family = family_named(code);
         REQUIRE(family != nullptr);
         INFO("the family is " << code);

@@ -209,8 +209,8 @@ TEST_CASE("a figure that is not a number is refused and the heading is named", c
     const auto* family = family_named("cashflow_report");
     REQUIRE(family != nullptr);
 
-    const auto csv =
-        cashflow_csv("cashflow_report", {{"TradeId", "T1"}, {"CashflowNo", "1"}, {"Amount", "not-a-figure"}});
+    const auto csv = cashflow_csv(
+        "cashflow_report", {{"TradeId", "T1"}, {"CashflowNo", "1"}, {"Amount", "not-a-figure"}});
     const auto outcome = read_cashflows(csv, *family);
 
     REQUIRE_FALSE(outcome.refusals.empty());
@@ -221,8 +221,8 @@ TEST_CASE("a null figure states nothing and is not a refusal", cashflow_tags) {
     const auto* family = family_named("cashflow_report");
     REQUIRE(family != nullptr);
 
-    const auto csv =
-        cashflow_csv("cashflow_report", {{"TradeId", "T1"}, {"CashflowNo", "1"}, {"Amount", "#N/A"}});
+    const auto csv = cashflow_csv("cashflow_report",
+                                  {{"TradeId", "T1"}, {"CashflowNo", "1"}, {"Amount", "#N/A"}});
     const auto outcome = read_cashflows(csv, *family);
 
     CHECK(outcome.refusals.empty());

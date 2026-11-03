@@ -91,8 +91,8 @@ ores::reporting::service::cut_body_facts apply_full_answers() {
 }
 
 ores::iam::domain::account apply_seed_account(ores::testing::scoped_database_helper& h,
-                                        const std::string& prefix,
-                                        const std::string& suffix) {
+                                              const std::string& prefix,
+                                              const std::string& suffix) {
     auto gen = ores::testing::make_generation_context(h);
     auto account = ores::iam::generators::generate_synthetic_account(gen);
     account.username = prefix + "-" + suffix;
@@ -286,8 +286,7 @@ TEST_CASE("a_refused_cut_authorisation_stamps_the_refusal_and_its_reason",
     CHECK(*detail->applied_at == *cut.refused_at);
 }
 
-TEST_CASE("a_decision_nobody_announced_is_applied_by_the_next_run",
-          "[cut_authorisation_apply]") {
+TEST_CASE("a_decision_nobody_announced_is_applied_by_the_next_run", "[cut_authorisation_apply]") {
 
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
@@ -303,8 +302,7 @@ TEST_CASE("a_decision_nobody_announced_is_applied_by_the_next_run",
     ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
     const auto request = lifecycle.request(taken.approval_request_id);
     REQUIRE(request);
-    REQUIRE(lifecycle
-                .decide(taken.approval_request_id, request->version, "approve", decider.id, "")
+    REQUIRE(lifecycle.decide(taken.approval_request_id, request->version, "approve", decider.id, "")
                 .outcome == "ok");
 
     // Nothing ran between the decision and this run, which is the case a service
@@ -317,8 +315,7 @@ TEST_CASE("a_decision_nobody_announced_is_applied_by_the_next_run",
     CHECK(rows.front().approved_by == decider.username);
 }
 
-TEST_CASE("a_second_run_applies_nothing_and_leaves_the_cut_alone",
-          "[cut_authorisation_apply]") {
+TEST_CASE("a_second_run_applies_nothing_and_leaves_the_cut_alone", "[cut_authorisation_apply]") {
 
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
@@ -330,8 +327,7 @@ TEST_CASE("a_second_run_applies_nothing_and_leaves_the_cut_alone",
     ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
     const auto request = lifecycle.request(taken.approval_request_id);
     REQUIRE(request);
-    REQUIRE(lifecycle
-                .decide(taken.approval_request_id, request->version, "approve", decider.id, "")
+    REQUIRE(lifecycle.decide(taken.approval_request_id, request->version, "approve", decider.id, "")
                 .outcome == "ok");
 
     // As above: the facts are the invariant, not which reconciler reached them

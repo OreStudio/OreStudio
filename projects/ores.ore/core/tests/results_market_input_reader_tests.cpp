@@ -94,15 +94,18 @@ TEST_CASE("a family that is not a market input is refused", input_tags) {
 }
 
 TEST_CASE("the checked-in market input samples read whole", input_tags) {
-    const auto quotes = read_market_inputs(sample_of("market_data_report"), *family_named("market_data_report"));
+    const auto quotes =
+        read_market_inputs(sample_of("market_data_report"), *family_named("market_data_report"));
     REQUIRE(quotes.refusals.empty());
     CHECK(quotes.rows.size() == 830);
 
-    const auto fixings = read_market_inputs(sample_of("fixings_report"), *family_named("fixings_report"));
+    const auto fixings =
+        read_market_inputs(sample_of("fixings_report"), *family_named("fixings_report"));
     REQUIRE(fixings.refusals.empty());
     CHECK(fixings.rows.size() == 5452);
 
-    const auto dividends = read_market_inputs(sample_of("dividends_report"), *family_named("dividends_report"));
+    const auto dividends =
+        read_market_inputs(sample_of("dividends_report"), *family_named("dividends_report"));
     CHECK(dividends.refusals.empty());
     CHECK(dividends.rows.empty());
 }

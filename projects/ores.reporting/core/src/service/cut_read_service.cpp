@@ -349,9 +349,9 @@ cut_read_service::authorisation_subjects(const std::vector<boost::uuids::uuid>& 
 
         const auto found = cuts_repo.read_latest(ctx_, boost::uuids::to_string(detail->cut_id));
         if (found.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "The request " << boost::uuids::to_string(request_id)
-                                      << " names cut " << boost::uuids::to_string(detail->cut_id)
-                                      << ", which the store does not hold.";
+            BOOST_LOG_SEV(lg(), warn)
+                << "The request " << boost::uuids::to_string(request_id) << " names cut "
+                << boost::uuids::to_string(detail->cut_id) << ", which the store does not hold.";
             continue;
         }
         const auto& cut = found.front();
@@ -372,8 +372,8 @@ cut_read_service::authorisation_subjects(const std::vector<boost::uuids::uuid>& 
 
         // The state and the label are the record page's, derived from the same
         // facts by the same functions, so the two screens cannot disagree.
-        auto gaps = gaps_repo.read_latest_by_cut_id(
-            ctx_, boost::uuids::to_string(cut.id), 0, paging_cap);
+        auto gaps =
+            gaps_repo.read_latest_by_cut_id(ctx_, boost::uuids::to_string(cut.id), 0, paging_cap);
         const auto candidates = cuts_repo.read_for_party_in_window(
             ctx_,
             cut.party_id,

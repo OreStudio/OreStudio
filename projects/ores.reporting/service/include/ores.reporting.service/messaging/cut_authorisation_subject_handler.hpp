@@ -64,9 +64,10 @@ private:
     }
 
 public:
-    cut_authorisation_subject_handler(ores::nats::service::client& nats,
-                                      ores::database::context ctx,
-                                      std::optional<ores::security::jwt::jwt_authenticator> verifier)
+    cut_authorisation_subject_handler(
+        ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
@@ -138,8 +139,8 @@ public:
                 answer.subjects.push_back(std::move(row));
             }
             answer.result = {.outcome = outcome::ok, .code = "", .message = "", .fields = {}};
-            BOOST_LOG_SEV(lg(), ores::logging::debug)
-                << "Completed " << msg.subject << " with " << answer.subjects.size() << " subject(s)";
+            BOOST_LOG_SEV(lg(), ores::logging::debug) << "Completed " << msg.subject << " with "
+                                                      << answer.subjects.size() << " subject(s)";
             ores::service::messaging::reply(nats_, msg, answer);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), ores::logging::error) << msg.subject << " failed: " << e.what();

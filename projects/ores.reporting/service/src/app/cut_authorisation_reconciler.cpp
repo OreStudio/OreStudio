@@ -62,8 +62,8 @@ boost::asio::awaitable<void> cut_authorisation_reconciler::run() {
         }
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted)
-            BOOST_LOG_SEV(lg(), warn) << "Cut authorisation reconciliation timer error: "
-                                      << e.what();
+            BOOST_LOG_SEV(lg(), warn)
+                << "Cut authorisation reconciliation timer error: " << e.what();
     }
 
     BOOST_LOG_SEV(lg(), info) << "Cut authorisation reconciliation stopped.";

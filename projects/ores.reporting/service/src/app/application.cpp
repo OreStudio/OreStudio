@@ -145,8 +145,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // yet, so a missed or repeated event changes nothing. The sweep below catches
     // what was decided while this service was down.
     using approval_request_event = ores::inbox::messaging::approval_request_event;
-    auto cut_authorisations = std::make_shared<service::cut_authorisation_applier>(
-        make_context(cfg.database));
+    auto cut_authorisations =
+        std::make_shared<service::cut_authorisation_applier>(make_context(cfg.database));
     event_source.register_entity_event_mapping<approval_request_event>(
         "ores_inbox_approval_requests");
     auto cut_authorisation_sub = event_bus.subscribe<approval_request_event>(

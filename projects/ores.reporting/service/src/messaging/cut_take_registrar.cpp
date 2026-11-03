@@ -52,8 +52,8 @@ std::vector<ores::nats::service::subscription> cut_take_registrar::register_hand
 
     // The request page reads what each cut authorisation is about from here,
     // because the subject is this component's and not the inbox's.
-    auto subjects =
-        std::make_shared<cut_authorisation_subject_handler>(nats, std::move(ctx), std::move(verifier));
+    auto subjects = std::make_shared<cut_authorisation_subject_handler>(
+        nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_cut_authorisation_subjects_request::nats_subject,
         cut_take_queue_group,

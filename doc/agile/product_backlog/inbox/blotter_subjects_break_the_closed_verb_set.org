@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: DC54C1AA-A619-49E6-9305-36B172CE2155
+:END:
+#+title: Blotter subjects break the closed verb set
+#+description: The blotter subjects trading.v1.blotter.rail and trading.v1.blotter.page use verbs outside the closed set of eight, so the subject conformance tests fail on main since PR #4403.
+#+type: capture
+#+level: cross
+#+filetags: :trading:nats:codegen:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The blotter model in =projects/ores.trading/modeling/ores.trading.blotter.org= declares the subjects =trading.v1.blotter.rail= and =trading.v1.blotter.page=. The verbs =rail= and =page= are not in the closed set of eight, and they are not in the reserved ops namespace. Rename the two verbs to verbs in the closed set, or change the subject protocol to accept them.
+
+* Why
+
+Two tests in =test_check_subject_conformance.py= fail on main: =test_the_committed_tree_is_clean_against_its_baseline= and =test_no_declared_subject_violates_the_protocol=. The =codegen-tests= gate check is red for every branch until this is fixed. The subjects came from PR #4403 (merge b903acb430).
+
+* References
+
+- PR #4403, "Answer the rail from one grouped read".
+
+* See also
+
+- =projects/ores.codegen/scripts/check_subject_conformance.py=

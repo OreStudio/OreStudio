@@ -3,7 +3,7 @@
 Run::
 
     projects/ores.codegen/venv/bin/python -m pytest \
-        projects/ores.codegen/tests/test_check_stream_coverage.py -q
+        build/scripts/tests/test_check_stream_coverage.py -q
 
 The check reads the declarations a service sends at start, so the tests build a
 small tree of declarations and ask what the check makes of it. The subject rules

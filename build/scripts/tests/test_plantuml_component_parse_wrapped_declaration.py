@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_plantuml_component_parse_wrapped_declaration.py
+    python3 -m pytest build/scripts/tests/test_plantuml_component_parse_wrapped_declaration.py
 
 A class may declare a function with its parameter list wrapped across two
 lines::

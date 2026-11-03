@@ -172,6 +172,7 @@ of the application join as their own stories under this heading.
 | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] | STARTED | 2026-11-03 | | Add volatility surfaces to the system: their structure, quotes, construction and storage, and how they flow to pricing. A long arc that starts from a documented architecture. |
 | [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]] | BACKLOG | | | Every environment holds years of daily public fixings from a static DQ snapshot, and the adapter fetches only the gap to today. |
 | [[id:839D0CD2-7684-4580-8C60-AE68C9DAD478][Stamp the time a build starts and finishes]] | DONE | 2026-11-03 | 2026-11-03 | compass build prints and logs the wall-clock start and finish of a build, so a reader can tell when a build ran. |
+| [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] | BACKLOG | | | The local check gate runs every heavy check for any C++ change, so a test-only header change pays for the database rebuild, the tick smoke and all 98 suites. |
 
 * Achievements
 

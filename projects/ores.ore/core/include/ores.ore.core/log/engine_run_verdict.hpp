@@ -56,7 +56,9 @@ struct engine_run_outcome {
  * =ERROR= lines say why. A run that wrote analytics succeeded, unless its log
  * carries the engine's own =Error in ORE analytics= verdict, because ORE writes
  * its calibration and timing reports whether or not the analytic it was asked
- * for ran.
+ * for ran. When that verdict names only some of the analytics the engine
+ * started, the others wrote their reports and the run succeeded; the failed
+ * analytic stays in the log the run records as its errors.
  *
  * @param output_file_names  the file names in the engine's output directory.
  * @param engine_log         the engine's own log, as it wrote it.

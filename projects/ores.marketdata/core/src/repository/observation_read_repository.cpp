@@ -20,9 +20,6 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.marketdata.core/repository/stored_text.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <charconv>
-#include <cstdint>
-#include <format>
 #include <optional>
 #include <stdexcept>
 #include <string>

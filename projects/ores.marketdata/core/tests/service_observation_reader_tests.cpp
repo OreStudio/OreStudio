@@ -183,24 +183,48 @@ TEST_CASE("an_empty_or_too_long_window_is_refused", "[observation_reader][integr
           outcome::ok);
 }
 
+namespace observation_reader_test {
+
+/// Writes @p count observations of one coordinate a second apart from the start of a day.
+void observe_many(observation_fixture& f,
+                  const boost::uuids::uuid& series_id,
+                  const std::string& coordinate,
+                  std::size_t count) {
+    std::vector<ores::marketdata::domain::market_observation> rows;
+    auto generation = ores::testing::make_generation_context(f.db);
+    for (std::size_t i = 0; i < count; ++i) {
+        auto row = ores::marketdata::generators::generate_synthetic_market_observation(generation);
+        row.party_id = f.party;
+        row.series_id = series_id;
+        row.observation_datetime = at(day_of(2026, 10, 21), 0) + seconds(static_cast<int>(i));
+        row.oresmd_uri = coordinate;
+        row.value = "0.08";
+        rows.push_back(row);
+    }
+    ores::marketdata::repository::market_observation_repository{}.write(f.db.context(), rows);
+}
+
+}
+
+TEST_CASE("a_window_holding_exactly_the_ceiling_is_read_whole",
+          "[observation_reader][integration]") {
+    observation_fixture f;
+    const auto uri = observation_fixture::series_uri();
+    const auto s = f.series(uri, "composite");
+    observation_reader_test::observe_many(
+        f, s, observation_fixture::point(uri, "ATM"), observation_reader::max_observations);
+    const auto r = f.window(uri, day_of(2026, 10, 21), 1);
+    REQUIRE(r.result.outcome == outcome::ok);
+    CHECK(r.used == static_cast<int>(observation_reader::max_observations));
+}
+
 TEST_CASE("a_window_holding_more_than_the_ceiling_is_refused_rather_than_cut",
           "[observation_reader][integration]") {
     observation_fixture f;
     const auto uri = observation_fixture::series_uri();
     const auto s = f.series(uri, "composite");
-    std::vector<ores::marketdata::domain::market_observation> rows;
-    auto generation = ores::testing::make_generation_context(f.db);
-    for (std::size_t i = 0; i <= observation_reader::max_observations; ++i) {
-        auto row = ores::marketdata::generators::generate_synthetic_market_observation(generation);
-        row.party_id = f.party;
-        row.series_id = s;
-        row.observation_datetime =
-            at(day_of(2026, 10, 21), 0) + std::chrono::seconds(static_cast<int>(i));
-        row.oresmd_uri = observation_fixture::point(uri, "ATM");
-        row.value = "0.08";
-        rows.push_back(row);
-    }
-    ores::marketdata::repository::market_observation_repository{}.write(f.db.context(), rows);
+    observation_reader_test::observe_many(
+        f, s, observation_fixture::point(uri, "ATM"), observation_reader::max_observations + 1);
     const auto r = f.window(uri, day_of(2026, 10, 21), 1);
     CHECK(r.result.outcome != outcome::ok);
     CHECK(r.used == 0);

@@ -53,7 +53,6 @@ std::variant<ores::database::context, result> scope_to_party(ores::database::con
     return ctx.with_party(ctx.tenant_id(), named, {named}, ctx.service_account());
 }
 
-/// The one series an item names, or the refusal of a read that cannot name one.
 }
 
 std::variant<repository::fixing_series, result> resolve_series(ores::database::context ctx,

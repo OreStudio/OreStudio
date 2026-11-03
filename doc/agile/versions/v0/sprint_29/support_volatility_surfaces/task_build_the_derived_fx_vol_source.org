@@ -121,3 +121,10 @@ via its "Verifies task" field.
 | R1.4 | The spread threshold is unexplained | return_moments.cpp | Accept | A comment states the residue it separates from spread |
 | R1.5 | The spot stands for the forward at long tenors | fx_vol_derivation.hpp | Accept, no change | Stated in the PR's limitations; fx_market takes discount factors for when the adapter has curves |
 | R1.6 | Test an expiry past the history, and a shape held outside the region | tests | Already present | "an expiry longer than the history is refused alone" and the hold test with excess kurtosis 7 |
+| R2.0 | fx_strike_from_delta would throw if its scaled delta reached zero, since the Boost quantile raises there | fx_delta.cpp | Accept | The guard states the open interval the quantile needs |
+| R2.1 | The iteration check failed a search that converged on its last allowed step | root.hpp | Accept | Failure needs both the iterations spent and a bracket still wide |
+| R2.2 | TOMS 748 reads no check of non-finite values, so the old diagnostic was lost | root.hpp | Accept | A non-finite value raises inside the search and becomes the reason; a test covers it |
+| R2.3 | The flat-root test was dropped | normal_and_root_tests.cpp | Accept | Restored for (x - 0.3)^5 |
+| R2.4 | The test tag moved from brent to root | tests | Accept, no change | Nothing filters or cites either tag |
+| R2.5 | normal.hpp puts Boost's erf header in every includer | normal.hpp | Accept | The quantile is defined in normal.cpp; the header keeps the std one-liners |
+| R2.6 | The tolerance comment is hard to read | root.hpp | Accept | Reworded |

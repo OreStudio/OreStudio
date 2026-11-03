@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
 #+branch: feature/show-the-calibration-chain-of-a-feed
-#+pr:
+#+pr: 4429
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4429][#4429]] | [web] Show the GARCH calibration on the feed and calibration screens |
 
 * Review
 

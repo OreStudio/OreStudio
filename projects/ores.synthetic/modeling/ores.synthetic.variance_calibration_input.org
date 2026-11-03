@@ -25,7 +25,8 @@ and reviewed before a feed runs it" in
 
 Who captured the input and when are the =performed_by= and =valid_from= every row
 carries. A capture over the same window of the same item is a new version of the
-input, not a second input, by the natural key.
+input, not a second input, by the natural key: the party, the fixing URI and the
+window. The item names the pair it is read for, so the pair is not part of the key.
 
 * Flags
 :PROPERTIES:
@@ -65,7 +66,6 @@ ctx.generate_uuid()
 :type:        text
 :cpp_type:    std::string
 :nullable:    false
-:natural_key: true
 :sortable:    true
 :filterable:  true
 :END:
@@ -81,7 +81,6 @@ std::string("EUR")
 :type:        text
 :cpp_type:    std::string
 :nullable:    false
-:natural_key: true
 :sortable:    true
 :filterable:  true
 :END:

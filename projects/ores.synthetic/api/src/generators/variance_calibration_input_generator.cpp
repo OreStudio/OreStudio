@@ -48,13 +48,13 @@ generate_synthetic_variance_calibration_input(utility::generation::generation_co
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.base_currency_code = std::string("EUR") + "-" + std::to_string(idx);
-    r.quote_currency_code = std::string("USD") + "-" + std::to_string(idx);
     r.fixing_uri = std::string("oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD") + "-" +
                    std::to_string(idx);
     r.window_end =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.window_days = 1826;
+    r.base_currency_code = std::string("EUR");
+    r.quote_currency_code = std::string("USD");
     r.provider_code = std::string("ecb");
     r.inverted = faker::datatype::boolean();
     r.policy_id = ctx.generate_uuid();

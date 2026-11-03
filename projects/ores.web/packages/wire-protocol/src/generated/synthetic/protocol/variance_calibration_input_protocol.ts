@@ -34,11 +34,11 @@ export interface VarianceCalibrationInputKey {
 
 export interface VarianceCalibrationInputWrite {
     id: string;
-    base_currency_code: string;
-    quote_currency_code: string;
     fixing_uri: string;
     window_end: string;
     window_days: number;
+    base_currency_code: string;
+    quote_currency_code: string;
     provider_code: string;
     inverted: boolean;
     policy_id: string;

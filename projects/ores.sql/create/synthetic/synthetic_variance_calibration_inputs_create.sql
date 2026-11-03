@@ -35,7 +35,8 @@
  *
  * Who captured the input and when are the performed_by and valid_from every row
  * carries. A capture over the same window of the same item is a new version of the
- * input, not a second input, by the natural key.
+ * input, not a second input, by the natural key: the party, the fixing URI and the
+ * window. The item names the pair it is read for, so the pair is not part of the key.
  */
 
 create table if not exists "ores_synthetic_variance_calibration_inputs_tbl" (
@@ -43,11 +44,11 @@ create table if not exists "ores_synthetic_variance_calibration_inputs_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "base_currency_code" text not null,
-    "quote_currency_code" text not null,
     "fixing_uri" text not null,
     "window_end" date not null,
     "window_days" integer not null,
+    "base_currency_code" text not null,
+    "quote_currency_code" text not null,
     "provider_code" text not null,
     "inverted" boolean not null,
     "policy_id" uuid not null,
@@ -77,8 +78,8 @@ create table if not exists "ores_synthetic_variance_calibration_inputs_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists variance_calibration_inputs_party_id_base_currency_code_quote_currency_code_fixing_uri_window_end_window_days_uniq_idx
-on "ores_synthetic_variance_calibration_inputs_tbl" (tenant_id, party_id, base_currency_code, quote_currency_code, fixing_uri, window_end, window_days)
+create unique index if not exists variance_calibration_inputs_party_id_fixing_uri_window_end_window_days_uniq_idx
+on "ores_synthetic_variance_calibration_inputs_tbl" (tenant_id, party_id, fixing_uri, window_end, window_days)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

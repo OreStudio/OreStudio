@@ -142,7 +142,7 @@ void variance_calibration_input_commands::register_commands(cli::Menu& root_menu
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <base_currency_code> <quote_currency_code> <fixing_uri> <window_end> <window_days> "
+        "add <fixing_uri> <window_end> <window_days> <base_currency_code> <quote_currency_code> "
         "<provider_code> <inverted> <policy_id> <policy_version> <point_count> <used_count> "
         "<reason> <commentary>");
 
@@ -151,17 +151,17 @@ void variance_calibration_input_commands::register_commands(cli::Menu& root_menu
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <base_currency_code> <quote_currency_code> <fixing_uri> <window_end> "
-        "<window_days> <provider_code> <inverted> <policy_id> <policy_version> <point_count> "
-        "<used_count> <reason> <commentary> [--version <n>]");
+        "set <id> <fixing_uri> <window_end> <window_days> <base_currency_code> "
+        "<quote_currency_code> <provider_code> <inverted> <policy_id> <policy_version> "
+        "<point_count> <used_count> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <base_currency_code> <quote_currency_code> <fixing_uri> "
-        "<window_end> <window_days> <provider_code> <inverted> <policy_id> <policy_version> "
+        "put-many --count <n> <id> <fixing_uri> <window_end> <window_days> <base_currency_code> "
+        "<quote_currency_code> <provider_code> <inverted> <policy_id> <policy_version> "
         "<point_count> <used_count> <reason> <commentary>");
 
     menu->Insert(
@@ -370,16 +370,16 @@ void variance_calibration_input_commands::process_add(std::ostream& out,
         }
         req.change.write.id = boost::uuids::random_generator()();
         variance_calibration_input_read_token(
-            req.change.write.base_currency_code, parsed->positionals[next++], "base_currency_code");
-        variance_calibration_input_read_token(req.change.write.quote_currency_code,
-                                              parsed->positionals[next++],
-                                              "quote_currency_code");
-        variance_calibration_input_read_token(
             req.change.write.fixing_uri, parsed->positionals[next++], "fixing_uri");
         variance_calibration_input_read_token(
             req.change.write.window_end, parsed->positionals[next++], "window_end");
         variance_calibration_input_read_token(
             req.change.write.window_days, parsed->positionals[next++], "window_days");
+        variance_calibration_input_read_token(
+            req.change.write.base_currency_code, parsed->positionals[next++], "base_currency_code");
+        variance_calibration_input_read_token(req.change.write.quote_currency_code,
+                                              parsed->positionals[next++],
+                                              "quote_currency_code");
         variance_calibration_input_read_token(
             req.change.write.provider_code, parsed->positionals[next++], "provider_code");
         variance_calibration_input_read_token(
@@ -444,16 +444,16 @@ void variance_calibration_input_commands::process_set(std::ostream& out,
         variance_calibration_input_read_token(
             req.change.write.id, parsed->positionals[next++], "id");
         variance_calibration_input_read_token(
-            req.change.write.base_currency_code, parsed->positionals[next++], "base_currency_code");
-        variance_calibration_input_read_token(req.change.write.quote_currency_code,
-                                              parsed->positionals[next++],
-                                              "quote_currency_code");
-        variance_calibration_input_read_token(
             req.change.write.fixing_uri, parsed->positionals[next++], "fixing_uri");
         variance_calibration_input_read_token(
             req.change.write.window_end, parsed->positionals[next++], "window_end");
         variance_calibration_input_read_token(
             req.change.write.window_days, parsed->positionals[next++], "window_days");
+        variance_calibration_input_read_token(
+            req.change.write.base_currency_code, parsed->positionals[next++], "base_currency_code");
+        variance_calibration_input_read_token(req.change.write.quote_currency_code,
+                                              parsed->positionals[next++],
+                                              "quote_currency_code");
         variance_calibration_input_read_token(
             req.change.write.provider_code, parsed->positionals[next++], "provider_code");
         variance_calibration_input_read_token(
@@ -532,16 +532,16 @@ void variance_calibration_input_commands::process_put_many(std::ostream& out,
             variance_calibration_input_read_token(
                 change.write.id, parsed->positionals[next++], "id");
             variance_calibration_input_read_token(
-                change.write.base_currency_code, parsed->positionals[next++], "base_currency_code");
-            variance_calibration_input_read_token(change.write.quote_currency_code,
-                                                  parsed->positionals[next++],
-                                                  "quote_currency_code");
-            variance_calibration_input_read_token(
                 change.write.fixing_uri, parsed->positionals[next++], "fixing_uri");
             variance_calibration_input_read_token(
                 change.write.window_end, parsed->positionals[next++], "window_end");
             variance_calibration_input_read_token(
                 change.write.window_days, parsed->positionals[next++], "window_days");
+            variance_calibration_input_read_token(
+                change.write.base_currency_code, parsed->positionals[next++], "base_currency_code");
+            variance_calibration_input_read_token(change.write.quote_currency_code,
+                                                  parsed->positionals[next++],
+                                                  "quote_currency_code");
             variance_calibration_input_read_token(
                 change.write.provider_code, parsed->positionals[next++], "provider_code");
             variance_calibration_input_read_token(

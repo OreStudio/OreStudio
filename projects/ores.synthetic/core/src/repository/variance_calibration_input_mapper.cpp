@@ -51,11 +51,11 @@ variance_calibration_input_mapper::map(const variance_calibration_input_entity& 
     r.tenant_id = v.tenant_id;
     r.id = v.id;
     r.party_id = v.party_id;
-    r.base_currency_code = v.base_currency_code;
-    r.quote_currency_code = v.quote_currency_code;
     r.fixing_uri = v.fixing_uri;
     r.window_end = v.window_end;
     r.window_days = v.window_days;
+    r.base_currency_code = v.base_currency_code;
+    r.quote_currency_code = v.quote_currency_code;
     r.provider_code = v.provider_code;
     r.inverted = v.inverted;
     r.policy_id = v.policy_id;
@@ -81,11 +81,11 @@ variance_calibration_input_mapper::map(const domain::variance_calibration_input&
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.party_id = v.party_id;
-    r.base_currency_code = v.base_currency_code;
-    r.quote_currency_code = v.quote_currency_code;
     r.fixing_uri = v.fixing_uri;
     r.window_end = v.window_end;
     r.window_days = v.window_days;
+    r.base_currency_code = v.base_currency_code;
+    r.quote_currency_code = v.quote_currency_code;
     r.provider_code = v.provider_code;
     r.inverted = v.inverted;
     r.policy_id = v.policy_id;

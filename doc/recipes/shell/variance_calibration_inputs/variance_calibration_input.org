@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-variance_calibration_inputs add <base_currency_code> <quote_currency_code> <fixing_uri> <window_end> <window_days> <provider_code> <inverted> <policy_id> <policy_version> <point_count> <used_count> <reason> <commentary>
+variance_calibration_inputs add <fixing_uri> <window_end> <window_days> <base_currency_code> <quote_currency_code> <provider_code> <inverted> <policy_id> <policy_version> <point_count> <used_count> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.variance_calibration_inputs.put=.
 
 #+name: variance_calibration_inputs-add
 #+begin_src ores-shell :tangle variance_calibration_inputs-add.ores :exports none
-variance_calibration_inputs add __none__ __none__ __none__ 1970-01-01 0 __none__ false 00000000-0000-0000-0000-000000000000 0 0 0 system.new_record generated_script
+variance_calibration_inputs add __none__ 1970-01-01 0 __none__ __none__ __none__ false 00000000-0000-0000-0000-000000000000 0 0 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-variance_calibration_inputs set <id> <base_currency_code> <quote_currency_code> <fixing_uri> <window_end> <window_days> <provider_code> <inverted> <policy_id> <policy_version> <point_count> <used_count> <reason> <commentary> [--version <n>]
+variance_calibration_inputs set <id> <fixing_uri> <window_end> <window_days> <base_currency_code> <quote_currency_code> <provider_code> <inverted> <policy_id> <policy_version> <point_count> <used_count> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =synthetic.v1.variance_calibration_inputs.put=.
 
 #+name: variance_calibration_inputs-set
 #+begin_src ores-shell :tangle variance_calibration_inputs-set.ores :exports none
-variance_calibration_inputs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 1970-01-01 0 __none__ false 00000000-0000-0000-0000-000000000000 0 0 0 system.new_record generated_script
+variance_calibration_inputs set 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 0 __none__ __none__ __none__ false 00000000-0000-0000-0000-000000000000 0 0 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-variance_calibration_inputs put-many --count <n> <id> <base_currency_code> <quote_currency_code> <fixing_uri> <window_end> <window_days> <provider_code> <inverted> <policy_id> <policy_version> <point_count> <used_count> <reason> <commentary>
+variance_calibration_inputs put-many --count <n> <id> <fixing_uri> <window_end> <window_days> <base_currency_code> <quote_currency_code> <provider_code> <inverted> <policy_id> <policy_version> <point_count> <used_count> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.variance_calibration_inputs.put_many=.
 
 #+name: variance_calibration_inputs-put-many
 #+begin_src ores-shell :tangle variance_calibration_inputs-put-many.ores :exports none
-variance_calibration_inputs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 1970-01-01 0 __none__ false 00000000-0000-0000-0000-000000000000 0 0 0 system.new_record generated_script
+variance_calibration_inputs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 0 __none__ __none__ __none__ false 00000000-0000-0000-0000-000000000000 0 0 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

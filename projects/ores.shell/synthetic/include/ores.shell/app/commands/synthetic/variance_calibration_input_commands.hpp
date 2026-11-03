@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <base_currency_code> <quote_currency_code> <fixing_uri> <window_end> <window_days>
+     * @brief add <fixing_uri> <window_end> <window_days> <base_currency_code> <quote_currency_code>
      * <provider_code> <inverted> <policy_id> <policy_version> <point_count> <used_count> <reason>
      * <commentary>
      */
@@ -96,8 +96,8 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <base_currency_code> <quote_currency_code> <fixing_uri> <window_end>
-     * <window_days> <provider_code> <inverted> <policy_id> <policy_version> <point_count>
+     * @brief set <id> <fixing_uri> <window_end> <window_days> <base_currency_code>
+     * <quote_currency_code> <provider_code> <inverted> <policy_id> <policy_version> <point_count>
      * <used_count> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -105,9 +105,9 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <base_currency_code> <quote_currency_code> <fixing_uri>
-     * <window_end> <window_days> <provider_code> <inverted> <policy_id> <policy_version>
-     * <point_count> <used_count> <reason> <commentary>
+     * @brief put-many --count <n> <id> <fixing_uri> <window_end> <window_days> <base_currency_code>
+     * <quote_currency_code> <provider_code> <inverted> <policy_id> <policy_version> <point_count>
+     * <used_count> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

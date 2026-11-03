@@ -41,11 +41,11 @@ render_variance_calibration_input_fields(const domain::variance_calibration_inpu
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
-    fields.push_back({.name = "Base Currency Code", .value = v.base_currency_code});
-    fields.push_back({.name = "Quote Currency Code", .value = v.quote_currency_code});
     fields.push_back({.name = "Fixing Uri", .value = v.fixing_uri});
     fields.push_back({.name = "Window End", .value = std::format("{:%Y-%m-%d}", v.window_end)});
     fields.push_back({.name = "Window Days", .value = std::to_string(v.window_days)});
+    fields.push_back({.name = "Base Currency Code", .value = v.base_currency_code});
+    fields.push_back({.name = "Quote Currency Code", .value = v.quote_currency_code});
     fields.push_back({.name = "Provider Code", .value = v.provider_code});
     fields.push_back({.name = "Inverted", .value = v.inverted ? "true" : "false"});
     fields.push_back({.name = "Policy ID", .value = boost::uuids::to_string(v.policy_id)});

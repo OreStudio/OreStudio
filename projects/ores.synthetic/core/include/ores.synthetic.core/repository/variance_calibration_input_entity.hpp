@@ -56,12 +56,6 @@ struct variance_calibration_input_entity {
     boost::uuids::uuid party_id;
 
 
-    std::string base_currency_code;
-
-
-    std::string quote_currency_code;
-
-
     std::string fixing_uri;
 
     std::chrono::year_month_day window_end;
@@ -69,6 +63,8 @@ struct variance_calibration_input_entity {
 
     int window_days = 0;
 
+    std::string base_currency_code;
+    std::string quote_currency_code;
     std::string provider_code;
     bool inverted = false;
     boost::uuids::uuid policy_id;
@@ -92,11 +88,11 @@ struct variance_calibration_input_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("party_id", &e::party_id) |
-               query_builder::bind("base_currency_code", &e::base_currency_code) |
-               query_builder::bind("quote_currency_code", &e::quote_currency_code) |
                query_builder::bind("fixing_uri", &e::fixing_uri) |
                query_builder::bind("window_end", &e::window_end) |
                query_builder::bind("window_days", &e::window_days) |
+               query_builder::bind("base_currency_code", &e::base_currency_code) |
+               query_builder::bind("quote_currency_code", &e::quote_currency_code) |
                query_builder::bind("provider_code", &e::provider_code) |
                query_builder::bind("inverted", &e::inverted) |
                query_builder::bind("policy_id", &e::policy_id) |

@@ -50,11 +50,11 @@ struct variance_calibration_input_key {
 
 struct variance_calibration_input_write {
     boost::uuids::uuid id;
-    std::string base_currency_code;
-    std::string quote_currency_code;
     std::string fixing_uri;
     std::chrono::year_month_day window_end;
     int window_days;
+    std::string base_currency_code;
+    std::string quote_currency_code;
     std::string provider_code;
     bool inverted;
     boost::uuids::uuid policy_id;
@@ -406,13 +406,13 @@ inline constexpr std::string_view deleted =
 [[nodiscard]] constexpr auto wire_fields(const variance_calibration_input_write&) {
     return std::tuple{
         utility::codec::field{"id", &variance_calibration_input_write::id},
+        utility::codec::field{"fixing_uri", &variance_calibration_input_write::fixing_uri},
+        utility::codec::field{"window_end", &variance_calibration_input_write::window_end},
+        utility::codec::field{"window_days", &variance_calibration_input_write::window_days},
         utility::codec::field{"base_currency_code",
                               &variance_calibration_input_write::base_currency_code},
         utility::codec::field{"quote_currency_code",
                               &variance_calibration_input_write::quote_currency_code},
-        utility::codec::field{"fixing_uri", &variance_calibration_input_write::fixing_uri},
-        utility::codec::field{"window_end", &variance_calibration_input_write::window_end},
-        utility::codec::field{"window_days", &variance_calibration_input_write::window_days},
         utility::codec::field{"provider_code", &variance_calibration_input_write::provider_code},
         utility::codec::field{"inverted", &variance_calibration_input_write::inverted},
         utility::codec::field{"policy_id", &variance_calibration_input_write::policy_id},

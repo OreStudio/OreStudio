@@ -754,11 +754,11 @@ package "synthetic" #F9FBE7 {
         --
         * version : integer
         * party_id : uuid <<FK>>
-        * base_currency_code : text
-        * quote_currency_code : text
         * fixing_uri : text
         * window_end : date
         * window_days : integer
+        * base_currency_code : text
+        * quote_currency_code : text
         * provider_code : text
         * inverted : boolean
         * policy_id : uuid <<FK>>
@@ -788,7 +788,8 @@ package "synthetic" #F9FBE7 {
     [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]].
     Who captured the input and when are the performed_by and valid_from every row
     carries. A capture over the same window of the same item is a new version of the
-    input, not a second input, by the natural key.
+    input, not a second input, by the natural key: the party, the fixing URI and the
+    window. The item names the pair it is read for, so the pair is not part of the key.
     end note
 
     entity ores_synthetic_variance_calibrations_tbl <<temporal>> #C6F0D8 {

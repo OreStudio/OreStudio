@@ -45,9 +45,10 @@ Three =ores.synthetic= entities, system-tenant rows under the system party as th
 FX spot feeds are (profile =uuid-identified-lookup=, visible to every tenant), and
 one column on the calibration policy.
 
-- =variance_calibration_input=: one capture. Natural key: party, pair, fixing
-  URI, window end and window length, so a repeat over the same window is a new
-  version, not a second row. Columns: the pair; =fixing_uri= and =provider_code=
+- =variance_calibration_input=: one capture. Natural key: party, fixing URI,
+  window end and window length, so a repeat over the same window is a new
+  version, not a second row; the item names the pair, so the pair is not in the
+  key. Columns: the pair; =fixing_uri= and =provider_code=
   of the item read; =inverted=; =policy_id= and =policy_version= of the policy
   it was read under; =window_days= and =window_end=; =point_count= and
   =used_count=. Who and when are the temporal columns every row carries.
@@ -111,3 +112,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Three =ores.synthetic= records hold the audit trail of a variance calibration, each
+generated across SQL, domain, repository, protocol, shell and TypeScript with its
+history: =variance_calibration_input=, keyed by party, fixing URI and window;
+=variance_calibration_input_point=, one fixing date of an input, used or left out
+with its reason; and =variance_calibration=, a fitted or authored shape with its
+evidence and its review state. The calibration policy gains
+=variance_window_days=, five years by default. The records are system-tenant rows
+that every tenant reads, as the feeds are; people get read access only, so the
+capture, fit and review operations of the next tasks are the only writers.
+
+Each bound is written so that a missing value or NaN fails it, because a check
+passes on null and PostgreSQL orders NaN above every number. One approved
+calibration of a pair is current, by a partial unique index.
+
+Measured on a recreated database at this branch: =ores.synthetic.api.tests= (186
+calibration cases), =ores.shell.synthetic.tests= (102) and
+=ores.synthetic.core.tests=, with the three eventing round trips, pass;
+=synthetic_variance_calibration_checks_test.sql= passes 24 of 24, and the six
+other synthetic pgTAP files pass, 64 tests in all. A first run showed the
+generator could not satisfy a natural key that held the validated currency codes,
+so the pair left the input's key; the fixing URI already names the pair.
+

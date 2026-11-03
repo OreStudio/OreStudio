@@ -104,11 +104,11 @@ domain::variance_calibration_input
 variance_calibration_input_to_domain(const messaging::variance_calibration_input_write& write) {
     domain::variance_calibration_input v;
     v.id = write.id;
-    v.base_currency_code = write.base_currency_code;
-    v.quote_currency_code = write.quote_currency_code;
     v.fixing_uri = write.fixing_uri;
     v.window_end = write.window_end;
     v.window_days = write.window_days;
+    v.base_currency_code = write.base_currency_code;
+    v.quote_currency_code = write.quote_currency_code;
     v.provider_code = write.provider_code;
     v.inverted = write.inverted;
     v.policy_id = write.policy_id;

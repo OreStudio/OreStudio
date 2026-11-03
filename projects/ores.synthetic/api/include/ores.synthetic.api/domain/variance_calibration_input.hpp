@@ -47,7 +47,8 @@ namespace ores::synthetic::domain {
  *
  * Who captured the input and when are the performed_by and valid_from every row
  * carries. A capture over the same window of the same item is a new version of the
- * input, not a second input, by the natural key.
+ * input, not a second input, by the natural key: the party, the fixing URI and the
+ * window. The item names the pair it is read for, so the pair is not part of the key.
  */
 struct variance_calibration_input final {
     /**
@@ -71,16 +72,6 @@ struct variance_calibration_input final {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief The pair's base currency, in the pair's market convention.
-     */
-    std::string base_currency_code;
-
-    /**
-     * @brief The pair's quote currency.
-     */
-    std::string quote_currency_code;
-
-    /**
      * @brief The oresmd fixing URI of the item that was read, such as
      * =oresmd://fx/USD?type=fixing&index=fx&source=IMF&ccy=AUD=.
      */
@@ -96,6 +87,16 @@ struct variance_calibration_input final {
      * the capture.
      */
     int window_days = 0;
+
+    /**
+     * @brief The pair's base currency, in the pair's market convention.
+     */
+    std::string base_currency_code;
+
+    /**
+     * @brief The pair's quote currency.
+     */
+    std::string quote_currency_code;
 
     /**
      * @brief The provider whose fixings of the item were read, chosen by the policy's provider

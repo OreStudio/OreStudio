@@ -1460,7 +1460,7 @@
     "version": 0,
     "report_name": "Headline Position (EOD)",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Global Portfolio"
+    "configuration_name": "Valuation and sensitivities (EOD) - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1495,7 +1495,7 @@
     "version": 0,
     "report_name": "Spot Greeks",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_uk",
@@ -1544,7 +1544,7 @@
     "version": 0,
     "report_name": "Spot Greeks (EOD)",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Global Portfolio"
+    "configuration_name": "Valuation and sensitivities (EOD) - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1579,7 +1579,7 @@
     "version": 0,
     "report_name": "Triple Vol Spot Ladder",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_uk",
@@ -1628,7 +1628,7 @@
     "version": 0,
     "report_name": "Triple Vol Spot Ladder (EOD)",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Global Portfolio"
+    "configuration_name": "Sensitivities (EOD) - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1663,7 +1663,7 @@
     "version": 0,
     "report_name": "Spot Ladder",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_uk",
@@ -1705,7 +1705,7 @@
     "version": 0,
     "report_name": "Spike Map",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_uk",
@@ -1747,7 +1747,7 @@
     "version": 0,
     "report_name": "Strike Map",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_uk",
@@ -1789,7 +1789,7 @@
     "version": 0,
     "report_name": "Option Map",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_uk",
@@ -1831,7 +1831,7 @@
     "version": 0,
     "report_name": "Intraday Change",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_uk",
@@ -1873,7 +1873,7 @@
     "version": 0,
     "report_name": "Trades Since Last In",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_uk",
@@ -2846,7 +2846,7 @@
     "version": 0,
     "report_name": "Headline Position (EOD)",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Global Portfolio"
+    "configuration_name": "Valuation and sensitivities (EOD) - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -2881,7 +2881,7 @@
     "version": 0,
     "report_name": "Spot Greeks",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_us",
@@ -2930,7 +2930,7 @@
     "version": 0,
     "report_name": "Spot Greeks (EOD)",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Global Portfolio"
+    "configuration_name": "Valuation and sensitivities (EOD) - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -2965,7 +2965,7 @@
     "version": 0,
     "report_name": "Spot Ladder",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_us",
@@ -3007,7 +3007,7 @@
     "version": 0,
     "report_name": "Intraday Change",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_us",
@@ -3049,7 +3049,7 @@
     "version": 0,
     "report_name": "Trades Since Last In",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_us",
@@ -4022,7 +4022,7 @@
     "version": 0,
     "report_name": "Headline Position (EOD)",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Global Portfolio"
+    "configuration_name": "Valuation and sensitivities (EOD) - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -4057,7 +4057,7 @@
     "version": 0,
     "report_name": "Spot Greeks",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_hk",
@@ -4106,7 +4106,7 @@
     "version": 0,
     "report_name": "Spot Greeks (EOD)",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Global Portfolio"
+    "configuration_name": "Valuation and sensitivities (EOD) - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -4141,7 +4141,7 @@
     "version": 0,
     "report_name": "Spot Ladder",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_hk",
@@ -4183,7 +4183,7 @@
     "version": 0,
     "report_name": "Intraday Change",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_hk",
@@ -4225,7 +4225,7 @@
     "version": 0,
     "report_name": "Trades Since Last In",
     "configuration_type_code": "pricing_engines",
-    "configuration_name": "EOD Official"
+    "configuration_name": "Intraday Indicative"
   },
   {
     "company_code": "acme_hk",

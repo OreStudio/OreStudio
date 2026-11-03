@@ -136,11 +136,14 @@ ORE_TYPES = {
 STRESS_WINDOW = "2008-09-01,2009-03-31"
 
 # The choices each analytic stores, as (parameter, value). A value that names a
-# currency is written {ccy}. The parameters that name a file are not stored: the
-# export resolves an input document through the bindings and takes an output name
-# from the file types table. The values are the most common ones in the ORE samples,
-# counted in the investigation "The analytics of a configuration and their
-# parameters".
+# currency is written {ccy}. An output name comes from the file types table. The two
+# inputs a sensitivity run reads are the exception: no owner exports either document,
+# so a configuration that switched the analytic on with no file named asked the engine
+# for sensitivities with no factors to shift. The names are the ones the file types
+# table gives those parameters, and the ones the shipped
+# examples/MarketRisk/Input/ore_sensi.xml states. The values are the most common ones
+# in the ORE samples, counted in the investigation "The analytics of a configuration
+# and their parameters".
 PARAMETERS = {
     "portfolioDetails": [],
     "npv": [("baseCurrency", "{ccy}")],
@@ -152,6 +155,8 @@ PARAMETERS = {
         ("recalibrateModels", "Y"),
         ("outputSensitivityThreshold", "0.000001"),
         ("parSensitivity", "Y"),
+        ("sensitivityConfigFile", "sensitivity.xml"),
+        ("marketConfigFile", "simulation.xml"),
     ],
     "stress": [],
     "simulation": [("baseCurrency", "{ccy}"), ("storeFlows", "Y"), ("amc", "N")],
@@ -245,11 +250,24 @@ def scope_of(company, report_name):
     return ROOT_PORTFOLIO[company]
 
 
-def configuration_name(company, report_name):
+def market_data_type_of(report):
+    """The market data the run reads, taken from the cut the definition selects.
+
+    A definition states one cut selection, and the selection is the kind of cut the
+    run prices from: a LIVE definition prices from the market data of the instant the
+    run starts, and an EOD definition from the close of the weekday before it. The
+    run settings and the selection therefore cannot disagree, and a report on the two
+    cycles binds two settings rows.
+    """
+    return "eod" if report.get("cut_kind_code") == "EOD" else "live"
+
+
+def configuration_name(company, report_name, market_data_type="live"):
     analytics = analytics_of(report_name)
     if analytics not in PROFILES:
         raise SystemExit(f"No profile is named for the analytics of {report_name}: {sorted(analytics)}")
-    return f"{PROFILES[analytics]} - {scope_of(company, report_name)}"
+    cycle = " (EOD)" if market_data_type == "eod" else ""
+    return f"{PROFILES[analytics]}{cycle} - {scope_of(company, report_name)}"
 
 
 def base_currency(company, portfolios):
@@ -307,22 +325,24 @@ def analytic_rows(company, name, configuration_id, analytics, currency):
 
 
 def risk_report_configs(definitions, portfolios):
-    """One configuration for each distinct (analytics, scope) of an entity's reports,
-    with its analytics and their parameters."""
+    """One configuration for each distinct (analytics, scope, market data) of an
+    entity's reports, with its analytics and their parameters."""
     configs, analytics_rows, parameter_rows, market_rows = [], [], [], []
     for company in documents.LABEL:
         used = {}
         for d in definitions:
             if d["company_code"] != company:
                 continue
-            name = configuration_name(company, d["name"])
-            used.setdefault(name, (d["name"], []))[1].append(d["name"])
+            market_data = market_data_type_of(d)
+            name = configuration_name(company, d["name"], market_data)
+            used.setdefault(name, (d, []))[1].append(d["name"])
         check_scopes(company, {scope_of(company, reports[0]) for _first, reports in used.values()},
                      portfolios)
         currency = base_currency(company, portfolios)
         for name in sorted(used):
             first, reports = used[name]
-            analytics = analytics_of(first)
+            analytics = analytics_of(first["name"])
+            market_data = market_data_type_of(first)
             check_exposure_needs_simulation(name, analytics)
             configuration_id = documents.new_uuid(f"risk_report_config_header:{company}:{name}")
             configs.append({
@@ -334,14 +354,15 @@ def risk_report_configs(definitions, portfolios):
                 "description": f"Run settings shared by {', '.join(sorted(reports))}.",
                 "configuration_id": configuration_id,
                 "base_currency": currency,
-                # The run date, not the previous close. The demo environment
-                # is used the day it is provisioned, and its synthetic feeds
-                # quote only from the moment they start, so a run that priced
-                # the previous close would find no quotes for it.
-                "market_data_type": "live",
+                # The market data follows the cut the definitions that share this
+                # row select. A live run values the portfolio on the date it
+                # starts, which is also the date the demo environment's synthetic
+                # feeds quote from. An end of day run values it on the weekday
+                # before, which is the close the report is booked against.
+                "market_data_type": market_data,
                 "market_data_date": None,
                 **SETUP_CHOICES,
-                "scope_portfolio": scope_of(company, first),
+                "scope_portfolio": scope_of(company, first["name"]),
             })
             rows, values = analytic_rows(company, name, configuration_id, analytics, currency)
             analytics_rows.extend(rows)

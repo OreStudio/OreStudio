@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_plantuml_component_parse_braced_initialiser.py
+    python3 -m pytest build/scripts/tests/test_plantuml_component_parse_braced_initialiser.py
 
 A data member may carry a brace-or-equal initialiser::
 

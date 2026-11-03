@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_plantuml_component_parse_operator_function.py
+    python3 -m pytest build/scripts/tests/test_plantuml_component_parse_operator_function.py
 
 An operator function carries an operator token in its name::
 

@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_check_boost_dependencies.py
+    python3 -m pytest build/scripts/tests/test_check_boost_dependencies.py
 
 Boost arrives as per-library vcpkg ports, so the check compares the headers the
 tree includes with the transitive closure of vcpkg.json. Most ports are named

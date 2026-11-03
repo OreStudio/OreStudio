@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_plantuml_component_parse_enum_trailing_comment.py
+    python3 -m pytest build/scripts/tests/test_plantuml_component_parse_enum_trailing_comment.py
 
 A C++ header may document an enumerator on the same line, in either Doxygen
 trailing style::

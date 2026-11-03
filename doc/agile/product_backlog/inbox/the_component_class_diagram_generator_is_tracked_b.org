@@ -4,7 +4,7 @@
 #+title: The component class-diagram generator is tracked but run by …
 #+description: The component class-diagram generator is tracked but run by no gate, so every diagram in the tree is behind the code.
 
-The generator is build/scripts/generate_component_puml.py. It reads projects/<component>/include/<component>/**/*.hpp and rewrites everything above the manual sentinel in projects/<component>/modeling/<component>.puml, preserving the hand-authored section below it. It handles composite parts (ores.dq.core resolves to projects/ores.dq/core). It is tracked, it is not gitignored, and it has a suite of parser tests under projects/ores.codegen/tests/test_plantuml_component_parse_*.py.
+The generator is build/scripts/generate_component_puml.py. It reads projects/<component>/include/<component>/**/*.hpp and rewrites everything above the manual sentinel in projects/<component>/modeling/<component>.puml, preserving the hand-authored section below it. It handles composite parts (ores.dq.core resolves to projects/ores.dq/core). It is tracked, it is not gitignored, and it has a suite of parser tests under build/scripts/tests/test_plantuml_component_parse_*.py.
 
 Nothing runs it. It is not in a cmake target, and the generate_<name>_diagram cmake target only runs PlantUML over the existing .puml to refresh the PNG. The codegen drift check cannot see the file either: resolve_targets(address="ores.plantuml") returns no units for a component model, so the ores.plantuml pass renders nothing and compares nothing.
 

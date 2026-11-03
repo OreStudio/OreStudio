@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_component_puml_project_paths.py
+    python3 -m pytest build/scripts/tests/test_component_puml_project_paths.py
 
 The generator read ``projects/<name>/include/<name>``, so a composite
 part was invisible to it: ``ores.ore.core`` lives at

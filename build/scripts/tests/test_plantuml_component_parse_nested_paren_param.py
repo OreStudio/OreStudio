@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_plantuml_component_parse_nested_paren_param.py
+    python3 -m pytest build/scripts/tests/test_plantuml_component_parse_nested_paren_param.py
 
 A parameter's type may state a signature of its own:
 

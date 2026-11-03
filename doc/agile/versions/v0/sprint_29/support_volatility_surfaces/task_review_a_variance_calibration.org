@@ -26,11 +26,11 @@ A person with the review permission approves or rejects a proposed calibration a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -41,9 +41,10 @@ A person with the review permission approves or rejects a proposed calibration a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add a review verb beside the class calibration run, on the same handler, with a
+permission of its own; approving supersedes first, approves second, then names
+the calibration on the pair's GJR-GARCH feeds. Delivered with the apply task in
+one PR, because the re-pointing is the application.
 
 * Measurements
 
@@ -90,3 +91,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=synthetic.v1.ops.review_variance_calibration= approves or rejects a proposed
+calibration with the reviewer's reason, for the system tenant and the permission
+=synthetic::variance_calibrations:review=, which Trading holds; the BFF route is
+=POST /api/synthetic/calibration/variance/:id/review=. Each write claims the
+version it read; approving supersedes the pair's approval, then approves, then
+names the calibration on the pair's GJR-GARCH feeds. A calibration that is not
+proposed is refused. The change reason =system.review= records each decision.
+
+Measured live on a recreated database with Acme provisioned: approving the
+EUR/USD fit superseded the authored approval and re-pointed the demo and
+Bloomberg EUR/USD feeds; a second approval was refused; rejecting the GBP/USD fit
+moved no feed. The BFF tests cover the system-tenant gate, the request, the
+refusal and an empty reason.

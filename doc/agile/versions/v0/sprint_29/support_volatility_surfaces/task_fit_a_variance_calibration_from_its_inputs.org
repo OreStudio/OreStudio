@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4427][#4427]] | [synthetic] Capture and fit a feed's variance in the class calibration |
 
 * Review
 

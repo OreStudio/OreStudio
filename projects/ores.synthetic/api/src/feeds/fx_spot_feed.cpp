@@ -430,9 +430,11 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process;
     if (cfg.variance_model == "gjr_garch") {
         const auto calibrated = calibrated_variance(cfg, variance, components);
+        // A configuration fault the caller must see: the config names a calibration that is not
+        // approved, so the reason goes back to the person who started the feed.
         if (!calibrated)
-            throw std::runtime_error("Feed " + cfg.source_name +
-                                     " did not start: " + calibrated.error() + ".");
+            throw std::invalid_argument("Feed " + cfg.source_name +
+                                        " did not start: " + calibrated.error() + ".");
         const auto& choice = *calibrated;
         start.variance = choice.record;
         BOOST_LOG_SEV(lg(), info) << "Feed " << cfg.source_name

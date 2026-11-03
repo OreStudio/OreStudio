@@ -592,6 +592,8 @@ export const feedStartSchema = z.object({
     variance: z
         .object({
             model: z.string(),
+            calibration_id: z.string().default(''),
+            calibration_version: z.int().default(0),
             fitted: z.boolean(),
             alpha: z.number(),
             gamma: z.number(),

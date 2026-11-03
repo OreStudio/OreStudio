@@ -411,8 +411,8 @@ begin
                         null, 'authored', 1, r.garch_alpha, r.garch_gamma, r.garch_beta,
                         r.garch_alpha + 0.5 * r.garch_gamma + r.garch_beta,
                         null, 1.0, null, 0, 0, false, 'approved',
-                        'The authored shape installed with the feeds of ' || v_dataset_name ||
-                            '; its persistence takes p_minus as one half, the value of a symmetric mixture',
+                        'The authored shape installed with the system feeds; its persistence '
+                            'takes p_minus as one half, the value of a symmetric mixture',
                         coalesce(ores_iam_current_service_fn(), current_user), current_user,
                         'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
                     );

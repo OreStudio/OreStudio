@@ -756,6 +756,82 @@ describe('synthetic calibration', () => {
         provider_order: ['boe', 'imf'],
     };
 
+    const CALIBRATION = '84902b7e-58f4-4127-86cb-129ebedabe95';
+    const reviewPath = `/api/synthetic/calibration/variance/${CALIBRATION}/review`;
+
+    it('refuses a variance review outside the system tenant, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'reviewed',
+        });
+        expect(response.statusCode).toBe(403);
+        expect(calls).toEqual([]);
+    });
+
+    it("sends the reviewer's decision and reason, and reports the feeds it re-pointed", async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: true,
+                    message: 'Approved; 2 feed(s) now run it.',
+                    state: 'approved',
+                    superseded_id: '6a184aa7-58d1-477a-8687-769a27c006de',
+                    repointed_feeds: ['synthetic.bloomberg.eurusd', 'synthetic.demo.eurusd'],
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'Stable across starts; persistence 0.955.',
+        });
+        expect(response.statusCode).toBe(200);
+        expect(calls).toEqual([
+            {
+                subject: 'synthetic.v1.ops.review_variance_calibration',
+                body: {
+                    calibration_id: CALIBRATION,
+                    decision: 'approve',
+                    reason: 'Stable across starts; persistence 0.955.',
+                },
+            },
+        ]);
+        expect(response.json()).toMatchObject({
+            state: 'approved',
+            supersededId: '6a184aa7-58d1-477a-8687-769a27c006de',
+            repointedFeeds: ['synthetic.bloomberg.eurusd', 'synthetic.demo.eurusd'],
+        });
+    });
+
+    it("passes the service's refusal of a review on to the reviewer", async () => {
+        const { server, sessionId } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: false,
+                    message: 'Only a proposed calibration is reviewed; it is approved.',
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'reject',
+            reason: 'unstable',
+        });
+        expect(response.statusCode).not.toBe(200);
+        expect(response.body).toContain('Only a proposed calibration is reviewed');
+    });
+
+    it('refuses a review that states no reason', async () => {
+        const { server, sessionId, calls } = buildTestServer({}, SYSTEM_TENANT);
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: '  ',
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('refuses a policy change outside the system tenant, before any call', async () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await send(

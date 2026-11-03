@@ -35,8 +35,8 @@ A fresh installation runs the fits that pass objective checks without a click. T
 
 * Acceptance
 
-- The FX policy is seeded in auto mode with the rules: at least 250 returns, starts agree, persistence from 0.80 to 0.995, and alpha plus gamma above zero.
-- An applied run approves each fit that passes and leaves each that fails proposed, naming the failed rule; on the data of 2026-11-03, 13 pairs pass and 11 wait.
+- The FX policy is seeded in auto mode with the rules: at least 250 returns, starts agree, persistence from 0.80 to 0.995, and an average reaction, alpha plus half of gamma, of at least 0.01. Each class's policy holds its own values.
+- An applied run approves each fit that passes and leaves each that fails proposed, naming the failed rule; on the data of 2026-11-03, 13 pairs pass and 11 wait, as =evidence/design_fx_preview_2026-11-03.txt= records.
 - An approval's history entry names its decider: the person, or the policy with its id and version.
 - A fit approved by the policy can still be rejected, and an exception approved, by a person.
 

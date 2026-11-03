@@ -23,7 +23,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 |---------------+----------------------------------------------------------------------|
 | State         | STARTED                                                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]               |
-| Now           | The synthetic calibration workflow is designed and its tasks named. |
+| Now           | The synthetic calibration workflow is designed and its tasks named.  |
 | Waiting on    | Nothing.                                                             |
 | Next          | Approve a fit within the class policy's rules.                       |
 | Last touched  | 2026-11-03                                                           |
@@ -174,31 +174,41 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   while the official adapters backfill the public rates on their own acceptance a
   few seconds later; nothing orders the two, and calibrating, reviewing and
   restarting were three manual acts with no owner. In the provisioning run of
-  2026-11-03 the 40 fixing feeds started at 16:09:57 and the IMF fixings were
-  stored at 16:10:03, so each run kept its authored level and the recorded spots
+  2026-11-03 the 26 Bloomberg fixing feeds started from 16:09:57 and the IMF
+  fixings were stored at 16:10:03, so each run kept its authored level and the
+  recorded spots
   jumped at the first calibrated restart. Decision: synthetic_calibration_workflow
   runs on the engine in the system tenant, in the order load_public_rates,
   calibrate_feeds, approve_within_policy, tell_reviewer. Loading the public rates
   becomes a step of the official service rather than a side effect of
   acceptance. Provisioning's system run starts the workflow after
   system_provision, an operator starts it from the Calibration screen, and the
-  scheduler starts it each business day. Consequences: every calibration is a
+  scheduler starts it each business day. The workflow's policy is stop: a step
+  that fails or times out ends the run there, so calibrate_feeds never runs on
+  public rates that were not loaded, and a release a profile orders runs only
+  after the workflow has completed. A stopped run leaves its class unreleased
+  until the engine's retry completes it. Consequences: every calibration is a
   recorded run with steps a person can follow and retry; the tenant run does not
   wait for it.
 
   #+caption: How a fresh installation reaches calibrated, running feeds.
   [[proj:doc/agile/versions/v0/sprint_29/support_volatility_surfaces/synthetic_calibration_workflow.png]]
+
 - *A fit within the class policy's rules is approved by the policy*
   (2026-11-03). Context: a person approving each pair's fit would mean dozens of
   clicks before a demonstration tenant is usable, and more each day. Measured on
   the data of 2026-11-03, 13 of the 24 proposed fits pass the rules below, and 11
   fail on disagreeing starts, a persistence out of range, or no reaction to moves.
-  Decision: the calibration policy holds an approval mode, manual or auto, and
-  its rules: at least 250 returns, starts that agree, persistence from 0.80 to
-  0.995, and alpha plus gamma above zero. In auto mode a passing fit is approved
-  through the review verb with the policy, its id and its version as the decider;
-  a failing fit stays proposed with the failed rule as its reason, and its pair
-  keeps the shape it runs. The seeded FX policy is in auto mode. Consequences: a
+  Decision: each asset class's calibration policy holds an approval mode, manual
+  or auto, and its own rules. The FX policy is seeded in auto mode with these
+  values: at least 250 returns, starts that agree, persistence from 0.80 to
+  0.995, and an average reaction, alpha plus half of gamma, of at least 0.01. The
+  reaction is a threshold and not merely above zero, because a fit can reach
+  alpha and gamma of about 1e-11, a variance that does not react to moves
+  (USD/CHF on 2026-11-03). In auto mode a passing fit is approved through the
+  review verb with the policy, its id and its version as the decider; a failing
+  fit stays proposed with the failed rule as its reason, and its pair keeps the
+  shape it runs. Consequences: a
   fresh installation needs no click to run fitted shapes where the data supports
   them; a person sees only the exceptions; the history names who decided each
   approval, a person or a policy version; a change of a rule is a new policy
@@ -222,8 +232,9 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   demand reaches them. Releasing is an explicit, recorded act: the release step a
   demonstration profile such as Acme orders, or an operator's Start feeds.
   Consequences: every fixing-sourced feed starts once, from its calibrated level;
-  a production installation starts its feeds by hand after calibration; the
-  Calibration screen shows why a class's feeds are silent.
+  on a fresh production installation every synthetic feed is silent until an
+  operator presses Start feeds after calibration, and the Calibration screen
+  shows each class's release state, so the silence is explained.
 
 * Out of scope
 

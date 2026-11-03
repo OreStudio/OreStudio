@@ -41,9 +41,12 @@ The story states, with a flow diagram, the order a fresh installation follows: p
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read the provisioning run of 2026-11-03 in the service journals to find the
+order of the system run, the feed starts and the public-rates backfill. Read the
+workflow engine and the existing apply workflows to see what the engine offers
+and how a human decision fits it. Preview the FX class to measure how many fits
+a policy could approve. Record the design as four decisions with a flow diagram,
+and split it into tasks in the order they are built.
 
 * Measurements
 
@@ -57,7 +60,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Fixing feeds started during provisioning, all at their fixed level | 26 Bloomberg feeds, 16:09:57 to 16:09:59 | =journalctl --user -u ores.synthetic.service-prime_origin.service= over 16:09:50 to 16:10:07; =evidence/design_provisioning_timeline_2026-11-03.txt= | services built from 861167d734 |
+| Public fixings stored | ecb 8215 at 16:10:01, imf 8974 at 16:10:03, boc 6382 at 16:10:04, tcmb 5772 at 16:10:06 | same journal, =ores.marketdata.official-prime_origin=; =evidence/design_provisioning_timeline_2026-11-03.txt= | services built from 861167d734 |
+| Proposed FX fits that pass the proposed rules | 13 of 24 pass, 11 wait | =python3 -I evidence/design_fx_preview.py fx_preview.json= on the FX preview of 2026-11-03; =evidence/design_fx_preview_2026-11-03.txt= | services built from the tree merged as 7eb8ddec0c |
 
 * Notes
 
@@ -82,7 +87,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| R1.1 | The cited figures have no measurement rows | task, story | Accept | Measurements name the command, the commit and an evidence file for each. Re-measuring corrected two claims: 26 feeds started, not 40; and the reaction rule "alpha plus gamma above zero" passed USD/CHF at 1.75e-11, so it is now alpha plus half of gamma of at least 0.01, which gives 13 pass and 11 wait |
+| R1.2 | The Plan is still the scaffold on a DONE task | task | Accept | The plan states how the design was reached |
+| R1.3 | Say that a fresh production install is silent until Start feeds | story, release task | Accept | Stated as a consequence; the release task checks the screen explains it |
+| R1.4 | Say what a failed load_public_rates does to calibration and release | story | Accept | The policy is stop; calibration never runs on rates not loaded, and a release runs only after the workflow completes |
+| R1.5 | Say whether the thresholds are FX values or class-wide | story, approval task | Accept | Each class's policy holds its own rules; the values are the FX seed |
+| R1.6 | Table cell width, a blank line after the image, the file name of the rewritten task | story | Accept the first two; decline the rename | The task keeps its id and its links; a rename changes nothing a reader follows |
 
 * Result
 
@@ -99,6 +109,6 @@ calibration workflow; release the synthetic feeds after calibration (the earlier
 task to start the feeds after calibration, rewritten); calibrate in the
 provisioning system run; and recalibrate on a schedule.
 
-The evidence is the provisioning run of 2026-11-03 (feeds started at 16:09:57,
+The evidence is the provisioning run of 2026-11-03 (26 Bloomberg fixing feeds started from 16:09:57,
 IMF fixings stored at 16:10:03) and a preview of the FX class on the same day (13
 of 24 proposed fits pass the proposed rules).

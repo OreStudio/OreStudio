@@ -38,6 +38,7 @@ The recorded spot series of every fixing-sourced feed is continuous from its fir
 - On a fresh installation, no synthetic feed publishes a tick before its class is released.
 - Releasing a class starts its demanded feeds, and each fixing-sourced feed records a start from its fixing whose first stored spot is within the feed's spread of that fixing.
 - The release is recorded with who released the class and when, and the Calibration screen shows each class's release state.
+- On a fresh installation whose profile orders no release, the Calibration screen shows each class as not released and says that its feeds wait for Start feeds.
 - The calibration workflow note and the provisioning documentation state the order: load the public rates, calibrate, approve, release.
 
 * Plan

@@ -1027,9 +1027,6 @@ void import_inflation_curve(ores::refdata::messaging::curve_configuration_docume
     r.tolerance = v.real("Tolerance");
     if (const auto seasonality = v.child("Seasonality"); seasonality) {
         const auto factors = seasonality->child("Factors");
-        if (!factors)
-            throw refusal("inflation curve " + d.curve_id +
-                          " states a Seasonality with no Factors");
         refdata::domain::inflation_seasonality s;
         s.id = curve_configuration_projection_new_uuid();
         s.curve_definition_id = d.id;
@@ -1038,15 +1035,16 @@ void import_inflation_curve(ores::refdata::messaging::curve_configuration_docume
         curve_configuration_projection_set_audit(s);
         out.inflation_seasonalities.push_back(std::move(s));
         int factor_position = 0;
-        for (const auto& f : factors->values("Factor")) {
-            refdata::domain::inflation_seasonality_factor sf;
-            sf.id = curve_configuration_projection_new_uuid();
-            sf.curve_definition_id = d.id;
-            sf.factor = f;
-            sf.position = factor_position++;
-            curve_configuration_projection_set_audit(sf);
-            out.seasonality_factors.push_back(std::move(sf));
-        }
+        if (factors)
+            for (const auto& f : factors->values("Factor")) {
+                refdata::domain::inflation_seasonality_factor sf;
+                sf.id = curve_configuration_projection_new_uuid();
+                sf.curve_definition_id = d.id;
+                sf.factor = f;
+                sf.position = factor_position++;
+                curve_configuration_projection_set_audit(sf);
+                out.seasonality_factors.push_back(std::move(sf));
+            }
     }
     r.use_last_fixing_date = v.spelling("UseLastFixingDate");
     r.interpolation_variable = v.text("InterpolationVariable");
@@ -2387,9 +2385,6 @@ void import_swaption_volatility(ores::refdata::messaging::curve_configuration_do
     r.swap_index_base = v.text("SwapIndexBase");
     r.quote_tag = v.text("QuoteTag");
     if (v.has("SmileOptionTenors") || v.has("SmileSwapTenors") || v.has("SmileSpreads")) {
-        if (r.dimension != "Smile")
-            throw refusal("swaption volatility " + d.curve_id +
-                          " states a smile grid but its Dimension is not Smile");
         refdata::domain::swaption_volatility_smile smile;
         smile.id = curve_configuration_projection_new_uuid();
         smile.swaption_volatility_config_id = r.id;
@@ -3506,9 +3501,6 @@ void export_swaption_volatility(record_writer r,
                                 const refdata::domain::swaption_volatility_smile* smile_grid,
                                 const refdata::domain::curve_report_configuration* report,
                                 const smile_export& smile) {
-    if (smile_grid && v.dimension != "Smile")
-        throw refusal("swaption volatility " + d.curve_id +
-                      " has a smile grid but its Dimension is not Smile");
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     if (proxy_config) {

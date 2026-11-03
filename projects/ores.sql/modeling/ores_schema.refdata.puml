@@ -6812,12 +6812,12 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     Swaption Volatility Smile Table
     ORE's swaptionVolatility is one xs:all with an optional Dimension and
-    every smile element optional, so the schema says only that the smile fields may
-    be absent. It cannot say that they are meaningless for an ATM surface: an ATM
-    surface has no smile, and a cube has one. That is the deficiency this part
-    corrects, as the FX smile part does for the FX entry. A row exists only where the
-    entry states a smile, and the export refuses a smile on an entry whose dimension
-    is not Smile.
+    every smile element optional. ORE reads the three smile lists only for a Smile
+    surface, and they are one block: in the ORE examples an entry states all three
+    or none. A row of this part is that block, and it exists wherever the entry
+    states one, as the FX smile part does for the FX entry. The examples also keep a
+    grid on three ATM entries whose dimension was switched from Smile, so the
+    part does not depend on the dimension, and the document round trips as written.
     The part holds SmileOptionTenors, SmileSwapTenors and SmileSpreads, each
     a comma separated list in ORE's own text. Dimension stays on the entry,
     because it is the entry's own setting and the smile only depends on it.

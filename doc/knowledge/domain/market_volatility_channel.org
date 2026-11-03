@@ -214,7 +214,7 @@ and the calm/active chain is a property of the market, not of one pair's
 history. That memory is the job of the GJR-GARCH variance each FX spot carries,
 described in
 [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]]
-under "GJR-GARCH in the synthetic FX spot". The two compose by multiplication:
+under "Daily GJR-GARCH variance of synthetic FX spot". The two compose by multiplication:
 
   Var(tick) = sigma_d^2 * M_vol(t)^2 * s
 

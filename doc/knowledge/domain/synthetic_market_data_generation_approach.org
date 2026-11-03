@@ -80,7 +80,7 @@ and the recursion
 =σ²_t = ω + α·ε²_{t-1} + γ·ε²_{t-1}·𝟙{ε_{t-1}<0} + β·σ²_{t-1}= sets its size.
 The parameters are estimated from five years of public fixings.  See
 [[id:351CB816-28F5-428A-A289-414B6F4B9F36][GARCH knowledge doc]], section
-"GJR-GARCH in the synthetic FX spot", for the model as the generator uses it.
+"Daily GJR-GARCH variance of synthetic FX spot", for the model as the generator uses it.
 
 *SSVI parameter dynamics — Q-measure.* An option vol surface is an SSVI
 surface whose parameters are the state of the generator.  SSVI describes a

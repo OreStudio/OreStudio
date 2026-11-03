@@ -58,11 +58,24 @@ source; nothing downstream changes, as
 [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]]
 describes for a live source.
 
-** No durable class
+** Stored as quotes, not as fixings
 
-Every derived quote can be computed again from the durable fixings it read, so
-the derived quotes need no durable tick class: they are kept as long as any
-quote of their kind, and a lost day is recomputed rather than restored.
+The derived quotes are stored, and stored as what they are: quotes. They are
+items of the =fx_option= series, as a vendor's vol quotes are, so they take the
+quote path of
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]]:
+the ingest applies the age gate, and the tick table keeps them for its seven
+days. They do not enter =market_fixing=, which keeps fixings for good, because a
+derived quote is not a fixing, and because it needs no permanent copy: every
+derived quote can be computed again from the fixings it was derived from, which
+=market_fixing= does keep. The values a surface generator starts from are
+recorded with its calibration, so a start is traceable after its quotes have
+aged out.
+
+The age gate has one consequence for the derived source. It publishes the
+current day's quotes only, after the day's fixings are in, and never a backfill
+of past days; a past day is recomputed from the fixings when it is needed, not
+replayed through the ingest.
 
 ** Its own identity
 

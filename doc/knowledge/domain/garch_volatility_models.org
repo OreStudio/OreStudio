@@ -312,7 +312,7 @@ computed numerically from the distribution's CDF.  This feeds directly
 into the persistence coefficient =kappa= and the unconditional variance
 formula.
 
-* GJR-GARCH in the synthetic FX spot
+* Daily GJR-GARCH variance of synthetic FX spot
 
 ORE Studio's synthetic FX spot feeds carry a GJR-GARCH variance from one market
 day to the next. This section states the model as the generator uses it. Where
@@ -554,7 +554,7 @@ engineered input feature =log(1.01 - kappa)=.
 
 ORE Studio's synthetic pipeline does not use the MDN. GJR-GARCH appears in it
 under the real-world measure, as the daily variance of the synthetic FX spot
-described in =* GJR-GARCH in the synthetic FX spot=. The synthetic volatility
+described in =* Daily GJR-GARCH variance of synthetic FX spot=. The synthetic volatility
 surfaces are not computed from the GARCH state: they evolve through SSVI
 parameter processes of their own, whose shocks are correlated with the spot
 shocks, as

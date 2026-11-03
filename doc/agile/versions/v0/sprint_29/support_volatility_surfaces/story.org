@@ -52,7 +52,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   fixings by variance targeting and quasi maximum likelihood, and multiplies
   with the intraday volatility channel. Consequences: the feed gains volatility
   clustering across days and a per-pair leverage effect; the surface reads no
-  GARCH state. See "GJR-GARCH in the synthetic FX spot" in
+  GARCH state. See "Daily GJR-GARCH variance of synthetic FX spot" in
   [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]]
   and "The daily variance" in
   [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][Market volatility channel]].

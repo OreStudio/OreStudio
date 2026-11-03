@@ -45,8 +45,7 @@ void check_wire_roundtrip() {
                   "the type has a member its wire shape does not name");
     using traits = utility::codec::wire_traits<T>;
     const auto bytes = [](const std::string& s) {
-        return std::span<const std::byte>(
-            reinterpret_cast<const std::byte*>(s.data()), s.size());
+        return std::span<const std::byte>(reinterpret_cast<const std::byte*>(s.data()), s.size());
     };
     const auto check = [&](const T& v) {
         CHECK(traits::read_json(traits::write_json(v)) == v);

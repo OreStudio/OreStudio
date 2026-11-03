@@ -388,11 +388,11 @@ struct get_cap_floor_volatility_config_version_response {
  */
 namespace cap_floor_volatility_config_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.cap_floor_volatility_configs_events.created";
+    "refdata.v1.events.cap_floor_volatility_configs.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.cap_floor_volatility_configs_events.updated";
+    "refdata.v1.events.cap_floor_volatility_configs.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.cap_floor_volatility_configs_events.deleted";
+    "refdata.v1.events.cap_floor_volatility_configs.deleted";
 }
 /**
  * @brief The members of cap_floor_volatility_config_key, named as the wire names them and in the

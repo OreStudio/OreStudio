@@ -171,9 +171,9 @@ struct get_many_run_results_response {
  * of them.
  */
 namespace run_result_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.run_results_events.created";
-inline constexpr std::string_view updated = "reporting.v1.run_results_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.run_results_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.run_results.created";
+inline constexpr std::string_view updated = "reporting.v1.events.run_results.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.run_results.deleted";
 }
 /**
  * @brief The members of run_result_key, named as the wire names them and in the order

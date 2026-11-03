@@ -340,9 +340,9 @@ struct get_host_version_response {
  * of them.
  */
 namespace host_event_subjects {
-inline constexpr std::string_view created = "compute.v1.hosts_events.created";
-inline constexpr std::string_view updated = "compute.v1.hosts_events.updated";
-inline constexpr std::string_view deleted = "compute.v1.hosts_events.deleted";
+inline constexpr std::string_view created = "compute.v1.events.hosts.created";
+inline constexpr std::string_view updated = "compute.v1.events.hosts.updated";
+inline constexpr std::string_view deleted = "compute.v1.events.hosts.deleted";
 }
 /**
  * @brief The members of host_key, named as the wire names them and in the order

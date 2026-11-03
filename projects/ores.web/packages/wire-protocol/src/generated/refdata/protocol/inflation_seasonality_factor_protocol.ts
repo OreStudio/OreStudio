@@ -210,7 +210,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.inflation_seasonality_factors_events.created',
-    updated: 'refdata.v1.inflation_seasonality_factors_events.updated',
-    deleted: 'refdata.v1.inflation_seasonality_factors_events.deleted',
+    created: 'refdata.v1.events.inflation_seasonality_factors.created',
+    updated: 'refdata.v1.events.inflation_seasonality_factors.updated',
+    deleted: 'refdata.v1.events.inflation_seasonality_factors.deleted',
 } as const;

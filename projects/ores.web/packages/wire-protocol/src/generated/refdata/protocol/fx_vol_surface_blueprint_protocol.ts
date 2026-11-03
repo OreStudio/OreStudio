@@ -219,7 +219,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.fx_vol_surface_blueprints_events.created',
-    updated: 'refdata.v1.fx_vol_surface_blueprints_events.updated',
-    deleted: 'refdata.v1.fx_vol_surface_blueprints_events.deleted',
+    created: 'refdata.v1.events.fx_vol_surface_blueprints.created',
+    updated: 'refdata.v1.events.fx_vol_surface_blueprints.updated',
+    deleted: 'refdata.v1.events.fx_vol_surface_blueprints.deleted',
 } as const;

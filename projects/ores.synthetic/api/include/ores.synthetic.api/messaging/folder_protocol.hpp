@@ -339,9 +339,9 @@ struct get_folder_version_response {
  * of them.
  */
 namespace folder_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.folders_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.folders_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.folders_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.folders.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.folders.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted";
 }
 /**
  * @brief The members of folder_key, named as the wire names them and in the order

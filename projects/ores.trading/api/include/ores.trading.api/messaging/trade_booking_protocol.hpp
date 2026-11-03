@@ -360,9 +360,9 @@ struct get_trade_booking_version_response {
  * of them.
  */
 namespace trade_booking_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trade_bookings_events.created";
-inline constexpr std::string_view updated = "trading.v1.trade_bookings_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trade_bookings_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trade_bookings.created";
+inline constexpr std::string_view updated = "trading.v1.events.trade_bookings.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trade_bookings.deleted";
 }
 /**
  * @brief The members of trade_booking_key, named as the wire names them and in the order

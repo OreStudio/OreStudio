@@ -383,9 +383,9 @@ struct get_engine_settings_version_response {
  * of them.
  */
 namespace engine_settings_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.engine_settings_events.created";
-inline constexpr std::string_view updated = "reporting.v1.engine_settings_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.engine_settings_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.engine_settings.created";
+inline constexpr std::string_view updated = "reporting.v1.events.engine_settings.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.engine_settings.deleted";
 }
 /**
  * @brief The members of engine_settings_key, named as the wire names them and in the order

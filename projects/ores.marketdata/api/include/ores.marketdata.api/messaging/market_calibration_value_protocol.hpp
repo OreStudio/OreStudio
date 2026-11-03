@@ -309,11 +309,11 @@ struct delete_many_market_calibration_values_response {
  */
 namespace market_calibration_value_event_subjects {
 inline constexpr std::string_view created =
-    "marketdata.v1.market_calibration_values_events.created";
+    "marketdata.v1.events.market_calibration_values.created";
 inline constexpr std::string_view updated =
-    "marketdata.v1.market_calibration_values_events.updated";
+    "marketdata.v1.events.market_calibration_values.updated";
 inline constexpr std::string_view deleted =
-    "marketdata.v1.market_calibration_values_events.deleted";
+    "marketdata.v1.events.market_calibration_values.deleted";
 }
 /**
  * @brief The members of market_calibration_value_key, named as the wire names them and in the order

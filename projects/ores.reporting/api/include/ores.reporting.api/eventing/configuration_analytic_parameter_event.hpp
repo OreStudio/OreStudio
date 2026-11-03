@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::reporting::messaging::configuration_analytic_parameter_event> {
     static constexpr std::string_view subject_prefix =
-        "reporting.v1.configuration_analytic_parameters_events";
+        "reporting.v1.events.configuration_analytic_parameters";
 
     static ores::reporting::messaging::configuration_analytic_parameter_event
     from_notification(const entity_event_notification& notification) {

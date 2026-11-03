@@ -357,9 +357,9 @@ struct get_series_subclass_code_version_response {
  * of them.
  */
 namespace series_subclass_code_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.series_subclass_codes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.series_subclass_codes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.series_subclass_codes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.series_subclass_codes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.series_subclass_codes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_codes.deleted";
 }
 /**
  * @brief The members of series_subclass_code_key, named as the wire names them and in the order

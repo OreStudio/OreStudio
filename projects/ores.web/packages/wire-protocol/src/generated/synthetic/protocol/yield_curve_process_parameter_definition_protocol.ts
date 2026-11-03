@@ -222,7 +222,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.yield_curve_process_parameter_definitions_events.created',
-    updated: 'synthetic.v1.yield_curve_process_parameter_definitions_events.updated',
-    deleted: 'synthetic.v1.yield_curve_process_parameter_definitions_events.deleted',
+    created: 'synthetic.v1.events.yield_curve_process_parameter_definitions.created',
+    updated: 'synthetic.v1.events.yield_curve_process_parameter_definitions.updated',
+    deleted: 'synthetic.v1.events.yield_curve_process_parameter_definitions.deleted',
 } as const;

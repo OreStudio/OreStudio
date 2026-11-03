@@ -485,9 +485,9 @@ struct get_file_type_version_response {
  * of them.
  */
 namespace file_type_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.file_types_events.created";
-inline constexpr std::string_view updated = "reporting.v1.file_types_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.file_types_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.file_types.created";
+inline constexpr std::string_view updated = "reporting.v1.events.file_types.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.file_types.deleted";
 }
 /**
  * @brief The members of file_type_key, named as the wire names them and in the order

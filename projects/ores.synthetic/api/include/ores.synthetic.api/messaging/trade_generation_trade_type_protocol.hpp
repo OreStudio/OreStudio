@@ -366,11 +366,11 @@ struct get_trade_generation_trade_type_version_response {
  */
 namespace trade_generation_trade_type_event_subjects {
 inline constexpr std::string_view created =
-    "synthetic.v1.trade_generation_trade_types_events.created";
+    "synthetic.v1.events.trade_generation_trade_types.created";
 inline constexpr std::string_view updated =
-    "synthetic.v1.trade_generation_trade_types_events.updated";
+    "synthetic.v1.events.trade_generation_trade_types.updated";
 inline constexpr std::string_view deleted =
-    "synthetic.v1.trade_generation_trade_types_events.deleted";
+    "synthetic.v1.events.trade_generation_trade_types.deleted";
 }
 /**
  * @brief The members of trade_generation_trade_type_key, named as the wire names them and in the

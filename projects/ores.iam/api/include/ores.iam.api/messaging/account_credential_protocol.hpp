@@ -263,9 +263,9 @@ struct get_account_credential_version_response {
  * of them.
  */
 namespace account_credential_event_subjects {
-inline constexpr std::string_view created = "iam.v1.account_credentials_events.created";
-inline constexpr std::string_view updated = "iam.v1.account_credentials_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.account_credentials.created";
+inline constexpr std::string_view updated = "iam.v1.events.account_credentials.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.deleted";
 }
 /**
  * @brief The members of account_credential_key, named as the wire names them and in the order

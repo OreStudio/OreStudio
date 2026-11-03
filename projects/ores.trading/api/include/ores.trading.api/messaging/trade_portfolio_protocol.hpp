@@ -382,9 +382,9 @@ struct get_trade_portfolio_version_response {
  * of them.
  */
 namespace trade_portfolio_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trade_portfolios_events.created";
-inline constexpr std::string_view updated = "trading.v1.trade_portfolios_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trade_portfolios_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trade_portfolios.created";
+inline constexpr std::string_view updated = "trading.v1.events.trade_portfolios.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trade_portfolios.deleted";
 }
 /**
  * @brief The members of trade_portfolio_key, named as the wire names them and in the order

@@ -347,9 +347,9 @@ struct get_local_jurisdiction_version_response {
  * of them.
  */
 namespace local_jurisdiction_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.local_jurisdictions_events.created";
-inline constexpr std::string_view updated = "refdata.v1.local_jurisdictions_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.local_jurisdictions_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.local_jurisdictions.created";
+inline constexpr std::string_view updated = "refdata.v1.events.local_jurisdictions.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictions.deleted";
 }
 /**
  * @brief The members of local_jurisdiction_key, named as the wire names them and in the order

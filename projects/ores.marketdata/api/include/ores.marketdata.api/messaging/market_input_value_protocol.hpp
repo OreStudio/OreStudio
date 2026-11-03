@@ -299,9 +299,9 @@ struct delete_many_market_input_values_response {
  * of them.
  */
 namespace market_input_value_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.market_input_values_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.market_input_values_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.market_input_values_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.market_input_values.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.market_input_values.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.market_input_values.deleted";
 }
 /**
  * @brief The members of market_input_value_key, named as the wire names them and in the order

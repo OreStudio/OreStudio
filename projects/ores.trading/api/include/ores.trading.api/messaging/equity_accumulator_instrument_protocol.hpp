@@ -382,11 +382,11 @@ struct get_equity_accumulator_instrument_version_response {
  */
 namespace equity_accumulator_instrument_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.equity_accumulator_instruments_events.created";
+    "trading.v1.events.equity_accumulator_instruments.created";
 inline constexpr std::string_view updated =
-    "trading.v1.equity_accumulator_instruments_events.updated";
+    "trading.v1.events.equity_accumulator_instruments.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.equity_accumulator_instruments_events.deleted";
+    "trading.v1.events.equity_accumulator_instruments.deleted";
 }
 /**
  * @brief The members of equity_accumulator_instrument_key, named as the wire names them and in the

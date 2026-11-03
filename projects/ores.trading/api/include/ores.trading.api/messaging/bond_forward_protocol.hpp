@@ -357,9 +357,9 @@ struct get_bond_forward_version_response {
  * of them.
  */
 namespace bond_forward_event_subjects {
-inline constexpr std::string_view created = "trading.v1.bond_forwards_events.created";
-inline constexpr std::string_view updated = "trading.v1.bond_forwards_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.bond_forwards_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.bond_forwards.created";
+inline constexpr std::string_view updated = "trading.v1.events.bond_forwards.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.bond_forwards.deleted";
 }
 /**
  * @brief The members of bond_forward_key, named as the wire names them and in the order

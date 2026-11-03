@@ -413,11 +413,11 @@ struct get_todays_market_configuration_binding_version_response {
  */
 namespace todays_market_configuration_binding_event_subjects {
 inline constexpr std::string_view created =
-    "analytics.v1.todays_market_configuration_bindings_events.created";
+    "analytics.v1.events.todays_market_configuration_bindings.created";
 inline constexpr std::string_view updated =
-    "analytics.v1.todays_market_configuration_bindings_events.updated";
+    "analytics.v1.events.todays_market_configuration_bindings.updated";
 inline constexpr std::string_view deleted =
-    "analytics.v1.todays_market_configuration_bindings_events.deleted";
+    "analytics.v1.events.todays_market_configuration_bindings.deleted";
 }
 /**
  * @brief The members of todays_market_configuration_binding_key, named as the wire names them and

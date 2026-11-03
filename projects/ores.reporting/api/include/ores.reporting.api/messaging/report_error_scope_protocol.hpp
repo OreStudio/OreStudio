@@ -356,9 +356,9 @@ struct get_report_error_scope_version_response {
  * of them.
  */
 namespace report_error_scope_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.report_error_scopes_events.created";
-inline constexpr std::string_view updated = "reporting.v1.report_error_scopes_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.report_error_scopes.created";
+inline constexpr std::string_view updated = "reporting.v1.events.report_error_scopes.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.report_error_scopes.deleted";
 }
 /**
  * @brief The members of report_error_scope_key, named as the wire names them and in the order

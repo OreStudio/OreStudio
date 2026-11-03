@@ -351,9 +351,9 @@ struct get_nature_dimension_version_response {
  * of them.
  */
 namespace nature_dimension_event_subjects {
-inline constexpr std::string_view created = "dq.v1.nature_dimensions_events.created";
-inline constexpr std::string_view updated = "dq.v1.nature_dimensions_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.nature_dimensions_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.nature_dimensions.created";
+inline constexpr std::string_view updated = "dq.v1.events.nature_dimensions.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.deleted";
 }
 /**
  * @brief The members of nature_dimension_key, named as the wire names them and in the order

@@ -351,9 +351,9 @@ struct get_trade_activity_version_response {
  * of them.
  */
 namespace trade_activity_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trade_activities_events.created";
-inline constexpr std::string_view updated = "trading.v1.trade_activities_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trade_activities.created";
+inline constexpr std::string_view updated = "trading.v1.events.trade_activities.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trade_activities.deleted";
 }
 /**
  * @brief The members of trade_activity_key, named as the wire names them and in the order

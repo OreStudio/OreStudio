@@ -394,11 +394,11 @@ struct get_trade_authorisation_request_version_response {
  */
 namespace trade_authorisation_request_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.trade_authorisation_requests_events.created";
+    "trading.v1.events.trade_authorisation_requests.created";
 inline constexpr std::string_view updated =
-    "trading.v1.trade_authorisation_requests_events.updated";
+    "trading.v1.events.trade_authorisation_requests.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.trade_authorisation_requests_events.deleted";
+    "trading.v1.events.trade_authorisation_requests.deleted";
 }
 /**
  * @brief The members of trade_authorisation_request_key, named as the wire names them and in the

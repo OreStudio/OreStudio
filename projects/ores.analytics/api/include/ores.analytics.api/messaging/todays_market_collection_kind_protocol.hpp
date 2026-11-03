@@ -369,11 +369,11 @@ struct get_todays_market_collection_kind_version_response {
  */
 namespace todays_market_collection_kind_event_subjects {
 inline constexpr std::string_view created =
-    "analytics.v1.todays_market_collection_kinds_events.created";
+    "analytics.v1.events.todays_market_collection_kinds.created";
 inline constexpr std::string_view updated =
-    "analytics.v1.todays_market_collection_kinds_events.updated";
+    "analytics.v1.events.todays_market_collection_kinds.updated";
 inline constexpr std::string_view deleted =
-    "analytics.v1.todays_market_collection_kinds_events.deleted";
+    "analytics.v1.events.todays_market_collection_kinds.deleted";
 }
 /**
  * @brief The members of todays_market_collection_kind_key, named as the wire names them and in the

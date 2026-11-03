@@ -361,9 +361,9 @@ struct get_workflow_instance_version_response {
  * of them.
  */
 namespace workflow_instance_event_subjects {
-inline constexpr std::string_view created = "workflow.v1.workflow_instances_events.created";
-inline constexpr std::string_view updated = "workflow.v1.workflow_instances_events.updated";
-inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_events.deleted";
+inline constexpr std::string_view created = "workflow.v1.events.workflow_instances.created";
+inline constexpr std::string_view updated = "workflow.v1.events.workflow_instances.updated";
+inline constexpr std::string_view deleted = "workflow.v1.events.workflow_instances.deleted";
 }
 /**
  * @brief The members of workflow_instance_key, named as the wire names them and in the order

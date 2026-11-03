@@ -371,9 +371,9 @@ struct get_subscription_interval_version_response {
  * of them.
  */
 namespace subscription_interval_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.subscription_intervals_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.subscription_intervals_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.subscription_intervals_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.subscription_intervals.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.subscription_intervals.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_intervals.deleted";
 }
 /**
  * @brief The members of subscription_interval_key, named as the wire names them and in the order

@@ -399,9 +399,9 @@ struct get_instrument_option_premium_version_response {
  * of them.
  */
 namespace instrument_option_premium_event_subjects {
-inline constexpr std::string_view created = "trading.v1.instrument_option_premiums_events.created";
-inline constexpr std::string_view updated = "trading.v1.instrument_option_premiums_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.instrument_option_premiums_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.instrument_option_premiums.created";
+inline constexpr std::string_view updated = "trading.v1.events.instrument_option_premiums.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.instrument_option_premiums.deleted";
 }
 /**
  * @brief The members of instrument_option_premium_key, named as the wire names them and in the

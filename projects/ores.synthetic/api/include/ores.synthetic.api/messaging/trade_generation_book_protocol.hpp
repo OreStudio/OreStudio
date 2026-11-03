@@ -359,9 +359,9 @@ struct get_trade_generation_book_version_response {
  * of them.
  */
 namespace trade_generation_book_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.trade_generation_books_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.trade_generation_books_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.trade_generation_books_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.trade_generation_books.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.trade_generation_books.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generation_books.deleted";
 }
 /**
  * @brief The members of trade_generation_book_key, named as the wire names them and in the order

@@ -354,9 +354,9 @@ struct get_approval_policy_version_response {
  * of them.
  */
 namespace approval_policy_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.approval_policies_events.created";
-inline constexpr std::string_view updated = "inbox.v1.approval_policies_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.approval_policies_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.approval_policies.created";
+inline constexpr std::string_view updated = "inbox.v1.events.approval_policies.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.approval_policies.deleted";
 }
 /**
  * @brief The members of approval_policy_key, named as the wire names them and in the order

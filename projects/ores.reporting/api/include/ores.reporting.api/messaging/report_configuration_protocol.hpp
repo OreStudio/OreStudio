@@ -462,9 +462,9 @@ struct get_report_configuration_version_response {
  * of them.
  */
 namespace report_configuration_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.report_configurations_events.created";
-inline constexpr std::string_view updated = "reporting.v1.report_configurations_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.report_configurations_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.report_configurations.created";
+inline constexpr std::string_view updated = "reporting.v1.events.report_configurations.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.report_configurations.deleted";
 }
 /**
  * @brief The members of report_configuration_key, named as the wire names them and in the order

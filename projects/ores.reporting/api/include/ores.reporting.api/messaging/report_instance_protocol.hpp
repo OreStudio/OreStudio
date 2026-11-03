@@ -522,9 +522,9 @@ struct count_report_definitions_by_health_response {
  * of them.
  */
 namespace report_instance_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.report_instances_events.created";
-inline constexpr std::string_view updated = "reporting.v1.report_instances_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.report_instances_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.report_instances.created";
+inline constexpr std::string_view updated = "reporting.v1.events.report_instances.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.report_instances.deleted";
 }
 /**
  * @brief The members of report_instance_key, named as the wire names them and in the order

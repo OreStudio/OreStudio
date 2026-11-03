@@ -213,7 +213,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.commodity_curve_cross_currencies_events.created',
-    updated: 'refdata.v1.commodity_curve_cross_currencies_events.updated',
-    deleted: 'refdata.v1.commodity_curve_cross_currencies_events.deleted',
+    created: 'refdata.v1.events.commodity_curve_cross_currencies.created',
+    updated: 'refdata.v1.events.commodity_curve_cross_currencies.updated',
+    deleted: 'refdata.v1.events.commodity_curve_cross_currencies.deleted',
 } as const;

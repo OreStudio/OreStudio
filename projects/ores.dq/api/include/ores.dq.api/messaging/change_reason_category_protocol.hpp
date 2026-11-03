@@ -353,9 +353,9 @@ struct get_change_reason_category_version_response {
  * of them.
  */
 namespace change_reason_category_event_subjects {
-inline constexpr std::string_view created = "dq.v1.change_reason_categories_events.created";
-inline constexpr std::string_view updated = "dq.v1.change_reason_categories_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.change_reason_categories_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.change_reason_categories.created";
+inline constexpr std::string_view updated = "dq.v1.events.change_reason_categories.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.change_reason_categories.deleted";
 }
 /**
  * @brief The members of change_reason_category_key, named as the wire names them and in the order

@@ -351,9 +351,9 @@ struct get_coding_scheme_version_response {
  * of them.
  */
 namespace coding_scheme_event_subjects {
-inline constexpr std::string_view created = "dq.v1.coding_schemes_events.created";
-inline constexpr std::string_view updated = "dq.v1.coding_schemes_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.coding_schemes_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.coding_schemes.created";
+inline constexpr std::string_view updated = "dq.v1.events.coding_schemes.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.coding_schemes.deleted";
 }
 /**
  * @brief The members of coding_scheme_key, named as the wire names them and in the order

@@ -377,9 +377,9 @@ struct get_result_version_response {
  * of them.
  */
 namespace result_event_subjects {
-inline constexpr std::string_view created = "compute.v1.results_events.created";
-inline constexpr std::string_view updated = "compute.v1.results_events.updated";
-inline constexpr std::string_view deleted = "compute.v1.results_events.deleted";
+inline constexpr std::string_view created = "compute.v1.events.results.created";
+inline constexpr std::string_view updated = "compute.v1.events.results.updated";
+inline constexpr std::string_view deleted = "compute.v1.events.results.deleted";
 }
 /**
  * @brief The members of result_key, named as the wire names them and in the order

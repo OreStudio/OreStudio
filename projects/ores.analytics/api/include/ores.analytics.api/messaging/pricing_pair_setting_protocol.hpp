@@ -363,9 +363,9 @@ struct get_pricing_pair_setting_version_response {
  * of them.
  */
 namespace pricing_pair_setting_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.pricing_pair_settings_events.created";
-inline constexpr std::string_view updated = "analytics.v1.pricing_pair_settings_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.pricing_pair_settings_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.pricing_pair_settings.created";
+inline constexpr std::string_view updated = "analytics.v1.events.pricing_pair_settings.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.pricing_pair_settings.deleted";
 }
 /**
  * @brief The members of pricing_pair_setting_key, named as the wire names them and in the order

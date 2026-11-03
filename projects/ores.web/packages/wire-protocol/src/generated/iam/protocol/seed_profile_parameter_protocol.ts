@@ -232,7 +232,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'iam.v1.seed_profile_parameters_events.created',
-    updated: 'iam.v1.seed_profile_parameters_events.updated',
-    deleted: 'iam.v1.seed_profile_parameters_events.deleted',
+    created: 'iam.v1.events.seed_profile_parameters.created',
+    updated: 'iam.v1.events.seed_profile_parameters.updated',
+    deleted: 'iam.v1.events.seed_profile_parameters.deleted',
 } as const;

@@ -403,11 +403,11 @@ struct get_instrument_option_payment_date_version_response {
  */
 namespace instrument_option_payment_date_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.instrument_option_payment_dates_events.created";
+    "trading.v1.events.instrument_option_payment_dates.created";
 inline constexpr std::string_view updated =
-    "trading.v1.instrument_option_payment_dates_events.updated";
+    "trading.v1.events.instrument_option_payment_dates.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.instrument_option_payment_dates_events.deleted";
+    "trading.v1.events.instrument_option_payment_dates.deleted";
 }
 /**
  * @brief The members of instrument_option_payment_date_key, named as the wire names them and in the

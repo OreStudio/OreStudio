@@ -366,9 +366,9 @@ struct get_rate_card_component_version_response {
  * of them.
  */
 namespace rate_card_component_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.rate_card_components_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.rate_card_components_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.rate_card_components_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.rate_card_components.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.rate_card_components.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_components.deleted";
 }
 /**
  * @brief The members of rate_card_component_key, named as the wire names them and in the order

@@ -210,7 +210,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.fx_spot_fixing_items_events.created',
-    updated: 'synthetic.v1.fx_spot_fixing_items_events.updated',
-    deleted: 'synthetic.v1.fx_spot_fixing_items_events.deleted',
+    created: 'synthetic.v1.events.fx_spot_fixing_items.created',
+    updated: 'synthetic.v1.events.fx_spot_fixing_items.updated',
+    deleted: 'synthetic.v1.events.fx_spot_fixing_items.deleted',
 } as const;

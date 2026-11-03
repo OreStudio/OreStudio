@@ -374,11 +374,11 @@ struct get_zero_inflation_index_convention_version_response {
  */
 namespace zero_inflation_index_convention_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.zero_inflation_index_conventions_events.created";
+    "refdata.v1.events.zero_inflation_index_conventions.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.zero_inflation_index_conventions_events.updated";
+    "refdata.v1.events.zero_inflation_index_conventions.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.zero_inflation_index_conventions_events.deleted";
+    "refdata.v1.events.zero_inflation_index_conventions.deleted";
 }
 /**
  * @brief The members of zero_inflation_index_convention_key, named as the wire names them and in

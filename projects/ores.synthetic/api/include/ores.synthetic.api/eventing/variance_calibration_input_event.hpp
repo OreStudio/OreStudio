@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::synthetic::messaging::variance_calibration_input_event> {
     static constexpr std::string_view subject_prefix =
-        "synthetic.v1.variance_calibration_inputs_events";
+        "synthetic.v1.events.variance_calibration_inputs";
 
     static ores::synthetic::messaging::variance_calibration_input_event
     from_notification(const entity_event_notification& notification) {

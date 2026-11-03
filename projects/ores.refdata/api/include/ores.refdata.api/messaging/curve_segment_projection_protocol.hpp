@@ -359,9 +359,9 @@ struct get_curve_segment_projection_version_response {
  * of them.
  */
 namespace curve_segment_projection_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.curve_segment_projections_events.created";
-inline constexpr std::string_view updated = "refdata.v1.curve_segment_projections_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.curve_segment_projections_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.curve_segment_projections.created";
+inline constexpr std::string_view updated = "refdata.v1.events.curve_segment_projections.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_projections.deleted";
 }
 /**
  * @brief The members of curve_segment_projection_key, named as the wire names them and in the order

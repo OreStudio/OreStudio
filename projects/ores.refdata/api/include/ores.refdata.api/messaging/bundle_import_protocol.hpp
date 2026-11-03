@@ -349,9 +349,9 @@ struct get_bundle_import_version_response {
  * of them.
  */
 namespace bundle_import_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.bundle_imports_events.created";
-inline constexpr std::string_view updated = "refdata.v1.bundle_imports_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.bundle_imports_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.bundle_imports.created";
+inline constexpr std::string_view updated = "refdata.v1.events.bundle_imports.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.deleted";
 }
 /**
  * @brief The members of bundle_import_key, named as the wire names them and in the order

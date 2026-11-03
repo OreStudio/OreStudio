@@ -397,9 +397,9 @@ struct get_engine_settings_execution_version_response {
  * of them.
  */
 namespace engine_settings_execution_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.engine_settings_execution_events.created";
-inline constexpr std::string_view updated = "reporting.v1.engine_settings_execution_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.engine_settings_execution_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.engine_settings_execution.created";
+inline constexpr std::string_view updated = "reporting.v1.events.engine_settings_execution.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.engine_settings_execution.deleted";
 }
 /**
  * @brief The members of engine_settings_execution_key, named as the wire names them and in the

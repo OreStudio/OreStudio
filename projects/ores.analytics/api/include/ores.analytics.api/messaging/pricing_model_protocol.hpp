@@ -348,9 +348,9 @@ struct get_pricing_model_version_response {
  * of them.
  */
 namespace pricing_model_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.pricing_models_events.created";
-inline constexpr std::string_view updated = "analytics.v1.pricing_models_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.pricing_models_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.pricing_models.created";
+inline constexpr std::string_view updated = "analytics.v1.events.pricing_models.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.pricing_models.deleted";
 }
 /**
  * @brief The members of pricing_model_key, named as the wire names them and in the order

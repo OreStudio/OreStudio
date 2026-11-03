@@ -1539,7 +1539,7 @@ def derive_junction_events(junction):
 
     A junction that states ``:events: true`` announces its changes like any
     entity: a notify trigger names the link by both columns, and the service
-    publishes it on ``<component>.v1.<name>_events``. Sets the table's channel
+    publishes it on ``<component>.v1.events.<name>``. Sets the table's channel
     name, the subject prefix, and the declarations the trigger spells for each
     key column. A key column is spelled as text, which is what the JSON key
     record reads back, whatever the column's own type.
@@ -1556,7 +1556,7 @@ def derive_junction_events(junction):
                 f"{owner}: cannot announce a link keyed by the date column "
                 f"{junction[side]['column']}")
     junction['events_channel'] = table[:-len('_tbl')]
-    junction['event_prefix'] = f"{junction['component']}.v1.{junction['name']}_events"
+    junction['event_prefix'] = f"{junction['component']}.v1.events.{junction['name']}"
     junction['event_key_columns'] = [
         {'column': column, 'last': index == len(columns) - 1}
         for index, column in enumerate(columns)]

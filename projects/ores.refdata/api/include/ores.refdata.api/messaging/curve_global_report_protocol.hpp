@@ -369,9 +369,9 @@ struct get_curve_global_report_version_response {
  * of them.
  */
 namespace curve_global_report_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.curve_global_reports_events.created";
-inline constexpr std::string_view updated = "refdata.v1.curve_global_reports_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.curve_global_reports_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.curve_global_reports.created";
+inline constexpr std::string_view updated = "refdata.v1.events.curve_global_reports.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.curve_global_reports.deleted";
 }
 /**
  * @brief The members of curve_global_report_key, named as the wire names them and in the order

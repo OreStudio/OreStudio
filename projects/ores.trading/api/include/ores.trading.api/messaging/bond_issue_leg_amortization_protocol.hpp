@@ -361,11 +361,11 @@ struct get_bond_issue_leg_amortization_version_response {
  */
 namespace bond_issue_leg_amortization_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.bond_issue_leg_amortizations_events.created";
+    "trading.v1.events.bond_issue_leg_amortizations.created";
 inline constexpr std::string_view updated =
-    "trading.v1.bond_issue_leg_amortizations_events.updated";
+    "trading.v1.events.bond_issue_leg_amortizations.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.bond_issue_leg_amortizations_events.deleted";
+    "trading.v1.events.bond_issue_leg_amortizations.deleted";
 }
 /**
  * @brief The members of bond_issue_leg_amortization_key, named as the wire names them and in the

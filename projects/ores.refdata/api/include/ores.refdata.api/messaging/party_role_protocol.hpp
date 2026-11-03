@@ -339,9 +339,9 @@ struct get_party_role_version_response {
  * of them.
  */
 namespace party_role_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.party_roles_events.created";
-inline constexpr std::string_view updated = "refdata.v1.party_roles_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.party_roles_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.party_roles.created";
+inline constexpr std::string_view updated = "refdata.v1.events.party_roles.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.party_roles.deleted";
 }
 /**
  * @brief The members of party_role_key, named as the wire names them and in the order

@@ -49,7 +49,7 @@ template <>
 struct entity_event_traits<
     ores::synthetic::messaging::yield_curve_process_parameter_definition_event> {
     static constexpr std::string_view subject_prefix =
-        "synthetic.v1.yield_curve_process_parameter_definitions_events";
+        "synthetic.v1.events.yield_curve_process_parameter_definitions";
 
     static ores::synthetic::messaging::yield_curve_process_parameter_definition_event
     from_notification(const entity_event_notification& notification) {

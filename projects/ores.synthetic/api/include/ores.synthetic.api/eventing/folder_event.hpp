@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::synthetic::messaging::folder_event> {
-    static constexpr std::string_view subject_prefix = "synthetic.v1.folders_events";
+    static constexpr std::string_view subject_prefix = "synthetic.v1.events.folders";
 
     static ores::synthetic::messaging::folder_event
     from_notification(const entity_event_notification& notification) {

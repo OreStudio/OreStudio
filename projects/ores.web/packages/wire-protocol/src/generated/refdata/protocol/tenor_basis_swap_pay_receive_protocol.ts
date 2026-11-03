@@ -238,7 +238,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.tenor_basis_swap_pay_receives_events.created',
-    updated: 'refdata.v1.tenor_basis_swap_pay_receives_events.updated',
-    deleted: 'refdata.v1.tenor_basis_swap_pay_receives_events.deleted',
+    created: 'refdata.v1.events.tenor_basis_swap_pay_receives.created',
+    updated: 'refdata.v1.events.tenor_basis_swap_pay_receives.updated',
+    deleted: 'refdata.v1.events.tenor_basis_swap_pay_receives.deleted',
 } as const;

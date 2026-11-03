@@ -391,9 +391,9 @@ struct get_csa_eligible_currency_version_response {
  * of them.
  */
 namespace csa_eligible_currency_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.csa_eligible_currencies_events.created";
-inline constexpr std::string_view updated = "refdata.v1.csa_eligible_currencies_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.csa_eligible_currencies_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.csa_eligible_currencies.created";
+inline constexpr std::string_view updated = "refdata.v1.events.csa_eligible_currencies.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.csa_eligible_currencies.deleted";
 }
 /**
  * @brief The members of csa_eligible_currency_key, named as the wire names them and in the order

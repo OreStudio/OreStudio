@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::default_curve_transition_matrix_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.default_curve_transition_matrices_events";
+        "refdata.v1.events.default_curve_transition_matrices";
 
     static ores::refdata::messaging::default_curve_transition_matrix_event
     from_notification(const entity_event_notification& notification) {

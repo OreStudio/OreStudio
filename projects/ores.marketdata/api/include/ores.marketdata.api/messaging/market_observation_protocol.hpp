@@ -326,9 +326,9 @@ struct list_by_series_id_market_observations_response {
  * of them.
  */
 namespace market_observation_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.market_observations_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.market_observations_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.market_observations_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.market_observations.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.market_observations.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.market_observations.deleted";
 }
 /**
  * @brief The members of market_observation_key, named as the wire names them and in the order

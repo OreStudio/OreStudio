@@ -333,9 +333,9 @@ struct get_tag_version_response {
  * of them.
  */
 namespace tag_event_subjects {
-inline constexpr std::string_view created = "assets.v1.tags_events.created";
-inline constexpr std::string_view updated = "assets.v1.tags_events.updated";
-inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
+inline constexpr std::string_view created = "assets.v1.events.tags.created";
+inline constexpr std::string_view updated = "assets.v1.events.tags.updated";
+inline constexpr std::string_view deleted = "assets.v1.events.tags.deleted";
 }
 /**
  * @brief The members of tag_key, named as the wire names them and in the order

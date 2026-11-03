@@ -353,9 +353,9 @@ struct get_session_version_response {
  * of them.
  */
 namespace session_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.sessions_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.sessions_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.sessions_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.sessions.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.sessions.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.deleted";
 }
 /**
  * @brief The members of session_key, named as the wire names them and in the order

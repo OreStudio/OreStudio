@@ -395,9 +395,9 @@ struct get_ore_parameter_version_response {
  * of them.
  */
 namespace ore_parameter_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.ore_parameters_events.created";
-inline constexpr std::string_view updated = "reporting.v1.ore_parameters_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.ore_parameters_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.ore_parameters.created";
+inline constexpr std::string_view updated = "reporting.v1.events.ore_parameters.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.deleted";
 }
 /**
  * @brief The members of ore_parameter_key, named as the wire names them and in the order

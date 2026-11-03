@@ -369,11 +369,11 @@ struct get_commodity_curve_cross_currency_version_response {
  */
 namespace commodity_curve_cross_currency_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.commodity_curve_cross_currencies_events.created";
+    "refdata.v1.events.commodity_curve_cross_currencies.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.commodity_curve_cross_currencies_events.updated";
+    "refdata.v1.events.commodity_curve_cross_currencies.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.commodity_curve_cross_currencies_events.deleted";
+    "refdata.v1.events.commodity_curve_cross_currencies.deleted";
 }
 /**
  * @brief The members of commodity_curve_cross_currency_key, named as the wire names them and in the

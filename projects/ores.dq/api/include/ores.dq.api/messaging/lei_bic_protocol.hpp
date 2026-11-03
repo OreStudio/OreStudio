@@ -152,9 +152,9 @@ struct get_many_lei_bic_response {
  * of them.
  */
 namespace lei_bic_event_subjects {
-inline constexpr std::string_view created = "dq.v1.lei_bic_events.created";
-inline constexpr std::string_view updated = "dq.v1.lei_bic_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.lei_bic.created";
+inline constexpr std::string_view updated = "dq.v1.events.lei_bic.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
 }
 /**
  * @brief The members of lei_bic_key, named as the wire names them and in the order

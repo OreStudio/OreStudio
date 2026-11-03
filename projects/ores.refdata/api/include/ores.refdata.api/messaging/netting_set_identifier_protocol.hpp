@@ -393,9 +393,9 @@ struct get_netting_set_identifier_version_response {
  * of them.
  */
 namespace netting_set_identifier_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.netting_set_identifiers_events.created";
-inline constexpr std::string_view updated = "refdata.v1.netting_set_identifiers_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.netting_set_identifiers_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.netting_set_identifiers.created";
+inline constexpr std::string_view updated = "refdata.v1.events.netting_set_identifiers.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_identifiers.deleted";
 }
 /**
  * @brief The members of netting_set_identifier_key, named as the wire names them and in the order

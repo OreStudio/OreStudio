@@ -222,7 +222,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.variance_calibration_inputs_events.created',
-    updated: 'synthetic.v1.variance_calibration_inputs_events.updated',
-    deleted: 'synthetic.v1.variance_calibration_inputs_events.deleted',
+    created: 'synthetic.v1.events.variance_calibration_inputs.created',
+    updated: 'synthetic.v1.events.variance_calibration_inputs.updated',
+    deleted: 'synthetic.v1.events.variance_calibration_inputs.deleted',
 } as const;

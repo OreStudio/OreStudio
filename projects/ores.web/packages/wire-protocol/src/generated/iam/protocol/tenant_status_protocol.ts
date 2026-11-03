@@ -206,7 +206,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'iam.v1.tenant_statuses_events.created',
-    updated: 'iam.v1.tenant_statuses_events.updated',
-    deleted: 'iam.v1.tenant_statuses_events.deleted',
+    created: 'iam.v1.events.tenant_statuses.created',
+    updated: 'iam.v1.events.tenant_statuses.updated',
+    deleted: 'iam.v1.events.tenant_statuses.deleted',
 } as const;

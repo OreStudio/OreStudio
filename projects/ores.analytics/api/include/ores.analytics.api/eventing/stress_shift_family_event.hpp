@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::analytics::messaging::stress_shift_family_event> {
-    static constexpr std::string_view subject_prefix = "analytics.v1.stress_shift_families_events";
+    static constexpr std::string_view subject_prefix = "analytics.v1.events.stress_shift_families";
 
     static ores::analytics::messaging::stress_shift_family_event
     from_notification(const entity_event_notification& notification) {

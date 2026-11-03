@@ -223,7 +223,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'iam.v1.role_grant_requests_events.created',
-    updated: 'iam.v1.role_grant_requests_events.updated',
-    deleted: 'iam.v1.role_grant_requests_events.deleted',
+    created: 'iam.v1.events.role_grant_requests.created',
+    updated: 'iam.v1.events.role_grant_requests.updated',
+    deleted: 'iam.v1.events.role_grant_requests.deleted',
 } as const;

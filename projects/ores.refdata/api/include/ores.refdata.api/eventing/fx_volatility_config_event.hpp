@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::refdata::messaging::fx_volatility_config_event> {
-    static constexpr std::string_view subject_prefix = "refdata.v1.fx_volatility_configs_events";
+    static constexpr std::string_view subject_prefix = "refdata.v1.events.fx_volatility_configs";
 
     static ores::refdata::messaging::fx_volatility_config_event
     from_notification(const entity_event_notification& notification) {

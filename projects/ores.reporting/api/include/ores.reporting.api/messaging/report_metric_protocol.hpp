@@ -299,9 +299,9 @@ struct delete_many_report_metrics_response {
  * of them.
  */
 namespace report_metric_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.report_metrics_events.created";
-inline constexpr std::string_view updated = "reporting.v1.report_metrics_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.report_metrics_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.report_metrics.created";
+inline constexpr std::string_view updated = "reporting.v1.events.report_metrics.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.deleted";
 }
 /**
  * @brief The members of report_metric_key, named as the wire names them and in the order

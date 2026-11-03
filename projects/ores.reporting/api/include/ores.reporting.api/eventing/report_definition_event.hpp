@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::reporting::messaging::report_definition_event> {
-    static constexpr std::string_view subject_prefix = "reporting.v1.report_definitions_events";
+    static constexpr std::string_view subject_prefix = "reporting.v1.events.report_definitions";
 
     static ores::reporting::messaging::report_definition_event
     from_notification(const entity_event_notification& notification) {

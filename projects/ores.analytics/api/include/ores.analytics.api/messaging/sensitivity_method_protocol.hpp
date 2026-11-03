@@ -357,9 +357,9 @@ struct get_sensitivity_method_version_response {
  * of them.
  */
 namespace sensitivity_method_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.sensitivity_methods_events.created";
-inline constexpr std::string_view updated = "analytics.v1.sensitivity_methods_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.sensitivity_methods_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.sensitivity_methods.created";
+inline constexpr std::string_view updated = "analytics.v1.events.sensitivity_methods.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_methods.deleted";
 }
 /**
  * @brief The members of sensitivity_method_key, named as the wire names them and in the order

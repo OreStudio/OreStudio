@@ -345,9 +345,9 @@ struct get_cut_family_version_response {
  * of them.
  */
 namespace cut_family_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.cut_families_events.created";
-inline constexpr std::string_view updated = "reporting.v1.cut_families_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.cut_families_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.cut_families.created";
+inline constexpr std::string_view updated = "reporting.v1.events.cut_families.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.cut_families.deleted";
 }
 /**
  * @brief The members of cut_family_key, named as the wire names them and in the order

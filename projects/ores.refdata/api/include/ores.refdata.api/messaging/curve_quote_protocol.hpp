@@ -355,9 +355,9 @@ struct get_curve_quote_version_response {
  * of them.
  */
 namespace curve_quote_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.curve_quotes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.curve_quotes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.curve_quotes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.curve_quotes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.curve_quotes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.curve_quotes.deleted";
 }
 /**
  * @brief The members of curve_quote_key, named as the wire names them and in the order

@@ -443,9 +443,9 @@ struct resolve_convention_response {
  * of them.
  */
 namespace tenor_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.tenors_events.created";
-inline constexpr std::string_view updated = "refdata.v1.tenors_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.tenors_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.tenors.created";
+inline constexpr std::string_view updated = "refdata.v1.events.tenors.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
 }
 /**
  * @brief The members of tenor_key, named as the wire names them and in the order

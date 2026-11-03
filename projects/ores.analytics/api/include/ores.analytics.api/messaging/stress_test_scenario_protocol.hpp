@@ -359,9 +359,9 @@ struct get_stress_test_scenario_version_response {
  * of them.
  */
 namespace stress_test_scenario_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.stress_test_scenarios_events.created";
-inline constexpr std::string_view updated = "analytics.v1.stress_test_scenarios_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.stress_test_scenarios.created";
+inline constexpr std::string_view updated = "analytics.v1.events.stress_test_scenarios.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_scenarios.deleted";
 }
 /**
  * @brief The members of stress_test_scenario_key, named as the wire names them and in the order

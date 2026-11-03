@@ -370,11 +370,11 @@ struct get_curve_segment_weighted_average_version_response {
  */
 namespace curve_segment_weighted_average_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.curve_segment_weighted_averages_events.created";
+    "refdata.v1.events.curve_segment_weighted_averages.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.curve_segment_weighted_averages_events.updated";
+    "refdata.v1.events.curve_segment_weighted_averages.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.curve_segment_weighted_averages_events.deleted";
+    "refdata.v1.events.curve_segment_weighted_averages.deleted";
 }
 /**
  * @brief The members of curve_segment_weighted_average_key, named as the wire names them and in the

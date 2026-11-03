@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::curve_report_configuration_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.curve_report_configurations_events";
+        "refdata.v1.events.curve_report_configurations";
 
     static ores::refdata::messaging::curve_report_configuration_event
     from_notification(const entity_event_notification& notification) {

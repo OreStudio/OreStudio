@@ -390,9 +390,9 @@ struct get_netting_agreement_version_response {
  * of them.
  */
 namespace netting_agreement_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.netting_agreements_events.created";
-inline constexpr std::string_view updated = "refdata.v1.netting_agreements_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.netting_agreements_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.netting_agreements.created";
+inline constexpr std::string_view updated = "refdata.v1.events.netting_agreements.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreements.deleted";
 }
 /**
  * @brief The members of netting_agreement_key, named as the wire names them and in the order

@@ -242,7 +242,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'analytics.v1.credit_simulation_matrix_row_configs_events.created',
-    updated: 'analytics.v1.credit_simulation_matrix_row_configs_events.updated',
-    deleted: 'analytics.v1.credit_simulation_matrix_row_configs_events.deleted',
+    created: 'analytics.v1.events.credit_simulation_matrix_row_configs.created',
+    updated: 'analytics.v1.events.credit_simulation_matrix_row_configs.updated',
+    deleted: 'analytics.v1.events.credit_simulation_matrix_row_configs.deleted',
 } as const;

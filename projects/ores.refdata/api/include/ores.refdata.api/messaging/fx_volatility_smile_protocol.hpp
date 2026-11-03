@@ -361,9 +361,9 @@ struct get_fx_volatility_smile_version_response {
  * of them.
  */
 namespace fx_volatility_smile_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.fx_volatility_smiles_events.created";
-inline constexpr std::string_view updated = "refdata.v1.fx_volatility_smiles_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.fx_volatility_smiles_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.fx_volatility_smiles.created";
+inline constexpr std::string_view updated = "refdata.v1.events.fx_volatility_smiles.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smiles.deleted";
 }
 /**
  * @brief The members of fx_volatility_smile_key, named as the wire names them and in the order

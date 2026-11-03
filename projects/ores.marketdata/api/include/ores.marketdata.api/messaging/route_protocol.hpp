@@ -347,9 +347,9 @@ struct get_route_version_response {
  * of them.
  */
 namespace route_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.routes_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.routes_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.routes_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.routes.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.routes.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.routes.deleted";
 }
 /**
  * @brief The members of route_key, named as the wire names them and in the order

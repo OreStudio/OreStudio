@@ -352,9 +352,9 @@ struct get_trade_version_response {
  * of them.
  */
 namespace trade_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trades_events.created";
-inline constexpr std::string_view updated = "trading.v1.trades_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trades_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trades.created";
+inline constexpr std::string_view updated = "trading.v1.events.trades.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trades.deleted";
 }
 /**
  * @brief The members of trade_key, named as the wire names them and in the order

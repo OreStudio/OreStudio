@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::fx_vol_surface_blueprint_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.fx_vol_surface_blueprints_events";
+        "refdata.v1.events.fx_vol_surface_blueprints";
 
     static ores::refdata::messaging::fx_vol_surface_blueprint_event
     from_notification(const entity_event_notification& notification) {

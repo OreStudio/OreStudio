@@ -396,9 +396,9 @@ struct get_seed_profile_parameter_version_response {
  * of them.
  */
 namespace seed_profile_parameter_event_subjects {
-inline constexpr std::string_view created = "iam.v1.seed_profile_parameters_events.created";
-inline constexpr std::string_view updated = "iam.v1.seed_profile_parameters_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.seed_profile_parameters_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.seed_profile_parameters.created";
+inline constexpr std::string_view updated = "iam.v1.events.seed_profile_parameters.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_parameters.deleted";
 }
 /**
  * @brief The members of seed_profile_parameter_key, named as the wire names them and in the order

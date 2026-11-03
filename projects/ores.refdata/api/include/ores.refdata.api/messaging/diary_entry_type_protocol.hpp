@@ -352,9 +352,9 @@ struct get_diary_entry_type_version_response {
  * of them.
  */
 namespace diary_entry_type_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.diary_entry_types_events.created";
-inline constexpr std::string_view updated = "refdata.v1.diary_entry_types_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.diary_entry_types_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.diary_entry_types.created";
+inline constexpr std::string_view updated = "refdata.v1.events.diary_entry_types.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.diary_entry_types.deleted";
 }
 /**
  * @brief The members of diary_entry_type_key, named as the wire names them and in the order

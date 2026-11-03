@@ -383,11 +383,11 @@ struct get_curve_volatility_moneyness_surface_version_response {
  */
 namespace curve_volatility_moneyness_surface_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.curve_volatility_moneyness_surfaces_events.created";
+    "refdata.v1.events.curve_volatility_moneyness_surfaces.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.curve_volatility_moneyness_surfaces_events.updated";
+    "refdata.v1.events.curve_volatility_moneyness_surfaces.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.curve_volatility_moneyness_surfaces_events.deleted";
+    "refdata.v1.events.curve_volatility_moneyness_surfaces.deleted";
 }
 /**
  * @brief The members of curve_volatility_moneyness_surface_key, named as the wire names them and in

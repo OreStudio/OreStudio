@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::marketdata::messaging::subscription_interval_event> {
     static constexpr std::string_view subject_prefix =
-        "marketdata.v1.subscription_intervals_events";
+        "marketdata.v1.events.subscription_intervals";
 
     static ores::marketdata::messaging::subscription_interval_event
     from_notification(const entity_event_notification& notification) {

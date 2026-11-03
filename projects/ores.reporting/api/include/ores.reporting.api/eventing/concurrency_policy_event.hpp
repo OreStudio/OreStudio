@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::reporting::messaging::concurrency_policy_event> {
-    static constexpr std::string_view subject_prefix = "reporting.v1.concurrency_policies_events";
+    static constexpr std::string_view subject_prefix = "reporting.v1.events.concurrency_policies";
 
     static ores::reporting::messaging::concurrency_policy_event
     from_notification(const entity_event_notification& notification) {

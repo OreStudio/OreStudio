@@ -26,8 +26,8 @@ namespace ores::http::stream {
 
 namespace {
 
-/// The suffixes a store puts on its events collection and its schema version.
-constexpr std::string_view events_suffix = "_events";
+/// The namespace token an event carries in place of a request's resource.
+constexpr std::string_view events_token = "events";
 
 [[nodiscard]] std::vector<std::string_view> split(std::string_view subject) {
     std::vector<std::string_view> tokens;
@@ -53,24 +53,25 @@ constexpr std::string_view events_suffix = "_events";
 
 std::optional<entity_event_address> parse_entity_event_subject(std::string_view subject) {
     const auto tokens = split(subject);
-    if (tokens.size() < 4)
+    if (tokens.size() < 5)
         return std::nullopt;
 
     const auto& action = tokens[tokens.size() - 1];
     const auto& collection = tokens[tokens.size() - 2];
-    const auto& version = tokens[tokens.size() - 3];
-    const auto& component = tokens[tokens.size() - 4];
+    const auto& ns = tokens[tokens.size() - 3];
+    const auto& version = tokens[tokens.size() - 4];
+    const auto& component = tokens[tokens.size() - 5];
 
-    if (action.empty() || component.empty())
+    if (action.empty() || component.empty() || collection.empty())
+        return std::nullopt;
+    if (ns != events_token)
         return std::nullopt;
     if (!version.starts_with('v') || version.size() < 2)
-        return std::nullopt;
-    if (!collection.ends_with(events_suffix) || collection.size() == events_suffix.size())
         return std::nullopt;
 
     return entity_event_address{
         .component = std::string(component),
-        .collection = std::string(collection.substr(0, collection.size() - events_suffix.size())),
+        .collection = std::string(collection),
         .action = std::string(action),
     };
 }

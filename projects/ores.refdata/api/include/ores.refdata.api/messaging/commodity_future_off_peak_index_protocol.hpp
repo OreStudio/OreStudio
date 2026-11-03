@@ -408,11 +408,11 @@ struct get_commodity_future_off_peak_index_version_response {
  */
 namespace commodity_future_off_peak_index_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.commodity_future_off_peak_indexes_events.created";
+    "refdata.v1.events.commodity_future_off_peak_indexes.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.commodity_future_off_peak_indexes_events.updated";
+    "refdata.v1.events.commodity_future_off_peak_indexes.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.commodity_future_off_peak_indexes_events.deleted";
+    "refdata.v1.events.commodity_future_off_peak_indexes.deleted";
 }
 /**
  * @brief The members of commodity_future_off_peak_index_key, named as the wire names them and in

@@ -356,9 +356,9 @@ struct get_badge_definition_version_response {
  * of them.
  */
 namespace badge_definition_event_subjects {
-inline constexpr std::string_view created = "dq.v1.badge_definitions_events.created";
-inline constexpr std::string_view updated = "dq.v1.badge_definitions_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.badge_definitions.created";
+inline constexpr std::string_view updated = "dq.v1.events.badge_definitions.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.deleted";
 }
 /**
  * @brief The members of badge_definition_key, named as the wire names them and in the order

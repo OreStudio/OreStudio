@@ -351,9 +351,9 @@ struct get_origin_dimension_version_response {
  * of them.
  */
 namespace origin_dimension_event_subjects {
-inline constexpr std::string_view created = "dq.v1.origin_dimensions_events.created";
-inline constexpr std::string_view updated = "dq.v1.origin_dimensions_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.origin_dimensions_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.origin_dimensions.created";
+inline constexpr std::string_view updated = "dq.v1.events.origin_dimensions.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.origin_dimensions.deleted";
 }
 /**
  * @brief The members of origin_dimension_key, named as the wire names them and in the order

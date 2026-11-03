@@ -359,9 +359,9 @@ struct get_market_data_provider_version_response {
  * of them.
  */
 namespace market_data_provider_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.market_data_providers_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.market_data_providers_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.market_data_providers_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.market_data_providers.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.market_data_providers.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.market_data_providers.deleted";
 }
 /**
  * @brief The members of market_data_provider_key, named as the wire names them and in the order

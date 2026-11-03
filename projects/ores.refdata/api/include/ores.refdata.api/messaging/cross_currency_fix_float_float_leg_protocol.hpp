@@ -417,11 +417,11 @@ struct get_cross_currency_fix_float_float_leg_version_response {
  */
 namespace cross_currency_fix_float_float_leg_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.cross_currency_fix_float_float_legs_events.created";
+    "refdata.v1.events.cross_currency_fix_float_float_legs.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.cross_currency_fix_float_float_legs_events.updated";
+    "refdata.v1.events.cross_currency_fix_float_float_legs.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.cross_currency_fix_float_float_legs_events.deleted";
+    "refdata.v1.events.cross_currency_fix_float_float_legs.deleted";
 }
 /**
  * @brief The members of cross_currency_fix_float_float_leg_key, named as the wire names them and in

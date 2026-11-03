@@ -341,9 +341,9 @@ struct get_subject_area_version_response {
  * of them.
  */
 namespace subject_area_event_subjects {
-inline constexpr std::string_view created = "dq.v1.subject_areas_events.created";
-inline constexpr std::string_view updated = "dq.v1.subject_areas_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.subject_areas_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.subject_areas.created";
+inline constexpr std::string_view updated = "dq.v1.events.subject_areas.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.subject_areas.deleted";
 }
 /**
  * @brief The members of subject_area_key, named as the wire names them and in the order

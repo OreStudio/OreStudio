@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::synthetic::messaging::fx_spot_fixing_item_event> {
-    static constexpr std::string_view subject_prefix = "synthetic.v1.fx_spot_fixing_items_events";
+    static constexpr std::string_view subject_prefix = "synthetic.v1.events.fx_spot_fixing_items";
 
     static ores::synthetic::messaging::fx_spot_fixing_item_event
     from_notification(const entity_event_notification& notification) {

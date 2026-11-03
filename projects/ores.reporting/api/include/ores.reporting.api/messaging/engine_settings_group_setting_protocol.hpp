@@ -370,11 +370,11 @@ struct get_engine_settings_group_setting_version_response {
  */
 namespace engine_settings_group_setting_event_subjects {
 inline constexpr std::string_view created =
-    "reporting.v1.engine_settings_group_settings_events.created";
+    "reporting.v1.events.engine_settings_group_settings.created";
 inline constexpr std::string_view updated =
-    "reporting.v1.engine_settings_group_settings_events.updated";
+    "reporting.v1.events.engine_settings_group_settings.updated";
 inline constexpr std::string_view deleted =
-    "reporting.v1.engine_settings_group_settings_events.deleted";
+    "reporting.v1.events.engine_settings_group_settings.deleted";
 }
 /**
  * @brief The members of engine_settings_group_setting_key, named as the wire names them and in the

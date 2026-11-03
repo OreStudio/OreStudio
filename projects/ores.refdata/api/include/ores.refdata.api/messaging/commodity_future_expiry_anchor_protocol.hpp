@@ -411,11 +411,11 @@ struct get_commodity_future_expiry_anchor_version_response {
  */
 namespace commodity_future_expiry_anchor_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.commodity_future_expiry_anchors_events.created";
+    "refdata.v1.events.commodity_future_expiry_anchors.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.commodity_future_expiry_anchors_events.updated";
+    "refdata.v1.events.commodity_future_expiry_anchors.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.commodity_future_expiry_anchors_events.deleted";
+    "refdata.v1.events.commodity_future_expiry_anchors.deleted";
 }
 /**
  * @brief The members of commodity_future_expiry_anchor_key, named as the wire names them and in the

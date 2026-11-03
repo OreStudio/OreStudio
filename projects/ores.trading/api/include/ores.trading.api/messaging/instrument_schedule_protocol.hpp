@@ -410,9 +410,9 @@ struct get_instrument_schedule_version_response {
  * of them.
  */
 namespace instrument_schedule_event_subjects {
-inline constexpr std::string_view created = "trading.v1.instrument_schedules_events.created";
-inline constexpr std::string_view updated = "trading.v1.instrument_schedules_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.instrument_schedules_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.instrument_schedules.created";
+inline constexpr std::string_view updated = "trading.v1.events.instrument_schedules.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedules.deleted";
 }
 /**
  * @brief The members of instrument_schedule_key, named as the wire names them and in the order

@@ -348,9 +348,9 @@ struct get_dataset_bundle_version_response {
  * of them.
  */
 namespace dataset_bundle_event_subjects {
-inline constexpr std::string_view created = "dq.v1.dataset_bundles_events.created";
-inline constexpr std::string_view updated = "dq.v1.dataset_bundles_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.dataset_bundles_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.dataset_bundles.created";
+inline constexpr std::string_view updated = "dq.v1.events.dataset_bundles.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.dataset_bundles.deleted";
 }
 /**
  * @brief The members of dataset_bundle_key, named as the wire names them and in the order

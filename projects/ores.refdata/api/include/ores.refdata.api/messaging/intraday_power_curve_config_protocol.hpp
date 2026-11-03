@@ -364,11 +364,11 @@ struct get_intraday_power_curve_config_version_response {
  */
 namespace intraday_power_curve_config_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.intraday_power_curve_configs_events.created";
+    "refdata.v1.events.intraday_power_curve_configs.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.intraday_power_curve_configs_events.updated";
+    "refdata.v1.events.intraday_power_curve_configs.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.intraday_power_curve_configs_events.deleted";
+    "refdata.v1.events.intraday_power_curve_configs.deleted";
 }
 /**
  * @brief The members of intraday_power_curve_config_key, named as the wire names them and in the

@@ -352,9 +352,9 @@ struct get_party_id_scheme_version_response {
  * of them.
  */
 namespace party_id_scheme_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.party_id_schemes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.party_id_schemes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.party_id_schemes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.party_id_schemes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.party_id_schemes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.party_id_schemes.deleted";
 }
 /**
  * @brief The members of party_id_scheme_key, named as the wire names them and in the order

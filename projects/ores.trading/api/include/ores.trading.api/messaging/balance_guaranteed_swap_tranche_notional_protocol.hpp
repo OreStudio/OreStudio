@@ -424,11 +424,11 @@ struct get_balance_guaranteed_swap_tranche_notional_version_response {
  */
 namespace balance_guaranteed_swap_tranche_notional_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.balance_guaranteed_swap_tranche_notionals_events.created";
+    "trading.v1.events.balance_guaranteed_swap_tranche_notionals.created";
 inline constexpr std::string_view updated =
-    "trading.v1.balance_guaranteed_swap_tranche_notionals_events.updated";
+    "trading.v1.events.balance_guaranteed_swap_tranche_notionals.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.balance_guaranteed_swap_tranche_notionals_events.deleted";
+    "trading.v1.events.balance_guaranteed_swap_tranche_notionals.deleted";
 }
 /**
  * @brief The members of balance_guaranteed_swap_tranche_notional_key, named as the wire names them

@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::iam::messaging::login_info_event> {
-    static constexpr std::string_view subject_prefix = "iam.v1.login_info_events";
+    static constexpr std::string_view subject_prefix = "iam.v1.events.login_info";
 
     static ores::iam::messaging::login_info_event
     from_notification(const entity_event_notification& notification) {

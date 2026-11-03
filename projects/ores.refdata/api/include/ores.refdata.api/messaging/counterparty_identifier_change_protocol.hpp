@@ -276,11 +276,11 @@ struct get_counterparty_identifier_change_version_response {
  */
 namespace counterparty_identifier_change_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.counterparty_identifier_changes_events.created";
+    "refdata.v1.events.counterparty_identifier_changes.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.counterparty_identifier_changes_events.updated";
+    "refdata.v1.events.counterparty_identifier_changes.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.counterparty_identifier_changes_events.deleted";
+    "refdata.v1.events.counterparty_identifier_changes.deleted";
 }
 /**
  * @brief The members of counterparty_identifier_change_key, named as the wire names them and in the

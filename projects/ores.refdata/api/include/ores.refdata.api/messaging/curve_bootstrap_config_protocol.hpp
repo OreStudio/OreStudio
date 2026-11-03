@@ -366,9 +366,9 @@ struct get_curve_bootstrap_config_version_response {
  * of them.
  */
 namespace curve_bootstrap_config_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.curve_bootstrap_configs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.curve_bootstrap_configs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.curve_bootstrap_configs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.curve_bootstrap_configs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.curve_bootstrap_configs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.curve_bootstrap_configs.deleted";
 }
 /**
  * @brief The members of curve_bootstrap_config_key, named as the wire names them and in the order

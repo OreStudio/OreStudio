@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'analytics.v1.stress_shift_families_events.created',
-    updated: 'analytics.v1.stress_shift_families_events.updated',
-    deleted: 'analytics.v1.stress_shift_families_events.deleted',
+    created: 'analytics.v1.events.stress_shift_families.created',
+    updated: 'analytics.v1.events.stress_shift_families.updated',
+    deleted: 'analytics.v1.events.stress_shift_families.deleted',
 } as const;

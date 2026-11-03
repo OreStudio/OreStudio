@@ -348,9 +348,9 @@ struct get_account_type_version_response {
  * of them.
  */
 namespace account_type_event_subjects {
-inline constexpr std::string_view created = "iam.v1.account_types_events.created";
-inline constexpr std::string_view updated = "iam.v1.account_types_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.account_types_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.account_types.created";
+inline constexpr std::string_view updated = "iam.v1.events.account_types.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.account_types.deleted";
 }
 /**
  * @brief The members of account_type_key, named as the wire names them and in the order

@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::intraday_power_load_convention_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.intraday_power_load_conventions_events";
+        "refdata.v1.events.intraday_power_load_conventions";
 
     static ores::refdata::messaging::intraday_power_load_convention_event
     from_notification(const entity_event_notification& notification) {

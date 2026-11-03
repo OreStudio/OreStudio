@@ -363,11 +363,11 @@ struct get_currency_pair_classification_version_response {
  */
 namespace currency_pair_classification_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.currency_pair_classifications_events.created";
+    "refdata.v1.events.currency_pair_classifications.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.currency_pair_classifications_events.updated";
+    "refdata.v1.events.currency_pair_classifications.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.currency_pair_classifications_events.deleted";
+    "refdata.v1.events.currency_pair_classifications.deleted";
 }
 /**
  * @brief The members of currency_pair_classification_key, named as the wire names them and in the

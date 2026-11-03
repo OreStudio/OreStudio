@@ -350,9 +350,9 @@ struct get_trade_link_version_response {
  * of them.
  */
 namespace trade_link_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trade_links_events.created";
-inline constexpr std::string_view updated = "trading.v1.trade_links_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trade_links_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trade_links.created";
+inline constexpr std::string_view updated = "trading.v1.events.trade_links.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trade_links.deleted";
 }
 /**
  * @brief The members of trade_link_key, named as the wire names them and in the order

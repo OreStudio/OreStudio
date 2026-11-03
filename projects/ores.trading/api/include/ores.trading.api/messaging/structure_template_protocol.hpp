@@ -353,9 +353,9 @@ struct get_structure_template_version_response {
  * of them.
  */
 namespace structure_template_event_subjects {
-inline constexpr std::string_view created = "trading.v1.structure_templates_events.created";
-inline constexpr std::string_view updated = "trading.v1.structure_templates_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.structure_templates_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.structure_templates.created";
+inline constexpr std::string_view updated = "trading.v1.events.structure_templates.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.structure_templates.deleted";
 }
 /**
  * @brief The members of structure_template_key, named as the wire names them and in the order

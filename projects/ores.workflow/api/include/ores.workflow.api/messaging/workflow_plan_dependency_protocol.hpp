@@ -395,9 +395,9 @@ struct get_workflow_plan_dependency_version_response {
  * of them.
  */
 namespace workflow_plan_dependency_event_subjects {
-inline constexpr std::string_view created = "workflow.v1.workflow_plan_dependencies_events.created";
-inline constexpr std::string_view updated = "workflow.v1.workflow_plan_dependencies_events.updated";
-inline constexpr std::string_view deleted = "workflow.v1.workflow_plan_dependencies_events.deleted";
+inline constexpr std::string_view created = "workflow.v1.events.workflow_plan_dependencies.created";
+inline constexpr std::string_view updated = "workflow.v1.events.workflow_plan_dependencies.updated";
+inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_dependencies.deleted";
 }
 /**
  * @brief The members of workflow_plan_dependency_key, named as the wire names them and in the order

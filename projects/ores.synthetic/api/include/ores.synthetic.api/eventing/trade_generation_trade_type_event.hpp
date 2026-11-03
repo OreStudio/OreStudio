@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::synthetic::messaging::trade_generation_trade_type_event> {
     static constexpr std::string_view subject_prefix =
-        "synthetic.v1.trade_generation_trade_types_events";
+        "synthetic.v1.events.trade_generation_trade_types";
 
     static ores::synthetic::messaging::trade_generation_trade_type_event
     from_notification(const entity_event_notification& notification) {

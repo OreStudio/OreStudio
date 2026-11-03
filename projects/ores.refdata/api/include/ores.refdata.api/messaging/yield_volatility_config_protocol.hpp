@@ -365,9 +365,9 @@ struct get_yield_volatility_config_version_response {
  * of them.
  */
 namespace yield_volatility_config_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.yield_volatility_configs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.yield_volatility_configs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.yield_volatility_configs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.yield_volatility_configs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.yield_volatility_configs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.yield_volatility_configs.deleted";
 }
 /**
  * @brief The members of yield_volatility_config_key, named as the wire names them and in the order

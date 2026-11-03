@@ -444,11 +444,11 @@ struct get_configuration_analytic_parameter_version_response {
  */
 namespace configuration_analytic_parameter_event_subjects {
 inline constexpr std::string_view created =
-    "reporting.v1.configuration_analytic_parameters_events.created";
+    "reporting.v1.events.configuration_analytic_parameters.created";
 inline constexpr std::string_view updated =
-    "reporting.v1.configuration_analytic_parameters_events.updated";
+    "reporting.v1.events.configuration_analytic_parameters.updated";
 inline constexpr std::string_view deleted =
-    "reporting.v1.configuration_analytic_parameters_events.deleted";
+    "reporting.v1.events.configuration_analytic_parameters.deleted";
 }
 /**
  * @brief The members of configuration_analytic_parameter_key, named as the wire names them and in

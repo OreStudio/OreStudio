@@ -344,9 +344,9 @@ struct get_fsm_state_version_response {
  * of them.
  */
 namespace fsm_state_event_subjects {
-inline constexpr std::string_view created = "dq.v1.fsm_states_events.created";
-inline constexpr std::string_view updated = "dq.v1.fsm_states_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.fsm_states_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.fsm_states.created";
+inline constexpr std::string_view updated = "dq.v1.events.fsm_states.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.fsm_states.deleted";
 }
 /**
  * @brief The members of fsm_state_key, named as the wire names them and in the order

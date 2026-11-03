@@ -401,11 +401,11 @@ struct get_todays_market_configuration_version_response {
  */
 namespace todays_market_configuration_event_subjects {
 inline constexpr std::string_view created =
-    "analytics.v1.todays_market_configurations_events.created";
+    "analytics.v1.events.todays_market_configurations.created";
 inline constexpr std::string_view updated =
-    "analytics.v1.todays_market_configurations_events.updated";
+    "analytics.v1.events.todays_market_configurations.updated";
 inline constexpr std::string_view deleted =
-    "analytics.v1.todays_market_configurations_events.deleted";
+    "analytics.v1.events.todays_market_configurations.deleted";
 }
 /**
  * @brief The members of todays_market_configuration_key, named as the wire names them and in the

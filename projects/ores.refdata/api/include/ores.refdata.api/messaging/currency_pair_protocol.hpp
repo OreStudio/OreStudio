@@ -349,9 +349,9 @@ struct get_currency_pair_version_response {
  * of them.
  */
 namespace currency_pair_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.currency_pairs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.currency_pairs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.currency_pairs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.currency_pairs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.currency_pairs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.currency_pairs.deleted";
 }
 /**
  * @brief The members of currency_pair_key, named as the wire names them and in the order

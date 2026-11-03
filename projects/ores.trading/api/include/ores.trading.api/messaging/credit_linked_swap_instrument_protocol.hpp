@@ -372,11 +372,11 @@ struct get_credit_linked_swap_instrument_version_response {
  */
 namespace credit_linked_swap_instrument_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.credit_linked_swap_instruments_events.created";
+    "trading.v1.events.credit_linked_swap_instruments.created";
 inline constexpr std::string_view updated =
-    "trading.v1.credit_linked_swap_instruments_events.updated";
+    "trading.v1.events.credit_linked_swap_instruments.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.credit_linked_swap_instruments_events.deleted";
+    "trading.v1.events.credit_linked_swap_instruments.deleted";
 }
 /**
  * @brief The members of credit_linked_swap_instrument_key, named as the wire names them and in the

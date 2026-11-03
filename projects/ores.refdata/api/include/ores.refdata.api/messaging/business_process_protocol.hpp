@@ -345,9 +345,9 @@ struct get_business_process_version_response {
  * of them.
  */
 namespace business_process_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.business_processes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.business_processes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.business_processes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.business_processes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.business_processes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.business_processes.deleted";
 }
 /**
  * @brief The members of business_process_key, named as the wire names them and in the order

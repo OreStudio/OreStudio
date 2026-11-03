@@ -347,9 +347,9 @@ struct get_draft_reason_version_response {
  * of them.
  */
 namespace draft_reason_event_subjects {
-inline constexpr std::string_view created = "trading.v1.draft_reasons_events.created";
-inline constexpr std::string_view updated = "trading.v1.draft_reasons_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.draft_reasons_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.draft_reasons.created";
+inline constexpr std::string_view updated = "trading.v1.events.draft_reasons.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.draft_reasons.deleted";
 }
 /**
  * @brief The members of draft_reason_key, named as the wire names them and in the order

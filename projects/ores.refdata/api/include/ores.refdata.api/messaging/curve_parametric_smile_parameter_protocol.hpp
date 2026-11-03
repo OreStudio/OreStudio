@@ -371,11 +371,11 @@ struct get_curve_parametric_smile_parameter_version_response {
  */
 namespace curve_parametric_smile_parameter_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.curve_parametric_smile_parameters_events.created";
+    "refdata.v1.events.curve_parametric_smile_parameters.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.curve_parametric_smile_parameters_events.updated";
+    "refdata.v1.events.curve_parametric_smile_parameters.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.curve_parametric_smile_parameters_events.deleted";
+    "refdata.v1.events.curve_parametric_smile_parameters.deleted";
 }
 /**
  * @brief The members of curve_parametric_smile_parameter_key, named as the wire names them and in

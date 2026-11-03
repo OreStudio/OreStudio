@@ -391,9 +391,9 @@ struct get_workflow_step_version_response {
  * of them.
  */
 namespace workflow_step_event_subjects {
-inline constexpr std::string_view created = "workflow.v1.workflow_steps_events.created";
-inline constexpr std::string_view updated = "workflow.v1.workflow_steps_events.updated";
-inline constexpr std::string_view deleted = "workflow.v1.workflow_steps_events.deleted";
+inline constexpr std::string_view created = "workflow.v1.events.workflow_steps.created";
+inline constexpr std::string_view updated = "workflow.v1.events.workflow_steps.updated";
+inline constexpr std::string_view deleted = "workflow.v1.events.workflow_steps.deleted";
 }
 /**
  * @brief The members of workflow_step_key, named as the wire names them and in the order

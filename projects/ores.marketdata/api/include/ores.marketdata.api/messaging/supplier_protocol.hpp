@@ -223,9 +223,9 @@ struct get_supplier_version_response {
  * of them.
  */
 namespace supplier_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.suppliers_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.suppliers_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.suppliers_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.suppliers.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.suppliers.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.suppliers.deleted";
 }
 /**
  * @brief The members of supplier_key, named as the wire names them and in the order

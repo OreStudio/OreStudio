@@ -347,9 +347,9 @@ struct get_tenor_anchor_version_response {
  * of them.
  */
 namespace tenor_anchor_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.tenor_anchors_events.created";
-inline constexpr std::string_view updated = "refdata.v1.tenor_anchors_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.tenor_anchors_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.tenor_anchors.created";
+inline constexpr std::string_view updated = "refdata.v1.events.tenor_anchors.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.tenor_anchors.deleted";
 }
 /**
  * @brief The members of tenor_anchor_key, named as the wire names them and in the order

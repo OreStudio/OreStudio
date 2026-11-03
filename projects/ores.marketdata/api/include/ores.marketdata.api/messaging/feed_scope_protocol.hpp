@@ -355,9 +355,9 @@ struct get_feed_scope_version_response {
  * of them.
  */
 namespace feed_scope_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.feed_scopes_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.feed_scopes_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.feed_scopes_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.feed_scopes.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.feed_scopes.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.deleted";
 }
 /**
  * @brief The members of feed_scope_key, named as the wire names them and in the order

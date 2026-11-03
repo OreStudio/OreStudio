@@ -359,9 +359,9 @@ struct get_demand_interval_version_response {
  * of them.
  */
 namespace demand_interval_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.demand_intervals_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.demand_intervals_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.demand_intervals_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.demand_intervals.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.demand_intervals.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.demand_intervals.deleted";
 }
 /**
  * @brief The members of demand_interval_key, named as the wire names them and in the order

@@ -406,11 +406,11 @@ struct get_instrument_option_exercise_fee_version_response {
  */
 namespace instrument_option_exercise_fee_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.instrument_option_exercise_fees_events.created";
+    "trading.v1.events.instrument_option_exercise_fees.created";
 inline constexpr std::string_view updated =
-    "trading.v1.instrument_option_exercise_fees_events.updated";
+    "trading.v1.events.instrument_option_exercise_fees.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.instrument_option_exercise_fees_events.deleted";
+    "trading.v1.events.instrument_option_exercise_fees.deleted";
 }
 /**
  * @brief The members of instrument_option_exercise_fee_key, named as the wire names them and in the

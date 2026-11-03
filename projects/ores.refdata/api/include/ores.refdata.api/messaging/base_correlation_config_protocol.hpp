@@ -372,9 +372,9 @@ struct get_base_correlation_config_version_response {
  * of them.
  */
 namespace base_correlation_config_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.base_correlation_configs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.base_correlation_configs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.base_correlation_configs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.base_correlation_configs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.base_correlation_configs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.base_correlation_configs.deleted";
 }
 /**
  * @brief The members of base_correlation_config_key, named as the wire names them and in the order

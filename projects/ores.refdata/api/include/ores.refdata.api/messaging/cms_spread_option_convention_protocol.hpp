@@ -368,11 +368,11 @@ struct get_cms_spread_option_convention_version_response {
  */
 namespace cms_spread_option_convention_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.cms_spread_option_conventions_events.created";
+    "refdata.v1.events.cms_spread_option_conventions.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.cms_spread_option_conventions_events.updated";
+    "refdata.v1.events.cms_spread_option_conventions.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.cms_spread_option_conventions_events.deleted";
+    "refdata.v1.events.cms_spread_option_conventions.deleted";
 }
 /**
  * @brief The members of cms_spread_option_convention_key, named as the wire names them and in the

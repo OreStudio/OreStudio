@@ -361,9 +361,9 @@ struct get_fx_vol_surface_pillar_version_response {
  * of them.
  */
 namespace fx_vol_surface_pillar_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.fx_vol_surface_pillars_events.created";
-inline constexpr std::string_view updated = "refdata.v1.fx_vol_surface_pillars_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_pillars_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.fx_vol_surface_pillars.created";
+inline constexpr std::string_view updated = "refdata.v1.events.fx_vol_surface_pillars.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pillars.deleted";
 }
 /**
  * @brief The members of fx_vol_surface_pillar_key, named as the wire names them and in the order

@@ -256,9 +256,9 @@ struct get_run_grant_version_response {
  * of them.
  */
 namespace run_grant_event_subjects {
-inline constexpr std::string_view created = "iam.v1.run_grants_events.created";
-inline constexpr std::string_view updated = "iam.v1.run_grants_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.run_grants.created";
+inline constexpr std::string_view updated = "iam.v1.events.run_grants.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.run_grants.deleted";
 }
 /**
  * @brief The members of run_grant_key, named as the wire names them and in the order

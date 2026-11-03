@@ -360,9 +360,9 @@ struct get_pricing_model_product_version_response {
  * of them.
  */
 namespace pricing_model_product_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.pricing_model_products_events.created";
-inline constexpr std::string_view updated = "analytics.v1.pricing_model_products_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.pricing_model_products_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.pricing_model_products.created";
+inline constexpr std::string_view updated = "analytics.v1.events.pricing_model_products.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.pricing_model_products.deleted";
 }
 /**
  * @brief The members of pricing_model_product_key, named as the wire names them and in the order

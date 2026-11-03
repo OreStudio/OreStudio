@@ -206,7 +206,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.market_data_providers_events.created',
-    updated: 'synthetic.v1.market_data_providers_events.updated',
-    deleted: 'synthetic.v1.market_data_providers_events.deleted',
+    created: 'synthetic.v1.events.market_data_providers.created',
+    updated: 'synthetic.v1.events.market_data_providers.updated',
+    deleted: 'synthetic.v1.events.market_data_providers.deleted',
 } as const;

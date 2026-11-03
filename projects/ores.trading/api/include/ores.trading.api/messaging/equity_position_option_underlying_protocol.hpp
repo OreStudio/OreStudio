@@ -415,11 +415,11 @@ struct get_equity_position_option_underlying_version_response {
  */
 namespace equity_position_option_underlying_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.equity_position_option_underlyings_events.created";
+    "trading.v1.events.equity_position_option_underlyings.created";
 inline constexpr std::string_view updated =
-    "trading.v1.equity_position_option_underlyings_events.updated";
+    "trading.v1.events.equity_position_option_underlyings.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.equity_position_option_underlyings_events.deleted";
+    "trading.v1.events.equity_position_option_underlyings.deleted";
 }
 /**
  * @brief The members of equity_position_option_underlying_key, named as the wire names them and in

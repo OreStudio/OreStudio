@@ -385,9 +385,9 @@ struct get_range_bound_version_response {
  * of them.
  */
 namespace range_bound_event_subjects {
-inline constexpr std::string_view created = "trading.v1.range_bounds_events.created";
-inline constexpr std::string_view updated = "trading.v1.range_bounds_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.range_bounds_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.range_bounds.created";
+inline constexpr std::string_view updated = "trading.v1.events.range_bounds.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.deleted";
 }
 /**
  * @brief The members of range_bound_key, named as the wire names them and in the order

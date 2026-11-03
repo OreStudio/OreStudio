@@ -384,9 +384,9 @@ struct get_csa_version_response {
  * of them.
  */
 namespace csa_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.csas_events.created";
-inline constexpr std::string_view updated = "refdata.v1.csas_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.csas_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.csas.created";
+inline constexpr std::string_view updated = "refdata.v1.events.csas.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.csas.deleted";
 }
 /**
  * @brief The members of csa_key, named as the wire names them and in the order

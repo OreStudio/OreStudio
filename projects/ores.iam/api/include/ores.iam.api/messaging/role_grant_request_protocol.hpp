@@ -385,9 +385,9 @@ struct get_role_grant_request_version_response {
  * of them.
  */
 namespace role_grant_request_event_subjects {
-inline constexpr std::string_view created = "iam.v1.role_grant_requests_events.created";
-inline constexpr std::string_view updated = "iam.v1.role_grant_requests_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.role_grant_requests_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.role_grant_requests.created";
+inline constexpr std::string_view updated = "iam.v1.events.role_grant_requests.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.role_grant_requests.deleted";
 }
 /**
  * @brief The members of role_grant_request_key, named as the wire names them and in the order

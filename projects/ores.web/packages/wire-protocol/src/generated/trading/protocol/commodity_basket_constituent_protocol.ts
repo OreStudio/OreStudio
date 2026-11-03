@@ -232,7 +232,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'trading.v1.commodity_basket_constituents_events.created',
-    updated: 'trading.v1.commodity_basket_constituents_events.updated',
-    deleted: 'trading.v1.commodity_basket_constituents_events.deleted',
+    created: 'trading.v1.events.commodity_basket_constituents.created',
+    updated: 'trading.v1.events.commodity_basket_constituents.updated',
+    deleted: 'trading.v1.events.commodity_basket_constituents.deleted',
 } as const;

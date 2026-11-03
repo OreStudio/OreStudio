@@ -370,11 +370,11 @@ struct get_intraday_power_load_convention_version_response {
  */
 namespace intraday_power_load_convention_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.intraday_power_load_conventions_events.created";
+    "refdata.v1.events.intraday_power_load_conventions.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.intraday_power_load_conventions_events.updated";
+    "refdata.v1.events.intraday_power_load_conventions.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.intraday_power_load_conventions_events.deleted";
+    "refdata.v1.events.intraday_power_load_conventions.deleted";
 }
 /**
  * @brief The members of intraday_power_load_convention_key, named as the wire names them and in the

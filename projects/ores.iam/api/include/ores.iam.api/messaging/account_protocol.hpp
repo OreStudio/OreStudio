@@ -223,9 +223,9 @@ struct get_account_version_response {
  * of them.
  */
 namespace account_event_subjects {
-inline constexpr std::string_view created = "iam.v1.accounts_events.created";
-inline constexpr std::string_view updated = "iam.v1.accounts_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.accounts_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.accounts.created";
+inline constexpr std::string_view updated = "iam.v1.events.accounts.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.accounts.deleted";
 }
 /**
  * @brief The members of account_key, named as the wire names them and in the order

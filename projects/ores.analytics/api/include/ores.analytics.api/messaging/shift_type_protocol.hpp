@@ -343,9 +343,9 @@ struct get_shift_type_version_response {
  * of them.
  */
 namespace shift_type_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.shift_types_events.created";
-inline constexpr std::string_view updated = "analytics.v1.shift_types_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.shift_types_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.shift_types.created";
+inline constexpr std::string_view updated = "analytics.v1.events.shift_types.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.shift_types.deleted";
 }
 /**
  * @brief The members of shift_type_key, named as the wire names them and in the order

@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::inbox::messaging::approval_request_event> {
-    static constexpr std::string_view subject_prefix = "inbox.v1.approval_requests_events";
+    static constexpr std::string_view subject_prefix = "inbox.v1.events.approval_requests";
 
     static ores::inbox::messaging::approval_request_event
     from_notification(const entity_event_notification& notification) {

@@ -212,7 +212,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.curve_segment_ibor_fallbacks_events.created',
-    updated: 'refdata.v1.curve_segment_ibor_fallbacks_events.updated',
-    deleted: 'refdata.v1.curve_segment_ibor_fallbacks_events.deleted',
+    created: 'refdata.v1.events.curve_segment_ibor_fallbacks.created',
+    updated: 'refdata.v1.events.curve_segment_ibor_fallbacks.updated',
+    deleted: 'refdata.v1.events.curve_segment_ibor_fallbacks.deleted',
 } as const;

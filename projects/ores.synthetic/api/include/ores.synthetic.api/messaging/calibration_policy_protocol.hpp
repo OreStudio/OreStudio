@@ -368,9 +368,9 @@ struct get_calibration_policy_version_response {
  * of them.
  */
 namespace calibration_policy_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.calibration_policies_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.calibration_policies_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.calibration_policies_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.calibration_policies.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.calibration_policies.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_policies.deleted";
 }
 /**
  * @brief The members of calibration_policy_key, named as the wire names them and in the order

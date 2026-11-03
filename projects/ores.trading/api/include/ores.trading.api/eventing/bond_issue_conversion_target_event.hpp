@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::trading::messaging::bond_issue_conversion_target_event> {
     static constexpr std::string_view subject_prefix =
-        "trading.v1.bond_issue_conversion_targets_events";
+        "trading.v1.events.bond_issue_conversion_targets";
 
     static ores::trading::messaging::bond_issue_conversion_target_event
     from_notification(const entity_event_notification& notification) {

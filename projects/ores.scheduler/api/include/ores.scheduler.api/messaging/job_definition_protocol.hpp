@@ -352,9 +352,9 @@ struct get_job_definition_version_response {
  * of them.
  */
 namespace job_definition_event_subjects {
-inline constexpr std::string_view created = "scheduler.v1.job_definitions_events.created";
-inline constexpr std::string_view updated = "scheduler.v1.job_definitions_events.updated";
-inline constexpr std::string_view deleted = "scheduler.v1.job_definitions_events.deleted";
+inline constexpr std::string_view created = "scheduler.v1.events.job_definitions.created";
+inline constexpr std::string_view updated = "scheduler.v1.events.job_definitions.updated";
+inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions.deleted";
 }
 /**
  * @brief The members of job_definition_key, named as the wire names them and in the order

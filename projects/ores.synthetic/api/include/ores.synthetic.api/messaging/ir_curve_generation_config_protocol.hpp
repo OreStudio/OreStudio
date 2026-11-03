@@ -380,11 +380,11 @@ struct get_ir_curve_generation_config_version_response {
  */
 namespace ir_curve_generation_config_event_subjects {
 inline constexpr std::string_view created =
-    "synthetic.v1.ir_curve_generation_configs_events.created";
+    "synthetic.v1.events.ir_curve_generation_configs.created";
 inline constexpr std::string_view updated =
-    "synthetic.v1.ir_curve_generation_configs_events.updated";
+    "synthetic.v1.events.ir_curve_generation_configs.updated";
 inline constexpr std::string_view deleted =
-    "synthetic.v1.ir_curve_generation_configs_events.deleted";
+    "synthetic.v1.events.ir_curve_generation_configs.deleted";
 }
 /**
  * @brief The members of ir_curve_generation_config_key, named as the wire names them and in the

@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::trading::messaging::knock_out_swap_instrument_event> {
     static constexpr std::string_view subject_prefix =
-        "trading.v1.knock_out_swap_instruments_events";
+        "trading.v1.events.knock_out_swap_instruments";
 
     static ores::trading::messaging::knock_out_swap_instrument_event
     from_notification(const entity_event_notification& notification) {

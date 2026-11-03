@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::scheduler::messaging::job_definition_event> {
-    static constexpr std::string_view subject_prefix = "scheduler.v1.job_definitions_events";
+    static constexpr std::string_view subject_prefix = "scheduler.v1.events.job_definitions";
 
     static ores::scheduler::messaging::job_definition_event
     from_notification(const entity_event_notification& notification) {

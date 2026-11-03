@@ -49,12 +49,14 @@ page [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]] stat
 
 A =market_datum= holds three things:
 
-- the ORE instrument type, an enum of all 45 that ORE's
-  =parseMarketDatum= reads;
+- the instrument type, an enum of all 45 that ORE's =parseMarketDatum=
+  reads, in ORE's order, followed by oresmd's own, which name series ORE
+  has no market datum for and so have no ORE key: =fx_vol_surface=, the
+  calibrated FX volatility surface;
 - the ORE quote type, an enum of all 16, plus =none= for the ORE token
   =NULL=;
 - a list of =(field, value)= pairs. =field= is an enum of the 61 fields that
-  any ORE key carries. A value is one of five kinds: text, an ORE period or
+  any ORE key carries, and =surface_id=, which only oresmd's own types use. A value is one of five kinds: text, an ORE period or
   date, a decimal, a strike, or an enum code.
 
 Equality compares every member, so a series and a quote are never equal.
@@ -254,6 +256,7 @@ identity field, and the points are the =term= values.
 | Discount curve | =oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR1D= | =term= |
 | Credit spread curve | =oresmd://credit/ACME?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=USD&doc_clause=XR14= | =term= |
 | FX volatility surface | =oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD= | =expiry=, =strike_label= |
+| Calibrated FX volatility surface | =oresmd://fx/EUR?type=series&instrument=fx_vol_surface&quote=rate_lnvol&ccy=USD&surface_id=EURUSD_BROKER= | =expiry=, =strike= |
 | Swaption cube | =oresmd://ir/EUR?type=series&instrument=swaption&quote=rate_nvol= | =expiry=, =term=, =dimension= |
 | Cap or floor surface | =oresmd://ir/EUR?type=series&instrument=capfloor&quote=rate_lnvol&index_tenor=6M&atm=0&relative=0= | =term=, =strike_level= |
 
@@ -283,10 +286,12 @@ curve's points are a =discount= series named by its =curve_id=, whose identity
 says the points are inferred, and the curve's blueprint is the only writer of
 that series. A calibrated volatility surface stands in the same relation to
 the quotes it was calibrated to. The =fx_option= series holds observed quotes and has a
-writer per contributor; the calibrated surface is a separate series of an
-instrument type for calibrated FX volatility surfaces, named by the pair and a
-surface identity in the place of =curve_id=, with the axes =expiry= and
-=strike=. =strike= takes the strike grammar the equity and commodity surfaces
+writer per contributor; the calibrated surface is a separate series of the
+instrument type =fx_vol_surface=, named by the pair and a =surface_id= in the
+place of =curve_id=, with the axes =expiry= and =strike=, as in
+=oresmd://fx/EUR?type=series&instrument=fx_vol_surface&quote=rate_lnvol&ccy=USD&surface_id=EURUSD_BROKER=.
+=fx_vol_surface= is oresmd's own type: ORE has no market datum for a calibrated
+surface, so it has no ORE key, and the key grammar neither reads nor writes it. =strike= takes the strike grammar the equity and commodity surfaces
 already use, so a grid point is a delta of a call or a put, or an absolute
 strike. The series is created with the surface blueprint and written only by
 its calibration, as

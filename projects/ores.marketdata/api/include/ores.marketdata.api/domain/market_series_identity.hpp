@@ -400,6 +400,12 @@ struct market_series_identity final {
     std::string source;
 
     /**
+     * @brief The surface_id field of the identity, as the URI spells it, or empty when the type's
+     * schema row does not declare it.
+     */
+    std::string surface_id;
+
+    /**
      * @brief The tenor field of the identity, as the URI spells it, or empty when the type's schema
      * row does not declare it.
      */

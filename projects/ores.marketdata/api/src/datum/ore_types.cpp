@@ -69,7 +69,8 @@ constexpr std::array<std::string_view, instrument_type_count> instrument_type_na
     "COMMODITY_CALENDAR_SPREAD_OPTION",
     "SHAPE_PROFILE",
     "CPR",
-    "RATING"};
+    "RATING",
+    "FX_VOL_SURFACE"};
 
 constexpr std::array<std::string_view, quote_type_count> quote_type_names{"BASIS_SPREAD",
                                                                           "CREDIT_SPREAD",

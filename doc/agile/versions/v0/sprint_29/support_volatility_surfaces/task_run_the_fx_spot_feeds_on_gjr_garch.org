@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: DF6A9912-BD6C-4AD7-B8F7-28DD8C58466F
+:END:
+#+title: Task: Run the FX spot feeds on GJR-GARCH
+#+description: Publish every FX spot generation column from DQ and seed every system FX spot feed with the GJR-GARCH variance.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/run-the-fx-spot-feeds-on-gjr-garch
+#+pr: 4420
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every FX spot feed a tenant such as Acme sees, the provider feeds and the demo feeds, runs with the GJR-GARCH daily variance after a fresh provision, and the publish carries the arrival and variance columns the artefact rows hold.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The DQ publish copies arrival_mode, branching_ratio, decay, sensitivity, variance_model, garch_alpha, garch_gamma, garch_beta and garch_window_days from the artefact row to the live config.
+- Every seeded FX spot artefact row, in the starter, provider and uniform demo datasets, names variance_model gjr_garch.
+- After a database recreate and an Acme provision, every live FX spot config has variance_model gjr_garch.
+- A pgTAP test publishes a feed whose arrival and GARCH columns differ from every default, and fails if the publish drops any of them.
+
+* Plan
+
+Every FX spot feed is a system feed in the root tenant, which Acme reads, so the
+change is to the system feed datasets. The publish function dropped nine
+artefact columns, so a seed naming =gjr_garch= published as =constant=; fix the
+publish first, then set =variance_model= in every seed. The authored parameters
+keep the column defaults; a feed that starts from fixings fits its own.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4420][#4420]] | [synthetic] Run every FX spot feed on GJR-GARCH |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The starter dataset still cannot publish; prioritise it, as the only Hawkes seed | synthetic_fx_spot_configs_populate.sql | Declined | Already a capture; the regimes test exercises Hawkes on the uniform demo dataset |
+| 2 | Confirm CI does not gate on the four failing marketdata pgTAP files | marketdata tests | Declined | No CI check runs on a PR; the derived source task fixes them |
+| 3 | The review did not build or run pgTAP | - | Declined | The build, recreate and pgTAP runs are in the Testing section |
+
+* Result
+
+The DQ publish now copies the four arrival columns and the five variance columns
+from an FX spot artefact row; before, it dropped them, so every published feed ran
+on the defaults. Every shipped FX spot seed, the Bloomberg, LSEG and uniform demo
+feeds and the unshipped starter set, names =gjr_garch=.
+
+Measured at e5ceae4f33 on a recreated database with Acme provisioned: the 51 live FX
+spot configs all have =variance_model= =gjr_garch= (40 from fixings, 11 fixed). The
+new =synthetic_fx_spot_regimes_publish_test.sql= passes, and fails 3 of 4 against
+main's publish function; the two provider feed tests pass with their GJR-GARCH
+assertions.
+
+The starter dataset cannot publish, because it names a provider that does not
+exist; that is filed as a capture. Four marketdata pgTAP files fail on main
+already, because their counts predate the derived source; the derived source task
+fixes them.
+

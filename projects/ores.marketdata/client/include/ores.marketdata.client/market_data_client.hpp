@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
+#include "ores.marketdata.api/messaging/observation_read_operations_protocol.hpp"
 #include "ores.marketdata.client/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <expected>
@@ -122,6 +123,15 @@ public:
      */
     [[nodiscard]] std::expected<messaging::get_fixing_window_response, std::string>
     get_fixing_window(const messaging::get_fixing_window_request& request);
+
+    /**
+     * @brief The observations of a series over a window of days, every point each day.
+     *
+     * Sends marketdata.v1.ops.get_observation_window. A refusal of the service is an
+     * error.
+     */
+    [[nodiscard]] std::expected<messaging::get_observation_window_response, std::string>
+    get_observation_window(const messaging::get_observation_window_request& request);
 
     /**
      * @brief List observations for a series (limit 10000, first page).

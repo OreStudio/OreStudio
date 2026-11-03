@@ -24,7 +24,7 @@ import { Link } from 'react-router';
 import { api, type PublishedCurveSet } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translate } from '../inbox/kinds.js';
-import { PARTY_FILTER_ID, usePartyScope } from '../refdata/partyScope.js';
+import { partyIdOf, usePartyScope } from '../refdata/partyScope.js';
 import {
     RecordList,
     type ListColumn,
@@ -103,7 +103,7 @@ function sourceOf(
     return {
         key: 'published-curves',
         read: async (page) => {
-            const partyId = page.filters[PARTY_FILTER_ID] ?? '';
+            const partyId = partyIdOf(page.filters) ?? '';
             const answer = await api.publishedCurves({
                 ...(partyId === '' ? {} : { partyId }),
                 search: page.search,

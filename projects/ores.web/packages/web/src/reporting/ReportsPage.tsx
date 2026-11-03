@@ -51,7 +51,12 @@ import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Crumbs } from '../refdata/shared.js';
-import { MY_PARTIES_QUERY_KEY, PARTY_COLUMN_ID, usePartyScope } from '../refdata/partyScope.js';
+import {
+    MY_PARTIES_QUERY_KEY,
+    PARTY_COLUMN_ID,
+    partyIdOf,
+    usePartyScope,
+} from '../refdata/partyScope.js';
 import { reportPath } from '../shell/paths.js';
 import {
     RecordList,
@@ -104,8 +109,17 @@ export function unreadNotes(
     }));
 }
 
-/** The fields of a definition the server orders by, which are the columns that can be clicked. */
+/**
+ * The fields of a definition the server orders by, which are the columns that can be clicked.
+ * The cut is a filter and a column, not an order: the server does not sort by it.
+ */
 const SORTABLE_FIELDS = ['name', 'report_type', 'schedule_expression'] as const;
+
+/** The kinds of cut a definition may select, in the order the filter offers them. */
+const CUT_KINDS = ['LIVE', 'EOD', 'SOD', 'IPV', 'FLASH', 'EOM', 'EOY'] as const;
+
+/** The id the cut filter travels under, in the address and in the page request. */
+const CUT_FILTER_ID = 'cut';
 
 /** The parties the rows come from, read one page at a time. */
 function useReportSource(party: ListFilter | undefined): ListSource<ReportRowView> {
@@ -114,7 +128,8 @@ function useReportSource(party: ListFilter | undefined): ListSource<ReportRowVie
         key: 'reports',
         read: async (page) => {
             // A party in the address is dropped when the list has no party filter to clear it.
-            const partyId = party === undefined ? null : (page.filters['party'] ?? null);
+            const partyId = party === undefined ? null : partyIdOf(page.filters);
+            const cutKind = page.filters[CUT_FILTER_ID] ?? '';
             // The tally is of every report the party and the search match, so it
             // is read with the page and not added up from it. It is read apart
             // from the rows: a tally that cannot be read costs the strip and the
@@ -127,6 +142,7 @@ function useReportSource(party: ListFilter | undefined): ListSource<ReportRowVie
                     descending: page.descending,
                     partyId,
                     search: page.search,
+                    cutKind,
                 }),
                 api
                     .reportHealth({ partyId, search: page.search })
@@ -160,13 +176,43 @@ function useReportSource(party: ListFilter | undefined): ListSource<ReportRowVie
         },
         search: true,
         sortable: SORTABLE_FIELDS,
-        ...(party === undefined ? {} : { filters: [party] }),
+        filters: [
+            ...(party === undefined ? [] : [party]),
+            {
+                kind: 'choice' as const,
+                id: CUT_FILTER_ID,
+                label: t('reporting.filter.cut'),
+                all: t('reporting.filter.allCuts'),
+                choices: CUT_KINDS.map((kind) => ({
+                    value: kind,
+                    label: t(`reporting.cut.${kind}`),
+                })),
+            },
+        ],
         mayAdd: false,
         watches: [REPORTS_EVENTS],
         // The change event names a definition by its name, which is the key the
         // model declares for the row.
         recordKey: (row) => ({ name: row.name }),
     };
+}
+
+/** The tone of a cut badge: the live and start-of-day kinds read as current, the close as quiet. */
+function cutTone(kind: string): 'accent' | 'up' | 'warn' | 'neutral' | 'muted' {
+    switch (kind) {
+        case 'LIVE':
+            return 'up';
+        case 'SOD':
+            return 'accent';
+        case 'FLASH':
+        case 'IPV':
+            return 'warn';
+        case 'EOM':
+        case 'EOY':
+            return 'muted';
+        default:
+            return 'neutral';
+    }
 }
 
 /** The party a row belongs to, as the tag the entity screen specification draws. */
@@ -253,8 +299,21 @@ function useColumns(showParty: boolean): readonly ListColumn<ReportRowView>[] {
             id: 'reportType',
             sort: 'report_type',
             header: t('reporting.columns.reportType'),
-            cell: (row) => row.reportType,
-            mono: true,
+            cell: (row) => (
+                <Tag tone={row.reportType === 'risk' ? 'accent' : 'neutral'}>
+                    {row.reportType}
+                </Tag>
+            ),
+        },
+        {
+            id: 'cut',
+            header: t('reporting.columns.cut'),
+            cell: (row) =>
+                row.cutKind === null ? (
+                    <Absent />
+                ) : (
+                    <Tag tone={cutTone(row.cutKind)}>{row.cutKind}</Tag>
+                ),
         },
         {
             id: 'schedule',

@@ -7703,6 +7703,8 @@ const fr: SourceCatalogue = {
         unread: "{cell} n'a pas pu être lu : {message}",
         filter: {
             allParties: 'Toutes les parties',
+            cut: 'Coupure',
+            allCuts: 'Toutes les coupures',
         },
         tally: {
             label: 'Rapports selon l’état de leur dernière exécution',
@@ -7712,12 +7714,22 @@ const fr: SourceCatalogue = {
             report: 'Rapport',
             party: 'Partie',
             reportType: 'Type',
+            cut: 'Coupure',
             schedule: 'Calendrier',
             latestRun: 'Début de la dernière exécution',
             duration: 'Durée',
             health: 'État',
             errors: 'Erreurs',
             warnings: 'Avertissements',
+        },
+        cut: {
+            LIVE: 'Live',
+            EOD: 'Fin de journée',
+            SOD: 'Début de journée',
+            IPV: 'Vérification indépendante des prix',
+            FLASH: 'Flash',
+            EOM: 'Fin de mois',
+            EOY: 'Fin d’année',
         },
         health: {
             failed: 'Échec',

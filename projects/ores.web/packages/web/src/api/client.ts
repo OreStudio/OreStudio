@@ -1936,6 +1936,8 @@ export const api = {
         readonly partyId: string | null;
         /** The text the name and the description are searched for, or empty for none. */
         readonly search: string;
+        /** The kind of cut the list is narrowed to, or empty for every kind. */
+        readonly cutKind: string;
     }): Promise<ReportsPage> {
         const query = new URLSearchParams({
             offset: String(page.offset),
@@ -1943,6 +1945,9 @@ export const api = {
             sort: page.sort,
             descending: page.descending ? 'true' : 'false',
         });
+        if (page.cutKind !== '') {
+            query.set('cut_kind', page.cutKind);
+        }
         if (page.partyId !== null) {
             query.set('party_id', page.partyId);
         }

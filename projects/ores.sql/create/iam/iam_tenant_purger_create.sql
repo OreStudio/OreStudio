@@ -40,7 +40,8 @@ create or replace function ores_iam_purge_tenant_fn(
 declare
     v_system_tenant_id uuid;
     v_tenant_code text;
-    v_deleted_count integer;
+    v_deleted_count bigint := 0;
+    v_row_count bigint;
     v_pending text[];
     v_blocked text[];
     v_table text;
@@ -75,118 +76,31 @@ begin
 
     -- =========================================================================
     -- Hard delete all tenant data
-    -- Order matters for foreign key relationships (delete children first)
     -- =========================================================================
-
-    -- IAM: Sessions
-    delete from ores_iam_sessions_tbl where tenant_id = p_tenant_id;
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Deleted % sessions', v_deleted_count;
-    end if;
-
-    -- IAM: Login info
-    delete from ores_iam_login_info_tbl where tenant_id = p_tenant_id;
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Deleted % login info records', v_deleted_count;
-    end if;
-
-    -- IAM: Account roles (FK to accounts and roles)
-    delete from ores_iam_account_roles_tbl where tenant_id = p_tenant_id;
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Deleted % account-role assignments', v_deleted_count;
-    end if;
-
-    -- IAM: Role permissions (FK to roles and permissions)
-    delete from ores_iam_role_permissions_tbl where tenant_id = p_tenant_id;
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Deleted % role-permission assignments', v_deleted_count;
-    end if;
-
-    -- IAM: Accounts
-    delete from ores_iam_accounts_tbl where tenant_id = p_tenant_id;
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Deleted % accounts', v_deleted_count;
-    end if;
-
-    -- IAM: Roles
-    delete from ores_iam_roles_tbl where tenant_id = p_tenant_id;
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Deleted % roles', v_deleted_count;
-    end if;
-
-    -- IAM: Permissions
-    delete from ores_iam_permissions_tbl where tenant_id = p_tenant_id;
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Deleted % permissions', v_deleted_count;
-    end if;
-
-    -- =========================================================================
-    -- Delete refdata
-    -- =========================================================================
-
-    delete from ores_refdata_currencies_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_countries_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_trading_account_types_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_asset_classes_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_asset_measures_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_benchmark_rates_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_business_centres_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_business_processes_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_cashflow_types_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_entity_classifications_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_local_jurisdictions_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_party_relationships_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_party_roles_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_person_roles_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_regulatory_corporate_sectors_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_reporting_regimes_tbl where tenant_id = p_tenant_id;
-    delete from ores_refdata_supervisory_bodies_tbl where tenant_id = p_tenant_id;
-
-    raise notice 'Deleted all refdata for tenant';
-
-    -- =========================================================================
-    -- Delete other tenant data
-    -- =========================================================================
-
-    -- Assets: Image tags (FK to images and tags)
-    delete from ores_assets_image_tags_tbl where tenant_id = p_tenant_id;
-
-    -- Assets: Tags
-    delete from ores_assets_tags_tbl where tenant_id = p_tenant_id;
-
-    -- Assets: Images
-    delete from ores_assets_images_tbl where tenant_id = p_tenant_id;
-
-    -- Variability: System settings
-    delete from ores_variability_system_settings_tbl where tenant_id = p_tenant_id;
-
-    -- Trading: every tenant-scoped trading table, the instruments and the
-    -- trade's anchor and components alike. Every version goes, so each
-    -- table's delete rules, which would only close the current version, are
-    -- disabled around its delete, whatever they are named. A component
-    -- references its anchor with an enforced foreign key, so a table whose
-    -- rows are still referenced is retried in a later pass once its
-    -- referrers are gone. An anchor is
-    -- immutable, so the purge turns on the purge signal for this transaction
-    -- first: it is the one sanctioned way past the anchor's guard.
+    -- Every table that carries a tenant_id is evidence of a tenant, so the
+    -- sweep takes its list from the catalogue rather than from a list here: a
+    -- table that gains the column is purged without this function changing,
+    -- and a table that is forgotten cannot quietly keep its rows.
+    --
+    -- Two things make a plain delete wrong. A delete rule closes the row it
+    -- matches instead of removing it, so each table's rules are disabled
+    -- around its own delete and always put back. And a component references
+    -- its anchor with an enforced foreign key, so a table whose rows are still
+    -- referenced is retried in a later pass once its referrers are gone.
+    --
+    -- An anchor is immutable, so the purge turns on the purge signal for this
+    -- transaction first: it is the one sanctioned way past the anchor's guard.
     perform ores_utility_allow_immutable_purge_fn();
-    select array_agg(t.tablename::text order by t.tablename) into v_pending
+    select coalesce(array_agg(t.tablename::text order by t.tablename), '{}')
+    into v_pending
     from pg_tables t
     where t.schemaname = 'public'
-      and t.tablename like 'ores\_trading\_%\_tbl'
       and exists (
           select 1 from information_schema.columns c
           where c.table_schema = t.schemaname
             and c.table_name = t.tablename
             and c.column_name = 'tenant_id');
-    v_pending := coalesce(v_pending, '{}');
+
     for v_pass in 1 .. cardinality(v_pending) loop
         exit when cardinality(v_pending) = 0;
         v_blocked := '{}';
@@ -202,12 +116,23 @@ begin
                 foreach v_rule in array v_rules loop
                     execute format('alter table %I disable rule %I', v_table, v_rule);
                 end loop;
-                execute format('delete from %I where tenant_id = $1', v_table)
-                    using p_tenant_id;
+                -- Compared as text: the tenant column is a uuid in most tables
+                -- and text in the few that record an operator's tenant as the
+                -- string they presented, and one sweep covers both.
+                execute format('delete from %I where tenant_id::text = $1', v_table)
+                    using p_tenant_id::text;
+                get diagnostics v_row_count = row_count;
+                v_deleted_count := v_deleted_count + v_row_count;
                 foreach v_rule in array v_rules loop
                     execute format('alter table %I enable rule %I', v_table, v_rule);
                 end loop;
             exception when foreign_key_violation then
+                -- The rules the failed attempt disabled are put back before the
+                -- table is retried: a disabled rule would let a later delete
+                -- remove a row that the table means to keep.
+                foreach v_rule in array v_rules loop
+                    execute format('alter table %I enable rule %I', v_table, v_rule);
+                end loop;
                 v_blocked := v_blocked || v_table;
             end;
         end loop;
@@ -215,13 +140,14 @@ begin
     end loop;
     perform set_config('ores.utility.allow_immutable_purge', 'off', true);
     if cardinality(v_pending) > 0 then
-        raise exception 'Could not purge the trading tables %: they are still referenced.',
+        raise exception 'Could not purge the tenant rows of %: they are still referenced.',
             v_pending using errcode = '23503';
     end if;
 
-    raise notice 'Tenant data purge complete: % (id: %)', v_tenant_code, p_tenant_id;
+    raise notice 'Purged % row(s) of tenant % (id: %)',
+        v_deleted_count, v_tenant_code, p_tenant_id;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- -----------------------------------------------------------------------------
 -- Hard delete tenant records (bypasses soft-delete rule)
@@ -254,7 +180,7 @@ begin
 
     return v_count;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- -----------------------------------------------------------------------------
 -- Purge all test tenants

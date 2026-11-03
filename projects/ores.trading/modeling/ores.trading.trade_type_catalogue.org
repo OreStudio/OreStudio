@@ -176,6 +176,144 @@ absent: it is a placeholder, not a product.
 | EuropeanOptionBarrier | European Option with Barrier | option | scripted |  | false | false |  |
 | PerformanceOption_01 | Performance Option (variant 01) |   | scripted |  | false | false | scripted_instrument |
 
+* Descriptions
+
+The description a person reads before booking a type, and the source it comes
+from. One row per code, in the same order as the trade types above.
+
+The prose says what the product is, in one sentence, and names no model, no
+engine and no pair: a reader who has never booked the type can tell from this
+line whether it is the one they want, and the page it is read on names the code.
+
+The source is the document the description was written from, and the reference
+is the file inside it. Where ORE documents a product under a chapter that covers
+several types, the chapter is named and the description says which of them this
+is.
+
+| code                                | description                                                                                                           | source          | source_ref                             |
+|-------------------------------------+------------------------------------------------------------------------------------------------------------------------+-----------------+----------------------------------------|
+| CompositeTrade                      | A hybrid position bundling multiple component trades.                                                                  | ORE User Guide  | compositetrade.tex                     |
+| RateDigitalOption                   | A fixed-payout option on an interest rate fixing.                                                                      | ORE User Guide  | ratedigitaloption.tex                  |
+| SwaptionStraddle                    | A payer swaption and a receiver swaption on the same expiry and strike, bought as one trade.                           | ORE User Guide  | swaption.tex                           |
+| ForwardVolatilityAgreement          | An option on the realised volatility of an underlying over a future period, settled against a strike.                  | ORE User Guide  | var_and_vol_derivatives.tex            |
+| Swap                                | An interest rate swap exchanges streams of interest payments between two parties on a notional.                        | ORE User Guide  | swap.tex                               |
+| CrossCurrencySwap                   | A swap with a leg in each of two currencies, exchanging interest and, usually, the notional at start and at end.       | ORE User Guide  | swap.tex                               |
+| ForwardRateAgreement                | A single-period lock on a future interest rate.                                                                        | ORE User Guide  | forwardrateagreement.tex               |
+| CapFloor                            | A strip of interest rate caplets or floorlets bounding a floating leg.                                                 | ORE User Guide  | capfloor.tex                           |
+| Swaption                            | An option to enter an interest rate swap.                                                                              | ORE User Guide  | swaption.tex                           |
+| FlexiSwap                           | A swap with an option to cut the notional toward a lower bound.                                                        | ORE User Guide  | flexiswap.tex                          |
+| BalanceGuaranteedSwap               | An amortising swap that follows the prepayments of a reference security.                                               | ORE User Guide  | balanceguaranteedswap.tex              |
+| CallableSwap                        | A swap one party can cancel on set dates.                                                                              | ORE User Guide  | callableswap.tex                       |
+| KnockOutSwap                        | A swap that terminates when a rate fixing breaches a barrier.                                                          | ORE User Guide  | knockoutswap.tex                       |
+| RiskParticipationAgreement          | Credit protection on a counterparty's default on an underlying swap.                                                   | ORE User Guide  | rpa.tex                                |
+| InflationSwap                       | A swap exchanging a fixed or floating rate for the return of a price index.                                            | ORE User Guide  | cpiswap.tex                            |
+| FxForwardVolatilityAgreement        | A forward volatility agreement on an exchange rate.                                                                    | ORE User Guide  | var_and_vol_derivatives.tex            |
+| FxForward                           | An FX forward locks an exchange rate for a future currency exchange.                                                   | ORE User Guide  | fxforward.tex                          |
+| FxSwap                              | An exchange of two currencies at spot and at a forward date.                                                           | ORE User Guide  | fxswap.tex                             |
+| FxOption                            | Vanilla FX optionality: the right to exchange currencies at a set rate.                                                | ORE User Guide  | fxoption.tex                           |
+| FxDigitalOption                     | An FX option paying a fixed amount when the rate settles.                                                              | ORE User Guide  | fx_digitaloption.tex                   |
+| FxAverageForward                    | An FX forward that settles at an average of the fixing over a period rather than at one date.                          | ORE User Guide  | fxforward.tex                          |
+| FxAsianOption                       | An FX option on an averaged exchange rate.                                                                             | ORE User Guide  | fx_asianoption.tex                     |
+| FxBarrierOption                     | An FX option with a single barrier.                                                                                    | ORE User Guide  | fx_barrieroption.tex                   |
+| FxDoubleBarrierOption               | An FX option with two barriers around the strike.                                                                      | ORE User Guide  | fx_doublebarrieroption.tex             |
+| FxEuropeanBarrierOption             | An FX European barrier option.                                                                                         | ORE User Guide  | fx_europeanbarrieroption.tex           |
+| FxWindowBarrierOption               | An option with a barrier active only inside a time window.                                                             | ORE User Guide  | window_barrieroption.tex               |
+| FxGenericBarrierOption              | A vanilla, asset-or-nothing or cash-or-nothing option with American and expiry barriers.                               | ORE User Guide  | generic_barrieroption.tex              |
+| FxKIKOBarrierOption                 | A knock-in knock-out FX barrier option.                                                                                | ORE User Guide  | fx_kikobarrieroption.tex               |
+| FxTouchOption                       | An FX option paying when spot touches a level before expiry.                                                           | ORE User Guide  | fx_touchoption.tex                     |
+| FxDoubleTouchOption                 | An FX option paying on one or two spot touches before expiry.                                                          | ORE User Guide  | fx_doubletouchoption.tex               |
+| FxDigitalBarrierOption              | An FX digital option combined with a barrier.                                                                          | ORE User Guide  | fx_digitalbarrieroption.tex            |
+| FxVarianceSwap                      | An FX derivative on realised variance or volatility.                                                                   | ORE User Guide  | fxvarianceswap.tex                     |
+| FxPairwiseVarianceSwap              | Variance and volatility swaps and options with barriers, corridors, baskets and optionality.                           | ORE User Guide  | var_and_vol_derivatives.tex            |
+| FxBasketVarianceSwap                | Variance and volatility swaps and options with barriers, corridors, baskets and optionality.                           | ORE User Guide  | var_and_vol_derivatives.tex            |
+| FxAccumulator                       | A forward purchase of an asset in daily instalments within a price range.                                              | ORE User Guide  | accumulator.tex                        |
+| FxTaRF                              | A forward series that redeems early at a target profit.                                                                | ORE User Guide  | tarf.tex                               |
+| FxWorstOfBasketSwap                 | A swap whose coupon references the worst performing asset in a basket.                                                 | ORE User Guide  | worstofbasketswap.tex                  |
+| FxBestEntryOption                   | An option whose payoff uses the best observed entry level of the underlying.                                           | ORE User Guide  | bestentryoption.tex                    |
+| FxBasketOption                      | An option on a basket of underlying assets.                                                                            | ORE User Guide  | basketoption.tex                       |
+| FxRainbowOption                     | European options on the best or worst of a range of assets.                                                            | ORE User Guide  | rainbow_option.tex                     |
+| FxStrikeResettableOption            | An option whose strike resets when the underlying reaches a level.                                                     | ORE User Guide  | strikeresettableoption.tex             |
+| CreditDefaultSwap                   | A CDS trades protection on a reference entity's default.                                                               | ORE User Guide  | creditdefaultswap.tex                  |
+| CreditDefaultSwapOption             | An option to buy protection on a single name at a strike spread on a future date.                                      | ORE User Guide  | creditdefaultswap.tex                  |
+| IndexCreditDefaultSwap              | A credit default swap on an index of reference entities.                                                               | ORE User Guide  | indexcds.tex                           |
+| IndexCreditDefaultSwapOption        | An option to enter an index CDS at a strike.                                                                           | ORE User Guide  | indexcdsoption.tex                     |
+| SyntheticCDO                        | A tranched basket credit derivative.                                                                                   | ORE User Guide  | syntheticcdo.tex                       |
+| CreditLinkedSwap                    | A swap with payments contingent on credit events of a reference.                                                       | ORE User Guide  | creditlinkedswap.tex                   |
+| CBO                                 | A tranched securitisation of a portfolio of corporate bonds or loans.                                                  | ORE User Guide  | cbodata.tex                            |
+| BondFutureOption                    | An option on a bond future, exercised into the future position.                                                        | ORE User Guide  | bondfuture.tex                         |
+| Bond                                | A bond is a tradable debt instrument paying scheduled interest and principal.                                          | ORE User Guide  | bond.tex                               |
+| ForwardBond                         | A forward contract to buy or sell an underlying bond at a future date.                                                 | ORE User Guide  | forwardbond.tex                        |
+| BondFuture                          | A contract to buy or sell an underlying bond at expiry at an agreed price.                                             | ORE User Guide  | bondfuture.tex                         |
+| BondOption                          | A right to buy or sell a given bond at a fixed price.                                                                  | ORE User Guide  | bondoption.tex                         |
+| BondRepo                            | A cash borrowing with a bond posted as collateral.                                                                     | ORE User Guide  | bondrepo.tex                           |
+| BondTRS                             | A swap paying the total return of a bond against a funding leg.                                                        | ORE User Guide  | bondTotalReturnSwap.tex                |
+| BondPosition                        | A position in a weighted basket of underlying bonds.                                                                   | ORE User Guide  | bondposition.tex                       |
+| CallableBond                        | A bond with issuer call and investor put rights.                                                                       | ORE User Guide  | callablebond.tex                       |
+| ConvertibleBond                     | A bond that converts into a prespecified number of shares.                                                             | ORE User Guide  | convertiblebond.tex                    |
+| Ascot                               | An American-style option to buy back a convertible bond.                                                               | ORE User Guide  | ascot.tex                              |
+| EquityAutoDeltaHedgedOption         | Batches of European equity options with an embedded delta-hedging strategy.                                            | ORE User Guide  | equityautodeltahedgedoption.tex        |
+| EquityForwardVolatilityAgreement    | A forward volatility agreement on an equity price.                                                                     | ORE User Guide  | var_and_vol_derivatives.tex            |
+| EquityOption                        | An option to buy or sell shares at a strike price.                                                                     | ORE User Guide  | equityoption.tex                       |
+| EquityFutureOption                  | An option on an equity future contract.                                                                                | ORE User Guide  | equityfuturesoption.tex                |
+| EquityAsianOption                   | An Asian option on the average equity price.                                                                           | ORE User Guide  | eq_asianoption.tex                     |
+| EquityBarrierOption                 | A barrier option on an equity price.                                                                                   | ORE User Guide  | eq_barrieroption.tex                   |
+| EquityDoubleBarrierOption           | A double barrier option on an equity price.                                                                            | ORE User Guide  | eq_doublebarrieroption.tex             |
+| EquityEuropeanBarrierOption         | A barrier option monitored once at expiry.                                                                             | ORE User Guide  | eq_europeanbarrieroption.tex           |
+| EquityWindowBarrierOption           | An option with a barrier active only inside a time window.                                                             | ORE User Guide  | window_barrieroption.tex               |
+| EquityGenericBarrierOption          | A vanilla, asset-or-nothing or cash-or-nothing option with American and expiry barriers.                               | ORE User Guide  | generic_barrieroption.tex              |
+| EquityTouchOption                   | A cash-or-nothing one-touch option on an equity.                                                                       | ORE User Guide  | eq_touchoption.tex                     |
+| EquityDoubleTouchOption             | A cash-or-nothing double touch option on an equity.                                                                    | ORE User Guide  | eq_doubletouchoption.tex               |
+| EquityDigitalOption                 | A cash-or-nothing digital option on an equity.                                                                         | ORE User Guide  | eq_digitaloption.tex                   |
+| EquityForward                       | An agreement to buy or sell shares at a future price.                                                                  | ORE User Guide  | equityforward.tex                      |
+| EquitySwap                          | A swap of an equity return against a fixed or floating leg.                                                            | ORE User Guide  | equityswap.tex                         |
+| EquityVarianceSwap                  | A swap of realised equity variance against a volatility strike.                                                        | ORE User Guide  | equityvarianceswap.tex                 |
+| EquityPairwiseVarianceSwap          | Variance and volatility swaps and options with barriers, corridors, baskets and optionality.                           | ORE User Guide  | var_and_vol_derivatives.tex            |
+| EquityBasketVarianceSwap            | Variance and volatility swaps and options with barriers, corridors, baskets and optionality.                           | ORE User Guide  | var_and_vol_derivatives.tex            |
+| EquityCliquetOption                 | A series of forward-start equity options with local and global caps.                                                   | ORE User Guide  | equitycliquetoption.tex                |
+| EquityAccumulator                   | A forward purchase of an asset in daily instalments within a price range.                                              | ORE User Guide  | accumulator.tex                        |
+| EquityTaRF                          | A forward series that redeems early at a target profit.                                                                | ORE User Guide  | tarf.tex                               |
+| EquityWorstOfBasketSwap             | A swap whose coupon references the worst performing asset in a basket.                                                 | ORE User Guide  | worstofbasketswap.tex                  |
+| EquityBestEntryOption               | An option whose payoff uses the best observed entry level of the underlying.                                           | ORE User Guide  | bestentryoption.tex                    |
+| EquityBasketOption                  | An option on a basket of underlying assets.                                                                            | ORE User Guide  | basketoption.tex                       |
+| EquityRainbowOption                 | European options on the best or worst of a range of assets.                                                            | ORE User Guide  | rainbow_option.tex                     |
+| EquityOutperformanceOption          | An option paying the outperformance of one asset over another.                                                         | ORE User Guide  | eq_outperformance.tex                  |
+| EquityStrikeResettableOption        | An option whose strike resets when the underlying reaches a level.                                                     | ORE User Guide  | strikeresettableoption.tex             |
+| TotalReturnSwap                     | A swap paying the total return of an asset against a funding leg.                                                      | ORE User Guide  | totalReturnSwap.tex                    |
+| ContractForDifference               | A cash-settled contract paying the difference between an entry price and the price at close.                           | ORE User Guide  | equityforward.tex                      |
+| EquityPosition                      | A position in a single equity or a weighted equity basket.                                                             | ORE User Guide  | equityposition.tex                     |
+| EquityOptionPosition                | A position in a single equity option or a weighted option basket.                                                      | ORE User Guide  | equityoptionposition.tex               |
+| CommodityForwardVolatilityAgreement | A forward volatility agreement on a commodity price.                                                                   | ORE User Guide  | var_and_vol_derivatives.tex            |
+| IntradayPowerForward                | A forward on power delivered in intraday blocks, priced against an intraday index.                                     | ORE User Guide  | commodityforward.tex                   |
+| CommodityForward                    | An agreement to buy or sell a commodity at a set price later.                                                          | ORE User Guide  | commodityforward.tex                   |
+| CommodityOption                     | A European or American option on a commodity.                                                                          | ORE User Guide  | commodityoption.tex                    |
+| CommodityDigitalOption              | A commodity option paying a fixed amount when the price settles beyond a strike.                                       | ORE User Guide  | commodityoption.tex                    |
+| CommodityDigitalAveragePriceOption  | A digital option on the average price of a commodity over a period.                                                    | ORE User Guide  | commodityapo.tex                       |
+| CommodityAsianOption                | An option on the average price of a commodity over a period.                                                           | ORE User Guide  | commodityoption.tex                    |
+| CommodityAveragePriceOption         | An Asian option on daily commodity price fixings.                                                                      | ORE User Guide  | commodityapo.tex                       |
+| CommoditySpreadOption               | An option on the spread between two commodity prices.                                                                  | ORE User Guide  | commodityoption.tex                    |
+| CommodityOptionStrip                | A strip of commodity APOs or European options over periods.                                                            | ORE User Guide  | commodityoptionstrip.tex               |
+| CommoditySwap                       | Floating commodity prices against a fixed price.                                                                       | ORE User Guide  | commodityswap.tex                      |
+| CommoditySwaption                   | A European option on a forward-starting commodity swap.                                                                | ORE User Guide  | commodityswaption.tex                  |
+| CommodityVarianceSwap               | A swap on commodity volatility or variance.                                                                            | ORE User Guide  | commodityvarianceswap.tex              |
+| CommodityPairwiseVarianceSwap       | Variance and volatility swaps and options with barriers, corridors, baskets and optionality.                           | ORE User Guide  | var_and_vol_derivatives.tex            |
+| CommodityBasketVarianceSwap         | Variance and volatility swaps and options with barriers, corridors, baskets and optionality.                           | ORE User Guide  | var_and_vol_derivatives.tex            |
+| CommodityAccumulator                | A forward purchase of an asset in daily instalments within a price range.                                              | ORE User Guide  | accumulator.tex                        |
+| CommodityTaRF                       | A forward series that redeems early at a target profit.                                                                | ORE User Guide  | tarf.tex                               |
+| CommodityWorstOfBasketSwap          | A swap whose coupon references the worst performing asset in a basket.                                                 | ORE User Guide  | worstofbasketswap.tex                  |
+| CommodityBestEntryOption            | An option whose payoff uses the best observed entry level of the underlying.                                           | ORE User Guide  | bestentryoption.tex                    |
+| CommodityWindowBarrierOption        | An option with a barrier active only inside a time window.                                                             | ORE User Guide  | window_barrieroption.tex               |
+| CommodityGenericBarrierOption       | A vanilla, asset-or-nothing or cash-or-nothing option with American and expiry barriers.                               | ORE User Guide  | generic_barrieroption.tex              |
+| CommodityBasketOption               | An option on a basket of underlying assets.                                                                            | ORE User Guide  | basketoption.tex                       |
+| CommodityRainbowOption              | European options on the best or worst of a range of assets.                                                            | ORE User Guide  | rainbow_option.tex                     |
+| CommodityStrikeResettableOption     | An option whose strike resets when the underlying reaches a level.                                                     | ORE User Guide  | strikeresettableoption.tex             |
+| CommodityPosition                   | A position in a commodity or weighted commodity basket.                                                                | ORE User Guide  | commodityposition.tex                  |
+| CashPosition                        | An amount of cash in a currency.                                                                                       | ORE User Guide  | cashposition.tex                       |
+| ScriptedTrade                       | A structured option that pays accumulated amounts and redeems early below a trigger level.                             | ORE User Guide  | autocallable_01.tex                    |
+| Autocallable_01                     | A scripted note that redeems early once the underlying fixes above a barrier, paying the coupons accrued to that date. | ORE User Guide  | autocallable_01.tex                    |
+| DoubleDigitalOption                 | A binary option paying a fixed amount when two underlyings are simultaneously in the money.                            | ORE User Guide  | doubledigitaloption.tex                |
+| EuropeanOptionBarrier               | A plain vanilla European option whose payoff depends on a barrier on another underlying.                               | ORE User Guide  | europeanoptioncontingentonabarrier.tex |
+| PerformanceOption_01                | A scripted option paying the outperformance of one underlying over another.                                            | ORE User Guide  | performanceoption_01.tex               |
+
 * Common dates
 
 The dates a deal grid reads across families. Each product used to state them

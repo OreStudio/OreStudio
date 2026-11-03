@@ -133,6 +133,10 @@ def _tree(tmp_path, header_cols, fact_cols, vocabulary=None, shared="| "):
         "| code | name | family | construction | markets | has_options | has_extension | instrument |\n"
         "|------+------+--------+--------------+---------+-------------+---------------+------------|\n"
         "| Swap | x | swap | native | interest_rates! | false | false | header |\n\n"
+        "* Descriptions\n\n"
+        "| code | description | source | source_ref |\n"
+        "|------+-------------+--------+------------|\n"
+        "| Swap | A swap. | ORE User Guide | swap.tex |\n\n"
         "* Common dates\n\n| name | description | shared_entity | shared_column |\n"
         "|------+-------------+---------------+---------------|\n"
         f"{rows}\n", encoding="utf-8")

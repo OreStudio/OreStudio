@@ -205,4 +205,60 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
     return out;
 }
 
+cut_body body_of_facts(const cut_body_facts& facts) {
+    cut_body body;
+
+    // The references the store materialises, where it materialises any. Neither
+    // a population copy nor a snapshot of the market data stands today, so both
+    // stay empty and the note carries what the reads answered.
+    body.reference_data_version = facts.reference_data_version;
+    body.engine_version = facts.engine_version;
+    body.code_version = facts.code_version;
+
+    std::string note;
+    const auto add = [&note](const std::string& part) {
+        if (!note.empty())
+            note += "; ";
+        note += part;
+    };
+
+    if (facts.deal_count) {
+        add(std::format("the trade store held {} deal(s) at the instant", *facts.deal_count));
+    } else {
+        add(facts.deals_refusal.empty() ?
+                std::string("the trade store answered no count of its deals") :
+                std::format("the trade store answered no count of its deals: {}", facts.deals_refusal));
+    }
+
+    if (facts.market_data_set_count && *facts.market_data_set_count > 0) {
+        add(facts.market_data_as_of.empty() ?
+                std::format("{} published set(s) were in use", *facts.market_data_set_count) :
+                std::format("{} published set(s) were in use, newest as of {}",
+                            *facts.market_data_set_count,
+                            facts.market_data_as_of));
+    } else if (!facts.market_data_refusal.empty()) {
+        add(std::format("the market data answered no published set: {}", facts.market_data_refusal));
+    } else {
+        add("no published set was in use, so the body names no market data snapshot");
+    }
+
+    if (facts.reference_data_version)
+        add(std::format("the reference data in force was {}", *facts.reference_data_version));
+    else if (!facts.reference_data_refusal.empty())
+        add(std::format("the reference data answered nothing: {}", facts.reference_data_refusal));
+
+    if (facts.engine_version) {
+        add(facts.wrapper_version.empty() ?
+                std::format("the run executes engine {}", *facts.engine_version) :
+                std::format("the run executes engine {} and wrapper {}",
+                            *facts.engine_version,
+                            facts.wrapper_version));
+    } else if (!facts.engine_refusal.empty()) {
+        add(std::format("the engine answered no version: {}", facts.engine_refusal));
+    }
+
+    body.note = std::move(note);
+    return body;
+}
+
 }

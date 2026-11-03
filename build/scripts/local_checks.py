@@ -237,6 +237,11 @@ def classify(changed: list[str]) -> tuple[set[str], dict[str, list[str]]]:
 
 SKILL_SCRIPTS = ("build/scripts/generate_skill*.py", "build/scripts/link_structure_notes.py")
 
+# The test preset names no job count, so ctest would run one suite at a time.
+# The suites that must not overlap already say so, with RESOURCE_LOCK or
+# RUN_SERIAL.
+CTEST_JOBS = 4
+
 CATALOGUE: tuple[Check, ...] = (
     # -- prepare: the writers run before anything reads what they write ------
     Check(
@@ -1180,6 +1185,12 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("modeling", "codegen", "tooling"),
     ),
     Check(
+        id="build-script-tests",
+        title="The build-script suite passes",
+        argv=(CODEGEN_TESTS_PY, "-m", "pytest", "build/scripts/tests", "-q"),
+        classes=("tooling",),
+    ),
+    Check(
         id="compass-tests",
         title="The compass suite passes",
         argv=("projects/ores.compass/venv/bin/pytest", "projects/ores.compass/tests", "-q"),
@@ -1222,7 +1233,7 @@ CATALOGUE: tuple[Check, ...] = (
             "-c",
             "./compass.sh services stop ores.marketdata.service || true;"
             " ./compass.sh services stop ores.synthetic.service || true;"
-            " ./compass.sh test run --preset {preset}",
+            " ./compass.sh test run --preset {preset} -- -j " + str(CTEST_JOBS),
         ),
         classes=("cpp", "services", "sql"),
         phase=HEAVY,

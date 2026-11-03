@@ -19,6 +19,7 @@
  *
  */
 
+import type { FeedPart } from './FeedHistory.js';
 import type { ReactNode } from 'react';
 import type { RecordRow } from '../../api/client.js';
 import type { FlagSource } from '../../images/flags.js';
@@ -101,6 +102,11 @@ export interface FeedKind {
     ) => readonly (readonly [string, ReactNode, string?])[];
     /** The rows a feed owns. */
     readonly parts: readonly FeedPartKind[];
+    /**
+     * Rows the feed does not own that belong to its story, such as the variance calibrations
+     * of its pair. The History tab reads them with the feed's own.
+     */
+    readonly useRelated?: (feed: RecordRow) => readonly FeedPart[];
     /** The tabs between Details and History. */
     readonly tabs: readonly FeedTab[];
     /** The tab a new feed opens on, where the person goes on. */

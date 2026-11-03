@@ -428,6 +428,17 @@ The import is a catalogue of report templates. It has no party, lifecycle state,
 :nullable: true
 :END:
 
+** cut_kind_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+The kind of cut the catalogue says the report prices from. A catalogue states a
+kind and never a body, because a cut's identity belongs to one database and the
+catalogue is copied into many. Empty for a report the catalogue does not yet
+classify by cycle, which the publish leaves as the close it has always read.
+
 * Artefact indexes
 
 ** name

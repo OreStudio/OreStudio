@@ -1,0 +1,873 @@
+:PROPERTIES:
+:ID: 90847fc9-501d-43c5-acb3-0f02d12b48ac
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.synthetic.market_regime
+#+description: Codegen operation model for the market regime: its read, its pin and configure writes, the scheduler trace and the tick history.
+#+type: ores.codegen.operation
+#+component: synthetic
+#+subcomponent: api
+#+entity_singular: market_regime
+#+namespace: ores::synthetic::messaging
+#+brief: The market regime's read, pin, configure, trace and history operations.
+#+filetags: :model:operation:synthetic:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+The market-wide arrival factor the synthetic service runs: a calm or active
+state, the shared heat that events add and decay fades, and the pace market
+time runs at. A screen reads it, pins it, configures it, and reads the
+scheduler's recent decisions and the tick history behind it.
+
+The pin and the configure writes answer with one response, the regime after
+the request, so the two share it.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** get_market_regime_request
+:PROPERTIES:
+:subject:  synthetic.v1.ops.get_market_regime
+:response: get_market_regime_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Ask what the market-wide arrival factor is doing now.
+ */
+#+end_src
+
+** market_regime_sample
+#+begin_src cpp :name comment
+/**
+ * @brief One reading of the endogenous half of the factor: the shared heat.
+ */
+#+end_src
+
+*** at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+#+begin_src cpp :name comment
+/** @brief When the service took the reading. */
+#+end_src
+
+*** heat
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The shared heat then, in units of a rate: what any event adds and decay fades. */
+#+end_src
+
+*** intensity
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The ticks a second every running feed's law asked for then: the market's lambda(t).
+ */
+#+end_src
+
+** get_market_regime_response
+#+begin_src cpp :name comment
+/**
+ * @brief The factor in force: its state, its multiplier and whether a scenario pinned it.
+ *
+ * The heat is the endogenous half, and it is the internal state jump and decay
+ * act on: a screen that wants to show the process rather than its outcome reads
+ * these readings, which the service takes a few times a second as it fades the
+ * heat. The jump and the decay are carried beside them, so a reader can say what
+ * the curve means without knowing the configuration.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief "calm" or "active". */
+#+end_src
+
+*** multiplier
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The multiplier every series is scaled by now. */
+#+end_src
+
+*** pinned
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief Whether a scenario pinned the state rather than the chain choosing it. */
+#+end_src
+
+*** heat
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The heat in force now. */
+#+end_src
+
+*** jump
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The heat one event adds, in units of a rate. */
+#+end_src
+
+*** decay
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How fast the heat fades, in units of one over a second. */
+#+end_src
+
+*** samples
+:PROPERTIES:
+:cpp_type: std::vector<market_regime_sample>
+:END:
+#+begin_src cpp :name comment
+/** @brief The heat's readings, oldest first, over the window the service keeps. */
+#+end_src
+
+*** pace
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How fast market time runs now: the multiplier plus the heat's share. */
+#+end_src
+
+*** tau
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The market's operational time since the run started. */
+#+end_src
+
+*** population_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The summed mean rate of the running series, a second: what the heat is shared over.
+ */
+#+end_src
+
+*** loop_gain
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The heat's loop gain, jump over decay; the heat settles while it is below one. */
+#+end_src
+
+*** run_seed
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The seed every random stream of the run is keyed by. */
+#+end_src
+
+*** speed
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The simulated seconds one unit of market time spans; zero when not reported. */
+#+end_src
+
+*** wake_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How often a calm market turns active, per second; zero when not reported. */
+#+end_src
+
+*** calm_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How often an active market turns calm, per second; zero when not reported. */
+#+end_src
+
+*** tail_loading
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How far activity tilts a price's shape toward its tails; zero is off. */
+#+end_src
+
+*** active_multiplier
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The pace of an active market; the calm pace follows from it. Zero when not reported.
+ */
+#+end_src
+
+** get_market_trace_request
+:PROPERTIES:
+:subject:  synthetic.v1.ops.get_market_trace
+:response: get_market_trace_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the scheduler's recent decisions and its own numbers.
+ */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief One feed's events and the market's, or every event when empty. */
+#+end_src
+
+*** seconds
+:PROPERTIES:
+:cpp_type: double
+:default: 120.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How far back to read, in seconds of the run. */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 5000
+:END:
+#+begin_src cpp :name comment
+/** @brief The most events to return; the newest are kept. */
+#+end_src
+
+** market_trace_event
+#+begin_src cpp :name comment
+/** @brief One decision of the scheduler's loop. */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief "tick", "transition", "pin", "unpin", "add", "remove" or "configure". */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The feed it concerns, or empty for a market event. */
+#+end_src
+
+*** at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** tau
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The market's operational time then. */
+#+end_src
+
+*** operational_gap
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief For a tick: the gap the feed's law drew, in its own operational time. */
+#+end_src
+
+*** wall_gap
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief For a tick: the wall seconds since the feed last ticked. */
+#+end_src
+
+*** compensated_gap
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief For a tick: the law's intensity integrated over the gap; Exp(1) when the feed
+ * follows its law. */
+#+end_src
+
+*** heat
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** multiplier
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The regime's multiplier; the pace less it is the heat's share. */
+#+end_src
+
+*** pace
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How fast market time ran after the decision. */
+#+end_src
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief "calm" or "active", after the decision. */
+#+end_src
+
+** market_series_state
+#+begin_src cpp :name comment
+/** @brief One running feed and the state of its arrival law now. */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** mode
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief "periodic", "poisson" or "hawkes". */
+#+end_src
+
+*** rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The configured mean rate, a second. */
+#+end_src
+
+*** sensitivity
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+
+*** effective_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The rate it ticks at now: its law's intensity, its sensitivity and the pace. */
+#+end_src
+
+*** phase
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief For a periodic law: the fraction of its first gap it started at. */
+#+end_src
+
+*** excess
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief For a Hawkes law: the excess intensity now, above the baseline. */
+#+end_src
+
+*** branching_ratio
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief For a Hawkes law: the branching ratio; zero for the other laws. */
+#+end_src
+
+*** decay
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief For a Hawkes law: the decay, per unit of operational time; zero otherwise. */
+#+end_src
+
+** get_market_trace_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** run_seed
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** ticks_per_second
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief Ticks a second, smoothed over about a second. */
+#+end_src
+
+*** heap_size
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief Entries in the scheduler's heap. */
+#+end_src
+
+*** lateness_seconds
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How late the loop fires a tick, smoothed, in seconds. */
+#+end_src
+
+*** max_lateness_seconds
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The latest tick since the last read, in seconds. */
+#+end_src
+
+*** series
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The feeds the scheduler runs. */
+#+end_src
+
+*** events
+:PROPERTIES:
+:cpp_type: std::vector<market_trace_event>
+:END:
+#+begin_src cpp :name comment
+/** @brief The decisions in the window, oldest first. */
+#+end_src
+
+*** series_states
+:PROPERTIES:
+:cpp_type: std::vector<market_series_state>
+:END:
+#+begin_src cpp :name comment
+/** @brief Every running feed and its law now, in name order. */
+#+end_src
+
+** get_market_history_request
+:PROPERTIES:
+:subject:  synthetic.v1.ops.get_market_history
+:response: get_market_history_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the ticks of the last stretch of the run, slot by slot and asset class by
+ * asset class: an hour by the second, or ten minutes by the tenth of a second.
+ */
+#+end_src
+
+*** resolution
+:PROPERTIES:
+:cpp_type: std::string
+:default: "second"
+:END:
+#+begin_src cpp :name comment
+/** @brief "second" or "tenth". */
+#+end_src
+
+*** seconds
+:PROPERTIES:
+:cpp_type: double
+:default: 3600.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How far back to read, in seconds of the run. */
+#+end_src
+
+** market_history_bin
+#+begin_src cpp :name comment
+/** @brief One slot of the history. */
+#+end_src
+
+*** at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** counts
+:PROPERTIES:
+:cpp_type: std::vector<std::uint32_t>
+:END:
+#+begin_src cpp :name comment
+/** @brief The ticks of each group in the slot, by the group's index. */
+#+end_src
+
+*** pace
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The mean pace over the slot; zero when the loop took no reading in it. */
+#+end_src
+
+*** active_share
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The share of the slot the market was active. */
+#+end_src
+
+** get_market_history_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** slot_seconds
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The length of a slot, in seconds. */
+#+end_src
+
+*** groups
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The groups the counts are by: the feeds' asset classes. */
+#+end_src
+
+*** bins
+:PROPERTIES:
+:cpp_type: std::vector<market_history_bin>
+:END:
+#+begin_src cpp :name comment
+/** @brief The slots with a tick or a reading in them, oldest first. */
+#+end_src
+
+** pin_market_regime_request
+:PROPERTIES:
+:subject:  synthetic.v1.ops.pin_market_regime
+:response: pin_market_regime_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Pin the market state, or hand it back to the chain.
+ */
+#+end_src
+
+*** mode
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief What to force: "auto" hands control back to the chain, "calm" and
+ * "active" pin that state.
+ */
+#+end_src
+
+** pin_market_regime_response
+#+begin_src cpp :name comment
+/**
+ * @brief The state in force after the request.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The state in force now, as the read reports it. */
+#+end_src
+
+*** multiplier
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The multiplier in force now. */
+#+end_src
+
+*** pinned
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief Whether the state is pinned after this request. */
+#+end_src
+
+*** heat
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The rest of the regime after the request, as the read reports it. */
+#+end_src
+
+*** jump
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** decay
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** samples
+:PROPERTIES:
+:cpp_type: std::vector<market_regime_sample>
+:END:
+
+*** pace
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+
+*** tau
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** population_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** loop_gain
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** run_seed
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** speed
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** wake_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** calm_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** tail_loading
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** active_multiplier
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** configure_market_request
+:PROPERTIES:
+:subject:  synthetic.v1.ops.configure_market
+:response: pin_market_regime_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Set how the market moves, from now on: the chain's two rates, the heat's
+ * jump and decay, the market speed, and the tail loading.
+ *
+ * Numbers the market cannot run on are refused with success false and a message that
+ * names the number. The reply is the regime after the request, as a pin replies.
+ */
+#+end_src
+
+*** wake_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How often a calm market turns active, per second. */
+#+end_src
+
+*** calm_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How often an active market turns calm, per second. */
+#+end_src
+
+*** jump
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The heat one event adds, in units of a rate. */
+#+end_src
+
+*** decay
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How fast the heat fades, in units of one over a second. */
+#+end_src
+
+*** speed
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The simulated seconds one unit of market time spans. */
+#+end_src
+
+*** tail_loading
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief How far activity tilts a price's shape toward its tails; zero is off. */
+#+end_src
+

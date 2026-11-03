@@ -40,7 +40,8 @@ create table if not exists "ores_dq_report_definitions_artefact_tbl" (
     "display_order" integer not null,
     "tier" text not null default 'trading',
     "applicable_jurisdiction" text null,
-    "regulatory_book_type" text null
+    "regulatory_book_type" text null,
+    "cut_kind_code" text null
 );
 
 create index if not exists dq_report_definitions_artefact_dataset_idx

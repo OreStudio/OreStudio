@@ -79,7 +79,7 @@ A check failed. How do I find what it was, fix it, and prove the fix?
 
 * Tested by
 
-The runner's own suite, =projects/ores.codegen/tests/test_local_checks.py=,
+The runner's own suite, =build/scripts/tests/test_local_checks.py=,
 pins the decision tree: a documentation change must not reach the compiler,
 a header change must, and a path nobody classified must ask for everything.
 

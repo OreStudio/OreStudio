@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: F58607C0-9D3D-407C-B8AF-610A15F75AE5
+:END:
+#+title: Task: Approve a fit within the class policy's rules
+#+description: The class calibration policy gains an approval mode and rules, so a fit that passes them is approved by the policy and only the exceptions wait for a person.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/approve-a-fit-within-the-class-policy
+#+pr: 4440
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A fresh installation runs the fits that pass objective checks without a click. The calibration policy holds an approval mode, manual or auto, and the rules a fit must pass: a minimum of returns, starts that agree, a persistence range, and a variance that reacts to moves. In auto mode each new fit is checked; one that passes is approved through the review verb with the policy, its id and its version as the decider, and the pair's feeds are re-pointed; one that fails stays proposed with the rule it failed as its reason. The review verb records its decider, a person or a policy, so history reads the same either way.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The FX policy is seeded in auto mode with the rules: at least 250 returns, starts agree, persistence from 0.80 to 0.995, and an average reaction, alpha plus half of gamma, of at least 0.01. Each class's policy holds its own values.
+- An applied run approves each fit that passes and leaves each that fails proposed, naming the failed rule; on the data of 2026-11-03, 13 pairs pass and 11 wait, as =evidence/design_fx_preview_2026-11-03.txt= records.
+- An approval's history entry names its decider: the person, or the policy with its id and version.
+- A fit approved by the policy can still be rejected, and an exception approved, by a person.
+
+* Plan
+
+The policy owns the rules, so six columns join it: the approval mode and the
+five rule values, with CHECKs, regenerated from the codegen model. A pure
+function judges a fit's evidence against the rules, so a new fit and a stored
+proposal are judged the same way. The applied run sets each fit's reason before
+it is stored, and after storing approves a passing fit through the existing
+review verb with the policy as the decider. The policy summary carries the rules
+to the policy page, and the policy save carries the fields the screen does not
+edit.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Decisions of one applied FX run | 14 approved, 11 proposed, 3 rejected of 28 pairs | =POST /api/synthetic/calibration/fx/run= on a fresh database; summary of =state= per pair | this branch, before the PR |
+| Repeat applied run | 96 calibration versions before and after; the same 14, 11 and 3 | the same call again; =select count(*) from ores_synthetic_variance_calibrations_tbl= | this branch |
+| Audit | 9 of 9 passed: 28 inputs, 7431 points, 68 calibrations, 51 feeds | =python3 -I projects/ores.sql/utility/audit_variance_calibrations.py= | this branch |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4440][#4440]] | [synthetic] Approve a variance fit within the class policy's rules |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| L1 | The SQL default of the mode came out as an identifier, "manual" | calibration_policy model | Accept | The model's SQL default is the literal 'manual' |
+| L2 | A policy save wrote only the fields the screen edits, so it reset the variance window, and would reset the mode, to the defaults | calibration.ts | Accept | The save writes back the stored values of the fields the screen does not edit; a test checks each one |
+| L3 | The rules' Greek letters were capitalised by the fact caption | CalibrationPages.tsx | Accept | The rules are a parameter table, in their own case; a test checks the header cell |
+| L4 | Two fixing feeds of one pair would each fit, and the later approval supersede the earlier | feed_config_handler.hpp | Decline | No pair has two fitted feeds today (28 pairs, 0 shared); the review closes older proposals, so the pair still ends with one approval |
+| L5 | feed_config_calibrate_writes_only_with_the_write_permissions times out with market data stopped | feed_config_handler_tests.cpp | Decline | It passes in 1.7 s with market data up; the gate stops market data while the test previews a database that now holds stored fixings, so the window reads time out. The preview makes no new remote call in this change |
+| L6 | protocol-twins, subject-conformance and codegen-tests fail | trading blotter, market regime | Decline | Files this branch does not touch; they fail on main the same way |
+| R1.1 | The reason and the decision count returns from different fields | feed_config_handler.hpp | Decline | A point is used exactly when it has a return, which the audit checks on every row; AUD/USD's 254 used points carry 254 returns |
+| R1.2 | The policy approval is told by a string literal | feed_config_handler.hpp | Accept | One constant, policy_approval_prefix, writes and reads it |
+| R1.3 | A failed approval's reason still says it passes | feed_config_handler.hpp | Accept | The reason says the fit waits because the approval failed |
+| R1.4 | The rule floor of 250 | calibration_policy model | Decline | Deliberate and documented on the column; the rules are not edited on screen |
+| R1.5 | A NaN shape passes the range checks | variance_calibration.cpp | Accept | A non-finite shape fails the rules; tested |
+| R1.6 | The reaction has no upper bound | variance_calibration.cpp | Decline | Deliberate; the persistence range bounds the shape |
+| R1.7 | The calibrate permission test depends on shared state | feed_config_handler_tests.cpp | Accept | Filed as the capture "The calibrate permission test times out when market data is stopped" |
+
+* Result
+
+The FX policy approves the fits that pass its rules, and a person sees only the
+rest. One applied run on a fresh database decided all 28 pairs: 14 approved by
+the policy, each with the reason "Approved by the fx calibration policy …
+version 1" and the checks it passed; 11 proposed, each naming the rules it
+failed, such as "Waits for review: reaction 1.754e-11 below 0.01"; and 3
+rejected by the fit for too few returns. A repeat run converged, and the audit
+passed 9 of 9.
+
+- The policy holds the approval mode and five rules, seeded in auto mode for FX,
+  with CHECKs; pgTAP checks the seed and each refusal (35 of 35).
+- approval_failures and approval_evidence judge a fit's evidence; unit tests
+  cover each rule (848 api cases).
+- The feed's calibration entry names the outcome, for example "calibration
+  891711d4 approved by the class policy".
+- The policy page shows the mode and the rules; a policy save keeps them.

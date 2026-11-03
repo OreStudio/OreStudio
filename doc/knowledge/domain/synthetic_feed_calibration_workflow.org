@@ -63,16 +63,29 @@ again finds the records it made and writes nothing, and it never reopens a
 calibration a person has decided. A preview reports a stored calibration as
 stored, with its id, so the screen reviews the record an earlier run kept.
 
-** A person decides the variance
+** The policy or a person decides the variance
 
 #+caption: The states of a variance calibration.
 [[proj:doc/knowledge/domain/variance_calibration_states.png]]
 
-A proposed calibration waits for a person with the review permission, which the
-Trading role holds. Approving or rejecting it, with a reason, is
-=synthetic.v1.ops.review_variance_calibration=; each decision is a new version of
-the calibration under the change reason =system.review=, so its history shows who
-decided what, when and why.
+Who decides is the class policy's approval mode. In =manual= mode a proposed
+calibration waits for a person with the review permission, which the Trading role
+holds. In =auto= mode, the seeded FX policy's, the policy decides each fit an
+applied run proposes against its rules: at least 250 returns, starts that agree, a
+persistence from 0.80 to 0.995, and an average reaction, alpha plus half of
+gamma, of at least 0.01. Each class's policy holds its own values, and a change to
+one is a new version of the policy.
+
+A fit that passes is approved through the same review a person uses, with the
+reason "Approved by the fx calibration policy" naming the policy, its version and
+each check it passed. A fit that fails stays proposed, and its reason names each
+rule it failed, such as "Waits for review: its starts disagree"; it waits for a
+person, and its pair keeps the shape it runs. A stored proposal is judged again
+on each applied run, so a repeat converges. Approving or rejecting by hand, with a
+reason, is =synthetic.v1.ops.review_variance_calibration=; each decision, the
+policy's or a person's, is a new version of the calibration under the change
+reason =system.review=, so its history shows who decided what, when and why. The
+policy page states the mode and the rules.
 
 #+caption: What an approval does, and what a feed reads when it starts.
 #+attr_html: :width 100%
@@ -111,10 +124,43 @@ the run in four cards: the start level in the pair's market convention, with the
 fixing, its provider and its orientation; what the fixing window measured; the
 daily variance, as a table of the GJR-GARCH parameters; and the calibration the run
 used, whose id links to the feed's calibration page. When the config names a newer
-calibration than the run used, the card says so and a restart runs it. On the
-Calibration screen the
-class list shows each feed's variance calibration and its state, and a feed's
-/Variance/ tab shows the whole calibration, its input and the review.
+calibration than the run used, the card says so and a restart runs it. A run that
+took no fixing records the level it kept, so the card states the level the run began
+at even after a later calibration moves the config's level.
+
+The history reads the whole process before and after approval. A feed's /History/
+tab holds the feed's versions and its mixture's, and also every variance input and
+variance calibration of its pair: the input a run captured, the fit it proposed,
+the reviewer's decision, and the calibration an approval superseded. Each entry
+names who made it, when, under which change reason, and its commentary. The
+commentary states the outcome: the input names the fixings it captured and how
+many are usable as returns; the calibration names its shape and says that it waits
+for review, or why the fit was rejected; and the feed's own calibration entry
+names the GJR-GARCH outcome beside the level it moved.
+
+Approving a fit also closes the pair's proposals that are older than it: they are
+superseded with a reason that names the approved fit, because approving one of them
+later would replace a fit of later fixings. A proposal made after the approved fit
+stays open.
+
+A proposed calibration changes no feed until a person approves it, so every screen
+that shows the pair says when a fit waits for review: the class list counts the
+fits that wait, and the feed's /Calibration/ tab and its calibration page state the
+calibration that waits and lead to its review. The review is attached to the
+stored calibration, not to a preview, so a newer fixing that moves the preview
+leaves the stored fit reviewable.
+
+The calibration page draws two charts. The first is the daily volatility a fit
+expected over its input, beside the size of each day's move and the long-run
+level. It is computed in the browser from the stored points and the stored shape
+with the fit's own recursion, and the variance after the last return over the
+long-run level must equal the stored first-day ratio; a series that does not is
+reported, not drawn as if it matched. The second is the pair's calibrations over
+time, one small chart for each of alpha (α), gamma (γ), beta (β) and persistence,
+beside a table of every calibration with its state, method and reason. On the
+Calibration screen the class list shows each feed's variance calibration and its
+state, and a feed's /Variance/ tab shows the whole calibration, its input and the
+review.
 
 The script =projects/ores.sql/utility/audit_variance_calibrations.py= checks the
 stored chain against what it should hold: every input's points and counts, every

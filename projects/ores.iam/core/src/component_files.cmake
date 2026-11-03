@@ -224,6 +224,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/provision_step_arguments.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/publish_from_dq_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/report_schedule_selection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/reset_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/role_grant_request_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/role_grant_request_history_provider_registrar.hpp"

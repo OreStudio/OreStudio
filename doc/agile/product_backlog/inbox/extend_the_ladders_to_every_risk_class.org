@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 16E9E20E-325B-4C17-AF13-530BB5824696
+:END:
+#+title: Extend the greek ladders to every risk class
+#+description: Swaption, cap and floor, credit, equity, inflation, commodity, correlation and bond future ladders: the same report over a different sensitivity block, gated on market data the store does not hold.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:sensitivity:greeks:risk-class:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Build the same ladder report over the risk classes the .1 work does not reach:
+swaption volatility, cap and floor volatility, yield volatility, equity spot and
+volatility, credit spread, CDS volatility, base correlation, security spread,
+commodity curve and volatility, dividend yield, correlation, bond future
+volatility and intraday power.
+
+Each is one sensitivity block of =SensitivityAnalysis= over a different kind of
+market data. Rows 11 to 26 of the family table on
+[[id:D9D59BD1-CAC0-4B4A-B32D-A734A4D79AB0][Greek ladder reports]] name the
+block, the factor key and the bucket columns for each.
+
+* Why
+
+The family the product owner asked for reads as a volatility family, and the
+engine is much wider: the sensitivity schema carries a block for each of these
+risk classes, and the report the store builds for one of them is the report for
+all of them, parameterised by the document it binds.
+
+The work waits on market data, not on code. The ACME seed holds interest rate
+swap curve quotes only, and the schema's volatility configuration tables —
+swaption, cap and floor, CDS, equity, commodity, inflation cap and floor, yield —
+exist with nothing to describe. So this capture is a queue behind
+[[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] and
+behind whatever brings credit and equity data in.
+
+* References
+
+- [[id:D9D59BD1-CAC0-4B4A-B32D-A734A4D79AB0][Greek ladder reports]] — the
+  family table, the dependencies and the decisions.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] — what each
+  block writes and which columns place a figure on a ladder.
+- =external/ore/xsd/sensitivity.xsd= — the twenty-six shift blocks and the four
+  switches that are not factors.
+
+* See also
+
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] — the business
+  catalogue this widens.
+- [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] —
+  the first market data the extension needs.

@@ -49,6 +49,12 @@ domain::calibration_policy calibration_policy_mapper::map(const calibration_poli
     r.asset_class_code = v.asset_class_code;
     r.window_days = v.window_days;
     r.variance_window_days = v.variance_window_days;
+    r.variance_approval_mode = v.variance_approval_mode;
+    r.variance_min_returns = v.variance_min_returns;
+    r.variance_require_starts_agree = v.variance_require_starts_agree;
+    r.variance_min_persistence = v.variance_min_persistence;
+    r.variance_max_persistence = v.variance_max_persistence;
+    r.variance_min_reaction = v.variance_min_reaction;
     r.allow_inverse = v.allow_inverse;
     r.fallback_code = v.fallback_code;
     r.modified_by = v.modified_by;
@@ -71,6 +77,12 @@ calibration_policy_entity calibration_policy_mapper::map(const domain::calibrati
     r.asset_class_code = v.asset_class_code;
     r.window_days = v.window_days;
     r.variance_window_days = v.variance_window_days;
+    r.variance_approval_mode = v.variance_approval_mode;
+    r.variance_min_returns = v.variance_min_returns;
+    r.variance_require_starts_agree = v.variance_require_starts_agree;
+    r.variance_min_persistence = v.variance_min_persistence;
+    r.variance_max_persistence = v.variance_max_persistence;
+    r.variance_min_reaction = v.variance_min_reaction;
     r.allow_inverse = v.allow_inverse;
     r.fallback_code = v.fallback_code;
     r.modified_by = v.modified_by;

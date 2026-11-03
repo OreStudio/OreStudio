@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 7C1F0E52-9A44-4B31-8E6D-2F5C7A1B9D03
+:END:
+#+title: The blotter lists trades
+#+description: A package is a trade, not a second table. The blotter's row is a trade whose instrument may be a composite, and the legs are its components. This plan retires the structures deviation and gives the blotter a single, indexable row.
+#+type: plan
+#+filetags: :plan:trading:blotter:structures:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+* Why this exists
+
+The blotter costs 54 seconds and then fails at ten thousand trades, and the
+first three attempts to fix it all had the same shape: compute a row that the
+model never writes down, then store the computation. A stored projection, a
+rebuild job to repair it, and a nightly alarm to notice when it drifted — three
+rents paid on a model that could not name its own row.
+
+This plan stops paying them. It states what the domain documentation says a
+row is, retires the one table that disagrees, and points the blotter at facts
+that already exist.
+
+* What the documents say
+
+[[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]:
+
+- a structure is one deal assembled from several parts, and each leg *is itself
+  a trade with its own identifier*;
+- *a structure references its legs by key; no parent owns a child*;
+- *the structure's internal version is read from the legs, not stored beside
+  them*;
+- in this tree, =CompositeTrade= is "our untyped structure today", the blotter
+  *"collapses structures to one header row with a disclosure triangle"*, and the
+  target model is =composite_instruments= plus =composite_legs= joined by keys.
+
+[[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]]: ORE's =CompositeTrade=
+*bundles several component trades into one position* — a container with a result
+currency, a notional method and a component list.
+
+* The decision
+
+**A package is a trade.**
+
+A structure is not a second kind of row. It is a trade whose instrument is a
+composite, and its components are trades in their own right. So the blotter
+lists *trades*, full stop: a standalone trade is a row, a composite trade is a
+row, and its component trades are children of that row.
+
+Three consequences follow, and they are the whole point:
+
+1. **The row's columns are facts of a trade.** The book and the date are the
+   composite's own booking; the state is its own state. Nothing is derived from
+   the legs, so the rules that made the row an expression — "the date is the
+   earliest leg's", "the status is the legs' when they agree", "the book is the
+   legs' shared book, else the lowest portfolio" — have no work left to do.
+2. **The order is an index.** A page is ordered by a column of a table, not by
+   =coalesce(column::text, '')= over a union, so the keyset page becomes what it
+   claims: a scan from the key, not a sort of the book.
+3. **There is no second copy of a fact**, so there is no rebuild to run, nothing
+   to drift, and nothing to reconcile.
+
+* The deviation, and its size
+
+Measured on the ACME demonstration, 2026-11-02:
+
+| Table | Rows |
+|-------+------|
+| =ores_trading_structures_tbl= | 60 |
+| =ores_trading_structure_members_tbl= | 115 |
+| =ores_trading_composite_instruments_tbl= | *0* |
+| =ores_trading_composite_legs_tbl= | *0* |
+
+The target model exists and nothing writes it; the deviation is live. That is
+the work: the assembly path writes =structures=, so retiring it is a migration
+and not a rename.
+
+* What changes
+
+1. **The blotter reads trades.** =trading.v1.blotter.page= and
+   =trading.v1.blotter.rail= — both already on main — are answered from
+   =trades= joined to each trade's current booking and state, with the composite's
+   components read only when a row is expanded.
+2. **The assembly path writes composites.** Grouping legs into a package creates
+   a composite trade with its own booking and state, and names its components in
+   =composite_legs=. This is the trade event rule: a link that carries an
+   economic effect is a trade event, not an annotation.
+3. **=structures= becomes what it actually is, or goes.** If the grouping is a
+   process run — a compression, an allocation — it is a *trade group* and is
+   named and modelled as one. If it is a product, the composite replaces it. It
+   does not stay in between.
+4. **The summary view stops unioning.** Once every row is a trade, the view is a
+   join of a trade to its current booking and state, and the blotter's two reads
+   are index scans over it.
+
+* Acceptance
+
+- The blotter's page and rail read a single kind of row: a trade.
+- A composite trade appears as one row, with its components listed beneath it,
+  and its book, date and status are its own facts.
+- No table holds a copy of a fact that lives elsewhere, and there is no rebuild
+  job for the blotter.
+- The first page of a hundred-thousand-trade book answers in the low tens of
+  milliseconds, measured through the service.
+- =structures= is either modelled as a trade group with its own words, or gone.
+
+* Checks before the code moves
+
+- **Does the blotter need a =CompositeTrade= to be booked as a trade at
+  assembly?** Today the packages are structure rows with no booking; the
+  composite model requires the package to have one. That is the migration's
+  shape.
+- **Which indexes exist for the page?** =ores_trading_trade_bookings_tbl= has
+  =trade_bookings_book_idx= and =trade_bookings_id_uniq_idx=; what the order
+  needs is a =trade_date= on the path the page scans, which is a small,
+  additive change.
+- **What does the ORE export read?** It reads legs, not containers — the
+  documentation says the ledger and netting need the leaves — so the composite
+  must not become the thing that is exported.
+
+* Out of scope
+
+- The projection table, its rebuild function and its nightly alarm: closed with
+  [[id:44A58042-462F-46E2-93A5-F6936D38B411][the story]]'s third task.
+- The screen's layout. It already draws a structure with a disclosure triangle;
+  this plan gives it rows that are already the right shape.
+- A general trade-group model, if the compression and allocation work needs one.
+  It is named here so it is not smuggled into =structures=.
+
+* See also
+
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]
+- [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]]
+- [[id:44A58042-462F-46E2-93A5-F6936D38B411][Let the blotter read a page, not the book]]

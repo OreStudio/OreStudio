@@ -1,0 +1,128 @@
+The intraday run chain, proven up to the ORE package step
+=========================================================
+
+Every command below ran against the development environment eager_maxwell on
+2026-11-03, with the seeds of this branch applied by
+evidence/apply_the_intraday_run_settings.sql. The account is the Acme tenant
+administrator, acting as the UK entity.
+
+
+1. The live definition mints its cut and dispatches the workflow
+---------------------------------------------------------------
+
+> report_operations trigger-report-instance f9ffda93-e12d-44f1-a45f-b7b5e03516e4 597b3e7d-0647-4ee2-9199-592e4ad827ee --covered_date 2026-11-03 --scope_code ACME-LONDON --business_centre_code GBLO
+{"result":{"outcome":"ok","code":"triggered","message":"Report instance cbacd5ee-0289-44cb-a34e-ad1887bb8ed0 created.","fields":[]},"report_instance_id":"cbacd5ee-0289-44cb-a34e-ad1887bb8ed0"}
+
+The instance the trigger made, read back from the store. It states the kind of
+cut, the label the mint gave it and the instant it fixed:
+
+                  id                  | cut_kind_code |               cut_label               |         cut_timepoint         |        message         |          started_at           |         completed_at          
+--------------------------------------+---------------+---------------------------------------+-------------------------------+------------------------+-------------------------------+-------------------------------
+ 849f4a2f-93ee-4c35-bb94-bd765a291577 | LIVE          | LIVE.ACME-LONDON.2026-11-03T15:36:48Z | 2026-11-03 15:36:48.422484+00 | NATS request timed out | 2026-11-03 15:36:48.551468+00 | 2026-11-03 15:37:19.945715+00
+ cbacd5ee-0289-44cb-a34e-ad1887bb8ed0 | LIVE          | LIVE.ACME-LONDON.2026-11-03T15:39:32Z | 2026-11-03 15:39:32.588001+00 | NATS request timed out | 2026-11-03 15:39:32.720771+00 | 2026-11-03 15:40:04.201684+00
+(2 rows)
+
+
+
+2. The workflow ran the first three phases and stopped in the fourth
+-------------------------------------------------------------------
+
+Excerpt from journalctl --user -u ores.workflow.service-eager_maxwell for the run
+cbacd5ee-0289-44cb-a34e-ad1887bb8ed0. The trades and the market data are gathered,
+the bundle is assembled, and the ORE package is the step that fails:
+
+step 1 (gather_market_data) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=f6bab823-8a42-42f8-9903-604df8f12781 state=in_progress at=2026-11-03 15:39:32.786837Z entered=created
+step 0 (gather_trades) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=d4531532-5cf5-4c92-8514-0a69cbbcdc50 state=in_progress at=2026-11-03 15:39:32.805072Z entered=created
+Workflow STARTED: type=report_execution_workflow workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_count=8 corr=cbacd5ee-0289-44cb-a34e-ad1887bb8ed0
+step 1 (gather_market_data) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=f6bab823-8a42-42f8-9903-604df8f12781 state=in_progress->completed at=2026-11-03 15:39:33.459111Z
+step 0 (gather_trades) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=d4531532-5cf5-4c92-8514-0a69cbbcdc50 state=in_progress->completed at=2026-11-03 15:39:33.657940Z
+step 2 (assemble_bundle) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=bcb4a380-8873-4487-8b92-633b21edd1b6 state=in_progress at=2026-11-03 15:39:33.689184Z entered=created
+step 2 (assemble_bundle) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=bcb4a380-8873-4487-8b92-633b21edd1b6 state=in_progress->completed at=2026-11-03 15:39:33.748345Z
+step 3 (prepare_ore_package) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=d0d10699-ae36-4202-837c-d42bbc7d96d1 state=in_progress at=2026-11-03 15:39:33.780774Z entered=created
+step 3 (prepare_ore_package) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=d0d10699-ae36-4202-837c-d42bbc7d96d1 state=in_progress->failed at=2026-11-03 15:40:04.129649Z
+Workflow FAILED — beginning compensation: type=report_execution_workflow workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de error=NATS request timed out
+step -3 (assemble_bundle_compensation) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=95134fe8-f26e-474a-bb2c-2299e409d81f state=in_progress at=2026-11-03 15:40:04.158735Z entered=created
+step -2 (gather_market_data_compensation) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=6f34e0b7-b846-49f6-8860-8c9148230f5b state=in_progress at=2026-11-03 15:40:04.171344Z entered=created
+step -1 (gather_trades_compensation) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=0f343ee4-a136-43e5-a53e-85d06dc47b3d state=in_progress at=2026-11-03 15:40:04.180795Z entered=created
+step -3 (assemble_bundle_compensation) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=95134fe8-f26e-474a-bb2c-2299e409d81f state=in_progress->completed at=2026-11-03 15:40:04.216595Z
+step -2 (gather_market_data_compensation) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=6f34e0b7-b846-49f6-8860-8c9148230f5b state=in_progress->completed at=2026-11-03 15:40:04.264394Z
+step -1 (gather_trades_compensation) workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de step_id=0f343ee4-a136-43e5-a53e-85d06dc47b3d state=in_progress->completed at=2026-11-03 15:40:04.304854Z
+Workflow COMPENSATED (all rollback steps complete): type=report_execution_workflow workflow=6d301565-0a6d-4a19-8bd0-6c2eef4f23de
+
+
+3. The package handler read the run document and the documents it names
+----------------------------------------------------------------------
+
+Excerpt from journalctl --user -u ores.ore.service-eager_maxwell for the same run.
+The handler fetches the run document its definition generates, then the pricing
+engines and today's market that the definition binds, then the conventions
+families. It stops on a family no service answers:
+
+prepare_ore_package starting | instance=cbacd5ee-0289-44cb-a34e-ad1887bb8ed0
+NATS request: ores.dev.eager_maxwell.reporting.v1.run_documents.get
+NATS request: ores.dev.eager_maxwell.analytics.v1.pricing_engines_documents.get
+NATS request: ores.dev.eager_maxwell.analytics.v1.todays_market_documents.get
+NATS request: ores.dev.eager_maxwell.refdata.v1.average_ois_conventions.list
+NATS request: ores.dev.eager_maxwell.refdata.v1.bma_basis_swap_conventions.list
+NATS request: ores.dev.eager_maxwell.refdata.v1.bond_yield_conventions.list
+NATS request: ores.dev.eager_maxwell.refdata.v1.cds_conventions.list
+NATS request: ores.dev.eager_maxwell.refdata.v1.cms_spread_option_conventions.list
+NATS request: ores.dev.eager_maxwell.refdata.v1.commodity_forward_conventions.list
+NATS request: ores.dev.eager_maxwell.refdata.v1.commodity_future_conventions.list
+prepare_ore_package failed: NATS request timed out
+
+
+4. The close twin refuses at the cut, because no authorised close cut is held
+----------------------------------------------------------------------------
+
+The close definition selects the EOD cut, and the environment holds none for the
+day, so the run refuses and names the cut it needs. Before this branch the twin
+bound a run settings row whose market data type was live, so it priced from the
+instant it started and this refusal could not happen:
+
+> report_operations resolve-cut 2cdcdac2-f34a-4617-8a4d-d598c0b6b42a 2026-11-03 ACME-LONDON GBLO
+{"result":{"outcome":"ok","code":"","message":"","fields":[]},"cut_id":"","cut_label":"","cut_kind_code":"","cut_timepoint":"","cut_state":"","output_is_indicative":false,"refusal":"No end of day cut is held for scope ACME-LONDON at rates centre GBLO on 2026-11-03."}
+
+> report_operations trigger-report-instance 2cdcdac2-f34a-4617-8a4d-d598c0b6b42a 597b3e7d-0647-4ee2-9199-592e4ad827ee --covered_date 2026-11-03 --scope_code ACME-LONDON --business_centre_code GBLO
+{"result":{"outcome":"invalid","code":"cut_not_resolved","message":"No end of day cut is held for scope ACME-LONDON at rates centre GBLO on 2026-11-03.","fields":[]},"report_instance_id":""}
+
+
+5. Where the chain stops, and why
+---------------------------------
+
+The package step asks the reference data service for every family of the
+conventions document. The running reference data service does not answer
+refdata.v1.commodity_future_conventions.list, so the request times out after
+thirty seconds and the run records the timeout on itself.
+
+The checkout's convention family registry names no such family. It names
+commodity_future_averaging_terms, commodity_future_contract_terms,
+commodity_future_expiry_anchor, commodity_future_off_peak_index and
+commodity_future_option_expiry, each with a subject stem of its own. The running
+services were built before this branch, so the exporter that runs and the
+registry in the tree disagree about the family names.
+
+The engine is therefore not reached in this environment, and the refusal is a
+fact about the environment's service versions, not about the report. Nothing in
+this branch changed the package step, the workflow, the engine invocation or the
+way a run records an engine error.
+
+
+6. The environment's administrator could not act in a party
+-----------------------------------------------------------
+
+The first attempts were refused at the run grant, with
+
+  "The definition's runs act in its own party, and this session is in another."
+
+The cause was a membership of the administrator account in a System Party row
+that the parties dataset superseded when it republished the parties earlier the
+same day (c52017ac-454a-4bb8-8322-fd2bccbdd6ca, a row no active party matches).
+The membership is removed with
+
+  account_parties delete 01a1a19c-e341-79cd-bc13-8b929bccddc6 \
+      c52017ac-454a-4bb8-8322-fd2bccbdd6ca system.new_record "<reason>"
+
+and the account then offers the real parties at login, so a run can be triggered
+for the entity a definition belongs to. The change is a correction of one
+membership row and nothing else.

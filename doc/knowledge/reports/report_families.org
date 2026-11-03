@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: ACB0A386-18D6-4045-B387-AED43C1C8B06
+:END:
+#+title: Report families
+#+description: Structure note for the report pages: the intraday monitors, their close twins, the desk maps, and the vega and greek ladder family, with the order to read each and what each family prices from.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:reporting:report:structure_note:greeks:intraday:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This structure note gathers the report pages. It states the four families the
+pages fall in, what each family prices from, and the order in which to read
+them. The classification axes and the measure definitions stay on
+[[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]], and the inventory
+of pages stays on [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]].
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Summary
+
+A report page describes one report. The pages divide by what the report prices
+from and by who reads it, and the division is the one the business catalogue
+draws with its cycle axis. An intraday report prices from the live cut and its
+figures are indicative. A close twin prices from the authorised end of day cut
+and its figures stand. The desk maps read the book's shape rather than a
+valuation. The ladder family reads one bumped risk factor at a time, and it is
+the family the store can describe and cannot yet run.
+
+* The four families
+
+** The intraday monitors
+
+These run through the trading day on the live cut. They answer what the book
+looks like now, and every figure on them is replaced by the close.
+
+- [[id:0744CB78-6EBF-4340-8885-837D0EEE6A95][Intraday Risk Monitor]], every thirty minutes, on the queue policy, because a
+  monitor that skips a half hour answers a question nobody asked.
+- [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]], every ten minutes, the shallow overview a reader opens
+  first.
+- [[id:826BE0EC-E26D-478A-84C9-73A42021037F][Bump and Reprice Spot Greeks]], every fifteen minutes, for directional risk.
+- [[id:F5288E4A-3F36-4FFB-992C-F1812E772232][Bump and Reprice Triple Vol Spot Ladder]], every fifteen minutes, for vol and skew risk, and
+  only in the entity that holds the option books.
+
+** The close twins
+
+A report on both cycles is two definitions and not one, because a definition
+states one cut selection. The close twin carries the same analytics, the same
+run settings shape and a different market data type, so it values the portfolio
+at the weekday before the run date.
+
+- [[id:07F92413-794A-4855-B761-73CC3CAF03C6][Headline Position (EOD)]], the figures market risk signs off.
+- [[id:B845A078-591B-4F4B-8FF6-5FA606B2DBA8][Bump and Reprice Spot Greeks (EOD)]], the directional statement of record.
+- [[id:84864DB2-3499-4B59-BDE3-14800CC2EA7D][Bump and Reprice Triple Vol Spot Ladder (EOD)]], the vol risk statement of record.
+
+** The desk maps and the activity reports
+
+These read the shape of the book rather than a single figure. They are on demand
+or event driven, and three of the five need a grid the store does not hold.
+
+- [[id:DE8B8E26-DD38-4686-AE79-831083B0351C][Bump and Reprice Spot Ladder]], the forward curve at every tenor.
+- [[id:2A5A5552-F1A4-46CD-AF3A-ADB2BD0ACA5D][Spike Map]], option notional against expiry and spot.
+- [[id:454304DE-E361-4E35-9ABE-41800C751118][Strike Map]], the same view against strike.
+- [[id:A952CB92-98B8-4F5A-B4AB-ECBBB9248521][Option Map]], delta beside strike.
+- [[id:289D0246-660B-46E9-A403-9D4BAF591E89][Intraday Change]], what moved since a stated time.
+- [[id:3A74B881-4D97-485F-9E9B-0179FA90ACBA][Trades Since Last In]], what was booked since a stated instant.
+
+** The ladder family
+
+A ladder reads one bumped risk factor at a time, and the number a reader sees is
+a value change rather than a derivative. The bump is a setting of the sensitivity
+configuration, not the identity of the report, so a 0.1 vol point ladder and a
+one basis point ladder differ only in the document they bind.
+
+- Volatility, across the smile: [[id:D19FBAFA-E9D7-40B7-8EA2-A59AB15609E6][Bump and Reprice ATM vega ladder]],
+  [[id:8A3CF082-FDA8-4D54-9272-8388A9ED3A50][Bump and Reprice Risk-reversal vega ladder]],
+  [[id:AEAE5CC8-9F55-4F2A-91EC-8C1BBCAAAE5F][Bump and Reprice Butterfly vega ladder]],
+  [[id:A6316CB6-8ADA-4A79-9AC2-B55F3A18DF47][Bump and Reprice Three-pillar vega ladder]] and
+  [[id:4F1792D8-A563-4860-B230-AE337C4F6BB0][Bump and Reprice Surface vega ladder]].
+- Rates: [[id:51B46B4E-1D7E-4ED6-8A49-8CD30F4D485B][Bump and Reprice DV01 ladder]] and
+  [[id:C004FD5F-33F0-49D1-893D-9F66FC62342E][Bump and Reprice Rho ladder]].
+- The second order, and the cross terms: [[id:7E02BB05-E808-48BC-A916-6C41B761F82D][Bump and Reprice Volga ladder]],
+  [[id:225423E8-D86B-45E1-BA1B-CAC159647AA0][Bump and Reprice Vanna ladder]],
+  [[id:2696A263-DDBF-4467-9CE3-9F951A653734][Bump and Reprice Cross-gamma ladder]],
+  [[id:FD5EACF2-9CA1-498B-A298-6FC13549B711][Bump and Reprice Gamma ladder]].
+- The first order: [[id:5F6C35FB-90B0-44B7-9991-38F5F3F67F0F][Bump and Reprice Delta ladder]].
+- The clock: [[id:0C87306E-9668-428B-93FD-D65FD9946DA9][Bump and Reprice Theta ladder]].
+
+* The order to read them
+
+A reader new to the folder starts with the shallow report and narrows.
+
+1. [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]], for the overview and the pointer to the deeper report.
+2. The report the overview points at: a
+   [[id:5F6C35FB-90B0-44B7-9991-38F5F3F67F0F][delta ladder]] for a directional
+   question, a [[id:D19FBAFA-E9D7-40B7-8EA2-A59AB15609E6][vega ladder]] for a
+   volatility question, or [[id:826BE0EC-E26D-478A-84C9-73A42021037F][Bump and Reprice Spot Greeks]]
+   for a spot scenario.
+3. [[id:0744CB78-6EBF-4340-8885-837D0EEE6A95][Intraday Risk Monitor]] when the
+   question spans several books at once.
+4. The close twin of whichever report answered the intraday question, once the
+   market shuts, for the figures that stand.
+5. [[id:289D0246-660B-46E9-A403-9D4BAF591E89][Intraday Change]] or
+   [[id:3A74B881-4D97-485F-9E9B-0179FA90ACBA][Trades Since Last In]] when a
+   figure moved and a reader needs to know why.
+
+* What every page states, and what no page states
+
+Every page states the six configuration types a definition binds, that the run
+document is generated from those bindings and is not stored, the market data
+type that fixes the valuation date, and the cut the run selects or mints. Every
+page separates what the report produces from what the store holds, because the
+result store is designed and not built.
+
+No page quotes a priced figure. No run has produced a priced row, because the
+store holds no volatility market data, so a volatility factor has nothing to
+shift. Where a run stopped in one environment is a fact for the task that ran
+it, and not for the page.
+
+* How a report's schedule reaches the scheduler
+
+A definition states a cron expression, and nothing fires until that expression
+is on a scheduler job and the definition holds a run grant. Only one operation
+makes that pair: the reporting service's schedule operation, which writes the
+job with its own client and asks IAM, on behalf of the person scheduling, for
+the grant the runs act under. So a definition states *when* a report runs and
+the operation states *that* it runs.
+
+Two consequences follow, and both are deliberate.
+
+- A report that is only ever asked for by hand states the placeholder
+  =0 0 31 2 *=, the thirty-first of February, which no calendar reaches. The
+  catalogue reads it as on demand. A step that schedules a catalogue leaves
+  such a definition alone rather than turning a report a person asks for into
+  one that fires by itself.
+- A tenant that is provisioned has its catalogue scheduled by the run that
+  builds it: =schedule_reports= reads each party's published definitions,
+  selects the ones whose schedule is a real cron, and calls the schedule
+  operation as the run's administrator. A re-provision asks for nothing that
+  already holds a job, so no second job and no second grant is created. See
+  [[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][the acme_demo profile]].
+
+The Schedule action on a report's screen is still a separate feature and not
+part of this: a person scheduling one definition from the UI is a later piece
+of work, and until it lands the provisioner is the only thing that schedules a
+catalogue.
+
+* See also
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] the structure note for the
+  cut an intraday report mints and a close twin reads.
+- [[id:4498456E-71DE-4250-8080-727690FAEFE6][Document type: report]] the contract
+  every page in this folder follows.

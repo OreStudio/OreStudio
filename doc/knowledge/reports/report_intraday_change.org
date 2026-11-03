@@ -1,0 +1,241 @@
+:PROPERTIES:
+:ID: 289D0246-660B-46E9-A403-9D4BAF591E89
+:END:
+#+title: Intraday Change
+#+description: How the market data and the risk of a book or portfolio have moved since a configurable reference time, so a desk reads intraday P&L attribution without waiting for the close.
+#+type: report
+#+level: cross
+#+filetags: :report:trading-desk:attribution:intraday:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+report_code: intraday_change
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Intraday Change. It states how the market data and the risk of a book or a
+portfolio have moved since a configurable reference time, so a desk reads intraday
+P&L attribution without waiting for the end of day explain run. It runs every half
+hour through the trading day, and it prices from the live cut. The run leaves the
+engine's own output archive in storage, and a reader opens the CSV files in that
+archive, because the result store that would hold the rows is not built.
+
+* Purpose
+
+It answers how far a book's value and its Greeks have moved since the desk last
+looked, and how much of that move the market data explains. The answer feeds the
+decision a trader makes between two readings of the same book, which is whether
+to act now or to leave the position to the close. It is the intraday counterpart
+of the end of day explain run, and it is read while the move is still in
+progress.
+
+The catalogue classifies the methodology as =risk-predict=, which approximates
+a P&L from stored Greeks and re-values nothing. The seeded definition binds
+=npv=, which re-values the book. The two statements do not agree, and the run
+follows the bound analytic.
+
+The catalogue states the report against a reference time. A reader sets the
+instant to measure from, and the report states the change between that instant
+and the instant of the run. That construction needs two readings of the same
+book, and the run produces one. The section "What is not built" states the
+consequence.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                              |
+|--------------+--------------------------------------------------------------------------------------------|
+| trading-desk | How much the book has moved since the last reading, and which part of the move is market data. |
+
+* Frequency
+
+Cycle =intraday=. The catalogue states the frequency as =scheduled= and
+=event-driven=. The seeded schedule expression is =*/30 8-17 * * 1-5=, which
+fires the definition every half hour through the trading day on weekdays. The
+concurrency policy is =skip=, so a firing that arrives while a run of the same
+definition is in flight does not start a second run. The report belongs to no
+ordered batch.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value                   |
+|-----------+-------------------------|
+| Cycle     | intraday                |
+| Frequency | scheduled, event-driven |
+| Batch     | none                    |
+| Owner     | trading-desk            |
+
+The Owner row names the role that reads the report.
+
+* Inputs
+
+- Trades selected by scope. The scope shape is =book= or =portfolio=, and the
+  seeded run settings read =Global Portfolio= for the entity.
+- Six configuration bindings, one for each configuration type. They are
+  =conventions=, =curve_configuration=, =todays_market=, =pricing_engines=,
+  =risk_report_config= and =engine_settings=. A definition that omits one of the
+  first five cannot run, because the engine reads all of them before it prices.
+- The run settings row =Valuation - Global Portfolio=, which states the base
+  currency, the market data type =live=, the input and output paths and the log
+  file.
+- The analytic =npv=, with the base currency as its parameter. It is the only
+  analytic the configuration binds.
+- A reference time, which the catalogue states as configurable. No seeded
+  parameter states it, so no seeded run names the instant to measure from.
+
+* Outputs
+
+The run produces the engine's own output archive, and it records where that
+archive landed against the run instance. It also records the cut the run minted,
+with the cut's identity, its label, its kind and its instant. The archive holds
+=npv.csv=, the one file that =npv= writes. The file holds one valuation of each
+trade at the run's instant. It holds no reference time, no earlier valuation and
+no difference. The result store that would carry the change is designed on
+[[file:../architecture/report_post_processing.org][Report post-processing]] and
+is not built.
+
+* Measures
+
+The values below are the ones the business catalogue states this report carries.
+Their definitions belong to the measures catalogue on
+[[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]] and are not repeated here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure                   | Meaning                                                                             |
+|---------------------------+-------------------------------------------------------------------------------------|
+| Change in PV              | The difference between the present value at the run's instant and at the reference time. |
+| Change in each Greek      | The same difference for each Greek the configuration carries, read Greek by Greek.   |
+| Change in the market data | The movement of the market data itself between the two instants, stated beside the value move. |
+
+* Columns and sections
+
+The definition binds one analytic, =npv=, and that analytic writes one file. The
+table states its columns and what each one holds.
+
+#+ATTR_HTML: :class hug-leading
+| Column          | What it holds                                                                   |
+|-----------------+---------------------------------------------------------------------------------|
+| TradeId         | The identifier of one trade. It is a key of the file.                           |
+| TradeType       | The instrument type of that trade. It is a key of the file.                     |
+| Maturity        | The date the trade matures.                                                     |
+| MaturityTime    | The time to maturity, in years.                                                 |
+| NPV             | The present value of the trade, in the row's own currency.                      |
+| NpvCurrency     | The currency the =NPV= column is stated in.                                     |
+| NPV(Base)       | The present value of the trade, converted to the run's base currency.           |
+| BaseCurrency    | The run's base currency.                                                        |
+| Notional        | The notional of the trade.                                                      |
+| NotionalCurrency | The currency the notional is stated in.                                        |
+| Notional(Base)  | The notional, converted to the run's base currency.                             |
+| NettingSet      | The netting set the trade belongs to. It is a key of the file.                   |
+| CounterParty    | The counterparty of the trade.                                                   |
+
+The report's shape is not the engine's rows. Its shape is a table of changes,
+with one row for each trade or each Greek and one column for the move since the
+reference time. The file ORE writes holds one valuation per trade and no column
+for an earlier valuation or for a difference, so the store does not hold the
+change.
+
+* ORE configuration
+
+The run document is generated, not stored. The service builds it from the
+definition's bindings and the run settings, in
+[[proj:projects/ores.reporting/core/src/service/run_document_generator.cpp][run document generator]].
+The analytics appear in the configuration's display order, with their
+parameters. The fragment below is the shape the generator writes for the
+analytic, and it is trimmed from
+=external/ore/examples/MarketRisk/Input/ore_pnl.xml=.
+
+#+begin_src xml
+<Analytic type="npv">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="baseCurrency">USD</Parameter>
+  <Parameter name="outputFileName">npv.csv</Parameter>
+  <Parameter name="additionalResults">Y</Parameter>
+</Analytic>
+#+end_src
+
+The seeded ACME configuration binds =npv= at display order 1 with =active= set
+to =Y=. It states one parameter row, =baseCurrency=, whose value is =GBP= for the
+UK entity. It states no row for =outputFileName= and none for
+=additionalResults=, so those two values in the fragment are the sample's.
+
+* Parameters
+
+The table states the rows a definition of this report carries. The mechanism is
+on
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter           | Domain                   | Seeded value                        | Meaning                                                                  |
+|---------------------+--------------------------+-------------------------------------+--------------------------------------------------------------------------|
+| cut_kind_code       | a kind of cut            | LIVE                                | The kind of cut the run mints when it starts. A LIVE cut is indicative.   |
+| schedule_expression | a cron expression        | */30 8-17 * * 1-5                   | When the definition fires. This one fires every half hour on weekdays.     |
+| concurrency_policy  | skip or queue            | skip                                | What happens when a firing arrives during a run of the same definition.   |
+| scope_portfolio     | a portfolio of the party | Global Portfolio                    | The subtree the run reads.                                               |
+| base_currency       | ISO 4217 code            | the entity's, GBP for the UK entity | The currency the figures are expressed in.                               |
+| market_data_type    | live, eod or date        | live                                | The market data the run reads. A live run values the book at its start.   |
+| npv.baseCurrency    | ISO 4217 code            | the entity's                        | The currency the =npv= analytic converts each trade into.                |
+| npv.outputFileName  | a file name              | none seeded, the sample sets npv.csv | The file that carries one row for each trade.                           |
+| npv.additionalResults | Y or N                 | none seeded, the sample sets Y      | Whether the analytic writes the extra columns the sample asks for.        |
+
+* A worked read
+
+A person at the screen reads this report in the steps below. No run has produced
+rows, so the steps state what the reader does and what the archive would and
+would not give.
+
+1. Open the report instance and read the cut it minted. The label says
+   indicative, so the figures are a view taken between closes.
+2. Read the instant of the cut, and the instant of the previous reading. The
+   change is measured between the two.
+3. Open the output archive and find =npv.csv=.
+4. Read one row for each trade. The row states the trade, its type, its
+   maturity, its present value in its own currency and its present value in the
+   base currency.
+5. Sum the =NPV(Base)= column over the book to state the present value at the
+   run's instant.
+6. Look for the same sum at the reference time. No file in the archive holds it.
+7. State the change as the difference between step 5 and the reading at the
+   reference time, and read the market data move beside it. Only the first half
+   of that sentence is available today.
+
+* What is not built
+
+- The change needs two valuations of the same book. The run produces one.
+- The definition binds =npv= only. That analytic writes no Greek and no market
+  data series, so the run carries neither the Greek changes nor the market data
+  changes the catalogue names.
+- Nothing in the store keeps a reference-time valuation for a live run, so the
+  earlier reading has no place to come from.
+- The =pnlExplain= analytic is the ORE analytic that decomposes a P&L between two
+  dates. The P&L Attribution report binds it, and this definition does not.
+- The ACME dataset holds no volatility market data. Its 420 seeded quotes are all
+  =IR_SWAP/RATE/...=. There is no =FX_OPTION/RATE_LNVOL= quote and no volatility
+  surface configuration. so a volatility factor has nothing to shift, and no volatility
+  sensitivity can be computed until the store holds that data.
+- The result store is not built, so a reader opens the CSV file in the archive
+  rather than a table of rows.
+
+* Test coverage
+
+No substitute is defined for this report, so a test run executes every phase. It
+gathers trades and market data, assembles its own bundle, builds the run
+document, submits the work and collects what comes back. The run stops where the
+engine needs a volatility, and the refusal is recorded against the run instance.
+The analytic the definition binds is also exercised by the engine's own sample,
+=external/ore/examples/MarketRisk/Input/ore_pnl.xml=, which binds =npv= in the
+same element shape. The task that lit the report is
+[[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]].
+
+* Related
+
+- [[file:./reports.org][Reports]] is the inventory this page is listed in.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]] carries the classification taxonomy and the measures catalogue.
+- [[file:./report_intraday_risk_monitor.org][Intraday Risk Monitor]] reads the book's risk between closes.
+- [[file:./report_headline_position.org][Headline Position]] states the headline Greeks the change is measured on.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] states the phases every run goes through.
+- [[file:../architecture/report_post_processing.org][Report post-processing]] designs the tables that would hold the change.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]] states what a LIVE cut holds.
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] states the definition fields and the schedule.
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]] is the engine whose =npv= analytic writes the file.

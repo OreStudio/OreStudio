@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: B942657D-C257-4FB5-95FE-D966A2DE7FC5
+:END:
+#+title: Settle the .1 family with the product owner
+#+description: Five open questions block the .1 design: what .1 means as a number, which greeks and buckets, which market data, which ORE version, and which cycle.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:sensitivity:greeks:decision:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Take the five open questions on [[id:D9D59BD1-CAC0-4B4A-B32D-A734A4D79AB0][Greek ladder reports]]
+to the product owner and record the answers on that page. The questions are:
+
+1. What is the .1 as a number: a tenth of a volatility point, ten basis
+   points of rate, or a tenth of the level? The prose catalogue states the unit
+   three different ways in three neighbouring paragraphs.
+2. Which greeks does the family cover, and which tenors and expiries are the
+   desk's buckets?
+3. Which market data must the store hold before the vol ladders are honest, and
+   is the FX vol surface a requirement for the first .1 report?
+4. Is 1.8.17.0 the engine version the reports must run on, and may the store
+   stop publishing 1.8.16.0-4-g3b62ba248?
+5. Which of the family runs intraday on the live cut, and which runs only on
+   the authorised cut?
+
+* Why
+
+The .1 family is prose only. [[id:D9D59BD1-CAC0-4B4A-B32D-A734A4D79AB0][Greek
+ladder reports]] grounds it in the engine and finds that the engine has no .1
+and no risk-reversal factor, so each of the five questions changes *what* gets
+built rather than *how*. Answering them before seeding is cheaper than seeding
+twice.
+
+The first question blocks the rest. The shift size is a bare real in the engine,
+and the same ".1" is a tenfold different report depending on whether the surface
+is stored as a decimal or in volatility points.
+
+* References
+
+- [[id:D9D59BD1-CAC0-4B4A-B32D-A734A4D79AB0][Greek ladder reports]] — the
+  design note, which states each question in full.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] — the prose .1
+  table the questions are about.
+
+* See also
+
+- [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] —
+  the market data question 3 is about.
+- [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio]] — the product the
+  family belongs to.

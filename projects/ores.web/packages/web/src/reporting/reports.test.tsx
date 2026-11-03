@@ -62,6 +62,7 @@ const DAILY_ROW = {
     id: DAILY,
     name: 'ACME daily PnL',
     reportType: 'pnl',
+    cutKind: 'LIVE',
     partyId: HOME,
     partyName: 'ACME Corporation',
     partyCode: 'ACMCOR',
@@ -82,6 +83,7 @@ const AUDIT_ROW = {
     id: AUDIT_ELSEWHERE,
     name: AUDIT_NAME,
     reportType: 'risk',
+    cutKind: 'EOD',
     partyId: ELSEWHERE,
     partyName: 'ACME Hong Kong',
     partyCode: 'ACCOHK',
@@ -117,6 +119,9 @@ const PARTIES = {
         },
     ],
 };
+
+/** The page the list opens on: the party filter is the party the account works in. */
+const OPEN_PAGE = { ...FIRST_PAGE, filters: { party: PARTIES.defaultPartyId } };
 
 const DETAIL: ReportDetail = {
     report: AUDIT_ROW,
@@ -157,7 +162,7 @@ function list(
         <Route path="/reporting/reports" element={<ReportsScreen />} />,
         (client) => {
             client.setQueryData(MY_PARTIES_QUERY_KEY, PARTIES);
-            client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), PAGE);
+            client.setQueryData(pageKey({ key: 'reports' }, OPEN_PAGE), PAGE);
             seed(client);
         },
     );
@@ -283,7 +288,7 @@ describe('the list of reports the parties run', () => {
     it('states the page the server returned, with the total it counted', () => {
         const page = textOf(
             list((client) =>
-                client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+                client.setQueryData(pageKey({ key: 'reports' }, OPEN_PAGE), {
                     ...PAGE,
                     total: 78,
                 }),
@@ -326,10 +331,10 @@ describe('the list of reports the parties run', () => {
         expect(page).toContain('Loading...');
     });
 
-    it('says the list holds nothing yet, in words', () => {
+    it('says the current party holds no reports, in the words of the filter', () => {
         const page = textOf(
             list((client) =>
-                client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+                client.setQueryData(pageKey({ key: 'reports' }, OPEN_PAGE), {
                     rows: [],
                     total: 0,
                     unread: [],
@@ -337,7 +342,9 @@ describe('the list of reports the parties run', () => {
             ),
         );
 
-        expect(page).toContain('There are no reports yet.');
+        // The list opens on the party the account works in, so an empty page is
+        // a page the filter matched nothing on, and it says so.
+        expect(page).toContain('No reports match the search.');
     });
 
     it('says which cell could not be read, in the words of the column that holds it', () => {
@@ -356,7 +363,7 @@ describe('the list of reports the parties run', () => {
 
     it('draws the notes a read states above the table, and claims no word it did not read', () => {
         const html = list((client) =>
-            client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+            client.setQueryData(pageKey({ key: 'reports' }, OPEN_PAGE), {
                 rows: [{ ...AUDIT_ROW, health: null }],
                 total: 1,
                 notes: [{ tone: 'warn', text: 'The latest run read was refused.' }],
@@ -403,7 +410,7 @@ describe('the list of reports the parties run', () => {
             total: 1240,
         };
         const html = list((client) =>
-            client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+            client.setQueryData(pageKey({ key: 'reports' }, OPEN_PAGE), {
                 ...PAGE,
                 summary: <HealthSummary tally={tally} />,
             }),
@@ -421,7 +428,7 @@ describe('the list of reports the parties run', () => {
 
     it('counts a report whose run has no word yet apart, so no report goes missing', () => {
         const html = list((client) =>
-            client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+            client.setQueryData(pageKey({ key: 'reports' }, OPEN_PAGE), {
                 ...PAGE,
                 summary: (
                     <HealthSummary

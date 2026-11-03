@@ -1,0 +1,302 @@
+:PROPERTIES:
+:ID: A6316CB6-8ADA-4A79-9AC2-B55F3A18DF47
+:END:
+#+title: Bump and Reprice Three-pillar vega ladder
+#+description: The value change when the at-the-money, risk-reversal and butterfly components move together, which is the whole surface shifted while its shape is held.
+#+type: report
++#+level: cross
++#+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:
++#+created: 2026-11-03
++#+updated: 2026-11-03
++#+report_code: three_pillar_vega_ladder_bump_and_reprice
++#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Bump and Reprice Three-pillar vega ladder. It states what the value of a book
+changes by when a volatility surface moves as one piece, with its shape held. A
+desk uses it to see the risk that survives a market-wide move in volatility, and
+market risk uses it to read volatility exposure without a view on skew. It runs on
+the end of day cycle and leaves the engine's output archive in storage. The result
+store that would ingest the archive is not built yet, so the run records where the
+archive landed.
+
+* Purpose
+
+It answers a question about a whole surface at once. If every point of this
+surface moves together, and the shape of the surface stays as it is, how much
+money does the scope change by? The answer feeds two decisions. A desk decides how
+much of its volatility risk is a level risk and how much is a shape risk. Market
+risk decides whether the book's volatility exposure sits inside its limit before
+anyone argues about skew.
+
+The three components the catalogue names move together in this reading. The
+at-the-money point, the risk reversal and the butterfly are three views of one
+surface. Move all three and the surface has moved while its shape is held. That is
+the ladder this page defines.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                       |
+|--------------+-------------------------------------------------------------------------------------|
+| trading-desk | The value change from a parallel move of the surface, at each shifted point.        |
+| market-risk  | Volatility level risk stated without a view on skew or on the wings.                |
+
+* Frequency
+
+Every ladder in this family is end of day. A ladder is read as the risk statement
+of record and compared across days, and a live ladder would be priced against a
+body that is not reproducible. Two ladders have an intraday variant worth naming,
+the ATM vega ladder and the surface vega ladder, because a desk watching a vol
+move wants the same bucket list during the day. No intraday variant is seeded for
+this ladder.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value        |
+|-----------+--------------|
+| Cycle     | eod          |
+| Frequency | scheduled    |
+| Batch     | none         |
+| Owner     | trading-desk |
+
+An intraday variant of this report would need three things. It would need a
+definition whose cut selection is =LIVE=, a run settings row whose market data type
+is =live=, and the same sensitivity configuration. Nothing else would change,
+because the bump is a setting of the configuration and not the identity of the
+report.
+
+* Inputs
+
+- Trades selected by the definition's scope. The scope is a row of the definition
+  and the taxonomy fixes the shapes it accepts, on
+  [[file:../domain/risk_reporting.org][Risk reporting]].
+- Market data at the authorised end of day cut. The run records the cut it read
+  against the run instance, with its label, kind and instant.
+- The risk report configuration the definition binds. It switches on the
+  =sensitivity= analytic, states the base currency and names =sensitivity.xml= as
+  the =sensitivityConfigFile=. The analytic states =recalibrateModels= =Y=,
+  =outputSensitivityThreshold= =0.000001=, =parSensitivity= =Y= and
+  =marketConfigFile= =simulation.xml=.
+- A sensitivity document that shifts every strike of every expiry of the surface.
+  The shipped document states an empty =ShiftStrikes=, which shifts the
+  at-the-money point only. A full-surface run states a strike list, and the two
+  run documents of the shipped smile examples differ only in the
+  =marketConfigFile= and the =sensitivityConfigFile= they name.
+
+* Outputs
+
+The run produces the engine's own output archive and records where that archive
+landed against the run instance. The archive holds =sensitivity.csv=, which
+carries one row for each trade and each shifted surface point, and =scenario.csv=,
+which carries the scenario value behind each row.
+
+The rows a reader would query in a table are a later phase. The result store is
+designed on [[file:../architecture/report_post_processing.org][Report post-processing]]
+and is not built yet.
+
+* Measures
+
+The catalogue calls this ladder the .1 Triple. Its own wording is a 0.1 bump
+applied to the at-the-money component, the risk reversal and the strangle
+together, and it calls that the equivalent of shifting the entire surface by 0.1
+while the shape is preserved.
+
+The engine's words are preferred on this page. The engine has one block for a
+volatility surface, and it shifts surface points. It has no risk-reversal factor
+and no strangle factor, so the three components are a way of reading one surface
+shift and not three separate bumps. A reader who wants the three components
+separately reads them from a full-surface run by change of basis, as the
+risk-reversal and butterfly ladder pages state.
+
+=Delta= is a value change and not a derivative. The shift size is already inside
+it, so a figure is money per bump and not a ratio.
+
+#+ATTR_HTML: :class hug-leading
+| Measure    | Meaning                                                                          |
+|------------+----------------------------------------------------------------------------------|
+| .1 Triple  | The catalogue's name for the value change from the three components moved together. |
+| Surface vega | The value change at one shifted point of the surface.                          |
+| Base NPV   | The value of the trade before the shift.                                         |
+| Difference | The change from the base value to the scenario value, from =scenario.csv=.      |
+
+* Columns and sections
+
+The reader opens the engine's CSV files, because the result store is not built.
+The tables below state the columns of the two files this report writes. The
+definitions are on
+[[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]].
+
+#+ATTR_HTML: :class hug-leading
+| Column           | Holds                                                                   |
+|------------------+-------------------------------------------------------------------------|
+| TradeId          | The trade the row belongs to.                                           |
+| IsPar            | Whether the row states a par sensitivity.                               |
+| Factor_1         | The key of the factor that was shifted, and the bucket the row sits in. |
+| ShiftSize_1      | The size of the shift on =Factor_1=, in the factor's own unit.          |
+| Factor_2         | The second factor of a cross row, and empty for a one-factor row.       |
+| ShiftSize_2      | The size of the shift on =Factor_2=.                                    |
+| Currency         | The currency the base value and the Delta are stated in.                |
+| Base NPV         | The value of the trade before the shift.                                |
+| Delta            | The value change at the shift, in money.                                |
+| Gamma            | The second-order change, empty unless gamma is switched on.             |
+| Currency(Trade)  | The currency of the trade.                                             |
+| Base NPV(Trade)  | The trade's value in its own currency.                                  |
+| Delta(Trade)     | The trade's Delta in its own currency.                                  |
+| Gamma(Trade)     | The trade's Gamma in its own currency.                                  |
+| Scenario         | The label of the scenario the row belongs to.                           |
+
+#+ATTR_HTML: :class hug-leading
+| Column       | Holds                                                             |
+|--------------+-------------------------------------------------------------------|
+| TradeId      | The trade the row belongs to.                                     |
+| Factor       | The key of the factor that was shifted.                           |
+| Up/Down      | Which side of the base value the row states.                      |
+| Base NPV     | The value of the trade before the shift.                          |
+| ShiftSize_1  | The size of the shift on the factor.                              |
+| ShiftSize_2  | The size of a second shift, for a paired row.                     |
+| Scenario NPV | The value of the trade after the shift.                           |
+| Difference   | The change from the base value to the scenario value.             |
+| Base Currency| The base currency of the run.                                     |
+
+A reader places a figure by the bucket columns. =Factor_1= carries the pair, the
+strike and the expiry, as in =FxVolatility/<pair>/<strike>/<expiry>=, and
+=ShiftSize_1= states the shift that produced the figure. A swaption volatility adds
+the term, as in =SwaptionVolatility/<key>/<strike>/<expiry>/<term>=. This ladder is
+built from the same full-surface run as the
+[[file:./report_surface_vega_ladder.org][Surface vega ladder]], so its rows carry
+the pair, the expiry and the strike of every shifted point.
+
+* ORE configuration
+
+The mechanism has four parts. First, the generated run document carries an
+analytic of type =sensitivity=, and that analytic names =sensitivity.xml= through
+=sensitivityConfigFile=. Second, the root of that document is
+=SensitivityAnalysis=, and ORE validates it against
+=external/ore/xsd/sensitivity.xsd=. Third, the document carries one block for each
+group of risk factors, and the block this ladder reads is =FxVolatilities=.
+Fourth, every factor block states =ShiftType=, =ShiftSize=, =ShiftScheme= and the
+bucket list, which for a surface is =ShiftExpiries= and =ShiftStrikes=.
+
+=ShiftType= is =Relative=, =Absolute= or =EqualTo=. =ShiftScheme= is =Forward=,
+=Backward= or =Central=. Both are enumerations in
+=external/ore/xsd/ore_types.xsd=. The ATM-only switch is =ShiftStrikes=. An empty
+=ShiftStrikes= shifts the at-the-money point of each expiry, and a populated
+=ShiftStrikes= shifts every listed strike.
+
+The fragment below is trimmed from
+=external/ore/examples/MarketRisk/Input/sensitivity.xml=. It shows the FX
+volatility block of the shipped document, with its expiry list and its empty
+=ShiftStrikes=.
+
+#+begin_src xml
+<FxVolatilities>
+  <FxVolatility ccypair="USDEUR">
+    <ShiftType>Relative</ShiftType>
+    <ShiftSize>0.01</ShiftSize>
+    <ShiftScheme>Forward</ShiftScheme>
+    <ShiftExpiries>1Y,2Y,3Y,5Y</ShiftExpiries>
+    <ShiftStrikes/>
+  </FxVolatility>
+  <FxVolatility ccypair="GBPEUR">
+    <ShiftType>Relative</ShiftType>
+    <ShiftSize>0.01</ShiftSize>
+    <ShiftScheme>Forward</ShiftScheme>
+    <ShiftExpiries>1Y,2Y,3Y,5Y</ShiftExpiries>
+    <ShiftStrikes/>
+  </FxVolatility>
+</FxVolatilities>
+#+end_src
+
+The full-surface variant of the same document carries a strike list in
+=ShiftStrikes=, and that is the document this ladder reads. The engine writes
+=sensitivity.csv= with the columns the reader saw above, and it writes
+=scenario.csv= with the scenario value and the difference behind each figure.
+
+The bump is a setting of the configuration and not the identity of the report.
+Two reports over one book that differ only in shift size differ only in the
+document they bind. The catalogue's 0.1 is one setting, and a ladder at another
+size is the same report with another document.
+
+* Parameters
+
+A definition of this report states the rows below. The shift itself is not a
+parameter of the store, and no seed states a shift size anywhere.
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                        | Domain                        | Seeded value | Meaning                                                          |
+|----------------------------------+-------------------------------+--------------+------------------------------------------------------------------|
+| cut_kind_code                    | a kind of cut                 | EOD          | The kind of cut the run mints when it starts.                     |
+| market_data_type                 | live, eod or date             | eod          | The market data the run values the portfolio at.                  |
+| base_currency                    | ISO 4217 code                 | the entity's | The currency the figures are expressed in.                        |
+| sensitivity.sensitivityConfigFile| a name in the file library    | sensitivity.xml | The sensitivity document the analytic reads.                   |
+| sensitivity.recalibrateModels    | Y or N                        | Y            | Whether models are recalibrated before each shift.                |
+| sensitivity.outputSensitivityThreshold | a real                  | 0.000001     | The size below which a change is not written.                     |
+| sensitivity.sensitivityOutputFile| a file name                   | sensitivity.csv | The file the engine writes the rows to.                        |
+| ShiftStrikes                     | empty, or a list of strikes   | empty in the shipped document | Whether every strike moves or the at-the-money point alone. |
+
+* A worked read
+
+1. Open the archive the run recorded and take =sensitivity.csv=.
+2. Keep the rows whose =Factor_1= starts =FxVolatility=. Those are the shifted
+   surface points.
+3. Read the bucket. The segments of =Factor_1= name the pair, the strike and the
+   expiry of the point.
+4. Check that the rows of one expiry carry several strikes. A run with an empty
+   =ShiftStrikes= states the at-the-money point alone, and that is a different
+   reading from this ladder.
+5. Read =ShiftSize_1=. It states the size of the move the figure belongs to.
+6. Read the =Delta= column as money per shift. Do not divide it by the shift.
+7. Sum the rows of one expiry. All the points of one expiry moved together, so
+   their sum is the value change at that expiry for a surface that held its shape.
+8. Open =scenario.csv= and read =Difference= for the same =TradeId= and =Factor=.
+   It agrees with the =Delta= figure to the printed precision.
+9. Read the same expiry on the previous close. Two closes state whether the level
+   risk grew or shrank.
+
+* What is not built
+
+- No mapper reads or writes a =SensitivityAnalysis= document. The document is a
+  name in a lookup and a row in the file library, and it is not a modelled
+  entity.
+- The run package carries only the four Setup documents, which are conventions,
+  curve configuration, today's market and pricing engines. An analytic document
+  that no owner exports never reaches the engine.
+- No volatility market data is seeded. The ACME dataset holds 420 quotes and all
+  of them are =IR_SWAP/RATE/...=. There is no =FX_OPTION/RATE_LNVOL= quote and no
+  volatility surface configuration. The engine therefore refuses at the point it
+  needs a volatility, and the run records that refusal against the run instance.
+  This is a fact about the environment and not about the report.
+- No shift size is stated anywhere in the store. The catalogue states 0.1 and the
+  store cannot state it as a row.
+- No stored shape holds a bucketed ladder. The bucket is a segment of a factor
+  key in a CSV file.
+- The result store is not built, so no table carries the rows a reader queries.
+
+* Test coverage
+
+The sensitivity configuration type is seeded with root =SensitivityAnalysis=, the
+parameter =sensitivityConfigFile= and the owner =ores.analytics=. The document and
+its two surface variants sit in the ORE file library with their descriptions, the
+schema is vendored as =sensitivity_schema=, and the worked configurations are
+vendored.
+
+No substitute is defined for this report, so a test run executes every phase and
+assembles its own bundle. The report is exercised by the full-pipeline proof and
+not by a smoke test. The machinery that proves a bundle without gathering one is
+[[file:./report_sample_bundle_smoke_test.org][Sample bundle smoke test]].
+
+* Related
+
+- [[file:./reports.org][Reports]], where this page is listed.
+- [[file:../domain/risk_reporting.org][Risk reporting]], which holds the classification taxonomy, the .1 Triple entry and the measures catalogue.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]], which states the columns of =sensitivity.csv= and =scenario.csv=.
+- [[file:./report_atm_vega_ladder.org][Bump and Reprice ATM vega ladder]], which places one shift on the at-the-money point.
+- [[file:./report_risk_reversal_vega_ladder.org][Bump and Reprice Risk-reversal vega ladder]], which reads the skew by change of basis.
+- [[file:./report_butterfly_vega_ladder.org][Bump and Reprice Butterfly vega ladder]], which reads the wing by change of basis.
+- [[file:./report_surface_vega_ladder.org][Bump and Reprice Surface vega ladder]], which places the same shift on every strike.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]], which states the smile identity the change of basis uses.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], which states the phases every run goes through.
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]]: the engine whose =FxVolatilities= block shifts a surface.

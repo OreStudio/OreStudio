@@ -120,6 +120,8 @@ function FeedBody({
     const mayRun = useHeld()(PERMISSION.feedsRun);
     const check = kind.useCheck();
     const parts = useFeedParts(kind, id);
+    // The kind of a page never changes, so this hook runs or does not on every render alike.
+    const related = kind.useRelated?.(feed) ?? [];
     const { tab, bar } = useRecordTabs({
         label: name,
         tabs: ['details', 'calibration', ...kind.tabs.map((one) => one.name), 'history'],
@@ -199,7 +201,7 @@ function FeedBody({
                     feed={feed}
                     feedEntity={kind.entity}
                     subject={kind.historySubject}
-                    parts={parts}
+                    parts={[...parts, ...related]}
                     feedSpecs={kind.fields}
                     feedResource={kind.resource}
                     complete={kind.complete}

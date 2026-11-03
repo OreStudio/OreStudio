@@ -1,7 +1,6 @@
 :PROPERTIES:
 :ID: 662d60e0-4740-4fff-a4de-a32eaf711eca
 :ores.cpp.wire-codec.enabled: true
-:ores.ts.protocol.enabled: nil
 :END:
 #+title: ores.trading.blotter
 #+description: Codegen operation model for the blotter's two reads: one page of rows, keyed by the sort key and the row id, and one rail of counts per node.
@@ -95,7 +94,7 @@ a projection later, and this contract does not move when that changes.
 
 ** get_blotter_rail_request
 :PROPERTIES:
-:subject:  trading.v1.blotter.rail
+:subject:  trading.v1.ops.get_blotter_rail
 :response: get_blotter_rail_response
 :END:
 
@@ -154,7 +153,7 @@ a projection later, and this contract does not move when that changes.
 
 ** get_blotter_page_request
 :PROPERTIES:
-:subject:  trading.v1.blotter.page
+:subject:  trading.v1.ops.get_blotter_page
 :response: get_blotter_page_response
 :END:
 

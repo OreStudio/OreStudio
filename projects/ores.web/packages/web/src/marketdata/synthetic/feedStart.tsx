@@ -30,6 +30,11 @@ import { Card, MeasureTile } from '../../ui/Card.js';
 import { Fact, Notice, Tag } from '../../ui/Primitives.js';
 import { formatDateTime } from '../../ui/Time.js';
 import { ParameterTable, garchRows } from '../calibration/VarianceCalibration.js';
+import {
+    AwaitingReview,
+    FittedVolatility,
+    usePairCalibrations,
+} from '../calibration/varianceRecords.js';
 
 /** A run's level in the pair's market convention: an inverted item is read as one over it. */
 export function levelOf(start: FeedStart): string {
@@ -60,8 +65,22 @@ export function FeedRunTab({
     const model = show(feed['variance_model']);
     const garch = model === 'gjr_garch';
     const running = start !== null && start !== undefined;
+    const calibrations = usePairCalibrations(
+        garch ? show(feed['base_currency_code']) : '',
+        garch ? show(feed['quote_currency_code']) : '',
+    );
+    const used = running ? (start.variance?.calibration_id ?? '') : '';
+    const fitted = (calibrations.data ?? []).find(
+        (c) => c.id === used && c.method === 'gjr_garch_qmle',
+    );
     return (
         <div className="space-y-4" data-feed-run>
+            {garch && (
+                <AwaitingReview
+                    calibrations={calibrations.data ?? []}
+                    to={`${calibrationFeedPath(show(feed['asset_class_code']) || 'fx', show(feed['id']))}?tab=variance`}
+                />
+            )}
             {!running && <Notice tone="info">{t('marketdata.fxFeeds.run.notRunning')}</Notice>}
             <div className="grid gap-4 lg:grid-cols-2">
                 <div className="space-y-4">
@@ -79,6 +98,11 @@ export function FeedRunTab({
                     )}
                 </div>
             </div>
+            {fitted !== undefined && (
+                <Card title={t('marketdata.calibration.variance.chart.title')}>
+                    <FittedVolatility calibration={fitted} />
+                </Card>
+            )}
         </div>
     );
 }
@@ -107,7 +131,7 @@ function LevelCard({
             <dl className="grid gap-4 sm:grid-cols-3">
                 <Fact label={t('marketdata.fxFeeds.run.levelValue')}>
                     <span className="font-mono text-base font-semibold tabular-nums">
-                        {start.from_fixing ? levelOf(start) : configured || '—'}
+                        {start.value !== '' ? levelOf(start) : configured || '—'}
                     </span>
                 </Fact>
                 {start.from_fixing && (

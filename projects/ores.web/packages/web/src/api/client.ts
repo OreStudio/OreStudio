@@ -789,6 +789,12 @@ const calibrationSchema = z.object({
         from_policy_row: z.boolean(),
         window_days: z.int(),
         variance_window_days: z.int().default(0),
+        variance_approval_mode: z.string().default('manual'),
+        variance_min_returns: z.int().default(0),
+        variance_require_starts_agree: z.boolean().default(false),
+        variance_min_persistence: z.number().default(0),
+        variance_max_persistence: z.number().default(0),
+        variance_min_reaction: z.number().default(0),
         allow_inverse: z.boolean(),
         fallback_code: z.string(),
         provider_order: z.array(z.string()),
@@ -1966,6 +1972,8 @@ export const api = {
         readonly partyId: string | null;
         /** The text the name and the description are searched for, or empty for none. */
         readonly search: string;
+        /** The kind of cut the list is narrowed to, or empty for every kind. */
+        readonly cutKind: string;
     }): Promise<ReportsPage> {
         const query = new URLSearchParams({
             offset: String(page.offset),
@@ -1973,6 +1981,9 @@ export const api = {
             sort: page.sort,
             descending: page.descending ? 'true' : 'false',
         });
+        if (page.cutKind !== '') {
+            query.set('cut_kind', page.cutKind);
+        }
         if (page.partyId !== null) {
             query.set('party_id', page.partyId);
         }

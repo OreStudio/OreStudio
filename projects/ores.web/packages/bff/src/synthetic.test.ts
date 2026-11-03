@@ -169,6 +169,9 @@ describe('synthetic resource routes', () => {
             'ir-curve-feeds',
             'ir-parameter-values',
             'ir-template-entries',
+            'variance-calibrations',
+            'variance-calibration-inputs',
+            'variance-calibration-input-points',
             'process-types',
             'parameter-definitions',
             'tenors',
@@ -186,6 +189,9 @@ describe('synthetic resource routes', () => {
         const providers = resources.find((resource) => resource.key === 'providers');
         expect(providers?.writable).toBe(false);
         expect(providers?.readOnlyBecause).toContain('catalogue');
+        const calibrations = resources.find((r) => r.key === 'variance-calibrations');
+        expect(calibrations?.writable).toBe(false);
+        expect(calibrations?.readOnlyBecause).toContain('decided by a review');
     });
 
     it('reads every row of a resource, as of now and unfiltered', async () => {
@@ -488,6 +494,12 @@ describe('synthetic calibration', () => {
         from_policy_row: true,
         window_days: 60,
         variance_window_days: 730,
+        variance_approval_mode: 'auto',
+        variance_min_returns: 300,
+        variance_require_starts_agree: false,
+        variance_min_persistence: 0.85,
+        variance_max_persistence: 0.99,
+        variance_min_reaction: 0.02,
         allow_inverse: false,
         fallback_code: 'refuse',
         provider_order: ['ecb', 'boe'],
@@ -495,7 +507,20 @@ describe('synthetic calibration', () => {
     const policyRows = {
         'synthetic.v1.calibration_policies.list': {
             result: ok,
-            policies: [{ id: POLICY_ID, version: 3, asset_class_code: 'fx' }],
+            policies: [
+                {
+                    id: POLICY_ID,
+                    version: 3,
+                    asset_class_code: 'fx',
+                    variance_window_days: 730,
+                    variance_approval_mode: 'auto',
+                    variance_min_returns: 300,
+                    variance_require_starts_agree: false,
+                    variance_min_persistence: 0.85,
+                    variance_max_persistence: 0.99,
+                    variance_min_reaction: 0.02,
+                },
+            ],
         },
     };
 
@@ -610,6 +635,12 @@ describe('synthetic calibration', () => {
             from_policy_row: false,
             window_days: 90,
             variance_window_days: 1826,
+            variance_approval_mode: 'manual',
+            variance_min_returns: 250,
+            variance_require_starts_agree: true,
+            variance_min_persistence: 0.8,
+            variance_max_persistence: 0.995,
+            variance_min_reaction: 0.01,
             allow_inverse: true,
             fallback_code: 'keep_fixed',
             provider_order: [],
@@ -629,6 +660,12 @@ describe('synthetic calibration', () => {
             from_policy_row: false,
             window_days: 90,
             variance_window_days: 1826,
+            variance_approval_mode: 'manual',
+            variance_min_returns: 250,
+            variance_require_starts_agree: true,
+            variance_min_persistence: 0.8,
+            variance_max_persistence: 0.995,
+            variance_min_reaction: 0.01,
             allow_inverse: true,
             fallback_code: 'keep_fixed',
             provider_order: [],
@@ -913,7 +950,7 @@ describe('synthetic calibration', () => {
     const changesOf = (calls: { subject: string; body: unknown }[], subject: string): Change[] =>
         (calls.find((c) => c.subject === subject)?.body as { changes: Change[] }).changes;
 
-    it('writes the policy against its version and the order from rank 1', async () => {
+    it('writes the policy against its version, keeping the fields the screen does not edit, and the order from rank 1', async () => {
         const { server, sessionId, calls } = buildTestServer(
             ordered([
                 [ID, 'ecb', 1, 1],
@@ -936,6 +973,13 @@ describe('synthetic calibration', () => {
                     id: POLICY_ID,
                     asset_class_code: 'fx',
                     window_days: 120,
+                    variance_window_days: 730,
+                    variance_approval_mode: 'auto',
+                    variance_min_returns: 300,
+                    variance_require_starts_agree: false,
+                    variance_min_persistence: 0.85,
+                    variance_max_persistence: 0.99,
+                    variance_min_reaction: 0.02,
                     allow_inverse: true,
                     fallback_code: 'keep_fixed',
                 },

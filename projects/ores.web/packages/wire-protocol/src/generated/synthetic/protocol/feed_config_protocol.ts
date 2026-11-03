@@ -196,6 +196,18 @@ export interface CalibrationPolicySummary {
     window_days: number;
     /** @brief How many calendar days of fixings a variance calibration's input covers. */
     variance_window_days: number;
+    /** @brief manual, a person approves every variance fit; auto, the policy approves each fit that passes its rules. */
+    variance_approval_mode: string;
+    /** @brief The fewest returns the policy approves a fit from. */
+    variance_min_returns: number;
+    /** @brief Whether the policy approves only a fit whose starts agree. */
+    variance_require_starts_agree: boolean;
+    /** @brief The lowest persistence the policy approves. */
+    variance_min_persistence: number;
+    /** @brief The highest persistence the policy approves. */
+    variance_max_persistence: number;
+    /** @brief The lowest average reaction, alpha plus half of gamma, the policy approves. */
+    variance_min_reaction: number;
     /** @brief True when an item that quotes the pair the other way round is read as one over it. */
     allow_inverse: boolean;
     /** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */

@@ -113,6 +113,8 @@ interface ReportRow {
     readonly id: string;
     readonly name: string;
     readonly reportType: string;
+    /** The kind of cut the definition selects, or null when it selects none. */
+    readonly cutKind: string | null;
     readonly partyId: string;
     readonly partyName: string;
     readonly partyCode: string | null;
@@ -151,6 +153,8 @@ const pageQuerySchema = z.object({
     party_id: z.uuid().optional(),
     /** The text the name and the description of a definition are searched for. */
     search: z.string().trim().max(SEARCH_LIMIT).default(''),
+    /** The kind of cut a definition selects, or empty for every kind. */
+    cut_kind: z.string().trim().max(40).default(''),
 });
 
 /** What narrows the definitions a health tally counts: the party and the search of the list. */
@@ -181,6 +185,7 @@ interface DefinitionFilter {
     readonly id_one_of: readonly string[] | null;
     readonly party_id_one_of: readonly string[] | null;
     readonly search: string | null;
+    readonly cut_kind_code: string | null;
 }
 
 /** The filter that narrows to one party, to one definition by its id, or to a search. */
@@ -188,12 +193,15 @@ function definitionFilter(members: {
     readonly partyId?: string;
     readonly idOneOf?: readonly string[];
     readonly search?: string;
+    readonly cutKind?: string;
 }): DefinitionFilter {
     return {
         party_id: members.partyId ?? null,
         id_one_of: members.idOneOf ?? null,
         party_id_one_of: null,
         search: members.search === undefined || members.search === '' ? null : members.search,
+        cut_kind_code:
+            members.cutKind === undefined || members.cutKind === '' ? null : members.cutKind,
     };
 }
 
@@ -260,14 +268,16 @@ async function readDefinitionsPage(
         readonly descending: boolean;
         readonly partyId: string | null;
         readonly search: string;
+        readonly cutKind: string | null;
     },
 ): Promise<DefinitionPage> {
     const filter =
-        page.partyId === null && page.search === ''
+        page.partyId === null && page.search === '' && page.cutKind === null
             ? null
             : definitionFilter({
                   ...(page.partyId === null ? {} : { partyId: page.partyId }),
                   search: page.search,
+                  ...(page.cutKind === null ? {} : { cutKind: page.cutKind }),
               });
     const reply = await session.client.callAuthenticated(
         definitionSubjects.list_report_definitions_request,
@@ -621,6 +631,7 @@ function rowOf(
         id,
         name: text(definition['name']),
         reportType: text(definition['report_type']),
+        cutKind: nullableText(definition['cut_kind_code']),
         partyId,
         partyName: party?.name ?? '',
         partyCode: party === undefined || party.shortCode === '' ? null : party.shortCode,
@@ -1028,6 +1039,7 @@ export function registerReportingRoutes(
             descending: page.descending,
             partyId: page.party_id ?? null,
             search: page.search,
+            cutKind: page.cut_kind === '' ? null : page.cut_kind,
         });
         const composed = await compose(session, read.definitions);
         return { rows: composed.rows, total: read.total, unread: composed.unread };

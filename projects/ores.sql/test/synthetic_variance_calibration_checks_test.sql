@@ -32,7 +32,7 @@
 
 begin;
 
-select plan(29);
+select plan(35);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -161,6 +161,29 @@ select is(
 select throws_like($$update ores_synthetic_calibration_policies_tbl set variance_window_days = 20
     where asset_class_code = 'fx' and valid_to = ores_utility_infinity_timestamp_fn()$$,
     '%violates check constraint%', 'a variance window shorter than thirty days is refused');
+
+select is(
+    (select row(variance_approval_mode, variance_min_returns, variance_require_starts_agree,
+                variance_min_persistence, variance_max_persistence, variance_min_reaction)::text
+     from ores_synthetic_calibration_policies_tbl
+     where asset_class_code = 'fx' and valid_to = ores_utility_infinity_timestamp_fn()),
+    row('auto', 250, true, 0.80::double precision, 0.995::double precision, 0.01::double precision)::text,
+    'the FX policy approves fits within its seeded rules');
+select throws_like($$update ores_synthetic_calibration_policies_tbl set variance_approval_mode = 'sometimes'
+    where asset_class_code = 'fx' and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%violates check constraint%', 'an approval mode other than manual or auto is refused');
+select throws_like($$update ores_synthetic_calibration_policies_tbl set variance_min_returns = 100
+    where asset_class_code = 'fx' and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%violates check constraint%', 'a policy that approves fits from fewer than 250 returns is refused');
+select throws_like($$update ores_synthetic_calibration_policies_tbl set variance_min_persistence = 0.99, variance_max_persistence = 0.9
+    where asset_class_code = 'fx' and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%violates check constraint%', 'a lowest persistence above the highest is refused');
+select throws_like($$update ores_synthetic_calibration_policies_tbl set variance_max_persistence = 1
+    where asset_class_code = 'fx' and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%violates check constraint%', 'a highest persistence of one is refused');
+select throws_like($$update ores_synthetic_calibration_policies_tbl set variance_min_reaction = -0.01
+    where asset_class_code = 'fx' and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%violates check constraint%', 'a negative lowest reaction is refused');
 
 select * from finish();
 

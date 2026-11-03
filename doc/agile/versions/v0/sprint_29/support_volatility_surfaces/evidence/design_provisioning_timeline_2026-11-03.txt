@@ -1,0 +1,30 @@
+2026-11-03T16:09:57+00:00 2026-11-03 16:09:57.591677 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.audusd starts at 0.7196, its fixed level. The config names no fixing item, and no
+2026-11-03T16:09:57+00:00 2026-11-03 16:09:57.910188 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.eurusd starts at 1.1707, its fixed level. The config names no fixing item, and no
+2026-11-03T16:09:57+00:00 2026-11-03 16:09:57.955577 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.gbpusd starts at 1.3576, its fixed level. The config names no fixing item, and no
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.260843 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.nzdusd starts at 0.5903, its fixed level. The config names no fixing item, and no
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.463856 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdbrl starts at 5.45, its fixed level. The config names no fixing item, and no s
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.494951 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdcad starts at 1.3609, its fixed level. The config names no fixing item, and no
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.520808 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdchf starts at 0.7822, its fixed level. The config names no fixing item, and no
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.541790 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdclp starts at 940, its fixed level. The config names no fixing item, and no se
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.561404 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdcnh starts at 7.15, its fixed level. The config names no fixing item, and no s
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.579438 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdcop starts at 4100, its fixed level. The config names no fixing item, and no s
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.599105 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdczk starts at 21.2, its fixed level. The config names no fixing item, and no s
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.620544 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usddkk starts at 6.3827, its fixed level. The config names no fixing item, and no
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.647651 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdhkd starts at 7.83, its fixed level. The config names no fixing item, and no s
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.668905 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdhuf starts at 330, its fixed level. The config names no fixing item, and no se
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.689077 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdils starts at 3.6, its fixed level. The config names no fixing item, and no se
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.722942 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdinr starts at 95.32, its fixed level. The config names no fixing item, and no 
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.748876 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdjpy starts at 157.68, its fixed level. The config names no fixing item, and no
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.782215 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdkrw starts at 1440, its fixed level. The config names no fixing item, and no s
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.804608 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdmxn starts at 17.3741, its fixed level. The config names no fixing item, and n
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.827688 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdnok starts at 9.2402, its fixed level. The config names no fixing item, and no
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.854719 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdpln starts at 3.65, its fixed level. The config names no fixing item, and no s
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.911692 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdsek starts at 9.246, its fixed level. The config names no fixing item, and no 
+2026-11-03T16:09:58+00:00 2026-11-03 16:09:58.961079 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdsgd starts at 1.29, its fixed level. The config names no fixing item, and no s
+2026-11-03T16:09:59+00:00 2026-11-03 16:09:59.184931 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdtry starts at 44, its fixed level. The config names no fixing item, and no ser
+2026-11-03T16:09:59+00:00 2026-11-03 16:09:59.338897 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdtwd starts at 30.5, its fixed level. The config names no fixing item, and no s
+2026-11-03T16:09:59+00:00 2026-11-03 16:09:59.370639 [INFO] [ores.synthetic.api.fx_spot_feed] Feed synthetic.bloomberg.usdzar starts at 16.6371, its fixed level. The config names no fixing item, and n
+2026-11-03T16:10:01+00:00 2026-11-03 16:10:01.904956 [INFO] [ores.marketdata.official.app.official_adapter] Sent 8215 fixing(s) of 'ecb-frankfurter'
+2026-11-03T16:10:03+00:00 2026-11-03 16:10:03.543764 [INFO] [ores.marketdata.official.app.official_adapter] Sent 8974 fixing(s) of 'imf-frankfurter'
+2026-11-03T16:10:04+00:00 2026-11-03 16:10:04.836175 [INFO] [ores.marketdata.official.app.official_adapter] Sent 6382 fixing(s) of 'boc-frankfurter'
+2026-11-03T16:10:06+00:00 2026-11-03 16:10:06.011925 [INFO] [ores.marketdata.official.app.official_adapter] Sent 5772 fixing(s) of 'tcmb-frankfurter'

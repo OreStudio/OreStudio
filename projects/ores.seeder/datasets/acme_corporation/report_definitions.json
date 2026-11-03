@@ -9,7 +9,8 @@
     "display_order": 5,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_group",
@@ -21,7 +22,8 @@
     "display_order": 10,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_group",
@@ -33,7 +35,8 @@
     "display_order": 15,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_group",
@@ -45,7 +48,8 @@
     "display_order": 25,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_group",
@@ -57,7 +61,8 @@
     "display_order": 35,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_group",
@@ -69,7 +74,8 @@
     "display_order": 40,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_group",
@@ -81,7 +87,8 @@
     "display_order": 60,
     "tier": "strategic",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_group",
@@ -93,7 +100,8 @@
     "display_order": 65,
     "tier": "strategic",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_group",
@@ -105,7 +113,8 @@
     "display_order": 70,
     "tier": "strategic",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_group",
@@ -117,7 +126,8 @@
     "display_order": 75,
     "tier": "strategic",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -129,7 +139,8 @@
     "display_order": 5,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -141,7 +152,8 @@
     "display_order": 15,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -153,7 +165,8 @@
     "display_order": 20,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -165,7 +178,8 @@
     "display_order": 25,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -177,7 +191,8 @@
     "display_order": 30,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -189,7 +204,8 @@
     "display_order": 35,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -201,7 +217,8 @@
     "display_order": 40,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -213,7 +230,8 @@
     "display_order": 45,
     "tier": "regulatory",
     "applicable_jurisdiction": "GB",
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -225,7 +243,8 @@
     "display_order": 80,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -237,7 +256,8 @@
     "display_order": 85,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -249,7 +269,8 @@
     "display_order": 90,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -261,7 +282,8 @@
     "display_order": 95,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -273,7 +295,8 @@
     "display_order": 100,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -285,7 +308,8 @@
     "display_order": 105,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -297,7 +321,8 @@
     "display_order": 110,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -309,7 +334,8 @@
     "display_order": 115,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -321,7 +347,8 @@
     "display_order": 120,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -333,7 +360,8 @@
     "display_order": 125,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -345,7 +373,8 @@
     "display_order": 130,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -357,7 +386,8 @@
     "display_order": 135,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -369,7 +399,8 @@
     "display_order": 140,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -381,7 +412,8 @@
     "display_order": 145,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_uk",
@@ -393,7 +425,8 @@
     "display_order": 150,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
   },
   {
     "company_code": "acme_uk",
@@ -405,7 +438,151 @@
     "display_order": 155,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Headline Position (EOD)",
+    "description": "The headline Greeks at the close: the same set the intraday definition carries, priced from the day's authorised end of day cut so the figures are authoritative and reproducible. The market risk function signs off on this one, and a later run of the intraday definition never replaces it.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 156,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Spot Greeks",
+    "description": "P&L and Delta at a grid of spot shift levels, answering what happens to the book if spot moves by a given percentage. The intraday definition reads the live cut, so a desk questions its directional risk while the day is still moving.",
+    "report_type": "risk",
+    "schedule_expression": "*/15 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 160,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Spot Greeks (EOD)",
+    "description": "The spot shift grid at the close, priced from the day's authorised end of day cut. Market risk reads it as the authoritative statement of directional risk where the intraday definition states an indicative one.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 161,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Triple Vol Spot Ladder",
+    "description": "Vega, Rega and Sega across every curve tenor at each spot shift level, so a desk reads vol and skew risk against a moving spot in one table. The intraday definition reads the live cut.",
+    "report_type": "risk",
+    "schedule_expression": "*/15 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 165,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Triple Vol Spot Ladder (EOD)",
+    "description": "The triple vol spot ladder at the close, priced from the day's authorised end of day cut. It is the vol risk statement of record; the intraday definition is the view taken between closes.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 166,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Spot Ladder",
+    "description": "The full forward curve of a currency pair, every tenor's outright rate, read from the live cut rather than from a valuation. A desk asks for it while quoting and hedging at a named tenor, so it holds a schedule and fires only when the definition is activated.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 170,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Spike Map",
+    "description": "Per currency pair, the concentration of option notional or theoretical value against expiry date and spot level, so a desk sees where barrier and digital risk piles up across time and spot. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 175,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Strike Map",
+    "description": "The same concentration view as the spike map, bucketed by option strike rather than expiry, so a desk reads notional across strike space at each tenor. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 180,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Option Map",
+    "description": "The traditional option map, bucketed by delta, shown beside the strike view, so one table states where notional sits across both delta and strike. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 185,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Intraday Change",
+    "description": "How the market data and the risk of a book or portfolio have moved since a configurable reference time, so a desk reads intraday P&L attribution without waiting for the end of day explain run. Priced from the live cut.",
+    "report_type": "risk",
+    "schedule_expression": "*/30 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 190,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_uk",
+    "name": "Trades Since Last In",
+    "description": "Every trade booked since a stated date and time, so a desk reviews its morning activity and sees what a colleague added to a shared book. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 195,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
   },
   {
     "company_code": "acme_us",
@@ -417,7 +594,8 @@
     "display_order": 5,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -429,7 +607,8 @@
     "display_order": 15,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -441,7 +620,8 @@
     "display_order": 20,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -453,7 +633,8 @@
     "display_order": 25,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -465,7 +646,8 @@
     "display_order": 30,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -477,7 +659,8 @@
     "display_order": 35,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -489,7 +672,8 @@
     "display_order": 40,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -501,7 +685,8 @@
     "display_order": 50,
     "tier": "regulatory",
     "applicable_jurisdiction": "US",
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -513,7 +698,8 @@
     "display_order": 80,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -525,7 +711,8 @@
     "display_order": 85,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -537,7 +724,8 @@
     "display_order": 90,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -549,7 +737,8 @@
     "display_order": 100,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -561,7 +750,8 @@
     "display_order": 105,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -573,7 +763,8 @@
     "display_order": 110,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -585,7 +776,8 @@
     "display_order": 115,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -597,7 +789,8 @@
     "display_order": 125,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -609,7 +802,8 @@
     "display_order": 130,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -621,7 +815,8 @@
     "display_order": 135,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -633,7 +828,8 @@
     "display_order": 140,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -645,7 +841,8 @@
     "display_order": 145,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_us",
@@ -657,7 +854,8 @@
     "display_order": 150,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
   },
   {
     "company_code": "acme_us",
@@ -669,7 +867,86 @@
     "display_order": 155,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_us",
+    "name": "Headline Position (EOD)",
+    "description": "The headline Greeks at the close: the same set the intraday definition carries, priced from the day's authorised end of day cut so the figures are authoritative and reproducible. The market risk function signs off on this one, and a later run of the intraday definition never replaces it.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 156,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "company_code": "acme_us",
+    "name": "Spot Greeks",
+    "description": "P&L and Delta at a grid of spot shift levels, answering what happens to the book if spot moves by a given percentage. The intraday definition reads the live cut, so a desk questions its directional risk while the day is still moving.",
+    "report_type": "risk",
+    "schedule_expression": "*/15 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 160,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_us",
+    "name": "Spot Greeks (EOD)",
+    "description": "The spot shift grid at the close, priced from the day's authorised end of day cut. Market risk reads it as the authoritative statement of directional risk where the intraday definition states an indicative one.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 161,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "company_code": "acme_us",
+    "name": "Spot Ladder",
+    "description": "The full forward curve of a currency pair, every tenor's outright rate, read from the live cut rather than from a valuation. A desk asks for it while quoting and hedging at a named tenor, so it holds a schedule and fires only when the definition is activated.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 170,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_us",
+    "name": "Intraday Change",
+    "description": "How the market data and the risk of a book or portfolio have moved since a configurable reference time, so a desk reads intraday P&L attribution without waiting for the end of day explain run. Priced from the live cut.",
+    "report_type": "risk",
+    "schedule_expression": "*/30 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 190,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_us",
+    "name": "Trades Since Last In",
+    "description": "Every trade booked since a stated date and time, so a desk reviews its morning activity and sees what a colleague added to a shared book. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 195,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
   },
   {
     "company_code": "acme_hk",
@@ -681,7 +958,8 @@
     "display_order": 5,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -693,7 +971,8 @@
     "display_order": 15,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -705,7 +984,8 @@
     "display_order": 20,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -717,7 +997,8 @@
     "display_order": 25,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -729,7 +1010,8 @@
     "display_order": 30,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -741,7 +1023,8 @@
     "display_order": 35,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -753,7 +1036,8 @@
     "display_order": 40,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -765,7 +1049,8 @@
     "display_order": 55,
     "tier": "regulatory",
     "applicable_jurisdiction": "HK",
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -777,7 +1062,8 @@
     "display_order": 80,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -789,7 +1075,8 @@
     "display_order": 85,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -801,7 +1088,8 @@
     "display_order": 90,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -813,7 +1101,8 @@
     "display_order": 100,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -825,7 +1114,8 @@
     "display_order": 105,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -837,7 +1127,8 @@
     "display_order": 110,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -849,7 +1140,8 @@
     "display_order": 115,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -861,7 +1153,8 @@
     "display_order": 125,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -873,7 +1166,8 @@
     "display_order": 130,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -885,7 +1179,8 @@
     "display_order": 135,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -897,7 +1192,8 @@
     "display_order": 140,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -909,7 +1205,8 @@
     "display_order": 145,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "company_code": "acme_hk",
@@ -921,7 +1218,8 @@
     "display_order": 150,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
   },
   {
     "company_code": "acme_hk",
@@ -933,6 +1231,85 @@
     "display_order": 155,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_hk",
+    "name": "Headline Position (EOD)",
+    "description": "The headline Greeks at the close: the same set the intraday definition carries, priced from the day's authorised end of day cut so the figures are authoritative and reproducible. The market risk function signs off on this one, and a later run of the intraday definition never replaces it.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 156,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "company_code": "acme_hk",
+    "name": "Spot Greeks",
+    "description": "P&L and Delta at a grid of spot shift levels, answering what happens to the book if spot moves by a given percentage. The intraday definition reads the live cut, so a desk questions its directional risk while the day is still moving.",
+    "report_type": "risk",
+    "schedule_expression": "*/15 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 160,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_hk",
+    "name": "Spot Greeks (EOD)",
+    "description": "The spot shift grid at the close, priced from the day's authorised end of day cut. Market risk reads it as the authoritative statement of directional risk where the intraday definition states an indicative one.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 161,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "company_code": "acme_hk",
+    "name": "Spot Ladder",
+    "description": "The full forward curve of a currency pair, every tenor's outright rate, read from the live cut rather than from a valuation. A desk asks for it while quoting and hedging at a named tenor, so it holds a schedule and fires only when the definition is activated.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 170,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_hk",
+    "name": "Intraday Change",
+    "description": "How the market data and the risk of a book or portfolio have moved since a configurable reference time, so a desk reads intraday P&L attribution without waiting for the end of day explain run. Priced from the live cut.",
+    "report_type": "risk",
+    "schedule_expression": "*/30 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 190,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "company_code": "acme_hk",
+    "name": "Trades Since Last In",
+    "description": "Every trade booked since a stated date and time, so a desk reviews its morning activity and sees what a colleague added to a shared book. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 195,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
   }
 ]

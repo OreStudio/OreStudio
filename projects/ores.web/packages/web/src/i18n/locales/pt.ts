@@ -3802,6 +3802,9 @@ const pt: SourceCatalogue = {
         'Generate the trades': 'Gerar as transações',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',
+        'Schedule the reports': 'Agendar os relatórios',
+        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.":
+            'Agenda cada definição de relatório que cada parte que nomeia publica, como o administrador da execução, para que o catálogo dispare sem que uma pessoa atue. Um relatório cujo calendário é o marcador sob demanda fica para ser pedido à mão.',
         'Hand the tenant to its administrator': 'Entregar o inquilino ao seu administrador',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             'Inicia a execução de configuração do próprio inquilino, que corre como o administrador do inquilino e conclui o inquilino.',
@@ -4878,7 +4881,25 @@ const pt: SourceCatalogue = {
                 runsNone:
                     'A variância do feed é constante, ou a sua configuração não nomeia calibração.',
                 fresh: 'O ajuste desta execução',
-                awaiting: 'novo ajuste a rever',
+                awaiting: 'aguarda revisão',
+                waiting:
+                    '{count} ajuste(s) GJR-GARCH deste par aguardam revisão. O mais recente é a calibração {id}, persistência {persistence}. Um feed só o usa depois de aprovado.',
+                reviewIt: 'Rever',
+                pairHistory: 'Calibrações de {pair}',
+                when: 'Última alteração',
+                stateHeader: 'Estado',
+                reason: 'Motivo',
+                chart: {
+                    title: 'Volatilidade diária ajustada',
+                    volatility: 'Volatilidade ajustada',
+                    move: 'Dimensão do movimento do dia',
+                    longRun: 'Nível de longo prazo {value}',
+                    label: 'A volatilidade diária esperada pelo ajuste GJR-GARCH sobre a sua entrada, e a dimensão de cada movimento diário',
+                    caption:
+                        '{days} retornos diários da entrada guardada. A volatilidade de cada dia decorre do movimento anterior segundo alpha (α), gamma (γ) e beta (β) da calibração.',
+                    disagrees:
+                        'A volatilidade recalculada a partir dos pontos guardados não termina no rácio do primeiro dia guardado. A entrada ou a forma mudou depois do ajuste.',
+                },
                 fitRejected: 'ajuste rejeitado',
                 method: {
                     gjr_garch_qmle: 'Ajustada',
@@ -4988,6 +5009,7 @@ const pt: SourceCatalogue = {
                 keptFixed: 'Nível mantido',
                 refused: 'Recusados',
                 overridden: 'Derrogam a política',
+                awaitingReview: 'Ajustes a aguardar revisão',
             },
             filter: {
                 label: 'Mostrar',
@@ -5129,6 +5151,25 @@ const pt: SourceCatalogue = {
                 save: 'Guardar a política',
                 reset: 'Voltar ao automático',
                 coverage: 'Cobertura',
+                approval: {
+                    title: 'Aprovação da variância',
+                    mode: {
+                        auto: 'Aprovado pela política',
+                        manual: 'Aprovado por uma pessoa',
+                    },
+                    leadAuto:
+                        'A política aprova cada ajuste GJR-GARCH que cumpre as regras abaixo, e um ajuste que falha aguarda uma pessoa. As regras só mudam com uma nova versão da política.',
+                    leadManual:
+                        'Uma pessoa aprova cada ajuste GJR-GARCH da classe; a política não aprova nenhum por si.',
+                    window: 'Janela de variância',
+                    days: '{days} dias',
+                    minReturns: 'Mínimo de retornos',
+                    starts: 'Pontos de partida',
+                    startsRequired: 'Têm de concordar',
+                    startsAny: 'Podem divergir',
+                    persistence: 'Intervalo de persistência',
+                    reaction: 'Reação mínima, alpha (α) + gamma (γ) / 2',
+                },
                 record: 'Registo da calibração',
             },
         },
@@ -7679,6 +7720,8 @@ const pt: SourceCatalogue = {
         unread: 'Não foi possível ler {cell}: {message}',
         filter: {
             allParties: 'Todas as partes',
+            cut: 'Corte',
+            allCuts: 'Todos os cortes',
         },
         tally: {
             label: 'Relatórios segundo o estado da sua última execução',
@@ -7688,12 +7731,25 @@ const pt: SourceCatalogue = {
             report: 'Relatório',
             party: 'Parte',
             reportType: 'Tipo',
+            cut: 'Corte',
             schedule: 'Calendário',
             latestRun: 'Início da última execução',
             duration: 'Duração',
             health: 'Estado',
             errors: 'Erros',
             warnings: 'Avisos',
+        },
+        schedule: {
+            onDemand: 'A pedido',
+        },
+        cut: {
+            LIVE: 'Live',
+            EOD: 'Fim do dia',
+            SOD: 'Início do dia',
+            IPV: 'Verificação independente de preços',
+            FLASH: 'Flash',
+            EOM: 'Fim do mês',
+            EOY: 'Fim do ano',
         },
         health: {
             failed: 'Falhou',

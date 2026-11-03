@@ -8,7 +8,7 @@
 #+filetags: :tooling:ci:local_checks:tests:run_only_the_checks_a_change_needs:sprint_29:v0:
 #+owner: marco
 #+branch: feature/run-only-the-checks-a-change-needs
-#+pr:
+#+pr: 4436
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4436][#4436]] | [build] Run the gate's suites in parallel and class the build-script tests as tooling |
 
 * Review
 

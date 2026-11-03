@@ -409,7 +409,10 @@ which every environment holds; see
 
 A feed never fits its own variance. The estimate above is a calibration with
 three stages, each stored as a versioned record, so every number a feed runs
-traces back to the fixings it came from and to the person who accepted it.
+traces back to the fixings it came from and to the person who accepted it. The
+first two stages run inside the class calibration run, beside the level and the
+spread, and the third is a review; [[id:5B561453-D754-466E-9234-5360AC611F02][Calibrating a synthetic feed: from fixings to a reviewed run]]
+draws the whole flow.
 
 1. *Capture the inputs.* A capture reads the pair's fixings under the asset
    class's calibration policy, which states the variance window, the order of
@@ -472,9 +475,15 @@ counterpart (=daily_negative_second_moment=) and
 =process_factory::make_gjr_garch_process= builds it with the mixture's own daily
 variance as the long-run level. The decorator reads the day's return once, at the
 roll, so it adds a few nanoseconds a tick to the mixture's step. The FX spot feed
-builds the process from the approved calibration its configuration names; the
-capture, the fit and the review run as operations of =ores.synthetic=, and the
-fit calls =fit_gjr_garch= on the points of one stored input.
+builds the process from the approved calibration its configuration names, through
+=calibrated_variance= in =ores.synthetic.api/feeds/variance_calibration.hpp=,
+which refuses a calibration that is missing, of another pair, not approved or
+shapeless. The same header holds =capture_variance_points= and =fit_variance=,
+which the class calibration run, =synthetic.v1.ops.calibrate_feeds=, calls on the
+policy's variance window of each GJR-GARCH feed's item; =fit_variance= calls
+=fit_gjr_garch= on the points of one stored input, and the fit reports the starts
+it tried and whether they agreed. The review is
+=synthetic.v1.ops.review_variance_calibration=.
 
 The tests reproduce QuantLib's GARCH calculation test values, compare the cost
 with QuantLib's Garch11 cost function ported as an independent expectation, and

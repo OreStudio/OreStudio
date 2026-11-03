@@ -708,6 +708,8 @@ export const feedStartSchema = z.object({
     variance: z
         .object({
             model: z.string(),
+            calibration_id: z.string().default(''),
+            calibration_version: z.int().default(0),
             fitted: z.boolean(),
             alpha: z.number(),
             gamma: z.number(),
@@ -734,6 +736,31 @@ const calibrationCandidateSchema = z.object({
 
 export type CalibrationCandidate = z.infer<typeof calibrationCandidateSchema>;
 
+/** What a calibration run made of a feed's daily variance: its input and its fit. */
+const varianceCalibrationSchema = z.object({
+    input_id: z.string().default(''),
+    calibration_id: z.string().default(''),
+    method: z.string().default(''),
+    state: z.string().default(''),
+    state_reason: z.string().default(''),
+    item: z.string().default(''),
+    provider_code: z.string().default(''),
+    inverted: z.boolean().default(false),
+    window_days: z.int().default(0),
+    window_end: z.string().default(''),
+    point_count: z.int().default(0),
+    used_count: z.int().default(0),
+    alpha: z.number().nullish(),
+    gamma: z.number().nullish(),
+    beta: z.number().nullish(),
+    persistence: z.number().nullish(),
+    starting_variance_ratio: z.number().nullish(),
+    starts: z.int().default(0),
+    starts_agreed: z.boolean().default(false),
+});
+
+export type VarianceCalibration = z.infer<typeof varianceCalibrationSchema>;
+
 /** How one feed of a class resolves under the policy, and what it states against it. */
 const calibratedFeedSchema = z.object({
     config_id: z.string(),
@@ -749,6 +776,8 @@ const calibratedFeedSchema = z.object({
     /** What an applied calibration did; empty on a read that writes nothing. */
     outcome: z.enum(['', 'updated', 'unchanged', 'kept', 'refused', 'failed']).default(''),
     outcome_message: z.string().default(''),
+    variance: varianceCalibrationSchema.nullish(),
+    current_variance: varianceCalibrationSchema.nullish(),
 });
 
 export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;
@@ -759,6 +788,7 @@ const calibrationSchema = z.object({
     policy: z.object({
         from_policy_row: z.boolean(),
         window_days: z.int(),
+        variance_window_days: z.int().default(0),
         allow_inverse: z.boolean(),
         fallback_code: z.string(),
         provider_order: z.array(z.string()),
@@ -2453,6 +2483,33 @@ export const api = {
             throw new Error(`The calibration of ${configId} answered no feed.`);
         }
         return feed;
+    },
+
+    /**
+     * Approves or rejects a proposed variance calibration with the reviewer's reason. Approving
+     * points the pair's GJR-GARCH feeds at it. Only the system tenant may.
+     */
+    async reviewVarianceCalibration(
+        calibrationId: string,
+        decision: 'approve' | 'reject',
+        reason: string,
+    ): Promise<{ state: string; repointedFeeds: readonly string[]; message: string }> {
+        return z
+            .object({
+                state: z.string(),
+                repointedFeeds: z.array(z.string()).default([]),
+                message: z.string().default(''),
+            })
+            .parse(
+                await request(
+                    `/api/synthetic/calibration/variance/${encodeURIComponent(calibrationId)}/review`,
+                    {
+                        method: 'POST',
+                        headers: JSON_HEADERS,
+                        body: JSON.stringify({ decision, reason }),
+                    },
+                ),
+            );
     },
 
     /** States a class's calibration policy. Only the system tenant may. */

@@ -20,6 +20,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
 import type { FeedStart, RecordRow } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { FeedStartVariance } from './feedStart.js';
@@ -41,9 +42,11 @@ function feed(over: Record<string, unknown> = {}): RecordRow {
 
 function tab(row: RecordRow): string {
     return renderToStaticMarkup(
-        <TranslationProvider>
-            <VarianceTab feed={row} />
-        </TranslationProvider>,
+        <MemoryRouter>
+            <TranslationProvider>
+                <VarianceTab feed={row} />
+            </TranslationProvider>
+        </MemoryRouter>,
     );
 }
 
@@ -67,6 +70,33 @@ describe('a feed’s variance tab', () => {
         expect(html).not.toContain('<input');
         expect(html).not.toContain('<button');
         expect(html).toContain('Calibration screen');
+    });
+
+    it('shows the shape the running feed carries and links to its calibration', () => {
+        const html = tab(
+            feed({
+                asset_class_code: 'fx',
+                start: {
+                    variance: {
+                        model: 'gjr_garch',
+                        calibration_id: CALIBRATION,
+                        calibration_version: 2,
+                        fitted: true,
+                        alpha: 0.0113,
+                        gamma: 0.023,
+                        beta: 0.9323,
+                        persistence: 0.9551,
+                        initial_ratio: 0.92,
+                        returns: 279,
+                        note: '',
+                    },
+                },
+            }),
+        );
+        expect(html).toContain('What the running feed carries');
+        expect(html).toContain('version 2');
+        expect(html).toContain('0.932');
+        expect(html).toMatch(/href="[^"]*calibration[^"]*tab=variance"/);
     });
 });
 
@@ -92,7 +122,7 @@ describe('the variance in the notice of where a run started', () => {
     it('says a fitted shape, the returns it read and how the first day stands', () => {
         const html = render(variance);
         expect(html).toContain('fitted from 1259 daily returns');
-        expect(html).toContain('alpha 0.061');
+        expect(html).toContain('alpha (α) 0.061');
         expect(html).toContain('persistence 0.984');
         expect(html).toContain('1.73 times the long-run level');
     });

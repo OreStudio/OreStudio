@@ -438,7 +438,8 @@ public:
                   review_variance_calibration_response{
                       .success = false,
                       .message = "A review names the calibration, a decision of approve or "
-                                 "reject, and the reason for it."});
+                                 "reject, and the reason for it.",
+                      .refusal = "invalid"});
             return;
         }
         // The calibrations and the feeds an approval re-points are system rows that every tenant
@@ -481,12 +482,14 @@ private:
         const auto found =
             repo::variance_calibration_repository{}.read_latest(req_ctx, req.calibration_id);
         if (found.empty()) {
+            resp.refusal = "not_found";
             resp.message = "No variance calibration " + req.calibration_id + " exists.";
             return resp;
         }
         const auto& c = found.front();
         const bool repoint_only = c.state == "approved" && req.decision == "approve";
         if (c.state != "proposed" && !repoint_only) {
+            resp.refusal = "decided";
             resp.message = "Only a proposed calibration is reviewed; " + req.calibration_id +
                            " is " + c.state + ".";
             resp.state = c.state;
@@ -640,6 +643,7 @@ private:
                 continue;
             }
             const auto& in = std::get<feed::fx_spot_feed_build_input>(*outcome.input);
+            one.current_variance = current_variance_of(req_ctx, in.config);
             one.explicit_items = !in.fixing_items.empty();
             one.window_days_override = in.config.calibration_window_days;
             if (in.config.price_source != "fixing") {
@@ -867,7 +871,108 @@ private:
         if (apply)
             store_variance_calibration(
                 req_ctx, in, policy, *src.fixing_date, points, fit, p_minus, v);
+        else
+            report_stored_variance_calibration(req_ctx, in, policy, *src.fixing_date, p_minus, v);
         one.variance = std::move(v);
+    }
+
+    /// The ids a feed's variance records are stored under, named by what identifies each.
+    struct variance_ids final {
+        boost::uuids::uuid input;
+        boost::uuids::uuid calibration;
+    };
+
+    // The fit depends on the feed's mixture through p_minus as well as on the input, so two
+    // feeds that read one item under different mixtures fit two calibrations.
+    // The text of each name is part of the stored id, the format of p_minus included: changing it
+    // names new ids, so a preview no longer finds the records an earlier run stored.
+    static variance_ids
+    name_variance_ids(const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                      const std::string& item,
+                      int window_days,
+                      std::chrono::year_month_day window_end,
+                      double p_minus) {
+        const boost::uuids::name_generator_sha1 name(variance_calibration_namespace());
+        const auto input = name(std::format("input|{}|{}|{:%F}|{}",
+                                            boost::uuids::to_string(cfg.party_id),
+                                            item,
+                                            window_end,
+                                            window_days));
+        const auto calibration =
+            name(std::format("calibration|{}|gjr_garch_qmle|{}|{:.12f}",
+                             boost::uuids::to_string(input),
+                             ores::synthetic::feed::variance_fit_method_version,
+                             p_minus));
+        return {.input = input, .calibration = calibration};
+    }
+
+    // The calibration a feed runs is the one its config names, read as stored with the input it
+    // was fitted from, so a reader sees what the feed is on beside any new fit of the run.
+    static std::optional<ores::synthetic::messaging::variance_calibration_summary>
+    current_variance_of(const ores::database::context& req_ctx,
+                        const ores::synthetic::domain::fx_spot_generation_config& cfg) {
+        namespace repo = ores::synthetic::repository;
+        if (cfg.variance_model != "gjr_garch" || !cfg.variance_calibration_id)
+            return std::nullopt;
+        const auto id = boost::uuids::to_string(*cfg.variance_calibration_id);
+        const auto found = repo::variance_calibration_repository{}.read_latest(req_ctx, id);
+        if (found.empty())
+            return std::nullopt;
+        const auto& c = found.front();
+        ores::synthetic::messaging::variance_calibration_summary v;
+        report_stored(c, v);
+        v.calibration_id = id;
+        if (c.input_id) {
+            v.input_id = boost::uuids::to_string(*c.input_id);
+            const auto inputs =
+                repo::variance_calibration_input_repository{}.read_latest(req_ctx, v.input_id);
+            if (!inputs.empty()) {
+                const auto& in = inputs.front();
+                v.item = in.fixing_uri;
+                v.provider_code = in.provider_code;
+                v.inverted = in.inverted;
+                v.window_days = in.window_days;
+                v.window_end = std::format("{:%F}", in.window_end);
+                v.point_count = in.point_count;
+                v.used_count = in.used_count;
+            }
+        }
+        return v;
+    }
+
+    // A preview stores nothing, but a calibration an earlier applied run stored is the one a
+    // reviewer decides, so the preview reports it as stored, with its ids.
+    void report_stored_variance_calibration(
+        const ores::database::context& req_ctx,
+        const ores::synthetic::feed::fx_spot_feed_build_input& in,
+        const ores::synthetic::feed::calibration_policy& policy,
+        std::chrono::year_month_day window_end,
+        double p_minus,
+        ores::synthetic::messaging::variance_calibration_summary& v) {
+        const auto ids =
+            name_variance_ids(in.config, v.item, policy.variance_window_days, window_end, p_minus);
+        const auto existing =
+            ores::synthetic::repository::variance_calibration_repository{}.read_latest(
+                req_ctx, boost::uuids::to_string(ids.calibration));
+        if (existing.empty())
+            return;
+        report_stored(existing.front(), v);
+        v.input_id = boost::uuids::to_string(ids.input);
+        v.calibration_id = boost::uuids::to_string(ids.calibration);
+    }
+
+    static void report_stored(const ores::synthetic::domain::variance_calibration& stored,
+                              ores::synthetic::messaging::variance_calibration_summary& v) {
+        v.method = stored.method;
+        v.state = stored.state;
+        v.state_reason = stored.state_reason;
+        v.alpha = stored.alpha;
+        v.gamma = stored.gamma;
+        v.beta = stored.beta;
+        v.persistence = stored.persistence;
+        v.starting_variance_ratio = stored.starting_variance_ratio;
+        v.starts = stored.starts;
+        v.starts_agreed = stored.starts_agreed;
     }
 
     // The namespace the ids of variance calibration records are named under.
@@ -895,15 +1000,10 @@ private:
         namespace feed = ores::synthetic::feed;
         const boost::uuids::name_generator_sha1 name(variance_calibration_namespace());
         const auto& cfg = in.config;
-        const auto party = boost::uuids::to_string(cfg.party_id);
-        const auto input_id = name(std::format(
-            "input|{}|{}|{:%F}|{}", party, v.item, window_end, policy.variance_window_days));
-        // The fit depends on the feed's mixture through p_minus as well as on the input, so two
-        // feeds that read one item under different mixtures fit two calibrations.
-        const auto calibration_id = name(std::format("calibration|{}|gjr_garch_qmle|{}|{:.12f}",
-                                                     boost::uuids::to_string(input_id),
-                                                     feed::variance_fit_method_version,
-                                                     p_minus));
+        const auto ids =
+            name_variance_ids(cfg, v.item, policy.variance_window_days, window_end, p_minus);
+        const auto input_id = ids.input;
+        const auto calibration_id = ids.calibration;
         const auto point_id = [&](std::chrono::year_month_day date) {
             return name(std::format("point|{}|{:%F}", boost::uuids::to_string(input_id), date));
         };
@@ -975,16 +1075,7 @@ private:
             if (!existing.empty()) {
                 // A stored calibration is reported as stored, so the summary never mixes a
                 // decision with the numbers of a fit made since.
-                const auto& stored = existing.front();
-                v.state = stored.state;
-                v.state_reason = stored.state_reason;
-                v.alpha = stored.alpha;
-                v.gamma = stored.gamma;
-                v.beta = stored.beta;
-                v.persistence = stored.persistence;
-                v.starting_variance_ratio = stored.starting_variance_ratio;
-                v.starts = stored.starts;
-                v.starts_agreed = stored.starts_agreed;
+                report_stored(existing.front(), v);
             } else {
                 const auto written =
                     svc::variance_calibration_service(req_ctx).put_variance_calibration(

@@ -304,6 +304,8 @@ struct variance_calibration_summary {
     std::string input_id;
     /** @brief The stored calibration; empty when the run was not applied. */
     std::string calibration_id;
+    /** @brief "gjr_garch_qmle" for a fit, "authored" for an authored shape. */
+    std::string method;
     /** @brief "proposed" when the fit was made, "rejected" when it could not be. */
     std::string state;
     /** @brief Why the fit was rejected; empty for a proposed one. */
@@ -376,6 +378,9 @@ struct calibrated_feed {
     /** @brief The variance calibration of a GJR-GARCH feed that starts from a fixing; absent
      * otherwise. */
     std::optional<variance_calibration_summary> variance;
+    /** @brief The calibration the feed's config names and runs, as stored; absent when it names
+     * none. */
+    std::optional<variance_calibration_summary> current_variance;
 
     friend bool operator==(const calibrated_feed&, const calibrated_feed&) = default;
 };
@@ -458,6 +463,9 @@ struct review_variance_calibration_response {
     bool success = false;
     /** @brief Why the decision was refused, or what it did. */
     std::string message;
+    /** @brief Why the review was refused: "invalid", "not_found" or "decided"; empty when it was
+     * not. */
+    std::string refusal;
     /** @brief The calibration's state after the review. */
     std::string state;
     /** @brief The approval the new one superseded; empty when there was none. */
@@ -697,6 +705,7 @@ struct review_variance_calibration_response {
         ::ores::utility::codec::field{"input_id", &variance_calibration_summary::input_id},
         ::ores::utility::codec::field{"calibration_id",
                                       &variance_calibration_summary::calibration_id},
+        ::ores::utility::codec::field{"method", &variance_calibration_summary::method},
         ::ores::utility::codec::field{"state", &variance_calibration_summary::state},
         ::ores::utility::codec::field{"state_reason", &variance_calibration_summary::state_reason},
         ::ores::utility::codec::field{"item", &variance_calibration_summary::item},
@@ -743,6 +752,7 @@ struct review_variance_calibration_response {
         ::ores::utility::codec::field{"outcome", &calibrated_feed::outcome},
         ::ores::utility::codec::field{"outcome_message", &calibrated_feed::outcome_message},
         ::ores::utility::codec::field{"variance", &calibrated_feed::variance},
+        ::ores::utility::codec::field{"current_variance", &calibrated_feed::current_variance},
     };
 }
 
@@ -808,6 +818,7 @@ struct review_variance_calibration_response {
     return std::tuple{
         ::ores::utility::codec::field{"success", &review_variance_calibration_response::success},
         ::ores::utility::codec::field{"message", &review_variance_calibration_response::message},
+        ::ores::utility::codec::field{"refusal", &review_variance_calibration_response::refusal},
         ::ores::utility::codec::field{"state", &review_variance_calibration_response::state},
         ::ores::utility::codec::field{"superseded_id",
                                       &review_variance_calibration_response::superseded_id},

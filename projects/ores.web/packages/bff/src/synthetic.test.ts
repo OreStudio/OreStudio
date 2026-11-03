@@ -590,13 +590,19 @@ describe('synthetic calibration', () => {
                         source_name: 'synthetic.bloomberg.eurusd',
                         start: { from_fixing: true, note: '' },
                         variance,
+                        current_variance: { ...variance, method: 'authored', state: 'approved' },
                     },
                 ],
             },
         });
         const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
         expect(response.statusCode).toBe(200);
-        expect(response.json().feeds[0].variance).toEqual(variance);
+        expect(response.json().feeds[0].variance).toMatchObject(variance);
+        expect(response.json().feeds[0].current_variance).toMatchObject({
+            calibration_id: variance.calibration_id,
+            method: 'authored',
+            state: 'approved',
+        });
     });
 
     it('states the defaults, with no version, when the class has no policy row', async () => {
@@ -809,6 +815,7 @@ describe('synthetic calibration', () => {
             {
                 'synthetic.v1.ops.review_variance_calibration': {
                     success: false,
+                    refusal: 'decided',
                     message: 'Only a proposed calibration is reviewed; it is approved.',
                 },
             },
@@ -818,8 +825,49 @@ describe('synthetic calibration', () => {
             decision: 'reject',
             reason: 'unstable',
         });
-        expect(response.statusCode).not.toBe(200);
-        expect(response.body).toContain('Only a proposed calibration is reviewed');
+        expect(response.statusCode).toBe(409);
+        expect(response.json()).toMatchObject({
+            code: 'conflict',
+            message: 'Only a proposed calibration is reviewed; it is approved.',
+        });
+    });
+
+    it('answers a review of a calibration that does not exist with not found', async () => {
+        const { server, sessionId } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: false,
+                    refusal: 'not_found',
+                    message: `No variance calibration ${CALIBRATION} exists.`,
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'reviewed',
+        });
+        expect(response.statusCode).toBe(404);
+        expect(response.json()).toMatchObject({ code: 'not-found' });
+    });
+
+    it("keeps a failure the service states no refusal for as the service's own", async () => {
+        const { server, sessionId } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: false,
+                    message: 'The request failed. The service log says why.',
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'reviewed',
+        });
+        expect(response.statusCode).not.toBe(409);
+        expect(response.statusCode).not.toBe(404);
+        expect(response.statusCode).toBeGreaterThanOrEqual(500);
     });
 
     it('refuses a review that states no reason', async () => {

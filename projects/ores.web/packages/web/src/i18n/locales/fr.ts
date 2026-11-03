@@ -4453,6 +4453,7 @@ const fr: SourceCatalogue = {
                 memberships: 'Appartenances',
                 centres: 'Centres d’affaires',
                 counterparties: 'Contreparties',
+                run: 'Cette exécution',
                 arrivals: 'Arrivées',
                 variance: 'Variance',
                 behaviour: 'Comportement du prix',
@@ -4909,6 +4910,59 @@ const fr: SourceCatalogue = {
 
     marketdata: {
         calibration: {
+            variance: {
+                runs: 'La calibration qu’utilise ce flux',
+                runsNone:
+                    'La variance du flux est constante, ou sa configuration ne nomme aucune calibration.',
+                fresh: 'L’ajustement de cette exécution',
+                awaiting: 'nouvel ajustement à revoir',
+                fitRejected: 'ajustement rejeté',
+                method: {
+                    gjr_garch_qmle: 'Ajustée',
+                    authored: 'Rédigée',
+                },
+                title: 'Calibration de la variance quotidienne',
+                lead: 'La calibration GJR-GARCH de la paire de ce flux : la forme, les éléments avec lesquels elle a été ajustée, l’entrée dont elle vient, et sa revue. Un flux n’utilise qu’une calibration approuvée.',
+                none: 'La variance de ce flux est constante, ou il n’a pas démarré d’un fixing, il n’a donc pas de calibration de variance.',
+                notStored:
+                    'Un aperçu ajuste la variance et n’enregistre rien. Calibrez le flux pour enregistrer cette entrée et cet ajustement, puis revoyez-le ici.',
+                alpha: 'Alpha (α)',
+                gamma: 'Gamma (γ)',
+                beta: 'Bêta (β)',
+                persistence: 'Persistance',
+                startingRatio: 'Premier jour / long terme',
+                starts: 'Départs',
+                startsAgreed: '{starts}, tous d’accord',
+                startsDisagreed: '{starts}, en désaccord',
+                startsDisagreedShort: 'départs en désaccord',
+                disagreeWarning:
+                    'Les points de départ de l’ajustement ont abouti à des optimums différents : cet historique identifie mal la forme. Pesez-la avant de l’approuver.',
+                returns: 'Rendements utilisés',
+                returnsOf: '{used} sur {points} fixings',
+                window: 'Fenêtre',
+                windowOf: '{days} jours jusqu’au {end}',
+                provider: 'Fournisseur',
+                orientation: 'Sens',
+                inverted: 'Inversé : l’élément cote la paire dans l’autre sens',
+                direct: 'Direct',
+                item: 'Élément',
+                calibrationId: 'Calibration',
+                inputId: 'Entrée',
+                reviewReason: 'Motif',
+                reviewHint:
+                    'Obligatoire. Conservé avec la décision dans l’historique de la calibration.',
+                approve: 'Approuver',
+                reject: 'Rejeter',
+                cell: 'α {alpha} γ {gamma} β {beta} · persistance {persistence}',
+                state: {
+                    proposed: 'Proposée',
+                    approved: 'Approuvée',
+                    rejected: 'Rejetée',
+                    superseded: 'Remplacée',
+                    failed: 'Non enregistrée',
+                },
+            },
+            invertedFrom: 'l’inverse du fixing {value}',
             title: 'Calibrage',
             lead: "Comment chaque flux d'une classe d'actifs prend son niveau de départ et sa volatilité des fixings publics.",
             systemOnly:
@@ -4983,6 +5037,7 @@ const fr: SourceCatalogue = {
                 overridden: 'Dérogations',
             },
             columns: {
+                variance: 'Variance',
                 feed: 'Flux',
                 start: 'Départ',
                 source: 'Source',
@@ -5017,6 +5072,7 @@ const fr: SourceCatalogue = {
                 title: 'Flux',
                 tabs: 'Calibrage du flux',
                 tab: {
+                    variance: 'Variance',
                     record: 'Fiche du flux',
                     flow: 'Parcours',
                 },
@@ -5829,6 +5885,9 @@ const fr: SourceCatalogue = {
             'model.gjr_garch': 'GJR-GARCH — une variance portée d’un jour à l’autre',
             calibration: 'Calibration',
             calibrationNone: 'Aucune',
+            running: 'Ce que porte le flux en cours',
+            notRunning: 'Le flux ne tourne pas.',
+            openCalibration: 'Ouvrir sa calibration : les éléments et la revue',
             calibrationLead:
                 'Un flux GJR-GARCH utilise la calibration approuvée de sa paire. Les calibrations sont capturées, ajustées, puis approuvées ou rejetées sur l’écran Calibration ; en approuver une y rattache les flux de la paire.',
         },
@@ -6208,6 +6267,16 @@ const fr: SourceCatalogue = {
                 variance_model:
                     'Constante garde la variance du mélange chaque jour. GJR-GARCH reporte une variance d’un jour au suivant, si bien que les jours calmes et agités se regroupent ; il demande le moteur géométrique ou arithmétique.',
             },
+            run: {
+                level: 'Niveau',
+                levelInverted:
+                    'L’inverse du fixing {provider} de {value} du {date}, reçu {received} : l’élément cote la paire dans l’autre sens.',
+                source: 'Élément de fixing',
+                window: 'Fenêtre',
+                variance: 'Variance quotidienne',
+                notRunning:
+                    'Le flux ne tourne pas, il n’y a donc pas d’exécution à décrire. Démarrez-le pour voir d’où il part.',
+            },
             start: {
                 title: "D'où part cette exécution",
                 fromFixing: 'Parti du fixing {provider} de {value} du {date}, reçu le {received}.',
@@ -6219,9 +6288,10 @@ const fr: SourceCatalogue = {
                     "L'élément cite la paire dans l'autre sens, donc sa valeur a été lue comme son inverse.",
                 window: '{used} fixings sur {days} jours ont mesuré sa dispersion.',
                 variance: {
-                    fitted: 'Variance quotidienne : GJR-GARCH ajusté sur {returns} rendements quotidiens, alpha {alpha}, gamma {gamma}, bêta {beta}, persistance {persistence}.',
+                    calibration: 'Calibration {id}, version {version}.',
+                    fitted: 'Variance quotidienne : GJR-GARCH ajusté sur {returns} rendements quotidiens, alpha (α) {alpha}, gamma (γ) {gamma}, bêta (β) {beta}, persistance {persistence}.',
                     authored:
-                        'Variance quotidienne : GJR-GARCH avec la forme saisie, alpha {alpha}, gamma {gamma}, bêta {beta}, persistance {persistence}.',
+                        'Variance quotidienne : GJR-GARCH avec la forme saisie, alpha (α) {alpha}, gamma (γ) {gamma}, bêta (β) {beta}, persistance {persistence}.',
                     firstDay:
                         'La variance du premier jour vaut {ratio} fois le niveau de long terme, tel que l’historique s’est terminé.',
                 },

@@ -1,0 +1,49 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+title What an approval does
+
+actor Reviewer
+participant "Calibration screen" as UI
+participant "synthetic service" as S
+database "Variance calibrations" as C
+database "FX spot feeds" as F
+
+Reviewer -> UI : approve, with a reason
+UI -> S : review_variance_calibration\n(id, approve, reason)
+S -> C : read the calibration
+alt it is decided, and not an approval sent again
+  S --> UI : refused: only a proposed\ncalibration is reviewed
+else it is proposed, or an approval sent again
+  opt it is proposed
+    S -> C : supersede the pair's current approval\n(a new version, its reason names the new one)
+    S -> C : approve the calibration\n(a new version, the reviewer's reason)
+  end
+  loop every GJR-GARCH feed of the pair\nnot already on it
+    S -> F : name the approved calibration\n(a new version of the feed)
+  end
+  S --> UI : approved; the feeds now on it
+end
+== when a feed starts ==
+F -> S : read the calibration the feed names
+alt approved, and of the feed's pair
+  S -> S : run its shape; the start record\nnames the calibration and its version
+else missing, of another pair, not approved or shapeless
+  S -> S : refuse to start, and say why
+end
+@enduml

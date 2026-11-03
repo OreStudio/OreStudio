@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/show-the-calibration-chain-of-a-feed
+#+pr: 4429
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -26,11 +26,11 @@ A reader sees how every number of a run came to be. The This run tab states the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -41,9 +41,12 @@ A reader sees how every number of a run came to be. The This run tab states the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Put the variance calibration where a person already looks: a Variance column on
+the class's calibration list, a Variance tab on each feed's calibration page with
+the calibration the feed runs beside the run's new fit and the review, and on the
+feed screen a This run tab, in plain text, in place of the notice over every tab.
+Document the flow, with flowcharts, in a knowledge note the GARCH and sources
+notes link to.
 
 * Measurements
 
@@ -76,12 +79,43 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4429][#4429]] | [web] Show the GARCH calibration on the feed and calibration screens |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Every review refusal becomes a 409 | calibration.ts | Accepted | The service states a refusal code; the BFF answers not_found 404, decided 409, invalid 400, and keeps any other failure as the service's own |
+| 2 | Confirm an approval sent again writes no new approval | feed_config_handler.hpp | Accepted | write_state is skipped on that path; checked live, the second approval of the EUR/USD fit wrote no version. An automated test needs the service harness and is not added |
+| 3 | A preview reads the store per feed | feed_config_handler.hpp | Declined | A class holds about fifty feeds; batch when classes grow |
+| 4 | The p_minus format is part of the id | feed_config_handler.hpp | Accepted | A comment says so above the naming |
+| 5 | A missing input shows as blanks | feed_config_handler.hpp | Declined | A calibration's input is held by a foreign key, and the audit checks every link |
+| 6 | French and Portuguese want a native pass | locales | Declined | Flagged to the product owner; not a merge blocker |
+| 7 | No browser run of approve and reject | VarianceCalibration.tsx | Declined | Covered by component and route tests and the live service; a browser check is left to the product owner |
 
 * Result
+
+The Calibration screen shows each feed's variance in a column: the calibration it
+runs, its state and persistence, and a mark when the run fitted a new one to
+review. A feed's calibration page has a Variance tab with two cards: the
+calibration the feed runs, read as stored with its input, and this run's fit, with
+its shape, persistence, starting ratio, starts and whether they agreed, returns,
+window, item, provider, orientation and ids, and approve and reject with a
+required reason. A preview reports a stored fit as stored, with its id, so the
+screen reviews it; a refused review is a conflict with the service's reason. The
+class list shows a start level in the pair's market convention, an inverted
+fixing beside it. On the feed screen, the This run tab replaces the notice over
+every tab and states the level first, then the fixing, the window and the daily
+variance with its calibration and version; the Variance tab shows the shape the
+running feed carries and opens its calibration.
+
+The flow is documented in
+[[id:5B561453-D754-466E-9234-5360AC611F02][Calibrating a synthetic feed: from fixings to a reviewed run]],
+with four PlantUML diagrams (the run, the states, an approval, the audit chain);
+the GARCH note and the calibration sources note link to it.
+
+Measured on the environment: the preview reports a current calibration for all 51
+feeds; the audit passes 9 of 9.
+The web suite passes 2445 tests and more, the BFF 1256 and more, the synthetic
+suites and the doc checks pass.
+

@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: 5B561453-D754-466E-9234-5360AC611F02
+:END:
+#+title: Calibrating a synthetic feed: from fixings to a reviewed run
+#+description: How the class calibration run sets a synthetic FX feed's level, spread and GJR-GARCH variance from public fixings, how a person reviews the variance, and how a feed runs only the approved calibration, with every step stored and traceable.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:calibration:garch:marketdata:knowledge:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+* Summary
+
+A synthetic FX feed takes its starting level, the spread of its mixture and its
+GJR-GARCH daily variance from public fixings, through one calibration run of its
+asset class. The run resolves each feed's fixing item under the class policy,
+measures the level and the spread, and, for a GJR-GARCH feed, captures the
+variance window of the same item and fits it. The variance is never used as
+fitted: the fit is stored as a proposed calibration, a person approves or rejects
+it with a reason, and a feed runs only the approved calibration of its pair, which
+its configuration names. Every step is a stored, versioned record, so a run can be
+traced back through its calibration and the input it was fitted from to the
+fixings that made it.
+
+* Detail
+
+** One run calibrates the class
+
+The calibration run, =synthetic.v1.ops.calibrate_feeds=, is the one action that
+calibrates an asset class, from the Calibration screen or the API. It reads the
+class's calibration policy, then walks every feed of the class, or the one feed
+it is asked for. A preview reports what it finds and stores nothing; an applied
+run, which only the system tenant may make, writes what it finds.
+
+#+caption: The calibration run of an asset class, for one feed and for its daily variance.
+#+attr_html: :width 100%
+#+attr_latex: :width \textwidth
+[[proj:doc/knowledge/domain/variance_calibration_run.png]]
+
+For each feed the run resolves the fixing item the feed starts from, ordered by the
+policy's provider order and allowed to be read inverted when the policy says so;
+see [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+It measures the level and the spread of the mixture over the policy's window, and
+an applied run writes them as a new version of the feed.
+
+A feed whose variance follows a GJR-GARCH is calibrated a second time from the same
+item. The run reads the policy's variance window, five years by default, and
+captures it as an /input/: every fixing date of the window is a /point/, holding
+the fixing as stored, its daily log return in the pair's market convention, and,
+when the point is left out, why. The fit reads only those points, by variance
+targeting and Gaussian quasi maximum likelihood, as
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]]
+describes. An input with fewer than 250 returns, or one no admissible shape fits,
+gives a /rejected/ calibration with the reason; any other fit gives a /proposed/
+one, with the evidence a reviewer judges it by: the shape, its persistence under
+the feed's mixture, the long-run and starting variance, the likelihood, and
+whether every start of the simplex reached the same optimum.
+
+An applied run stores the input, its points and the calibration once each, under
+an id named by what identifies it: the input by its party, item and window, the
+calibration by its input, the method's version and the feed's mixture. A run made
+again finds the records it made and writes nothing, and it never reopens a
+calibration a person has decided. A preview reports a stored calibration as
+stored, with its id, so the screen reviews the record an earlier run kept.
+
+** A person decides the variance
+
+#+caption: The states of a variance calibration.
+[[proj:doc/knowledge/domain/variance_calibration_states.png]]
+
+A proposed calibration waits for a person with the review permission, which the
+Trading role holds. Approving or rejecting it, with a reason, is
+=synthetic.v1.ops.review_variance_calibration=; each decision is a new version of
+the calibration under the change reason =system.review=, so its history shows who
+decided what, when and why.
+
+#+caption: What an approval does, and what a feed reads when it starts.
+#+attr_html: :width 100%
+#+attr_latex: :width \textwidth
+[[proj:doc/knowledge/domain/variance_calibration_approval.png]]
+
+A pair has at most one approved calibration at a time. Approving one supersedes the
+pair's earlier approval, approves the new one, and names it on every GJR-GARCH feed
+of the pair, each as a new version of the feed. Each step reads what is stored
+before it writes, so an approval that stopped part way is completed by sending it
+again. Rejecting moves no feed.
+
+** A feed runs only what was approved
+
+A GJR-GARCH feed's configuration names the calibration it runs. When it starts, it
+reads that calibration and fits nothing. A calibration that is missing, of another
+pair, not approved or without a shape refuses the start, and the person who
+started the feed reads why. A run's start record names the calibration and the
+version it read, and states the persistence under the feed's own mixture.
+
+A fresh installation runs reviewed shapes from its first start: publishing the
+system feeds installs, for each pair that has none, the authored shape of the feed
+data as an approved, authored calibration, and names it on the pair's feeds. A
+later approval replaces it, and publishing again keeps the later one.
+
+** Every number traces to its fixings
+
+#+caption: The audit chain of a feed's daily variance.
+[[proj:doc/knowledge/domain/variance_calibration_chain.png]]
+
+The chain reads from a run to the calibration it names, to the input that
+calibration was fitted from, to the points of that input, to the fixings they
+were read from, and to the policy and its version they were read under; and from a
+calibration back to the feeds that name it. On screen, a feed's /This run/ tab
+states where the run started, its level in the pair's market convention first,
+and the calibration its variance came from; its /Variance/ tab shows the shape the
+running feed carries and opens its calibration. On the Calibration screen the
+class list shows each feed's variance calibration and its state, and a feed's
+/Variance/ tab shows the whole calibration, its input and the review.
+
+The script =projects/ores.sql/utility/audit_variance_calibrations.py= checks the
+stored chain against what it should hold: every input's points and counts, every
+return against its fixing, every calibration's evidence against its method and
+state, one approval per pair, and every GJR-GARCH feed on the approved calibration
+of its own pair.
+
+* See also
+
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] -- the model, the fit and the stored stages.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] -- where the fixings come from.
+- [[id:97E3E3C7-98D2-4DDC-B062-8F04CA2850E5][Variance Calibration Input]], [[id:BEEFE7C7-3B6A-4204-A110-A0DE54345194][Variance Calibration Input Point]] and [[id:84902B7E-58F4-4127-86CB-129EBEDABE95][Variance Calibration]] -- the records.

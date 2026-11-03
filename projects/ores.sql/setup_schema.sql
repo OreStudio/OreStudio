@@ -73,8 +73,10 @@
 -- not grant on, and each would warn.
 -- Note: TRUNCATE is included for test database cleanup
 -- Owner role gets full access; RW role gets standard DML access. Each grant
--- reports a status line, so their output is discarded; errors still show.
-\o /dev/null
+-- reports a status line, so QUIET is on while they run and errors still show.
+-- QUIET rather than \o to a null device, which has no name on every platform.
+\set setup_schema_quiet :QUIET
+\set QUIET on
 select format('grant select, insert, update, delete, truncate on %I to %I, %I',
               c.relname, :'owner_role', :'rw_role')
 from pg_class c
@@ -90,7 +92,7 @@ where c.relnamespace = 'public'::regnamespace
   and c.relkind in ('r', 'p', 'v', 'm', 'f')
   and c.relowner = current_user::regrole
 \gexec
-\o
+\set QUIET :setup_schema_quiet
 
 -- Grant sequence permissions to appropriate roles
 grant usage, select on all sequences in schema public to :owner_role, :rw_role;

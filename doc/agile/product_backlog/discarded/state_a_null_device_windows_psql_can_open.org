@@ -36,6 +36,17 @@ grant statements and run them with =\gexec= under =\set QUIET on=.
 - =gh api --allow-escape-sequences repos/OreStudio/OreStudio/actions/jobs/125139825651/logs=
 - [[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][Re-inventory what the splits leave]], which found it.
 
+* Resolution
+
+Fixed on the branch =fix/discard-grant-status-without-a-null-device=.
+=setup_schema.sql= no longer sends the grants' output anywhere. It saves
+psql's =QUIET= setting, sets it on while the two =\gexec= grant blocks run,
+and restores it afterwards. =QUIET= suppresses the status line each grant
+prints on every platform, and errors still show. A probe against the dev
+database showed a =\gexec= grant printing nothing with =QUIET= on and =GRANT=
+after it was restored. Filed as discarded because the work is done, not
+because it was declined.
+
 * See also
 
 -

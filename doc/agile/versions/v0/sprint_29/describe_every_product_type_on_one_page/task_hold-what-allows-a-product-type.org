@@ -28,9 +28,9 @@ The page can answer which books allow a type and who may book one. Both answers 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Modelled, generated, dropped and permitted. The ACME seed and the booking check remain. |
+| Now          | Modelled, generated, dropped, permitted, seeded and enforced. |
 | Waiting on   | Nothing.                               |
-| Next         | Seed ACME for all 121 types, then make the booking path read the book's rule. |
+| Next         | Review the pull request, then merge. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -57,8 +57,14 @@ Two junctions, and one column that decides which of them applies.
   trading component and a foreign key would point refdata and IAM at the trades.
 - The booking path reads the book's flag first, then the junction, and refuses
   with the rule that refused it.
-- ACME seeds every book and role with all 121 types, which is the unrestricted
-  reading written as data so a later restriction has somewhere to start.
+- A book published from a curated dataset states its allowed set: the books
+  publish writes the book with =restricts_product_types = true= and takes every
+  code the system catalogue holds. A later restriction is a row removed, not a
+  flag flipped, and every published book starts from the catalogue as it stands.
+- A provisioned tenant's roles all permit the whole catalogue, because the role
+  junction is the grant and a role with no rows permits nothing. A tenant that
+  could not book what the system catalogue states would be provisioned unable to
+  trade.
 
 * Measurements
 
@@ -72,7 +78,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Product types in the catalogue | 121, all in the system tenant | =select count(*) from ores_trading_product_types_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | |
+| Codes a published book allows | 121 per book: 242 junction rows for the 2 books of the ACME group dataset | =pg_prove ... test/refdata_book_product_types_seed_test.sql= | |
+| Grants a provisioned tenant starts with | 31 roles x 121 codes | =select count(*) from ores_iam_roles_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | |
+| Books whose rule the booking path reads | one read of the book, and the junction only when it restricts | =projects/ores.trading/core/src/service/bus_book_rules.cpp= | |
 
 * Notes
 
@@ -88,6 +97,48 @@ Both junctions name the catalogue by code rather than by a foreign key. The
 catalogue is the trading component's and the junctions belong to refdata and IAM,
 so a key would point the reference data at the trades; the same soft reference is
 what the instrument tables already use for a product type.
+
+** 2026-11-03 — the seed goes where the rows are made, not into a populate script
+
+The obvious home for the ACME seed is =populate/acme/=, beside the books and
+accounts, and it is the wrong one: publication is a runtime act, so a rebuilt
+database holds the ACME artefacts and no book. A populate script would write
+junction rows for books that do not exist yet and the seed would be empty on
+every run that mattered.
+
+So each junction is seeded where its rows are created:
+
+- =ores_refdata_publish_books_from_dq_fn= writes the book with
+  =restricts_product_types = true= and then takes every code the system
+  catalogue holds for the books it just inserted. The rows are held in a temp
+  table between the two statements so the publish still reports books rather
+  than the cross product.
+- =ores_iam_provision_tenant_fn= copies the system roles into a new tenant and
+  now grants each copied role the whole catalogue. A tenant is provisioned
+  unable to trade otherwise, because the role junction is the grant.
+
+** 2026-11-03 — the booking path asks one question and gets two answers
+
+The port was =book_status_port=, answering only whether a book is open. It is
+now =book_rules_port=, and the one reading of the book answers both the status
+and the flag, so a book is read once per booking and the junction is read only
+when the book restricts its product types — which is the reading the flag exists
+to spare. A refusal is coded =product_type_not_allowed= and its message names the
+rule and the type it refused, so a caller can tell it from a frozen book.
+
+An answer that cannot be had is still logged and let through. The rule is the
+book's own policy, not a permission, and a booking refused because refdata was
+busy would delete the trade a desk is trying to book. The trader holds
+=refdata::book_product_types:read= so the refusal comes from the book's rule
+rather than from a missing permission.
+
+** 2026-11-03 — what this task leaves
+
+The tenant purger deletes the trading tables it can enumerate and the IAM
+tables it names, and it names neither of the two junctions: a purge leaves their
+rows behind, as it already leaves the books they point at. That gap predates this
+task — no purge reaches the books at all — and closing it means deciding what a
+purge does with books, which is its own task.
 
 * Test Scenarios
 

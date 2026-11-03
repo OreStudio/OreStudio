@@ -645,6 +645,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/configuration_type_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/cut_approval_detail_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/cut_assembly.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/cut_authorisation_applier.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/cut_body_reader.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/cut_family_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/cut_gap_service.hpp"

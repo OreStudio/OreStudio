@@ -112,6 +112,7 @@ target_link_libraries(${lib_target_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.ore.core.lib
         ores.reporting.service.lib
         ores.inbox.api.lib
         ores.inbox.core.lib

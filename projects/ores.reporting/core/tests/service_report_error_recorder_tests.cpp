@@ -161,7 +161,12 @@ TEST_CASE("a run that failed its analytics carries one error row per trade it co
                       .subject_id = "PRICING",
                       .detail = {}});
 
-    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    const auto recorded = recorder.record_engine_errors(instance_id, errors);
+    CHECK(recorded.failure.empty());
+    // What the write put on the run, which is what a failed run states about
+    // itself: one error for each trade, and one for the analytic.
+    CHECK(recorded.stored.errors == 4);
+    CHECK(recorded.stored.warnings == 0);
 
     const auto rows = errors_of(ctx, instance_id);
     REQUIRE(rows.size() == 4);
@@ -214,7 +219,7 @@ TEST_CASE("an error about a trade carries the version the run read and the date 
          .subject = "trade",
          .subject_id = trade_id,
          .detail = {}}};
-    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
 
     const auto rows = errors_of(ctx, instance_id);
     REQUIRE(rows.size() == 1);
@@ -248,7 +253,7 @@ TEST_CASE("an error about a trade the manifest does not name is recorded with no
          .subject = "trade",
          .subject_id = "033b4053-fe1d-5901-bc2f-7d95afe91f00",
          .detail = {}}};
-    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
 
     const auto rows = errors_of(ctx, instance_id);
     REQUIRE(rows.size() == 1);
@@ -293,7 +298,7 @@ TEST_CASE("a run that succeeded records no error at all", "[service][database]")
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    CHECK(recorder.record_engine_errors(instance_id, {}).empty());
+    CHECK(recorder.record_engine_errors(instance_id, {}).failure.empty());
 
     CHECK(errors_of(ctx, instance_id).empty());
 }
@@ -321,7 +326,7 @@ TEST_CASE("an error whose scope the vocabulary does not hold costs its own row o
          .subject_id = "033b4053-fe1d-5901-bc2f-7d95afe91f00",
          .detail = {}}};
 
-    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
 
     const auto rows = errors_of(ctx, instance_id);
     // The curve the vocabulary names, and a warning saying what it could not store.
@@ -356,7 +361,7 @@ TEST_CASE("the run's failure row points at the reasons when they are there",
          .subject_id = "[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]",
          .cause = "Yield/GBP/GBP1D",
          .detail = {}}};
-    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
     CHECK(recorder.record_run_failure(instance_id, "The run's compute job failed with outcome 3")
               .empty());
 
@@ -403,7 +408,7 @@ TEST_CASE("the run-level failure is stored beside the engine's own errors", "[se
          .cause = "Yield/GBP/GBP1D",
          .detail = {}}};
 
-    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
     CHECK(recorder.record_run_failure(instance_id, "The run's compute job failed with outcome 3")
               .empty());
 
@@ -442,8 +447,8 @@ TEST_CASE("a batch whose scopes were all unplaceable does not block the next one
          .cause = "Yield/GBP/GBP1D",
          .detail = {}}};
 
-    CHECK(recorder.record_engine_errors(instance_id, unplaceable).empty());
-    CHECK(recorder.record_engine_errors(instance_id, placeable).empty());
+    CHECK(recorder.record_engine_errors(instance_id, unplaceable).failure.empty());
+    CHECK(recorder.record_engine_errors(instance_id, placeable).failure.empty());
 
     const auto rows = errors_of(ctx, instance_id);
     CHECK(std::ranges::any_of(rows, [](const auto& row) { return row.scope_code == "Curve"; }));
@@ -466,8 +471,8 @@ TEST_CASE("a run's errors are stored once however often its output is read",
          .cause = "Yield/GBP/GBP1D",
          .detail = {}}};
 
-    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
-    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
+    CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
 
     CHECK(errors_of(ctx, instance_id).size() == 1);
 }

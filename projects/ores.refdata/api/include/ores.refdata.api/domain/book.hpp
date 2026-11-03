@@ -157,6 +157,18 @@ struct book final {
     bool is_sweepable = false;
 
     /**
+     * @brief Whether this book states the product types it allows. False means the book allows
+     * every product type the catalogue states, which is what a book that has never been restricted
+     * does; true means the book's product types junction holds the allowed set, and an empty
+     * junction is then a book that allows none.
+     *
+     * The two states are different facts and must not be collapsed: a book with no junction rows is
+     * unrestricted when this is false and allows nothing when it is true. A blank set is a
+     * decision, not a gap, and the page that draws it says which of the two it is.
+     */
+    bool restricts_product_types = false;
+
+    /**
      * @brief Rates centre determining which revaluation market data snapshot this book uses at
      * end-of-day; see [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]].
      *

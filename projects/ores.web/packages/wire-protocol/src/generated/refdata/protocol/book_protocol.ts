@@ -48,6 +48,7 @@ export interface BookWrite {
     book_purpose_type: string;
     ledger_feed_type: string;
     is_sweepable: boolean;
+    restricts_product_types: boolean;
     rates_centre_code: string;
     sandbox_id: string | null;
 }

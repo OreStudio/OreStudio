@@ -31,6 +31,7 @@ set(files
     "bond_yield_convention_commands_tests.cpp"
     "book_change_commands_tests.cpp"
     "book_commands_tests.cpp"
+    "book_product_type_commands_tests.cpp"
     "book_purpose_type_commands_tests.cpp"
     "book_status_commands_tests.cpp"
     "business_centre_commands_tests.cpp"

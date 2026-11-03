@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 1c65f407-d655-4003-b2a0-9c84ff5f8edd
+:END:
+#+title: ores.iam.role_product_type
+#+description: Codegen junction model for role_product_types: the product types a role may book.
+#+type: ores.codegen.junction
+#+component: iam
+#+filetags: :model:junction:iam:trading:
+#+name: role_product_types
+#+name_singular: role_product_type
+#+name_title: Role Product Type
+#+name_singular_words: permitted product type
+#+brief: A product type a role may book.
+#+product: ores
+#+schema: public
+#+created: 2026-11-03
++#+updated: 2026-11-03
+
+The product types a role may book.
+
+A permission says what a person may do; this says what they may do it to. The
+verb is still gated by the trading permission, so a role that holds the booking
+permission but no row here may book nothing, and a role with rows here and no
+permission books nothing either: both halves are needed.
+
+A role with no rows permits no product type, which is the safe reading: the
+junction is the grant, so a blank junction grants nothing. That is the opposite
+of a book, where a blank set means everything, and the asymmetry is deliberate:
+a book is a container that a tenant configures, and a role is an authority that
+a tenant grants.
+
+The product type is named by the code the catalogue states, a soft reference
+because the catalogue belongs to the trading component and a foreign key would
+point the IAM tables at the trades.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:history: true
+:events: true
+:history_read_permission: iam::roles:read
+:END:
+
+* Left
+:PROPERTIES:
+:column:        role_id
+:column_short:  role
+:column_title:  Role
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up the product types a role permits
+:list_by:       true
+:END:
+
+ID of the IAM role.
+
+References ores_iam_roles_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        product_type_code
+:column_short:  product_type
+:column_title:  Product Type
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding the roles that permit a product type
+:list_by:       true
+:END:
+
+Code of the product type the role permits.
+
+References ores_trading_product_types_tbl.code (soft FK, because the catalogue
+belongs to the trading component).
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_role_product_types_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** role_id
+:PROPERTIES:
+:table:         ores_iam_roles_tbl
+:error_message: Invalid role_id: %. No active role found with this id.
+:END:
+
+ID of the IAM role; must exist in ores_iam_roles_tbl.
+
+* Repository
+:PROPERTIES:
+:name_singular_short: role_product_type
+:name_short:          role_product_types
+:name_singular_words: permitted product type
+:name_words:          permitted product types
+:order_column:        product_type_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* See also
+
+- [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product type]] states what a product type is and the one catalogue that
+  holds them.

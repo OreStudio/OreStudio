@@ -7665,6 +7665,7 @@ def cmd_build(argv):
         source = "--jobs" if args.jobs is not None else f"build-lock slot '{slot_name}'"
         lock.announce()
     print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
+    start_time = time.monotonic()
     started = None if args.dry_run else _build_stamp("Build started")
     build_cmd += ["-j", str(jobs)]
     if args.keep_going is not None:
@@ -7693,7 +7694,6 @@ def cmd_build(argv):
         if started is not None:
             log.write(started + "\n")
 
-    start_time = time.monotonic()
     outcome = "interrupted"
     try:
         for cmd in commands:

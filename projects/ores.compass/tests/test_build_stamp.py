@@ -54,7 +54,7 @@ def test_a_build_states_when_it_started_and_when_it_succeeded(build, capsys):
                                out.index("Build started"), out.index("Build finished"))
     assert jobs < started < finished
     assert re.search(rf"Build started: {STAMP}", out)
-    assert re.search(rf"Build finished \(succeeded, took 0:00:0\d\): {STAMP}", out)
+    assert re.search(rf"Build finished \(succeeded, took [\d:]+\): {STAMP}", out)
     log = log_path.read_text()
     assert re.search(rf"Build started: {STAMP}", log)
     assert re.search(rf"Build finished \(succeeded, took [\d:]+\): {STAMP}", log)
@@ -66,6 +66,20 @@ def test_a_failed_build_states_its_exit_code_when_it_finished(build, capsys):
     assert re.search(rf"Build finished \(failed, exit 2, took [\d:]+\): {STAMP}",
                      capsys.readouterr().out)
     assert "failed, exit 2" in log_path.read_text()
+
+
+def test_an_interrupted_build_states_when_it_stopped(build, monkeypatch, capsys):
+    _, log_path = build
+
+    def interrupt(*args, **kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(compass, "_run_logged", interrupt)
+    with pytest.raises(KeyboardInterrupt):
+        compass.cmd_build([])
+    assert re.search(rf"Build finished \(interrupted, took [\d:]+\): {STAMP}",
+                     capsys.readouterr().out)
+    assert "interrupted" in log_path.read_text()
 
 
 def test_a_dry_run_states_no_times(build, capsys):

@@ -76,26 +76,29 @@ namespace {
 
 using ores::trading::messaging::book_trade_request;
 using ores::trading::messaging::put_bond_issue_composite_request;
-using ores::trading::service::book_status_port;
+using ores::trading::service::book_rules_port;
 using ores::trading::service::trade_operations_service;
 using ores::utility::domain::outcome;
 
 namespace {
 
 /** A port that answers the same way for every book, so a case states its rule. */
-class stated_book_status final : public book_status_port {
+class stated_book_rules final : public book_rules_port {
 public:
-    explicit stated_book_status(state answer)
-        : answer_(answer) {}
-    [[nodiscard]] state of(const boost::uuids::uuid&, std::string_view) const override {
-        return answer_;
+    explicit stated_book_rules(answer rules)
+        : rules_(rules) {}
+    [[nodiscard]] answer
+    of(const boost::uuids::uuid&, std::string_view, std::string_view) const override {
+        return rules_;
     }
 
 private:
-    state answer_;
+    answer rules_;
 };
 
-const stated_book_status every_book_open{book_status_port::state::open};
+const book_rules_port::answer open_book_allows_every_type{book_rules_port::status::open,
+                                                          book_rules_port::product_type::allows};
+const stated_book_rules every_book_open{open_book_allows_every_type};
 
 }
 
@@ -269,11 +272,31 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", "[service]")
 
 TEST_CASE("a_booking_into_a_book_that_is_not_open_is_refused", "[service]") {
     fixture f;
-    const stated_book_status frozen{book_status_port::state::not_open};
+    const stated_book_rules frozen{book_rules_port::status::not_open,
+                                   book_rules_port::product_type::allows};
     auto request = f.request();
     const auto response = trade_operations_service(f.ctx, frozen).book_trade(request, {});
     CHECK(response.result.outcome == outcome::failed);
     CHECK(response.result.code == "book_not_open");
+}
+
+TEST_CASE("a_booking_of_a_product_type_the_book_does_not_allow_is_refused", "[service]") {
+    fixture f;
+    const stated_book_rules narrow{book_rules_port::status::open,
+                                   book_rules_port::product_type::refuses};
+    const auto req = f.request();
+
+    const auto response = trade_operations_service(f.ctx, narrow).book_trade(req, {});
+
+    // The refusal names the rule and the type it refused, so a caller can tell
+    // it from a book that is closed.
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "product_type_not_allowed");
+    CHECK(response.result.message.find(req.anchor.trade_type) != std::string::npos);
+    CHECK(response.result.message.find("restricts the product types") != std::string::npos);
+    CHECK(ores::trading::repository::trade_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
 }
 
 TEST_CASE("a_second_booking_of_the_same_trade_is_a_conflict", "[service]") {

@@ -18,8 +18,8 @@
  *
  *
  */
-#ifndef ORES_TRADING_CORE_SERVICE_BOOK_STATUS_PORT_HPP
-#define ORES_TRADING_CORE_SERVICE_BOOK_STATUS_PORT_HPP
+#ifndef ORES_TRADING_CORE_SERVICE_BOOK_RULES_PORT_HPP
+#define ORES_TRADING_CORE_SERVICE_BOOK_RULES_PORT_HPP
 
 #include <boost/uuid/uuid.hpp>
 #include <string_view>
@@ -27,47 +27,66 @@
 namespace ores::trading::service {
 
 /**
- * @brief Whether a book is open, as another service knows it.
+ * @brief What a book's own rules say about a booking, as another service knows
+ * them.
  *
- * A book's status is reference data: the refdata service owns it and this
- * component does not store it. A booking must land in a book that is open, and
- * that is a rule about the book, so asking is the only honest way to know it.
+ * A book's status and the product types it allows are reference data: the
+ * refdata service owns both and this component stores neither. A booking must
+ * land in a book that is open, under a product type the book allows, and both
+ * are rules about the book, so asking is the only honest way to know them.
  *
  * The interface is a port because the caller decides how to ask: the service
  * process asks over the message bus, and a test hands in its own answer. The
- * booking service is a database service with no bus of its own, and it must stay
- * one.
+ * booking service is a database service with no bus of its own, and it must
+ * stay one.
  */
-class book_status_port {
+class book_rules_port {
 public:
-    /** What the port can say about a book. */
-    enum class state {
+    /** What the port can say about a book's status. */
+    enum class status {
         open,
         not_open,
         unknown,
     };
 
-    virtual ~book_status_port() = default;
+    /** What the port can say about the book's view of a product type. */
+    enum class product_type {
+        allows,
+        refuses,
+        unknown,
+    };
+
+    /** One book's answer to one booking. */
+    struct answer {
+        status book_status = status::unknown;
+        product_type allowed = product_type::unknown;
+    };
+
+    virtual ~book_rules_port() = default;
 
     /**
-     * @brief The state of the book a booking names, asked as @p actor_token.
+     * @brief What the book a booking names says about it, asked as
+     * @p actor_token.
      *
      * `unknown` means the answer could not be had: the book was not found, or
      * the ask was refused, or the other service did not answer. A caller that
      * cannot tell a frozen book from an unreadable one must not pretend it is
-     * open, so the booking service refuses on `not_open` and carries on with an
-     * `unknown`, which it logs. A booking refused because refdata was busy would
-     * be a worse fault than the one this rule prevents.
+     * open, and it must not pretend a rule was satisfied, so the booking
+     * service refuses on `not_open` and on `refuses`, and carries on with an
+     * `unknown`, which it logs. A booking refused because refdata was busy
+     * would be a worse fault than the one these rules prevent.
      */
-    [[nodiscard]] virtual state of(const boost::uuids::uuid& book_id,
-                                   std::string_view actor_token) const = 0;
+    [[nodiscard]] virtual answer of(const boost::uuids::uuid& book_id,
+                                    std::string_view product_type_code,
+                                    std::string_view actor_token) const = 0;
 };
 
 /** A port that knows nothing, for callers that cannot ask. */
-class unknown_book_status final : public book_status_port {
+class unknown_book_rules final : public book_rules_port {
 public:
-    [[nodiscard]] state of(const boost::uuids::uuid&, std::string_view) const override {
-        return state::unknown;
+    [[nodiscard]] answer
+    of(const boost::uuids::uuid&, std::string_view, std::string_view) const override {
+        return {};
     }
 };
 

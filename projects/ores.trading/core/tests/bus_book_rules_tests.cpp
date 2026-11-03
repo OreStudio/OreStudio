@@ -22,9 +22,10 @@
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/messaging/book_product_type_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.testing/nats_options_helper.hpp"
-#include "ores.trading.core/service/bus_book_status.hpp"
+#include "ores.trading.core/service/bus_book_rules.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -34,19 +35,22 @@
 
 namespace {
 
-constexpr std::string_view test_subject = "ores.test.books.status";
+constexpr std::string_view books_subject = "ores.test.books.rules";
+constexpr std::string_view product_types_subject = "ores.test.book_product_types.rules";
 
 /** What the answering service saw, so the test can hold the port to it. */
 struct seen {
     std::optional<std::string> delegated;
     std::optional<boost::uuids::uuid> asked_about;
+    std::optional<std::string> product_type_code;
+    std::atomic<int> product_type_reads{0};
 };
 
 }
 
 using namespace ores::trading::service;
 
-TEST_CASE("the port asks as the caller and maps the book's status", "[trading][bus]") {
+TEST_CASE("the port asks as the caller and maps the book's rules", "[trading][bus]") {
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
     REQUIRE(nats.is_connected());
@@ -54,9 +58,11 @@ TEST_CASE("the port asks as the caller and maps the book's status", "[trading][b
     const auto book_id = boost::uuids::random_generator()();
     seen observed;
     std::string answer_status = "Active";
+    bool answer_restricts = false;
+    bool answer_allows = true;
 
     // Answers as refdata would, and records what the port sent.
-    auto sub = nats.subscribe(std::string(test_subject), [&](ores::nats::message msg) {
+    auto book_sub = nats.subscribe(std::string(books_subject), [&](ores::nats::message msg) {
         const auto& codec = ores::nats::default_wire_codec();
         const auto request = codec.decode<ores::refdata::messaging::list_books_request>(msg.data);
         REQUIRE(request.has_value());
@@ -76,18 +82,47 @@ TEST_CASE("the port asks as the caller and maps the book's status", "[trading][b
         ores::refdata::domain::book book;
         book.id = book_id;
         book.book_status = answer_status;
+        book.restricts_product_types = answer_restricts;
         response.books.push_back(book);
         response.total = 1;
         const auto body = codec.encode(response);
         nats.publish(msg.reply_subject, std::span<const std::byte>(body.data(), body.size()));
     });
 
-    bus_book_status port(nats, std::string(test_subject));
+    auto product_type_sub =
+        nats.subscribe(std::string(product_types_subject), [&](ores::nats::message msg) {
+            const auto& codec = ores::nats::default_wire_codec();
+            const auto request =
+                codec.decode<ores::refdata::messaging::list_book_product_types_request>(msg.data);
+            REQUIRE(request.has_value());
+            REQUIRE(request->filter.has_value());
+            REQUIRE(request->filter->book_id.has_value());
+            CHECK(*request->filter->book_id == book_id);
+            REQUIRE(request->filter->product_type_code.has_value());
+            observed.product_type_code = *request->filter->product_type_code;
+            ++observed.product_type_reads;
 
-    SECTION("an open book is open, and the caller travels with the question") {
-        answer_status = "Active";
-        const auto state = port.of(book_id, "the-callers-token");
-        CHECK(state == book_status_port::state::open);
+            ores::refdata::messaging::list_book_product_types_response response;
+            response.result.outcome = decltype(response.result.outcome)::ok;
+            if (answer_allows) {
+                ores::refdata::domain::book_product_type allowed;
+                allowed.book_id = book_id;
+                allowed.product_type_code = *request->filter->product_type_code;
+                response.book_product_types.push_back(allowed);
+                response.total = 1;
+            }
+            const auto body = codec.encode(response);
+            nats.publish(msg.reply_subject, std::span<const std::byte>(body.data(), body.size()));
+        });
+
+    bus_book_rules port(nats, std::string(books_subject), std::string(product_types_subject));
+
+    SECTION("an open book that allows everything, and the caller travels with the question") {
+        const auto rules = port.of(book_id, "FxForward", "the-callers-token");
+        CHECK(rules.book_status == book_rules_port::status::open);
+        CHECK(rules.allowed == book_rules_port::product_type::allows);
+        // The flag spares the junction read: an unrestricted book answers alone.
+        CHECK(observed.product_type_reads.load() == 0);
         REQUIRE(observed.asked_about.has_value());
         CHECK(boost::uuids::to_string(*observed.asked_about) == boost::uuids::to_string(book_id));
         REQUIRE(observed.delegated.has_value());
@@ -96,11 +131,31 @@ TEST_CASE("the port asks as the caller and maps the book's status", "[trading][b
 
     SECTION("a frozen book is not open") {
         answer_status = "Frozen";
-        CHECK(port.of(book_id, "the-callers-token") == book_status_port::state::not_open);
+        CHECK(port.of(book_id, "FxForward", "the-callers-token").book_status ==
+              book_rules_port::status::not_open);
     }
 
     SECTION("a closed book is not open") {
         answer_status = "Closed";
-        CHECK(port.of(book_id, "the-callers-token") == book_status_port::state::not_open);
+        CHECK(port.of(book_id, "FxForward", "the-callers-token").book_status ==
+              book_rules_port::status::not_open);
+    }
+
+    SECTION("a restricting book that holds the type allows it") {
+        answer_restricts = true;
+        const auto rules = port.of(book_id, "FxForward", "the-callers-token");
+        CHECK(rules.book_status == book_rules_port::status::open);
+        CHECK(rules.allowed == book_rules_port::product_type::allows);
+        // The question carries the type the trade states, not the whole set.
+        REQUIRE(observed.product_type_code.has_value());
+        CHECK(*observed.product_type_code == "FxForward");
+    }
+
+    SECTION("a restricting book that holds no row for the type refuses it") {
+        answer_restricts = true;
+        answer_allows = false;
+        const auto rules = port.of(book_id, "FxForward", "the-callers-token");
+        CHECK(rules.book_status == book_rules_port::status::open);
+        CHECK(rules.allowed == book_rules_port::product_type::refuses);
     }
 }

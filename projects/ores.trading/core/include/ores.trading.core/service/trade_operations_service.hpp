@@ -24,7 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/export.hpp"
-#include "ores.trading.core/service/book_status_port.hpp"
+#include "ores.trading.core/service/book_rules_port.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include <string_view>
 
@@ -50,13 +50,14 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief The service, with a way to ask a book's status.
+     * @brief The service, with a way to ask a book's rules.
      *
      * The port is required rather than defaulted: a booking that cannot ask
-     * whether its book is open would apply the rule to some callers and not
-     * others, and the caller that forgot would be the one nobody notices.
+     * whether its book is open, or whether the book allows its product type,
+     * would apply those rules to some callers and not others, and the caller
+     * that forgot would be the one nobody notices.
      */
-    trade_operations_service(context ctx, const book_status_port& books);
+    trade_operations_service(context ctx, const book_rules_port& books);
 
     /**
      * @brief Books a trade: its anchor, its booking and its first state, in
@@ -128,7 +129,7 @@ private:
                                                        boost::uuids::uuid* activity_id = nullptr);
 
     context ctx_;
-    const book_status_port* books_;
+    const book_rules_port* books_;
 };
 
 }

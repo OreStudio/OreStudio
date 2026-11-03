@@ -18,6 +18,7 @@
  */
 #include "ores.marketdata.core/repository/observation_read_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.marketdata.core/repository/stored_text.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <charconv>
 #include <cstdint>
@@ -31,26 +32,6 @@ namespace ores::marketdata::repository {
 using namespace ores::logging;
 using ores::database::repository::execute_parameterized_multi_column_query;
 
-namespace {
-
-std::string to_text(std::chrono::year_month_day d) {
-    return std::format("{:04}-{:02}-{:02}",
-                       static_cast<int>(d.year()),
-                       static_cast<unsigned>(d.month()),
-                       static_cast<unsigned>(d.day()));
-}
-
-std::chrono::system_clock::time_point instant_of(const std::string& micros) {
-    std::int64_t us = 0;
-    const auto [end, ec] = std::from_chars(micros.data(), micros.data() + micros.size(), us);
-    if (ec != std::errc{} || end != micros.data() + micros.size())
-        throw std::runtime_error("Not a stored instant: " + micros);
-    return std::chrono::system_clock::time_point(
-        std::chrono::duration_cast<std::chrono::system_clock::duration>(
-            std::chrono::microseconds(us)));
-}
-
-}
 
 std::vector<stored_observation>
 observation_read_repository::between(context ctx,
@@ -72,7 +53,10 @@ observation_read_repository::between(context ctx,
         "AND o.observation_datetime < ($3::date)::timestamp AT TIME ZONE 'UTC' "
         "AND o.valid_to = ores_utility_infinity_timestamp_fn() "
         "ORDER BY o.observation_datetime, o.oresmd_uri LIMIT $4::int",
-        {boost::uuids::to_string(series_id), to_text(from), to_text(after), std::to_string(limit)},
+        {boost::uuids::to_string(series_id),
+         date_text(from),
+         date_text(after),
+         std::to_string(limit)},
         lg(),
         "reading the observations of a series in a window");
     std::vector<stored_observation> out;
@@ -81,7 +65,7 @@ observation_read_repository::between(context ctx,
         if (row.size() < 4 || !row[0] || !row[1] || !row[2])
             throw std::runtime_error(
                 "A stored observation came back without its time, coordinate or value");
-        out.push_back({.observed_at = instant_of(*row[0]),
+        out.push_back({.observed_at = instant_of_micros(*row[0]),
                        .coordinate = *row[1],
                        .value = *row[2],
                        .source = row[3].value_or("")});

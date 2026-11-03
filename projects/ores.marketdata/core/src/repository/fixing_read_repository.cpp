@@ -20,6 +20,7 @@
 #include "ores.marketdata.core/repository/fixing_read_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.marketdata.core/repository/pg_array.hpp"
+#include "ores.marketdata.core/repository/stored_text.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <charconv>
@@ -38,13 +39,6 @@ using namespace ores::logging;
 using ores::database::repository::execute_parameterized_multi_column_query;
 
 namespace {
-
-std::string to_text(std::chrono::year_month_day d) {
-    return std::format("{:04}-{:02}-{:02}",
-                       static_cast<int>(d.year()),
-                       static_cast<unsigned>(d.month()),
-                       static_cast<unsigned>(d.day()));
-}
 
 int number(std::string_view text) {
     int out = 0;
@@ -66,16 +60,6 @@ std::chrono::year_month_day date_of(const std::string& text) {
     return d;
 }
 
-std::chrono::system_clock::time_point instant_of(const std::string& micros) {
-    std::int64_t us = 0;
-    const auto [end, ec] = std::from_chars(micros.data(), micros.data() + micros.size(), us);
-    if (ec != std::errc{} || end != micros.data() + micros.size())
-        throw std::runtime_error("Not a stored instant: " + micros);
-    return std::chrono::system_clock::time_point(
-        std::chrono::duration_cast<std::chrono::system_clock::duration>(
-            std::chrono::microseconds(us)));
-}
-
 // The date as ISO text, the value as stored, the source, and the time stored as whole
 // microseconds since the epoch, which parse back without a rounding step.
 constexpr std::string_view fixing_columns =
@@ -92,7 +76,7 @@ to_fixings(const std::vector<std::vector<std::optional<std::string>>>& rows) {
         out.push_back({.date = date_of(*row[0]),
                        .value = *row[1],
                        .source = row[2].value_or(""),
-                       .received_at = instant_of(*row[3])});
+                       .received_at = instant_of_micros(*row[3])});
     }
     return out;
 }
@@ -132,9 +116,9 @@ std::vector<stored_fixing> fixing_read_repository::on_or_before(context ctx,
     const auto read = [&](std::optional<std::chrono::year_month_day> after) {
         const std::string bound = after ? "AND f.fixing_date > $4::date " : "";
         std::vector<std::optional<std::string>> params{
-            boost::uuids::to_string(series_id), to_text(date), std::to_string(limit)};
+            boost::uuids::to_string(series_id), date_text(date), std::to_string(limit)};
         if (after)
-            params.push_back(to_text(*after));
+            params.push_back(date_text(*after));
         return to_fixings(execute_parameterized_multi_column_query(
             ctx,
             std::format("SELECT {} FROM ores_marketdata_market_fixings_tbl f "
@@ -171,7 +155,7 @@ std::vector<stored_fixing> fixing_read_repository::between(context ctx,
                     "AND f.valid_to = ores_utility_infinity_timestamp_fn() "
                     "ORDER BY f.fixing_date LIMIT $4::int",
                     fixing_columns),
-        {boost::uuids::to_string(series_id), to_text(from), to_text(to), std::to_string(limit)},
+        {boost::uuids::to_string(series_id), date_text(from), date_text(to), std::to_string(limit)},
         lg(),
         "reading the fixings of a series in a window"));
 }

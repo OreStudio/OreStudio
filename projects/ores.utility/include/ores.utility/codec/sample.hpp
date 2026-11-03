@@ -158,8 +158,8 @@ struct sampler<boost::uuids::uuid> {
 template <>
 struct sampler<ores::utility::uuid::tenant_id> {
     static ores::utility::uuid::tenant_id make(std::size_t which) {
-        const auto text = which == 0 ? "a0a1a2a3-a4a5-a6a7-a8a9-aaabacadaeaf"
-                                     : "10111213-1415-1617-1819-1a1b1c1d1e1f";
+        const auto text = which == 0 ? "a0a1a2a3-a4a5-a6a7-a8a9-aaabacadaeaf" :
+                                       "10111213-1415-1617-1819-1a1b1c1d1e1f";
         auto out = ores::utility::uuid::tenant_id::from_string(text);
         if (!out)
             throw std::logic_error("the tenant id sample is not a tenant id: " + out.error());
@@ -182,8 +182,8 @@ template <>
 struct sampler<std::chrono::year_month_day> {
     static std::chrono::year_month_day make(std::size_t which) {
         using namespace std::chrono;
-        return which == 0 ? year_month_day{year{2026}, month{3}, day{14}}
-                          : year_month_day{year{1999}, month{12}, day{31}};
+        return which == 0 ? year_month_day{year{2026}, month{3}, day{14}} :
+                            year_month_day{year{1999}, month{12}, day{31}};
     }
 };
 
@@ -192,8 +192,8 @@ struct sampler<std::chrono::system_clock::time_point> {
     static std::chrono::system_clock::time_point make(std::size_t which) {
         using namespace std::chrono;
         const auto day = sys_days{sampler<year_month_day>::make(which)};
-        return which == 0 ? day + hours{15} + minutes{9} + seconds{26} + microseconds{535897}
-                          : day + hours{23} + minutes{59} + seconds{59};
+        return which == 0 ? day + hours{15} + minutes{9} + seconds{26} + microseconds{535897} :
+                            day + hours{23} + minutes{59} + seconds{59};
     }
 };
 

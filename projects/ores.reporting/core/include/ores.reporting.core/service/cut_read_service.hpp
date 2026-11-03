@@ -106,6 +106,37 @@ struct cut_page {
     int total = 0;
 };
 
+/**
+ * @brief One cut's authorisation request as the request page draws it.
+ *
+ * The request is the inbox's record of the ask and the decision; what it is
+ * about lives in this component's detail row. The subject states the body a
+ * person quotes, the occasion, the scope and the counts of the parts the take
+ * fixed, and the label and the state are derived here and stored nowhere, so the
+ * request page and the cut's own page cannot disagree about the body.
+ */
+struct cut_authorisation_subject_view {
+    boost::uuids::uuid request_id;
+    boost::uuids::uuid cut_id;
+    std::string label;
+    std::string kind_code;
+    std::string kind_name;
+    std::chrono::system_clock::time_point timepoint;
+    std::string timepoint_timezone;
+    std::string scope_code;
+    std::string business_centre_code;
+    cut_state state = cut_state::draft;
+    int deal_count = 0;
+    int market_data_set_count = 0;
+    int gap_count = 0;
+
+    /** @brief The account the apply stamped the cut with, or empty while none has. */
+    std::string applied_by;
+
+    /** @brief When the decision was stamped onto the cut, or nothing while it waits. */
+    std::optional<std::chrono::system_clock::time_point> applied_at;
+};
+
 /** @brief One cut as its record page reads it. */
 struct cut_record_view {
     domain::cut cut;
@@ -195,6 +226,18 @@ public:
      * session may not see it.
      */
     std::optional<cut_record_view> record(const boost::uuids::uuid& cut_id);
+
+    /**
+     * @brief Reads the body each cut-authorisation request authorises.
+     *
+     * One read for a page of requests: the subject lives in this component's
+     * detail row, keyed by the request, and each row's cut is read beside it.
+     * A request this component holds no detail row for answers nothing, which is
+     * what a request raised outside a take leaves behind, so the caller draws the
+     * kind alone and says why.
+     */
+    std::vector<cut_authorisation_subject_view>
+    authorisation_subjects(const std::vector<boost::uuids::uuid>& request_ids);
 
 private:
     /**

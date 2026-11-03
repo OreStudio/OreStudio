@@ -119,9 +119,6 @@ swaption_volatility_config_to_domain(const messaging::swaption_volatility_config
     v.swap_tenors = write.swap_tenors;
     v.short_swap_index_base = write.short_swap_index_base;
     v.swap_index_base = write.swap_index_base;
-    v.smile_option_tenors = write.smile_option_tenors;
-    v.smile_swap_tenors = write.smile_swap_tenors;
-    v.smile_spreads = write.smile_spreads;
     v.quote_tag = write.quote_tag;
     return v;
 }

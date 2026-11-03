@@ -68,6 +68,11 @@ struct fx_spot_generation_config_write {
     double branching_ratio;
     double decay;
     double sensitivity;
+    std::string variance_model;
+    double garch_alpha;
+    double garch_gamma;
+    double garch_beta;
+    int garch_window_days;
 
     friend bool operator==(const fx_spot_generation_config_write&,
                            const fx_spot_generation_config_write&) = default;
@@ -432,6 +437,12 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"branching_ratio", &fx_spot_generation_config_write::branching_ratio},
         utility::codec::field{"decay", &fx_spot_generation_config_write::decay},
         utility::codec::field{"sensitivity", &fx_spot_generation_config_write::sensitivity},
+        utility::codec::field{"variance_model", &fx_spot_generation_config_write::variance_model},
+        utility::codec::field{"garch_alpha", &fx_spot_generation_config_write::garch_alpha},
+        utility::codec::field{"garch_gamma", &fx_spot_generation_config_write::garch_gamma},
+        utility::codec::field{"garch_beta", &fx_spot_generation_config_write::garch_beta},
+        utility::codec::field{"garch_window_days",
+                              &fx_spot_generation_config_write::garch_window_days},
     };
 }
 

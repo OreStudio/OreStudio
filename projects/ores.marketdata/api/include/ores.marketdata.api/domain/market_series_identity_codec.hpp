@@ -100,6 +100,7 @@ namespace ores::marketdata::domain {
         utility::codec::field{"seniority", &market_series_identity::seniority},
         utility::codec::field{"side", &market_series_identity::side},
         utility::codec::field{"source", &market_series_identity::source},
+        utility::codec::field{"surface_id", &market_series_identity::surface_id},
         utility::codec::field{"tenor", &market_series_identity::tenor},
         utility::codec::field{"term", &market_series_identity::term},
         utility::codec::field{"time_unit", &market_series_identity::time_unit},

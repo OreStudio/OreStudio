@@ -41,6 +41,7 @@ create table if not exists "ores_synthetic_calibration_policies_tbl" (
     "version" integer not null,
     "asset_class_code" text not null,
     "window_days" integer not null,
+    "variance_window_days" integer not null default 1826,
     "allow_inverse" boolean not null,
     "fallback_code" text not null,
     "modified_by" text not null,
@@ -57,7 +58,8 @@ create table if not exists "ores_synthetic_calibration_policies_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("window_days" between 2 and 180)
+    check ("window_days" between 2 and 180),
+    check ("variance_window_days" between 30 and 3660)
 );
 
 -- Unique asset_class_code for active records

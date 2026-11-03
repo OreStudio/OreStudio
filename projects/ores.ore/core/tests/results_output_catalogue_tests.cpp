@@ -91,29 +91,30 @@ TEST_CASE("every sample output belongs to a family", catalogue_tags) {
 TEST_CASE("a family covers the file names it states", catalogue_tags) {
     const auto* npv = family_of_file("npv.csv");
     REQUIRE(npv != nullptr);
-    CHECK(npv->code == "npv");
+    CHECK(npv->code == "npv_report");
 
     const auto* exposure = family_of_file("exposure_trade_Swap_20y_1.csv");
     REQUIRE(exposure != nullptr);
-    CHECK(exposure->code == "exposure-trade");
+    CHECK(exposure->code == "trade_exposure_report");
 
-    CHECK(family_named("curves") != nullptr);
+    CHECK(family_named("curves_report") != nullptr);
     CHECK(family_named("no_such_family") == nullptr);
     CHECK(family_of_file("no_such_output.csv") == nullptr);
 }
 
 TEST_CASE("a family names the parameter that writes it, or says the engine does", catalogue_tags) {
-    const auto* npv = family_named("npv");
+    const auto* npv = family_named("npv_report");
     REQUIRE(npv != nullptr);
     CHECK(npv->file_parameter == "npv.outputFileName");
 
-    const auto* exposure = family_named("exposure-trade");
+    const auto* exposure = family_named("trade_exposure_report");
     REQUIRE(exposure != nullptr);
     CHECK(exposure->file_parameter.empty());
 }
 
 TEST_CASE("a family states every heading its sample states", catalogue_tags) {
-    for (const auto& code : {"npv", "flows", "curves", "exposure-trade"}) {
+    for (const auto& code :
+         {"npv_report", "cashflow_report", "curves_report", "trade_exposure_report"}) {
         const auto* family = family_named(code);
         REQUIRE(family != nullptr);
         INFO("the family is " << code);
@@ -146,7 +147,7 @@ TEST_CASE("a family states each column once, and its sample exists", catalogue_t
 }
 
 TEST_CASE("a decimal column is a figure and a key is text or a date", catalogue_tags) {
-    const auto* npv = family_named("npv");
+    const auto* npv = family_named("npv_report");
     REQUIRE(npv != nullptr);
 
     const auto* npv_column = column_named(*npv, "NPV");
@@ -183,7 +184,7 @@ TEST_CASE("a key is required, and a required column is a column", catalogue_tags
 }
 
 TEST_CASE("npv states its figures as measures and its context as qualifiers", catalogue_tags) {
-    const auto* npv = family_named("npv");
+    const auto* npv = family_named("npv_report");
     REQUIRE(npv != nullptr);
 
     CHECK_FALSE(npv->measures_open);
@@ -196,8 +197,11 @@ TEST_CASE("npv states its figures as measures and its context as qualifiers", ca
 }
 
 TEST_CASE("a configuration-driven family says its measures are open", catalogue_tags) {
-    for (const auto& code :
-         {"curves", "var", "dim_regression", "stress_scenarios", "scenariostatistics"}) {
+    for (const auto& code : {"curves_report",
+                             "var_report",
+                             "dim_regression",
+                             "stress_scenarios",
+                             "scenario_statistics"}) {
         const auto* family = family_named(code);
         REQUIRE(family != nullptr);
         INFO("the family is " << code);
@@ -210,7 +214,7 @@ TEST_CASE("a configuration-driven family says its measures are open", catalogue_
                   family->required_columns.end());
     }
 
-    for (const auto& code : {"npv", "exposure-trade", "flows"}) {
+    for (const auto& code : {"npv_report", "trade_exposure_report", "cashflow_report"}) {
         const auto* family = family_named(code);
         REQUIRE(family != nullptr);
         INFO("the family is " << code);
@@ -219,13 +223,13 @@ TEST_CASE("a configuration-driven family says its measures are open", catalogue_
 }
 
 TEST_CASE("every market-state family is a family of the catalogue", catalogue_tags) {
-    const std::vector<std::string> expected = {"dividends",
-                                               "fixings",
-                                               "marketdata",
-                                               "scenariodump",
-                                               "scenariostatistics",
+    const std::vector<std::string> expected = {"dividends_report",
+                                               "fixings_report",
+                                               "market_data_report",
+                                               "scenario_dump",
+                                               "scenario_statistics",
                                                "stress_scenarios",
-                                               "todaysmarketcalibration"};
+                                               "todays_market_calibration"};
 
     std::vector<std::string> stated;
     for (const auto& family : output_families())
@@ -239,13 +243,13 @@ TEST_CASE("every market-state family is a family of the catalogue", catalogue_ta
 TEST_CASE("a family selection stores every family it does not skip", catalogue_tags) {
     const auto none = ores::ore::results::family_selection_of("");
     CHECK(none.skipped.empty());
-    CHECK(none.stores("rawcube"));
+    CHECK(none.stores("raw_cube"));
 
-    const auto some = ores::ore::results::family_selection_of(" rawcube, netcube ,,rawcube");
-    CHECK(some.skipped == std::vector<std::string>{"netcube", "rawcube"});
-    CHECK_FALSE(some.stores("rawcube"));
-    CHECK_FALSE(some.stores("netcube"));
-    CHECK(some.stores("npv"));
+    const auto some = ores::ore::results::family_selection_of(" raw_cube, net_cube ,,raw_cube");
+    CHECK(some.skipped == std::vector<std::string>{"net_cube", "raw_cube"});
+    CHECK_FALSE(some.stores("raw_cube"));
+    CHECK_FALSE(some.stores("net_cube"));
+    CHECK(some.stores("npv_report"));
 }
 
 TEST_CASE("a family selection refuses a family the catalogue does not name", catalogue_tags) {
@@ -258,7 +262,7 @@ TEST_CASE("a family is found by the report name the engine writes when none is c
           catalogue_tags) {
     const auto* flows = ores::ore::results::family_of_file("cashflow.csv");
     REQUIRE(flows != nullptr);
-    CHECK(flows->code == "flows");
+    CHECK(flows->code == "cashflow_report");
 
     const auto* detail = ores::ore::results::family_of_file("saccrdetail.csv");
     REQUIRE(detail != nullptr);
@@ -282,7 +286,7 @@ TEST_CASE("a family proven only by a sample we wrote says so", catalogue_tags) {
         CHECK(family->synthetic);
         CHECK(family->sample_file.starts_with("projects/ores.ore/data/samples/synthetic/"));
     }
-    const auto* npv = family_named("npv");
+    const auto* npv = family_named("npv_report");
     REQUIRE(npv != nullptr);
     CHECK_FALSE(npv->synthetic);
 }

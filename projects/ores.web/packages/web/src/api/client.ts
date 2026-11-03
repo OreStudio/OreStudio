@@ -112,7 +112,11 @@ import {
     gridUsageViewSchema,
     gridViewSchema,
     appVersionPageViewSchema,
-    gridReportRunViewSchema,
+    reportRunDetailViewSchema,
+    reportRunErrorViewSchema,
+    reportRunFileInfoViewSchema,
+    reportRunFilesViewSchema,
+    reportRunRowViewSchema,
     batchPageSchema,
     batchViewSchema,
     resultPageSchema,
@@ -148,7 +152,11 @@ import {
     type GridSeriesView,
     type GridUsageView,
     type AppVersionPageView,
-    type GridReportRunView,
+    type ReportRunDetailView,
+    type ReportRunErrorView,
+    type ReportRunFileInfoView,
+    type ReportRunFilesView,
+    type ReportRunRowView,
     type BatchPage,
     type BatchView,
     type ResultPage,
@@ -697,6 +705,19 @@ export const feedStartSchema = z.object({
     dispersion: z
         .array(z.object({ provider_code: z.string(), item: z.string(), basis_points: z.number() }))
         .default([]),
+    variance: z
+        .object({
+            model: z.string(),
+            fitted: z.boolean(),
+            alpha: z.number(),
+            gamma: z.number(),
+            beta: z.number(),
+            persistence: z.number(),
+            initial_ratio: z.number(),
+            returns: z.int(),
+            note: z.string(),
+        })
+        .nullish(),
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;
@@ -1062,44 +1083,12 @@ export interface RunResults {
     readonly baseline: BaselineSummary | null;
 }
 
-/** One report run, as the reporting area reads it. */
-export interface ReportRunDetail {
-    readonly id: string;
-    readonly name: string;
-    readonly party_id: string;
-    readonly definition_id: string;
-    readonly kind: string;
-    readonly state_name: string;
-    readonly started_at: string;
-    readonly completed_at: string;
-    readonly priced_at: string;
-    readonly price_note: string;
-    readonly output_message: string;
-    readonly output_storage_key: string;
-}
-
 /** A run's results, as the server answered them. */
 export interface RunResults {
     readonly level: ResultLevel;
     readonly rows: readonly unknown[];
     readonly totals: readonly Money[];
     readonly reason: ResultReason;
-}
-
-/** One report run, as the reporting area reads it. */
-export interface ReportRunDetail {
-    readonly id: string;
-    readonly name: string;
-    readonly party_id: string;
-    readonly definition_id: string;
-    readonly kind: string;
-    readonly state_name: string;
-    readonly started_at: string;
-    readonly completed_at: string;
-    readonly priced_at: string;
-    readonly price_note: string;
-    readonly output_message: string;
-    readonly output_storage_key: string;
 }
 
 /** One book's share of a run. */
@@ -3739,13 +3728,6 @@ export const api = {
         );
     },
 
-    /** The report run that dispatched a batch. */
-    async gridReportRun(id: string): Promise<GridReportRunView> {
-        return gridReportRunViewSchema.parse(
-            await request(`/api/operations/grid/report-runs/${id}`, { method: 'GET' }),
-        );
-    },
-
     /** One trade as it stood at one version, which is what a run records. */
     async tradeVersion(id: string, version: number): Promise<unknown | null> {
         const reply = (await request(`/api/trades/${id}/versions/${version}`, {
@@ -3769,16 +3751,18 @@ export const api = {
     },
 
     /** The runs of one report, newest first. */
-    async reportRuns(id: string): Promise<readonly unknown[]> {
+    async reportRuns(id: string): Promise<readonly ReportRunRowView[]> {
         const reply = (await request(`/api/reporting/reports/${id}/runs`, {
             method: 'GET',
         })) as { runs?: readonly unknown[] };
-        return reply.runs ?? [];
+        return (reply.runs ?? []).map((one) => reportRunRowViewSchema.parse(one));
     },
 
-    /** One report run, with the state it reached and what it said. */
-    async reportRun(id: string): Promise<ReportRunDetail> {
-        return (await request(`/api/reporting/runs/${id}`, { method: 'GET' })) as ReportRunDetail;
+    /** One report run: the state it reached, its batch, and where its output is. */
+    async reportRun(id: string): Promise<ReportRunDetailView> {
+        return reportRunDetailViewSchema.parse(
+            await request(`/api/reporting/runs/${id}`, { method: 'GET' }),
+        );
     },
 
     /** The results of one run, at the level the reader asked for. */
@@ -3808,17 +3792,39 @@ export const api = {
         };
     },
 
-    /** Where the run's output archive is downloaded from. */
-    reportRunOutputUrl(id: string): string {
-        return `/api/reporting/runs/${encodeURIComponent(id)}/output`;
+    /** Every file a report run read and wrote, inputs first. */
+    async reportRunFiles(id: string): Promise<ReportRunFilesView> {
+        return reportRunFilesViewSchema.parse(
+            await request(`/api/reporting/runs/${encodeURIComponent(id)}/files`, { method: 'GET' }),
+        );
     },
 
-    /** The errors a report run recorded. */
-    async gridReportRunErrors(id: string): Promise<readonly unknown[]> {
-        const reply = (await request(`/api/operations/grid/report-runs/${id}/errors`, {
+    /** One file of a run, with the ORE file it is and the parameters that name it. */
+    async reportRunFileInfo(runId: string, fileId: string): Promise<ReportRunFileInfoView> {
+        return reportRunFileInfoViewSchema.parse(
+            await request(
+                `/api/reporting/runs/${encodeURIComponent(runId)}/files/${encodeURIComponent(fileId)}/info`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /** Where an ORE schema is downloaded from, with its includes, at one engine version. */
+    oreSchemaUrl(code: string, engineVersion: string): string {
+        return `/api/reporting/ore-files/${encodeURIComponent(code)}/schema?version=${encodeURIComponent(engineVersion)}`;
+    },
+
+    /** Where one file of a run is downloaded from, by its id in the run's list. */
+    reportRunFileUrl(runId: string, fileId: string): string {
+        return `/api/reporting/runs/${encodeURIComponent(runId)}/files/${encodeURIComponent(fileId)}`;
+    },
+
+    /** The problems a report run recorded, one row each. */
+    async reportRunErrors(id: string): Promise<readonly ReportRunErrorView[]> {
+        const reply = (await request(`/api/reporting/runs/${id}/errors`, {
             method: 'GET',
         })) as { errors?: readonly unknown[] };
-        return reply.errors ?? [];
+        return (reply.errors ?? []).map((one) => reportRunErrorViewSchema.parse(one));
     },
 
     /** One app version with its packages and the other versions of its app. */

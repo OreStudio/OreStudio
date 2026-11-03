@@ -87,10 +87,12 @@ message, and no family of conventions has a type here.
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_strikes.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
+#include "ores.refdata.api/domain/inflation_seasonality.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
 #include "ores.refdata.api/domain/swaption_proxy_config.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
+#include "ores.refdata.api/domain/swaption_volatility_smile.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
 #include <string>
@@ -312,6 +314,11 @@ message, and no family of conventions has a type here.
 :cpp_type: std::vector<ores::refdata::domain::swaption_proxy_config>
 :END:
 
+*** swaption_volatility_smiles
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::swaption_volatility_smile>
+:END:
+
 *** cap_floor_volatilities
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::cap_floor_volatility_config>
@@ -385,6 +392,11 @@ message, and no family of conventions has a type here.
 *** default_curve_yield_reinterpretations
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::default_curve_yield_reinterpretation>
+:END:
+
+*** inflation_seasonalities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::inflation_seasonality>
 :END:
 
 *** seasonality_factors

@@ -168,12 +168,16 @@
 #include "ores.refdata.service/messaging/fra_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/future_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/fx_option_convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/fx_vol_surface_blueprint_event_registrar.hpp"
+#include "ores.refdata.service/messaging/fx_vol_surface_pillar_event_registrar.hpp"
+#include "ores.refdata.service/messaging/fx_vol_surface_pillar_source_event_registrar.hpp"
 #include "ores.refdata.service/messaging/fx_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/fx_volatility_smile_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ibor_index_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_cap_floor_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_cap_floor_volatility_strikes_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_curve_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/inflation_seasonality_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_seasonality_factor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_swap_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/instrument_code_event_registrar.hpp"
@@ -217,6 +221,7 @@
 #include "ores.refdata.service/messaging/swap_index_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/swaption_proxy_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/swaption_volatility_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/swaption_volatility_smile_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_anchor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_basis_swap_long_short_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_basis_swap_pay_receive_event_registrar.hpp"
@@ -477,6 +482,10 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
         register_intraday_power_load_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ir_curve_bootstrap_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ir_curve_bootstrap_pillar_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fx_vol_surface_blueprint_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fx_vol_surface_pillar_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_fx_vol_surface_pillar_source_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_netting_agreement_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_netting_set_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_netting_set_identifier_event_mapping(event_source, event_bus, nats));
@@ -501,6 +510,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(
         register_swaption_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_swaption_proxy_config_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_swaption_volatility_smile_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_inflation_seasonality_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_tenor_basis_swap_long_short_event_mapping(event_source, event_bus, nats));
     subs.push_back(

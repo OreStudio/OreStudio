@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix and smile, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so it is a row of swaption_proxy_config and the entry holds none of its fields. - Artefact Table
+-- The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so it is a row of swaption_proxy_config and the entry holds none of its fields. The smile grid of a Smile surface is a row of swaption_volatility_smile in the same way, so an ATM entry carries no smile columns. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_swaption_volatility_configs_artefact_tbl" (
@@ -48,9 +48,6 @@ create table if not exists "ores_dq_swaption_volatility_configs_artefact_tbl" (
     "swap_tenors" text null,
     "short_swap_index_base" text null,
     "swap_index_base" text null,
-    "smile_option_tenors" text null,
-    "smile_swap_tenors" text null,
-    "smile_spreads" text null,
     "quote_tag" text null
 );
 

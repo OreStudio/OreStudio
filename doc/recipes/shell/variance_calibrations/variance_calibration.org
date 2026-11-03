@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 00D9ABEB-CF5C-5B5D-A107-3D0651440DC5
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the variance_calibrations commands from the shell?
+#+description: Every command the variance_calibrations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:variance_calibrations:
+
+This file documents the variance_calibrations resource at the shell, one section per command. Every command is a subcommand of =variance_calibrations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A6FDBD13-0F17-5CC6-844D-67246A7A8D6F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations.list=.
+
+#+name: variance_calibrations-list
+#+begin_src ores-shell :tangle variance_calibrations-list.ores :exports none
+variance_calibrations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B0593D0F-E8FC-5144-BA69-E1DE417E1F04
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations.get=.
+
+#+name: variance_calibrations-get
+#+begin_src ores-shell :tangle variance_calibrations-get.ores :exports none
+variance_calibrations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C1F6C1B9-048F-58F1-880B-67F20B09421F
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations.get_many=.
+
+#+name: variance_calibrations-get-many
+#+begin_src ores-shell :tangle variance_calibrations-get-many.ores :exports none
+variance_calibrations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 6FDAB64A-31EE-5631-917D-4D849205BDDD
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations add <base_currency_code> <quote_currency_code> <input_id> <method> <method_version> <alpha> <gamma> <beta> <persistence> <long_run_variance> <starting_variance_ratio> <log_likelihood> <returns_used> <starts> <starts_agreed> <state> <state_reason> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations.put=.
+
+#+name: variance_calibrations-add
+#+begin_src ores-shell :tangle variance_calibrations-add.ores :exports none
+variance_calibrations add __none__ __none__ - __none__ 0 - - - - - - - 0 0 false __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6AC9F982-AA60-5119-95D0-06856B6F0046
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations set <id> <base_currency_code> <quote_currency_code> <input_id> <method> <method_version> <alpha> <gamma> <beta> <persistence> <long_run_variance> <starting_variance_ratio> <log_likelihood> <returns_used> <starts> <starts_agreed> <state> <state_reason> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations.put=.
+
+#+name: variance_calibrations-set
+#+begin_src ores-shell :tangle variance_calibrations-set.ores :exports none
+variance_calibrations set 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ 0 - - - - - - - 0 0 false __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 200A3DB9-AEAE-59CD-9FCA-243FA6F68A5B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations put-many --count <n> <id> <base_currency_code> <quote_currency_code> <input_id> <method> <method_version> <alpha> <gamma> <beta> <persistence> <long_run_variance> <starting_variance_ratio> <log_likelihood> <returns_used> <starts> <starts_agreed> <state> <state_reason> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations.put_many=.
+
+#+name: variance_calibrations-put-many
+#+begin_src ores-shell :tangle variance_calibrations-put-many.ores :exports none
+variance_calibrations put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ 0 - - - - - - - 0 0 false __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 65BB441F-3344-5E9A-B742-8A202FD4E8B2
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations.delete=.
+
+#+name: variance_calibrations-delete
+#+begin_src ores-shell :tangle variance_calibrations-delete.ores :exports none
+variance_calibrations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 18771997-90FB-5059-ABD2-5BCEE4ED1548
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations.delete_many=.
+
+#+name: variance_calibrations-delete-many
+#+begin_src ores-shell :tangle variance_calibrations-delete-many.ores :exports none
+variance_calibrations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: EED89FBA-49D4-5685-839F-8438797045C0
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations_versions.list=.
+
+#+name: variance_calibrations-versions
+#+begin_src ores-shell :tangle variance_calibrations-versions.ores :exports none
+variance_calibrations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 22EAC652-DB21-536F-A8CB-A6268191034D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibrations version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibrations_versions.get=.
+
+#+name: variance_calibrations-version
+#+begin_src ores-shell :tangle variance_calibrations-version.ores :exports none
+variance_calibrations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

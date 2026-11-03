@@ -88,6 +88,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:1011BE35-F85F-4505-9385-75A0BB36B4A2][Give the cut families and values system labels, and fix the history]] | DONE | 2026-10-31 | 2026-10-31 | The cut types screen shows raw family names and ad-hoc value words, and the History tab fails because the cut entities' history providers are not registered. |
 | [[id:A08B6E4B-45AD-4487-8134-41648A074F0A][Remove the committed session cookie]] | DONE | 2026-10-31 | 2026-10-31 | build/cj.txt holds a live curl session cookie and is tracked in git. |
 | [[id:95F9EEE9-0D19-4A59-BBEF-F1C6F18FD250][Build the cut take and its authorisation]] | DONE | 2026-10-31 | 2026-11-01 | The cut screens read only; the take flow, the body assembly and the approval request it raises are the next unit. |
+| [[id:45C1929E-9B92-489F-8E44-FA1819E5372D][Decide a cut's authorisation and apply it]] | DONE | 2026-11-01 | 2026-11-01 | The take raises the request; the inbox decides and the reporting side must stamp the authorisation. |
 
 * Decisions
 

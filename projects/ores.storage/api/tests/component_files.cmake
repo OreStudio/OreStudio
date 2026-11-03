@@ -23,5 +23,6 @@ set(files
     "codec_wire_bytes_tests.cpp"
     "main.cpp"
     "object_keys_tests.cpp"
+    "objects_protocol_codec_roundtrip_tests.cpp"
     "storage_paths_tests.cpp"
 )

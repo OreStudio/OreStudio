@@ -453,3 +453,24 @@ It is addressed at =reporting.v1.ops.take_cut=.
 report_operations take-cut __none__ __none__ __none__ __none__ __none__ __none__
 #+end_src
 
+** =list-cut-authorisation-subjects=
+:PROPERTIES:
+:ID: DECAD5E1-CAC6-55C8-AF4F-4882136A2AAA
+:END:
+
+Sends =list_cut_authorisation_subjects_request= and prints =list_cut_authorisation_subjects_response=, so the shape is the protocol's and the meaning is the service's. It reads =request_ids=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations list-cut-authorisation-subjects <request_ids>
+#+end_example
+
+It is addressed at =reporting.v1.ops.list_cut_authorisation_subjects=.
+
+#+name: report_operations-list-cut-authorisation-subjects
+#+begin_src ores-shell :tangle report_operations-list-cut-authorisation-subjects.ores :exports none
+report_operations list-cut-authorisation-subjects __none__
+#+end_src
+

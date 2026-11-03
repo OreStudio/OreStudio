@@ -39,6 +39,9 @@
 #include "ores.reporting.api/domain/engine_settings_group_codec.hpp"
 #include "ores.reporting.api/domain/engine_settings_group_setting_codec.hpp"
 #include "ores.reporting.api/domain/file_type_codec.hpp"
+#include "ores.reporting.api/domain/ore_file_category_codec.hpp"
+#include "ores.reporting.api/domain/ore_file_codec.hpp"
+#include "ores.reporting.api/domain/ore_file_version_codec.hpp"
 #include "ores.reporting.api/domain/ore_parameter_codec.hpp"
 #include "ores.reporting.api/domain/ore_parameter_setting_value_set_codec.hpp"
 #include "ores.reporting.api/domain/ore_parameter_value_domain_codec.hpp"
@@ -82,6 +85,9 @@
 #include "ores.reporting.api/generators/engine_settings_group_generator.hpp"
 #include "ores.reporting.api/generators/engine_settings_group_setting_generator.hpp"
 #include "ores.reporting.api/generators/file_type_generator.hpp"
+#include "ores.reporting.api/generators/ore_file_category_generator.hpp"
+#include "ores.reporting.api/generators/ore_file_generator.hpp"
+#include "ores.reporting.api/generators/ore_file_version_generator.hpp"
 #include "ores.reporting.api/generators/ore_parameter_generator.hpp"
 #include "ores.reporting.api/generators/ore_parameter_setting_value_set_generator.hpp"
 #include "ores.reporting.api/generators/ore_parameter_value_domain_generator.hpp"
@@ -192,6 +198,11 @@ TEST_CASE("every reporting domain type has reflect-cpp's bytes", codec_tags) {
     same_bytes_as_reflect_cpp(
         ores::reporting::generators::generate_synthetic_engine_settings_group_setting(ctx));
     same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_file_type(ctx));
+    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_ore_file(ctx));
+    same_bytes_as_reflect_cpp(
+        ores::reporting::generators::generate_synthetic_ore_file_version(ctx));
+    same_bytes_as_reflect_cpp(
+        ores::reporting::generators::generate_synthetic_ore_file_category(ctx));
     same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_ore_parameter(ctx));
     same_bytes_as_reflect_cpp(
         ores::reporting::generators::generate_synthetic_ore_parameter_setting_value_set(ctx));

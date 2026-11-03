@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_FEEDS_FIXING_CALIBRATION_HPP
 #define ORES_SYNTHETIC_API_FEEDS_FIXING_CALIBRATION_HPP
 
+#include "ores.analytics.quant/math/gjr_garch.hpp"
 #include "ores.synthetic.api/domain/fx_spot_fixing_item.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include <algorithm>
@@ -118,7 +119,12 @@ measure_window(const std::vector<double>& values, bool inverted);
  * is the automatic default when no policy row exists.
  */
 struct calibration_policy final {
+    /// The policy row this was read from and its version; empty when no row exists.
+    std::string id;
+    int version = 0;
     int window_days = 90;
+    /// The days of fixings a variance calibration's input covers.
+    int variance_window_days = 1826;
     bool allow_inverse = true;
     std::string fallback_code = "keep_fixed";
     /// Provider codes, lowest first. Empty means every provider, ordered by code.
@@ -191,6 +197,41 @@ change_of(double stored_level,
           const std::vector<double>& stored_stdevs,
           std::optional<double> level,
           const std::optional<std::vector<double>>& stdevs);
+
+/// The daily returns a GJR-GARCH fit is trusted on: about a year of business days.
+inline constexpr int minimum_garch_returns = 250;
+
+/// The daily variance a feed starts with, as its history decided it.
+struct daily_variance_choice final {
+    ores::analytics::quant::math::gjr_garch_shape shape;
+    /// The first day's variance over the long-run level.
+    double initial_ratio = 1.0;
+    /// True when the shape was fitted from the window; false when it is the authored one.
+    bool fitted = false;
+    /// The daily returns the window held.
+    int returns = 0;
+    /// Why the authored shape was kept, when it was.
+    std::string note;
+};
+
+/**
+ * @brief Fit a feed's GJR-GARCH shape to @p values, a window of fixings oldest first, or keep
+ * @p authored.
+ *
+ * The returns are read in the feed's orientation, so an inverted item's falls are the feed's
+ * rises and a fitted gamma takes the feed's sign. A window with fewer than
+ * minimum_garch_returns returns, or one the fit refuses, keeps the authored shape and says
+ * why. A fitted shape also sets the first day's variance: the history's last filtered
+ * variance over its long-run level, so a feed that starts after a turbulent stretch opens
+ * turbulent.
+ *
+ * @param p_minus The feed's own mixture's E[z^2 1{z < 0}].
+ */
+ORES_SYNTHETIC_API_EXPORT daily_variance_choice
+choose_daily_variance(const std::vector<double>& values,
+                      bool inverted,
+                      const ores::analytics::quant::math::gjr_garch_shape& authored,
+                      double p_minus);
 
 }
 

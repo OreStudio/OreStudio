@@ -82,23 +82,6 @@ const aggregateSchema = z.object({
         .transform((value) => Math.max(0, value ?? 0)),
 });
 
-const errorSchema = z.object({
-    scope: text,
-    severity: text,
-    message: text,
-    cause: text,
-    subject_id: text,
-});
-
-/** One error the run recorded, as the screen reads it. */
-export interface RunError {
-    readonly scope: string;
-    readonly severity: string;
-    readonly message: string;
-    readonly cause: string;
-    readonly subjectId: string;
-}
-
 /** What a parse of the server's rows produced, and how many it could not read. */
 export interface Parsed<Row> {
     readonly rows: readonly Row[];
@@ -131,27 +114,6 @@ export function toAggregateRows(rows: readonly unknown[]): Parsed<AggregateRow> 
         } else {
             unread += 1;
         }
-    }
-    return { rows: read, unread };
-}
-
-/** The errors a run recorded, as the screen reads them. */
-export function toErrors(rows: readonly unknown[]): Parsed<RunError> {
-    const read: RunError[] = [];
-    let unread = 0;
-    for (const row of rows) {
-        const parsed = errorSchema.safeParse(row);
-        if (!parsed.success) {
-            unread += 1;
-            continue;
-        }
-        read.push({
-            scope: parsed.data.scope,
-            severity: parsed.data.severity,
-            message: parsed.data.message,
-            cause: parsed.data.cause,
-            subjectId: parsed.data.subject_id,
-        });
     }
     return { rows: read, unread };
 }

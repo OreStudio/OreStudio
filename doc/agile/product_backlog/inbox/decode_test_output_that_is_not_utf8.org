@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 5431DCFD-AF5A-4418-ABEA-6661B6586390
+:END:
+#+title: compass test run crashes on test output that is not UTF-8
+#+description: compass test run reads the test process's output as UTF-8 in _run_logged and stops with UnicodeDecodeError ('utf-8' codec can't decode byte 0xa1) when a Catch2 failure expands a uuid as raw bytes. The run's results XML is written, but the summary and the failure detail are lost. Seen on 2026-11-03 with a failing uuid comparison in ores.ore.core.tests. Decoding with errors='replace' would keep the run readable.
+#+type: capture
+#+level: cross
+#+filetags: :compass:testing:bug:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass test run= reads the test process's output as UTF-8 in =_run_logged=,
+at =projects/ores.compass/src/compass.py= line 7286. When a Catch2 failure
+expands a =boost::uuids::uuid=, the expansion holds raw bytes, and the read stops
+with =UnicodeDecodeError: 'utf-8' codec can't decode byte 0xa1=.
+
+* Why
+
+The test binary still writes its results XML, so nothing is lost on disk. But
+the command exits with a Python traceback and not with the test summary, and the
+reader has to go to the XML to find out which assertion failed. The crash happens
+exactly when a test fails, which is when the output matters. Decoding with
+=errors='replace'= keeps the run readable.
+
+* References
+
+- [[id:06F7D57F-82C7-440D-91D7-54EED11EBB85][Split the swaption smile and the inflation seasonality]], where it was seen.
+
+* See also
+
+-

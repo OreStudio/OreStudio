@@ -464,6 +464,12 @@ RLS_002 ores_synthetic_gmm_components_tbl
 RLS_002 ores_synthetic_fx_spot_fixing_items_tbl
 RLS_002 ores_synthetic_ir_curve_generation_configs_tbl
 RLS_002 ores_synthetic_ir_curve_template_entries_tbl
+# The variance calibrations of those feeds, their inputs and the inputs' points
+# follow the feeds: the system party owns them and every tenant reads them, so a
+# reader can trace a feed's variance to the fixings it was fitted from.
+RLS_002 ores_synthetic_variance_calibration_inputs_tbl
+RLS_002 ores_synthetic_variance_calibration_input_points_tbl
+RLS_002 ores_synthetic_variance_calibrations_tbl
 
 # IAM auth events — auth log; party_id records the session context for
 # debugging, not for data isolation. The whole log is tenant-scoped.

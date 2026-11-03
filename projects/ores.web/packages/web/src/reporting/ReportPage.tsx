@@ -40,7 +40,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ReportDetail, ReportNameChoice } from '@ores/wire-protocol/browser';
+import type { ReportDetail, ReportNameChoice, ReportRunRowView } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useHolds } from '../access/holds.js';
@@ -51,6 +51,8 @@ import { RecordStoreProvider } from '../refdata/store.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { Crumbs } from '../refdata/shared.js';
+import { localSource, RecordTable } from '../refdata/RecordList.js';
+import { ReadFailure } from '../operations/GridJobs.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useTabs } from '../ui/Tabs.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
@@ -391,11 +393,12 @@ function ReportBody(): ReactNode {
 const REPORT_TABS = ['details', 'configurations', 'runs'] as const;
 
 /**
- * The runs of one report, newest first, each with what the run reached and the
- * two things a person does next: read the run, or read the results it produced.
+ * The runs of one report, newest first. A row opens the run, whose page holds
+ * its details, results, problems and files.
  */
 function ReportRuns({ definitionId }: { readonly definitionId: string }): ReactNode {
     const { t } = useTranslation();
+    const field = 'reporting.runs';
     const runs = useQuery({
         queryKey: ['report-runs', definitionId],
         queryFn: () => api.reportRuns(definitionId),
@@ -405,68 +408,57 @@ function ReportRuns({ definitionId }: { readonly definitionId: string }): ReactN
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
     if (runs.isError) {
-        return <Notice tone="error">{runs.error.message}</Notice>;
+        return <ReadFailure error={runs.error} onRetry={() => void runs.refetch()} />;
     }
-    const rows = (runs.data ?? []) as readonly Record<string, unknown>[];
-    const text = (value: unknown): string => (typeof value === 'string' ? value : '');
-    if (rows.length === 0) {
-        return <p className="text-sm text-ink-muted">{t('reporting.runs.empty')}</p>;
-    }
+    const time = (at: string | null): ReactNode => (at === null ? '—' : <RelativeTime at={at} />);
     return (
-        <section className="card space-y-3 p-4">
-            <h2 className="text-sm font-medium">{t('reporting.runs.title')}</h2>
-            <table className="w-full text-left text-sm">
-                <thead>
-                    <tr className="text-xs uppercase tracking-wide text-ink-faint">
-                        <th className="px-2 py-1">{t('reporting.runs.name')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.state')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.started')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.completed')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.pricedAt')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.actions')}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row) => {
-                        const id = text(row['id']);
-                        const started = text(row['started_at']);
-                        const completed = text(row['completed_at']);
-                        const priced = text(row['priced_at']);
-                        return (
-                            <tr key={id} className="border-t border-line-subtle">
-                                <td className="px-2 py-1">{text(row['name']) || id.slice(0, 8)}</td>
-                                <td className="px-2 py-1">{text(row['state_name']) || '—'}</td>
-                                <td className="px-2 py-1">
-                                    {started === '' ? '—' : <RelativeTime at={started} />}
-                                </td>
-                                <td className="px-2 py-1">
-                                    {completed === '' ? '—' : <RelativeTime at={completed} />}
-                                </td>
-                                <td className="px-2 py-1 font-mono text-xs">
-                                    {priced === '' ? '—' : priced.slice(0, 10)}
-                                </td>
-                                <td className="px-2 py-1">
-                                    <span className="flex gap-3">
-                                        <Link
-                                            to={`${reportRunPath(id)}?tab=run`}
-                                            className="text-accent hover:text-accent-bright"
-                                        >
-                                            {t('reporting.runs.details')}
-                                        </Link>
-                                        <Link
-                                            to={`${reportRunPath(id)}?tab=results`}
-                                            className="text-accent hover:text-accent-bright"
-                                        >
-                                            {t('reporting.runs.results')}
-                                        </Link>
-                                    </span>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </section>
+        <RecordTable<ReportRunRowView>
+            source={localSource<ReportRunRowView>({
+                key: `report-runs-${definitionId}`,
+                rows: runs.data,
+                revision: String(runs.dataUpdatedAt),
+                searchOf: (row) => `${row.name} ${row.state_name}`,
+            })}
+            plural={t(`${field}.plural`)}
+            keyOf={(row) => row.id}
+            pathOf={(row) => reportRunPath(row.id)}
+            columns={[
+                {
+                    id: 'name',
+                    header: t(`${field}.name`),
+                    cell: (row) => row.name || row.id.slice(0, 8),
+                },
+                {
+                    id: 'state',
+                    header: t(`${field}.state`),
+                    cell: (row) => (
+                        <HealthTag health={row.health} stateName={row.state_name} hasRun />
+                    ),
+                },
+                {
+                    id: 'started',
+                    header: t(`${field}.started`),
+                    cell: (row) => time(row.started_at),
+                },
+                {
+                    id: 'completed',
+                    header: t(`${field}.completed`),
+                    cell: (row) => time(row.completed_at),
+                },
+                {
+                    id: 'duration',
+                    header: t(`${field}.duration`),
+                    cell: (row) =>
+                        row.duration_ms === null ? '—' : formatDuration(row.duration_ms, t),
+                },
+                {
+                    id: 'pricedAt',
+                    header: t(`${field}.pricedAt`),
+                    mono: true,
+                    cell: (row) => row.priced_at?.slice(0, 10) ?? '—',
+                },
+            ]}
+        />
     );
 }
 

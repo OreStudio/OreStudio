@@ -226,17 +226,24 @@ cross join (values
     -- The book count and the population size are the config's, so a tenant that
     -- wants a thinner book changes a row and not the generator, and gives up the
     -- codes past its slot count by doing so.
+    --
+    -- A config that states trade_type_codes books only those types. The holding
+    -- company prices linear products only (the Acme dataset's ENTITY_PRODUCTS),
+    -- so its bond config books plain bonds and its FX config books forwards; it
+    -- keeps its counts, and the population keeps its total.
     ('acme_demo', 'generate_trades', 70, '{"configs": [
         {"party": "Acme Corporation Plc", "name": "ACME ACMCOR bonds",
          "description": "The bonds the group books, in its intercompany book.",
          "asset_class_code": "bond", "book": "Group Intercompany Loans",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 10, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 10, "structures_per_book": 2,
+         "trade_type_codes": ["Bond"]},
                 {"party": "Acme Corporation Plc", "name": "ACME ACMCOR FX",
          "description": "The foreign exchange trades the group books, in its hedge book.",
          "asset_class_code": "fx", "book": "Group FX Hedges",
          "min_tenor_code": "1M", "max_tenor_code": "2Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 44, "trades_per_book": 63, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 44, "trades_per_book": 63, "structures_per_book": 2,
+         "trade_type_codes": ["FxForward"]},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK bonds",
          "description": "The bonds the UK entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",

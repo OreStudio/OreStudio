@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: CD30006E-A327-4254-8BA0-A3FF95CD51A6
+:END:
+#+title: ores.cpp.wire-codec.protocol_roundtrip_tests
+#+description: Requires each protocol message to read back exactly what its wire codec wrote, in JSON and in MessagePack. =wire-codec= facet.
+#+type: archetype
+#+output: projects/{component_dir}/tests/{entity}_protocol_codec_roundtrip_tests.cpp
+#+facet: ores.cpp.wire-codec
+#+requires_facet: ores.cpp.protocol
+#+model_types: domain_entity junction operation family
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+The test file for the messages of one protocol header. Each message gets one
+case, which calls =ores::testing::check_wire_roundtrip=. That helper fills the
+message with =ores::utility::codec::sample=, writes it, reads it back, and
+requires the value it read to equal the value it wrote, in JSON and in
+MessagePack, for the sample and for the default value. It also requires the
+message's =wire_fields= to name every member, because the sample fills only the
+members the list names.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Mustache incantations
+
+The sections, includes and type names follow the
+[[id:6A583145-C60B-4EDC-A17E-03226578C168][protocol codec unit]], because
+the tests call the functions that unit defines. The sampler must see the
+=wire_fields= of each domain type a message holds, so the test includes the same
+codec headers the unit includes, and the envelope shapes in
+=ores.utility/domain/protocol_codec.hpp=. It renders only where =ores.cpp.protocol=
+renders, because a model with no protocol has no header to include.
+
+One case per message, not one per format and value: a component has about
+twenty messages in each protocol header, and the helper's checks state which
+format failed and which value. The checks live in the helper, so the generated
+file declares no names of its own, and the files of a component can build as one
+unity unit. The case name is the message's qualified type name, which is unique
+in the test binary because it is unique in the program.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_protocol_codec_roundtrip_tests.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_protocol_codec_roundtrip_tests.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.wire-codec.protocol_roundtrip_tests.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+{{^family}}
+#include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
+{{/family}}
+{{#message_codec_includes}}
+#include "{{{.}}}"
+{{/message_codec_includes}}
+#include "ores.testing/wire_roundtrip.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
+#include <catch2/catch_test_macros.hpp>
+
+{{#messages}}
+TEST_CASE("ores::{{component}}::messaging::{{name}}", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::{{component}}::messaging::{{name}}>();
+}
+
+{{/messages}}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"
+#include "ores.{{component_include}}/domain/{{name_singular}}_codec.hpp"
+#include "ores.testing/wire_roundtrip.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
+#include <catch2/catch_test_macros.hpp>
+
+{{#messages}}
+TEST_CASE("ores::{{component}}::messaging::{{name}}", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::{{component}}::messaging::{{name}}>();
+}
+
+{{/messages}}
+{{/junction}}
+{{#operation}}
+{{#has_generated_wire_codec}}
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+{{#message_codec_includes}}
+#include "{{{.}}}"
+{{/message_codec_includes}}
+#include "ores.testing/wire_roundtrip.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
+#include <catch2/catch_test_macros.hpp>
+
+{{#messages}}
+TEST_CASE("{{namespace}}::{{name}}", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<{{namespace}}::{{name}}>();
+}
+
+{{/messages}}
+{{/has_generated_wire_codec}}
+{{/operation}}
+{{#family}}
+{{#has_generated_wire_codec}}
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+{{#message_codec_includes}}
+#include "{{{.}}}"
+{{/message_codec_includes}}
+#include "ores.testing/wire_roundtrip.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
+#include <catch2/catch_test_macros.hpp>
+
+{{#messages}}
+TEST_CASE("ores::{{component}}::messaging::{{name}}", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::{{component}}::messaging::{{name}}>();
+}
+
+{{/messages}}
+{{/has_generated_wire_codec}}
+{{/family}}
+#+end_src
+
+* See also
+
+- [[id:6A583145-C60B-4EDC-A17E-03226578C168][ores.cpp.wire-codec.protocol_codec_impl]]: the functions these tests call.
+- [[id:32E1CFE6-AD54-4DB9-9F2D-14504A2124DA][ores.cpp.wire-codec.roundtrip_tests]]: the same test for entities, junctions and field groups.

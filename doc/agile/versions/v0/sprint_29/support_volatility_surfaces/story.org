@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 3D2A2BD4-4126-4E54-9046-A9E00966D898
+:END:
+#+title: Story: Support volatility surfaces
+#+description: Add volatility surfaces to the system: their structure, quotes, construction and storage, and how they flow to pricing. A long arc that starts from a documented architecture.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:volatility:architecture:sprint_29:v0:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The system holds, builds and serves volatility surfaces as market data, and pricing reads them. The first step states the architecture in the knowledge base, so every later task builds on one agreed design.
+
+* Status
+
+| Field         | Value                                                                |
+|---------------+----------------------------------------------------------------------|
+| State         | STARTED                                                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]               |
+| Now           | The variance calibration workflow is documented and its tasks named. |
+| Waiting on    | Nothing.                                                             |
+| Next          | Model the variance calibration records.                              |
+| Last touched  | 2026-11-03                                                           |
+
+* Acceptance
+
+- The volatility surface architecture is in the knowledge base, linked into the existing notes on FX volatility surfaces and surface driving, with no duplicated content.
+- The later tasks of the arc are named from that architecture.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F2F684E4-FD35-4C78-85CF-E6299995EE5A][Scaffold story: Support volatility surfaces]] | DONE | 2026-11-03 | 2026-11-03 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6B682F27-6C29-4954-A355-39E27E7197B7][Document the volatility surface architecture]] | DONE | 2026-11-03 | 2026-11-03 | Integrate the volatility surface analysis into the knowledge base as linked notes, and name the tasks of the arc from it. |
+| [[id:E9F41943-12D6-47AB-BA60-6FC0931F1A99][Check that IR calibration is set up for every supported currency]] | BACKLOG | | | Check, currency by currency, that each synthetic IR curve feed has a public calibration source, a calibration policy and a stored history, and set up or record what is missing. |
+| [[id:D5A1A642-5982-4B7F-A0F9-4D0921FC8D91][Keep the derived FX volatility quotes for backtesting]] | DONE | 2026-11-03 | 2026-11-03 | Store each day's derived ATM, RR and BF quotes for good, as fixings are, so a backtest can read years of them; today they age out of the tick table after seven days. |
+| [[id:FC6463DC-6901-477D-83A5-6D49761DCE2A][Add the daily GJR-GARCH variance to the synthetic FX spot]] | DONE | 2026-11-03 | 2026-11-03 | A process that scales each standardised GMM shock by a GJR-GARCH variance updated at the FX day roll, calibrated from five years of fixings; see Daily GJR-GARCH variance of synthetic FX spot in Volatility clustering and GARCH models. |
+| [[id:B3ED233A-99E2-4AF0-8238-862D64A9E651][Build the derived source of FX volatility quotes]] | DONE | 2026-11-03 | 2026-11-03 | An adapter that reads historical fixings through the reader and publishes ATM, RR and BF quotes under its own identity; see Derivation of FX volatility quotes from historical fixings. |
+| [[id:67D0F734-5703-43DF-BF16-F5513C85A01F][Build the synthetic FX volatility surface generator]] | BACKLOG | | | A generator of kind fx_vol_surface whose SSVI state evolves through bounded processes correlated with spot, observed by contributors with noise profiles; see the approach note and A synthetic contributor publishes noisy observations of a latent surface. |
+| [[id:A9C30523-4950-460B-B9E0-C05A84F57210][Model the volatility surface blueprint]] | DONE | 2026-11-03 | 2026-11-03 | The recipe record of a surface: pillars naming their series per contributor, weights, smile model, output grid and output series; see Constructing a volatility surface: from quotes to a published set. |
+| [[id:ED38F922-C76B-4F8C-A8A3-FE7244E9FCA7][Add the calibrated FX volatility surface series to oresmd]] | DONE | 2026-11-03 | 2026-11-03 | An instrument type whose identity names a calibrated surface, with expiry and strike axes, created with its blueprint; see A calibrated surface is a series of its own in the oresmd note. |
+| [[id:886DD1DB-7FFD-4EB0-9BE7-D7A5F1C1BEBD][Calibrate a volatility surface from its quotes]] | BACKLOG | | | The marketdata.v1.surface.calibrate operation and its engine, with the recipe and result checks run in the service, writing a candidate with lineage; see Constructing a volatility surface: from quotes to a published set. |
+| [[id:780C7570-E322-4B2F-833A-C352D4A95B84][Read a published surface and its slices]] | BACKLOG | | | The surface and slice reads the slices journey needs, over the published set rather than the quotes; see Constructing a volatility surface: from quotes to a published set. |
+| [[id:DF6A9912-BD6C-4AD7-B8F7-28DD8C58466F][Run the FX spot feeds on GJR-GARCH]] | DONE | 2026-11-03 | 2026-11-03 | Publish every FX spot generation column from DQ and seed every system FX spot feed with the GJR-GARCH variance. |
+| [[id:42A03AA2-E010-4AC3-B97A-8070BCE8D831][Document the variance calibration workflow]] | DONE | 2026-11-03 | 2026-11-03 | State the GJR-GARCH variance as a calibration of three stored stages, inputs, fit and review, and application, and name the tasks that build it. |
+| [[id:F41343F6-3CD8-4903-9E58-F5871DF61B32][Model the variance calibration records]] | DONE | 2026-11-03 | 2026-11-03 | Codegen entities for a stored GJR-GARCH calibration input, its dated points, and the calibration fitted from it, with the class policy's variance window. |
+| [[id:24E25E0E-E12D-463C-B70D-E4851380B94A][Capture the inputs of a variance calibration]] | DONE | 2026-11-03 | 2026-11-03 | An operation that reads a pair's fixings under its class policy and stores them as a calibration input, without fitting anything. |
+| [[id:59412E3C-F6A0-45D0-8823-C949F6FBB8A8][Fit a variance calibration from its inputs]] | DONE | | 2026-11-03 | An operation that fits GJR-GARCH to one stored input and stores the result as a proposed calibration, with the evidence a reviewer needs. |
+| [[id:E7A79AFD-FD48-43F6-9A6F-9E1D522469C6][Review a variance calibration]] | BACKLOG | | | Approve or reject a proposed calibration with a reason; approving one supersedes the pair's earlier approval. |
+| [[id:748305F3-48FD-4551-BD68-D269AF56292D][Apply an approved variance calibration to a feed]] | BACKLOG | | | An FX spot feed names the approved calibration it runs; the feed no longer fits at start, and its start record names the calibration it used. |
+| [[id:764B5B0A-9B8E-4C6F-A5D1-0BD6D8F18C68][Show the calibration chain of a feed]] | BACKLOG | | | Replace the start banner with a This run tab in plain text, and add a Calibration tab that shows inputs, fits and reviews, linked both ways. |
+| [[id:ACF60CC6-3DB4-44C4-9059-B8D58180E7AB][Run the derived source in the system tenant]] | BACKLOG | | | Fix the three defects of the derived FX volatility source that a live run showed: an unknown derivation kind, no conventions in the system tenant, and stale pgTAP counts. |
+| [[id:64F0A193-A749-4B94-99C6-78CCFC9C45AD][Read whole numbers as doubles on the wire]] | DONE | | 2026-11-03 | Fix the MessagePack reader refusing a whole number packed as an integer for a double field, which broke the Price behaviour tab. |
+
+* Decisions
+
+- *GJR-GARCH sets the daily variance of FX spot, and not the surface*
+  (2026-11-03). Context: the approach document used GARCH only to feed the
+  MDN's surface, the volatility channel listed GARCH as not adopted, and FX spot
+  draws i.i.d. GMM shocks with no memory from day to day. Decision: a GJR-GARCH
+  variance scales the standardised GMM shock, is calibrated from five years of
+  fixings by variance targeting and quasi maximum likelihood, and multiplies
+  with the intraday volatility channel. Consequences: the feed gains volatility
+  clustering across days and a per-pair leverage effect; the surface reads no
+  GARCH state. See "Daily GJR-GARCH variance of synthetic FX spot" in
+  [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]]
+  and "The daily variance" in
+  [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][Market volatility channel]].
+- *The GJR-GARCH variance is a stored, reviewed calibration, not a fit at feed
+  start* (2026-11-03). Context: a feed fitted alpha, gamma and beta from its own
+  window of fixings each time it started, kept the result only in that run's
+  start record, and used it with no review, so a user could not see where the
+  values came from, compare them across runs, or refuse a bad fit such as a
+  negative gamma. Decision: the calibration has three stored and versioned
+  stages. A capture stores the inputs, read under the class policy; a fit reads
+  one stored input and stores a proposed calibration; a person approves or
+  rejects it with a reason. A feed names the approved calibration it runs, and
+  its start record names the calibration used. Consequences: the window and the
+  provider order belong to the class policy, not to the feed; the feed's own
+  GARCH columns and the fit at start are removed; an authored shape is a
+  calibration of method authored and is reviewed like any other; history shows
+  every stage from the fixings to the run.
+- *The variance capture and fit run inside the class calibration* (2026-11-03).
+  Context: the asset class already calibrates through one run, =calibrate_feeds=,
+  which resolves each feed's item under the class policy and either previews or
+  applies what it finds, from the calibration screens. Decision: the same run
+  captures and fits the variance of each GJR-GARCH feed it resolves from a
+  fixing, rather than two operations of their own; a preview reports the fit and
+  stores nothing, and an applied run stores the input, its points and a proposed
+  or rejected calibration, each once under an id named by what identifies it.
+  Consequences: one action calibrates a class's level, spread and variance from
+  the same item under the same policy; a repeat run converges on the records it
+  wrote; the review is the one separate step.
+- *A surface is SSVI and moves through its parameters; the MDN is abandoned*
+  (2026-11-03). Context: the MDN is not available, does not cover IR, and makes
+  the surface a function of spot variance only. Decision: the surface is SSVI
+  with $\gamma = 1/2$; its forward variances follow CIR processes, its skew a
+  tanh of an OU process and its curvature a bounded logistic of an OU process,
+  so every emitted surface is free of static arbitrage; the shocks are
+  correlated with spot. Consequences: the generator prices quotes from the
+  state in the pair's own convention, a tenant's blueprint fits the smile model
+  it chooses and checks it, and a calibrated surface still needs an identity of its own. See
+  the option vol surface section of
+  [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+  and [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]].
+- *A derived source supplies the starting surface* (2026-11-03). Context: no
+  free public source of FX implied volatilities was found. Decision: a
+  publisher of our own backs ATM, RR and BF out of the spot fixings through the
+  Gram-Charlier smile. Consequences: the values are plausible, not real; a real
+  vendor is another provider of the same items and replaces the derived source
+  by a change of route. See
+  [[id:099697A6-8526-48E0-A63D-DB3932C06468][Derivation of FX volatility quotes from historical fixings]]
+  and "How a volatility surface starts" in
+  [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+- *Derived values carry their own identity* (2026-11-03). Context: the derived
+  source and the cross rates compute from fixings whose terms, the ECB's among
+  them, allow reuse of unmodified statistics with a credit. Decision: a public
+  publisher's data may feed a computation, and the computation's output is
+  never labelled, credited or described as that publisher's data; it names
+  the derived publisher alone, and the inputs are stored as published.
+  Consequences: the rule sits with the terms of each source in the calibration
+  sources note.
+- *A tenant receives contributor quotes, not the surface* (2026-11-03).
+  Context: a clean generated surface tests none of the marking a desk does.
+  Decision: synthetic contributors inside the simulator adapter publish noisy
+  observations of the latent surface; the clean contributor is the truth.
+  Every quote is a mid; two-way prices are a later extension of the
+  contributor. See
+  [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
+- *Surface construction follows curve construction* (2026-11-03). Context: the
+  curve already goes from quotes through a blueprint, a candidate with lineage
+  and a four-eyes publish to a report. Decision: a surface takes the same path;
+  its method is a calibration where a curve's is a bootstrap, and its output
+  is a calibrated surface series with an identity of its own. See
+  [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
+- *Five years of public fixings ship as a static DQ snapshot* (2026-11-03).
+  Context: every environment backfilled its window from the publishers' API.
+  Decision: DQ holds a five-year snapshot refreshed by hand, and the adapter
+  fills each item's gap from its latest stored fixing to today. Consequences:
+  the load on Frankfurter drops to one small request per item per new
+  environment, and every provider in the snapshot must allow redistribution. The
+  work is [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]].
+
+* Out of scope
+
+- The fixings history. Years of daily fixings in every environment are
+  [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]], a story of
+  its own: this story works from the adapter's shorter window without it, with
+  the priors of the derived quotes dominating and weak butterflies.
+- Two-way pricing. Every quote, synthetic or real, is a mid, and valuation runs
+  on mids. Bid and ask, for every input and not only vol surfaces, are a later
+  level of work, taken up once mid valuation is reliable for every product.
+- The rest of the scope is set by the architecture task.

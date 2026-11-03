@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/gaussian_mixture_model_process.hpp"
 #include <cmath>
+#include <cstddef>
 #include <stdexcept>
 #include <utility>
 
@@ -46,6 +47,13 @@ gaussian_mixture_model_process::gaussian_mixture_model_process(std::vector<doubl
         throw std::invalid_argument(
             "gaussian_mixture_model_process: initial_price must be positive");
     base_ = {.means = means_, .stdevs = stdevs_, .weights = weights_};
+    double total_weight = 0.0;
+    for (std::size_t k = 0; k < weights_.size(); ++k) {
+        mixture_mean_ += weights_[k] * means_[k];
+        total_weight += weights_[k];
+    }
+    if (total_weight > 0.0)
+        mixture_mean_ /= total_weight;
 }
 
 double gaussian_mixture_model_process::next() {
@@ -74,9 +82,9 @@ void gaussian_mixture_model_process::step_one_tick() {
     // std::normal_distribution requires stddev > 0 (a libstdc++ assertion aborts
     // the process on σ <= 0 in debug builds). A zero-variance component is
     // degenerate: the draw is exactly the mean, so handle it directly.
-    const double sd = stdevs_[k];
-    const double log_return =
-        sd > 0.0 ? std::normal_distribution<double>(means_[k], sd)(rng_) : means_[k];
+    const double sd = multiplier_ * stdevs_[k];
+    const double mean = mean_of(k);
+    const double log_return = sd > 0.0 ? std::normal_distribution<double>(mean, sd)(rng_) : mean;
     price_ *= std::exp(log_return);
 }
 
@@ -85,10 +93,29 @@ void gaussian_mixture_model_process::step_partial_tick(double part) {
     // the fraction of the mean and the square root of the fraction of the
     // variance, which keeps the spread additive to first order.
     const int k = component_dist_(rng_);
-    const double sd = stdevs_[k] * std::sqrt(part);
-    const double mean = means_[k] * part;
+    const double sd = multiplier_ * stdevs_[k] * std::sqrt(part);
+    const double mean = mean_of(k) * part;
     const double log_return = sd > 0.0 ? std::normal_distribution<double>(mean, sd)(rng_) : mean;
     price_ *= std::exp(log_return);
+}
+
+double gaussian_mixture_model_process::mean_of(int k) const {
+    // At a multiplier of one the configured mean is drawn as it is, so a path that
+    // never scales is the path it always was, to the last bit.
+    if (multiplier_ == 1.0)
+        return means_[k];
+    return mixture_mean_ + multiplier_ * (means_[k] - mixture_mean_);
+}
+
+void gaussian_mixture_model_process::set_volatility_multiplier(double multiplier) {
+    if (!(multiplier > 0.0) || !std::isfinite(multiplier))
+        throw std::invalid_argument("gaussian_mixture_model_process: the volatility multiplier "
+                                    "must be positive and finite");
+    multiplier_ = multiplier;
+}
+
+bool gaussian_mixture_model_process::supports_volatility_multiplier() const {
+    return true;
 }
 
 bool gaussian_mixture_model_process::supports_variable_step() const {

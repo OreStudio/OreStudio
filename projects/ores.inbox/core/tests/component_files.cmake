@@ -24,6 +24,7 @@ set(files
     "approval_apply_retry_tests.cpp"
     "approval_apply_start_tests.cpp"
     "approval_as_service_tests.cpp"
+    "approval_cut_authorisation_tests.cpp"
     "approval_decision_eventing_integration_tests.cpp"
     "approval_decision_type_eventing_integration_tests.cpp"
     "approval_hold_reason_tests.cpp"

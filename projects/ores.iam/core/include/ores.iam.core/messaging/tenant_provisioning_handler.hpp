@@ -77,6 +77,7 @@
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
+#include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
@@ -1573,6 +1574,43 @@ private:
         return {};
     }
 
+    /// Records the trade types the entry states, each once. A type already
+    /// recorded is left alone, so the step stays re-runnable.
+    void record_trade_types(internal_request_client& client,
+                            const boost::uuids::uuid& config_id,
+                            const trade_generation_assignment& entry) {
+        if (entry.trade_type_codes.empty())
+            return;
+
+        ores::synthetic::messaging::list_trade_generation_trade_types_request list;
+        list.filter =
+            ores::synthetic::messaging::trade_generation_trade_types_filter{.config_id = config_id};
+        list.limit = 1000;
+        const auto listed = client.request(list);
+        require_read(listed.result, "the trade types of '" + entry.name + "'");
+
+        ores::synthetic::messaging::put_many_trade_generation_trade_types_request request;
+        request.intent.reason_code = "system.initial_load";
+        request.intent.commentary = "Trade types of the population.";
+        for (const auto& code : entry.trade_type_codes) {
+            const auto recorded =
+                std::ranges::any_of(listed.trade_generation_trade_types,
+                                    [&](const auto& row) { return row.trade_type_code == code; });
+            if (recorded)
+                continue;
+            ores::synthetic::messaging::trade_generation_trade_type_change change;
+            change.write.id = ores::synthetic::service::trade_type_scope_id_for(config_id, code);
+            change.write.config_id = config_id;
+            change.write.trade_type_code = code;
+            change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                   std::nullopt};
+            request.changes.push_back(std::move(change));
+        }
+        if (!request.changes.empty())
+            require_recorded(client.request(request).result,
+                             "the trade types of '" + entry.name + "'");
+    }
+
     /// Records the scope the entry describes: the party's book of that name,
     /// and every counterparty the party may face. A row that is already there
     /// is left alone, so the step is re-runnable and a scope that grew between
@@ -1600,6 +1638,8 @@ private:
         if (!book_is_scoped(client, config_id, book->id))
             require_recorded(client.request(book_request).result,
                              "the book scope of '" + entry.name + "'");
+
+        record_trade_types(client, config_id, entry);
 
         const auto scoped = scoped_counterparties(client, config_id);
         std::vector<boost::uuids::uuid> missing;

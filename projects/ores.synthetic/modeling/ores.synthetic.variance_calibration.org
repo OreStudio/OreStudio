@@ -1,0 +1,422 @@
+:PROPERTIES:
+:ID: 84902B7E-58F4-4127-86CB-129EBEDABE95
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.synthetic.variance_calibration
+#+description: Codegen entity model for the synthetic variance_calibration table; one GJR-GARCH shape for a pair, fitted from a stored input or authored, and its review.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: variance_calibration
+#+entity_plural: variance_calibrations
+#+entity_title: Variance Calibration
+#+brief: One GJR-GARCH shape for a pair, fitted from a stored input or authored, and its review.
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+One GJR-GARCH shape of a pair's daily variance and the evidence a reviewer judges
+it by. A fitted calibration names the =variance_calibration_input= it was fitted
+from and the version of the method that fitted it; an authored one names no input
+and is reviewed like any other. A feed runs only a calibration that is approved,
+and names it. See "A calibration is stored and reviewed before a feed runs it" in
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]].
+
+A calibration is =proposed= when it is stored. A person approves or rejects it and
+states why in =state_reason=; approving one makes the pair's earlier approval
+=superseded= in the same change, so one approved calibration of a pair is current.
+Each decision is a new version of the row, so its history shows who decided what
+and when. A fit that could not be made, for too few returns or a shape at the
+stationarity bound, is stored as =rejected= with the reason, so the attempt is kept;
+such a row may have no shape, so the shape is required, and admissible, in the
+other three states only. Each bound is written so that a missing value or NaN
+fails it: a check passes on null, and PostgreSQL orders NaN above every number. A
+value that is present is finite in every state, rejected included, so the audit
+trail holds no NaN. The evidence of a fit agrees with its method: an authored shape
+has no starts, returns or likelihood, and a fit that was not rejected has all three.
+
+The checks do not tie =persistence= to the three parameters, because =p_minus= is
+not stored; the fit that writes a calibration owns that equality.
+
+=persistence= is =alpha + gamma p_minus + beta=, with =p_minus= the share of the
+daily return's variance that falls on negative days, so it is stored rather than
+recomputed from the three parameters alone.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this calibration.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:server_owned: true
+:END:
+
+Owning party: the system party, as for the feeds.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** base_currency_code
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:sortable:   true
+:filterable: true
+:END:
+
+The pair's base currency, held here so the approval index needs no join.
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** quote_currency_code
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:sortable:   true
+:filterable: true
+:END:
+
+The pair's quote currency.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** input_id
+:PROPERTIES:
+:type:       uuid
+:cpp_type:   std::optional<boost::uuids::uuid>
+:nullable:   true
+:filterable: true
+:END:
+
+The =variance_calibration_input= this calibration was fitted from; absent for an
+authored calibration, which reads no input. A foreign key holds a fitted
+calibration to an input that exists.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** method
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:filterable: true
+:END:
+
+How the shape was obtained: =gjr_garch_qmle=, variance targeting and Gaussian quasi
+maximum likelihood over the input's returns, or =authored=, written by a person.
+
+#+begin_src cpp :name generator
+std::string("authored")
+#+end_src
+
+** method_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The version of the method, so a fit made by an earlier estimator stays
+distinguishable from one made by a later one.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** alpha
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The reaction to yesterday's squared return.
+
+#+begin_src cpp :name generator
+std::optional<double>(0.05)
+#+end_src
+
+** gamma
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The extra reaction to a negative return, the asymmetry; =alpha + gamma= is not
+negative.
+
+#+begin_src cpp :name generator
+std::optional<double>(0.02)
+#+end_src
+
+** beta
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The weight of yesterday's variance.
+
+#+begin_src cpp :name generator
+std::optional<double>(0.9)
+#+end_src
+
+** persistence
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+=alpha + gamma p_minus + beta=, below one for a stationary shape.
+
+#+begin_src cpp :name generator
+std::optional<double>(0.96)
+#+end_src
+
+** long_run_variance
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The unconditional daily variance the shape returns to, positive.
+
+#+begin_src cpp :name generator
+std::optional<double>(0.00004)
+#+end_src
+
+** starting_variance_ratio
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The variance at the end of the input's history over the long-run level: where a
+feed's first day starts. One for an authored shape.
+
+#+begin_src cpp :name generator
+std::optional<double>(1.0)
+#+end_src
+
+** log_likelihood
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The Gaussian log likelihood of the input's returns at the fitted shape; absent for
+an authored shape.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** returns_used
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 0
+:END:
+
+How many returns the fit read; zero for an authored shape.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** starts
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 0
+:END:
+
+How many starting points the simplex was run from; zero for an authored shape.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** starts_agreed
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether every start reached the same optimum, within the fit's tolerance; a fit
+whose starts disagree deserves a closer look before it is approved.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** state
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "proposed"
+:filterable:    true
+:END:
+
+=proposed=, =approved=, =rejected= or =superseded=.
+
+#+begin_src cpp :name generator
+std::string("proposed")
+#+end_src
+
+** state_reason
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+Why the calibration is in its state: the reviewer's reason for an approval or a
+rejection, the refusal of a fit that could not be made, or the calibration that
+superseded it.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_variance_calibrations_tbl
+:END:
+
+** Checks
+
+| expression                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| "base_currency_code" <> "quote_currency_code"                                                                                                                                                                                                                                                                                                                                                                                                   |
+| "method" in ('gjr_garch_qmle', 'authored')                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ("method" = 'authored') = ("input_id" is null)                                                                                                                                                                                                                                                                                                                                                                                                  |
+| "method_version" > 0                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| "state" in ('proposed', 'approved', 'rejected', 'superseded')                                                                                                                                                                                                                                                                                                                                                                                   |
+| "state" not in ('approved', 'rejected', 'superseded') or "state_reason" <> ''                                                                                                                                                                                                                                                                                                                                                                   |
+| "returns_used" >= 0 and "starts" >= 0 and (not "starts_agreed" or "starts" > 0)                                                                                                                                                                                                                                                                                                                                                                 |
+| "method" <> 'authored' or ("starts" = 0 and "returns_used" = 0 and "log_likelihood" is null)                                                                                                                                                                                                                                                                                                                                                    |
+| "method" = 'authored' or "state" = 'rejected' or ("starts" > 0 and "returns_used" > 0 and "log_likelihood" is not null)                                                                                                                                                                                                                                                                                                                         |
+| coalesce("alpha", 0) < 'Infinity'::double precision and coalesce("gamma", 0) < 'Infinity'::double precision and coalesce("beta", 0) < 'Infinity'::double precision and coalesce("persistence", 0) < 'Infinity'::double precision and coalesce("long_run_variance", 0) < 'Infinity'::double precision and coalesce("starting_variance_ratio", 0) < 'Infinity'::double precision and coalesce("log_likelihood", 0) < 'Infinity'::double precision |
+| "state" = 'rejected' or coalesce("alpha" >= 0 and "alpha" < 1 and "beta" >= 0 and "beta" < 1 and "alpha" + "gamma" >= 0 and "alpha" + "gamma" < 'Infinity'::double precision, false)                                                                                                                                                                                                                                                            |
+| "state" = 'rejected' or coalesce("persistence" >= 0 and "persistence" < 1, false)                                                                                                                                                                                                                                                                                                                                                               |
+| "state" = 'rejected' or coalesce("long_run_variance" > 0 and "long_run_variance" < 'Infinity'::double precision, false)                                                                                                                                                                                                                                                                                                                         |
+| "state" = 'rejected' or coalesce("starting_variance_ratio" > 0 and "starting_variance_ratio" < 'Infinity'::double precision, false)                                                                                                                                                                                                                                                                                                             |
+
+** Indexes
+
+| name          | columns                                                      | unique | current_only | where_extra        |
+|---------------+--------------------------------------------------------------+--------+--------------+--------------------|
+| approved_pair | tenant_id, party_id, base_currency_code, quote_currency_code | true   | true         | state = 'approved' |
+
+* Foreign keys
+
+** input_id
+:PROPERTIES:
+:table:         ores_synthetic_variance_calibration_inputs_tbl
+:error_message: Invalid input_id: %. No active variance_calibration_input found with this id.
+:nullable:      true
+:END:
+
+* Insert trigger
+** Validations
+
+| column              | validation_function               |
+|---------------------+-----------------------------------|
+| base_currency_code  | ores_refdata_validate_currency_fn |
+| quote_currency_code | ores_refdata_validate_currency_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: variance_calibration
+:entity_plural_short:   variance_calibrations
+:entity_singular_words: variance calibration
+:entity_plural_words:   variance calibrations
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column              | header      |
+|---------------------+-------------|
+| base_currency_code  | Base        |
+| quote_currency_code | Quote       |
+| method              | Method      |
+| state               | State       |
+| alpha               | Alpha       |
+| gamma               | Gamma       |
+| beta                | Beta        |
+| persistence         | Persistence |
+| version             | Version     |
+
+* See also
+
+- [[id:97E3E3C7-98D2-4DDC-B062-8F04CA2850E5][Variance Calibration Input]] -- the stored fixings a fit reads.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] -- the model and the workflow.

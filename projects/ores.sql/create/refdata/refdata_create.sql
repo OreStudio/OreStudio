@@ -165,6 +165,15 @@
 \ir ./refdata_ir_curve_bootstrap_configs_notify_trigger_create.sql
 \ir ./refdata_ir_curve_bootstrap_pillars_create.sql
 \ir ./refdata_ir_curve_bootstrap_pillars_notify_trigger_create.sql
+
+-- FX volatility surface recipe: blueprint, then pillars, then their sources (FK);
+-- depends on currencies (validation function).
+\ir ./refdata_fx_vol_surface_blueprints_create.sql
+\ir ./refdata_fx_vol_surface_blueprints_notify_trigger_create.sql
+\ir ./refdata_fx_vol_surface_pillars_create.sql
+\ir ./refdata_fx_vol_surface_pillars_notify_trigger_create.sql
+\ir ./refdata_fx_vol_surface_pillar_sources_create.sql
+\ir ./refdata_fx_vol_surface_pillar_sources_notify_trigger_create.sql
 \ir ./refdata_derivation_kinds_notify_trigger_create.sql
 
 -- Party and counterparty tables
@@ -407,6 +416,8 @@
 \ir ./refdata_equity_curve_configs_notify_trigger_create.sql
 \ir ./refdata_inflation_curve_configs_create.sql
 \ir ./refdata_inflation_curve_configs_notify_trigger_create.sql
+\ir ./refdata_inflation_seasonalities_create.sql
+\ir ./refdata_inflation_seasonalities_notify_trigger_create.sql
 \ir ./refdata_inflation_seasonality_factors_create.sql
 \ir ./refdata_inflation_seasonality_factors_notify_trigger_create.sql
 \ir ./refdata_default_curve_configs_create.sql
@@ -481,6 +492,8 @@
 \ir ./refdata_curve_parametric_smile_parameters_notify_trigger_create.sql
 \ir ./refdata_swaption_proxy_configs_create.sql
 \ir ./refdata_swaption_proxy_configs_notify_trigger_create.sql
+\ir ./refdata_swaption_volatility_smiles_create.sql
+\ir ./refdata_swaption_volatility_smiles_notify_trigger_create.sql
 \ir ./refdata_swaption_volatility_configs_create.sql
 \ir ./refdata_swaption_volatility_configs_notify_trigger_create.sql
 \ir ./refdata_cap_floor_proxy_configs_create.sql

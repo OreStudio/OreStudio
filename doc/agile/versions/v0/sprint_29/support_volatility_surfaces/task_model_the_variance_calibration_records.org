@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: F41343F6-3CD8-4903-9E58-F5871DF61B32
+:END:
+#+title: Task: Model the variance calibration records
+#+description: Codegen entities for a stored GJR-GARCH calibration input, its dated points, and the calibration fitted from it, with the class policy's variance window.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/model-the-variance-calibration-records
+#+pr: 4426
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Three versioned ores.synthetic records hold the whole audit trail: the input snapshot (pair, item, provider, policy and its version, window, inversion, counts, who and when), one point per fixing date (fixing, return, whether it was used and why not), and the calibration (the input it read, method and version, alpha, gamma, beta, persistence, long-run variance, starting variance, likelihood, convergence, admissibility, and a review state of proposed, approved, rejected or superseded with its reason). The calibration policy gains the variance window.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The three entities are generated across SQL, domain, repository, protocol, shell and TypeScript, with history for each.
+- Checks on write: a calibration's shape is admissible (alpha, beta and alpha plus gamma not negative, persistence below one); its state is one of the four; an approved or rejected state carries a reason; a point that is not used carries a reason.
+- At most one approved calibration per pair is current, by a unique index, so approving one supersedes the pair's earlier approval whatever its method; an authored calibration is a record of method authored with no input.
+
+* Plan
+
+Three =ores.synthetic= entities, system-tenant rows under the system party as the
+FX spot feeds are (profile =uuid-identified-lookup=, visible to every tenant), and
+one column on the calibration policy.
+
+- =variance_calibration_input=: one capture. Natural key: party, fixing URI,
+  window end and window length, so a repeat over the same window is a new
+  version, not a second row; the item names the pair, so the pair is not in the
+  key. Columns: the pair; =fixing_uri= and =provider_code=
+  of the item read; =inverted=; =policy_id= and =policy_version= of the policy
+  it was read under; =window_days= and =window_end=; =point_count= and
+  =used_count=. Who and when are the temporal columns every row carries.
+- =variance_calibration_input_point=: one fixing date of an input, foreign key
+  to the input. Natural key: party, input, date. Columns: =fixing_date=;
+  =fixing_text= as stored; =fixing_value= and =log_return= (in market
+  convention, nullable: the first date has no return and an unreadable value
+  has neither); =used=; =exclusion_reason=, which a point not used must carry.
+- =variance_calibration=: one fit or authored shape. Columns: the pair, so the
+  approval index needs no join; =input_id= (nil for an authored shape, a check
+  ties the two); =method= (=gjr_garch_qmle= or =authored=) and
+  =method_version=; =alpha=, =gamma=, =beta=, =persistence=,
+  =long_run_variance=, =starting_variance_ratio=; =log_likelihood=,
+  =returns_used=, =starts=, =starts_agreed= (fit evidence, nullable or zero for
+  an authored shape); =state= (=proposed=, =approved=, =rejected=, =superseded=)
+  and =state_reason=. A rejected fit may be inadmissible, so the admissibility
+  check applies to the other three states only.
+- =calibration_policy.variance_window_days=, default 1826, between 30 and 3660,
+  the window the feed's own =garch_window_days= held.
+
+The capture, fit, review and application operations are later tasks; this task
+adds the records, their checks and their generated stack.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4426][#4426]] | [synthetic] Model the variance calibration records |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A rejected row may carry NaN or infinity in its shape | ores.synthetic.variance_calibration.org | Accepted | Every value present is finite in every state; the suggested =x = x= test passes NaN in PostgreSQL, so the bound is below infinity |
+| 2 | =persistence= is not tied to the parameters in SQL | ores.synthetic.variance_calibration.org | Accepted | =p_minus= is not stored, so the fit task owns the equality; recorded on that task |
+| 3 | Superseding on approval is not ordered by the schema | ores.synthetic.variance_calibration.org | Accepted | The review task must supersede first and approve second in one transaction; recorded on that task |
+| 4 | =input_id= has no foreign key | ores.synthetic.variance_calibration.org | Accepted | An authored row now has no input, not the nil UUID, so a nullable foreign key holds a fit to an input that exists |
+| 5 | =starts= and =starts_agreed= are not related | ores.synthetic.variance_calibration.org | Accepted | Agreement needs a start; an authored row has no starts, returns or likelihood, and a fit that is not rejected has all three |
+| 6 | Confirm the approval index, NaN and nil input cases are covered | synthetic_variance_calibration_checks_test.sql | Accepted | They were; five cases added for the new checks, 29 in all |
+
+* Result
+
+Three =ores.synthetic= records hold the audit trail of a variance calibration, each
+generated across SQL, domain, repository, protocol, shell and TypeScript with its
+history: =variance_calibration_input=, keyed by party, fixing URI and window;
+=variance_calibration_input_point=, one fixing date of an input, used or left out
+with its reason; and =variance_calibration=, a fitted or authored shape with its
+evidence and its review state. The calibration policy gains
+=variance_window_days=, five years by default. The records are system-tenant rows
+that every tenant reads, as the feeds are; people get read access only, so the
+capture, fit and review operations of the next tasks are the only writers.
+
+Each bound is written so that a missing value or NaN fails it, because a check
+passes on null and PostgreSQL orders NaN above every number. One approved
+calibration of a pair is current, by a partial unique index.
+
+Measured on a recreated database at this branch: =ores.synthetic.api.tests= (186
+calibration cases), =ores.shell.synthetic.tests= (102) and
+=ores.synthetic.core.tests=, with the three eventing round trips, pass;
+=synthetic_variance_calibration_checks_test.sql= passes 29 of 29, and the six
+other synthetic pgTAP files pass, 69 tests in all. A first run showed the
+generator could not satisfy a natural key that held the validated currency codes,
+so the pair left the input's key; the fixing URI already names the pair.
+

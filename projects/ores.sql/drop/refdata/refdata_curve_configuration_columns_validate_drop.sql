@@ -43,6 +43,7 @@ drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_inflation_c
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_inflation_curve_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_intraday_power_curve_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_swaption_volatility_configs_tbl;
+drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_swaption_volatility_smiles_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_yield_curve_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_yield_volatility_configs_tbl;
 drop function if exists ores_refdata_validate_curve_values_fn();

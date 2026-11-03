@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: The six split tasks of this story
-#+blocked_since: 2026-10-29
+#+branch: feature/re-inventory-what-the-splits-leave
+#+pr: 4408
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-10-29
-#+environment:
+#+updated: 2026-11-02
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The inventory is re-run on the tree the splits produce, and what remains is deci
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
-| Waiting on   | The six split tasks of this story.      |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                             |
 
 * Acceptance
 
@@ -93,9 +93,84 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Persisted types the models declare | 520, against 457 at the first run | `python3 build/scripts/inventory_entity_columns.py --summary`; full output in =evidence/entity_columns.tsv= | `691b269fe2` |
+| Types carrying 20 members or more | 19, against 24 | same | `691b269fe2` |
+| Types carrying 30 or more | 3, against 6 | same | `691b269fe2` |
+| Median members per type | 6, unchanged | same | `691b269fe2` |
+| Widest type | 57, `market_series_identity`, unchanged | same | `691b269fe2` |
+| Widest refdata type | 31, `cap_floor_volatility_config` (38 generated bindings) | same, and `grep -c 'query_builder::bind(' projects/ores.refdata/core/include/ores.refdata.core/repository/cap_floor_volatility_config_entity.hpp` | `691b269fe2` |
+| Entities MSVC last stopped on with C1202 | `tenor_basis_swap_pay_receive` (12 columns, 19 bindings) on 2026-10-31; `yield_volatility_config` (12 columns, 19 bindings) on 2026-11-01 | `gh api --allow-escape-sequences repos/OreStudio/OreStudio/actions/jobs/<id>/logs` for jobs 124465676569 and 124778610476 | `2c1e5f8055`, `def800f245` |
+| First Windows nightly with the flat slots (`6feebec946`) | Fails at database setup, before compiling: `psql:setup_schema.sql:77: error: /dev/null: No such file or directory` | same, for job 125139825651 | `2c52d7fdfd` |
 
 * Notes
+
+** What moved
+
+The ten refdata splits took the refdata types over the threshold from 14 to 6.
+Only one of the parts they made is at 20 or more:
+=commodity_future_contract_terms=, at 21, which is the block ORE requires of
+every commodity future convention. Four types crossed the threshold from outside
+the splits. =cut= (26) and =report_instance= (21) are reporting types that grew
+on their own, and =fx_spot_generation_config= went from 19 to 20.
+
+** Verdicts
+
+Every type at 20 members or more, at =691b269fe2=. A verdict outside refdata is
+a reading, and its owner confirms it, as the first inventory said.
+
+| Members | Verdict | Type | Reason |
+|---------+---------+------+--------|
+| 57 | split, owner | =market_series_identity= (marketdata) | Unchanged. [[id:CC94A796-F6C1-4F59-B89E-CB5EB3133EC2][Its task]] holds the reading. |
+| 33 | split, owner | =instrument_option= (trading) | Unchanged. [[id:8A68BFFA-EF99-45A4-915D-92172BD042AA][The trading task]] holds the reading. |
+| 31 | keep | =cap_floor_volatility_config= (refdata) | One =xs:all= with no flag and no discriminator: every element is a setting of the one surface, and the proxy and the parametric smile are already parts. The first inventory said one of =use_effecive_volatility= and =use_effective_volatility= is dead. That is wrong: the schema states both =UseEffeciveVolatility= and =UseEffectiveVolatility=, and the import reads both. |
+| 29 | split, owner | =bond_leg_rate= (trading) | Unchanged; the trading task. |
+| 27 | group, owner | =commodity_instrument= (trading) | Unchanged; the trading task reads it with its other types. |
+| 27 | split, owner | =bond_issue_leg_rate= (trading) | Unchanged; the trading task. |
+| 26 | split, owner | =cut= (reporting) | New. =requires_authorisation= is followed by the approval columns it governs, and =cut_approval_detail= is already a part. Captured as [[id:4F62706B-0238-4979-90E6-8DAD0BE30827][Read the cut's approval columns and the report instance's copy of the cut]]. |
+| 25 | keep | =lei_entity= (dq) | Unchanged. The width is the GLEIF record's. |
+| 23 | keep | =csa= (refdata) | Was =group=. The pay and receive columns are two values of one term of one agreement, not two legs. A field group is a core and cold split, and nothing in the agreement is cold, so a group would change the C++ shape and nothing else. |
+| 22 | keep | =book_change= (refdata) | Was =group=. The book columns are the payload of the change line: the row the line applies, with the same key and the same invariant. Nothing reads them without the line. |
+| 22 | split, owner | =instrument_schedule= (trading) | Unchanged; the trading task. |
+| 21 | keep | =commodity_future_contract_terms= (refdata) | New, a part of the conventions split. It is the listed contract that ORE requires, and the optional blocks are already the other four parts. |
+| 21 | split | =swaption_volatility_config= (refdata) | The proxy split left the smile: =smile_option_tenors=, =smile_swap_tenors= and =smile_spreads= mean something only when =dimension= is =Smile=. That is the reading the FX split made for =fx_volatility_smile=. [[id:06F7D57F-82C7-440D-91D7-54EED11EBB85][A new task]] does it. |
+| 21 | split, owner | =report_instance= (reporting) | New. =cut_label=, =cut_kind_code= and =cut_timepoint= copy the cut that =cut_id= names. The same capture as =cut=. |
+| 21 | split, owner | =ir_curve_generation_config= (synthetic) | Was =group=. =arrival_mode= is followed by =branching_ratio=, =decay= and =sensitivity=, its parameters. Captured as [[id:3CEB5251-D5AE-4DA6-88CF-8A6CC429F1CC][Split the arrival process from the synthetic generation configs]]. |
+| 20 | keep | =dataset= (dq) | Was =group=. The lineage columns are two, and the registry row is read whole. |
+| 20 | split | =inflation_curve_config= (refdata) | Was =group=. =has_seasonality= is followed by =seasonality_base_date= and =seasonality_frequency=, and the schema requires the two with the factors. The factors are already rows of =inflation_seasonality_factor=. The same new task does it. |
+| 20 | split, owner | =fx_spot_generation_config= (synthetic) | New. The same arrival block as =ir_curve_generation_config=. |
+| 20 | split, owner | =bond_issue_leg_schedule= (trading) | Unchanged; the trading task. |
+
+No =group= verdict is left. A field group separates a core from a cold annex,
+and none of the six had a cold block: each was one component, or a part that
+has its own task now.
+
+** The C1202
+
+The C1202 does not come from width. On 2026-10-31 and 2026-11-01, after the
+volatility and conventions splits, MSVC stopped with the same
+=tuple(320)= error on two entities of 12 columns and 19 bindings. The entity that
+started the story was down from 39 columns to 31 by then, and the failure moved
+to entities a third of its width. The cause was the query builder: each =operator|=
+grew a =std::tuple= one column longer, so a list of n columns instantiated every
+prefix. =6feebec946= holds the columns in flat slots instead.
+
+That fix has no Windows proof yet. The first nightly that has it, on 2026-11-02,
+stopped at database setup before it compiled, on =\o /dev/null= in
+=setup_schema.sql=. That is captured as
+[[id:3997C7F7-B6DB-4103-98D9-21D9082A3AB9][Database setup on Windows fails on
+psql's \o /dev/null]]. The splits did not cause the C1202 and could not have
+ended it. That is the story's decision that no split is made for a compiler,
+now measured.
+
+** The rule
+
+The three shapes are a decision check on
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE
+Studio]], under the Regime 2 checklist, as "One component per row". The check
+also says when a pair is not two legs, which is the =csa= reading. A codegen
+check cannot see the second shape, because nothing in a model says which
+columns belong to which value of a discriminator. So the rule is on the page,
+which the acceptance allows, and not in codegen.
 
 * Test Scenarios
 
@@ -112,12 +187,42 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4408][#4408]] | [sql] Quiet the schema grants without a null device |
+| [[https://github.com/OreStudio/OreStudio/pull/4402][#4402]] | [agile,doc] Re-inventory what the splits leave |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4402, @claude 1: =#+updated:= still reads 2026-10-29 | task, story | Accept | Bumped on both inventory tasks and the story. |
+| 2 | PR #4402, @claude 2: status table padding no longer lines up | task | Decline | Cosmetic; org renders the table the same either way. |
+| 3 | PR #4402, @claude 3: the story status should say it is still open | =story.org= | Accept | The Now cell names the three open tasks. |
+| 4 | PR #4402, @claude 4: the C1202 reading needs a Windows nightly past setup | task | Decline here | The Notes already say the fix has no Windows proof; the null device capture is what unblocks it. |
 
 * Result
+
+The lever ran on =691b269fe2=, and =evidence/entity_columns.tsv= holds its
+output. 19 types carry 20 members or more, against 24 at the first run, and the
+refdata ones went from 14 to 6.
+
+Every type at 20 or more has a verdict in the Notes. Of the six refdata types,
+four are kept with a reason and two split: the swaption smile and the inflation
+seasonality, which [[id:06F7D57F-82C7-440D-91D7-54EED11EBB85][a new task]] in this
+story does. The six =group= verdicts are gone: =csa=, =book_change= and
+=dataset= are kept, =inflation_curve_config= and =ir_curve_generation_config=
+split, and =commodity_instrument= stays with the trading task. Two readings
+outside refdata are captured for their owners, one for reporting and one for
+synthetic.
+
+The C1202 did not come from width. After the splits, MSVC stopped on two
+entities of 12 columns, and the cause was the query builder's tuple, which
+=6feebec946= replaced. The Windows nightly has not yet compiled that fix,
+because database setup fails on Windows first. That defect is captured.
+
+The rule is a Regime 2 decision check on the data-oriented design page, "One
+component per row". It names the three shapes and says when a pair of values
+is not two legs.
+
+The story does not close with this task. The widest refdata type is now a shape
+the model allows, but the swaption and inflation splits, and the trading and
+market data tasks, are still open.

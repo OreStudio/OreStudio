@@ -62,7 +62,7 @@ std::string sample_text(const std::string& sample_file) {
 }
 
 TEST_CASE("npv states one metric for each figure the row carries", metric_tags) {
-    const auto* family = family_named("npv");
+    const auto* family = family_named("npv_report");
     REQUIRE(family != nullptr);
 
     const auto outcome = read_metrics(sample_text(family->sample_file), *family);
@@ -85,7 +85,7 @@ TEST_CASE("npv states one metric for each figure the row carries", metric_tags) 
 }
 
 TEST_CASE("a configuration-driven family names each column as a measure", metric_tags) {
-    const auto* family = family_named("curves");
+    const auto* family = family_named("curves_report");
     REQUIRE(family != nullptr);
 
     const auto outcome = read_metrics(sample_text(family->sample_file), *family);
@@ -106,7 +106,7 @@ TEST_CASE("a configuration-driven family names each column as a measure", metric
 }
 
 TEST_CASE("a key that is not the subject travels with the metric", metric_tags) {
-    const auto* family = family_named("exposure-trade");
+    const auto* family = family_named("trade_exposure_report");
     REQUIRE(family != nullptr);
 
     const auto outcome = read_metrics(sample_text(family->sample_file), *family);
@@ -140,7 +140,7 @@ TEST_CASE("a scenario that is the row's only key still names the scenario", metr
 }
 
 TEST_CASE("a row whose key is empty keeps its figure and its other keys", metric_tags) {
-    const auto* family = family_named("xva");
+    const auto* family = family_named("xva_report");
     REQUIRE(family != nullptr);
 
     const auto outcome = read_metrics(sample_text(family->sample_file), *family);
@@ -156,7 +156,7 @@ TEST_CASE("a row whose key is empty keeps its figure and its other keys", metric
 }
 
 TEST_CASE("a figure that is not a number is refused, and names its heading", metric_tags) {
-    const auto* family = family_named("npv");
+    const auto* family = family_named("npv_report");
     REQUIRE(family != nullptr);
 
     const auto csv = npv_header() + npv_row("not-a-figure");
@@ -167,7 +167,7 @@ TEST_CASE("a figure that is not a number is refused, and names its heading", met
 }
 
 TEST_CASE("a file that omits a required column is refused", metric_tags) {
-    const auto* family = family_named("npv");
+    const auto* family = family_named("npv_report");
     REQUIRE(family != nullptr);
 
     const auto csv = "#TradeId,TradeType,Maturity,MaturityTime,NPV,NpvCurrency,NPV(Base),"
@@ -182,7 +182,7 @@ TEST_CASE("a file that omits a required column is refused", metric_tags) {
 }
 
 TEST_CASE("a figure the engine has no value for is not a metric", metric_tags) {
-    const auto* family = family_named("npv");
+    const auto* family = family_named("npv_report");
     REQUIRE(family != nullptr);
 
     const auto csv = npv_header() + npv_row("1.0") + npv_row("#N/A");
@@ -203,7 +203,7 @@ TEST_CASE("a figure the engine has no value for is not a metric", metric_tags) {
 }
 
 TEST_CASE("an open family reads a measure the samples do not state", metric_tags) {
-    const auto* family = family_named("curves");
+    const auto* family = family_named("curves_report");
     REQUIRE(family != nullptr);
 
     const auto* csv = "#Tenor,Date,USD,SOME.NEW.CURVE\n1M,2023-02-28,0.99,0.98\n";
@@ -215,7 +215,7 @@ TEST_CASE("an open family reads a measure the samples do not state", metric_tags
 }
 
 TEST_CASE("a closed family refuses a measure it does not state", metric_tags) {
-    const auto* family = family_named("npv");
+    const auto* family = family_named("npv_report");
     REQUIRE(family != nullptr);
 
     const auto csv = npv_header() + npv_row("1.0") +
@@ -262,7 +262,7 @@ TEST_CASE("every metric family's checked-in sample reads", metric_tags) {
 
 TEST_CASE("a family read in blocks hands over what it reads whole, a block at a time",
           metric_tags) {
-    const auto* family = family_named("rawcube");
+    const auto* family = family_named("raw_cube");
     REQUIRE(family != nullptr);
     const auto csv = sample_text(family->sample_file);
 

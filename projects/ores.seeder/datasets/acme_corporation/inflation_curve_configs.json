@@ -15,7 +15,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"
@@ -36,7 +35,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"
@@ -57,7 +55,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"
@@ -78,7 +75,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"
@@ -99,7 +95,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"
@@ -120,7 +115,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"
@@ -141,7 +135,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"
@@ -162,7 +155,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"
@@ -183,7 +175,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"
@@ -204,7 +195,6 @@
     "frequency": "Monthly",
     "base_rate": 0.02,
     "tolerance": 1e-12,
-    "has_seasonality": false,
     "use_last_fixing_date": false,
     "interpolation_variable": "ZeroRate",
     "interpolation_method": "Linear"

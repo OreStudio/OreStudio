@@ -37,6 +37,12 @@
 \ir ./synthetic_calibration_policies_notify_trigger_create.sql
 \ir ./synthetic_calibration_provider_orders_create.sql
 \ir ./synthetic_calibration_provider_orders_notify_trigger_create.sql
+\ir ./synthetic_variance_calibration_inputs_create.sql
+\ir ./synthetic_variance_calibration_inputs_notify_trigger_create.sql
+\ir ./synthetic_variance_calibration_input_points_create.sql
+\ir ./synthetic_variance_calibration_input_points_notify_trigger_create.sql
+\ir ./synthetic_variance_calibrations_create.sql
+\ir ./synthetic_variance_calibrations_notify_trigger_create.sql
 
 -- IR curve generation: yield_curve_process_types before the config that
 -- FK-validates against it; parameter definitions after the process types
@@ -55,13 +61,15 @@
 \ir ./synthetic_ir_curve_template_entries_create.sql
 \ir ./synthetic_ir_curve_template_entries_notify_trigger_create.sql
 
--- Trade generation: the config before the two scope lists that reference it.
+-- Trade generation: the config before the scope lists that reference it.
 \ir ./synthetic_trade_generation_configs_create.sql
 \ir ./synthetic_trade_generation_configs_notify_trigger_create.sql
 \ir ./synthetic_trade_generation_books_create.sql
 \ir ./synthetic_trade_generation_books_notify_trigger_create.sql
 \ir ./synthetic_trade_generation_counterparties_create.sql
 \ir ./synthetic_trade_generation_counterparties_notify_trigger_create.sql
+\ir ./synthetic_trade_generation_trade_types_create.sql
+\ir ./synthetic_trade_generation_trade_types_notify_trigger_create.sql
 
 -- Feed placement
 \ir ./synthetic_feed_placement_create.sql

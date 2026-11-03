@@ -45,12 +45,12 @@ struct text_columns {
 };
 
 constexpr std::array<text_columns, 6> text_columns_of_families = {{
-    {"additional_results", "TradeId", "ResultId", "ResultType", "ResultValue"},
-    {"marketObjects", "", "MarketObjectType", "", "MarketObjectName"},
-    {"riskFactors", "", "RiskFactorType", "", "RiskFactorName"},
+    {"additional_results_report", "TradeId", "ResultId", "ResultType", "ResultValue"},
+    {"market_objects", "", "MarketObjectType", "", "MarketObjectName"},
+    {"risk_factors", "", "RiskFactorType", "", "RiskFactorName"},
     {"underlying_indices", "", "AssetType", "", "Indices"},
     {"swap_indices", "", "", "", "SwapIndices"},
-    {"calibration", "", "", "", "CrossAssetModel", true},
+    {"calibration_report", "", "", "", "CrossAssetModel", true},
 }};
 
 const text_columns* text_columns_of(const output_family& family) {

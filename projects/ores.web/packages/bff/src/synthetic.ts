@@ -63,7 +63,12 @@ import {
 import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
 import { subjects as fxSimpleSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_simple_protocol';
 import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
+import type { ListFolderFeedsRequest } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
 import { subjects as feedSelectionSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_selection_protocol';
+import type {
+    StartSelectedFeedsRequest,
+    StopSelectedFeedsRequest,
+} from '@ores/wire-protocol/generated/synthetic/protocol/feed_selection_protocol';
 import { subjects as irConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_ir_parameters_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
 import {
@@ -269,6 +274,11 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             folder_id: idSchema.nullable(),
             asset_class_code: code.default('fx'),
             calibration_window_days: z.int().min(2).max(180).nullable().default(null),
+            variance_model: code.default('constant'),
+            garch_alpha: z.number().min(0).default(0.05),
+            garch_gamma: z.number().default(0),
+            garch_beta: z.number().min(0).default(0.9),
+            garch_window_days: z.int().min(30).max(3660).default(1826),
         }) satisfies z.ZodType<FxSpotGenerationConfigWrite>,
     },
     {
@@ -582,6 +592,19 @@ export const feedStartSchema = z.object({
             }),
         )
         .default([]),
+    variance: z
+        .object({
+            model: z.string(),
+            fitted: z.boolean(),
+            alpha: z.number(),
+            gamma: z.number(),
+            beta: z.number(),
+            persistence: z.number(),
+            initial_ratio: z.number(),
+            returns: z.int(),
+            note: z.string(),
+        })
+        .nullish(),
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;
@@ -898,7 +921,7 @@ interface FeedFilter {
     readonly search: string;
 }
 
-function wireFilter(filter: FeedFilter): Record<string, unknown> {
+function wireFilter(filter: FeedFilter): Omit<ListFolderFeedsRequest, 'offset' | 'limit'> {
     return {
         folder_id: filter.folder,
         provider_code: filter.provider,
@@ -920,7 +943,7 @@ const selectionSchema = feedFilterSchema
 
 function wireSelection(
     selection: FeedFilter & { readonly feedIds: string[]; readonly excludedIds: string[] },
-): Record<string, unknown> {
+): StartSelectedFeedsRequest & StopSelectedFeedsRequest {
     return {
         ...wireFilter(selection),
         feed_ids: selection.feedIds,
@@ -1019,7 +1042,7 @@ export function registerSyntheticRoutes(
                 ...wireFilter(query),
                 offset: query.offset,
                 limit: query.limit,
-            },
+            } satisfies ListFolderFeedsRequest,
             operationReplySchema.extend({
                 total: z.int().default(0),
                 feeds: z

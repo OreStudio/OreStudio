@@ -29,6 +29,7 @@
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
+#include "ores.synthetic.api/feeds/variance_calibration.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <charconv>
@@ -293,6 +294,73 @@ resolve_fx_start_from(ores::nats::service::nats_client& auth_nats,
     return out;
 }
 
+/// FX trades round the clock on a business day, so a market day is twenty-four hours of ticks.
+
+struct feed_variance final {
+    ores::analytics::quant::math::gjr_garch_shape shape;
+    ores::marketdata::domain::variance_start record;
+};
+
+/**
+ * The GJR-GARCH shape a feed starts with: fitted from the chosen item's longer window when the
+ * feed started from a fixing, the authored shape otherwise or when the window is too short.
+ */
+feed_variance choose_feed_variance(ores::nats::service::nats_client& auth_nats,
+                                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                                   const ores::marketdata::domain::feed_start& start,
+                                   const std::vector<double>& means,
+                                   const std::vector<double>& stdevs,
+                                   const std::vector<double>& weights) {
+    namespace qm = ores::analytics::quant::math;
+    const qm::gjr_garch_shape authored{
+        .alpha = cfg.garch_alpha, .gamma = cfg.garch_gamma, .beta = cfg.garch_beta};
+    double total_weight = 0.0;
+    for (const double w : weights)
+        total_weight += w;
+    qm::mixture per_tick{.means = means, .stdevs = stdevs, .weights = weights};
+    if (total_weight > 0.0)
+        for (auto& w : per_tick.weights)
+            w /= total_weight;
+    const double p_minus =
+        qm::daily_negative_second_moment(per_tick, cfg.ticks_per_hour * hours_per_market_day);
+
+    daily_variance_choice choice{.shape = authored};
+    if (cfg.price_source != "fixing" || !start.from_fixing || !start.fixing_date) {
+        choice.note = "The feed did not start from a fixing, so there is no history to fit and "
+                      "the authored shape is kept.";
+    } else {
+        auto delegated = auth_nats.with_delegation({});
+        ores::marketdata::client::market_data_client md(delegated);
+        const auto window = md.get_fixing_window({.item = start.item,
+                                                  .provider_code = start.provider_code,
+                                                  .party_id = boost::uuids::to_string(cfg.party_id),
+                                                  .to = *start.fixing_date,
+                                                  .days = cfg.garch_window_days});
+        if (!window) {
+            choice.note =
+                "The history could not be read, so the authored shape is kept: " + window.error();
+        } else {
+            std::vector<double> values;
+            values.reserve(window->values.size());
+            for (const auto& v : window->values)
+                if (const auto n = number_of(v))
+                    values.push_back(*n);
+            choice = choose_daily_variance(values, start.inverted, authored, p_minus);
+        }
+    }
+    return {.shape = choice.shape,
+            .record = {.model = "gjr_garch",
+                       .fitted = choice.fitted,
+                       .alpha = choice.shape.alpha,
+                       .gamma = choice.shape.gamma,
+                       .beta = choice.shape.beta,
+                       .persistence =
+                           choice.shape.alpha + choice.shape.beta + choice.shape.gamma * p_minus,
+                       .initial_ratio = choice.initial_ratio,
+                       .returns = choice.returns,
+                       .note = choice.note}};
+}
+
 } // namespace
 
 ORES_SYNTHETIC_API_EXPORT resolved_start
@@ -373,13 +441,36 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                   << (start.note.empty() ? "" : ". " + start.note);
     }
 
-    auto process = ores::analytics::quant::service::process_factory::make_process(
-        cfg.process_type,
-        std::move(means),
-        std::move(stdevs),
-        std::move(weights),
-        initial_price,
-        price_stream_for(scheduler.run_seed(), cfg.source_name));
+    std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process;
+    if (cfg.variance_model == "gjr_garch") {
+        const auto choice = choose_feed_variance(auth_nats, cfg, start, means, stdevs, weights);
+        start.variance = choice.record;
+        BOOST_LOG_SEV(lg(), info) << "Feed " << cfg.source_name << " carries a GJR-GARCH variance, "
+                                  << (choice.record.fitted ?
+                                          "fitted from " + std::to_string(choice.record.returns) +
+                                              " daily returns" :
+                                          std::string("authored"))
+                                  << ", persistence " << choice.record.persistence
+                                  << (choice.record.note.empty() ? "" : ". " + choice.record.note);
+        process = ores::analytics::quant::service::process_factory::make_gjr_garch_process(
+            cfg.process_type,
+            std::move(means),
+            std::move(stdevs),
+            std::move(weights),
+            initial_price,
+            price_stream_for(scheduler.run_seed(), cfg.source_name),
+            choice.shape,
+            cfg.ticks_per_hour * hours_per_market_day,
+            choice.record.initial_ratio);
+    } else {
+        process = ores::analytics::quant::service::process_factory::make_process(
+            cfg.process_type,
+            std::move(means),
+            std::move(stdevs),
+            std::move(weights),
+            initial_price,
+            price_stream_for(scheduler.run_seed(), cfg.source_name));
+    }
 
     const auto arrival = to_arrival_spec(cfg);
     const auto compatibility = ores::analytics::quant::domain::validate_step_compatibility(

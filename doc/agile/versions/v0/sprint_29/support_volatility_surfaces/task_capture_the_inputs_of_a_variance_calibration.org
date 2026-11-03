@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 24E25E0E-E12D-463C-B70D-E4851380B94A
+:END:
+#+title: Task: Capture the inputs of a variance calibration
+#+description: An operation that reads a pair's fixings under its class policy and stores them as a calibration input, without fitting anything.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/capture-the-inputs-of-a-variance-calibration
+#+pr: 4427
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person, or a scheduled run, asks for the inputs of one pair or of a whole asset class. The service resolves the item by the policy's provider order and inverse rule, reads the variance window of fixings, and stores one input snapshot with every point, used or left out with its reason. The same request on the same fixings stores a new version, not a duplicate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- synthetic.v1 operation capture_variance_inputs for a pair or an asset class, permission-checked, returning the stored input ids.
+- Each point records the fixing value as stored, its date, the return it gives in market convention, and whether it was used; an unreadable value or a gap is kept with its reason.
+- Tests cover the provider order, an inverted item, a short history, a value that is not a number, and an idempotent repeat.
+
+* Plan
+
+Fold the capture and the fit into the class calibration run, =calibrate_feeds=,
+as the story's decision states: the run already resolves each feed's item under
+the class policy, so it reads that item's variance window, captures the points,
+fits them, and, when applied, stores the records.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4427][#4427]] | [synthetic] Capture and fit a feed's variance in the class calibration |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A partial input is never repaired | feed_config_handler.hpp | Accepted | The points name their input, so they follow it; the last point's id tells whether they landed, and a run writes them again when not |
+| 2 | The calibration id ignores p_minus | feed_config_handler.hpp | Accepted | The id names the feed's daily p_minus, so feeds that read one item under different mixtures fit two calibrations |
+| 3 | A failed store still reports proposed | feed_config_handler.hpp | Accepted | The state is failed and the ids are cleared |
+| 4 | A read-back mixes stored and new values | feed_config_handler.hpp | Accepted | An existing calibration is reported from its stored row |
+| 5 | Missing standard includes | variance_calibration.cpp | Accepted | Added |
+| 6 | Dates and values of different lengths are truncated | feed_config_handler.hpp | Accepted | Such a window is rejected with its reason |
+| 7 | daily_p_minus has no guard on ticks or components | variance_calibration.cpp | Declined | The table checks ticks_per_hour is positive, and a feed with no components is skipped before it is calibrated |
+| 8 | Confirm the starting ratio uses the next step's variance | variance_calibration.cpp | Declined | filter returns one more than the shocks, and its last element is the forecast, the first day's variance; a test now pins it |
+| 9 | Pin the likelihood with a hand-computed test | feeds_variance_calibration_tests.cpp | Accepted | The test recomputes it from the shape and the filtered variances |
+| 10 | Batch the window reads | feed_config_handler.hpp | Declined | 28 reads per run; not a cost at this size |
+| 11 | An automated test of the storage path | feed_config_handler.hpp | Declined | The path needs the service and the store; the live runs prove the records and the repeat, and the repair is the same deterministic ids |
+
+* Result
+
+The class calibration run captures the input of each GJR-GARCH feed it resolves
+from a fixing, rather than a =capture_variance_inputs= operation of its own (see
+the story's decision). =capture_variance_points= turns the policy's variance window
+of the resolved item into points: each fixing kept as stored, its value, its log
+return in the pair's market convention, and a reason for a point left out. An
+applied run stores the input and its points once, under ids named by the party,
+item and window, so a repeat stores nothing new.
+
+Measured on a recreated database with Acme provisioned: an applied FX run stored 28
+inputs and 7408 points, 28 of them the first points that have no return; a second
+applied run left 28 and 7408 rows across all versions. The inputs hold 241 to 279
+returns each: this environment has about a year of fixings per pair, not the five
+the window asks for. =feeds_variance_calibration_tests.cpp= covers the reasons,
+the market-convention sign of an inverted item, and a return across a skipped
+point.

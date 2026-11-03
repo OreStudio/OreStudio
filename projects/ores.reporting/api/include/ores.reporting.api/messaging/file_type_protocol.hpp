@@ -52,9 +52,8 @@ struct file_type_write {
     std::optional<std::string> analytic_type_code;
     std::string ore_parameter;
     std::string direction;
-    std::string format;
-    std::optional<std::string> xsd_file;
     std::string kind;
+    std::string ore_file_code;
     std::optional<std::string> configuration_type_code;
     std::string name_pattern;
     bool is_default;
@@ -89,10 +88,12 @@ struct file_type_lookup {
 };
 
 struct file_types_filter {
+    std::optional<std::string> ore_file_code;
     std::optional<std::optional<std::string>> analytic_type_code;
     std::optional<std::optional<std::string>> configuration_type_code;
     std::optional<std::optional<std::string>> produced_by_file_type_code;
     std::optional<std::vector<std::string>> code_one_of;
+    std::optional<std::vector<std::string>> ore_file_code_one_of;
     std::optional<std::vector<std::string>> analytic_type_code_one_of;
     std::optional<std::vector<std::string>> configuration_type_code_one_of;
     std::optional<std::vector<std::string>> produced_by_file_type_code_one_of;
@@ -298,6 +299,37 @@ struct delete_many_file_types_response {
                            const delete_many_file_types_response&) = default;
 };
 
+struct list_by_ore_file_code_file_types_request {
+    using response_type = struct list_by_ore_file_code_file_types_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.file_types.list_by_ore_file_code";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string ore_file_code;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<file_types_filter> filter;
+
+    friend bool operator==(const list_by_ore_file_code_file_types_request&,
+                           const list_by_ore_file_code_file_types_request&) = default;
+};
+
+struct list_by_ore_file_code_file_types_response {
+    ores::utility::domain::result result;
+    std::vector<ores::reporting::domain::file_type> types;
+    std::uint64_t total;
+
+    friend bool operator==(const list_by_ore_file_code_file_types_response&,
+                           const list_by_ore_file_code_file_types_response&) = default;
+};
+
 struct list_by_analytic_type_code_file_types_request {
     using response_type = struct list_by_analytic_type_code_file_types_response;
     static constexpr std::string_view nats_subject =
@@ -485,9 +517,8 @@ inline constexpr std::string_view deleted = "reporting.v1.file_types_events.dele
         utility::codec::field{"analytic_type_code", &file_type_write::analytic_type_code},
         utility::codec::field{"ore_parameter", &file_type_write::ore_parameter},
         utility::codec::field{"direction", &file_type_write::direction},
-        utility::codec::field{"format", &file_type_write::format},
-        utility::codec::field{"xsd_file", &file_type_write::xsd_file},
         utility::codec::field{"kind", &file_type_write::kind},
+        utility::codec::field{"ore_file_code", &file_type_write::ore_file_code},
         utility::codec::field{"configuration_type_code", &file_type_write::configuration_type_code},
         utility::codec::field{"name_pattern", &file_type_write::name_pattern},
         utility::codec::field{"is_default", &file_type_write::is_default},
@@ -555,12 +586,14 @@ inline constexpr std::string_view deleted = "reporting.v1.file_types_events.dele
  */
 [[nodiscard]] constexpr auto wire_fields(const file_types_filter&) {
     return std::tuple{
+        utility::codec::field{"ore_file_code", &file_types_filter::ore_file_code},
         utility::codec::field{"analytic_type_code", &file_types_filter::analytic_type_code},
         utility::codec::field{"configuration_type_code",
                               &file_types_filter::configuration_type_code},
         utility::codec::field{"produced_by_file_type_code",
                               &file_types_filter::produced_by_file_type_code},
         utility::codec::field{"code_one_of", &file_types_filter::code_one_of},
+        utility::codec::field{"ore_file_code_one_of", &file_types_filter::ore_file_code_one_of},
         utility::codec::field{"analytic_type_code_one_of",
                               &file_types_filter::analytic_type_code_one_of},
         utility::codec::field{"configuration_type_code_one_of",
@@ -827,6 +860,42 @@ inline constexpr std::string_view deleted = "reporting.v1.file_types_events.dele
 [[nodiscard]] constexpr auto wire_fields(const delete_many_file_types_response&) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_file_types_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_ore_file_code_file_types_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_ore_file_code_file_types_request&) {
+    return std::tuple{
+        utility::codec::field{"ore_file_code",
+                              &list_by_ore_file_code_file_types_request::ore_file_code},
+        utility::codec::field{"scope", &list_by_ore_file_code_file_types_request::scope},
+        utility::codec::field{"offset", &list_by_ore_file_code_file_types_request::offset},
+        utility::codec::field{"limit", &list_by_ore_file_code_file_types_request::limit},
+        utility::codec::field{"order", &list_by_ore_file_code_file_types_request::order},
+        utility::codec::field{"filter", &list_by_ore_file_code_file_types_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_ore_file_code_file_types_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_ore_file_code_file_types_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_ore_file_code_file_types_response::result},
+        utility::codec::field{"types", &list_by_ore_file_code_file_types_response::types},
+        utility::codec::field{"total", &list_by_ore_file_code_file_types_response::total},
     };
 }
 
@@ -1273,6 +1342,34 @@ struct ORES_REPORTING_API_EXPORT
     static std::string
     write_msgpack(const ores::reporting::messaging::delete_many_file_types_response& v);
     static ores::reporting::messaging::delete_many_file_types_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_by_ore_file_code_file_types_request& v);
+    static ores::reporting::messaging::list_by_ore_file_code_file_types_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_by_ore_file_code_file_types_request& v);
+    static ores::reporting::messaging::list_by_ore_file_code_file_types_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_by_ore_file_code_file_types_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_by_ore_file_code_file_types_response& v);
+    static ores::reporting::messaging::list_by_ore_file_code_file_types_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_by_ore_file_code_file_types_response& v);
+    static ores::reporting::messaging::list_by_ore_file_code_file_types_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

@@ -315,8 +315,22 @@ const fr: SourceCatalogue = {
             approve: 'Approuver la publication',
         },
         cutAuthorisation: {
-            noSubjectLink:
-                'Le corps que cette demande autorise se trouve sur l’enregistrement de la coupure, sous Reporting, Coupures. Rien ici n’y renvoie encore, car aucune lecture ne répond d’une coupure par la demande qu’elle a levée.',
+            subject: 'Le corps que cette demande autorise',
+            kind: 'Type de coupure',
+            timepoint: 'Instant fixé',
+            scope: 'Périmètre',
+            centre: 'Centre de taux',
+            deals: 'Opérations',
+            sets: 'Ensembles publiés',
+            gaps: 'Écarts',
+            state: 'État du corps',
+            openCut: 'Ouvrir la coupure',
+            row: '{kind} · {timepoint} · {scope} · {deals} opérations · {sets} ensembles',
+            summary: 'coupure {label}',
+            noSubjectRefused:
+                'Cette demande est une autorisation de coupure, et ce compte ne peut pas lire la coupure qu’elle nomme : son sujet n’est donc pas dessiné ici. La demande elle-même est saine.',
+            noSubjectMissing:
+                'Cette demande est une autorisation de coupure, et le composant de reporting ne détient aucune coupure pour elle. Rien n’a été trouvé à dessiner, plutôt que quelque chose ayant été refusé.',
         },
         mine: {
             none: 'Vous n’avez fait aucune demande.',
@@ -2100,30 +2114,6 @@ const fr: SourceCatalogue = {
                     viaBatch: 'par batch_id',
                     result: 'Résultat {id}, exécution {run},',
                 },
-            },
-            reportRun: {
-                title: 'Exécution de rapport',
-                description:
-                    'L’exécution d’un rapport qui a envoyé un lot : son état, ses heures et le lot qu’elle a créé.',
-                loading: 'Lecture de l’exécution de rapport...',
-                run: 'Exécution',
-                errors: 'Erreurs',
-                name: 'Nom',
-                kind: 'Type',
-                state: 'État',
-                startedAt: 'Début',
-                completedAt: 'Fin',
-                pricedAt: 'Évalué au {date}',
-                output: 'Sortie',
-                links: 'Liens',
-                report: 'Ouvrir le rapport',
-                batch: 'Ouvrir le lot',
-                noBatch: 'Aucun lot de cette exécution n’est visible pour vous.',
-                noBatchFailed: 'Cette exécution n’a créé aucun lot.',
-                reportNamed: 'Ouvrir le rapport {name}',
-                party: 'Partie',
-                notProduction:
-                    'Cette exécution est de type {kind}, pas une exécution de production.',
             },
             appVersion: {
                 title: 'Version de l’application',
@@ -4464,6 +4454,7 @@ const fr: SourceCatalogue = {
                 centres: 'Centres d’affaires',
                 counterparties: 'Contreparties',
                 arrivals: 'Arrivées',
+                variance: 'Variance',
                 behaviour: 'Comportement du prix',
                 ticks: 'Cotations',
                 process: 'Processus',
@@ -4615,6 +4606,7 @@ const fr: SourceCatalogue = {
                 arithmetic: 'Arithmétique',
                 ornstein_uhlenbeck: 'Retour à la moyenne (Ornstein-Uhlenbeck)',
             },
+            variance_model: { constant: 'Constante', gjr_garch: 'GJR-GARCH' },
             role: {
                 self_discounting: 'Auto-actualisante',
                 discount: 'Actualisation',
@@ -5829,6 +5821,31 @@ const fr: SourceCatalogue = {
             restartFailed:
                 'Enregistré, mais le redémarrage a échoué : {message}. Le flux tourne sur son ancienne loi jusqu’à son prochain démarrage.',
         },
+        variance: {
+            title: 'Variance quotidienne',
+            lead: 'Si la variance quotidienne de ce flux est constante ou suit un GJR-GARCH, afin que les jours calmes et agités se regroupent, et la forme dont elle part.',
+            model: 'Modèle de variance',
+            'model.constant': 'Constante — la variance du mélange chaque jour',
+            'model.gjr_garch': 'GJR-GARCH — une variance reportée de jour en jour',
+            alpha: 'Alpha',
+            alphaHelp:
+                'La force avec laquelle le mouvement d’un jour relève la variance du lendemain. Au moins zéro.',
+            gamma: 'Gamma',
+            gammaHelp:
+                'La réaction supplémentaire à une baisse de la paire ; alpha plus gamma vaut au moins zéro.',
+            beta: 'Bêta',
+            betaHelp: 'La part de la variance d’un jour reportée au suivant. Au moins zéro.',
+            window: 'Historique, jours',
+            windowHelp:
+                'Les jours de fixings qu’un flux à fixing utilise pour ajuster sa forme, de 30 à 3660.',
+            fitted: 'Un flux qui part d’un fixing ajuste sa propre forme sur cet historique, et garde ces valeurs quand l’historique est trop court. Le point de départ du run indique laquelle il a utilisée.',
+            engine: 'Une variance GJR-GARCH met le mélange à l’échelle ; elle demande donc le moteur géométrique ou arithmétique. Changez d’abord le moteur dans l’onglet Comportement du prix.',
+            editTitle: 'Modifier la variance quotidienne de {feed}',
+            runningNote: 'Le flux tourne sur la variance avec laquelle il a démarré.',
+            restart: 'Le redémarrer pour appliquer',
+            restartFailed:
+                'Enregistré, mais le redémarrage a échoué : {message}. Le flux garde son ancienne variance jusqu’à son prochain démarrage.',
+        },
         market: {
             title: 'Le marché',
             views: {
@@ -6202,6 +6219,16 @@ const fr: SourceCatalogue = {
                 auto_start: 'Le flux démarre quand le service synthétique démarre.',
                 calibration_window_days:
                     'La fenêtre propre au flux, de 2 à 180 jours, à la place de celle de la politique de sa classe. Laissez vide pour suivre la politique.',
+                variance_model:
+                    'Constante garde la variance du mélange chaque jour. GJR-GARCH reporte une variance d’un jour au suivant, si bien que les jours calmes et agités se regroupent ; il demande le moteur géométrique ou arithmétique.',
+                garch_alpha:
+                    'GJR-GARCH seulement : la force avec laquelle le mouvement d’un jour relève la variance du lendemain. Au moins zéro.',
+                garch_gamma:
+                    'GJR-GARCH seulement : la réaction supplémentaire à une baisse de la paire. Négatif quand une hausse relève davantage la variance ; alpha plus gamma vaut au moins zéro.',
+                garch_beta:
+                    'GJR-GARCH seulement : la part de la variance d’un jour reportée au suivant. Au moins zéro.',
+                garch_window_days:
+                    'GJR-GARCH seulement : combien de jours de fixings un flux à fixing utilise pour ajuster sa forme, de 30 à 3660. Cinq ans par défaut.',
             },
             start: {
                 title: "D'où part cette exécution",
@@ -6213,6 +6240,13 @@ const fr: SourceCatalogue = {
                 inverted:
                     "L'élément cite la paire dans l'autre sens, donc sa valeur a été lue comme son inverse.",
                 window: '{used} fixings sur {days} jours ont mesuré sa dispersion.',
+                variance: {
+                    fitted: 'Variance quotidienne : GJR-GARCH ajusté sur {returns} rendements quotidiens, alpha {alpha}, gamma {gamma}, bêta {beta}, persistance {persistence}.',
+                    authored:
+                        'Variance quotidienne : GJR-GARCH avec la forme saisie, alpha {alpha}, gamma {gamma}, bêta {beta}, persistance {persistence}.',
+                    firstDay:
+                        'La variance du premier jour vaut {ratio} fois le niveau de long terme, tel que l’historique s’est terminé.',
+                },
                 measures: {
                     volatility:
                         "Volatilité réalisée {daily} par jour, {hourly} par heure : elle a changé le calibrage, car elle met le mélange à l'échelle.",
@@ -7316,8 +7350,11 @@ const fr: SourceCatalogue = {
             deals: 'Transactions à l’instant',
             sets: 'Ensembles publiés en vigueur',
             gaps: 'Écarts ouverts',
-            applyLater:
-                'L’application n’est pas construite. Quand la demande sera approuvée, le service reporting écrira l’autorisation de la coupure et marquera cet enregistrement, et rien ne l’écrit maintenant.',
+            applied: 'Apposé sur la coupure par {who} le {when}.',
+            appliedLead:
+                'Le service reporting applique une demande décidée par réconciliation : il lit les demandes décidées et pas encore apposées, et écrit la coupure à partir des faits de la décision. L’instant apposé est celui de la décision, donc répéter l’exécution ne peut pas le déplacer.',
+            applyPending:
+                'La décision n’a pas encore atteint cet enregistrement. Quand la demande sera décidée, le service reporting marquera la coupure et cette ligne en moins d’une minute.',
             takeAgain: 'Prendre à nouveau',
             takeAgainLead:
                 'Un refus est définitif pour ce corps, donc le remède est une nouvelle prise. Le nouveau corps porte l’ordinal suivant de son jour dans son libellé.',
@@ -7441,30 +7478,125 @@ const fr: SourceCatalogue = {
             starting: 'Lancement…',
             title: 'Exécution du rapport',
             tabs: {
-                run: 'Exécution',
+                details: 'Détails',
                 results: 'Résultats',
+                errors: 'Erreurs',
+                downloads: 'Téléchargements',
             },
             definition: 'Rapport',
+            party: 'Partie',
             kind: 'Type',
             state: 'État',
             started: 'Début',
             completed: 'Fin',
+            duration: 'Durée',
             pricedAt: 'Valorisé au',
             message: "Ce que l'exécution a dit",
-            output: 'Archive de sortie',
-            download: "Télécharger l'archive",
-            errors: 'Lire les erreurs de cette exécution',
+            batch: 'Lot de calcul',
+            noBatch: 'Aucun lot de cette exécution ne vous est visible.',
+            noBatchFailed: "Cette exécution n'a créé aucun lot.",
+            modifiedBy: 'Modifié en dernier par',
+            notProduction: 'Cette exécution est du type {kind}, pas une exécution de production.',
+            files: {
+                none: "Cette exécution n'a pas encore de fichiers. Une exécution liste ses fichiers une fois son travail distribué.",
+                plural: 'fichiers',
+                direction: 'Sens',
+                name: 'Fichier',
+                kind: 'Type',
+                oreFile: 'Fichier ORE',
+                size: 'Taille',
+                digest: 'SHA-256',
+                job: 'Travail',
+                notCatalogued: 'Non catalogué',
+                directions: { input: 'Entrée', output: 'Sortie' },
+                kinds: { archive: 'Archive', file: 'Fichier' },
+                tree: 'Où sont les fichiers',
+                nodes: {
+                    run: 'Cette exécution',
+                    batch: 'Lot {ref}',
+                    job: 'Travail {ref}',
+                    input: "Paquet d'entrée",
+                    output: 'Sortie, résultat {ref}',
+                },
+            },
+            file: {
+                title: 'Fichier',
+                notCatalogued:
+                    "Aucun fichier ORE du catalogue ne reconnaît ce nom, donc ORE Studio ne peut pas dire ce qu'il contient. Le fichier peut quand même être téléchargé.",
+                origins: {
+                    supplied: "Fourni à l'exécution",
+                    produced: 'Écrit par ORE',
+                    packaged: 'Créé par ORE Studio',
+                },
+                facts: 'Ce fichier',
+                download: 'Télécharger',
+                name: 'Nom du fichier',
+                direction: 'Sens',
+                kind: 'Type',
+                size: 'Taille',
+                digest: 'SHA-256',
+                job: 'Travail',
+                format: 'Format',
+                formats: {
+                    xml: 'Document XML',
+                    csv: 'Valeurs séparées par des virgules',
+                    csv_gz: 'Valeurs séparées par des virgules, compressées',
+                    txt: 'Texte brut',
+                    dat: 'Données binaires',
+                    json: 'JSON',
+                    json_gz: 'JSON, compressé',
+                    tar_gz: 'Archive tar compressée',
+                    xsd: 'Schéma XML',
+                },
+                schema: 'Schéma',
+                engineVersion: 'Version ORE',
+                downloadSchema: 'Télécharger le schéma et ses inclusions',
+                schemaNotStored: '(non stocké pour ORE {version})',
+                typicalName: 'Nom habituel',
+                namePattern: 'Noms reconnus',
+                configurationType: 'Type de configuration',
+                guideSection: "Section du guide d'utilisation ORE",
+                code: 'Code du fichier ORE',
+                parameters: 'Paramètres qui nomment ce fichier',
+                parametersPlural: 'paramètres',
+                noParameters:
+                    "Aucun paramètre d'un document d'exécution ne nomme ce fichier ; ORE ou ORE Studio le nomme.",
+                parameter: 'Paramètre',
+                parameterName: 'Nom donné',
+                default: 'Par défaut',
+                parameterDescription: 'À quoi sert le paramètre',
+            },
+            errors: {
+                none: "Cette exécution n'a enregistré aucun problème.",
+                plural: 'problèmes',
+                severity: 'Gravité',
+                scope: 'Portée',
+                about: 'Objet',
+                message: 'Message',
+                views: { overview: 'Aperçu', list: 'Liste' },
+                byScope: "Les problèmes de l'exécution par portée",
+                byScopeCaption:
+                    "Chaque problème enregistré, compté par la partie de l'exécution à laquelle il appartient.",
+                unscoped: 'Portée non indiquée',
+                otherScopes: 'Autres portées',
+                errorsCount: 'Erreurs',
+                warningsCount: 'Avertissements',
+                total: 'Total',
+                openScope: 'Ouvrir les problèmes {scope} dans la liste',
+                scopeShown: 'Seuls les problèmes {scope} sont affichés.',
+                everyScope: 'Afficher toutes les portées',
+                filter: {
+                    all: 'Tous ({count})',
+                    error: 'Erreurs ({count})',
+                    warning: 'Avertissements ({count})',
+                },
+            },
         },
         results: {
             unreadRows: "{count} lignes n'ont pas pu être lues et ne sont pas affichées.",
-            otherScopes: 'Autres portées',
             shareTitle: "Part de chaque livre dans l'exécution",
             shareCaption:
                 'Un tout en quelques parts se lit en anneau. Les chiffres sont à côté, car un anneau dit la forme et non la valeur.',
-            problemsTitle: "Les problèmes de l'exécution par portée",
-            problemsCaption:
-                'Un tout en quelques parts se lit en anneau. Chaque problème enregistré est compté ici, quelle que soit sa portée.',
-            unscoped: 'Portée non indiquée',
             was: 'Exécution précédente',
             compareTo: 'Comparer à',
             noComparison: 'Aucune comparaison',
@@ -7514,9 +7646,9 @@ const fr: SourceCatalogue = {
             notional: 'Notionnel',
             counterparty: 'Contrepartie',
             noRun: "Ce rapport n'a aucune exécution à lire.",
-            noRows: "Cette exécution n'a chargé aucune ligne de résultat.",
-            noFigures: 'Les lignes de cette exécution ne portent ni transaction ni chiffre.',
-            failed: "Les résultats n'ont pas pu être lus.",
+            noRows: "Cette exécution n'a aucun résultat. Elle n'a stocké aucun chiffre pour aucune transaction. L'onglet Erreurs indique ce qui a échoué.",
+            noFigures:
+                "Cette exécution n'a aucun résultat à afficher. Ses lignes ne nomment ni transaction ni NPV. L'onglet Erreurs indique ce qui a échoué.",
             selectedTrade: 'La transaction ouverte',
             tradeErrors: "Ce que l'exécution a enregistré sur cette transaction",
             noTradeError: "L'exécution n'a enregistré aucune erreur sur cette transaction.",
@@ -7529,16 +7661,15 @@ const fr: SourceCatalogue = {
             results: 'Résultats',
         },
         runs: {
-            pricedAt: 'Valorisé au',
-            actions: 'Actions',
-            details: 'Détails',
-            results: 'Résultats',
             title: 'Exécutions',
             empty: "Ce rapport n'a pas encore été exécuté.",
             name: 'Exécution',
             state: 'État',
             started: 'Début',
             completed: 'Fin',
+            duration: 'Durée',
+            pricedAt: 'Valorisé au',
+            plural: 'exécutions',
         },
         area: {
             title: 'Rapports',

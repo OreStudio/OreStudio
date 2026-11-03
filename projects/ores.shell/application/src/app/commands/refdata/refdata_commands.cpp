@@ -134,12 +134,16 @@
 #include "ores.shell/app/commands/refdata/fra_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/future_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/fx_option_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/fx_vol_surface_blueprint_commands.hpp"
+#include "ores.shell/app/commands/refdata/fx_vol_surface_pillar_commands.hpp"
+#include "ores.shell/app/commands/refdata/fx_vol_surface_pillar_source_commands.hpp"
 #include "ores.shell/app/commands/refdata/fx_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/fx_volatility_smile_commands.hpp"
 #include "ores.shell/app/commands/refdata/ibor_index_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/inflation_cap_floor_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/inflation_cap_floor_volatility_strikes_commands.hpp"
 #include "ores.shell/app/commands/refdata/inflation_curve_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/inflation_seasonality_commands.hpp"
 #include "ores.shell/app/commands/refdata/inflation_seasonality_factor_commands.hpp"
 #include "ores.shell/app/commands/refdata/inflation_swap_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/instrument_code_commands.hpp"
@@ -190,6 +194,7 @@
 #include "ores.shell/app/commands/refdata/swap_index_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/swaption_proxy_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/swaption_volatility_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/swaption_volatility_smile_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_anchor_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_basis_swap_long_short_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_basis_swap_pay_receive_commands.hpp"
@@ -224,6 +229,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     fx_volatility_smile_commands::register_commands(root_menu, session);
     inflation_cap_floor_volatility_strikes_commands::register_commands(root_menu, session);
     swaption_proxy_config_commands::register_commands(root_menu, session);
+    swaption_volatility_smile_commands::register_commands(root_menu, session);
     trading_account_type_commands::register_commands(root_menu, session);
     asset_class_code_commands::register_commands(root_menu, session);
     asset_class_commands::register_commands(root_menu, session);
@@ -354,6 +360,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     ibor_index_convention_commands::register_commands(root_menu, session);
     inflation_cap_floor_volatility_config_commands::register_commands(root_menu, session);
     inflation_curve_config_commands::register_commands(root_menu, session);
+    inflation_seasonality_commands::register_commands(root_menu, session);
     inflation_seasonality_factor_commands::register_commands(root_menu, session);
     inflation_swap_convention_commands::register_commands(root_menu, session);
     instrument_code_commands::register_commands(root_menu, session);
@@ -361,6 +368,9 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     intraday_power_load_convention_commands::register_commands(root_menu, session);
     ir_curve_bootstrap_config_commands::register_commands(root_menu, session);
     ir_curve_bootstrap_pillar_commands::register_commands(root_menu, session);
+    fx_vol_surface_blueprint_commands::register_commands(root_menu, session);
+    fx_vol_surface_pillar_commands::register_commands(root_menu, session);
+    fx_vol_surface_pillar_source_commands::register_commands(root_menu, session);
     ledger_feed_type_commands::register_commands(root_menu, session);
     leg_type_commands::register_commands(root_menu, session);
     local_jurisdiction_commands::register_commands(root_menu, session);

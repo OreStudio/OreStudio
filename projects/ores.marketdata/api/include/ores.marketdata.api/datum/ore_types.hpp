@@ -29,11 +29,11 @@
 namespace ores::marketdata::datum {
 
 /**
- * @brief ORE's market datum instrument types: MarketDatum::InstrumentType in
- * OREData, without NONE.
+ * @brief The market datum instrument types: ORE's MarketDatum::InstrumentType in
+ * OREData, without NONE, then oresmd's own.
  *
- * The order is ORE's, so the enum and ORE's own list can be compared line by
- * line.
+ * ORE's come first and in ORE's order, so the enum and ORE's own list can be
+ * compared line by line; oresmd's follow them.
  */
 enum class instrument_type : std::uint8_t {
     zero,
@@ -80,10 +80,25 @@ enum class instrument_type : std::uint8_t {
     commodity_calendar_spread_option,
     shape_profile,
     cpr,
-    rating
+    rating,
+    fx_vol_surface
 };
 
-inline constexpr std::size_t instrument_type_count = 45;
+inline constexpr std::size_t instrument_type_count = 46;
+
+/**
+ * @brief How many of the instrument types are ORE's, in ORE's order; the rest are oresmd's own.
+ *
+ * An oresmd type names a series ORE has no market datum for, such as a calibrated FX
+ * volatility surface, which a blueprint writes from the quotes it was calibrated to. It
+ * has no ORE key: the key grammar neither reads nor writes it.
+ */
+inline constexpr std::size_t ore_instrument_type_count = 45;
+
+/// Whether ORE has the type, so that a key can name it.
+constexpr bool is_ore_type(instrument_type t) {
+    return static_cast<std::size_t>(t) < ore_instrument_type_count;
+}
 
 /**
  * @brief ORE's market datum quote types: MarketDatum::QuoteType in OREData.

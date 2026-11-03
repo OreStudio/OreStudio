@@ -36,6 +36,7 @@ export interface CalibrationPolicy {
     id: string;
     asset_class_code: string;
     window_days: number;
+    variance_window_days: number;
     allow_inverse: boolean;
     fallback_code: string;
     modified_by: string;

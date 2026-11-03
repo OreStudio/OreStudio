@@ -13,7 +13,7 @@
 #+entity_title: FX Spot Generation Config
 #+brief: Configuration for generating synthetic FX spot observations.
 #+created: 2026-06-30
-#+updated: 2026-06-30
+#+updated: 2026-11-03
 
 A typed sub-configuration owned by a =market_data_generation_config=. Describes
 how to synthesise the tick stream for a single FX spot rate: which ORE market
@@ -356,6 +356,91 @@ leaves today's behaviour unchanged.
 1.0
 #+end_src
 
+** variance_model
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "constant"
+:default:       'constant'
+:END:
+
+How the feed's daily variance moves: "constant", the mixture's own variance on
+every day, or "gjr_garch", a GJR-GARCH(1,1) variance carried from one market day
+to the next that scales the mixture's shocks. "gjr_garch" needs an engine that
+can scale its law, geometric or arithmetic.
+
+#+begin_src cpp :name generator
+std::string("constant")
+#+end_src
+
+** garch_alpha
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.05
+:default:       0.05
+:END:
+
+For "gjr_garch": how strongly a day's move raises the next day's variance. At
+least zero. The authored value; a fixing feed with enough history fits its own
+at start and keeps this as the fallback.
+
+#+begin_src cpp :name generator
+0.05
+#+end_src
+
+** garch_gamma
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:default:       0.0
+:END:
+
+For "gjr_garch": the extra reaction to a fall of the pair. Negative when a rise
+of the pair raises the variance more, as for a pair whose base currency is a
+safe haven; alpha + gamma is at least zero.
+
+#+begin_src cpp :name generator
+0.0
+#+end_src
+
+** garch_beta
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.9
+:default:       0.9
+:END:
+
+For "gjr_garch": how much of a day's variance carries into the next. At least
+zero; with alpha and gamma it must leave the persistence below one, which the
+feed checks at start against its own mixture.
+
+#+begin_src cpp :name generator
+0.9
+#+end_src
+
+** garch_window_days
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 1826
+:default:       1826
+:END:
+
+For "gjr_garch" on a fixing feed: how many days of the chosen item's fixings the
+fit reads, five years by default. Between 30 and 3660.
+
+#+begin_src cpp :name generator
+1826
+#+end_src
+
 * Artefact columns
 :PROPERTIES:
 :key: id
@@ -467,6 +552,46 @@ For hawkes: how fast a burst fades, per second.
 
 How strongly a market-wide regime moves this row, where one is the average.
 
+** variance_model
+:PROPERTIES:
+:type: text
+:default: 'constant'
+:END:
+
+How the daily variance moves: constant or gjr_garch.
+
+** garch_alpha
+:PROPERTIES:
+:type: double precision
+:default: 0.05
+:END:
+
+For gjr_garch: the reaction to a day's move.
+
+** garch_gamma
+:PROPERTIES:
+:type: double precision
+:default: 0.0
+:END:
+
+For gjr_garch: the extra reaction to a fall.
+
+** garch_beta
+:PROPERTIES:
+:type: double precision
+:default: 0.9
+:END:
+
+For gjr_garch: the carry-over of a day's variance.
+
+** garch_window_days
+:PROPERTIES:
+:type: integer
+:default: 1826
+:END:
+
+For gjr_garch: the days of fixings the fit reads.
+
 * Artefact indexes
 
 ** base_currency_code
@@ -501,6 +626,12 @@ How strongly a market-wide regime moves this row, where one is the average.
 | "price_source" in ('fixed', 'fixing')                 |
 | "gmm_initial_price" > 0                                |
 | "calibration_window_days" is null or "calibration_window_days" between 2 and 180 |
+| "variance_model" in ('constant', 'gjr_garch')       |
+| "garch_alpha" >= 0                                    |
+| "garch_beta" >= 0                                     |
+| "garch_alpha" + "garch_gamma" >= 0                    |
+| "garch_window_days" between 30 and 3660               |
+| "variance_model" <> 'gjr_garch' or "process_type" in ('geometric', 'arithmetic') |
 
 * Foreign keys
 

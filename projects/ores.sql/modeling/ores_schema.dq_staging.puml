@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 168
+Tables: 170
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2026,6 +2026,11 @@ package "dq_staging" #F3E5F5 {
         * branching_ratio : double
         * decay : double
         * sensitivity : double
+        * variance_model : text
+        * garch_alpha : double
+        * garch_gamma : double
+        * garch_beta : double
+        * garch_window_days : integer
     }
 
     note right of ores_dq_fx_spot_generation_configs_artefact_tbl
@@ -2170,16 +2175,29 @@ package "dq_staging" #F3E5F5 {
         * frequency : text
           base_rate : text
           tolerance : double
-        * has_seasonality : boolean
-          seasonality_base_date : text
-          seasonality_frequency : text
           use_last_fixing_date : text
           interpolation_variable : text
           interpolation_method : text
     }
 
     note right of ores_dq_inflation_curve_configs_artefact_tbl
-    The settings of one InflationCurve entry of a curveconfig.xml, one row per curve_definition in the InflationCurves section: the nominal curve it is built over, whether it is zero coupon or year on year, its lag and frequency, and its seasonality. The quotes it is built from are rows of curve_quote, and the seasonality factors rows of inflation_seasonality_factor. The schema also allows a list of segments, each a convention and quotes. No corpus document writes one, and the mapper refuses an entry that does rather than lose it. - Artefact Table
+    The settings of one InflationCurve entry of a curveconfig.xml, one row per curve_definition in the InflationCurves section: the nominal curve it is built over, whether it is zero coupon or year on year, its lag and frequency, and its interpolation. The quotes it is built from are rows of curve_quote. Its seasonality is a row of inflation_seasonality, present only when the curve states one, and the seasonality factors are rows of inflation_seasonality_factor. The schema also allows a list of segments, each a convention and quotes. No corpus document writes one, and the mapper refuses an entry that does rather than lose it. - Artefact Table
+    end note
+
+    entity ores_dq_inflation_seasonalities_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * base_date : text
+        * frequency : text
+    }
+
+    note right of ores_dq_inflation_seasonalities_artefact_tbl
+    ORE's seasonalityType requires BaseDate, Frequency and Factors together. The inflation curve held them as has_seasonality and two nullable columns, which could say a curve has a seasonality with no base date. A row of this part is the seasonality: it exists only where the curve states one, so its presence replaces the flag, and its base date and frequency are required. The factors stay rows of inflation_seasonality_factor, keyed by the same curve entry. The export refuses factors with no seasonality. ORE allows a seasonality whose Factors holds no Factor, so the part does not require one. A curve entry holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_definition_id). - Artefact Table
     end note
 
     entity ores_dq_inflation_seasonality_factors_artefact_tbl  #F7E5FF {
@@ -2971,14 +2989,28 @@ package "dq_staging" #F3E5F5 {
           swap_tenors : text
           short_swap_index_base : text
           swap_index_base : text
-          smile_option_tenors : text
-          smile_swap_tenors : text
-          smile_spreads : text
           quote_tag : text
     }
 
     note right of ores_dq_swaption_volatility_configs_artefact_tbl
-    The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix and smile, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so it is a row of swaption_proxy_config and the entry holds none of its fields. - Artefact Table
+    The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so it is a row of swaption_proxy_config and the entry holds none of its fields. The smile grid of a Smile surface is a row of swaption_volatility_smile in the same way, so an ATM entry carries no smile columns. - Artefact Table
+    end note
+
+    entity ores_dq_swaption_volatility_smiles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * swaption_volatility_config_id : uuid <<FK>>
+          smile_option_tenors : text
+          smile_swap_tenors : text
+          smile_spreads : text
+    }
+
+    note right of ores_dq_swaption_volatility_smiles_artefact_tbl
+    ORE's swaptionVolatility is one xs:all with an optional Dimension and every smile element optional. ORE reads the three smile lists only for a Smile surface, and they are one block: in the ORE examples an entry states all three or none. A row of this part is that block, and it exists wherever the entry states one, as the FX smile part does for the FX entry. The examples also keep a grid on three ATM entries whose dimension was switched from Smile, so the part does not depend on the dimension, and the document round trips as written. The part holds SmileOptionTenors, SmileSwapTenors and SmileSpreads, each a comma separated list in ORE's own text. Dimension stays on the entry, because it is the entry's own setting and the smile only depends on it. An entry holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, swaption_volatility_config_id). - Artefact Table
     end note
 
     entity ores_dq_tags_artefact_tbl  #F7E5FF {

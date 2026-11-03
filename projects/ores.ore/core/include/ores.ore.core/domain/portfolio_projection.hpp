@@ -33,6 +33,23 @@
 namespace ores::ore::domain {
 
 /**
+ * @brief A trade a portfolio leaves out because its ORE XML cannot be written.
+ */
+struct refused_trade {
+    std::string trade_id;
+    std::string trade_type;
+    std::string message;
+};
+
+/**
+ * @brief A Portfolio document, and the trades it leaves out to be written.
+ */
+struct written_portfolio {
+    std::string xml;
+    std::vector<refused_trade> refused;
+};
+
+/**
  * @brief Projects an ORE Portfolio document onto the trading entities, and back.
  *
  * The document is one list of trades. Each trade states its type, an envelope
@@ -63,6 +80,18 @@ public:
      * @throws std::runtime_error when the record cannot produce one.
      */
     static std::string write(const document& v);
+
+    /**
+     * @brief Writes a Portfolio record as a document, leaving out each trade
+     * that cannot be written.
+     *
+     * One malformed trade refuses the whole document under write(), so a run
+     * of many trades would price none of them. Here the trade is left out and
+     * named with the writer's reason, and the rest are written.
+     *
+     * @throws std::runtime_error when no trade can be written.
+     */
+    static written_portfolio write_leaving_out(const document& v);
 
     /**
      * @brief Projects every trade the document states, in document order.

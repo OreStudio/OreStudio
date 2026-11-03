@@ -705,3 +705,173 @@ TEST_CASE("a_curve_entry_holds_only_the_parts_its_construction_has",
         curve_configuration_projection::map(untyped),
         Catch::Matchers::ContainsSubstring("states neither a Type nor Configurations"));
 }
+
+TEST_CASE("a_swaption_smile_and_an_inflation_seasonality_are_parts_their_entry_states",
+          "[ore][xml][roundtrip][curveconfig]") {
+    auto lg(make_logger(test_suite));
+
+    const std::string text = R"(<CurveConfiguration>
+  <SwaptionVolatilities>
+    <SwaptionVolatility>
+      <CurveId>EUR_SW_N</CurveId>
+      <CurveDescription>An ATM surface that keeps a smile grid it does not use</CurveDescription>
+      <Dimension>ATM</Dimension>
+      <OptionTenors>1Y,2Y</OptionTenors>
+      <SwapTenors>1Y,5Y</SwapTenors>
+      <SmileOptionTenors>2Y</SmileOptionTenors>
+      <SmileSwapTenors>1Y</SmileSwapTenors>
+      <SmileSpreads>-0.005,0,0.005</SmileSpreads>
+    </SwaptionVolatility>
+    <SwaptionVolatility>
+      <CurveId>GBP_SW_N</CurveId>
+      <CurveDescription>An ATM surface</CurveDescription>
+      <Dimension>ATM</Dimension>
+      <OptionTenors>1Y,2Y</OptionTenors>
+      <SwapTenors>1Y,5Y</SwapTenors>
+    </SwaptionVolatility>
+    <SwaptionVolatility>
+      <CurveId>EUR_SW_N_CUBE</CurveId>
+      <CurveDescription>A cube</CurveDescription>
+      <Dimension>Smile</Dimension>
+      <OptionTenors>1Y,2Y</OptionTenors>
+      <SwapTenors>1Y,5Y</SwapTenors>
+      <SmileOptionTenors>1Y</SmileOptionTenors>
+      <SmileSwapTenors>5Y</SmileSwapTenors>
+      <SmileSpreads>-0.01,0,0.01</SmileSpreads>
+    </SwaptionVolatility>
+  </SwaptionVolatilities>
+  <InflationCurves>
+    <InflationCurve>
+      <CurveId>EUHICPXT_ZC_Swaps</CurveId>
+      <CurveDescription>With seasonality</CurveDescription>
+      <NominalTermStructure>Yield/EUR/EUR6M</NominalTermStructure>
+      <Type>ZC</Type>
+      <Calendar>TARGET</Calendar>
+      <Lag>3M</Lag>
+      <Frequency>Monthly</Frequency>
+      <Seasonality>
+        <BaseDate>2016-01-01</BaseDate>
+        <Frequency>Monthly</Frequency>
+        <Factors>
+          <Factor>SEASONALITY/RATE/MULT/EUHICPXT/JAN</Factor>
+          <Factor>SEASONALITY/RATE/MULT/EUHICPXT/FEB</Factor>
+        </Factors>
+      </Seasonality>
+    </InflationCurve>
+    <InflationCurve>
+      <CurveId>UKRPI_ZC_Swaps</CurveId>
+      <CurveDescription>Without seasonality</CurveDescription>
+      <NominalTermStructure>Yield/GBP/GBP6M</NominalTermStructure>
+      <Type>ZC</Type>
+      <Calendar>UK</Calendar>
+      <Lag>2M</Lag>
+      <Frequency>Monthly</Frequency>
+    </InflationCurve>
+  </InflationCurves>
+</CurveConfiguration>)";
+    CHECK(round_trip(text, "parts").empty());
+
+    const auto mapped = curve_configuration_projection::map(read_document(text));
+    // The rows of an entry and of its parts are keyed by the curve the entry
+    // defines, so each is found by its CurveId rather than by its position.
+    const auto definition_of = [&](const std::string& curve_id) {
+        const auto it = std::ranges::find(
+            mapped.definitions, curve_id, [](const auto& d) { return d.curve_id; });
+        REQUIRE(it != mapped.definitions.end());
+        return it->id;
+    };
+    const auto swaption_of = [&](const std::string& curve_id) {
+        const auto definition = definition_of(curve_id);
+        const auto it = std::ranges::find(mapped.swaption_volatilities,
+                                          definition,
+                                          [](const auto& v) { return v.curve_definition_id; });
+        REQUIRE(it != mapped.swaption_volatilities.end());
+        return it->id;
+    };
+    const auto smile_of = [&](const boost::uuids::uuid& entry) {
+        return std::ranges::find(mapped.swaption_volatility_smiles, entry, [](const auto& s) {
+            return s.swaption_volatility_config_id;
+        });
+    };
+    REQUIRE(mapped.swaption_volatilities.size() == 3);
+    const auto atm_with_grid = swaption_of("EUR_SW_N");
+    const auto cube = swaption_of("EUR_SW_N_CUBE");
+    const auto atm = swaption_of("GBP_SW_N");
+    REQUIRE(mapped.inflation_curves.size() == 2);
+    const auto seasonal = definition_of("EUHICPXT_ZC_Swaps");
+    const auto plain = definition_of("UKRPI_ZC_Swaps");
+
+    // A grid is a row wherever the document states one, as ORE reads it only
+    // for a Smile surface but a document may keep it on an ATM one.
+    REQUIRE(mapped.swaption_volatility_smiles.size() == 2);
+    CHECK(smile_of(atm_with_grid) != mapped.swaption_volatility_smiles.end());
+    CHECK(smile_of(atm) == mapped.swaption_volatility_smiles.end());
+    const auto found = smile_of(cube);
+    REQUIRE(found != mapped.swaption_volatility_smiles.end());
+    const auto smile = *found;
+    CHECK(smile.smile_spreads == "-0.01,0,0.01");
+    REQUIRE(mapped.inflation_seasonalities.size() == 1);
+    const auto& season = mapped.inflation_seasonalities.front();
+    CHECK(season.curve_definition_id == seasonal);
+    CHECK(season.base_date == "2016-01-01");
+    CHECK(season.frequency == "Monthly");
+    CHECK(mapped.seasonality_factors.size() == 2);
+
+    const auto refused = [](const auto& changed, const std::string& reason) {
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring(reason));
+    };
+    {
+        auto changed = mapped;
+        changed.swaption_volatility_smiles.push_back(smile);
+        refused(changed, "has two smile grid rows");
+    }
+    {
+        auto changed = mapped;
+        auto p = smile;
+        p.swaption_volatility_config_id = boost::uuids::random_generator()();
+        changed.swaption_volatility_smiles.push_back(p);
+        refused(changed, "is not in the document");
+    }
+    {
+        auto changed = mapped;
+        changed.inflation_seasonalities.clear();
+        refused(changed, "has seasonality factors but no seasonality");
+    }
+    {
+        // ORE's Factors may hold no Factor, so a seasonality with none writes
+        // an empty Factors element rather than being refused.
+        auto changed = mapped;
+        auto p = season;
+        p.curve_definition_id = plain;
+        changed.inflation_seasonalities.push_back(p);
+        const auto written =
+            curve_configuration_projection::write(curve_configuration_projection::reverse(changed));
+        const auto again = curve_configuration_projection::map(read_document(written));
+        CHECK(again.inflation_seasonalities.size() == 2);
+        CHECK(again.seasonality_factors.size() == 2);
+    }
+
+    const auto refused_at_import = [](const std::string& document, const std::string& reason) {
+        CHECK_THROWS_WITH(curve_configuration_projection::map(read_document(document)),
+                          Catch::Matchers::ContainsSubstring(reason));
+    };
+    refused_at_import(R"(<CurveConfiguration>
+  <InflationCurves>
+    <InflationCurve>
+      <CurveId>EUHICPXT_ZC_Swaps</CurveId>
+      <CurveDescription>A seasonality with no factors</CurveDescription>
+      <NominalTermStructure>Yield/EUR/EUR6M</NominalTermStructure>
+      <Type>ZC</Type>
+      <Calendar>TARGET</Calendar>
+      <Lag>3M</Lag>
+      <Frequency>Monthly</Frequency>
+      <Seasonality>
+        <BaseDate>2016-01-01</BaseDate>
+        <Frequency>Monthly</Frequency>
+      </Seasonality>
+    </InflationCurve>
+  </InflationCurves>
+</CurveConfiguration>)",
+                      "required element 'Factors' is missing");
+}

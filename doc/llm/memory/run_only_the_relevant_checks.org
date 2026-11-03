@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B43EFFA5-F768-4B6D-ADC8-8A2A0DD37A18
+:END:
+#+title: Run only the checks a change needs, not the full gate
+#+description: The full local check gate takes too long; run the checks a change touches.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :compass:checks:gate:memory:feedback:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+Do not run the full local check gate, ./compass.sh check with no filter, before a PR or a review round. Pick the checks the change touches and run them with ./compass.sh check --only ID, repeated, plus the build and test targets of the changed components run directly.
+
+*Why:* The full gate takes twenty to fifty minutes, mostly ctest and ticks-smoke over every suite, and the user stopped a run, saying full gates take too long.
+
+*How to apply:* Before raising a PR or pushing a review round, build the changed targets and run their test suites. Then run the gate checks that match the diff: format, cmake-sources, lint and site-page for C++ and docs; component-drift for a model change; er-diagram and tangle-shell for an entity change; web for ores.web. Name the checks run in the Testing section of the PR.

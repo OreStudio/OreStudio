@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 099697A6-8526-48E0-A63D-DB3932C06468
+:END:
+#+title: Derivation of FX volatility quotes from historical fixings
+#+description: Where no free source publishes FX implied volatilities, a derived source of our own derives ATM, RR and BF quotes from the historical spot fixings: an adapter that reads them through the market data reader and publishes under its own identity, so a vendor of the same quotes replaces it by rank.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:architecture:adapters:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+* Summary
+
+Some starting values have no free public source, the implied volatilities of an
+FX surface first among them. A derived source supplies them. It is a publisher
+in the catalogue like the ECB, and its adapter reads stored fixings through the
+market data reader, computes values from them, and publishes those values as
+quotes of the same items a vendor would quote. Because the items are the same, a
+vendor of them ranks above the derived source in a calibration policy and
+replaces it with no change to any consumer. Its quotes carry its own identity,
+never that of the publishers whose fixings it read.
+
+* Detail
+
+** The shape
+
+#+begin_example
+ durable fixing ticks (ECB, Bank of Canada, ...)
+        |  latest on or before, window
+        v
+ the market data reader
+        |
+ the derived source adapter  -- announce, demand, tick, heartbeat -->  ores.marketdata
+        (once a day, after the day's fixings)                          | stored as series
+                                                                       | keyed by item, provider, party
+                                                                       v
+                                                   synthetic surface generator at start
+                                                   (calibration policy ranks the providers)
+#+end_example
+
+- The derived source fetches nothing from outside. It reads only what the store
+  already holds.
+- It is not part of the public sources adapter, which publishes only what it
+  fetched, in the supplier's own notation, and knows nothing of statistics.
+- It reads through the reader of
+  [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]],
+  as any client of the market data service does, and it publishes through the
+  four messages every adapter uses.
+
+** Same items, another provider
+
+The derived quotes are oresmd quotes of the same items a vendor's vol feed
+carries, one per pair, expiry and strike label, in the pair's quoting
+convention. A quote series is keyed by item, provider and party, so a vendor's
+quotes of an item sit beside the derived ones, and the generator's calibration
+policy chooses between them by rank. A vendor ranked first replaces the derived
+source; nothing downstream changes, as
+[[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]]
+describes for a live source.
+
+** Kept as observations, not as fixings
+
+The derived quotes are kept for good, and kept as what they are: the observations
+of a quote series, not fixings. Each pair has one =fx_option= series of the derived
+provider, whose derivation kind says it is computed rather than observed, and each
+day's quotes are its observations at the end of that day, one for each expiry and
+strike label. An observation is stored with no retention and a correction is a new
+version of it, so a backtest reads any past day as it was published, through the
+market data service's window reader of a series' observations. They do not enter =market_fixing=, because a derived quote is not a fixing.
+
+The derived source keeps its own history. On start it reads the days each series
+holds and derives every other day the stored fixings cover, each from the fixings
+on or before it, so a past day reads no later fixing; afterwards it writes each new
+day as the day's fixings arrive. It writes those days through the market data
+service rather than through the ingest, whose age gate admits the current day only.
+The quotes it publishes as ticks are the current day's, so a subscriber sees the
+same values the series keeps.
+
+** Its own identity
+
+A derived quote is the output of our computation, and the system presents it as
+such. Its provenance names the derived publisher. It carries no credit of the
+publishers whose fixings fed it and no claim to be their figures; those fixings
+are stored exactly as published, with their own credit, and appear in the
+derived source only as internal inputs. The rule is stated with the terms of
+each source in
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]],
+and how the values are computed is described there too.
+
+** In the code
+
+The derived source is the provider =derived=, served through the feed
+=derived-fx-vol= of the session =derived-local=, whose adapter module =derived= the
+synthetic service runs; =marketdata_derived_catalogue_populate.sql= holds its rows.
+The synthetic service starts =derived_fx_vol_adapter= for each feed of that session
+beside the simulator. Its universe is the vendor instruments the catalogue holds for
+the provider, one for each pair, expiry and label in the source's own notation, such
+as =EURUSD/1Y/25RR=, each mapped to the =fx_option= quote of the pair. =derived_fx_vol_feed=
+in =ores.synthetic.api= reads each demanded pair's ECB fixings through the market data
+reader as the system party, takes a cross's returns as the difference of its two euro
+legs on the days both hold, reads the pair's =fx_option_convention= from refdata, and
+publishes each demanded quote not yet sent for the latest day its legs hold; it keeps
+every day of every pair of its universe in the pair's series through the market data
+service; the computation itself is the one =ores.analytics.quant= holds. The source reads no curves,
+so it takes the spot as the forward: a quote under a forward delta or a forward ATM is
+read against a forward that ignores the rate differential, which grows with the expiry.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]] — completes: an adapter that reads the fixings that adapter stores.
+- [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]] — exemplifies: a vendor replaces the derived source by rank.
+- [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]] — completes: a provider whose provenance says its values were inferred, not observed.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] — completes: the values it computes and the terms that govern their inputs.

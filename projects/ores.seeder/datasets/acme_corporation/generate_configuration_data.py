@@ -552,7 +552,7 @@ def inflation_curve_configuration():
                 # takes the engine's own default rather than a guessed word.
                 has_quotes=False, calendar="TARGET",
                 day_counter="A365", lag="3M", frequency="Monthly", base_rate=0.02,
-                tolerance=1e-12, has_seasonality=False, use_last_fixing_date=False,
+                tolerance=1e-12, use_last_fixing_date=False,
                 interpolation_variable="ZeroRate", interpolation_method="Linear"))
     return definitions, configs
 

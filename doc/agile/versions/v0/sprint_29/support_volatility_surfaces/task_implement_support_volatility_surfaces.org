@@ -1,0 +1,270 @@
+:PROPERTIES:
+:ID: 6B682F27-6C29-4954-A355-39E27E7197B7
+:END:
+#+title: Task: Document the volatility surface architecture
+#+description: Integrate the volatility surface analysis into the knowledge base as linked notes, and name the tasks of the arc from it.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/support-volatility-surfaces
+#+pr: 4407
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The volatility surface architecture is in the knowledge base as small, linked
+notes, and the rest of the arc is named from it. The source is the analysis the
+user supplies. Each idea goes into the note that owns it: an existing note when
+one covers the idea, a new note when none does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- Every idea in the supplied analysis is in exactly one knowledge note, or is listed in this task's Notes as left out, with the reason.
+- The existing notes are extended, not repeated. A new note links to the notes it builds on, and those notes link back.
+- An overview note states the architecture: the surface types, the quotes behind them, how a surface is built, where it is stored, and how pricing reads it.
+- The story's Tasks table names the later tasks of the arc, each traced to the note that motivates it.
+- The site pages build and every link resolves.
+
+* Plan
+
+The user's analysis (two parts, quant and architecture) is the baseline, not
+text to copy. Each claim is checked against the knowledge base and gets one
+outcome: covered (link or extend the owning note), new (a new atomic note), in
+conflict (a decision note), or discarded (listed in Notes with the reason).
+
+Decisions agreed with the user on 2026-11-03:
+
+- The MDN route is abandoned. A surface moves through its own parameter
+  processes (ATM level, skew, curvature per tenor), with shocks correlated with
+  spot but not driven by it.
+- GARCH drives FX spot returns, not the surface (agreed 2026-11-03). Proposed:
+  the GMM stays the shape of each shock and GJR-GARCH scales it by the day's
+  volatility.
+- A surface follows the IR curve approach: state processes, a template ladder
+  of pillars, one quote tick per pillar on an oresmd series, a blueprint that
+  builds the surface with the smile model the tenant chooses (SSVI, SABR, a
+  spline or Vanna-Volga) and static no-arbitrage checks, then a
+  candidate and a published set. Quotes are published, not model parameters.
+- Agreed on 2026-11-03: a *derived source* of public data. It is a publisher
+  of its own. Its session is an engine that reads the stored spot fixings and
+  backs out plausible ATM, RR and BF values (realised volatility for ATM,
+  skewness for RR, excess kurtosis for BF, through a Gram-Charlier smile, the
+  higher moments shrunk to authored priors). It publishes them as ticks
+  through the same adapter contract as any source, and provenance says they
+  are derived. A real vendor, such as LSEG, is another provider of the same
+  items, so replacing the derived source is a change of route or rank and
+  nothing else, as in
+  [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]].
+- Agreed on 2026-11-03: the surface is SSVI (or eSSVI). The state
+  processes are its parameters (ATM total variance per tenor, skew, curvature),
+  each held inside the no-arbitrage region, so every surface is free of static
+  arbitrage by construction. The generator prices ATM, RR and BF quotes from
+  the SSVI state. SSVI is the generator's law of motion only: it never leaves
+  the simulator, and a tenant's blueprint fits whatever smile model it chooses.
+- Agreed on 2026-11-03: an *observation layer* between the surface state and
+  the quotes, inside the simulator adapter. The SSVI state is the latent "true
+  market". Synthetic contributors observe it, each a provider of its own, and
+  publish what a real broker feed carries: the pair's full delta ladder (5D,
+  10D, 15D, 25D, 35D as the pair quotes them), mids rounded to the quote
+  step, measurement noise that grows on the wings and at long tenors,
+  stale and missing points, rare outliers, and a persistent bias per
+  contributor. Noise touches only what is published, never the state, so it
+  does not feed back into the dynamics. Each contributor has a noise profile;
+  the profile =none= publishes the clean quotes, for tests, and a fixed seed
+  makes a noisy run repeatable. Everything stays behind the adapter seam: the
+  ingest, the store and the tenant's marking see contributor quotes on the same
+  four messages as a vendor's. Because the truth is known, a tenant's marked
+  surface can be measured against it, which no real feed allows. The truth needs
+  nothing special: as for IR, where the clean pillar quotes and their bootstrap
+  are the truth, the contributor whose profile is =none= is a provider like the
+  others, and its quotes, constructed by the same build, are the true surface.
+  A tenant sees it only if the system routes that provider to it. Every quote
+  is a mid. Two-way pricing is a later level of work across the whole system,
+  once mid valuation is reliable for every product (agreed 2026-11-03); the
+  noise scale per point stands in for the width of the market until then. The
+  observation layer is where two-way pricing will attach: a contributor will
+  publish a bid and an ask around the mid it already publishes, so the mid
+  path does not change.
+- Agreed on 2026-11-03: *surface construction* follows curve construction
+  exactly. A surface blueprint names its output series; its build fits the
+  tenant's chosen smile model to the quotes, checks it, and writes the fitted
+  vols on the blueprint's grid as observations of that series, each with a
+  lineage record naming the source series and the blueprint version. That is
+  the candidate, and the same four-eyes publish makes it a published set that
+  reports bind. The blueprint is the series' only writer, and the series'
+  identity says its points are inferred, as a discount series with a
+  =curve_id= does. oresmd needs a new instrument type for that series, with a
+  surface identity in place of =curve_id=. Naming: a curve's method is a
+  /bootstrap/, a sequential solve pillar by pillar; a surface's method is a
+  /calibration/, all points at once, the idiomatic market term (agreed with
+  the user). Both are /construction/. Calibrating a smile model to quotes and
+  calibrating a generator to public fixings are one meaning: fitting a model's
+  parameters to data.
+  The one true bootstrap among vol surfaces, stripping caplet vols from cap
+  vols, keeps that name when cap/floor surfaces arrive.
+
+The user asks that all of this is explained in great detail in the knowledge
+notes on synthetic data generation: each model, why it was chosen over the
+alternatives, its parameters and their bounds, how it is calibrated, and how it
+reaches the code. A decision without its reasoning in a note is not done.
+
+The history depth the derived source and the GARCH fit need comes from
+[[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]].
+
+Steps:
+
+1. Check the analysis's doubtful claims. Done; see Notes.
+2. Place the content by the Zettelkasten document types, quant apart from
+   architecture, and extend the synthetic generation documents rather than
+   write parallel ones. Done:
+   - Quant reference: SVI Volatility Parameterisation (new); FX Volatility
+     Surface, Volatility clustering and GARCH models, Market volatility
+     channel and Synthetic market data generation: approach (extended).
+   - Paper summaries: arbitrage-free SVI volatility surfaces; accounting for
+     biases in Black-Scholes (new).
+   - Calibration: Synthetic prices are calibrated from free public sources
+     (extended: the five-year history, the derived starting surface, the rule
+     for derived values).
+   - Architecture: A volatility surface follows the curve from state to
+     published set; A synthetic contributor publishes noisy observations of a
+     latent surface; A derived source publishes what it infers from stored
+     fixings (new); oresmd (extended: the calibrated surface series).
+   - Structure notes: Volatility, Stochastic Processes and Market Data
+     Architecture order the new pages.
+   Every page states the target state only, and every link carries its
+   relation.
+3. Name the later tasks of the arc in the story, each traced to its note.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The knowledge base already holds this material. Read it before writing new notes:
+
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]]: pillar quoting (ATM, RR, STR), delta conventions, smile models and interpolation across time.
+- [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]]: the driver and derived (proxy) pattern for FX surfaces, correlation and basis proxying, marks, tenor propagation.
+- [[id:C8B4449D-E82E-4184-8E0B-50F070FAF22B][Correlations and derived volatility surfaces]]: an earlier backlog story on correlation management and surface proxying in ores.marketdata.
+- [[id:B91F6F7D-5C8A-4DB0-A5C6-827EEC43BE41][Design and add oresmd volatility-surface sub-schema]]: a sprint 24 task on one strike, expiry and model sub-schema for the eight vol quote sub-families.
+
+** Checks of the analysis's claims (2026-11-03)
+
+1. *FX implied vols on DBnomics, from the BIS or the ECB.* Not found. A
+   DBnomics API search for "implied volatility" returns no dataset, and a
+   search for "volatility" returns only the ECB's systemic stress indicator
+   (CISS) and unrelated OECD data. No free source of ATM, RR or BF quotes was
+   found; the daily FX vol surfaces on offer are commercial (LSEG, GFI,
+   Exchange Data International). Consequence: the starting surface has no free
+   public source. Its shape is authored, as the GMM components are.
+   https://api.db.nomics.world/v22/search?q=volatility
+2. *The MOVE index on FRED.* Not found on FRED. The ICE BofA series that FRED
+   does carry state that reproduction in any form is prohibited without ICE
+   Data's written permission, and from April 2026 keep only three years of
+   observations, so they cannot be stored as fixings in any case. FRED carries
+   VIX as =VIXCLS= (daily close, Cboe), marked "Copyrighted: Citation
+   Required"; its storage terms are unread. VIX is an equity vol index and does
+   not set an FX surface.
+   https://fred.stlouisfed.org/series/BAMLC0A0CMEY ,
+   https://fred.stlouisfed.org/series/VIXCLS
+3. *The RR and BF formulas.* σ_call = σ_ATM + σ_BF + σ_RR/2 and
+   σ_put = σ_ATM + σ_BF − σ_RR/2 hold only for the smile convention. The broker
+   convention quotes a market strangle at one volatility and at strikes of its
+   own, and turning it into call and put volatilities needs a numerical solve
+   against a smile. Healy (2025), "Counterexamples for FX Options Interpolations
+   - Part II", arXiv:2512.19625, eq. 1 and 5–12, citing Clark (2011) and
+   Reiswich and Wystup (2012). The same paper notes that FX SABR usually fixes
+   β = 1. FX Volatility Surface states the smile definition without the broker
+   one, so that note is extended.
+4. *"SABR and SVI keep the surface free of static arbitrage."* False in
+   general. Gatheral and Jacquier (2014), "Arbitrage-free SVI volatility
+   surfaces", arXiv:1204.0646: SVI smiles may be arbitrageable, a slice is free
+   of butterfly arbitrage only if its density function g(k) ≥ 0, and a
+   restricted class (SSVI) is free of static arbitrage in closed form. Hagan's
+   SABR expansion can give a negative density at low strikes; arbitrage-free
+   SABR (Hagan et al. 2014) addresses it. Consequence: the surface blueprint
+   checks static arbitrage, as a curve blueprint checks its curve.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4407][#4407]] | [doc] Document the volatility surface architecture |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The theta < 2 bound reads as exact | svi_volatility_parameterisation.org | Accept | Stated as sufficient, with the exact limit per eta and rho |
+| 2 | "eSSVI typically fits short expiries better" is unsourced | svi_volatility_parameterisation.org | Accept | Attributed to the authors, as their abstract states it |
+| 3 | The Hendriks and Martini link is a paywalled landing page | svi_volatility_parameterisation.org | Accept | Added the SSRN working paper DOI and the page range; no arXiv version exists |
+| 4 | Say the Engle 1982 DOI is unverified, or drop it | garch_volatility_models.org | Decline | No note gives a DOI for Engle (1982); the GARCH note links his bibliography and says so |
+| 5 | Split the task scaffolds from the knowledge notes | PR | Decline | Documentation only with a green gate; splitting would churn the PR for no change in content |
+
+* Result
+
+The volatility surface architecture is in the knowledge base, signed off by the
+user on 2026-11-03.
+
+- Quant: SVI Volatility Parameterisation (new, with a layperson's mental
+  model); two paper summaries, Gatheral and Jacquier (2014) and Backus,
+  Foresi, Li and Wu (1997); FX Volatility Surface (strangle conventions, SSVI,
+  a layperson's mental model); Volatility clustering and GARCH models (Daily
+  GJR-GARCH variance of synthetic FX spot); Market volatility channel (the
+  daily variance); Synthetic market data generation: approach (SSVI parameter
+  dynamics, GARCH on spot, open decisions OD-1, 2, 3, 6 and 8).
+- Calibration: Synthetic prices are calibrated from free public sources (the
+  five-year history, the derived starting surface, the rule for derived
+  values).
+- Architecture: Constructing a volatility surface: from quotes to a published
+  set, in the shape of Bootstrapping a curve; A synthetic contributor publishes
+  noisy observations of a latent surface; Derivation of FX volatility quotes
+  from historical fixings; oresmd (a calibrated surface is a series of its
+  own).
+- Structure: Volatility, Stochastic Processes and Market Data Architecture
+  order the new pages, and the three patterns list the construction note.
+- The story names the arc's later tasks, each traced to its note.
+
+Every page states the target state, and every link carries its relation. The
+changed pages build with no failure, every org link resolves, and the
+structure-note and pattern checks pass.

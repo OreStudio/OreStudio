@@ -19,8 +19,8 @@
  */
 #include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.reporting.core/results/run_output_reader.hpp"
-#include "run_stamp_fixture.hpp"
 #include <boost/json.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -33,9 +33,17 @@ const std::string run_tags("[results][run_output_reader]");
 
 using ores::reporting::results::output_file;
 using ores::reporting::results::read_run_outputs;
-using ores::reporting::tests::a_run_stamp;
+using ores::reporting::results::run_stamp;
 
 const auto priced_at = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31};
+
+run_stamp the_run() {
+    return run_stamp{.party_id = boost::uuids::random_generator()(),
+                     .report_instance_id = boost::uuids::random_generator()(),
+                     .report_definition_id = boost::uuids::random_generator()(),
+                     .result_id = boost::uuids::random_generator()(),
+                     .priced_at = priced_at};
+}
 
 // The npv family's required columns, with the figures a run states.
 std::string npv_file() {
@@ -53,7 +61,7 @@ std::string npv_file() {
  * is built from the catalogue.
  */
 std::string flows_file() {
-    const auto* family = ores::ore::results::family_named("flows");
+    const auto* family = ores::ore::results::family_named("cashflow_report");
     REQUIRE(family != nullptr);
 
     // Currency is a qualifier rather than a required column, and the payment
@@ -98,7 +106,7 @@ std::string flows_file() {
 }
 
 TEST_CASE("each file of a run is read by its family, and both shapes land apart", run_tags) {
-    const auto run = a_run_stamp(priced_at);
+    const auto run = the_run();
     const auto outcome = read_run_outputs({output_file{.name = "npv.csv", .body = npv_file()},
                                            output_file{.name = "flows.csv", .body = flows_file()}},
                                           run);
@@ -110,7 +118,7 @@ TEST_CASE("each file of a run is read by its family, and both shapes land apart"
     const auto npv =
         std::ranges::find_if(outcome.metrics, [](const auto& one) { return one.measure == "NPV"; });
     REQUIRE(npv != outcome.metrics.end());
-    CHECK(npv->family == "npv");
+    CHECK(npv->family == "npv_report");
     CHECK(npv->subject_type == "trade");
     CHECK(npv->subject_id == "Swap_20y");
     CHECK(npv->value == 1234.5);
@@ -139,7 +147,7 @@ TEST_CASE("each file of a run is read by its family, and both shapes land apart"
         outcome.cashflows, [](const auto& one) { return one.measure == "Amount"; });
     REQUIRE(amount != outcome.cashflows.end());
     const auto& flow = *amount;
-    CHECK(flow.family == "flows");
+    CHECK(flow.family == "cashflow_report");
     CHECK(flow.subject_id == "Swap_20y");
     CHECK(flow.cashflow_no == "1");
     CHECK(flow.leg_no == "0");
@@ -153,7 +161,7 @@ TEST_CASE("two rows that state the same heading for the same trade stay apart", 
     const auto body = npv_file() + "Swap_20y,Swap,2036-10-31,2.0,99.0,USD,90.0,EUR,1000.0,USD,"
                                    "900.0,CPTY_A,CPTY_A\n";
     const auto outcome =
-        read_run_outputs({output_file{.name = "npv.csv", .body = body}}, a_run_stamp(priced_at));
+        read_run_outputs({output_file{.name = "npv.csv", .body = body}}, the_run());
 
     REQUIRE(outcome.refusals.empty());
     std::vector<int> lines;
@@ -164,8 +172,8 @@ TEST_CASE("two rows that state the same heading for the same trade stay apart", 
 }
 
 TEST_CASE("a family the definition skips stores no rows and is named", run_tags) {
-    auto run = a_run_stamp(priced_at);
-    run.families = ores::ore::results::family_selection_of("npv");
+    auto run = the_run();
+    run.families = ores::ore::results::family_selection_of("npv_report");
     const auto outcome = read_run_outputs({output_file{.name = "npv.csv", .body = npv_file()},
                                            output_file{.name = "flows.csv", .body = flows_file()}},
                                           run);
@@ -178,7 +186,7 @@ TEST_CASE("a family the definition skips stores no rows and is named", run_tags)
 }
 
 TEST_CASE("a portfolio detail is a text value, about its run and its line", run_tags) {
-    const auto run = a_run_stamp(priced_at);
+    const auto run = the_run();
     const auto outcome =
         read_run_outputs({output_file{.name = "marketObjects.csv",
                                       .body = "#MarketObjectType,MarketObjectName\n"
@@ -190,7 +198,7 @@ TEST_CASE("a portfolio detail is a text value, about its run and its line", run_
     CHECK(outcome.metrics.empty());
     REQUIRE(outcome.text_values.size() == 2);
     const auto& curve = outcome.text_values[1];
-    CHECK(curve.family == "marketObjects");
+    CHECK(curve.family == "market_objects");
     CHECK(curve.name == "YieldCurve");
     CHECK(curve.value == "EUR-EURIBOR-6M");
     CHECK(curve.source == "marketObjects.csv");
@@ -201,7 +209,7 @@ TEST_CASE("a portfolio detail is a text value, about its run and its line", run_
 
 TEST_CASE("a file no family states is counted rather than refused", run_tags) {
     const auto outcome = read_run_outputs(
-        {output_file{.name = "something-else.csv", .body = "a,b\n1,2\n"}}, a_run_stamp(priced_at));
+        {output_file{.name = "something-else.csv", .body = "a,b\n1,2\n"}}, the_run());
 
     CHECK(outcome.refusals.empty());
     CHECK(outcome.metrics.empty());
@@ -217,14 +225,14 @@ TEST_CASE("a file whose row the reader refuses stops the whole run", run_tags) {
                                   "Swap_20y,Swap,2036-10-31,2.0,not-a-figure,USD,1100.0,EUR,"
                                   "1000.0,USD,900.0,CPTY_A,CPTY_A\n");
     const auto outcome =
-        read_run_outputs({output_file{.name = "npv.csv", .body = body}}, a_run_stamp(priced_at));
+        read_run_outputs({output_file{.name = "npv.csv", .body = body}}, the_run());
 
     REQUIRE_FALSE(outcome.refusals.empty());
     CHECK(outcome.refusals.front().find("NPV") != std::string::npos);
 }
 
 TEST_CASE("a run whose files state no figure loads nothing", run_tags) {
-    const auto outcome = read_run_outputs({}, a_run_stamp(priced_at));
+    const auto outcome = read_run_outputs({}, the_run());
 
     CHECK(outcome.refusals.empty());
     CHECK(outcome.metrics.empty());

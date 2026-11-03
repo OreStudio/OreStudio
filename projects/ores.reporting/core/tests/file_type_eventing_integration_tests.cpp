@@ -40,10 +40,21 @@
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
 #include "ores.reporting.core/repository/file_type_repository.hpp"
 #include "ores.reporting.core/service/file_type_service.hpp"
+#include "test_suite.hpp"
+// Soft-FK parent seeding (ores_reporting_ore_files_tbl): the parent may live in another
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
+#include "ores.reporting.api/generators/ore_file_generator.hpp"
+#include "ores.reporting.core/repository/ore_file_repository.hpp"
+// Grand-parent seeding (ores_reporting_ore_file_categories_tbl): the parent's own mandatory soft
+// FKs reference rows the test seeds before the parent, so their generator and repository headers
+// are needed too. A system-tenant parent is read rather than seeded, so its grand-parents need
+// nothing, and a system-tenant grand-parent is read rather than generated.
+#include "ores.reporting.api/generators/ore_file_category_generator.hpp"
+#include "ores.reporting.core/repository/ore_file_category_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -113,6 +124,23 @@ TEST_CASE("write_file_type_publishes_an_event", "[eventing][integration]") {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_file_type(ctx);
     v.change_reason_code = "system.test";
+    // Seed the active ore_file row ores_reporting_ore_files_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto ore_file_code_parent = ores::reporting::generators::generate_synthetic_ore_file(ctx);
+    auto ore_file_code_parent_ore_file_category_parent =
+        ores::reporting::generators::generate_synthetic_ore_file_category(ctx);
+    // Seed the active ore_file_category row ores_reporting_ore_file_categories_tbl references:
+    // the referencing row's insert trigger rejects a synthetic key that
+    // matches no active row, so it must be written first.
+    ores::reporting::repository::ore_file_category_repository
+        ore_file_code_parent_ore_file_category_parent_repo;
+    ore_file_code_parent_ore_file_category_parent_repo.write(
+        party_ctx, ore_file_code_parent_ore_file_category_parent);
+    ore_file_code_parent.category_code = ore_file_code_parent_ore_file_category_parent.code;
+    ores::reporting::repository::ore_file_repository ore_file_code_repo;
+    ore_file_code_repo.write(party_ctx, ore_file_code_parent);
+    v.ore_file_code = ore_file_code_parent.code;
     const auto id_str = v.code;
     BOOST_LOG_SEV(lg, debug) << "File Type: " << v;
 

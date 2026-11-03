@@ -515,6 +515,10 @@ function approvalDetailOf(detail: Read): Record<string, unknown> {
         dealCount: count(detail['deal_count']),
         marketDataSetCount: count(detail['market_data_set_count']),
         gapCount: count(detail['gap_count']),
+        // The apply's own record: who stamped the decision onto the cut and the
+        // instant they stamped, which is the decision's and not the run's.
+        appliedBy: text(detail['applied_by']),
+        appliedAt: text(detail['applied_at']) === '' ? null : text(detail['applied_at']),
     };
 }
 

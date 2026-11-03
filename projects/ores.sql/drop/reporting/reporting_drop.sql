@@ -50,6 +50,7 @@
 \ir ./reporting_engine_settings_drop.sql
 \ir ./reporting_cut_gaps_notify_trigger_drop.sql
 \ir ./reporting_cut_gaps_drop.sql
+\ir ./reporting_cut_authorisation_functions_drop.sql
 \ir ./reporting_cut_approval_details_notify_trigger_drop.sql
 \ir ./reporting_cut_approval_details_drop.sql
 \ir ./reporting_cuts_notify_trigger_drop.sql
@@ -91,6 +92,12 @@
 
 \ir ./reporting_file_types_notify_trigger_drop.sql
 \ir ./reporting_file_types_drop.sql
+\ir ./reporting_ore_file_versions_notify_trigger_drop.sql
+\ir ./reporting_ore_file_versions_drop.sql
+\ir ./reporting_ore_files_notify_trigger_drop.sql
+\ir ./reporting_ore_files_drop.sql
+\ir ./reporting_ore_file_categories_notify_trigger_drop.sql
+\ir ./reporting_ore_file_categories_drop.sql
 \ir ./reporting_analytic_types_notify_trigger_drop.sql
 \ir ./reporting_analytic_types_drop.sql
 

@@ -42,7 +42,7 @@ select set_config('app.visible_party_ids',
 -- Every uuid column of the document tables other than the key, the tenant, the party, the
 -- reporting configuration and the ore parameter, which a publish resolves by name.
 -- Each refers to a row of the same document: a header, a collection, a curve definition,
--- a segment or an analytic.
+-- a segment, an entry whose part it keys or an analytic.
 select is(
     (select string_agg(distinct column_name, ' ' order by column_name)
      from information_schema.columns c
@@ -61,12 +61,13 @@ select is(
            'default_curve_configurations', 'inflation_curve_configs',
            'default_curve_market_terms', 'default_curve_cds_terms', 'default_curve_benchmarks',
            'default_curve_transition_matrices', 'default_curve_yield_reinterpretations',
-           'inflation_seasonality_factors', 'curve_security_configs',
+           'inflation_seasonalities', 'inflation_seasonality_factors',
+           'curve_security_configs',
            'intraday_power_curve_configs', 'fx_volatility_configs', 'base_correlation_configs',
            'curve_correlation_configs', 'curve_report_configurations', 'cds_volatility_configs',
            'cds_volatility_terms', 'curve_volatility_configs',
            'inflation_cap_floor_volatility_configs', 'swaption_volatility_configs',
-           'cap_floor_volatility_configs', 'curve_parametric_smiles',
+           'swaption_volatility_smiles', 'cap_floor_volatility_configs', 'curve_parametric_smiles',
            'curve_parametric_smile_parameters', 'equity_volatility_configs',
            'commodity_volatility_configs', 'bond_future_volatility_configs',
            'curve_bootstrap_configs', 'curve_segments', 'curve_segment_curves',
@@ -82,7 +83,7 @@ select is(
            'configuration_market_bindings']) t)),
     'commodity_price_segment_id configuration_analytic_id curve_configuration_id curve_definition_id curve_segment_id '
     'default_curve_configuration_id pricing_model_config_id pricing_model_product_id '
-    'todays_market_collection_id todays_market_config_id todays_market_configuration_id',
+    'swaption_volatility_config_id todays_market_collection_id todays_market_config_id todays_market_configuration_id',
     'every uuid key column of a document refers to a row of the same document');
 
 create temp table t_ctx on commit drop as

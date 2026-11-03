@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-728 tables in 21 groups.
+742 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -210,12 +210,16 @@ entity "refdata" as refdata {
   ores_refdata_fra_conventions_tbl
   ores_refdata_future_conventions_tbl
   ores_refdata_fx_option_conventions_tbl
+  ores_refdata_fx_vol_surface_blueprints_tbl
+  ores_refdata_fx_vol_surface_pillar_sources_tbl
+  ores_refdata_fx_vol_surface_pillars_tbl
   ores_refdata_fx_volatility_configs_tbl
   ores_refdata_fx_volatility_smiles_tbl
   ores_refdata_ibor_index_conventions_tbl
   ores_refdata_inflation_cap_floor_volatility_configs_tbl
   ores_refdata_inflation_cap_floor_volatility_strikes_tbl
   ores_refdata_inflation_curve_configs_tbl
+  ores_refdata_inflation_seasonalities_tbl
   ores_refdata_inflation_seasonality_factors_tbl
   ores_refdata_inflation_swap_conventions_tbl
   ores_refdata_instrument_codes_tbl
@@ -267,6 +271,7 @@ entity "refdata" as refdata {
   ores_refdata_swap_index_conventions_tbl
   ores_refdata_swaption_proxy_configs_tbl
   ores_refdata_swaption_volatility_configs_tbl
+  ores_refdata_swaption_volatility_smiles_tbl
   ores_refdata_tenor_anchors_tbl
   ores_refdata_tenor_basis_swap_long_shorts_tbl
   ores_refdata_tenor_basis_swap_pay_receives_tbl
@@ -286,7 +291,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-211 tables — ores_schema.refdata.puml
+216 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -401,6 +406,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_images_artefact_tbl
   ores_dq_inflation_cap_floor_volatility_configs_artefact_tbl
   ores_dq_inflation_curve_configs_artefact_tbl
+  ores_dq_inflation_seasonalities_artefact_tbl
   ores_dq_inflation_seasonality_factors_artefact_tbl
   ores_dq_inflation_swap_conventions_artefact_tbl
   ores_dq_intraday_power_curve_configs_artefact_tbl
@@ -444,6 +450,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_swap_conventions_artefact_tbl
   ores_dq_swap_index_conventions_artefact_tbl
   ores_dq_swaption_volatility_configs_artefact_tbl
+  ores_dq_swaption_volatility_smiles_artefact_tbl
   ores_dq_tags_artefact_tbl
   ores_dq_tenor_basis_swap_long_shorts_artefact_tbl
   ores_dq_tenor_basis_swap_pay_receives_artefact_tbl
@@ -461,7 +468,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-168 tables — ores_schema.dq_staging.puml
+170 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -712,6 +719,9 @@ entity "reporting" as reporting {
   ores_reporting_engine_settings_tbl
   ores_reporting_file_types_tbl
   ores_reporting_ore_element_map_columns_tbl
+  ores_reporting_ore_file_categories_tbl
+  ores_reporting_ore_file_versions_tbl
+  ores_reporting_ore_files_tbl
   ores_reporting_ore_parameter_setting_value_sets_tbl
   ores_reporting_ore_parameter_value_domains_tbl
   ores_reporting_ore_parameter_value_set_catalogues_tbl
@@ -739,7 +749,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-47 tables — ores_schema.reporting.puml
+50 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {
@@ -873,11 +883,15 @@ entity "synthetic" as synthetic {
   ores_synthetic_trade_generation_books_tbl
   ores_synthetic_trade_generation_configs_tbl
   ores_synthetic_trade_generation_counterparties_tbl
+  ores_synthetic_trade_generation_trade_types_tbl
+  ores_synthetic_variance_calibration_input_points_tbl
+  ores_synthetic_variance_calibration_inputs_tbl
+  ores_synthetic_variance_calibrations_tbl
   ores_synthetic_yield_curve_process_types_tbl
 }
 note bottom of synthetic
 Synthetic Data Generation
-17 tables — ores_schema.synthetic.puml
+21 tables — ores_schema.synthetic.puml
 end note
 
 entity "inbox" as inbox {

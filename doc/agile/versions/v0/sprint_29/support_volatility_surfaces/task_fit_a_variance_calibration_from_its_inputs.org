@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 59412E3C-F6A0-45D0-8823-C949F6FBB8A8
+:END:
+#+title: Task: Fit a variance calibration from its inputs
+#+description: An operation that fits GJR-GARCH to one stored input and stores the result as a proposed calibration, with the evidence a reviewer needs.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fitting reads only a stored input, never the live fixings, so the same input always gives the same fit. The result is stored as a proposed calibration that names its input, the method version and every number a reviewer needs to judge it: the parameters, persistence, long-run and starting variance, likelihood, the starts tried and whether they agreed, and why a fit was refused.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- synthetic.v1 operation fit_variance_calibration for an input id, permission-checked, returning the proposed calibration.
+- A refused fit (too few returns, a fit at the stationarity bound, no convergence) is stored as a rejected calibration with the reason, so the attempt is in history.
+- Fitting one input twice gives the same parameters; the tests reuse the QuantLib-derived GJR-GARCH cases and add one per refusal.
+
+* Plan
+
+Fold the capture and the fit into the class calibration run, =calibrate_feeds=,
+as the story's decision states: the run already resolves each feed's item under
+the class policy, so it reads that item's variance window, captures the points,
+fits them, and, when applied, stores the records.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The schema does not tie =persistence= to =alpha=, =gamma= and =beta=, because
+=p_minus= is not stored (review of the records task, PR 4426). This task owns the
+equality: the fit writes =persistence= as =alpha + gamma p_minus + beta= from the
+mixture it fitted under, and a test checks it on every stored fit.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The same run fits each captured input with =fit_variance=, which reads only the
+points, so the same input gives the same fit; an applied run stores the result as
+a proposed calibration, or a rejected one with its reason, named by its input and
+the method version, and never rewrites one that exists. The fit states its
+evidence: the shape, the persistence computed under the feed's daily =p_minus=
+(tested equal to =alpha + gamma p_minus + beta=), the long-run and starting
+variance, the likelihood, the starts tried and whether they agreed, which the
+analytics fit now reports.
+
+Measured on the same run: 25 proposed and 3 rejected (241, 247 and 248 returns
+against the minimum of 250). Several proposed fits sit at a boundary with
+disagreeing starts, such as NZD/USD, USD/TRY and EUR/JPY: a year of data identifies
+the shape weakly, which is what the review is for. The analytics tests show the
+starts agree on a well identified series and disagree on thirty returns of near
+white noise; the synthetic tests cover recovery, determinism, rejection and the
+inverted sign.

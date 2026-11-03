@@ -1,0 +1,326 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 4E6A70AD-E26F-49DF-B15F-EC01986F8FB6
+:END:
+#+title: ores.refdata.fx_vol_surface_blueprint
+#+description: Codegen entity model for the refdata fx_vol_surface_blueprint table; the recipe (pair, smile model, expiry interpolation, output grid and output series) a calibration fits one FX volatility surface by.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: fx_vol_surface_blueprint
+#+entity_plural: fx_vol_surface_blueprints
+#+entity_title: FX Volatility Surface Blueprint
+#+brief: The recipe a calibration fits one FX volatility surface by -- pair, smile model, expiry interpolation, output grid and output series.
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+Records *how* one FX volatility surface is built, as a named, inspectable recipe, the
+surface's counterpart of the IR curve bootstrap config. Its pillars, in
+=fx_vol_surface_pillar=, name the quotes the calibration reads; the blueprint states
+what is done with them: the smile model fitted at each expiry, how the fitted
+expiries are joined, the grid of expiries and strikes the surface is written on, and
+the series it is written to. See
+[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
+
+=output_series_id= is a soft, cross-component reference into =ores.marketdata='s
+=market_series=: the =fx_vol_surface= series the calibration alone writes. As for the
+IR config, it is chosen and not minted, and it is the sole natural key, so exactly
+one active blueprint, tenant-wide, writes any given surface series.
+
+=fx_option_convention_id= names the pair's quoting convention in
+=fx_option_convention=, a soft reference: its ATM type, delta type, butterfly style
+and switch tenor decide what each pillar's quote means. =smile_model= and
+=expiry_interpolation= are small, fixed vocabularies intrinsic to the record, held
+by check constraints, as the IR config's =curve_family_role= is.
+
+The output grid is two lists, the expiries as tenor codes and the strikes in the
+oresmd strike grammar (=ATM=, =DEL/Spot/Put/25=, an absolute level), each separated
+by commas: the grid is a property of the recipe, read whole by the calibration and
+never addressed one point at a time, so it has no table of its own.
+
+* Uniqueness
+
+The name is unique per tenant and per party among the active rows, by the declared
+=party_name= index, as for the IR config; the output series is the natural key.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-surrogate-lookup
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this blueprint.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this blueprint belongs to. Set server-side from the
+authenticated session, enforced by RLS. Not part of the natural key: the output
+series is unique tenant-wide.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:sortable:   true
+:searchable: true
+:END:
+
+The record's display name, as a person writes it, such as =EURUSD-BROKER=. Typed by
+the caller and never derived. Unique per tenant and per party among the active rows.
+
+#+begin_src cpp :name generator
+std::string("EURUSD-BROKER")
+#+end_src
+
+** base_currency_code
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:filterable: true
+:END:
+
+The pair's base currency, the =fx_vol_surface= series' subject.
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** quote_currency_code
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:filterable: true
+:END:
+
+The pair's quote currency.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** fx_option_convention_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Soft reference to the pair's =fx_option_convention=, such as =EUR-USD-FXOPTION=,
+whose types and switch tenor decide what each pillar's quote means.
+
+#+begin_src cpp :name generator
+std::string("EUR-USD-FXOPTION")
+#+end_src
+
+** smile_model
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The model fitted at each expiry: =ssvi=, =sabr= or =spline=. SSVI and SABR need an
+ATM and a risk reversal and a butterfly at one delta at least; a spline needs two
+deltas.
+
+#+begin_src cpp :name generator
+std::string("ssvi")
+#+end_src
+
+** expiry_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the fitted expiries are joined: =linear_total_variance=, linear in total
+implied variance at a fixed strike measure, or =flat_forward_variance=, constant
+forward variance between expiries.
+
+#+begin_src cpp :name generator
+std::string("linear_total_variance")
+#+end_src
+
+** output_expiries
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The output grid's expiries as tenor codes, separated by commas, such as
+=1W,1M,3M,6M,1Y,2Y=.
+
+#+begin_src cpp :name generator
+std::string("1M,3M,6M,1Y")
+#+end_src
+
+** output_strikes
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The output grid's strikes in the oresmd strike grammar, separated by commas, such
+as =DEL/Spot/Put/10,DEL/Spot/Put/25,ATM,DEL/Spot/Call/25,DEL/Spot/Call/10=.
+
+#+begin_src cpp :name generator
+std::string("DEL/Spot/Put/25,ATM,DEL/Spot/Call/25")
+#+end_src
+
+** output_series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:natural_key: true
+:END:
+
+Soft reference to the =fx_vol_surface= =market_series= (in =ores.marketdata=) the
+calibration writes, named by the caller from the series its desk holds. The sole
+natural key.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_fx_vol_surface_blueprints_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+** Checks
+
+| expression                                                                    |
+|-------------------------------------------------------------------------------|
+| "name" <> ''                                                                  |
+| "base_currency_code" <> "quote_currency_code"                                 |
+| "fx_option_convention_id" <> ''                                               |
+| "smile_model" in ('ssvi', 'sabr', 'spline')                                   |
+| "expiry_interpolation" in ('linear_total_variance', 'flat_forward_variance')  |
+| "output_expiries" <> ''                                                       |
+| "output_strikes" <> ''                                                        |
+
+** Indexes
+
+| name       | columns                    | unique | current_only | where_extra |
+|------------+----------------------------+--------+--------------+-------------|
+| party_name | tenant_id, party_id, name  | true   | true         |             |
+
+* Insert trigger
+** Validations
+
+| column              | validation_function              |
+|---------------------+----------------------------------|
+| base_currency_code  | ores_refdata_validate_currency_fn |
+| quote_currency_code | ores_refdata_validate_currency_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: blueprint
+:entity_plural_short:   blueprints
+:entity_singular_words: FX volatility surface blueprint
+:entity_plural_words:   FX volatility surface blueprints
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: b
+:END:
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/fx_vol_surface_blueprint.hpp
+:domain_class:            refdata::domain::fx_vol_surface_blueprint
+:protocol_include:        ores.refdata.api/messaging/fx_vol_surface_blueprint_protocol.hpp
+:collection_name:         fx_vol_surface_blueprints
+:key_field:                id
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:has_export_macro:        true
+:save_request_item_field: data
+:END:
+
+*** Detail fields
+
+| field                   | label                 | widget                    | type      | is_key | is_required | placeholder |
+|-------------------------+-----------------------+---------------------------+-----------+--------+-------------+-------------|
+| id                      | Id                    | idEdit                    | line_edit | true   | true        |             |
+| name                    | Name                  | nameEdit                  | line_edit |        | true        |             |
+| base_currency_code      | Base Currency         | baseCurrencyCodeEdit      | line_edit |        | true        |             |
+| quote_currency_code     | Quote Currency        | quoteCurrencyCodeEdit     | line_edit |        | true        |             |
+| fx_option_convention_id | FX Option Convention  | fxOptionConventionIdEdit  | line_edit |        | true        |             |
+| smile_model             | Smile Model           | smileModelEdit            | line_edit |        | true        |             |
+| expiry_interpolation    | Expiry Interpolation  | expiryInterpolationEdit   | line_edit |        | true        |             |
+| output_expiries         | Output Expiries       | outputExpiriesEdit        | line_edit |        | true        |             |
+| output_strikes          | Output Strikes        | outputStrikesEdit         | line_edit |        | true        |             |
+| output_series_id        | Output Series Id      | outputSeriesIdEdit        | line_edit |        | true        |             |
+
+*** Columns
+
+| enum_name           | field               | header         | type   | width | is_badge | badge_key |
+|---------------------+---------------------+----------------+--------+-------+----------+-----------|
+| Name                | name                | Name           | string | auto  |          |           |
+| BaseCurrencyCode    | base_currency_code  | Base           | string | 70    |          |           |
+| QuoteCurrencyCode   | quote_currency_code | Quote          | string | 70    |          |           |
+| SmileModel          | smile_model         | Smile Model    | string | 100   |          |           |
+| OutputSeriesId      | output_series_id    | Output Series  | uuid   | auto  |          |           |
+| Version             | version             | Version        | int    | 70    |          |           |
+
+* See also
+
+- [[id:E3778CAD-A176-4B6D-839F-3E8AB20AF28F][FX Volatility Surface Pillar]] -- the quotes the blueprint's calibration reads.
+- [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][IR Curve Bootstrap Config]] -- the curve's recipe this mirrors.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] -- the construction the blueprint records.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

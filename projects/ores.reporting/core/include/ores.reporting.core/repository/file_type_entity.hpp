@@ -55,9 +55,8 @@ struct file_type_entity {
     std::optional<std::string> analytic_type_code;
     std::string ore_parameter;
     std::string direction;
-    std::string format;
-    std::optional<std::string> xsd_file;
     std::string kind;
+    std::string ore_file_code;
     std::optional<std::string> configuration_type_code;
     std::string name_pattern;
     bool is_default = false;
@@ -85,9 +84,8 @@ struct file_type_entity {
                query_builder::bind("analytic_type_code", &e::analytic_type_code) |
                query_builder::bind("ore_parameter", &e::ore_parameter) |
                query_builder::bind("direction", &e::direction) |
-               query_builder::bind("format", &e::format) |
-               query_builder::bind("xsd_file", &e::xsd_file) |
                query_builder::bind("kind", &e::kind) |
+               query_builder::bind("ore_file_code", &e::ore_file_code) |
                query_builder::bind("configuration_type_code", &e::configuration_type_code) |
                query_builder::bind("name_pattern", &e::name_pattern) |
                query_builder::bind("is_default", &e::is_default) |

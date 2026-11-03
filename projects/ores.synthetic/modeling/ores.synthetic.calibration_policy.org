@@ -12,7 +12,7 @@
 #+entity_title: Calibration Policy
 #+brief: The calibration rule for one asset class: window, inverse and fallback.
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-03
 
 A policy is the class-wide answer to how a feed is calibrated: the volatility
 window in days, whether a pair may be read the other way round as =1/x=, and
@@ -76,6 +76,23 @@ The volatility window, in days, over which the fixing returns are measured.
 faker::number::integer(30, 180)
 #+end_src
 
+** variance_window_days
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 1826
+:default:       1826
+:END:
+
+The variance window, in days, of fixings a variance calibration's input is
+captured over: five years by default, so a GJR-GARCH fit sees several volatility
+regimes. Between 30 and 3660.
+
+#+begin_src cpp :name generator
+1826
+#+end_src
+
 ** allow_inverse
 :PROPERTIES:
 :type:          boolean
@@ -121,6 +138,7 @@ std::string("keep_fixed")
 | expression                                                 |
 |------------------------------------------------------------|
 | "window_days" between 2 and 180                            |
+| "variance_window_days" between 30 and 3660                 |
 
 * Validation function
 :PROPERTIES:

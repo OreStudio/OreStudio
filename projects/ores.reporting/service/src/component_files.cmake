@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "app/application.cpp"
+    "app/cut_authorisation_reconciler.cpp"
     "app/host.cpp"
     "config/options.cpp"
     "config/parser.cpp"
@@ -49,6 +50,9 @@ set(files
     "messaging/engine_settings_group_setting_event_registrar.cpp"
     "messaging/engine_settings_proposal_registrar.cpp"
     "messaging/file_type_event_registrar.cpp"
+    "messaging/ore_file_category_event_registrar.cpp"
+    "messaging/ore_file_event_registrar.cpp"
+    "messaging/ore_file_version_event_registrar.cpp"
     "messaging/ore_parameter_event_registrar.cpp"
     "messaging/ore_parameter_setting_value_set_event_registrar.cpp"
     "messaging/ore_parameter_value_domain_event_registrar.cpp"
@@ -73,6 +77,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/app/application.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/app/cut_authorisation_reconciler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/app/host.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/config/options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/config/parser.hpp"
@@ -87,6 +92,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/configuration_parameter_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/configuration_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_approval_detail_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_authorisation_subject_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_family_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_gap_event_registrar.hpp"
@@ -105,6 +111,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/engine_settings_proposal_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/engine_settings_proposal_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/file_type_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/ore_file_category_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/ore_file_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/ore_file_version_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/ore_parameter_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/ore_parameter_setting_value_set_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/ore_parameter_value_domain_event_registrar.hpp"

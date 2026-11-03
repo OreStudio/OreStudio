@@ -82,6 +82,30 @@ export interface ProviderDispersion {
 }
 
 /**
+ * @brief How a feed's daily variance started: the model, and whether history fitted it.
+ */
+export interface VarianceStart {
+    /** @brief "constant" or "gjr_garch". */
+    model: string;
+    /** @brief True when the shape was fitted from the item's fixings; false when it is the authored one. */
+    fitted: boolean;
+    /** @brief The reaction to a day's move. */
+    alpha: number;
+    /** @brief The extra reaction to a fall of the pair. */
+    gamma: number;
+    /** @brief The carry-over of a day's variance. */
+    beta: number;
+    /** @brief alpha + beta + gamma times the mixture's p_minus, below one. */
+    persistence: number;
+    /** @brief The first day's variance over the long-run level: above one when history ended turbulent. */
+    initial_ratio: number;
+    /** @brief How many daily returns the fit read; zero when nothing was fitted. */
+    returns: number;
+    /** @brief Why the authored shape was kept, when it was. */
+    note: string;
+}
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * The record belongs to the run, not to the config: a feed that stops and
@@ -126,6 +150,8 @@ export interface FeedStart {
     jumps: number | null;
     /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
     dispersion: ProviderDispersion[];
+    /** @brief How the daily variance started, for a feed whose variance is modelled. */
+    variance: VarianceStart | null;
 }
 
 /**
@@ -164,6 +190,8 @@ export interface CalibrationPolicySummary {
     from_policy_row: boolean;
     /** @brief How many calendar days of fixings measure the spread. */
     window_days: number;
+    /** @brief How many calendar days of fixings a variance calibration's input covers. */
+    variance_window_days: number;
     /** @brief True when an item that quotes the pair the other way round is read as one over it. */
     allow_inverse: boolean;
     /** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
@@ -188,6 +216,49 @@ export interface CandidateOutcome {
     state: string;
     /** @brief Why the candidate was chosen, skipped or not reached. */
     reason: string;
+}
+
+/**
+ * @brief What a calibration run made of a feed's daily variance: the input it captured and the
+ * calibration it fitted from it, stored when the run is applied.
+ */
+export interface VarianceCalibrationSummary {
+    /** @brief The stored input; empty when the run was not applied. */
+    input_id: string;
+    /** @brief The stored calibration; empty when the run was not applied. */
+    calibration_id: string;
+    /** @brief "proposed" when the fit was made, "rejected" when it could not be. */
+    state: string;
+    /** @brief Why the fit was rejected; empty for a proposed one. */
+    state_reason: string;
+    /** @brief The fixing item the input was read from. */
+    item: string;
+    /** @brief The provider of that item. */
+    provider_code: string;
+    /** @brief True when the item quotes the pair the other way round. */
+    inverted: boolean;
+    /** @brief The window the input covers, in calendar days, from the policy. */
+    window_days: number;
+    /** @brief The last date of the window, as YYYY-MM-DD. */
+    window_end: string;
+    /** @brief The fixing dates the window held. */
+    point_count: number;
+    /** @brief The points whose return the fit used. */
+    used_count: number;
+    /** @brief The fitted reaction to a day's move; absent when rejected. */
+    alpha: number | null;
+    /** @brief The fitted extra reaction to a fall; absent when rejected. */
+    gamma: number | null;
+    /** @brief The fitted weight of yesterday's variance; absent when rejected. */
+    beta: number | null;
+    /** @brief alpha + gamma p_minus + beta; absent when rejected. */
+    persistence: number | null;
+    /** @brief The first day's variance over the long-run level; absent when rejected. */
+    starting_variance_ratio: number | null;
+    /** @brief How many starts the fit ran from. */
+    starts: number;
+    /** @brief True when every start reached the same optimum. */
+    starts_agreed: boolean;
 }
 
 /**
@@ -222,6 +293,8 @@ export interface CalibratedFeed {
     outcome: string;
     /** @brief The words of the outcome: the change written, or why nothing was written. */
     outcome_message: string;
+    /** @brief The variance calibration of a GJR-GARCH feed that starts from a fixing; absent otherwise. */
+    variance: VarianceCalibrationSummary | null;
 }
 
 /**

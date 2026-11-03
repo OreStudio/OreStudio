@@ -27,6 +27,7 @@
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -602,10 +603,40 @@ report_execution_handler::read_run_log_rows(const std::string& tenant_id,
     }
 }
 
+std::vector<service::engine_log_row>
+report_execution_handler::read_package_log_rows(const std::string& tenant_id,
+                                                const std::string& report_instance_id) {
+    try {
+        std::string err;
+        const auto token = run_token(tenant_id, report_instance_id, err);
+        if (token.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "The package log of report instance " << report_instance_id
+                                      << " was not read: " << err;
+            return {};
+        }
+        ores::storage::net::storage_transfer transfer(http_base_url_, token);
+        const auto body = transfer.download_blob(
+            std::string(ores::storage::api::object_keys::ores_bucket),
+            ores::ore::net::ore_storage::package_log_key(report_instance_id));
+        const auto read =
+            results::read_canonical_log_csv(std::string_view(body.data(), body.size()));
+        if (!read.refusals.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "The package log of report instance " << report_instance_id
+                                      << " was refused: " << read.refusals.front();
+            return {};
+        }
+        return read.rows;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Report instance " << report_instance_id << " stores no package log: " << e.what();
+        return {};
+    }
+}
+
 void report_execution_handler::record_run_logs(const std::string& tenant_id,
                                                const std::string& report_instance_id,
                                                const std::vector<std::string>& result_ids) {
-    std::vector<service::engine_log_row> rows;
+    auto rows = read_package_log_rows(tenant_id, report_instance_id);
     for (const auto& result_id : result_ids) {
         auto read = read_run_log_rows(tenant_id, report_instance_id, result_id);
         rows.insert(

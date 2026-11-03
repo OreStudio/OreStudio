@@ -189,7 +189,8 @@ std::optional<instrument_type> type_from_token(std::string_view t) {
         return instrument_type::fx_spot;
     if (t == "FX_FWD")
         return instrument_type::fx_fwd;
-    for (std::size_t i = 0; i < instrument_type_count; ++i) {
+    // A key names only ORE's types; oresmd's own have no key.
+    for (std::size_t i = 0; i < ore_instrument_type_count; ++i) {
         const auto type = static_cast<instrument_type>(i);
         if (ore_key_codec::token_of(type) == t)
             return type;
@@ -277,6 +278,8 @@ market_datum dispatch(instrument_type t, quote_type q, detail::tokens rest) {
         case it::rating:
         case it::shape_profile:
             return detail::read_securities(t, q, rest);
+        case it::fx_vol_surface:
+            detail::refuse("ORE has no market datum of this type");
     }
     detail::refuse("unknown instrument type");
 }
@@ -304,6 +307,9 @@ std::expected<market_datum, std::string> ore_key_codec::read(std::string_view ke
 std::expected<std::string, std::string> ore_key_codec::write(const market_datum& datum) {
     if (datum.is_series())
         return std::unexpected(std::string("a series has no ORE key"));
+    if (!is_ore_type(datum.type()))
+        return std::unexpected(
+            std::format("ORE has no market datum of type {}", ore_name(datum.type())));
     std::string key(token_of(datum.type()));
     key += '/';
     key += ore_name(datum.quote());

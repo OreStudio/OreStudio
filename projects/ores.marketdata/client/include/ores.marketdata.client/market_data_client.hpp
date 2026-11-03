@@ -21,11 +21,16 @@
 #define ORES_MARKETDATA_CLIENT_MARKET_DATA_CLIENT_HPP
 
 #include "ores.marketdata.api/domain/feed.hpp"
+#include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
+#include "ores.marketdata.api/messaging/observation_read_operations_protocol.hpp"
 #include "ores.marketdata.client/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include <cstddef>
 #include <expected>
 #include <optional>
 #include <string>
@@ -123,6 +128,15 @@ public:
     get_fixing_window(const messaging::get_fixing_window_request& request);
 
     /**
+     * @brief The observations of a series over a window of days, every point each day.
+     *
+     * Sends marketdata.v1.ops.get_observation_window. A refusal of the service is an
+     * error.
+     */
+    [[nodiscard]] std::expected<messaging::get_observation_window_response, std::string>
+    get_observation_window(const messaging::get_observation_window_request& request);
+
+    /**
      * @brief List observations for a series (limit 10000, first page).
      *
      * Sends marketdata.v1.market_observations.list_by_series_id, which returns
@@ -156,6 +170,33 @@ public:
      * adapter that needs to know its sources asks here and reads no table of marketdata.
      */
     [[nodiscard]] std::expected<std::vector<domain::feed>, std::string> list_feeds();
+
+    /**
+     * @brief The vendor instruments of one provider.
+     *
+     * Sends marketdata.v1.market_data_vendor_instruments.list filtered to the provider,
+     * so an adapter whose universe is what the catalogue holds for it reads it here.
+     */
+    [[nodiscard]] std::expected<std::vector<domain::market_data_vendor_instrument>, std::string>
+    list_vendor_instruments(const std::string& provider_code);
+
+    /// The series of one provider. Sends marketdata.v1.market_series.list.
+    [[nodiscard]] std::expected<std::vector<domain::market_series>, std::string>
+    list_series_of_provider(const std::string& provider_code);
+
+    /// Writes a series and returns it as stored. Sends marketdata.v1.market_series.put.
+    [[nodiscard]] std::expected<domain::market_series, std::string>
+    put_series(const messaging::market_series_write& write,
+               const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Writes observations; one at a key already held is stored as its new version.
+     *
+     * Sends marketdata.v1.market_observations.put_many.
+     */
+    [[nodiscard]] std::expected<std::size_t, std::string>
+    put_observations(const std::vector<messaging::market_observation_write>& writes,
+                     const ores::utility::domain::change_intent& intent);
 
 private:
     ores::nats::service::nats_client& nats_;

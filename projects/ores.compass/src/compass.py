@@ -7418,6 +7418,58 @@ def split_keep_going(value, targets):
     return "0", [value, *targets]
 
 
+def _build_stamp(label, log=None):
+    """Print, and write to the build log, a build event's wall-clock time."""
+    line = f"🕒 {label}: {datetime.datetime.now().astimezone():%Y-%m-%d %H:%M:%S %Z}"
+    print(line)
+    if log is not None:
+        log.write(line + "\n")
+        log.flush()
+    return line
+
+
+def _cmake_cache_value(build_dir, key):
+    """A value from the build directory's CMakeCache.txt, or "" without one."""
+    cache = Path(build_dir) / "CMakeCache.txt"
+    if not cache.is_file():
+        return ""
+    for line in cache.read_text(encoding="utf-8", errors="replace").splitlines():
+        if line.startswith(f"{key}:"):
+            return line.split("=", 1)[1].strip()
+    return ""
+
+
+def deps_log_repair_command(build_dir, ninja_version):
+    """The command that repairs a damaged ninja deps log, or None.
+
+    Ninja 1.13 keeps a deps log record that fails its check when it recovers
+    the log (ninja#2703), so every later load stops at that record and drops
+    what the last build recorded after it: each build is then a full one. A
+    recompact rewrites the log from the records that load, so the bad record
+    goes. Ninja 1.12 removes the bad record itself. The fix is on ninja's
+    master but in no release up to 1.13.2, so every 1.13 recompacts, and a
+    later release is expected to have the fix.
+    """
+    program = _cmake_cache_value(build_dir, "CMAKE_MAKE_PROGRAM")
+    if not program or not (Path(build_dir) / ".ninja_deps").is_file():
+        return None
+    version = ninja_version(program)
+    if version is None or version[:2] != (1, 13):
+        return None
+    return [program, "-C", str(build_dir), "-t", "recompact"]
+
+
+def _ninja_version(program):
+    """The (major, minor, patch) of a ninja binary, or None if not ninja."""
+    try:
+        out = subprocess.run([program, "--version"], capture_output=True,
+                             text=True, check=False, timeout=10).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)\S*", out)
+    return tuple(int(g) for g in match.groups()) if match else None
+
+
 def keep_going_args(build_dir, preset, failures=0):
     """The native build tool's keep-going option, after cmake's `--`.
 
@@ -7428,13 +7480,7 @@ def keep_going_args(build_dir, preset, failures=0):
     there is no cache, so the preset name decides. Any other generator gets
     no option, because a wrong one fails the build.
     """
-    cache = Path(build_dir) / "CMakeCache.txt"
-    generator = ""
-    if cache.is_file():
-        for line in cache.read_text(encoding="utf-8", errors="replace").splitlines():
-            if line.startswith("CMAKE_GENERATOR:"):
-                generator = line.split("=", 1)[1].strip()
-                break
+    generator = _cmake_cache_value(build_dir, "CMAKE_GENERATOR")
     if not generator:
         generator = "Ninja" if "ninja" in preset.lower() else "Unix Makefiles"
     if generator.startswith("Ninja"):
@@ -7597,6 +7643,9 @@ def cmd_build(argv):
         print(f"ℹ️  {build_dir.relative_to(PROJECT_ROOT)} not found — "
               f"configuring first: cmake --preset {preset}")
         commands.append(["cmake", "--preset", preset])
+    repair = deps_log_repair_command(build_dir, _ninja_version)
+    if repair is not None:
+        commands.append(repair)
 
     build_cmd = ["cmake", "--build", "--preset", preset]
     if targets:
@@ -7616,6 +7665,8 @@ def cmd_build(argv):
         source = "--jobs" if args.jobs is not None else f"build-lock slot '{slot_name}'"
         lock.announce()
     print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
+    start_time = time.monotonic()
+    started = None if args.dry_run else _build_stamp("Build started")
     build_cmd += ["-j", str(jobs)]
     if args.keep_going is not None:
         build_cmd += keep_going_args(build_dir, preset, int(args.keep_going))
@@ -7640,7 +7691,10 @@ def cmd_build(argv):
     if log_path is not None:
         print(f"📝 Build output: {log_path} (tail -f to follow)")
         log = open(log_path, "w")
+        if started is not None:
+            log.write(started + "\n")
 
+    outcome = "interrupted"
     try:
         for cmd in commands:
             print(f"🔨 {' '.join(cmd)}")
@@ -7648,10 +7702,18 @@ def cmd_build(argv):
                 continue
             rc = (_run_logged(cmd, PROJECT_ROOT, log) if log is not None
                   else subprocess.run(cmd, cwd=PROJECT_ROOT).returncode)
+            # A stale build.ninja fails the recompact, and only cmake --build
+            # regenerates it, so the build must still run.
+            if rc != 0 and cmd is repair:
+                print(f"⚠️  The deps log repair failed with exit code {rc}; "
+                      "building without it.", file=sys.stderr)
+                continue
             if rc != 0:
                 print(f"❌ Command failed with exit code {rc}: {' '.join(cmd)}",
                       file=sys.stderr)
+                outcome = f"failed, exit {rc}"
                 return rc
+        outcome = "succeeded"
         if not args.dry_run:
             problems = _check_publish_artifacts(build_dir)
             if problems:
@@ -7668,6 +7730,9 @@ def cmd_build(argv):
                       file=sys.stderr)
         return 0
     finally:
+        if started is not None:
+            took = datetime.timedelta(seconds=round(time.monotonic() - start_time))
+            _build_stamp(f"Build finished ({outcome}, took {took})", log)
         if log is not None:
             log.close()
         if lock is not None:

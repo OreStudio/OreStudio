@@ -128,6 +128,34 @@ struct provider_dispersion {
 };
 
 /**
+ * @brief How a feed's daily variance started: the model, and whether history fitted it.
+ */
+struct variance_start {
+    /** @brief "constant" or "gjr_garch". */
+    std::string model;
+    /** @brief True when the shape was fitted from the item's fixings; false when it is the authored
+     * one. */
+    bool fitted = false;
+    /** @brief The reaction to a day's move. */
+    double alpha = 0.0;
+    /** @brief The extra reaction to a fall of the pair. */
+    double gamma = 0.0;
+    /** @brief The carry-over of a day's variance. */
+    double beta = 0.0;
+    /** @brief alpha + beta + gamma times the mixture's p_minus, below one. */
+    double persistence = 0.0;
+    /** @brief The first day's variance over the long-run level: above one when history ended
+     * turbulent. */
+    double initial_ratio = 1.0;
+    /** @brief How many daily returns the fit read; zero when nothing was fitted. */
+    int returns = 0;
+    /** @brief Why the authored shape was kept, when it was. */
+    std::string note;
+
+    friend bool operator==(const variance_start&, const variance_start&) = default;
+};
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * The record belongs to the run, not to the config: a feed that stops and
@@ -172,6 +200,8 @@ struct feed_start {
     std::optional<int> jumps;
     /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
     std::vector<provider_dispersion> dispersion;
+    /** @brief How the daily variance started, for a feed whose variance is modelled. */
+    std::optional<variance_start> variance;
 
     friend bool operator==(const feed_start&, const feed_start&) = default;
 };
@@ -228,6 +258,8 @@ struct calibration_policy_summary {
     bool from_policy_row = false;
     /** @brief How many calendar days of fixings measure the spread. */
     int window_days = 0;
+    /** @brief How many calendar days of fixings a variance calibration's input covers. */
+    int variance_window_days = 0;
     /** @brief True when an item that quotes the pair the other way round is read as one over it. */
     bool allow_inverse = false;
     /** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
@@ -257,6 +289,52 @@ struct candidate_outcome {
     std::string reason;
 
     friend bool operator==(const candidate_outcome&, const candidate_outcome&) = default;
+};
+
+/**
+ * @brief What a calibration run made of a feed's daily variance: the input it captured and the
+ * calibration it fitted from it, stored when the run is applied.
+ */
+struct variance_calibration_summary {
+    /** @brief The stored input; empty when the run was not applied. */
+    std::string input_id;
+    /** @brief The stored calibration; empty when the run was not applied. */
+    std::string calibration_id;
+    /** @brief "proposed" when the fit was made, "rejected" when it could not be. */
+    std::string state;
+    /** @brief Why the fit was rejected; empty for a proposed one. */
+    std::string state_reason;
+    /** @brief The fixing item the input was read from. */
+    std::string item;
+    /** @brief The provider of that item. */
+    std::string provider_code;
+    /** @brief True when the item quotes the pair the other way round. */
+    bool inverted = false;
+    /** @brief The window the input covers, in calendar days, from the policy. */
+    int window_days = 0;
+    /** @brief The last date of the window, as YYYY-MM-DD. */
+    std::string window_end;
+    /** @brief The fixing dates the window held. */
+    int point_count = 0;
+    /** @brief The points whose return the fit used. */
+    int used_count = 0;
+    /** @brief The fitted reaction to a day's move; absent when rejected. */
+    std::optional<double> alpha;
+    /** @brief The fitted extra reaction to a fall; absent when rejected. */
+    std::optional<double> gamma;
+    /** @brief The fitted weight of yesterday's variance; absent when rejected. */
+    std::optional<double> beta;
+    /** @brief alpha + gamma p_minus + beta; absent when rejected. */
+    std::optional<double> persistence;
+    /** @brief The first day's variance over the long-run level; absent when rejected. */
+    std::optional<double> starting_variance_ratio;
+    /** @brief How many starts the fit ran from. */
+    int starts = 0;
+    /** @brief True when every start reached the same optimum. */
+    bool starts_agreed = false;
+
+    friend bool operator==(const variance_calibration_summary&,
+                           const variance_calibration_summary&) = default;
 };
 
 /**
@@ -291,6 +369,9 @@ struct calibrated_feed {
     std::string outcome;
     /** @brief The words of the outcome: the change written, or why nothing was written. */
     std::string outcome_message;
+    /** @brief The variance calibration of a GJR-GARCH feed that starts from a fixing; absent
+     * otherwise. */
+    std::optional<variance_calibration_summary> variance;
 
     friend bool operator==(const calibrated_feed&, const calibrated_feed&) = default;
 };
@@ -412,6 +493,28 @@ struct calibrate_response {
 }
 
 /**
+ * @brief The members of variance_start, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const variance_start&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"model", &variance_start::model},
+        ::ores::utility::codec::field{"fitted", &variance_start::fitted},
+        ::ores::utility::codec::field{"alpha", &variance_start::alpha},
+        ::ores::utility::codec::field{"gamma", &variance_start::gamma},
+        ::ores::utility::codec::field{"beta", &variance_start::beta},
+        ::ores::utility::codec::field{"persistence", &variance_start::persistence},
+        ::ores::utility::codec::field{"initial_ratio", &variance_start::initial_ratio},
+        ::ores::utility::codec::field{"returns", &variance_start::returns},
+        ::ores::utility::codec::field{"note", &variance_start::note},
+    };
+}
+
+/**
  * @brief The members of feed_start, named as the wire names them and in the order
  * the type declares them.
  *
@@ -440,6 +543,7 @@ struct calibrate_response {
         ::ores::utility::codec::field{"max_return", &feed_start::max_return},
         ::ores::utility::codec::field{"jumps", &feed_start::jumps},
         ::ores::utility::codec::field{"dispersion", &feed_start::dispersion},
+        ::ores::utility::codec::field{"variance", &feed_start::variance},
     };
 }
 
@@ -498,6 +602,8 @@ struct calibrate_response {
         ::ores::utility::codec::field{"from_policy_row",
                                       &calibration_policy_summary::from_policy_row},
         ::ores::utility::codec::field{"window_days", &calibration_policy_summary::window_days},
+        ::ores::utility::codec::field{"variance_window_days",
+                                      &calibration_policy_summary::variance_window_days},
         ::ores::utility::codec::field{"allow_inverse", &calibration_policy_summary::allow_inverse},
         ::ores::utility::codec::field{"fallback_code", &calibration_policy_summary::fallback_code},
         ::ores::utility::codec::field{"provider_order",
@@ -525,6 +631,41 @@ struct calibrate_response {
 }
 
 /**
+ * @brief The members of variance_calibration_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const variance_calibration_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"input_id", &variance_calibration_summary::input_id},
+        ::ores::utility::codec::field{"calibration_id",
+                                      &variance_calibration_summary::calibration_id},
+        ::ores::utility::codec::field{"state", &variance_calibration_summary::state},
+        ::ores::utility::codec::field{"state_reason", &variance_calibration_summary::state_reason},
+        ::ores::utility::codec::field{"item", &variance_calibration_summary::item},
+        ::ores::utility::codec::field{"provider_code",
+                                      &variance_calibration_summary::provider_code},
+        ::ores::utility::codec::field{"inverted", &variance_calibration_summary::inverted},
+        ::ores::utility::codec::field{"window_days", &variance_calibration_summary::window_days},
+        ::ores::utility::codec::field{"window_end", &variance_calibration_summary::window_end},
+        ::ores::utility::codec::field{"point_count", &variance_calibration_summary::point_count},
+        ::ores::utility::codec::field{"used_count", &variance_calibration_summary::used_count},
+        ::ores::utility::codec::field{"alpha", &variance_calibration_summary::alpha},
+        ::ores::utility::codec::field{"gamma", &variance_calibration_summary::gamma},
+        ::ores::utility::codec::field{"beta", &variance_calibration_summary::beta},
+        ::ores::utility::codec::field{"persistence", &variance_calibration_summary::persistence},
+        ::ores::utility::codec::field{"starting_variance_ratio",
+                                      &variance_calibration_summary::starting_variance_ratio},
+        ::ores::utility::codec::field{"starts", &variance_calibration_summary::starts},
+        ::ores::utility::codec::field{"starts_agreed",
+                                      &variance_calibration_summary::starts_agreed},
+    };
+}
+
+/**
  * @brief The members of calibrated_feed, named as the wire names them and in the order
  * the type declares them.
  *
@@ -547,6 +688,7 @@ struct calibrate_response {
         ::ores::utility::codec::field{"running", &calibrated_feed::running},
         ::ores::utility::codec::field{"outcome", &calibrated_feed::outcome},
         ::ores::utility::codec::field{"outcome_message", &calibrated_feed::outcome_message},
+        ::ores::utility::codec::field{"variance", &calibrated_feed::variance},
     };
 }
 
@@ -637,6 +779,15 @@ struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::provide
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::variance_start> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::variance_start& v);
+    static ores::synthetic::messaging::variance_start read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::variance_start& v);
+    static ores::synthetic::messaging::variance_start read_msgpack(std::span<const std::byte> data);
+};
+template <>
 struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::feed_start> {
     static constexpr bool is_generated = true;
 
@@ -694,6 +845,20 @@ struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::candida
     static ores::synthetic::messaging::candidate_outcome read_json(std::string_view text);
     static std::string write_msgpack(const ores::synthetic::messaging::candidate_outcome& v);
     static ores::synthetic::messaging::candidate_outcome
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::variance_calibration_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::variance_calibration_summary& v);
+    static ores::synthetic::messaging::variance_calibration_summary
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::variance_calibration_summary& v);
+    static ores::synthetic::messaging::variance_calibration_summary
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

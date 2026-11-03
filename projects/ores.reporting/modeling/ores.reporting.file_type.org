@@ -81,28 +81,6 @@ Whether ORE Studio reads the file or ORE writes it: input or output. An input is
 std::string("input")
 #+end_src
 
-** format
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-The format of the file: xml, csv, csv_gz for a compressed csv, txt, dat for a binary file, or json. An xml file is validated against the XSD in xsd_file. A csv file has a header line and its columns are named by the guide or by the report that writes it.
-
-#+begin_src cpp :name generator
-std::string("csv")
-#+end_src
-
-** xsd_file
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-For an xml file, the XSD of ORE that declares its root element, for example nettingsetdefinitions.xsd for netting.xml. Nothing for a file that is not xml, or an xml file that ORE publishes no schema for.
-
 ** kind
 :PROPERTIES:
 :type:     text
@@ -114,6 +92,21 @@ What the file is: input_document, data_file, output_file or intermediate_file. A
 
 #+begin_src cpp :name generator
 std::string("data_file")
+#+end_src
+
+** ore_file_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The ORE file the parameter names, as the ORE user guide identifies it, for example
+npv_cube for the cubeFile of xva. The file says what the file is, its format and
+its XSD; the file type says how one parameter of the run reaches it.
+
+#+begin_src cpp :name generator
+std::string("market_data")
 #+end_src
 
 ** configuration_type_code
@@ -224,8 +217,6 @@ checks the template emits on its own.
 | "ore_parameter" <> '' |
 | "direction" in ('input', 'output') |
 | ("direction" = 'output') = ("kind" = 'output_file') |
-| "format" in ('xml', 'csv', 'csv_gz', 'txt', 'dat', 'json') |
-| "xsd_file" is null or "format" = 'xml' |
 | "kind" in ('input_document', 'data_file', 'output_file', 'intermediate_file') |
 | "name_pattern" ~ '^[A-Za-z0-9_.-]*(\{\{[A-Z][A-Z0-9_]*\}\}[A-Za-z0-9_.-]*)*$' |
 | "sample_count" >= 0 and "sample_count" <= "sample_total" |
@@ -244,6 +235,16 @@ parameters each have an index of their own. A third index gives each configurati
 | setup_document   | tenant_id, configuration_type_code         | true   | true         | analytic_type_code is null and configuration_type_code is not null |
 
 * Foreign keys
+
+** ore_file_code
+:PROPERTIES:
+:table:         ores_reporting_ore_files_tbl
+:target_column: code
+:parent_entity: ore_file
+:nullable:      false
+:error_message: Invalid ore_file_code: %. No active ORE file found with this code.
+:list_by:       true
+:END:
 
 ** analytic_type_code
 :PROPERTIES:
@@ -346,8 +347,7 @@ parameters each have an index of their own. A third index gives each configurati
 | analytic_type_code      | Analytic Type          | line_edit |        |             | e.g. npv |
 | ore_parameter           | ORE Parameter          | line_edit |        | true        | e.g. outputFileName |
 | direction               | Direction              | line_edit |        | true        | input or output |
-| format                  | Format                 | line_edit |        | true        | e.g. xml |
-| xsd_file                | XSD                    | line_edit |        |             | e.g. conventions.xsd |
+| ore_file_code           | ORE File               | line_edit |        | true        | e.g. npv_cube |
 | kind                    | Kind                   | line_edit |        | true        | e.g. output_file |
 | configuration_type_code | Configuration Type     | line_edit |        |             | e.g. conventions |
 | is_default              | Default In Run         | check_box |        |             |  |

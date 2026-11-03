@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: E67C68AC-FCA3-4187-A4B2-EB1087A45F8F
+:ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.swaption_volatility_smile
+#+description: Codegen entity model for the refdata =swaption_volatility_smile= part: the smile grid a swaption volatility entry of the Smile dimension states.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: swaption_volatility_smile
+#+entity_plural: swaption_volatility_smiles
+#+entity_title: Swaption Volatility Smile
+#+brief: The smile grid a swaption volatility cube is quoted on.
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+ORE's =swaptionVolatility= is one =xs:all= with an optional =Dimension= and
+every smile element optional. ORE reads the three smile lists only for a =Smile=
+surface, and they are one block: in the ORE examples an entry states all three
+or none. A row of this part is that block, and it exists wherever the entry
+states one, as the FX smile part does for the FX entry. The examples also keep a
+grid on three =ATM= entries whose dimension was switched from =Smile=, so the
+part does not depend on the dimension, and the document round trips as written.
+
+The part holds =SmileOptionTenors=, =SmileSwapTenors= and =SmileSpreads=, each
+a comma separated list in ORE's own text. =Dimension= stays on the entry,
+because it is the entry's own setting and the smile only depends on it.
+
+An entry holds at most one row of this part, so the generated table adds the
+unique index on the live rows of =(tenant_id, swaption_volatility_config_id)=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** swaption_volatility_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:unique:   true
+:END:
+
+The swaption volatility entry this smile belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** smile_option_tenors
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The option tenors of the smile grid, as ORE's =SmileOptionTenors= list.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** smile_swap_tenors
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The swap tenors of the smile grid, as ORE's =SmileSwapTenors= list.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** smile_spreads
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The strike spreads of the smile grid, as ORE's =SmileSpreads= list.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** swaption_volatility_config_id
+:PROPERTIES:
+:table:         ores_refdata_swaption_volatility_configs_tbl
+:target_column: id
+:parent_entity: swaption_volatility_config
+:nullable:      false
+:error_message: Invalid swaption_volatility_config_id: %. No active swaption volatility entry found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_swaption_volatility_smiles_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: swaption_volatility_smile
+:entity_plural_short:   swaption_volatility_smiles
+:entity_singular_words: swaption volatility smile
+:entity_plural_words:   swaption volatility smiles
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:D513CA90-418E-4973-935D-78939EDBAD0F][ores.refdata.swaption_volatility_config]] — the entry this smile belongs to.
+- [[id:7E4C1D92-6B08-4F3A-9C51-2D8B7A0E5F14][ores.refdata.fx_volatility_smile]] — the same split for the FX entry.
+- [[id:06F7D57F-82C7-440D-91D7-54EED11EBB85][Split the swaption smile and the inflation seasonality]] — the task that introduced it.

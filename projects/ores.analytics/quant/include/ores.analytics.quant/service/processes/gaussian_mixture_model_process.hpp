@@ -54,17 +54,25 @@ public:
     bool supports_variable_step() const override;
     double current() const override;
     void set_tail_tilt(double tilt) override;
+    void set_volatility_multiplier(double multiplier) override;
+    bool supports_volatility_multiplier() const override;
 
 private:
     /// One nominal tick: the old step, unchanged.
     void step_one_tick();
     /// The fraction of a tick left over after the whole ones.
     void step_partial_tick(double part);
+    /// Component k's mean as drawn: scaled about the mixture's mean by the multiplier.
+    double mean_of(int k) const;
 
     /// The mixture as configured, which a tilt starts from.
     math::mixture base_;
     /// The tilt in force. The steps draw from stdevs_, which it sets.
     double tilt_ = 0.0;
+    /// The mixture's mean, about which a multiplier scales each component.
+    double mixture_mean_ = 0.0;
+    /// The volatility multiplier in force; one draws the law exactly as configured.
+    double multiplier_ = 1.0;
     std::vector<double> means_;
     std::vector<double> stdevs_;
     std::vector<double> weights_;

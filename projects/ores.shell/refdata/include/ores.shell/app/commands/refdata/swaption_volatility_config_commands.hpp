@@ -90,8 +90,7 @@ public:
      * @brief add <curve_definition_id> <dimension> <volatility_type> <interpolation>
      * <extrapolation> <output_volatility_type> <model_shift> <output_shift> <day_counter>
      * <calendar> <business_day_convention> <option_tenors> <swap_tenors> <short_swap_index_base>
-     * <swap_index_base> <smile_option_tenors> <smile_swap_tenors> <smile_spreads> <quote_tag>
-     * <reason> <commentary>
+     * <swap_index_base> <quote_tag> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -101,8 +100,7 @@ public:
      * @brief set <id> <curve_definition_id> <dimension> <volatility_type> <interpolation>
      * <extrapolation> <output_volatility_type> <model_shift> <output_shift> <day_counter>
      * <calendar> <business_day_convention> <option_tenors> <swap_tenors> <short_swap_index_base>
-     * <swap_index_base> <smile_option_tenors> <smile_swap_tenors> <smile_spreads> <quote_tag>
-     * <reason> <commentary> [--version <n>]
+     * <swap_index_base> <quote_tag> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -112,8 +110,7 @@ public:
      * @brief put-many --count <n> <id> <curve_definition_id> <dimension> <volatility_type>
      * <interpolation> <extrapolation> <output_volatility_type> <model_shift> <output_shift>
      * <day_counter> <calendar> <business_day_convention> <option_tenors> <swap_tenors>
-     * <short_swap_index_base> <swap_index_base> <smile_option_tenors> <smile_swap_tenors>
-     * <smile_spreads> <quote_tag> <reason> <commentary>
+     * <short_swap_index_base> <swap_index_base> <quote_tag> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -116,7 +116,7 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
         }
     }
 
-    CHECK(metrics == 68);
+    CHECK(metrics == 67);
     CHECK(cashflows == 3);
     CHECK(calibrations == 1);
     CHECK(market_inputs == 3);

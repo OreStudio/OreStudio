@@ -52,6 +52,7 @@ namespace ores::synthetic::domain {
         utility::codec::field{"id", &calibration_policy::id},
         utility::codec::field{"asset_class_code", &calibration_policy::asset_class_code},
         utility::codec::field{"window_days", &calibration_policy::window_days},
+        utility::codec::field{"variance_window_days", &calibration_policy::variance_window_days},
         utility::codec::field{"allow_inverse", &calibration_policy::allow_inverse},
         utility::codec::field{"fallback_code", &calibration_policy::fallback_code},
         utility::codec::field{"modified_by", &calibration_policy::modified_by},

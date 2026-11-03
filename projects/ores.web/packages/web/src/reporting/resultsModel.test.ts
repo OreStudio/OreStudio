@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { asFigure, toAggregateRows, toErrors, toTradeRows } from './resultsModel.js';
+import { asFigure, toAggregateRows, toTradeRows } from './resultsModel.js';
 
 describe('toTradeRows', () => {
     it('reads a row whose fields are present', () => {
@@ -55,24 +55,6 @@ describe('toAggregateRows', () => {
         expect(parsed.rows[0]?.depth).toBe(0);
         expect(parsed.rows[0]?.is_group).toBe(false);
         expect(parsed.rows[0]?.totals).toEqual([]);
-    });
-});
-
-describe('toErrors', () => {
-    it('maps the wire words to the screen words and counts the rest', () => {
-        const parsed = toErrors([
-            { scope: 'Trade', subject_id: 't1', message: 'why' },
-            { message: 7 },
-        ]);
-
-        expect(parsed.rows[0]).toEqual({
-            scope: 'Trade',
-            severity: '',
-            message: 'why',
-            cause: '',
-            subjectId: 't1',
-        });
-        expect(parsed.unread).toBe(1);
     });
 });
 

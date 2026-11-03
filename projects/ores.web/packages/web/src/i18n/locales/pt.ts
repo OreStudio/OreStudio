@@ -4420,6 +4420,7 @@ const pt: SourceCatalogue = {
                 centres: 'Centros de negócios',
                 counterparties: 'Contrapartes',
                 arrivals: 'Chegadas',
+                variance: 'Variância',
                 behaviour: 'Comportamento do preço',
                 ticks: 'Cotações',
                 process: 'Processo',
@@ -4571,6 +4572,7 @@ const pt: SourceCatalogue = {
                 arithmetic: 'Aritmético',
                 ornstein_uhlenbeck: 'Reversão à média (Ornstein-Uhlenbeck)',
             },
+            variance_model: { constant: 'Constante', gjr_garch: 'GJR-GARCH' },
             role: {
                 self_discounting: 'Autodesconto',
                 discount: 'Desconto',
@@ -5778,6 +5780,30 @@ const pt: SourceCatalogue = {
             restartFailed:
                 'Guardado, mas o reinício falhou: {message}. O feed corre com a sua lei antiga até voltar a arrancar.',
         },
+        variance: {
+            title: 'Variância diária',
+            lead: 'Se a variância diária deste feed é constante ou segue um GJR-GARCH, para que os dias calmos e agitados se agrupem, e a forma de que parte.',
+            model: 'Modelo de variância',
+            'model.constant': 'Constante — a variância da mistura todos os dias',
+            'model.gjr_garch': 'GJR-GARCH — uma variância transportada dia a dia',
+            alpha: 'Alfa',
+            alphaHelp:
+                'Quanto o movimento de um dia eleva a variância do dia seguinte. Pelo menos zero.',
+            gamma: 'Gama',
+            gammaHelp: 'A reação adicional a uma queda do par; alfa mais gama é pelo menos zero.',
+            beta: 'Beta',
+            betaHelp: 'Quanto da variância de um dia passa para o seguinte. Pelo menos zero.',
+            window: 'Histórico, dias',
+            windowHelp:
+                'Os dias de fixings que um feed com fixing usa para ajustar a sua forma, de 30 a 3660.',
+            fitted: 'Um feed que parte de um fixing ajusta a sua própria forma a esse histórico, e mantém estes valores quando o histórico é curto demais. O ponto de partida da execução diz qual usou.',
+            engine: 'Uma variância GJR-GARCH escala a mistura, por isso precisa do motor geométrico ou aritmético. Mude primeiro o motor no separador Comportamento do preço.',
+            editTitle: 'Editar a variância diária de {feed}',
+            runningNote: 'O feed corre com a variância com que arrancou.',
+            restart: 'Reiniciá-lo para aplicar',
+            restartFailed:
+                'Guardado, mas o reinício falhou: {message}. O feed corre com a variância antiga até voltar a arrancar.',
+        },
         market: {
             title: 'O mercado',
             views: {
@@ -6146,6 +6172,16 @@ const pt: SourceCatalogue = {
                 auto_start: 'O fluxo arranca quando o serviço sintético arranca.',
                 calibration_window_days:
                     'A janela própria do fluxo, de 2 a 180 dias, em vez da política da sua classe. Deixe vazio para seguir a política.',
+                variance_model:
+                    'Constante mantém a variância da mistura em todos os dias. GJR-GARCH transporta uma variância de um dia para o seguinte, de modo que os dias calmos e agitados se agrupam; precisa do motor geométrico ou aritmético.',
+                garch_alpha:
+                    'Só GJR-GARCH: quanto o movimento de um dia eleva a variância do dia seguinte. Pelo menos zero.',
+                garch_gamma:
+                    'Só GJR-GARCH: a reação adicional a uma queda do par. Negativo quando uma subida eleva mais a variância; alfa mais gama é pelo menos zero.',
+                garch_beta:
+                    'Só GJR-GARCH: quanto da variância de um dia passa para o seguinte. Pelo menos zero.',
+                garch_window_days:
+                    'Só GJR-GARCH: quantos dias de fixings um feed com fixing usa para ajustar a sua forma, de 30 a 3660. Cinco anos por omissão.',
             },
             start: {
                 title: 'De onde arrancou esta execução',
@@ -6158,6 +6194,13 @@ const pt: SourceCatalogue = {
                 inverted:
                     'O item cita o par ao contrário, por isso o valor foi lido como o seu inverso.',
                 window: '{used} fixings em {days} dias mediram a sua dispersão.',
+                variance: {
+                    fitted: 'Variância diária: GJR-GARCH ajustado a {returns} retornos diários, alfa {alpha}, gama {gamma}, beta {beta}, persistência {persistence}.',
+                    authored:
+                        'Variância diária: GJR-GARCH com a forma definida, alfa {alpha}, gama {gamma}, beta {beta}, persistência {persistence}.',
+                    firstDay:
+                        'A variância do primeiro dia é {ratio} vezes o nível de longo prazo, tal como o histórico terminou.',
+                },
                 measures: {
                     volatility:
                         'Volatilidade realizada {daily} por dia, {hourly} por hora: esta mudou a calibração, pois ajusta a escala da mistura.',

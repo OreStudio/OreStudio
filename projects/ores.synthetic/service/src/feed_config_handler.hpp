@@ -64,6 +64,23 @@ dispersion_of(const ores::marketdata::domain::feed_start& start) {
     return out;
 }
 
+/// How a run's daily variance started, in the words of the wire.
+inline std::optional<ores::synthetic::messaging::variance_start>
+variance_of(const ores::marketdata::domain::feed_start& start) {
+    if (!start.variance)
+        return std::nullopt;
+    const auto& v = *start.variance;
+    return ores::synthetic::messaging::variance_start{.model = v.model,
+                                                      .fitted = v.fitted,
+                                                      .alpha = v.alpha,
+                                                      .gamma = v.gamma,
+                                                      .beta = v.beta,
+                                                      .persistence = v.persistence,
+                                                      .initial_ratio = v.initial_ratio,
+                                                      .returns = v.returns,
+                                                      .note = v.note};
+}
+
 /// A run's start in the words of the wire, field for field.
 inline ores::synthetic::messaging::feed_start
 to_wire(const ores::marketdata::domain::feed_start& start) {
@@ -85,7 +102,8 @@ to_wire(const ores::marketdata::domain::feed_start& start) {
             .min_return = start.min_return,
             .max_return = start.max_return,
             .jumps = start.jumps,
-            .dispersion = dispersion_of(start)};
+            .dispersion = dispersion_of(start),
+            .variance = variance_of(start)};
 }
 } // namespace
 

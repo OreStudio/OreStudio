@@ -27,7 +27,7 @@ import type { AccountAccess } from '@ores/wire-protocol/browser';
 import type { RecordRow, SyntheticResourceView } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { MarketDataPage } from '../MarketDataPage.js';
-import { IrFeedPage } from './irFeeds.js';
+import { IrFeedPage, irFeedWrite } from './irFeeds.js';
 import { SyntheticScreen } from './SyntheticScreen.js';
 
 const FEED_ID = '66666666-6666-4666-8666-666666666666';
@@ -435,5 +435,30 @@ describe('the IR curve feed screens', () => {
         expect(html).toContain('ir_curve_generation_config');
         expect(html).toContain('ir_curve_generation_config_process_parameter_value');
         expect(html.match(/>Revert</g)?.length).toBe(2);
+    });
+});
+
+describe('the IR feed an engine change writes', () => {
+    it("keeps the feed's arrivals, so an engine change does not reset them", () => {
+        const write = irFeedWrite(
+            {
+                id: 'ir-1',
+                process_type: 'vasicek',
+                arrival_mode: 'poisson',
+                branching_ratio: 0.3,
+                decay: 2,
+                sensitivity: 1.2,
+                modified_by: 'priya',
+            },
+            { process_type: 'hull_white' },
+        );
+        expect(write).toMatchObject({
+            process_type: 'hull_white',
+            arrival_mode: 'poisson',
+            branching_ratio: 0.3,
+            decay: 2,
+            sensitivity: 1.2,
+        });
+        expect(write).not.toHaveProperty('modified_by');
     });
 });

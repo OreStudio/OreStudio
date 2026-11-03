@@ -133,6 +133,27 @@ wire_traits<ores::synthetic::messaging::provider_dispersion>::read_msgpack(
     return object::read_msgpack<ores::synthetic::messaging::provider_dispersion>(data);
 }
 
+std::string wire_traits<ores::synthetic::messaging::variance_start>::write_json(
+    const ores::synthetic::messaging::variance_start& v) {
+    return object::write_json(v);
+}
+
+ores::synthetic::messaging::variance_start
+wire_traits<ores::synthetic::messaging::variance_start>::read_json(std::string_view text) {
+    return object::read_json<ores::synthetic::messaging::variance_start>(text);
+}
+
+std::string wire_traits<ores::synthetic::messaging::variance_start>::write_msgpack(
+    const ores::synthetic::messaging::variance_start& v) {
+    return object::write_msgpack(v);
+}
+
+ores::synthetic::messaging::variance_start
+wire_traits<ores::synthetic::messaging::variance_start>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::synthetic::messaging::variance_start>(data);
+}
+
 std::string wire_traits<ores::synthetic::messaging::feed_start>::write_json(
     const ores::synthetic::messaging::feed_start& v) {
     return object::write_json(v);

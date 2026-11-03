@@ -2026,6 +2026,11 @@ package "dq_staging" #F3E5F5 {
         * branching_ratio : double
         * decay : double
         * sensitivity : double
+        * variance_model : text
+        * garch_alpha : double
+        * garch_gamma : double
+        * garch_beta : double
+        * garch_window_days : integer
     }
 
     note right of ores_dq_fx_spot_generation_configs_artefact_tbl

@@ -4454,6 +4454,7 @@ const fr: SourceCatalogue = {
                 centres: 'Centres d’affaires',
                 counterparties: 'Contreparties',
                 arrivals: 'Arrivées',
+                variance: 'Variance',
                 behaviour: 'Comportement du prix',
                 ticks: 'Cotations',
                 process: 'Processus',
@@ -4605,6 +4606,7 @@ const fr: SourceCatalogue = {
                 arithmetic: 'Arithmétique',
                 ornstein_uhlenbeck: 'Retour à la moyenne (Ornstein-Uhlenbeck)',
             },
+            variance_model: { constant: 'Constante', gjr_garch: 'GJR-GARCH' },
             role: {
                 self_discounting: 'Auto-actualisante',
                 discount: 'Actualisation',
@@ -5819,6 +5821,31 @@ const fr: SourceCatalogue = {
             restartFailed:
                 'Enregistré, mais le redémarrage a échoué : {message}. Le flux tourne sur son ancienne loi jusqu’à son prochain démarrage.',
         },
+        variance: {
+            title: 'Variance quotidienne',
+            lead: 'Si la variance quotidienne de ce flux est constante ou suit un GJR-GARCH, afin que les jours calmes et agités se regroupent, et la forme dont elle part.',
+            model: 'Modèle de variance',
+            'model.constant': 'Constante — la variance du mélange chaque jour',
+            'model.gjr_garch': 'GJR-GARCH — une variance reportée de jour en jour',
+            alpha: 'Alpha',
+            alphaHelp:
+                'La force avec laquelle le mouvement d’un jour relève la variance du lendemain. Au moins zéro.',
+            gamma: 'Gamma',
+            gammaHelp:
+                'La réaction supplémentaire à une baisse de la paire ; alpha plus gamma vaut au moins zéro.',
+            beta: 'Bêta',
+            betaHelp: 'La part de la variance d’un jour reportée au suivant. Au moins zéro.',
+            window: 'Historique, jours',
+            windowHelp:
+                'Les jours de fixings qu’un flux à fixing utilise pour ajuster sa forme, de 30 à 3660.',
+            fitted: 'Un flux qui part d’un fixing ajuste sa propre forme sur cet historique, et garde ces valeurs quand l’historique est trop court. Le point de départ du run indique laquelle il a utilisée.',
+            engine: 'Une variance GJR-GARCH met le mélange à l’échelle ; elle demande donc le moteur géométrique ou arithmétique. Changez d’abord le moteur dans l’onglet Comportement du prix.',
+            editTitle: 'Modifier la variance quotidienne de {feed}',
+            runningNote: 'Le flux tourne sur la variance avec laquelle il a démarré.',
+            restart: 'Le redémarrer pour appliquer',
+            restartFailed:
+                'Enregistré, mais le redémarrage a échoué : {message}. Le flux garde son ancienne variance jusqu’à son prochain démarrage.',
+        },
         market: {
             title: 'Le marché',
             views: {
@@ -6192,6 +6219,16 @@ const fr: SourceCatalogue = {
                 auto_start: 'Le flux démarre quand le service synthétique démarre.',
                 calibration_window_days:
                     'La fenêtre propre au flux, de 2 à 180 jours, à la place de celle de la politique de sa classe. Laissez vide pour suivre la politique.',
+                variance_model:
+                    'Constante garde la variance du mélange chaque jour. GJR-GARCH reporte une variance d’un jour au suivant, si bien que les jours calmes et agités se regroupent ; il demande le moteur géométrique ou arithmétique.',
+                garch_alpha:
+                    'GJR-GARCH seulement : la force avec laquelle le mouvement d’un jour relève la variance du lendemain. Au moins zéro.',
+                garch_gamma:
+                    'GJR-GARCH seulement : la réaction supplémentaire à une baisse de la paire. Négatif quand une hausse relève davantage la variance ; alpha plus gamma vaut au moins zéro.',
+                garch_beta:
+                    'GJR-GARCH seulement : la part de la variance d’un jour reportée au suivant. Au moins zéro.',
+                garch_window_days:
+                    'GJR-GARCH seulement : combien de jours de fixings un flux à fixing utilise pour ajuster sa forme, de 30 à 3660. Cinq ans par défaut.',
             },
             start: {
                 title: "D'où part cette exécution",
@@ -6203,6 +6240,13 @@ const fr: SourceCatalogue = {
                 inverted:
                     "L'élément cite la paire dans l'autre sens, donc sa valeur a été lue comme son inverse.",
                 window: '{used} fixings sur {days} jours ont mesuré sa dispersion.',
+                variance: {
+                    fitted: 'Variance quotidienne : GJR-GARCH ajusté sur {returns} rendements quotidiens, alpha {alpha}, gamma {gamma}, bêta {beta}, persistance {persistence}.',
+                    authored:
+                        'Variance quotidienne : GJR-GARCH avec la forme saisie, alpha {alpha}, gamma {gamma}, bêta {beta}, persistance {persistence}.',
+                    firstDay:
+                        'La variance du premier jour vaut {ratio} fois le niveau de long terme, tel que l’historique s’est terminé.',
+                },
                 measures: {
                     volatility:
                         "Volatilité réalisée {daily} par jour, {hourly} par heure : elle a changé le calibrage, car elle met le mélange à l'échelle.",

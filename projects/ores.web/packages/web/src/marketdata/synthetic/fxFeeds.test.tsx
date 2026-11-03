@@ -170,7 +170,46 @@ describe('the feed an engine change writes', () => {
         expect(write['ticks_per_hour']).toBe(3600);
         expect(write).not.toHaveProperty('version');
         expect(write).not.toHaveProperty('modified_by');
-        expect(Object.keys(write)).toHaveLength(14);
+        expect(Object.keys(write)).toHaveLength(23);
+    });
+
+    it("keeps the feed's daily variance, so an engine change does not reset it", () => {
+        const write = feedWrite(
+            {
+                ...feed,
+                variance_model: 'gjr_garch',
+                garch_alpha: 0.07,
+                garch_gamma: -0.02,
+                garch_beta: 0.9,
+                garch_window_days: 900,
+            },
+            { process_type: 'arithmetic' },
+        );
+        expect(write).toMatchObject({
+            variance_model: 'gjr_garch',
+            garch_alpha: 0.07,
+            garch_gamma: -0.02,
+            garch_beta: 0.9,
+            garch_window_days: 900,
+        });
+    });
+
+    it("keeps the feed's arrivals, so an engine or variance change does not reset them", () => {
+        const hawkes = {
+            ...feed,
+            arrival_mode: 'hawkes',
+            branching_ratio: 0.6,
+            decay: 2.5,
+            sensitivity: 1.4,
+        };
+        const arrivals = {
+            arrival_mode: 'hawkes',
+            branching_ratio: 0.6,
+            decay: 2.5,
+            sensitivity: 1.4,
+        };
+        expect(feedWrite(hawkes, { process_type: 'arithmetic' })).toMatchObject(arrivals);
+        expect(feedWrite(hawkes, { variance_model: 'gjr_garch' })).toMatchObject(arrivals);
     });
 
     it("keeps the feed's own calibration window, so an engine change does not reset it", () => {

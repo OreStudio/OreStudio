@@ -128,6 +128,34 @@ struct provider_dispersion {
 };
 
 /**
+ * @brief How a feed's daily variance started: the model, and whether history fitted it.
+ */
+struct variance_start {
+    /** @brief "constant" or "gjr_garch". */
+    std::string model;
+    /** @brief True when the shape was fitted from the item's fixings; false when it is the authored
+     * one. */
+    bool fitted = false;
+    /** @brief The reaction to a day's move. */
+    double alpha = 0.0;
+    /** @brief The extra reaction to a fall of the pair. */
+    double gamma = 0.0;
+    /** @brief The carry-over of a day's variance. */
+    double beta = 0.0;
+    /** @brief alpha + beta + gamma times the mixture's p_minus, below one. */
+    double persistence = 0.0;
+    /** @brief The first day's variance over the long-run level: above one when history ended
+     * turbulent. */
+    double initial_ratio = 1.0;
+    /** @brief How many daily returns the fit read; zero when nothing was fitted. */
+    int returns = 0;
+    /** @brief Why the authored shape was kept, when it was. */
+    std::string note;
+
+    friend bool operator==(const variance_start&, const variance_start&) = default;
+};
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * The record belongs to the run, not to the config: a feed that stops and
@@ -172,6 +200,8 @@ struct feed_start {
     std::optional<int> jumps;
     /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
     std::vector<provider_dispersion> dispersion;
+    /** @brief How the daily variance started, for a feed whose variance is modelled. */
+    std::optional<variance_start> variance;
 
     friend bool operator==(const feed_start&, const feed_start&) = default;
 };
@@ -412,6 +442,28 @@ struct calibrate_response {
 }
 
 /**
+ * @brief The members of variance_start, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const variance_start&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"model", &variance_start::model},
+        ::ores::utility::codec::field{"fitted", &variance_start::fitted},
+        ::ores::utility::codec::field{"alpha", &variance_start::alpha},
+        ::ores::utility::codec::field{"gamma", &variance_start::gamma},
+        ::ores::utility::codec::field{"beta", &variance_start::beta},
+        ::ores::utility::codec::field{"persistence", &variance_start::persistence},
+        ::ores::utility::codec::field{"initial_ratio", &variance_start::initial_ratio},
+        ::ores::utility::codec::field{"returns", &variance_start::returns},
+        ::ores::utility::codec::field{"note", &variance_start::note},
+    };
+}
+
+/**
  * @brief The members of feed_start, named as the wire names them and in the order
  * the type declares them.
  *
@@ -440,6 +492,7 @@ struct calibrate_response {
         ::ores::utility::codec::field{"max_return", &feed_start::max_return},
         ::ores::utility::codec::field{"jumps", &feed_start::jumps},
         ::ores::utility::codec::field{"dispersion", &feed_start::dispersion},
+        ::ores::utility::codec::field{"variance", &feed_start::variance},
     };
 }
 
@@ -635,6 +688,15 @@ struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::provide
     static std::string write_msgpack(const ores::synthetic::messaging::provider_dispersion& v);
     static ores::synthetic::messaging::provider_dispersion
     read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::variance_start> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::variance_start& v);
+    static ores::synthetic::messaging::variance_start read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::variance_start& v);
+    static ores::synthetic::messaging::variance_start read_msgpack(std::span<const std::byte> data);
 };
 template <>
 struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::feed_start> {

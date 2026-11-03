@@ -272,6 +272,11 @@ package "synthetic" #F9FBE7 {
         * branching_ratio : double
         * decay : double
         * sensitivity : double
+        * variance_model : text
+        * garch_alpha : double
+        * garch_gamma : double
+        * garch_beta : double
+        * garch_window_days : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

@@ -37,7 +37,7 @@ const NO_PAGES: ReadonlyMap<string, string> = new Map();
 const REASON_CODE = 'system.update';
 
 /** How a save of the arrivals ended: stored, stored but not restarted, or not stored. */
-export type ArrivalsSaveOutcome =
+export type FeedSaveOutcome =
     | { readonly kind: 'saved' }
     | { readonly kind: 'restartFailed'; readonly message: string }
     | { readonly kind: 'failed'; readonly message: string };
@@ -47,16 +47,16 @@ function messageOf(cause: unknown): string {
 }
 
 /**
- * Stores the arrivals, re-reads the feed, and restarts it when asked. The feed is re-read as
+ * Stores a feed setting, re-reads the feed, and restarts it when asked. The feed is re-read as
  * soon as the save is stored, so a restart that fails cannot leave the form comparing against
- * the old row; and a failed restart is told apart from a failed save, since the law is stored
+ * the old row; and a failed restart is told apart from a failed save, since the setting is stored
  * either way.
  */
-export async function saveArrivals(steps: {
+export async function saveFeedSettings(steps: {
     readonly save: () => Promise<void>;
     readonly saved?: (() => Promise<void>) | undefined;
     readonly restart?: (() => Promise<void>) | undefined;
-}): Promise<ArrivalsSaveOutcome> {
+}): Promise<FeedSaveOutcome> {
     try {
         await steps.save();
     } catch (cause) {
@@ -239,7 +239,7 @@ export function ArrivalsDialog({
     const saveNow = async (): Promise<void> => {
         setSaving(true);
         setError(null);
-        const outcome = await saveArrivals({
+        const outcome = await saveFeedSettings({
             save: () =>
                 save(model, ratio, decay, sensitivity, { reasonCode: REASON_CODE, commentary: '' }),
             saved,

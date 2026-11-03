@@ -163,6 +163,92 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief The distance from the level the feed took, in basis points of that level. */
 #+end_src
 
+** variance_start
+#+begin_src cpp :name comment
+/**
+ * @brief How a feed's daily variance started: the model, and whether history fitted it.
+ */
+#+end_src
+
+*** model
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief "constant" or "gjr_garch". */
+#+end_src
+
+*** fitted
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the shape was fitted from the item's fixings; false when it is the authored one. */
+#+end_src
+
+*** alpha
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The reaction to a day's move. */
+#+end_src
+
+*** gamma
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The extra reaction to a fall of the pair. */
+#+end_src
+
+*** beta
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The carry-over of a day's variance. */
+#+end_src
+
+*** persistence
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief alpha + beta + gamma times the mixture's p_minus, below one. */
+#+end_src
+
+*** initial_ratio
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The first day's variance over the long-run level: above one when history ended turbulent. */
+#+end_src
+
+*** returns
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many daily returns the fit read; zero when nothing was fitted. */
+#+end_src
+
+*** note
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why the authored shape was kept, when it was. */
+#+end_src
+
 ** feed_start
 #+begin_src cpp :name comment
 /**
@@ -327,6 +413,14 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
+#+end_src
+
+*** variance
+:PROPERTIES:
+:cpp_type: std::optional<variance_start>
+:END:
+#+begin_src cpp :name comment
+/** @brief How the daily variance started, for a feed whose variance is modelled. */
 #+end_src
 
 ** running_feed

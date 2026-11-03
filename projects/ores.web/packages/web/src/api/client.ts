@@ -705,6 +705,19 @@ export const feedStartSchema = z.object({
     dispersion: z
         .array(z.object({ provider_code: z.string(), item: z.string(), basis_points: z.number() }))
         .default([]),
+    variance: z
+        .object({
+            model: z.string(),
+            fitted: z.boolean(),
+            alpha: z.number(),
+            gamma: z.number(),
+            beta: z.number(),
+            persistence: z.number(),
+            initial_ratio: z.number(),
+            returns: z.int(),
+            note: z.string(),
+        })
+        .nullish(),
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;

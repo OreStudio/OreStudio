@@ -4392,6 +4392,7 @@ export const en: SourceCatalogue = {
                 centres: 'Business centres',
                 counterparties: 'Counterparties',
                 arrivals: 'Arrivals',
+                variance: 'Variance',
                 behaviour: 'Price behaviour',
                 ticks: 'Ticks',
                 process: 'Process',
@@ -4540,6 +4541,7 @@ export const en: SourceCatalogue = {
                 arithmetic: 'Arithmetic',
                 ornstein_uhlenbeck: 'Mean reverting (Ornstein-Uhlenbeck)',
             },
+            variance_model: { constant: 'Constant', gjr_garch: 'GJR-GARCH' },
             role: {
                 self_discounting: 'Self-discounting',
                 discount: 'Discount',
@@ -5741,6 +5743,29 @@ export const en: SourceCatalogue = {
             restartFailed:
                 'Saved, but the restart failed: {message}. The feed runs on its old law until it starts again.',
         },
+        variance: {
+            title: 'Daily variance',
+            lead: 'Whether this feed’s daily variance is constant or follows a GJR-GARCH, so that calm and turbulent days cluster, and the shape it starts from.',
+            model: 'Variance model',
+            'model.constant': 'Constant — the mixture’s variance every day',
+            'model.gjr_garch': 'GJR-GARCH — a variance carried day to day',
+            alpha: 'Alpha',
+            alphaHelp: 'How strongly a day’s move raises the next day’s variance. At least zero.',
+            gamma: 'Gamma',
+            gammaHelp:
+                'The extra reaction to a fall of the pair; alpha plus gamma is at least zero.',
+            beta: 'Beta',
+            betaHelp: 'How much of a day’s variance carries into the next. At least zero.',
+            window: 'History, days',
+            windowHelp: 'The days of fixings a fixing feed fits its shape from, 30 to 3660.',
+            fitted: 'A feed that starts from a fixing fits its own shape from that history, and keeps these values when the history is too short. Where the run started says which it used.',
+            engine: 'A GJR-GARCH variance scales the mixture, so it needs the geometric or arithmetic engine. Change the engine on the Price behaviour tab first.',
+            editTitle: 'Edit the daily variance of {feed}',
+            runningNote: 'The feed is running on the variance it started with.',
+            restart: 'Restart it to apply',
+            restartFailed:
+                'Saved, but the restart failed: {message}. The feed runs on its old variance until it starts again.',
+        },
         market: {
             title: 'The market',
             views: {
@@ -6107,6 +6132,16 @@ export const en: SourceCatalogue = {
                 auto_start: 'The feed starts when the synthetic service starts.',
                 calibration_window_days:
                     "The feed's own window, from 2 to 180 days, in place of its class policy's. Leave it empty to follow the policy.",
+                variance_model:
+                    "Constant keeps the mixture's variance on every day. GJR-GARCH carries a variance from one day to the next, so calm and turbulent days cluster; it needs the geometric or arithmetic engine.",
+                garch_alpha:
+                    'GJR-GARCH only: how strongly a day’s move raises the next day’s variance. At least zero.',
+                garch_gamma:
+                    'GJR-GARCH only: the extra reaction to a fall of the pair. Negative when a rise raises the variance more; alpha plus gamma is at least zero.',
+                garch_beta:
+                    'GJR-GARCH only: how much of a day’s variance carries into the next. At least zero.',
+                garch_window_days:
+                    'GJR-GARCH only: how many days of fixings a fixing feed fits its shape from, 30 to 3660. Five years by default.',
             },
             start: {
                 title: 'Where this run started',
@@ -6119,6 +6154,13 @@ export const en: SourceCatalogue = {
                 inverted:
                     'The item quotes the pair the other way round, so its value was read as one over it.',
                 window: '{used} fixings over {days} days measured its spread.',
+                variance: {
+                    fitted: 'Daily variance: GJR-GARCH fitted from {returns} daily returns, alpha {alpha}, gamma {gamma}, beta {beta}, persistence {persistence}.',
+                    authored:
+                        'Daily variance: GJR-GARCH with the authored shape, alpha {alpha}, gamma {gamma}, beta {beta}, persistence {persistence}.',
+                    firstDay:
+                        'The first day’s variance is {ratio} times the long-run level, as the history ended.',
+                },
                 measures: {
                     volatility:
                         'Realised volatility {daily} daily, {hourly} hourly: this changed the calibration, since it scales the mixture.',

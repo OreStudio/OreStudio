@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-gjr-garch-variance-to-fx-spot
+#+pr: 4410
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -20,28 +20,74 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A synthetic FX spot feed can carry a GJR-GARCH variance from one market day to
+the next, so its volatility clusters across days and a fall can raise it more
+than a rise. The variance scales the feed's own GMM shock; the shape parameters
+are fitted from the pair's daily fixings, or authored where the history is too
+short. Native to =ores.analytics.quant=: no QuantLib code, QuantLib and ORE are a
+reference and a source of test expectations. See "Daily GJR-GARCH variance of
+synthetic FX spot" in Volatility clustering and GARCH models.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
 
--
+- =ores.analytics.quant= has a native GJR-GARCH model: validated parameters, the
+  recursion, the variance filter, the Gaussian quasi-likelihood, the mixture's
+  p_minus, and a quasi-maximum-likelihood fit with variance targeting.
+- Its tests at least match QuantLib's GARCH coverage: the calculation test
+  reproduces QuantLib's published values, the cost matches QuantLib's cost
+  function, and every start of the fit reaches the same optimum on a simulated
+  series whose parameters it recovers.
+- Any mixture process takes a volatility multiplier that scales its variance and
+  keeps its mean, and a GJR-GARCH decorator drives it day by day at O(1) cost
+  and no allocation per tick.
+- An FX spot config chooses a constant or a GJR-GARCH variance, carries authored
+  shape parameters, and a fixing feed fits them from its history at start; the
+  start record says which path it took and the values.
+- The FX feed screen edits the variance on a tab of its own, in the pattern of
+  the Arrivals tab, and shows what the running feed started with.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Data shapes, in =ores.analytics.quant/math/gjr_garch.hpp=:
+
+- =gjr_garch_shape= {alpha, gamma, beta}: the reaction and carry-over.
+- =gjr_garch_model= {shape, long_run_variance, p_minus}: built only through
+  =make_gjr_garch_model=, which refuses omega <= 0, alpha < 0, beta < 0,
+  alpha + gamma < 0 and persistence >= 1, so a model in hand is always valid.
+  omega is derived from the long-run variance (variance targeting).
+- Free functions over it: =next_variance= (the recursion, noexcept), =filter=,
+  =mean_cost= (QuantLib's Gaussian cost: the mean of log sigma2 + u2 / sigma2,
+  halved), =fit_gjr_garch= (multi-start Nelder-Mead over the shape, variance
+  targeted), and =negative_second_moment= of a standardised mixture in closed form.
+- =math/nelder_mead.hpp=: a native, deterministic, allocation-free-per-iteration
+  simplex minimiser, reusable by later calibrations.
+
+Process seam: =i_stochastic_process::set_volatility_multiplier= scales a law's
+variance and keeps its mean; the two mixture processes honour it. A decorator,
+=gjr_garch_variance_process=, wraps any process that honours it: it splits a step
+at the day boundary, sets the multiplier once a day, accumulates the day's log
+return and updates the variance at the roll. Per tick it adds one log and a
+multiply; per feed it holds a handful of doubles.
+
+Throughput checkpoint:
+- Blocking first steps: the math and its tests, then the seam, then the decorator.
+- Independent workstreams: the web tab is independent of the quant code once the
+  columns exist. n/a for parallel delegates: no Agent tool, one owner.
+- Shared mutable state: each feed owns its process; the decorator has no shared
+  state, so thousands of feeds share nothing.
+- Smallest safe decomposition: one PR, ordered commits (math, seam and decorator,
+  columns, feed wiring and start record, web tab).
 
 * Measurements
 
@@ -74,12 +120,43 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4410][#4410]] | [synthetic] Give FX spot feeds a GJR-GARCH daily variance |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| L1 | The model took p_minus from one tick's mixture, but the recursion reacts to a day's shock, the sum of the day's ticks, which is nearer normal; for a skewed mixture with a leverage effect the daily variance settled at 0.56 of its level | process_factory.cpp, fx_spot_feed.cpp | Accept | daily_negative_second_moment gives the day's p_minus from the first Edgeworth term; both callers use it; a test of the long-run daily variance fails under the old value |
+| L2 | saveArrivals is the save, re-read and restart of any feed setting, and the Variance tab uses it too | ArrivalsPanel.tsx | Accept | Renamed saveFeedSettings, its outcome FeedSaveOutcome |
+| L3 | The factory and the feed each normalise the mixture's weights before taking its moments | process_factory.cpp, fx_spot_feed.cpp | Decline | Two short call sites in different components; a shared helper adds a public function for four lines |
+| L4 | The variance_model column had no SQL default, so a dataset publish that names only the columns it knows refused every feed | ores.synthetic.fx_spot_generation_config.org | Accept | Found by the provisioning smoke check; default 'constant' |
+| L5 | The FX and IR feed writes left out the arrival fields, which the BFF defaults, so saving the engine or the variance reset a feed to periodic arrivals | fxFeeds.tsx, irFeeds.tsx | Accept | The four arrival fields join both write lists; tests fail when one is dropped |
+| R1.1 | The fit builds an error string at every rejected simplex point | gjr_garch.cpp | Accept | gjr_garch_model::admissible, noexcept, checked first; a grid test holds it equal to make() |
+| R1.2 | An underflowed variance would freeze the feed; clamp it in roll() | gjr_garch_variance_process.cpp | Decline | next_variance is omega plus non-negative terms and omega is positive for every model make() builds, so the variance never falls below omega |
+| R1.3 | A non-finite day return would poison the variance silently | gjr_garch_variance_process.cpp | Accept | roll() throws, naming the close and the open; a test closes a day at zero |
+| R1.4 | The decorator removes the inner drift and the fit the sample mean; say why | gjr_garch_variance_process.cpp | Accept | Comment above the update: each removes the mean of the law it reads |
+| R1.5 | The Edgeworth term is used for one to three ticks a day | gjr_garch.cpp | Decline | A feed's day is ticks_per_hour times 24, so at least 24 ticks; one tick takes the exact value |
+| R1.6 | A negative gamma is unusual for FX; surface it or constrain it | gjr_garch.cpp | Decline | Either sign is admissible by design for FX, where a fall of the pair is a rise of its base; the start notice shows gamma |
+| R1.7 | The two mixture processes repeat the multiplier logic | gaussian_mixture_model_process.cpp | Decline | Two lines of scaling and one setter per class; a shared base adds a layer to two hot loops for little |
+| R1.8 | Confirm the SQL defaults match the C++ config defaults | fx_spot_generation_config | Accept, no change | Both are constant, 0.05, 0, 0.9 and 1826, from the same model |
 
 * Result
+
+A synthetic FX spot feed can carry a GJR-GARCH daily variance, fitted from its
+fixing history or authored, and the FX feed screen edits it on a Variance tab.
+
+- =ores.analytics.quant= gained a native GJR-GARCH model, a Nelder-Mead simplex, a
+  volatility multiplier on the two mixture processes and a decorator that drives
+  it day by day. No QuantLib code is used.
+- Tests: 558 quant test cases pass. They reproduce QuantLib's GARCH calculation
+  values to 1e-6, match QuantLib's Garch11 cost ported as an independent
+  expectation to 1e-13, and repeat its calibration and initial-guess tests with
+  our own random numbers. A deliberate flip of the GJR indicator is caught by
+  three tests.
+- Performance, measured with the on-demand =[.benchmark]= test, three runs: the
+  plain mixture takes about 67 ns a tick and the decorated one about 70.6 ns,
+  after moving the day's return to the roll (it was 85 ns with a log a tick).
+  A fit over 1,260 daily returns took about 8 ms.
+- The config carries the model, the shape and the history window; a feed start
+  records how its variance started. The web tests pass (256 synthetic and i18n,
+  1,228 BFF).

@@ -116,6 +116,34 @@ store holds no volatility market data, so a volatility factor has nothing to
 shift. Where a run stopped in one environment is a fact for the task that ran
 it, and not for the page.
 
+* How a report's schedule reaches the scheduler
+
+A definition states a cron expression, and nothing fires until that expression
+is on a scheduler job and the definition holds a run grant. Only one operation
+makes that pair: the reporting service's schedule operation, which writes the
+job with its own client and asks IAM, on behalf of the person scheduling, for
+the grant the runs act under. So a definition states *when* a report runs and
+the operation states *that* it runs.
+
+Two consequences follow, and both are deliberate.
+
+- A report that is only ever asked for by hand states the placeholder
+  =0 0 31 2 *=, the thirty-first of February, which no calendar reaches. The
+  catalogue reads it as on demand. A step that schedules a catalogue leaves
+  such a definition alone rather than turning a report a person asks for into
+  one that fires by itself.
+- A tenant that is provisioned has its catalogue scheduled by the run that
+  builds it: =schedule_reports= reads each party's published definitions,
+  selects the ones whose schedule is a real cron, and calls the schedule
+  operation as the run's administrator. A re-provision asks for nothing that
+  already holds a job, so no second job and no second grant is created. See
+  [[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][the acme_demo profile]].
+
+The Schedule action on a report's screen is still a separate feature and not
+part of this: a person scheduling one definition from the UI is a later piece
+of work, and until it lands the provisioner is the only thing that schedules a
+catalogue.
+
 * See also
 
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] the structure note for the

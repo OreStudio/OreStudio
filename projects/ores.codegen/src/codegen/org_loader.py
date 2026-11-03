@@ -6662,11 +6662,6 @@ _PRODUCT_FAMILIES = frozenset({
 _PRODUCT_CONSTRUCTIONS = frozenset({"native", "scripted", "container"})
 
 
-def _sql_literal(text: str) -> str:
-    """The text as a single-quoted SQL literal body, with its quotes doubled."""
-    return " ".join(text.split()).replace("'", "''")
-
-
 def _trade_type_descriptions(path: Path, doc, codes: list[str]) -> dict[str, dict[str, str]]:
     """The prose a product type is read with: its description and its source.
 
@@ -6685,9 +6680,8 @@ def _trade_type_descriptions(path: Path, doc, codes: list[str]) -> dict[str, dic
         if not code:
             continue
         entry = {
-            "description": _sql_literal(r.get("description") or ""),
-            "source": _sql_literal(r.get("source") or ""),
-            "source_ref": _sql_literal(r.get("source_ref") or ""),
+            column: " ".join((r.get(column) or "").split()).replace("'", "''")
+            for column in ("description", "source", "source_ref")
         }
         blank = [name for name, value in entry.items() if not value]
         if blank:
@@ -6709,6 +6703,7 @@ def _trade_type_descriptions(path: Path, doc, codes: list[str]) -> dict[str, dic
             f"{path.name}: a description names product type(s) the * Trade "
             f"types table does not state: {', '.join(extra)}.")
     return found
+
 
 def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     """Load the trade-type catalogue into the shape its readers want.

@@ -99,6 +99,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:3DD3449A-CF81-458D-BE3D-07951A1E0EC2][Build the .1 ATM and surface vol ladders]] | BACKLOG | | | The .1 ATM ladder shifts one point per expiry; the .1 surface ladder shifts every configured strike. Both are the same report over two sensitivity documents. |
 | [[id:0C0F9826-403E-4C62-B03F-050888E9F88B][Derive the risk reversal and strangle ladders]] | BACKLOG | | | The engine has no risk reversal factor, so the RR and STR ladders are a change of basis over the surface-point deltas of the surface run. |
 | [[id:CC276A2C-4676-4DE3-8114-C496CAB0C082][Build the cross-gamma ladder]] | BACKLOG | | | The cross terms are present in the sensitivity report as rows with two factors; crossgamma.csv has no writer at 1.8.17.0, so the ladder reads the rows. |
+| [[id:62655D66-B68E-4E5A-9D23-1D142B74E086][Fix the post-merge checks]] | DONE | 2026-11-03 | 2026-11-03 | The merged reports pages do not link their structure notes, and four web files are not formatted. |
 
 * Decisions
 

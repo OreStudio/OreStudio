@@ -624,11 +624,7 @@ export function RecordTable<Row>({
                         <div key={candidate.id} className="w-48 shrink-0">
                             <Select
                                 aria-label={candidate.label}
-                                value={
-                                    state.filters[candidate.id] ??
-                                    candidate.defaultValue ??
-                                    ''
-                                }
+                                value={state.filters[candidate.id] ?? candidate.defaultValue ?? ''}
                                 onChange={(event) => state.filter(candidate.id, event.target.value)}
                             >
                                 <option value={candidate.allValue ?? ''}>{candidate.all}</option>

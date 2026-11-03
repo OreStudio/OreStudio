@@ -320,5 +320,7 @@ full-pipeline proof and not by a run that writes rows.
 
 * See also
 
+
+- [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — the structure note that orders this cluster, and where to read this page in it.
 - [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine whose =sensitivity= analytic writes the two files.
 - [[https://www.opensourcerisk.org/][Open Source Risk]], the project home of the engine.

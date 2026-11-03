@@ -8,7 +8,7 @@
 #+filetags: :run_only_the_checks_a_change_needs:sprint_29:v0:
 #+owner: marco
 #+branch: fix/move-the-blotter-subjects-to-ops
-#+pr:
+#+pr: 4441
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4441][#4441]] | [trading] Move the blotter reads to ops and give every protocol a twin |
 
 * Review
 

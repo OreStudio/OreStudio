@@ -27,7 +27,9 @@
 #include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 using namespace ores::analytics::quant;
@@ -198,6 +200,19 @@ TEST_CASE("the variance updates at the end of each day from the day's return les
     CHECK(p.daily_variance() == Catch::Approx(expected).epsilon(1e-12));
     REQUIRE(script->multipliers.size() == 2);
     CHECK(script->multipliers[1] == Catch::Approx(std::sqrt(p.daily_variance() / 1e-4)));
+}
+
+TEST_CASE("a day that closes at a price no log return reads fails loudly", "[gjr_garch_variance]") {
+    const auto model = decorated_model_of({.alpha = 0.1, .gamma = 0.0, .beta = 0.8}, 1e-4);
+    const daily_variance_frame frame{.ticks_per_day = 2.0,
+                                     .inner_daily_variance = 1e-4,
+                                     .inner_daily_drift = 0.0,
+                                     .measure = return_measure::log_return};
+    auto inner = std::make_unique<scripted_process>(
+        std::vector<double>{0.001, -std::numeric_limits<double>::infinity()});
+    gjr_garch_variance_process p(std::move(inner), model, frame, 1e-4);
+    p.next(1.0);
+    CHECK_THROWS_AS(p.next(1.0), std::runtime_error);
 }
 
 TEST_CASE("a step that crosses the end of a day is split there", "[gjr_garch_variance]") {

@@ -63,6 +63,14 @@ public:
     static std::expected<gjr_garch_model, std::string>
     make(const gjr_garch_shape& shape, double long_run_variance, double p_minus);
 
+    /**
+     * @brief Whether make() accepts this shape and p_minus, given a positive, finite
+     * long-run variance, without building the reason it would refuse.
+     *
+     * A fit asks this at every point its simplex visits, so it allocates nothing.
+     */
+    static bool admissible(const gjr_garch_shape& shape, double p_minus) noexcept;
+
     const gjr_garch_shape& shape() const noexcept {
         return shape_;
     }

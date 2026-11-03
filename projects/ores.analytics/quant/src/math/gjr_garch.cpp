@@ -67,6 +67,13 @@ gjr_garch_model::make(const gjr_garch_shape& shape, double long_run_variance, do
     return gjr_garch_model(shape, long_run_variance, p_minus);
 }
 
+bool gjr_garch_model::admissible(const gjr_garch_shape& shape, double p_minus) noexcept {
+    return std::isfinite(shape.alpha) && std::isfinite(shape.gamma) && std::isfinite(shape.beta) &&
+           shape.alpha >= 0.0 && shape.beta >= 0.0 && shape.alpha + shape.gamma >= 0.0 &&
+           p_minus >= 0.0 && p_minus <= 1.0 &&
+           shape.alpha + shape.beta + shape.gamma * p_minus < 1.0;
+}
+
 gjr_garch_model::gjr_garch_model(const gjr_garch_shape& shape,
                                  double long_run_variance,
                                  double p_minus)
@@ -185,8 +192,10 @@ std::expected<gjr_garch_fit, std::string> fit_gjr_garch(std::span<const double> 
         return std::unexpected("the returns have no variance to fit");
 
     const auto cost_of = [&](const std::array<double, 3>& x) {
-        const auto model =
-            gjr_garch_model::make({.alpha = x[0], .gamma = x[1], .beta = x[2]}, variance, p_minus);
+        const gjr_garch_shape shape{.alpha = x[0], .gamma = x[1], .beta = x[2]};
+        if (!gjr_garch_model::admissible(shape, p_minus))
+            return outside;
+        const auto model = gjr_garch_model::make(shape, variance, p_minus);
         if (!model)
             return outside;
         const double c = mean_cost(*model, shocks, variance);

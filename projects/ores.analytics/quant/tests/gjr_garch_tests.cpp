@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <random>
 #include <vector>
 
@@ -144,6 +145,27 @@ TEST_CASE("a model outside the admissible region is refused, with the reason", "
         gjr_garch_model::make({.alpha = 0.1, .gamma = 0.0, .beta = 0.9}, 1e-4, 0.5);
     REQUIRE_FALSE(message.has_value());
     CHECK(message.error().find("persistence") != std::string::npos);
+}
+
+TEST_CASE("admissible agrees with make on every shape of a grid across the region's edges",
+          "[gjr_garch]") {
+    const std::vector<double> alphas{-0.01, 0.0, 0.05, 0.2, 1.1};
+    const std::vector<double> gammas{-0.3, -0.05, 0.0, 0.1, 0.4};
+    const std::vector<double> betas{-0.01, 0.0, 0.7, 0.9, 0.99};
+    const std::vector<double> p_minuses{-0.1, 0.0, 0.5, 0.62, 1.0, 1.1};
+    int accepted = 0;
+    for (const double a : alphas)
+        for (const double g : gammas)
+            for (const double b : betas)
+                for (const double p : p_minuses) {
+                    const gjr_garch_shape shape{.alpha = a, .gamma = g, .beta = b};
+                    const bool made = gjr_garch_model::make(shape, 1e-4, p).has_value();
+                    CHECK(gjr_garch_model::admissible(shape, p) == made);
+                    accepted += made ? 1 : 0;
+                }
+    CHECK(accepted > 0);
+    CHECK_FALSE(gjr_garch_model::admissible(
+        {.alpha = std::numeric_limits<double>::quiet_NaN(), .gamma = 0.0, .beta = 0.9}, 0.5));
 }
 
 TEST_CASE("p_minus is one half for any symmetric mixture", "[gjr_garch]") {

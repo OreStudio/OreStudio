@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 namespace ores::analytics::quant::service {
@@ -90,6 +91,12 @@ void gjr_garch_variance_process::roll() {
     const double day_return = frame_.measure == return_measure::log_return ?
                                   std::log(close / day_open_) :
                                   close - day_open_;
+    if (!std::isfinite(day_return))
+        throw std::runtime_error("gjr_garch_variance_process: the day's return is not finite; "
+                                 "the inner process closed the day at " +
+                                 std::to_string(close) + " from " + std::to_string(day_open_));
+    // The inner law's own daily mean is removed, as a fit removes its sample's mean, so
+    // the recursion reacts to the surprise and not to the drift.
     variance_ = model_.next_variance(variance_, day_return - frame_.inner_daily_drift);
     inner_->set_volatility_multiplier(std::sqrt(variance_ / frame_.inner_daily_variance));
     ticks_into_day_ = 0.0;

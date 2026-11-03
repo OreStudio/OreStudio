@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_plantuml_component_parse_one_line_enum.py
+    python3 -m pytest build/scripts/tests/test_plantuml_component_parse_one_line_enum.py
 
 A C++ header may declare an enum with its whole body on one line::
 

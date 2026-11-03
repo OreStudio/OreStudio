@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_plantuml_component_parse_class_attribute.py
+    python3 -m pytest build/scripts/tests/test_plantuml_component_parse_class_attribute.py
 
 A class may carry an attribute between the ``class`` keyword and the export
 macro, or after the macro::

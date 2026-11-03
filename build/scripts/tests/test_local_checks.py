@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_local_checks.py
+    python3 -m pytest build/scripts/tests/test_local_checks.py
 
 The runner is the pull-request gate now that GitHub runs no check on a pull
 request, so its decision tree is the contract: a documentation change must not
@@ -308,3 +308,9 @@ def test_the_suites_run_in_parallel():
     command = check.command("origin/main", "some-preset")[-1]
     assert command.endswith(f"test run --preset some-preset -- -j {local_checks.CTEST_JOBS}")
     assert local_checks.CTEST_JOBS > 1
+
+
+def test_a_build_script_test_change_runs_no_codegen_check():
+    chosen = select(["build/scripts/tests/test_local_checks.py"])
+    assert "build-script-tests" in chosen
+    assert not chosen & {"component-drift", "drift-sweep", "model-drift"}

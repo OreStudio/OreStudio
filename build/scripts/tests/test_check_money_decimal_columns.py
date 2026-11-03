@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_check_money_decimal_columns.py
+    python3 -m pytest build/scripts/tests/test_check_money_decimal_columns.py
 
 The check enforces both halves of the numeric rule: a money quantity is exact
 decimal in the domain and the column, and a continuous quantity is binary

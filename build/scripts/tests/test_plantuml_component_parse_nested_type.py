@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_plantuml_component_parse_nested_type.py
+    python3 -m pytest build/scripts/tests/test_plantuml_component_parse_nested_type.py
 
 A repository class declares its outcome enum inside its own body::
 

@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_check_no_pr_triggers.py
+    python3 -m pytest build/scripts/tests/test_check_no_pr_triggers.py
 
 GitHub runs no pull-request check, and the only thing keeping that true is
 that no workflow declares the trigger. The guard reads the workflow files, so

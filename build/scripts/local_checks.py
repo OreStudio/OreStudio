@@ -1185,6 +1185,12 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("modeling", "codegen", "tooling"),
     ),
     Check(
+        id="build-script-tests",
+        title="The build-script suite passes",
+        argv=(CODEGEN_TESTS_PY, "-m", "pytest", "build/scripts/tests", "-q"),
+        classes=("tooling",),
+    ),
+    Check(
         id="compass-tests",
         title="The compass suite passes",
         argv=("projects/ores.compass/venv/bin/pytest", "projects/ores.compass/tests", "-q"),

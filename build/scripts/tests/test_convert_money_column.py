@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_convert_money_column.py
+    python3 -m pytest build/scripts/tests/test_convert_money_column.py
 
 The lever rewrites three places per column, and the build fails if one is
 missed. It has also carried two bugs that no test caught -- a rewrite ending in

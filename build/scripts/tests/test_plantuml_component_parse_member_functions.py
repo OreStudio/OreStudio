@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_plantuml_component_parse_member_functions.py
+    python3 -m pytest build/scripts/tests/test_plantuml_component_parse_member_functions.py
 
 The capture read data members only, so a class whose content is member
 functions arrived as an empty box. PlantUML cannot be made to attach

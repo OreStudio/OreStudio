@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_unity_checks.py
+    python3 -m pytest build/scripts/tests/test_unity_checks.py
 
 The two scripts guard the unity build: one refuses a file-local name two
 sources of a target define, the other a type two headers define under one

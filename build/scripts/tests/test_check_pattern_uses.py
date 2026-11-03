@@ -2,7 +2,7 @@
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_check_pattern_uses.py
+    python3 -m pytest build/scripts/tests/test_check_pattern_uses.py
 
 A service architecture pattern names its uses, and each use names the pattern.
 The check reports a link that goes one way only, and a Patterns used entry that

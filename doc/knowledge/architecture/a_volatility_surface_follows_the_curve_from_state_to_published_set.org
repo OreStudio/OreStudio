@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: 53D14F31-EE32-493E-BBEB-140AA4906BE4
+:END:
+#+title: A volatility surface follows the curve from state to published set
+#+description: The path of a synthetic FX volatility surface, mapped step by step onto the IR curve's: generation config, generator kind, contributors, quotes, ingest, surface blueprint, fit, candidate, publication and the ORE export.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:architecture:volatility:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+* Summary
+
+A synthetic FX volatility surface takes the path an IR curve takes, and every
+step has its counterpart. A generation config holds a ladder and process
+parameters; a generator behind a kind string of its own advances a hidden state
+and prices quotes from it; the quotes cross the adapter seam as ticks on oresmd
+series; a blueprint constructs an object from them, checks it and writes a
+candidate with lineage; a four-eyes publish makes the candidate authoritative;
+and a report binds the published set, which the ORE export writes at the
+boundary. Two steps differ. Synthetic contributors stand between the state and
+the quotes, and a surface is /fitted/ all at once where a curve is
+/bootstrapped/ pillar by pillar.
+
+* Detail
+
+** The map
+
+| Step | IR curve | FX volatility surface |
+|------+----------+-----------------------|
+| Config | [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]] | An FX vol surface generation config |
+| Ladder | [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][Template rows, one per pillar]] | Template rows, one per expiry and strike label |
+| State | One short-rate process ([[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][the catalogue]]) | The SSVI parameter processes of the approach document |
+| Start | The level calibration of the feed | A derived source or a real vol source, by rank |
+| Generator | [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][kind ="ir_curve"=]] | Kind ="fx_vol_surface"= |
+| Quotes | One swap-rate quote per pillar | Contributor quotes per expiry and strike label |
+| Seam | The simulator adapter, four messages | The same |
+| Store | Series keyed by item, provider and party | The same |
+| Recipe | A curve blueprint | A surface blueprint |
+| Construction | A bootstrap | A fit |
+| Candidate | A =discount= series with a =curve_id=, with lineage | A fitted surface series, with lineage |
+| Publish | Four-eyes publish to a published set | The same |
+| Consume | Report binding; ORE export of the set's points | The same |
+
+The rows marked "the same" are the point of the map. The surface reuses the
+seam, the store, the publication and the binding as they stand.
+
+** Generation
+
+A surface generator joins the simulator by the edits of
+[[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]]: a codegen
+entity model for its config, a builder in the generator factory, one kind
+registration, a permission and its grant, and catalogue rows for each provider
+that quotes surfaces. The runner, the subject builders, the adapter contract and
+the ingest loop need no edit
+([[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]]).
+
+The config holds child rows, as the IR curve config does: the pair and the
+refdata =fx_volatility_config= of the surface, which names its
+=fx_option_convention=; template rows for the expiries and strike labels; process
+parameter rows against a parameter vocabulary; the correlation rows between the
+shocks, spot included; and contributor rows, each naming a provider and a noise
+profile. Which processes the state uses, and why, is the subject of
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]].
+Where the starting quotes come from is
+[[id:099697A6-8526-48E0-A63D-DB3932C06468][A derived source publishes what it infers from stored fixings]].
+
+** Contributors
+
+A curve's quotes are its pillars, so the IR producer publishes them directly. A
+surface's quotes reach the seam through synthetic contributors that observe the
+state with noise of their own, as
+[[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]
+describes. Each contributor is a provider; the clean one is the truth.
+
+** Quotes
+
+Each quote is named by its oresmd URI. The surface is one series, and a point
+adds the two axes, the expiry and the strike label:
+
+: oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD
+: oresmd://fx/EUR?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=USD&expiry=1Y&strike_label=25RR
+
+The schema row exists, and a =strike_label= names every point of a delta ladder:
+=ATM=, a delta call or put, a risk reversal, a butterfly, or a level
+([[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]).
+The quoting convention is not in the URI. It is the pair's
+=fx_option_convention=, so every source quotes in it, and that is what lets a
+vendor replace a synthetic contributor.
+
+** Construction
+
+[[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
+is followed step for step.
+
+1. *The recipe.* A surface blueprint names the pair, the series it reads with a
+   weight per contributor, its expiries and strike labels, its conventions, its
+   smile model and its output series. The smile model is the tenant's: SSVI,
+   SABR per expiry, a spline or another
+   ([[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]]).
+   The settings are those of
+   [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][User Journey: Author a surface's framework]].
+2. *The inputs.* Each pillar reads its series by oresmd identity at or before the
+   as-of, as
+   [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+   requires.
+3. *The fit.* The model is fitted to all the quotes at once. A curve has an order
+   in which one pillar's solve feeds the next, which is what makes its method a
+   bootstrap; a surface has none, so its method is a fit. Both are
+   /construction/. A butterfly quoted as a broker strangle is matched as a
+   strangle price rather than as a smile volatility.
+4. *The checks.* The fitted surface is checked for calendar-spread and butterfly
+   arbitrage ([[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage Conditions]]),
+   and the fit error of each point is recorded beside the checks.
+5. *The candidate.* The fit writes the fitted volatilities on the blueprint's
+   grid as observations of its output series, at the as-of, each with a lineage
+   record naming the source series and the blueprint version. The blueprint is
+   the series' only writer, and the series' identity says its points are
+   inferred; the identity is described in the oresmd note.
+6. *Publication.* The four-eyes act of a curve makes the candidate a published
+   set.
+
+The trader's side of these steps is the journeys
+[[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]],
+[[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]],
+[[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] and
+[[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]].
+This note calls the construction step a /fit/ and keeps /calibration/ for the
+start of a synthetic feed from public data, the meaning of the calibration
+policy and the calibration screen.
+
+** Consumption
+
+A report binds the published set as
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve]]
+describes: the binding names the publish record and the as-of, the export
+refuses a set that is not published, and the export writes the ORE market
+configuration from the set's points. For a surface, the published grid becomes
+ORE volatility quotes at the boundary with an ORE volatility configuration that
+describes the grid. ORE interpolates between grid points by its own rules, so
+the blueprint's grid and the exported configuration together decide how closely
+ORE reproduces the fitted surface at the strikes a trade needs.
+
+** Other asset classes
+
+Equity and commodity surfaces quote by strike or moneyness, and an IR cube adds
+the swap tenor. Each follows this path with its own template and its own
+schema row.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — exemplifies: the same construction, with a fit in the place of a bootstrap.
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve]] — completes: the binding, for a surface.
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] — completes: the step between the state and the quotes.
+- [[id:099697A6-8526-48E0-A63D-DB3932C06468][A derived source publishes what it infers from stored fixings]] — completes: where the starting quotes come from.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the method behind the state.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the conventions every quote follows.

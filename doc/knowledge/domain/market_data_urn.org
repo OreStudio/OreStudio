@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:identifiers:design:
 #+created: 2026-07-27
-#+updated: 2026-10-22
+#+updated: 2026-11-03
 
 * Summary
 
@@ -275,6 +275,23 @@ tenor. The dependency between the curves is data of the build, for example
 =discount_curve_config_id= on the bootstrap configuration described in
 [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]].
 It is not part of any identity.
+
+*** A fitted surface is a series of its own
+
+A bootstrapped curve and the swap quotes it was solved from are two series. The
+curve's points are a =discount= series named by its =curve_id=, whose identity
+says the points are inferred, and the curve's blueprint is the only writer of
+that series. A fitted volatility surface stands in the same relation to the
+quotes it was fitted to. The =fx_option= series holds observed quotes and has a
+writer per contributor; the fitted surface is a separate series of an
+instrument type for fitted FX volatility surfaces, named by the pair and a
+surface identity in the place of =curve_id=, with the axes =expiry= and
+=strike=. =strike= takes the strike grammar the equity and commodity surfaces
+already use, so a grid point is a delta of a call or a put, or an absolute
+strike. The series is created with the surface blueprint and written only by
+its fit, as
+[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]]
+describes.
 
 *** What the grammar does not hold
 

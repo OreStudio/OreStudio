@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 3C43D0CC-3E74-45CA-BC85-A2303D0ADEDC
+:END:
+#+title: Paper summary: arbitrage-free SVI volatility surfaces
+#+description: Gatheral and Jacquier (2014): the SVI forms, why raw SVI admits static arbitrage, and SSVI, a surface family whose absence of static arbitrage reduces to inequalities on its parameters.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:research:volatility:svi:ssvi:arbitrage_free:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+* Summary
+
+SVI is a five-parameter form for the implied variance smile of one expiry that
+fits market smiles well, but nothing about its parameters guarantees that a
+smile has a non-negative density or that two smiles do not cross. Gatheral and
+Jacquier show how to calibrate SVI so that static arbitrage is absent. Their
+central contribution is *SSVI*, a family that describes a whole surface by the
+ATM total variance of each expiry plus a skew parameter and a curvature
+function, and for which the conditions excluding calendar spread and butterfly
+arbitrage are explicit inequalities. They also give a method to remove calendar
+arbitrage from an SVI parameter set and an algorithm to remove butterfly
+arbitrage from a slice. For ORE Studio the result matters because a surface
+whose arbitrage conditions are inequalities on its parameters can be evolved
+through time without leaving the arbitrage-free region.
+
+* Source
+
+Jim Gatheral and Antoine Jacquier, "Arbitrage-free SVI volatility surfaces",
+/Quantitative Finance/, 14(1), 59-71, 2014. Preprint:
+[[https://arxiv.org/abs/1204.0646][arXiv:1204.0646]].
+
+* Problem being solved
+
+A practitioner fitting smiles expiry by expiry wants three things at once: a
+good fit to each quoted smile, a density that is non-negative at every strike,
+and slices that do not cross across expiries. Raw SVI gives the first. The
+paper shows that it gives neither of the others reliably: Example 3.1 is a
+plausible parameter set with a visibly negative density, and the authors find
+general conditions excluding butterfly arbitrage in raw SVI "seemingly
+impossible" to state. Calendar arbitrage between two raw SVI slices can only be
+checked numerically, through the real roots of a quartic polynomial (Lemma 3.3).
+
+* The method
+
+** Three forms of one family
+
+The paper first sets out three equivalent forms of SVI for one slice: the raw
+form $\{a, b, \rho, m, \sigma\}$ (equation 3.1), the natural form
+$\{\Delta, \mu, \rho, \omega, \zeta\}$ (equation 3.2, with the maps between them
+in Lemma 3.1), and the jump-wings form $\{v_t, \psi_t, p_t, c_t,
+\tilde{v}_t\}$ (equation 3.5), whose parameters are the ATM variance, the ATM
+skew, the two wing slopes and the minimum variance. The jump-wings form is the
+one a trader can read.
+
+** SSVI
+
+Definition 4.1 restricts the natural form to a surface:
+
+\begin{equation}
+w(k, \theta_t) = \frac{\theta_t}{2}\left(1 + \rho\,\varphi(\theta_t)\,k + \sqrt{\left(\varphi(\theta_t)\,k + \rho\right)^2 + 1 - \rho^2}\right)
+\end{equation}
+
+where $\theta_t$ is the ATM total variance of expiry $t$ and $\varphi$ a positive
+function. Theorem 4.1 gives necessary and sufficient conditions for the absence
+of calendar spread arbitrage, Theorem 4.2 sufficient conditions for the absence
+of butterfly arbitrage, and Corollary 4.1 combines them. Example 4.1 gives a
+Heston-like $\varphi$ that is free of static arbitrage for all expiries when
+$\lambda \ge (1 + |\rho|)/4$ (Remark 4.5); Example 4.2 gives the power law
+$\varphi(\theta) = \eta\theta^{-\gamma}$, which is free of static arbitrage only
+up to a maximum expiry (Remark 4.4). The full statement of the conditions, and
+their simple form for the power law with $\gamma = 1/2$, is in
+[[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]].
+
+** Calibration without arbitrage
+
+Section 5 of the paper turns the result into a calibration recipe. An SSVI fit
+to the market's slices gives an arbitrage-free first guess; each slice is then
+fitted with full SVI under a heavy penalty for crossing its neighbours, measured
+by the /crossedness/ of Definition 5.1. Section 5.3 interpolates and
+extrapolates the calibrated slices so that the interpolated surface stays free
+of static arbitrage. Theorem 4.3 adds a related freedom: a non-negative function
+of time that never decreases may be added to an arbitrage-free SSVI surface
+without creating arbitrage.
+
+* Key assumptions and limitations
+
+1. *Static arbitrage only.* The conditions make one surface consistent at one
+   instant. They say nothing about how the surface may move from one day to
+   the next.
+2. *One skew for all expiries.* SSVI has one $\rho$, so the term structure of
+   the risk reversal is fixed by the shape of $\varphi$. Hendriks and Martini
+   (2019) relax this with an expiry-dependent $\rho$.
+3. *Sufficient, not necessary, for butterflies.* Theorem 4.2 is sufficient;
+   Lemma 4.2 shows it is close to necessary, but a surface outside the bound is
+   not thereby shown to admit arbitrage.
+4. *Equity framing.* The examples are equity index smiles. Nothing in the
+   conditions depends on the asset class, but FX quoting in delta needs a strike
+   solve before a quote can be compared with the surface.
+
+* Applicability to synthetic market data generation
+
+The paper's Remark 4.1 observes that the ATM variance curve $\theta_t$ is
+directly observable and a natural place to impose dynamics on SSVI. That remark
+is the basis of the synthetic surface generator described in
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]:
+the generator's state is the SSVI parameter set, each parameter follows a
+mean-reverting process bounded to the region of Corollary 4.1, and every surface
+the generator emits is therefore free of static arbitrage by construction. The
+paper does not consider such dynamics; the bound is what lets them be added
+without a check-and-repair step on each surface.
+
+* Open questions
+
+1. *Expiry range.* For the power-law curvature, the surface is arbitrage-free
+   only below a total ATM variance of about two when $\eta \le \sqrt{2}$. FX
+   surfaces sit far below that bound; equity and commodity surfaces at long
+   expiries and high volatility may not.
+2. *Skew term structure.* Whether one $\rho$ reproduces the risk-reversal term
+   structure of the major FX pairs, or whether eSSVI is needed, is untested on
+   our data.
+
+* See also
+
+- [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
+- [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]] — the reference page that states the forms and conditions this paper proves.
+- [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage Conditions]] — completes: the general conditions, of which SSVI gives a parametric instance.
+- [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — contradicts: reaches the same freedom from calendar arbitrage by blending mixture weights between calibrated pillars instead of by a parametric surface.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the generator that uses Remark 4.1.

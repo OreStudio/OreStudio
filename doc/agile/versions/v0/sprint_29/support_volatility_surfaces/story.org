@@ -52,8 +52,10 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   fixings by variance targeting and quasi maximum likelihood, and multiplies
   with the intraday volatility channel. Consequences: the feed gains volatility
   clustering across days and a per-pair leverage effect; the surface reads no
-  GARCH state. See
-  [[id:B9792D9D-38B3-40A4-90FD-C35F02C68284][GJR-GARCH sets the daily variance of FX spot]].
+  GARCH state. See "GJR-GARCH in the synthetic FX spot" in
+  [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]]
+  and "The daily variance" in
+  [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][Market volatility channel]].
 - *A surface is SSVI and moves through its parameters; the MDN is abandoned*
   (2026-11-03). Context: the MDN is not available, does not cover IR, and makes
   the surface a function of spot variance only. Decision: the surface is SSVI
@@ -63,13 +65,39 @@ The system holds, builds and serves volatility surfaces as market data, and pric
   correlated with spot. Consequences: the generator prices quotes from the
   state in the pair's own convention, a tenant's blueprint fits the smile model
   it chooses and checks it, and a fitted surface still needs an identity of its own. See
-  [[id:3C5FA141-16E5-4505-A36D-F6C29AE7679B][A volatility surface moves through its SSVI parameters]].
+  the option vol surface section of
+  [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+  and [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]].
 - *A derived source supplies the starting surface* (2026-11-03). Context: no
   free public source of FX implied volatilities was found. Decision: a
   publisher of our own backs ATM, RR and BF out of the spot fixings through the
   Gram-Charlier smile. Consequences: the values are plausible, not real; a real
   vendor is another provider of the same items and replaces the derived source
-  by a change of route.
+  by a change of route. See
+  [[id:099697A6-8526-48E0-A63D-DB3932C06468][A derived source publishes what it infers from stored fixings]]
+  and "How a volatility surface starts" in
+  [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+- *Derived values carry their own identity* (2026-11-03). Context: the derived
+  source and the cross rates compute from fixings whose terms, the ECB's among
+  them, allow reuse of unmodified statistics with a credit. Decision: a public
+  publisher's data may feed a computation, and the computation's output is
+  never labelled, credited or described as that publisher's data; it names
+  the derived publisher alone, and the inputs are stored as published.
+  Consequences: the rule sits with the terms of each source in the calibration
+  sources note.
+- *A tenant receives contributor quotes, not the surface* (2026-11-03).
+  Context: a clean generated surface tests none of the marking a desk does.
+  Decision: synthetic contributors inside the simulator adapter publish noisy
+  observations of the latent surface; the clean contributor is the truth.
+  Every quote is a mid; two-way prices are a later extension of the
+  contributor. See
+  [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
+- *Surface construction follows curve construction* (2026-11-03). Context: the
+  curve already goes from quotes through a blueprint, a candidate with lineage
+  and a four-eyes publish to a report. Decision: a surface takes the same path;
+  its method is a fit where a curve's is a bootstrap, and its output is a
+  fitted surface series with an identity of its own. See
+  [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]].
 - *Five years of public fixings ship as a static DQ snapshot* (2026-11-03).
   Context: every environment backfilled its window from the publishers' API.
   Decision: DQ holds a five-year snapshot refreshed by hand, and the adapter

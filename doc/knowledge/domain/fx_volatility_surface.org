@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:fx:volatility:ore:
 #+created: 2026-05-25
-#+updated: 2026-05-25
+#+updated: 2026-11-03
 
 The FX volatility surface is the primary market data input for pricing and
 risk-managing FX options in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. It is a two-dimensional function of
@@ -70,6 +70,22 @@ $$\sigma_{STR}^{25\Delta} = \frac{\sigma_{call}^{25\Delta} + \sigma_{put}^{25\De
 The strangle captures the /curvature/ of the smile — how "fat" the wings are
 relative to the centre. A positive strangle means OTM options are more
 expensive than ATM, as is typical in FX.
+
+The formula above is the *smile* butterfly, and with it the call and put
+volatilities follow from the quotes directly:
+
+$$\sigma_{call} = \sigma_{ATM} + \sigma_{BF} + \tfrac{1}{2}\sigma_{RR}, \qquad \sigma_{put} = \sigma_{ATM} + \sigma_{BF} - \tfrac{1}{2}\sigma_{RR}$$
+
+Brokers usually quote the *market* (or broker) strangle instead. Its quote
+$\tilde{\sigma}_{BF}$ prices a strangle at the single volatility
+$\sigma_{ATM} + \tilde{\sigma}_{BF}$, struck where that volatility puts the
+25-delta call and put, and those strikes are not the strikes of the vanilla
+25-delta options the risk reversal refers to. Recovering the call and put
+volatilities from a market strangle therefore needs a smile and a numerical
+solve: the smile must reproduce the ATM and risk reversal volatilities and the
+market strangle's price at once (Healy, 2025, equations 5 to 12; Clark, 2011).
+The two conventions give different numbers for the same surface, so a quote is
+read only together with the pair's butterfly style.
 
 ** The Three-Pillar Parameterisation
 
@@ -158,6 +174,18 @@ sensitivity (up/down), vol adjustments, RR infinite flag, vol swap adjustments,
 and standard deviation weighting. These are model parameters rather than market
 observables. In [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] these appear as entries in the =EngineData= XML
 configuration.
+
+** SVI and SSVI
+
+SVI writes the total implied variance of one expiry as a five-parameter function
+of log-moneyness, and SSVI restricts it to a surface described by the ATM total
+variance of each expiry, one skew parameter $\rho$ and a curvature function.
+The three FX pillars map onto SSVI as they map onto SABR: ATM onto the ATM total
+variance, RR onto $\rho$, and STR onto the curvature. What SSVI adds is that the
+conditions excluding calendar spread and butterfly arbitrage across the whole
+surface are explicit inequalities on its parameters, where SABR fitted expiry by
+expiry carries no condition between expiries. The forms and the conditions are
+in [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]].
 
 ** Black-Scholes (Flat Vol)
 
@@ -287,3 +315,18 @@ ORE Studio will need to model vol surface configurations as domain entities (see
 * See also
 
 - [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]] — completes: a smile model whose arbitrage conditions are stated on its parameters.
+- [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Paper summary: accounting for biases in Black-Scholes]] — completes: the ATM, RR and STR pillars expressed through the skewness and kurtosis of the return distribution.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]] — exemplifies: how the system carries a surface from quotes to a published set.
+
+** Further reading
+
+- Healy, J. (2025). "Counterexamples for FX Options Interpolations - Part II."
+  [[https://arxiv.org/abs/2512.19625][arXiv:2512.19625]]. The smile and broker
+  conventions for the risk reversal and butterfly, and the solve for the
+  market strangle.
+- Reiswich, D. and Wystup, U. (2009). "FX volatility smile construction." CPQF
+  Working Paper 20.
+  [[https://econpapers.repec.org/RePEc:zbw:cpqfwp:20][EconPapers]].
+- Clark, I. J. (2011). /Foreign Exchange Option Pricing: A Practitioner's
+  Guide/. Wiley. The market strangle solve; cited through Healy (2025).

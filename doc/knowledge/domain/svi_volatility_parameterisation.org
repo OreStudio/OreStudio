@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ID: 5910304A-FA45-461E-B2A2-8F24FA798769
+:END:
+#+title: SVI Volatility Parameterisation
+#+description: The SVI family of implied-variance parameterisations: raw, natural and jump-wings SVI for one expiry, SSVI and extended SSVI for a whole surface, what each parameter does, and which forms carry closed-form conditions for the absence of static arbitrage.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:volatility:svi:ssvi:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+* Summary
+
+SVI, the /stochastic volatility inspired/ parameterisation, writes the total
+implied variance of one expiry as a function of log-moneyness with five
+parameters. Gatheral introduced it in 2004, and it is widely used because it
+fits listed and OTC smiles well and has the right asymptotic shape in both
+wings. Its weakness is that no simple condition on the five parameters rules out
+arbitrage: a raw SVI smile can imply a negative density, and two SVI slices can
+cross. *SSVI*, the /surface SVI/ of Gatheral and Jacquier (2014), restricts
+the family so that a whole surface is described by the ATM total variance of
+each expiry and two or three further parameters, and for that restriction the
+absence of static arbitrage reduces to inequalities on the parameters. The
+extended SSVI of Hendriks and Martini (2019) lets the skew parameter vary by
+expiry and keeps those inequalities. This note defines each form and states the
+conditions; the surfaces built on it are described in
+[[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]].
+
+* Detail
+
+** Coordinates
+
+Every form below is written in two quantities. The /log-moneyness/ against the
+forward to expiry $t$ is
+
+\begin{equation}
+k = \ln\left(\frac{K}{F_t}\right)
+\end{equation}
+
+and the /total implied variance/ is
+
+\begin{equation}
+w(k, t) = \sigma_{BS}^2(k, t)\, t
+\end{equation}
+
+where $\sigma_{BS}$ is the Black-Scholes implied volatility. Total variance is
+the natural coordinate because it adds across time: a surface with no calendar
+spread arbitrage is one whose total variance does not fall as $t$ rises at any
+fixed $k$. The no-arbitrage conditions themselves are in
+[[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage Conditions]].
+
+** Raw SVI
+
+For one expiry and a parameter set $\chi_R = \{a, b, \rho, m, \sigma\}$, raw
+SVI is (Gatheral and Jacquier, 2014, equation 3.1):
+
+\begin{equation}
+w(k; \chi_R) = a + b\left(\rho\,(k - m) + \sqrt{(k - m)^2 + \sigma^2}\right)
+\end{equation}
+
+with $b \ge 0$, $|\rho| < 1$, $\sigma > 0$ and $a + b\,\sigma\sqrt{1 - \rho^2}
+\ge 0$, the last ensuring the variance is never negative. The smile is a
+hyperbola in total variance, so each wing is asymptotically linear in $k$, as
+Lee's moment formula requires of any arbitrage-free smile. Each parameter has
+one visible effect:
+
+| Parameter | Effect on the smile |
+|-----------+---------------------|
+| $a$ | Raises or lowers the general level of variance |
+| $b$ | Steepens both wings together |
+| $\rho$ | Rotates the smile: a lower $\rho$ steepens the put wing against the call wing |
+| $m$ | Translates the smile along $k$ |
+| $\sigma$ | Widens the rounded minimum, lowering the ATM curvature |
+
+The *natural* SVI of the same paper (equation 3.2) is the same family
+reparameterised, with an explicit map between the two (Lemma 3.1). The
+*jump-wings* SVI-JW (equation 3.5) rewrites the parameters as quantities a
+trader reads off a smile: the ATM variance $v_t$, the ATM skew $\psi_t$, the
+slopes $p_t$ and $c_t$ of the put and call wings, and the minimum variance
+$\tilde{v}_t$. If smiles scaled exactly as $1/\sqrt{w_t}$, the SVI-JW
+parameters would not change with the expiry.
+
+** Why raw SVI admits arbitrage
+
+Raw SVI parameterises one slice, and a surface built from it is a separate set
+of five parameters per expiry. Two failures follow. A single slice can carry
+/butterfly arbitrage/, a negative risk-neutral density at some strike, and
+Gatheral and Jacquier give an example with plausible parameters (Example 3.1).
+They state that general conditions on the five parameters that exclude it
+appear impossible to find, because the density is a highly non-linear function
+of them. And two slices can cross, which is /calendar spread arbitrage/; the
+paper reduces the check to whether a quartic polynomial has real roots (Lemma
+3.3), which is a numerical test rather than a constraint a parameter can be held
+to. Martini and Mingone (2020) later characterise the absence of butterfly
+arbitrage in raw SVI completely, as conditions that are exact but not simple.
+
+** SSVI: one surface, few parameters
+
+SSVI describes the whole surface at once (Gatheral and Jacquier, 2014,
+Definition 4.1):
+
+\begin{equation}
+w(k, \theta_t) = \frac{\theta_t}{2}\left(1 + \rho\,\varphi(\theta_t)\,k + \sqrt{\left(\varphi(\theta_t)\,k + \rho\right)^2 + 1 - \rho^2}\right)
+\end{equation}
+
+- $\theta_t = \sigma_{BS}^2(0, t)\,t$ is the ATM total variance of expiry $t$.
+  It is the only quantity that varies by expiry, and it is directly observable
+  from the market; the authors note it as the natural place to impose dynamics
+  on the surface (Remark 4.1).
+- $\rho \in (-1, 1)$ sets the skew. The smile is symmetric if and only if
+  $\rho = 0$, as in a stochastic volatility model whose spot and volatility are
+  uncorrelated.
+- $\varphi$ is a positive function of $\theta$ that sets the curvature.
+
+The ATM volatility skew is (equation 4.2)
+
+\begin{equation}
+\left.\partial_k \sigma_{BS}(k, t)\right|_{k=0} = \frac{\rho\sqrt{\theta_t}}{2\sqrt{t}}\,\varphi(\theta_t)
+\end{equation}
+
+The paper gives two forms of $\varphi$:
+
+- The *Heston-like* form (Example 4.1),
+  $\varphi(\theta) = \frac{1}{\lambda\theta}\left(1 - \frac{1 - e^{-\lambda\theta}}{\lambda\theta}\right)$,
+  consistent with the implied variance skew of the Heston model. Its short-expiry
+  smile flattens, as that of a pure diffusion does.
+- The *power-law* form (Example 4.2), $\varphi(\theta) = \eta\,\theta^{-\gamma}$
+  with $\eta > 0$ and $0 < \gamma < 1$. Its short-expiry smile is V-shaped,
+  which is what observed surfaces and models with jumps show. With
+  $\gamma = 1/2$ the SVI-JW parameters of every slice are constant (Lemma 4.1)
+  and the ATM skew is $\rho\eta/(2\sqrt{t})$, falling as $1/\sqrt{t}$.
+
+** The absence of static arbitrage in SSVI
+
+Corollary 4.1 of the paper: an SSVI surface is free of static arbitrage if, for
+all $\theta > 0$,
+
+1. $\partial_t \theta_t \ge 0$;
+2. $0 \le \partial_\theta\left(\theta\varphi(\theta)\right) \le \frac{1}{\rho^2}\left(1 + \sqrt{1 - \rho^2}\right)\varphi(\theta)$;
+3. $\theta\varphi(\theta)\,(1 + |\rho|) < 4$;
+4. $\theta\varphi(\theta)^2\,(1 + |\rho|) \le 4$.
+
+The first two exclude calendar spread arbitrage (Theorem 4.1) and are necessary
+as well as sufficient. The last two exclude butterfly arbitrage (Theorem 4.2);
+Lemma 4.2 shows the third is necessary and the fourth tight. Unlike raw SVI,
+every condition is an inequality on the parameters, so a surface can be held
+inside the region by bounding them.
+
+For the power law with $\gamma = 1/2$ the conditions take a particularly simple
+form. Condition 2 holds for every $\rho$, because
+$\partial_\theta(\theta\varphi)/\varphi = 1/2$ never exceeds
+$(1 + \sqrt{1 - \rho^2})/\rho^2$. Condition 4 becomes
+$\eta^2(1 + |\rho|) \le 4$, which holds for any $\rho$ when $\eta \le \sqrt{2}$.
+Condition 3 becomes $\eta\sqrt{\theta}\,(1 + |\rho|) < 4$, which, with
+$\eta \le \sqrt{2}$, holds whenever $\theta < 2$, that is whenever
+$\sigma_{ATM}\sqrt{t} < \sqrt{2}$. So the region is: $\theta_t$ rising in $t$,
+$|\rho| < 1$, $0 < \eta \le \sqrt{2}$, and total ATM variance below two. Remark
+4.4 of the paper notes the general point behind the last bound: a power-law
+SSVI is free of static arbitrage only up to some maximum expiry.
+
+** Extended SSVI
+
+A single $\rho$ ties the skew of every expiry to one number, which limits the
+term structures of risk reversal an SSVI surface can represent. Hendriks and
+Martini (2019) make $\rho$ a function of the expiry, the *extended SSVI*
+(eSSVI), and give necessary and sufficient conditions for that surface to be
+free of calendar spread arbitrage. The extension typically fits short expiries
+better. A later paper on a global parametrisation of eSSVI that keeps it free of
+arbitrage is listed below and has not been read in full.
+
+** In ORE Studio
+
+SSVI with the power-law curvature and $\gamma = 1/2$ is the surface the
+synthetic volatility generator evolves, as
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+describes; its parameters are the generator's state, held inside the region
+above. A tenant's surface blueprint may fit SSVI, SABR, a spline or another
+smile model to the quotes it reads, so the generator's choice does not bind the
+tenant's.
+
+* See also
+
+- [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — completes: SVI and SSVI beside SABR and the five-point spline as smile models.
+- [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage Conditions]] — exemplifies: SSVI is a family for which those conditions become inequalities on parameters.
+- [[id:3C43D0CC-3E74-45CA-BC85-A2303D0ADEDC][Paper summary: arbitrage-free SVI volatility surfaces]] — the paper this note's definitions and conditions come from.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — exemplifies: the generator that evolves an SSVI surface.
+
+** Further reading
+
+- Gatheral, J. (2004). "A parsimonious arbitrage-free implied volatility
+  parameterization with application to the valuation of volatility
+  derivatives." Presentation, Global Derivatives & Risk Management, Madrid.
+  [[https://jgatheral.github.io/assets/slides/madrid2004.pdf][Slides]]. The
+  origin of SVI.
+- Gatheral, J. and Jacquier, A. (2014). "Arbitrage-free SVI volatility
+  surfaces." /Quantitative Finance/, 14(1), 59-71.
+  [[https://arxiv.org/abs/1204.0646][arXiv:1204.0646]].
+- Martini, C. and Mingone, A. (2020). "No arbitrage SVI."
+  [[https://arxiv.org/abs/2005.03340][arXiv:2005.03340]]. The complete
+  characterisation of butterfly arbitrage in raw SVI.
+- Hendriks, S. and Martini, C. (2019). "The extended SSVI volatility surface."
+  /Journal of Computational Finance/, 22(5).
+  [[https://www.risk.net/journal-of-computational-finance/6555351/the-extended-ssvi-volatility-surface][risk.net]].
+- "No arbitrage global parametrization for the eSSVI volatility surface."
+  [[https://arxiv.org/abs/2204.00312][arXiv:2204.00312]].

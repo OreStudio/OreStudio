@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :market_data:synthetic:approach:sprint_21:knowledge:
 #+created: 2026-06-25
-#+updated: 2026-10-06
+#+updated: 2026-11-03
 
 * Purpose and scope
 
@@ -19,9 +19,11 @@ strategy, the UI requirements, and the phased implementation roadmap.  It is
 the output of the sprint-21 analysis story and supersedes the intermediate
 analysis ([[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][intermediate analysis]]) as the day-to-day developer reference — the intermediate
 analysis documents the reasoning; this document documents the decisions.  It
-does not include implementation code, and it does not cover calibration to
-live market data feeds.  Seven design decisions are explicitly deferred (see
-[[#open-design-decisions][open design decisions]]).
+does not include implementation code.  Where a generator starts from public
+data, the sources and their terms are in
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+The decisions still open are listed in
+[[#open-design-decisions][open design decisions]].
 
 * Where the implemented mechanism is documented
 
@@ -44,7 +46,7 @@ Those notes are the place to change when the implementation changes. The
 method, constraint and strategy sections below remain this document's own
 subject.
 
-* The three building blocks
+* The building blocks
 
 *Gaussian Mixture Model (GMM) — P-measure.* A GMM is fitted to historical
 daily market data via Expectation-Maximisation.  K Gaussian components, each
@@ -70,17 +72,27 @@ downstream of any P-measure generation step.  SABR/SVI pillars require a
 conversion pre-step to mixture form before the frozen pool applies.  See
 [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][frozen-pool paper summary]] for the full paper treatment.
 
-*GJR-GARCH Mixture Density Network (MDN) — Q-measure.* A pretrained MDN maps
-seven GJR-GARCH parameters plus maturity to a 128-component Gaussian mixture
-approximating the risk-neutral terminal return density; European option prices
-follow from a closed-form weighted sum of Black formulas.  The surrogate is
-~400,000× faster than matched-accuracy Monte Carlo and is certified against the
-MC noise floor.  It operates in Q-measure and produces arbitrage-free surfaces
-directly from model parameters, bypassing the need for a separate P-to-Q
-calibration for equity, FX, and commodity vol surfaces.  It does not cover
-swaption, cap/floor, or credit vol surfaces.  The GARCH recurrence is
-=σ²_t = ω + α·ε²_{t-1} + γ·ε²_{t-1}·𝟙{ε_{t-1}<0} + β·σ²_{t-1}=; see
-[[id:351CB816-28F5-428A-A289-414B6F4B9F36][GARCH knowledge doc]] for the full model treatment and [[id:3F849D36-022B-49CC-AD71-791481F36581][MDN paper summary]] for the MDN paper.
+*GJR-GARCH daily variance — P-measure.* The GMM draws each daily change
+independently, so on its own it cannot reproduce the clustering of volatility
+from one day to the next.  The FX and equity spot processes therefore carry a
+GJR-GARCH variance: the GMM draw, standardised, is the shape of the day's shock,
+and the recursion
+=σ²_t = ω + α·ε²_{t-1} + γ·ε²_{t-1}·𝟙{ε_{t-1}<0} + β·σ²_{t-1}= sets its size.
+The parameters are estimated from five years of public fixings.  See
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][GARCH knowledge doc]], section
+"GJR-GARCH in the synthetic FX spot", for the model as the generator uses it.
+
+*SSVI parameter dynamics — Q-measure.* An option vol surface is an SSVI
+surface whose parameters are the state of the generator.  SSVI describes a
+whole surface by the ATM total variance of each expiry, one skew parameter and
+a curvature function, and the conditions under which it is free of static
+arbitrage are inequalities on those parameters (see
+[[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]]).
+Each parameter follows a mean-reverting process held inside that region, so
+every surface the generator emits is free of calendar-spread and butterfly
+arbitrage by construction, and the surface moves through shocks of its own that
+are correlated with, but not driven by, the shocks of spot.  The method is set
+out in [[#option-vol-surfaces][option vol surfaces]].
 
 * Generation method per asset class
 :PROPERTIES:
@@ -158,7 +170,7 @@ is a [[#phase-4][Phase 4]] item.
 |-------------+-----------------+-------------------+-------|
 | Commodity spot | =COMMODITY/PRICE= | GMM on forward curve vector (front contract = spot for energy) | |
 | Commodity forward strip | =COMMODITY_FWD/PRICE= | GMM on full tenor vector | Energy: deseasonalise before fitting, reapply seasonal shape after |
-| Commodity options | See [[#option-vol-surfaces][option vol surfaces]] | GJR-GARCH MDN | Treat like equity options; commodity spot replaces equity spot as F₀ input |
+| Commodity options | See [[#option-vol-surfaces][option vol surfaces]] | SSVI parameter dynamics | Treat like equity options; the commodity forward strip sets the forward each expiry is struck against |
 | CPR / prepayment | =CPR/RATE= | *Gap* — static | Only needed for BalanceGuaranteedSwap; skip for initial scope |
 
 For precious metals, the forward curve must satisfy the carry relationship
@@ -217,20 +229,102 @@ the environment forward, not just at initial generation.
 
 | Vol surface | ORE quote types | Pillar generation | Expiry interpolation | Strike/smile generation | Notes |
 |-------------+-----------------+-------------------+----------------------+-------------------------+-------|
-| Equity option | =EQUITY_OPTION/RATE_LNVOL=, =EQUITY_OPTION/PRICE= | GJR-GARCH MDN with F₀ from equity forward (step 7) | Automatic within MDN output grid | MDN Gaussian mixture encodes full smile | Q-measure by construction |
-| FX option | =FX_OPTION/RATE_LNVOL= | GJR-GARCH MDN with F₀ from FX forward (step 4) | Automatic within MDN output grid | MDN Gaussian mixture; delta-to-strike conversion required before populating ORE quote keys | Apply QuantLib =BlackDeltaCalculator= to convert ATM/25RR/25BF/10RR/10BF to strikes |
-| Commodity option | =COMMODITY_OPTION/RATE_LNVOL=, =COMMODITY_OPTION/RATE_NVOL= | GJR-GARCH MDN with F₀ from commodity forward strip | Automatic | MDN or frozen pool with GMM pillars | Seasonal/structural complexity is upstream in the commodity forward curve |
+| Equity option | =EQUITY_OPTION/RATE_LNVOL=, =EQUITY_OPTION/PRICE= | SSVI ATM total variance per expiry, struck against the equity forward (step 7) | Automatic: SSVI is a surface | SSVI skew and curvature; quotes by strike or moneyness | Free of static arbitrage by construction |
+| FX option | =FX_OPTION/RATE_LNVOL= | SSVI ATM total variance per expiry, struck against the FX forward (step 4) | Automatic: SSVI is a surface | SSVI skew and curvature; ATM, RR and BF quoted in the pair's convention | Strikes solved from delta under the pair's delta and ATM conventions |
+| Commodity option | =COMMODITY_OPTION/RATE_LNVOL=, =COMMODITY_OPTION/RATE_NVOL= | SSVI ATM total variance per expiry, struck against the commodity forward strip | Automatic: SSVI is a surface | SSVI skew and curvature | Seasonal/structural complexity is upstream in the commodity forward curve |
 
-The GJR-GARCH MDN is the primary Q-measure generator for all three surface
-types.  Input: GJR-GARCH parameters (ω, α, γ, β, ν, λ) calibrated from the
-GMM-generated spot paths, plus the forward F₀ from the consistently generated
-forward price.  Output: a 128-component Gaussian mixture terminal density →
-evaluate at the desired (strike, maturity) grid to produce the full implied
-vol surface.  The forward F₀ passed to the MDN must come from the same
-generated scenario (steps 4, 7, 8) — using a mismatched forward breaks the
-ATMF anchoring constraint.  Calendar-spread and butterfly no-arbitrage are
-automatic within the MDN output and within the frozen-pool interpolation.
-See [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][3F7A2C91]] for the arbitrage condition definitions.
+The three surface types share one method: an SSVI surface whose parameters
+evolve as state processes.  It is set out here for FX, the first asset class to
+use it; equity and commodity surfaces differ only in how they quote.
+
+*** The surface
+
+The surface is SSVI with the power-law curvature
+$\varphi(\theta) = \eta/\sqrt{\theta}$, so its state is the ATM total
+variance $\theta_T$ of each quoted expiry, one skew $\rho$ and one curvature
+$\eta$.  With that curvature the conditions for the absence of static
+arbitrage reduce to four bounds: $\theta_T$ rises with $T$, $|\rho| < 1$,
+$0 < \eta \le \sqrt{2}$, and $\theta_T < 2$.  The last bound is total ATM
+variance, and an FX surface at 10% volatility reaches $\theta = 0.1$ only at
+ten years.  The derivation is in
+[[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]],
+and its source is
+[[id:3C43D0CC-3E74-45CA-BC85-A2303D0ADEDC][Paper summary: arbitrage-free SVI volatility surfaces]].
+The exponent $\gamma = 1/2$ is fixed for three reasons: it gives the
+V-shaped short-expiry smile that FX surfaces show, it makes the ATM skew fall as
+$1/\sqrt{T}$, and it reduces the butterfly conditions to the bound on $\eta$.
+
+*** The state processes
+
+Each parameter follows a mean-reverting process from
+[[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]], chosen so
+that its bound holds on every path.
+
+- *ATM variance.*  Two processes per expiry would cross, so the state is the
+  forward variance $v_j$ of each segment between quoted expiries, and
+  $\theta_{T_i} = \sum_{j \le i} v_j (T_j - T_{j-1})$.  Each $v_j$ is a
+  [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross process]],
+  $dv_j = \kappa_j(\bar{v}_j - v_j)\,dt + \xi_j\sqrt{v_j}\,dW^{v_j}$,
+  which stays positive under the Feller condition $2\kappa_j\bar{v}_j \ge
+  \xi_j^2$; every $v_j > 0$ makes $\theta_T$ rise strictly.  The shocks of
+  neighbouring segments are strongly but not perfectly correlated, so the curve
+  mostly moves as one and a single expiry can still spike.
+- *Skew.*  $\rho = \tanh(y)$, with $y$ an
+  [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck process]].
+  The hyperbolic tangent maps the real line onto $(-1, 1)$, and near zero
+  $\rho \approx y$.
+- *Curvature.*  $\eta = \sqrt{2}/(1 + e^{-u})$, with $u$ a second
+  Ornstein-Uhlenbeck process, which keeps $\eta$ in $(0, \sqrt{2})$.
+
+The long-run level of each process is its starting value, so the surface
+reverts to where it was calibrated.
+
+*** Correlation with spot
+
+The shocks of spot and of every surface parameter are joined by one
+correlation matrix, whose square root =psd_matrix_square_root= computes.  Two of
+its entries carry the economics.  The correlation of spot with the ATM level
+has no universal sign in FX, because a crisis lifts the volatility of a pair in
+whichever direction its safe-haven currency moves; it is a parameter per pair.
+The correlation of spot with the skew moves the risk reversal toward the side
+the market is buying protection on.  Every other shock is independent of spot,
+which is what lets the surface move while spot is flat.  How the smile moves
+with spot under this correlation is the question
+[[id:96108D1A-6808-4D68-B226-FD03192C8009][Skew Stickiness Ratio]] measures.
+
+*** The starting state
+
+The processes start from a surface fitted to starting quotes.  No free public
+source publishes FX implied volatilities, so the starting quotes come from a
+derived source that infers ATM, RR and BF from the pair's spot fixings, as
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]
+describes.  A real vol source, where one is available, ranks above it.
+
+*** From state to quotes
+
+At each step the generator advances the state, builds each expiry's slice, and
+reads the ATM, risk reversal and butterfly volatilities at the strikes the
+pair's conventions place them: its ATM type, delta type and butterfly style,
+held in the refdata entity =fx_option_convention=.  Where the style is the
+broker strangle, the butterfly is the market strangle solved against the slice
+(see [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]]).
+Strikes are solved against the generated forward of step 4, which keeps
+constraint 3 of the [[#constraints][constraint table]].  The clean quotes are
+then observed by synthetic contributors, as
+[[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]
+describes, so a tenant receives what a broker feed carries rather than the
+surface itself.
+
+*** Limits
+
+The surfaces are free of static arbitrage, each on its own.  The sequence of
+surfaces is not made consistent with the spot dynamics under one risk-neutral
+measure, so dynamic arbitrage between a day's surface and the next is not
+excluded; ORE prices from one surface at a time, which needs the static
+property only.  One $\rho$ for all expiries limits the term structures of skew
+the surface can carry; the extended SSVI, with a $\rho$ per expiry, is the
+extension (open decision OD-8).  The Cox-Ingersoll-Ross process takes one
+fixed step in =ores.analytics.quant=, so a surface feed ticks periodically.
 
 ** Correlation
 
@@ -261,8 +355,8 @@ means the quantity is never sampled but always computed from its inputs.
 |---+----------+---------------------------+---------------------------+-------------|
 | 1 | =FX/RATE= + =IR_SWAP/RATE= → =FXFWD/RATE= | =FXFWD(T) = FX_spot × DF_for(T) / DF_dom(T)= | Steps 1, 3 → step 4 | Derivation — never sample =FXFWD= independently |
 | 2 | =EQUITY/PRICE= + =IR_SWAP/RATE= + =EQUITY_DIVIDEND/RATE= → =EQUITY_FWD/PRICE= | =EQUITY_FWD(T) = EQUITY_SPOT × exp((r − q) × T)= | Steps 1, 5, 6 → step 7 | Derivation — never sample =EQUITY_FWD= independently |
-| 3 | FX option ATMF anchor | ATM strike of =FX_OPTION/RATE_LNVOL= surface = =FXFWD= at each maturity | Steps 4, 10 | Automatic — MDN F₀ input must equal the generated =FXFWD= from step 4 |
-| 4 | Equity option ATMF anchor | ATM strike of =EQUITY_OPTION/RATE_LNVOL= surface = =EQUITY_FWD= at each maturity | Steps 7, 10 | Automatic — MDN F₀ input must equal the generated =EQUITY_FWD= from step 7 |
+| 3 | FX option ATMF anchor | ATM strike of =FX_OPTION/RATE_LNVOL= surface = =FXFWD= at each maturity | Steps 4, 10 | Automatic — the surface's strikes are solved against the generated =FXFWD= from step 4 |
+| 4 | Equity option ATMF anchor | ATM strike of =EQUITY_OPTION/RATE_LNVOL= surface = =EQUITY_FWD= at each maturity | Steps 7, 10 | Automatic — the surface's strikes are solved against the generated =EQUITY_FWD= from step 7 |
 | 5 | IR discount curve → =CAPFLOOR/SHIFT= | =CAPFLOOR/SHIFT ≥ |min bootstrapped forward rate|= for each currency and tenor | Steps 1, 11 | Post-generation check per currency after step 1; set shift before populating step 11 vol keys |
 | 6 | Swaption ATM vol ↔ capfloor ATM vol | ATM swaption vol and cap/floor caplet vol imply the same forward rate distribution for overlapping tenors | Steps 11, 11 | Post-generation cross-check — not automatically enforced; use standard swap-rate/caplet decomposition to compare |
 | 7 | =CDS/CREDIT_SPREAD= + =RECOVERY_RATE/RATE= → =HAZARD_RATE/RATE= | =λ ≈ CDS_spread / (1 − R)= | Steps 2, 13 | Derivation — fix recovery first; derive hazard rate; never sample both independently |
@@ -289,35 +383,19 @@ calibration failures in ORE.  See [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][A3F
 
 ** Resolution for equity, FX, and commodity option vol surfaces
 
-The GJR-GARCH MDN is the primary Q-measure generator for these three surface
-types.  The pipeline is:
-
-1. *GMM step (P-measure):* GMM generates synthetic spot/rate paths.  These
-   provide the return history used to calibrate GJR-GARCH parameters
-   (ω, α, γ, β, ν, λ) via maximum likelihood on the generated return series.
-
-2. *GJR-GARCH MDN step (Q-measure bridge):* Call the MDN with the calibrated
-   GJR-GARCH parameters, the generated forward F₀ from the relevant step
-   (steps 4, 7, or 8), and each target maturity T.  The MDN outputs a
-   128-component Gaussian mixture approximating the risk-neutral terminal
-   return density.  The output is Q-measure by construction: the MDN was
-   trained on risk-neutral GJR-GARCH dynamics with a forward constraint
-   (forward = F₀ at each maturity).
-
-3. *Vol surface population:* Evaluate each Gaussian mixture component's
-   contribution to the Black-Scholes call price at each (strike, maturity)
-   cell.  Back out the implied vol via bisection.  Populate the ORE vol
-   surface quote keys (=EQUITY_OPTION/RATE_LNVOL=, =FX_OPTION/RATE_LNVOL=,
-   =COMMODITY_OPTION/RATE_LNVOL=).
-
-The GMM provides the regime and correlation structure of the synthetic
-environment; the MDN provides the no-arbitrage Q-measure calibration that
-makes those surfaces usable as QuantLib inputs.  The two steps are not
-competing — they are sequential.
+The surfaces of these three asset classes are generated directly in the
+Q-measure.  The spot and forward paths are P-measure, from the GMM with its
+GJR-GARCH variance; the surface is a separate set of state processes, so it is
+never computed from a P-measure distribution and needs no conversion from one.
+Its Q-measure property is the one QuantLib and ORE need: every surface the
+generator emits is free of calendar-spread and butterfly arbitrage, because the
+SSVI parameters never leave the region where Corollary 4.1 of Gatheral and
+Jacquier holds, and every strike is solved against the forward of the same
+generated scenario.  The method is in [[#option-vol-surfaces][option vol surfaces]].
 
 ** Resolution for swaption and cap/floor vol surfaces
 
-The GJR-GARCH MDN does not cover IR vol surfaces.  The path for swaption
+The SSVI method covers the equity, FX and commodity option surfaces.  The path for swaption
 and cap/floor surfaces is:
 
 1. *GMM step (P-measure):* GMM on historical ATM normal vols (with PCA
@@ -379,22 +457,23 @@ dependent quantities in dependency order:
 1. Re-derive =FXFWD/RATE= from new spot + new IR curves (CIP).
 2. Re-derive =EQUITY_FWD/PRICE= from new spot + new IR + static dividend yield.
 3. Re-compute =CAPFLOOR/SHIFT= from new IR zero curve minimum forward rate.
-4. Invoke the GJR-GARCH MDN with updated GARCH state and new forward to
-   produce updated option vol surfaces.
+4. Advance the SSVI state of each option vol surface, and solve its quotes'
+   strikes against the new forward.
 
 The [[#constraints][constraint table]] must be re-verified at each step.
 
-** Vol surface update via GARCH state propagation
+** Spot variance via GARCH state propagation
 
-After each new spot/rate return ε_t is observed, update the GARCH conditional
-variance using the GJR-GARCH recurrence:
+At the end of each market day, the day's spot return ε_t updates the GARCH
+conditional variance:
 
 : σ²_{t+1} = ω + α·ε²_t + γ·ε²_t·𝟙{ε_t < 0} + β·σ²_t
 
-Call the MDN with the updated (σ²_{t+1}, remaining parameters, new F₀) to
-produce the vol surface for date t+1.  This is the state-carrying mechanism
-for volatility: the GARCH variance σ²_t persists between steps rather than
-being re-initialised from a GMM draw.
+σ²_{t+1} sets the size of the next day's GMM shocks.  This is the
+state-carrying mechanism for the volatility of spot: the GARCH variance σ²_t
+persists between steps rather than being re-initialised from a GMM draw.  The
+vol surface carries its own state, as [[#option-vol-surfaces][option vol surfaces]]
+describes, and reads none of the GARCH variance.
 
 ** Preserving volatility clustering
 
@@ -455,8 +534,8 @@ reaches the code, and the parameters it takes, is in
 quantities that depend on it must be updated immediately:
 
 - FX spot tick → re-derive FX forwards (CIP) for all tenors.
-- Equity spot tick → re-derive equity forwards (carry); update GJR-GARCH
-  state (σ²_t) and regenerate vol surface via MDN.
+- Equity spot tick → re-derive equity forwards (carry); add the move to the
+  day's return that updates the GJR-GARCH variance at the day's end.
 - IR curve tick → re-derive FX forwards, equity forwards, CAPFLOOR/SHIFT.
 
 Derived quantities do NOT have their own independent tick clocks: they tick
@@ -484,8 +563,8 @@ draw to k throughout the scenario.
 
 ** Known limitation: descriptive vs generative regime modelling
 
-Every technique in this document (GMM, frozen-pool interpolation, GJR-GARCH
-MDN) is *descriptive*: each is fitted to historical distributions and
+Every technique in this document (GMM, GJR-GARCH, SSVI parameter dynamics,
+frozen-pool interpolation) is *descriptive*: each is fitted to historical distributions and
 reproduces their statistical shape, including the multi-component GMM's
 distinct "regimes" (steep/inverted curve, risk-on/risk-off). Fratini
 (2026) draws a sharp distinction between a descriptive model — one that
@@ -544,8 +623,7 @@ The control panel provides per-group technique selectors:
 - IR curves: GMM / static from ORE examples
 - FX spot: GMM / static
 - Equity spot: GMM / static
-- Option vol surfaces: GJR-GARCH MDN / GMM on vol matrix / static from ORE
-  examples
+- Option vol surfaces: SSVI parameter dynamics / static from ORE examples
 - Swaption/capfloor vol: GMM + SABR / static from ORE examples
 - Credit / dividend / inflation vol: static only (gap types; no generation
   technique available)
@@ -568,14 +646,12 @@ independently per asset class group:
 
 *GJR-GARCH parameters:*
 
-The control panel provides direct parameter entry for the GJR-GARCH MDN
-inputs: ω (omega), α (alpha), γ (gamma), β (beta), ν (nu), λ (lambda).  Each
-field accepts a floating-point value.  Alongside the manual entry fields, the
-panel provides a "Calibrate from generated paths" button per asset class
-(equity, FX, commodity): clicking it runs a GJR-GARCH MLE fit on the spot
-log-returns from the most recent GMM-generated path and populates the six
-fields with the calibrated values.  The button is greyed out until the
-corresponding asset class GMM generation has been run.
+The control panel provides direct parameter entry for the GJR-GARCH daily
+variance of each spot: ω (omega), α (alpha), γ (gamma), β (beta) and the
+starting variance.  Each field accepts a floating-point value.  Alongside the
+manual entry fields, the panel provides a "Calibrate from fixings" button per
+pair: clicking it runs the quasi-maximum-likelihood fit on five years of the
+pair's daily fixings and populates the fields with the calibrated values.
 
 *Tick frequency per asset class:*
 
@@ -786,9 +862,9 @@ produces non-NaN, economically plausible NPVs for all generated dates.
 *Scope:* Phase 1 plus equity spot for S&P 500 proxy (=EQUITY/PRICE/SP5/USD=),
 flat dividend yield (=EQUITY_DIVIDEND/RATE/SP5/USD/1Y= ± noise), equity
 forward derived via carry (=EQUITY_FWD/PRICE/SP5/USD=), equity option vol
-surface via GJR-GARCH MDN (=EQUITY_OPTION/RATE_LNVOL/SP5/USD/=), EUR/USD FX
-option vol surface via GJR-GARCH MDN (=FX_OPTION/RATE_LNVOL/EUR/USD/=) with
-delta-to-strike conversion.
+surface via SSVI parameter dynamics (=EQUITY_OPTION/RATE_LNVOL/SP5/USD/=),
+EUR/USD FX option vol surface via SSVI parameter dynamics
+(=FX_OPTION/RATE_LNVOL/EUR/USD/=) quoted in the pair's conventions.
 
 *Priced products:* European equity options, FX vanilla options, equity variance
 swaps, FX variance swaps.
@@ -852,12 +928,11 @@ matrix within 10 percentage points for all major cross-asset pairs.
 * Out of scope
 
 - Implementation code for any generation algorithm.
-- Calibration to real live market data feeds or external data providers.
+- Calibration to vendor data.  Generators calibrate from free public sources only.
 - Full stochastic-vol model calibration (SABR parameter fitting from traded
   option prices; Heston surface fitting to market quotes).
 - Coverage of ORE scripted trade types not listed in the phase milestones.
 - Any UI implementation code (this document specifies requirements only).
-- Real-time or intra-day market data generation.
 - The sample trade portfolio validation feature ([[#portfolio-validation][sample trade portfolio validation]]).
 - Non-ORE market data formats or external system integration.
 - Credit migration matrix generation (=RATING/TRANSITION_PROBABILITY=).
@@ -868,31 +943,34 @@ matrix within 10 percentage points for all major cross-asset pairs.
 :CUSTOM_ID: open-design-decisions
 :END:
 
-These seven decisions must be made before implementation of the relevant phase
-begins.  They are unresolved in the intermediate analysis and are not resolved
-by this document.
+These decisions must be made before implementation of the relevant phase
+begins.
 
 | # | Decision | Options | Impacts |
 |---+----------+---------+---------|
 | OD-1 | *Joint GMM architecture* | (a) single joint GMM with block-diagonal covariance; (b) hierarchical GMM conditioned on shared latent regime; (c) independent GMMs per asset class + post-hoc copula | Determines whether constraints 6, 7, 8, 16 (from intermediate analysis) are satisfied by construction or require post-generation correction; affects Phase 5 |
 | OD-2 | *Clock function for frozen pool* | Linear clock =s = (t − t₀)/(t₁ − t₀)= vs variance clock =s = (Var(t) − Var₀)/(Var₁ − Var₀)= | Affects smoothness of ATM total variance interpolation between swaption and capfloor pillars; must be validated on ORE example datasets |
 | OD-3 | *SABR/SVI to normal mixture density conversion recipe* | Fit Gaussian mixture to ∂²C_SABR/∂K² via EM; number of components (working assumption: 3–5); fitting objective (KL divergence vs MSE on call prices); strike grid extent | Required before frozen pool applies to swaption/capfloor surfaces; gates Phase 3 |
-| OD-4 | *Training data source for GMM* | (a) synthetic historical bootstrapping from ORE example snapshots (single-date or three-date sets); (b) external historical daily data as mandatory prerequisite | Affects data availability, reproducibility, and statistical quality of the GMM; must be decided before any GMM implementation |
-| OD-5 | *P-to-Q measure adjustment depth for GJR-GARCH MDN* | (a) use MDN outputs directly with forward constraint as the only risk premium adjustment; (b) apply explicit variance risk premium adjustment (market price of variance risk) before MDN call | Affects how closely the generated vol surfaces match traded market vols; option (a) is simpler and sufficient for synthetic test environments |
 | OD-6 | *Dimensionality reduction for swaption cube* | Number of PCA components to retain (working assumption: 10–15 for >99% variance explained); positivity enforcement on normal vols after back-projection from PCA space | Required before full swaption cube GMM can be implemented; gates Phase 3 smile generation |
-| OD-7 | *MVE scope confirmation* | Confirm that Phase 1 boundaries (EUR OIS + USD SOFR + EUR/USD FX + EUR/USD ATM swaption) are the correct starting point, or extend to include equity spot before declaring MVE | Must be agreed with the development team before Phase 1 implementation begins |
+| OD-8 | *Skew term structure of option vol surfaces* | (a) SSVI with one ρ for all expiries; (b) extended SSVI with a ρ per expiry (Hendriks and Martini, 2019) | Whether the generated risk reversals can follow a term structure other than 1/√T; (b) adds a process per expiry and a calendar condition on the ρ curve |
 
 * See also
 
 
 
+
+- [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — full 49-type ORE quote-key taxonomy; source for all quote-key notation in this document.
 - [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: technique-to-asset-class mapping]] — the analysis document this supersedes; contains the full coverage table, gap analysis with proper solutions, and the reasoning behind the generation stack order.
 - [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure technique (Kienitz 2024, SSRN 5050372).
 - [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — frozen-pool Q-measure arbitrage-free interpolation (van den Berg 2026a, arXiv:2606.12717).
-- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — MDN Q-measure option pricing surrogate (van den Berg 2026b, arXiv:2606.15502).
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — contradicts: a learned surface computed from the GARCH state, where this approach evolves the surface through state of its own (van den Berg 2026b, arXiv:2606.15502).
+- [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]] — completes: the surface the option vol generator evolves, and its no-arbitrage region.
+- [[id:3C43D0CC-3E74-45CA-BC85-A2303D0ADEDC][Paper summary: arbitrage-free SVI volatility surfaces]] — the source of the bounds the state processes respect.
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][Market volatility channel]] — completes: the intraday volatility the daily GJR-GARCH variance is spread over.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][A volatility surface follows the curve from state to published set]] — completes: how a generated surface reaches a tenant and a report.
 - [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P and Q]] — the P/Q distinction underpinning the measure bridge in [[#measure-bridge][the P-to-Q measure bridge]].
 - [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered interest parity]] — the CIP formula and arbitrage argument behind constraint 1.
 - [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — calendar-spread, butterfly, and put-call parity; QuantLib detection; Dupire local vol implications.

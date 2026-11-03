@@ -130,26 +130,27 @@ The history depth the derived source and the GARCH fit need comes from
 
 Steps:
 
-1. Check the analysis's doubtful claims: FX implied vols on DBnomics (BIS,
-   ECB), the MOVE index on FRED, the RR and BF formulas against the smile and
-   market strangle conventions, and "SABR and SVI are free of static arbitrage".
-2. Write the decision notes: surface parameter dynamics, and the role of GARCH
-   with its coupling to the intraday volatility channel.
-3. Write the new notes: SVI, a GJR-GARCH process as a generator kind, the
-   surface pipeline that follows the IR curve with its observation layer, and FRED and DBnomics as public
-   sources once their terms are read.
-4. Extend the existing notes: the approach note (drop the MDN, update the open
-   decisions and the out of scope list), Stochastic Processes, FX Volatility
-   Surface, Market volatility channel, Synthetic prices are calibrated from free
-   public sources, and Public sources publish daily fixings.
-5. Write a Volatility surfaces structure note and link it from Market Data
-   Architecture.
-6. Name the later tasks of the arc in the story, each traced to its note.
-
-Status of the approach note's open decisions, to record in step 4: OD-1 open
-but reshaped (correlated shocks, not a joint GMM); OD-2, OD-3 and OD-6 deferred
-to IR vol cubes; OD-4 decided (authored components, calibrated from public
-fixings); OD-5 obsolete with the MDN; OD-7 overtaken by what was built.
+1. Check the analysis's doubtful claims. Done; see Notes.
+2. Place the content by the Zettelkasten document types, quant apart from
+   architecture, and extend the synthetic generation documents rather than
+   write parallel ones. Done:
+   - Quant reference: SVI Volatility Parameterisation (new); FX Volatility
+     Surface, Volatility clustering and GARCH models, Market volatility
+     channel and Synthetic market data generation: approach (extended).
+   - Paper summaries: arbitrage-free SVI volatility surfaces; accounting for
+     biases in Black-Scholes (new).
+   - Calibration: Synthetic prices are calibrated from free public sources
+     (extended: the five-year history, the derived starting surface, the rule
+     for derived values).
+   - Architecture: A volatility surface follows the curve from state to
+     published set; A synthetic contributor publishes noisy observations of a
+     latent surface; A derived source publishes what it infers from stored
+     fixings (new); oresmd (extended: the fitted surface series).
+   - Structure notes: Volatility, Stochastic Processes and Market Data
+     Architecture order the new pages.
+   Every page states the target state only, and every link carries its
+   relation.
+3. Name the later tasks of the arc in the story, each traced to its note.
 
 * Measurements
 

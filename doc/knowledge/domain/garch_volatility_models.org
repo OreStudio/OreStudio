@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :quantitative_finance:volatility:market_data:garch:knowledge:
 #+created: 2026-06-25
-#+updated: 2026-06-25
+#+updated: 2026-11-03
 
 If you have been reading sprint-21 analysis documents or paper summaries
 and keep hitting "GARCH", "GJR-GARCH", "volatility clustering", or
@@ -312,6 +312,96 @@ computed numerically from the distribution's CDF.  This feeds directly
 into the persistence coefficient =kappa= and the unconditional variance
 formula.
 
+* GJR-GARCH in the synthetic FX spot
+
+ORE Studio's synthetic FX spot feeds carry a GJR-GARCH variance from one market
+day to the next. This section states the model as the generator uses it. Where
+it sits among the other generation methods is in
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]],
+and how it composes with the market's intraday activity is in
+[[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][Market volatility channel]].
+
+** The innovation is the feed's mixture
+
+The innovation =z_t= is not a Gaussian or a skewed t draw. It is a draw from the
+feed's own Gaussian mixture, the GMM of
+[[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], standardised to
+mean zero and variance one:
+
+#+begin_example
+z_t = (x_t - m) / s       x_t drawn from the mixture, m its mean, s its standard deviation
+epsilon_t = sigma_t * z_t
+#+end_example
+
+The two models then do separate work. The mixture gives the shape of a day's
+shock: its fat tails, its asymmetry and the regimes its components stand for.
+The recursion gives the size of the shock as a function of the days before, which
+an independent mixture draw cannot. The skewed Student-t of Hansen (1994) would
+give the shape with two parameters; the mixture is used because its components
+are already part of each FX spot configuration and are already calibrated from
+public fixings.
+
+For a mixture, =p_minus = E[z^2 * I{z < 0}]= has a closed form. Each component
+=k=, with weight =w_k=, mean =mu_k= and standard deviation =s_k= after
+standardisation, contributes the second moment of a normal truncated at zero:
+
+#+begin_example
+p_minus = sum_k w_k * [ (mu_k^2 + s_k^2) * Phi(-mu_k / s_k) - mu_k * s_k * phi(mu_k / s_k) ]
+#+end_example
+
+where =Phi= and =phi= are the standard normal distribution and density. The
+persistence =kappa= and the unconditional variance follow from it as in
+=* Stationarity=.
+
+** The sign of the asymmetry in FX
+
+In equities a fall is bad news, so =gamma > 0=. In FX a fall of the pair is a
+rise of its base currency, and which direction raises volatility depends on the
+pair: a pair whose quote currency is a safe haven tends to fall in a crisis, a
+pair whose base currency is one tends to rise. So =gamma= may take either sign.
+The variance stays positive if
+
+#+begin_example
+omega > 0,   alpha >= 0,   beta >= 0,   alpha + gamma >= 0
+#+end_example
+
+and a negative =gamma=, bounded by =-alpha=, makes a rise of the pair raise
+variance more than a fall of the same size.
+
+** Calibration
+
+The parameters are estimated from the daily fixings of the pair, five years of
+which every environment holds; see
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+
+1. *Variance targeting.* The unconditional variance is set to the sample
+   variance of the daily log returns, and =omega = sigma^2_inf * (1 - kappa)=.
+   One parameter leaves the fit, and the long-run level is tied to the data
+   directly (Engle and Mezrich, 1996).
+2. *Quasi maximum likelihood.* =alpha=, =gamma= and =beta= maximise the
+   Gaussian likelihood of the returns under the bounds above. The likelihood is
+   Gaussian although the innovation is a mixture: the estimator is consistent
+   when the conditional mean and variance are correctly specified, whatever the
+   shape of the innovation (Bollerslev and Wooldridge, 1992).
+3. *The starting variance.* =sigma^2_0= is the last value of the fitted
+   variance filtered through the whole history, so a feed that starts in a
+   turbulent period starts turbulent.
+4. *Authored values.* A pair with too little history for a stable fit, or a fit
+   that reaches the stationarity bound, takes authored parameters, as it takes
+   authored mixture components.
+
+** A daily recursion in a feed that ticks
+
+The recursion is daily, and a feed ticks at gaps its arrival process draws, as
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]] describes. The
+market day ends at the FX day roll, 17:00 New York time, on the market's
+operational clock, and =sigma^2_t= holds for the whole day. A tick that covers a
+fraction of the day takes that fraction of =sigma^2_t= as its variance: the
+mixture's deviations from its mean are scaled so the mixture's daily variance is
+=sigma^2_t=, and its drift is left alone. At the roll, =epsilon_t= is the log
+return of the generated path over the day. Saturday and Sunday are not market
+days, so the variance does not change across them.
+
 * Comparison with continuous-time models (Heston)
 
 ** Two families
@@ -460,33 +550,27 @@ percentile CDF error is 4–6 times higher near =kappa = 1= than in the
 centre of the parameter space.  The paper mitigates this with an
 engineered input feature =log(1.01 - kappa)=.
 
-** Connection to sprint-21 synthetic data pipeline
+** Relation to the synthetic data pipeline
 
-In the ORE Studio sprint-21 analysis, the GJR-GARCH MDN is the Q-measure
-bridge in a two-stage synthetic data pipeline:
-
-#+begin_example
-Historical returns  -->  GJR-GARCH calibration (P)
-                                    |
-                          risk premium adjustment
-                                    |
-                    GJR-GARCH MDN forward pass (Q)
-                                    |
-                        Gaussian mixture --> implied vol grid
-                                    |
-                      ORE vol surface (EQUITY_OPTION/RATE)
-#+end_example
-
-The GMM Gaussian synthetic data paper (see [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]]) generates synthetic market data
-in P.  The MDN provides the Q-measure pricing layer that makes that
-synthetic data usable inside QuantLib option pricers without arbitrage
-violations.
+ORE Studio's synthetic pipeline does not use the MDN. GJR-GARCH appears in it
+under the real-world measure, as the daily variance of the synthetic FX spot
+described in =* GJR-GARCH in the synthetic FX spot=. The synthetic volatility
+surfaces are not computed from the GARCH state: they evolve through SSVI
+parameter processes of their own, whose shocks are correlated with the spot
+shocks, as
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+describes. The paper remains the reference for pricing options under GJR-GARCH
+dynamics, which the pipeline does not need.
 
 * See also
 
 
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — exemplifies: GJR-GARCH as the daily variance of the synthetic FX spot.
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][Market volatility channel]] — completes: the intraday volatility that the daily GJR-GARCH variance is spread over.
+- [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]] — completes: the mixture whose standardised draw is the innovation.
+- [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Paper summary: accounting for biases in Black-Scholes]] — answers: its open question on the term structure of kurtosis, which a GARCH variance sets.
 - [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — full treatment
   of the MDN surrogate: architecture, error bounds, QuantLib parallels,
   and integration questions.
@@ -501,3 +585,32 @@ violations.
   here.
 - [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] — the library whose Heston model is the continuous-time
   analogue of GJR-GARCH.
+
+** Further reading
+
+- Engle, R. F. (1982). "Autoregressive conditional heteroscedasticity with
+  estimates of the variance of United Kingdom inflation." /Econometrica/,
+  50(4), 987-1007. Listed in
+  [[https://www.econlib.org/library/Enc/bios/Engle.html][Engle's bibliography]].
+- Bollerslev, T. (1986). "Generalized autoregressive conditional
+  heteroskedasticity." /Journal of Econometrics/, 31(3), 307-327.
+  [[https://doi.org/10.1016/0304-4076(86)90063-1][doi:10.1016/0304-4076(86)90063-1]].
+- Glosten, L. R., Jagannathan, R. and Runkle, D. E. (1993). "On the relation
+  between the expected value and the volatility of the nominal excess return on
+  stocks." /Journal of Finance/, 48(5), 1779-1801.
+  [[https://doi.org/10.1111/j.1540-6261.1993.tb05128.x][doi:10.1111/j.1540-6261.1993.tb05128.x]].
+- Bollerslev, T. and Wooldridge, J. M. (1992). "Quasi-maximum likelihood
+  estimation and inference in dynamic models with time-varying covariances."
+  /Econometric Reviews/, 11(2), 143-172.
+  [[https://doi.org/10.1080/07474939208800229][doi:10.1080/07474939208800229]].
+- Engle, R. F. and Mezrich, J. (1996). "GARCH for groups." /Risk/, 9(8), 36-40.
+  [[https://econbiz.de/Record/garch-for-groups-a-round-up-of-recent-developments-in-garch-techniques-for-estimating-correlation-engle-robert/10007078117][EconBiz record]].
+  Variance targeting; the article itself not read.
+- Hansen, B. E. (1994). "Autoregressive conditional density estimation."
+  /International Economic Review/, 35(3), 705-730.
+  [[https://doi.org/10.2307/2527081][doi:10.2307/2527081]]. The skewed
+  Student-t.
+- Hansen, P. R., Huang, Z. and Shek, H. H. (2012). "Realized GARCH: a joint
+  model for returns and realized measures of volatility." /Journal of Applied
+  Econometrics/, 27(6), 877-906.
+  [[https://doi.org/10.1002/jae.1234][doi:10.1002/jae.1234]].

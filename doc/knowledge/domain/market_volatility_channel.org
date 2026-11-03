@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:synthetic:volatility:design:factor:
 #+created: 2026-10-26
-#+updated: 2026-10-27
+#+updated: 2026-11-03
 
 * Summary
 
@@ -206,6 +206,35 @@ must accept that tolerance rather than an exact one.
   sampling frequency and microstructure noise, and which rises even when the
   process is unchanged.
 
+** The daily variance
+
+The loading moves volatility within the day. It does not carry a calm or a
+turbulent state from one day to the next: the heat fades over minutes to hours,
+and the calm/active chain is a property of the market, not of one pair's
+history. That memory is the job of the GJR-GARCH variance each FX spot carries,
+described in
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]]
+under "GJR-GARCH in the synthetic FX spot". The two compose by multiplication:
+
+  Var(tick) = sigma_d^2 * M_vol(t)^2 * s
+
+where sigma_d^2 is the day's GARCH variance, M_vol the loading above and s the
+share of the day the tick covers. The loading is calibrated so its long-run
+mean leaves a run's sigma as configured, so over a day the expected variance is
+still sigma_d^2: GARCH sets how much variance the day has, and the channel
+decides where in the day it falls.
+
+The coupling runs one way by construction. A busy day, with the loading high,
+produces a larger day return, and the GARCH update at the day's end turns it
+into a larger variance for the next day, so intraday activity reaches the daily
+variance with no mechanism beyond the two models. Realized GARCH (Hansen, Huang
+and Shek, 2012) updates the variance from an intraday realised measure instead
+of the squared day return, which is less noisy; the generated path is known
+exactly, so that measure is available. The other direction, a high daily
+variance raising the rate of arrivals, is activity and volatility exciting each
+other, the bivariate model of "Out of scope: activity and volatility exciting
+each other".
+
 ** The tails
 
 A diffusion whose sigma doubles gives wider returns but the same shape. A panic
@@ -328,13 +357,14 @@ section that leans on each entry, with one line on what it gives us.
   Financial Economics 71(1) — time-changing a process *with jumps*, which is the
   honest version of "the tails move with activity".
 
-** Stochastic volatility and regime switching — the models not adopted
+** Stochastic volatility, regime switching and GARCH
 
 - Engle (1982), *Autoregressive conditional heteroscedasticity*, Econometrica
   50(4), and Bollerslev (1986), *Generalized autoregressive conditional
   heteroskedasticity*, Journal of Econometrics 31(3) — volatility clustering as a
-  process on variance itself. The standard the generated series will be compared
-  against, and what this design is not.
+  process on variance itself. The channel does not model it; the daily GJR-GARCH
+  variance of each spot does, and the two compose as "The daily variance"
+  states.
 - Hull and White (1987), *The pricing of options on assets with stochastic
   volatilities*, Journal of Finance 42(2), and Heston (1993), *A closed-form
   solution for options with stochastic volatility*, Review of Financial Studies
@@ -518,3 +548,8 @@ important as the platform's output is used for something other than display.
   form, its branching ratio and the two simulation methods.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
   — the tick modes this note extends.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]]
+  — completes: the daily variance whose day this channel spreads.
+- Hansen, P. R., Huang, Z. and Shek, H. H. (2012). "Realized GARCH: a joint
+  model for returns and realized measures of volatility." /Journal of Applied
+  Econometrics/, 27(6), 877-906. [[https://doi.org/10.1002/jae.1234][doi:10.1002/jae.1234]].

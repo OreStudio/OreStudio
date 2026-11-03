@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: DCB34BC0-8125-43A1-B99F-074BC280975D
+:END:
+#+title: Paper summary: accounting for biases in Black-Scholes
+#+description: Backus, Foresi, Li and Wu (1997): a Gram-Charlier expansion of the currency return density gives an implied volatility smile that is quadratic in moneyness, with skewness setting its slope and kurtosis its curvature.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:research:volatility:fx:gram_charlier:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+* Summary
+
+Currency option prices depart from the Black-Scholes formula in two ways: implied
+volatility varies with the strike, the smile, and with the maturity. Backus,
+Foresi, Li and Wu explain both by approximating the distribution of the log
+exchange rate with a Gram-Charlier expansion, a normal density corrected by its
+skewness and its excess kurtosis. In that setting the implied volatility smile
+is approximately a quadratic function of moneyness: skewness tilts it and
+kurtosis bends it. The relation runs both ways, so the paper reads skewness and
+kurtosis off observed smiles. For ORE Studio the relation is used the other way
+round: given the skewness and kurtosis of a pair's historical returns, it gives
+a plausible smile, which is how the synthetic generator obtains a starting
+surface where no implied volatility is published.
+
+* Source
+
+David Backus, Silverio Foresi, Kai Li and Liuren Wu, "Accounting for Biases in
+Black-Scholes", working paper, first draft August 1997, this version November
+1997. [[https://econwpa.ub.uni-muenchen.de/econ-wp/fin/papers/0207/0207008.pdf][PDF]].
+
+* Problem being solved
+
+The Black-Scholes model assumes log-normal prices, so a single volatility should
+price every strike and maturity. Currency options show otherwise: implied
+volatility rises away from the money, and the implied volatility of
+at-the-money options rises, on average, with maturity. The paper asks how much
+of each bias departures from normality can account for, and how to read those
+departures from option prices.
+
+* The method
+
+** The density
+
+The conditional distribution of the log spot rate over $n$ periods is written as
+a Gram-Charlier expansion: a normal density times a polynomial in the
+standardised variable, whose coefficients are the skewness $\gamma_{1n}$ and the
+excess kurtosis $\gamma_{2n}$. Moneyness is measured by
+
+\begin{equation}
+d = \frac{\ln(S_t / K) + (r_{nt} - r^*_{nt})\,n + \sigma_n^2/2}{\sigma_n}
+\end{equation}
+
+(their equation 9), the $d_1$ of the Black-Scholes formula with $\sigma_n$ the
+standard deviation over the option's life; $d = 0$ is a call at the money and
+$d > 0$ a call in the money.
+
+** The smile
+
+Proposition 1 gives the call price as the Black-Scholes price plus terms in the
+skewness and the kurtosis. Proposition 2 inverts it to an implied volatility
+(their equation 16):
+
+\begin{equation}
+v_n(d) \approx \sigma_n\left(1 - \frac{\gamma_{1n}}{3!}\,d - \frac{\gamma_{2n}}{4!}\,(1 - d^2)\right)
+\end{equation}
+
+Skewness enters linearly in $d$, so it tilts the smile: negative skewness raises
+the volatility of out-of-the-money puts relative to calls. Kurtosis enters
+through $1 - d^2$, so it lowers the at-the-money volatility below $\sigma_n$ and
+raises the wings. The approximation drops terms in the square and higher powers
+of $\sigma_n$; the paper's Figure 4 shows it close to the exact inversion of the
+call price for $|d| < 1.5$ and above it beyond.
+
+** Reading moments from a smile
+
+A least-squares fit of a quadratic to an observed smile gives $\sigma_n$,
+$\gamma_{1n}$ and $\gamma_{2n}$. The paper's example, a one-month Deutschemark
+smile, gives a skewness of $-0.168$ and an excess kurtosis of $1.591$. It
+reports that both kurtosis in currency prices and the Black-Scholes biases
+decline with maturity.
+
+* Key assumptions and limitations
+
+1. *First order in the higher moments.* The smile is accurate for moderate
+   skewness and kurtosis and for $|d| < 1.5$. Beyond, the true smile is lower
+   than the approximation.
+2. *The expansion is not always a density.* A Gram-Charlier expansion with too
+   much skewness for its kurtosis is negative somewhere. Jondeau and Rockinger
+   (2001) give the region of skewness and kurtosis in which it stays positive.
+3. *The moments are risk-neutral.* The paper reads moments from option prices.
+   Moments estimated from historical returns are physical-measure moments and
+   carry no risk premium.
+
+* Applicability to synthetic market data generation
+
+Reading the smile at the market's delta pillars turns three moments into the
+three FX quotes. Forward delta is $\Phi(d)$ for a call, so a 25-delta call sits
+near $d = \Phi^{-1}(0.25) = -0.674$ and a 25-delta put near $d = +0.674$; the
+10-delta points sit near $d = \mp 1.282$, inside the range where the
+approximation holds. With $\sigma$ the volatility over the expiry:
+
+| Quote | From equation 16 | At 25 delta | At 10 delta |
+|-------+------------------+-------------+-------------|
+| ATM ($d \approx 0$) | $\sigma(1 - \gamma_2/24)$ | | |
+| Risk reversal | $\sigma\,\gamma_1\,\lvert d\rvert / 3$ | $0.225\,\sigma\gamma_1$ | $0.427\,\sigma\gamma_1$ |
+| Smile butterfly | $\sigma\,\gamma_2\, d^2 / 24$ | $0.019\,\sigma\gamma_2$ | $0.068\,\sigma\gamma_2$ |
+
+The skewness and kurtosis of an $n$-day return of independent daily returns are
+$\gamma_1/\sqrt{n}$ and $\gamma_2/n$, so the risk reversal falls as
+$1/\sqrt{t}$ and the butterfly as $1/t$. How the synthetic calibration uses
+this, including the risk premium the third limitation leaves out, is in
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+
+* Open questions
+
+1. *Kurtosis term structure.* Daily returns that cluster keep their kurtosis
+   over longer horizons than $1/n$ implies, so the scaling above understates
+   long-dated butterflies. A GARCH model of the daily variance implies its own
+   term structure of kurtosis, which would be the better scaling.
+
+* See also
+
+- [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — completes: the ATM, risk reversal and butterfly pillars this smile is read at.
+- [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]] — contradicts: the concept note keeps realised and implied volatility apart, and this paper's use here builds an implied smile from realised moments, with the premium between them left to an authored multiplier.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] — exemplifies: the starting surface computed from a pair's returns.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — answers the open question: the model whose term structure of kurtosis replaces the independent-day scaling.
+
+** Further reading
+
+- Jondeau, E. and Rockinger, M. (2001). "Gram-Charlier densities." /Journal of
+  Economic Dynamics and Control/, 25(10), 1457-1483.
+  [[https://serval.unil.ch/notice/serval:BIB_2F2004420977][Serval record]].

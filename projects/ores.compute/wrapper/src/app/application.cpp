@@ -767,13 +767,15 @@ void process_assignment(ores::nats::service::client& nats,
 
         // ORE stamps its log lines in the local time of the machine, and the log
         // parser reads them as UTC, so the engine runs with TZ=UTC on every node.
-        std::vector<std::string> engine_env;
+        // Keep native environment strings: on Windows this preserves UTF-16
+        // values and avoids Boost's UTF-8 conversion rejecting empty values.
+        std::vector<bp2::environment::key_value_pair> engine_env;
+        const bp2::environment::key tz_key("TZ");
         for (const auto& entry : bp2::environment::current()) {
-            const auto key = entry.key().string();
-            if (key != "TZ")
-                engine_env.push_back(key + "=" + entry.value().string());
+            if (entry.key() != tz_key)
+                engine_env.emplace_back(entry);
         }
-        engine_env.push_back("TZ=UTC");
+        engine_env.emplace_back("TZ=UTC");
 
         const auto engine_start = std::chrono::steady_clock::now();
         bp2::process engine_proc(boost::asio::any_io_executor(proc_ioc.get_executor()),

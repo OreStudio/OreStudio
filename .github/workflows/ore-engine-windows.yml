@@ -1,0 +1,54 @@
+name: ORE Windows engine package
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'external/ore/tools/build_ore_windows.ps1'
+      - 'external/ore/tools/package_ore_windows*'
+      - 'external/ore/tools/windows/**'
+      - 'external/ore/tools/compare_csv.py'
+      - 'external/ore/packages/TA002_IR_Swap.tar.gz'
+      - 'external/ore/examples/Academy/TA002_IR_Swap/**'
+      - '.github/workflows/ore-engine-windows.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-2022
+    timeout-minutes: 350
+    env:
+      VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/build/output/vcpkg-cache,readwrite'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - uses: actions/checkout@v7
+        with:
+          repository: OreStudio/Engine
+          ref: 3d75a69087911a7e2cf1e6882da7bc27135c0762
+          submodules: recursive
+          path: engine-src
+      - uses: actions/cache@v6
+        with:
+          path: build/output/vcpkg-cache
+          key: ore-windows-2022-${{ hashFiles('external/ore/tools/windows/vcpkg.json', 'external/ore/tools/windows/overlays/**') }}
+      - name: Check packaging failure paths
+        shell: pwsh
+        run: python -m unittest discover -s external/ore/tools/windows/tests -v
+      - name: Build pinned x64 engine
+        shell: pwsh
+        run: ./external/ore/tools/build_ore_windows.ps1 -SourceDir engine-src -Jobs 2
+      - name: Package and compare sample pricing
+        shell: pwsh
+        run: ./external/ore/tools/package_ore_windows.ps1 -BuildDir engine-src/build/orestudio-windows-x64-release -OutDir build/output/ore-windows-package
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ore-1.8.17.0-x64-windows
+          path: build/output/ore-windows-package/*
+          if-no-files-found: error

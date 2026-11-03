@@ -113,10 +113,13 @@ descendants. PostgreSQL and NATS remain independently managed. This is a
 foreground development supervisor; the Linux systemd deployment retains its
 existing startup, restart, and resource-management behavior.
 
-The currently vendored ORE engine archives target =x64-linux=. A native
-Windows compute wrapper needs a matching Windows ORE engine package to run
-pricing work; starting the application services alone does not verify
-pricing. Keep existing Linux engine packages and provisioning unchanged.
+The vendored ORE engine archives include =x64-linux= packages and a matching
+=x64-windows= 1.8.17.0 package. The Acme provisioning recipe publishes both
+platforms. To add Windows pricing to an existing installation, publish the
+Windows package as the system administrator; no database recreation is needed.
+See =external/ore/packages/README.md= for pinned source checkout, Windows
+build/package commands, and the compute-grid acceptance test. Starting the
+application services alone does not verify pricing.
 
 Stop any independently started BFF before running the full fleet, since
 both would otherwise bind the same HTTP port. The launcher generates a

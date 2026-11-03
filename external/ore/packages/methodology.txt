@@ -1,5 +1,20 @@
 Data Sourcing and Generation Steps:
 
+WINDOWS ADDENDUM
+   Follow README.md's Windows x64 section for native Windows builds. Use
+   the same pinned Engine commit as the accepted Linux package. The Windows
+   entry points are tools/build_ore_windows.ps1 and
+   tools/package_ore_windows.ps1 (paths relative to external/ore/).
+   They use a dedicated pinned vcpkg dependency manifest, inspect the PE
+   runtime closure, bundle redistributable DLLs beside ore.exe, and test the
+   extracted flat archive against TA002_IR_Swap with a restricted PATH.
+   Platform is x64-windows in provenance and app-version/platform metadata;
+   the runtime manifest remains executable plus args. Publish via compute
+   publish-package; preserve existing Linux platform rows. Never recreate
+   an existing database just to install an additional platform package.
+
+LINUX PROCEDURE
+
 1. CLONE / SYNC THE ORE ENGINE SOURCE
    Source: OreStudio's fork of the ORE Engine, kept in sync with
    upstream OpenSourceRisk/Engine.

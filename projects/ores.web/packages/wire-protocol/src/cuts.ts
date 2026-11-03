@@ -240,8 +240,9 @@ export type CutBody = z.infer<typeof cutBodySchema>;
  *
  * A decider reads the counts here before answering; the cut's own page states
  * the same numbers, because the two records of one act are read from one row.
- * The row also carries the facts an apply will stamp when the request is
- * approved, and no apply exists yet, so nothing here reads them.
+ * The row also carries the facts the apply stamps when the request is decided:
+ * who stamped the cut and when, which is the decision's instant and not the
+ * run's clock.
  */
 export const cutApprovalDetailSchema = z.object({
     id: z.string(),
@@ -250,6 +251,10 @@ export const cutApprovalDetailSchema = z.object({
     dealCount: z.int().nonnegative(),
     marketDataSetCount: z.int().nonnegative(),
     gapCount: z.int().nonnegative(),
+    /** The account that stamped the decision onto the cut, or empty while none has. */
+    appliedBy: z.string().default(''),
+    /** When the decision was stamped, which is the decision's own instant, or null. */
+    appliedAt: z.string().nullable().default(null),
 });
 
 export type CutApprovalDetail = z.infer<typeof cutApprovalDetailSchema>;

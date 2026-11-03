@@ -411,13 +411,28 @@ function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode
                         </div>
                     </dl>
                     {/*
-                     * The apply is the reporting side's reconciliation of an
-                     * approved request, and it does not exist yet: nothing
-                     * writes the cut's authorisation when the request is
-                     * approved, so the panel states that instead of drawing an
+                     * The decision reaches the cut by reconciliation, so the
+                     * applied facts are the record of that: who stamped it and
+                     * when, and the decision's own instant rather than the
+                     * run's clock. A row without them is a decision that has not
+                     * landed yet, and the panel says so instead of drawing an
                      * apply nobody made.
                      */}
-                    <p className="mt-3 text-xs text-ink-muted">{t('cuts.auth.applyLater')}</p>
+                    {record.detail.appliedAt === null ? (
+                        <p className="mt-3 text-xs text-ink-muted">
+                            {t('cuts.auth.applyPending')}
+                        </p>
+                    ) : (
+                        <div className="mt-3 space-y-1">
+                            <p className="text-xs text-ink">
+                                {t('cuts.auth.applied', {
+                                    who: record.detail.appliedBy,
+                                    when: record.detail.appliedAt.slice(0, 10),
+                                })}
+                            </p>
+                            <p className="text-xs text-ink-muted">{t('cuts.auth.appliedLead')}</p>
+                        </div>
+                    )}
                 </section>
             )}
 

@@ -325,4 +325,77 @@ std::optional<cut_record_view> cut_read_service::record(const boost::uuids::uuid
     return record;
 }
 
+std::vector<cut_authorisation_subject_view>
+cut_read_service::authorisation_subjects(const std::vector<boost::uuids::uuid>& request_ids) {
+    std::vector<cut_authorisation_subject_view> subjects;
+    if (request_ids.empty())
+        return subjects;
+
+    repository::cut_approval_detail_repository detail_repo;
+    repository::cut_repository cuts_repo;
+    repository::cut_gap_repository gaps_repo;
+
+    std::map<std::string, domain::cut_kind> kinds_by_code;
+    for (const auto& request_id : request_ids) {
+        const auto detail =
+            detail_repo.read_latest_by_request(ctx_, boost::uuids::to_string(request_id));
+        if (!detail) {
+            // A request raised outside a take names no body, and the caller says
+            // so rather than drawing an empty subject as one about nothing.
+            BOOST_LOG_SEV(lg(), debug) << "No cut authorisation detail for request "
+                                       << boost::uuids::to_string(request_id);
+            continue;
+        }
+
+        const auto found = cuts_repo.read_latest(ctx_, boost::uuids::to_string(detail->cut_id));
+        if (found.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "The request " << boost::uuids::to_string(request_id)
+                                      << " names cut " << boost::uuids::to_string(detail->cut_id)
+                                      << ", which the store does not hold.";
+            continue;
+        }
+        const auto& cut = found.front();
+
+        cut_authorisation_subject_view subject;
+        subject.request_id = request_id;
+        subject.cut_id = cut.id;
+        subject.timepoint = cut.timepoint;
+        subject.timepoint_timezone = cut.timepoint_timezone;
+        subject.scope_code = cut.scope_code;
+        subject.business_centre_code = cut.business_centre_code;
+        subject.kind_code = cut.kind_code;
+        subject.deal_count = detail->deal_count;
+        subject.market_data_set_count = detail->market_data_set_count;
+        subject.gap_count = detail->gap_count;
+        subject.applied_by = detail->applied_by;
+        subject.applied_at = detail->applied_at;
+
+        // The state and the label are the record page's, derived from the same
+        // facts by the same functions, so the two screens cannot disagree.
+        auto gaps = gaps_repo.read_latest_by_cut_id(
+            ctx_, boost::uuids::to_string(cut.id), 0, paging_cap);
+        const auto candidates = cuts_repo.read_for_party_in_window(
+            ctx_,
+            cut.party_id,
+            cut.kind_code,
+            cut.timepoint - std::chrono::hours(24),
+            std::chrono::system_clock::now() + std::chrono::hours(24));
+        std::vector<cut_row_view> rows{cut_row_view{.cut = cut}};
+        derive_rows(rows, candidates, gaps);
+        subject.state = rows.front().state;
+
+        auto kind = kinds_by_code.find(cut.kind_code);
+        if (kind == kinds_by_code.end()) {
+            const auto held = kind_of(cut.kind_code);
+            if (!held)
+                continue;
+            kind = kinds_by_code.emplace(held->code, *held).first;
+        }
+        subject.kind_name = kind->second.name;
+        subject.label = cut_label_of(cut, kind->second);
+        subjects.push_back(std::move(subject));
+    }
+    return subjects;
+}
+
 }

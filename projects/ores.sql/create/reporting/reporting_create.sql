@@ -61,6 +61,9 @@
 -- the counts of the body's parts.
 \ir ./reporting_cut_approval_details_create.sql
 \ir ./reporting_cut_approval_details_notify_trigger_create.sql
+-- The read the apply makes into the inbox: the decided cut authorisations whose
+-- decision has not reached the cut yet.
+\ir ./reporting_cut_authorisation_functions_create.sql
 
 \ir ./reporting_ore_parameter_value_domains_create.sql
 \ir ./reporting_ore_parameter_value_domains_notify_trigger_create.sql

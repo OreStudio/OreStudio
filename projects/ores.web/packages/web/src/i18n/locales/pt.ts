@@ -3802,6 +3802,9 @@ const pt: SourceCatalogue = {
         'Generate the trades': 'Gerar as transações',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',
+        'Schedule the reports': 'Agendar os relatórios',
+        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.":
+            'Agenda cada definição de relatório que cada parte que nomeia publica, como o administrador da execução, para que o catálogo dispare sem que uma pessoa atue. Um relatório cujo calendário é o marcador sob demanda fica para ser pedido à mão.',
         'Hand the tenant to its administrator': 'Entregar o inquilino ao seu administrador',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             'Inicia a execução de configuração do próprio inquilino, que corre como o administrador do inquilino e conclui o inquilino.',

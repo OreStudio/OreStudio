@@ -301,3 +301,10 @@ def test_a_dependency_that_is_not_running_this_time_is_not_an_error():
              if check.id in chosen and check.phase == local_checks.PREPARE]
     assert [check.id for check in local_checks.in_dependency_order(group, known)] == [
         check.id for check in group]
+
+
+def test_the_suites_run_in_parallel():
+    check = next(c for c in local_checks.CATALOGUE if c.id == "ctest")
+    command = check.command("origin/main", "some-preset")[-1]
+    assert command.endswith(f"test run --preset some-preset -- -j {local_checks.CTEST_JOBS}")
+    assert local_checks.CTEST_JOBS > 1

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.quant/math/gjr_garch.hpp"
 #include "ores.synthetic.api/feeds/fixing_calibration.hpp"
 #include "ores.synthetic.api/feeds/variance_calibration.hpp"
 #include <catch2/catch_approx.hpp>
@@ -24,6 +25,7 @@
 #include <chrono>
 #include <cmath>
 #include <format>
+#include <numbers>
 #include <random>
 #include <string>
 #include <vector>
@@ -159,4 +161,40 @@ TEST_CASE("an inverted item fits the asymmetry with the pair's sign", variance_c
     REQUIRE(inverted.fitted);
     CHECK(*direct.gamma > 0.05);
     CHECK(*inverted.gamma < *direct.gamma);
+}
+
+TEST_CASE("the likelihood a fit states is the Gaussian one of its returns at its shape",
+          variance_calibration_tags) {
+    namespace qm = ores::analytics::quant::math;
+    const auto texts = gjr_garch_fixings(0.05, 0.06, 0.88, 4e-5, 1'000, 53);
+    const auto points = capture_variance_points(variance_days(texts.size()), texts, false);
+    const double p_minus = 0.5;
+    const auto fit = fit_variance(points, p_minus);
+    REQUIRE(fit.fitted);
+
+    std::vector<double> returns;
+    for (const auto& p : points)
+        if (p.used)
+            returns.push_back(*p.log_return);
+    double mean = 0.0;
+    for (const double r : returns)
+        mean += r;
+    mean /= static_cast<double>(returns.size());
+    std::vector<double> shocks;
+    for (const double r : returns)
+        shocks.push_back(r - mean);
+    const auto model =
+        qm::gjr_garch_model::make({.alpha = *fit.alpha, .gamma = *fit.gamma, .beta = *fit.beta},
+                                  *fit.long_run_variance,
+                                  p_minus);
+    REQUIRE(model.has_value());
+    const auto variances = qm::filter(*model, shocks, *fit.long_run_variance);
+    double expected = 0.0;
+    for (std::size_t t = 0; t < shocks.size(); ++t)
+        expected -= 0.5 * (std::log(2.0 * std::numbers::pi) + std::log(variances[t]) +
+                           shocks[t] * shocks[t] / variances[t]);
+    CHECK(*fit.log_likelihood == Approx(expected).epsilon(1e-9));
+    // The first day's variance is the filter's forecast after the last return.
+    CHECK(*fit.starting_variance_ratio ==
+          Approx(variances.back() / *fit.long_run_variance).epsilon(1e-12));
 }

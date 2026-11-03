@@ -39,7 +39,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 |------+-------+-------+-----+-------------|
 | [[id:F2F684E4-FD35-4C78-85CF-E6299995EE5A][Scaffold story: Support volatility surfaces]] | STARTED | 2026-11-03 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6B682F27-6C29-4954-A355-39E27E7197B7][Document the volatility surface architecture]] | STARTED | 2026-11-03 | | Integrate the volatility surface analysis into the knowledge base as linked notes, and name the tasks of the arc from it. |
-| [[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]] | BACKLOG | | | A nightly job downloads five years of daily spot fixings for the supported currencies into a DQ dataset, the dataset seeds every environment, and the public sources adapter fetches only the days after it. |
+| [[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]] | BACKLOG | | | A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today. |
 
 * Decisions
 

@@ -2,7 +2,7 @@
 :ID: 17EB5750-8798-4AEE-8877-771E9B22C55D
 :END:
 #+title: Task: Seed five years of public fixings from a DQ dataset
-#+description: A nightly job downloads five years of daily spot fixings for the supported currencies into a DQ dataset, the dataset seeds every environment, and the public sources adapter fetches only the days after it.
+#+description: A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today.
 #+type: task
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A new environment gets years of public fixings without calling the publishers' API. A nightly job refreshes a DQ dataset with five years of daily fixings for every supported currency, each environment loads it through DQ publishing, and the public sources adapter backfills only the gap between the dataset's last day and today. The derived vol source and the GARCH calibration need this depth of history.
+A new environment gets years of public fixings without calling the publishers' API. A DQ dataset holds a static snapshot of five years of daily fixings for every supported currency, and each environment loads it through DQ publishing. The snapshot is refreshed only now and then, by hand. Everything after its last day is the adapter's job: for each item it fetches from the latest stored fixing to today, whether the gap is a day or months. The derived vol source and the GARCH calibration need this depth of history.
 
 * Status
 
@@ -35,9 +35,9 @@ A new environment gets years of public fixings without calling the publishers' A
 
 * Acceptance
 
-- A nightly job writes five years of daily fixings for every catalogued provider and pair into a DQ dataset, and a run that finds no new day changes nothing.
+- A DQ dataset holds a static snapshot of five years of daily fixings for every catalogued provider and pair, with the date it was taken. No scheduled job writes it; a documented command refreshes it when someone chooses to.
 - DQ publishing loads the dataset as durable fixing ticks with their provider, time and credit, the same rows the adapter would write.
-- The public sources adapter fetches only the days after the latest stored fixing of each item.
+- The public sources adapter fetches, for each item, only the days from its latest stored fixing to today, so an environment loaded from an old snapshot catches up in one fetch per item.
 - Each provider's terms allow the dataset to be redistributed in the public repository, or that provider is left out of the dataset and stays adapter-only.
 
 * Plan
@@ -75,11 +75,11 @@ task and name that file in the Command column.
   must allow redistribution. The ECB allows reuse of unmodified statistics with
   the credit "Source: ECB statistics". A provider whose terms do not allow it
   stays adapter-only.
-- The nightly job has a model in the repository: the nightly-format workflow,
-  which commits its change through a bot PR. Whether the dataset is refreshed
-  by a workflow or by a compass command is decided when work starts.
+- The snapshot is static and refreshed rarely, by a command someone runs, not
+  by a nightly job. An old snapshot is not a fault: the adapter fills the gap.
+  A refresh only shortens the gap the environments fetch.
 - The fixings are durable and keyed by item, provider and date, so a second
-  load of the same days is a no-op, and the job and the adapter can overlap.
+  load of the same days is a no-op, and the snapshot and the adapter can overlap.
 
 * Test Scenarios
 

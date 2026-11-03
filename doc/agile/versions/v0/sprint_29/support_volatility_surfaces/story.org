@@ -19,14 +19,14 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | STARTED                                |
-| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Field         | Value                                                                |
+|---------------+----------------------------------------------------------------------|
+| State         | STARTED                                                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]               |
 | Now           | The variance calibration workflow is documented and its tasks named. |
-| Waiting on    | Nothing.                               |
-| Next          | Model the variance calibration records. |
-| Last touched  | 2026-11-03                             |
+| Waiting on    | Nothing.                                                             |
+| Next          | Model the variance calibration records.                              |
+| Last touched  | 2026-11-03                                                           |
 
 * Acceptance
 

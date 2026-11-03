@@ -916,6 +916,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['role_id', 'permission_id', 'role_id_one_of', 'permission_id_one_of'],
         rows: ['role_permissions'],
     },
+    'iam.v1.role_product_types.list': {
+        asOf: false,
+        filter: ['role_id', 'product_type_code', 'role_id_one_of', 'product_type_code_one_of'],
+        rows: ['role_product_types'],
+    },
+    'iam.v1.role_product_types.list_by_product_type_code': {
+        asOf: false,
+        filter: ['role_id', 'product_type_code', 'role_id_one_of', 'product_type_code_one_of'],
+        rows: ['role_product_types'],
+    },
+    'iam.v1.role_product_types.list_by_role_id': {
+        asOf: false,
+        filter: ['role_id', 'product_type_code', 'role_id_one_of', 'product_type_code_one_of'],
+        rows: ['role_product_types'],
+    },
     'iam.v1.roles.list': {
         asOf: true,
         filter: ['id_one_of'],
@@ -1762,6 +1777,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
+    },
+    'refdata.v1.book_product_types.list': {
+        asOf: false,
+        filter: ['book_id', 'product_type_code', 'book_id_one_of', 'product_type_code_one_of'],
+        rows: ['book_product_types'],
+    },
+    'refdata.v1.book_product_types.list_by_book_id': {
+        asOf: false,
+        filter: ['book_id', 'product_type_code', 'book_id_one_of', 'product_type_code_one_of'],
+        rows: ['book_product_types'],
+    },
+    'refdata.v1.book_product_types.list_by_product_type_code': {
+        asOf: false,
+        filter: ['book_id', 'product_type_code', 'book_id_one_of', 'product_type_code_one_of'],
+        rows: ['book_product_types'],
     },
     'refdata.v1.book_purpose_types.list': {
         asOf: true,

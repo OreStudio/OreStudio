@@ -170,7 +170,7 @@ describe('the feed an engine change writes', () => {
         expect(write['ticks_per_hour']).toBe(3600);
         expect(write).not.toHaveProperty('version');
         expect(write).not.toHaveProperty('modified_by');
-        expect(Object.keys(write)).toHaveLength(19);
+        expect(Object.keys(write)).toHaveLength(23);
     });
 
     it("keeps the feed's daily variance, so an engine change does not reset it", () => {
@@ -192,6 +192,24 @@ describe('the feed an engine change writes', () => {
             garch_beta: 0.9,
             garch_window_days: 900,
         });
+    });
+
+    it("keeps the feed's arrivals, so an engine or variance change does not reset them", () => {
+        const hawkes = {
+            ...feed,
+            arrival_mode: 'hawkes',
+            branching_ratio: 0.6,
+            decay: 2.5,
+            sensitivity: 1.4,
+        };
+        const arrivals = {
+            arrival_mode: 'hawkes',
+            branching_ratio: 0.6,
+            decay: 2.5,
+            sensitivity: 1.4,
+        };
+        expect(feedWrite(hawkes, { process_type: 'arithmetic' })).toMatchObject(arrivals);
+        expect(feedWrite(hawkes, { variance_model: 'gjr_garch' })).toMatchObject(arrivals);
     });
 
     it("keeps the feed's own calibration window, so an engine change does not reset it", () => {

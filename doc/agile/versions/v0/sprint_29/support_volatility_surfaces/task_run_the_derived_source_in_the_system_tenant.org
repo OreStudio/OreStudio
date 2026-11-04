@@ -82,6 +82,16 @@ On a provisioned environment, for each of the ten pairs, the derived source logg
 - With a party, the publish ran ninth, before =iso.currencies=, and the zero-inflation convention's currency check refused EUR. The bundle sort was a plain topological sort, so datasets with no edge between them ran in an arbitrary order. An edge was not used: dependencies resolve transitively, so every =party_essentials= publish would republish the currencies and write a version of each per party.
 - In member order, =synthetic.feeds.bloomberg= ran after the currencies and was refused CNH. The currency check lets any value through while no currency is stored, which is how the feeds published before. CNH is in =fpml.non_iso_currency=, which =base= publishes for a tenant and =system_core= did not.
 
+** Why the first history took ten minutes
+
+Measured on a recreated environment at debug level, after the public feeds stored about 29,000 ECB fixings within two minutes of provisioning. The first pass of the derived source wrote 2,600 days (55,070 observations) in 595.678 s; the next pass took 3.53 s.
+
+- Per pair: the series is ready in under 0.2 s, the stored days are read in 0.6 to 1.2 s, the days are derived in 0.02 to 0.21 s, and they are written in 25 to 73 s.
+- Per batch of 1,000 observations: 8.65 s on average (1.86 to 15.43 s), 104 observations a second. The insert statement itself takes 0.34 s on average.
+- The rest is the generated put-many path of the marketdata service: it reads each row by id before the write, to check its precondition, and again after it, to answer, so a batch of 1,000 makes about 2,000 single-row reads.
+
+Before this task the pass logged nothing until it ended, so a reader saw ten minutes of silence. The feed now logs each pass, and each pair's series, stored days, derivation and write with their durations, and each failure as it happens; the adapter logs each window read, series lookup and batch write at debug.
+
 ** Found outside this task
 
 - The committed =ores_schema.dq_staging.puml= was one line stale on main (=cut_kind_code=); regenerated here.
@@ -111,6 +121,12 @@ via its "Verifies task" field.
 | 1 | Local pgTAP: the system tenant always took its system party, over a root party a publish names by default | refdata_publish_from_dq_create.sql | Accept | The root party is still preferred; the system party is the fallback for the system tenant only. A case in the new suite covers it. |
 | 2 | Local check: the committed staging ER diagram is one line stale | ores_schema.dq_staging.puml | Accept | The drift came from main (=cut_kind_code=); regenerated. |
 | 3 | Local check: =test_junction_events.py= fails | ores.codegen tests | Decline | This branch does not touch =ores.codegen=. |
+| 4 | Claude review 1: the new test file says 2025 | service_publication_order_tests.cpp | Accept | Now 2026. |
+| 5 | Claude review 2: a dependency with no dataset row is dropped without a word | publish_service.cpp | Accept | It is logged as a warning and left out. |
+| 6 | Claude review 3: the rank pass has no cycle guard of its own | publish_service.cpp | Decline | The reviewer notes that =rank.emplace= bounds it. |
+| 7 | Claude review 4: check nothing else names Boost.Graph | component_overview.org | Accept | The component model still listed =Boost::graph=, so a regeneration would have restored the link; removed. |
+| 8 | Local check: =component-drift= reports =ores.storage/service/src/CMakeLists.txt= | ores.storage | Decline | Drift on main in a component this branch does not touch. |
+| 9 | Asked in review: the log does not say what the derived source is doing, and its first history takes minutes | derived_fx_vol_feed.cpp, derived_fx_vol_adapter.cpp | Accept | Each phase is logged with its duration; the cost is measured in Notes. Batching the put-many reads is its own task. |
 
 * Result
 

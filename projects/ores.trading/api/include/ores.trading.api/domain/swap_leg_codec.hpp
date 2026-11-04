@@ -66,6 +66,10 @@ namespace ores::trading::domain {
         utility::codec::field{"notional_final_exchange", &swap_leg::notional_final_exchange},
         utility::codec::field{"payment_lag", &swap_leg::payment_lag},
         utility::codec::field{"payment_calendar", &swap_leg::payment_calendar},
+        utility::codec::field{"commodity_price_type", &swap_leg::commodity_price_type},
+        utility::codec::field{"future_month_offset", &swap_leg::future_month_offset},
+        utility::codec::field{"daily_expiry_offset", &swap_leg::daily_expiry_offset},
+        utility::codec::field{"pricing_calendar", &swap_leg::pricing_calendar},
         utility::codec::field{"audit", &swap_leg::audit},
     };
 }

@@ -91,6 +91,7 @@ public:
      * <business_day_convention_code> <payment_frequency_code> <floating_index_code> <currency>
      * <leg_group> <fixing_days> <is_in_arrears> <include_spread> <is_averaged> <has_sub_periods>
      * <notional_initial_exchange> <notional_final_exchange> <payment_lag> <payment_calendar>
+     * <commodity_price_type> <future_month_offset> <daily_expiry_offset> <pricing_calendar>
      * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
@@ -102,7 +103,8 @@ public:
      * <day_count_fraction_code> <business_day_convention_code> <payment_frequency_code>
      * <floating_index_code> <currency> <leg_group> <fixing_days> <is_in_arrears> <include_spread>
      * <is_averaged> <has_sub_periods> <notional_initial_exchange> <notional_final_exchange>
-     * <payment_lag> <payment_calendar> <reason> <commentary> [--version <n>]
+     * <payment_lag> <payment_calendar> <commodity_price_type> <future_month_offset>
+     * <daily_expiry_offset> <pricing_calendar> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -113,7 +115,8 @@ public:
      * <leg_type_code> <day_count_fraction_code> <business_day_convention_code>
      * <payment_frequency_code> <floating_index_code> <currency> <leg_group> <fixing_days>
      * <is_in_arrears> <include_spread> <is_averaged> <has_sub_periods> <notional_initial_exchange>
-     * <notional_final_exchange> <payment_lag> <payment_calendar> <reason> <commentary>
+     * <notional_final_exchange> <payment_lag> <payment_calendar> <commodity_price_type>
+     * <future_month_offset> <daily_expiry_offset> <pricing_calendar> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

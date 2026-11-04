@@ -69,6 +69,10 @@ struct swap_leg_write {
     std::optional<bool> notional_final_exchange;
     std::optional<std::string> payment_lag;
     std::optional<std::string> payment_calendar;
+    std::optional<std::string> commodity_price_type;
+    std::optional<int> future_month_offset;
+    std::optional<int> daily_expiry_offset;
+    std::optional<std::string> pricing_calendar;
 
     friend bool operator==(const swap_leg_write&, const swap_leg_write&) = default;
 };
@@ -441,6 +445,10 @@ inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted
         utility::codec::field{"notional_final_exchange", &swap_leg_write::notional_final_exchange},
         utility::codec::field{"payment_lag", &swap_leg_write::payment_lag},
         utility::codec::field{"payment_calendar", &swap_leg_write::payment_calendar},
+        utility::codec::field{"commodity_price_type", &swap_leg_write::commodity_price_type},
+        utility::codec::field{"future_month_offset", &swap_leg_write::future_month_offset},
+        utility::codec::field{"daily_expiry_offset", &swap_leg_write::daily_expiry_offset},
+        utility::codec::field{"pricing_calendar", &swap_leg_write::pricing_calendar},
     };
 }
 

@@ -76,6 +76,16 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     fields.push_back({.name = "Payment Lag", .value = v.payment_lag.value_or(std::string{})});
     fields.push_back(
         {.name = "Payment Calendar", .value = v.payment_calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Commodity Price Type", .value = v.commodity_price_type.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Future Month Offset",
+         .value = v.future_month_offset ? std::to_string(*v.future_month_offset) : std::string{}});
+    fields.push_back(
+        {.name = "Daily Expiry Offset",
+         .value = v.daily_expiry_offset ? std::to_string(*v.daily_expiry_offset) : std::string{}});
+    fields.push_back(
+        {.name = "Pricing Calendar", .value = v.pricing_calendar.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

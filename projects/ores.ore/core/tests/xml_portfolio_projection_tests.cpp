@@ -596,7 +596,7 @@ const char* const commodity_swap_and_forward_document_text = R"(<Portfolio>
   </Trade>
   <Trade id="cmd-2">
     <TradeType>CommoditySwap</TradeType>
-    <CommoditySwapData>
+    <SwapData>
       <LegData>
         <LegType>CommodityFixed</LegType>
         <Payer>false</Payer>
@@ -624,7 +624,7 @@ const char* const commodity_swap_and_forward_document_text = R"(<Portfolio>
           </Rules>
         </ScheduleData>
       </LegData>
-    </CommoditySwapData>
+    </SwapData>
   </Trade>
 </Portfolio>)";
 

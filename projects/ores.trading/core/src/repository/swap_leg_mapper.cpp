@@ -68,6 +68,10 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.notional_final_exchange = v.notional_final_exchange;
     r.payment_lag = v.payment_lag;
     r.payment_calendar = v.payment_calendar;
+    r.commodity_price_type = v.commodity_price_type;
+    r.future_month_offset = v.future_month_offset;
+    r.daily_expiry_offset = v.daily_expiry_offset;
+    r.pricing_calendar = v.pricing_calendar;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -106,6 +110,10 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.notional_final_exchange = v.notional_final_exchange;
     r.payment_lag = v.payment_lag;
     r.payment_calendar = v.payment_calendar;
+    r.commodity_price_type = v.commodity_price_type;
+    r.future_month_offset = v.future_month_offset;
+    r.daily_expiry_offset = v.daily_expiry_offset;
+    r.pricing_calendar = v.pricing_calendar;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

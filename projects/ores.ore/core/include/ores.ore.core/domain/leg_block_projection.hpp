@@ -22,11 +22,14 @@
 
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
+#include "ores.trading.api/domain/instrument_schedule.hpp"
+#include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amortization.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include <algorithm>
+#include <cstddef>
 #include <chrono>
 #include <optional>
 #include <string>
@@ -126,8 +129,30 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         row.is_averaged = optional_flag(*floating, "IsAveraged");
         row.has_sub_periods = optional_flag(*floating, "HasSubPeriods");
     }
+    if (const auto commodity = leg.child("CommodityFloatingLegData")) {
+        row.floating_index_code = text_of(*commodity, "Name");
+        if (commodity->has("PriceType"))
+            row.commodity_price_type = spelling_of(*commodity, "PriceType");
+        if (commodity->has("PricingCalendar"))
+            row.pricing_calendar = text_of(*commodity, "PricingCalendar");
+        if (const auto offset = commodity->integer("FutureMonthOffset"))
+            row.future_month_offset = static_cast<int>(*offset);
+        if (const auto offset = commodity->integer("DailyExpiryOffset"))
+            row.daily_expiry_offset = static_cast<int>(*offset);
+        row.is_in_arrears = optional_flag(*commodity, "IsInArrears");
+        row.is_averaged = optional_flag(*commodity, "IsAveraged");
+    }
     stamp_leg(row);
     return row;
+}
+
+/// A commodity leg states its notional as quantities on its own payload.
+inline std::optional<record_reader> commodity_quantities(const record_reader& leg) {
+    if (const auto fixed = leg.child("CommodityFixedLegData"))
+        return fixed->child("Quantities");
+    if (const auto floating = leg.child("CommodityFloatingLegData"))
+        return floating->child("Quantities");
+    return std::nullopt;
 }
 
 inline std::vector<swap_leg_amount> read_leg_amounts(const record_reader& leg, int leg_number) {
@@ -154,6 +179,9 @@ inline std::vector<swap_leg_amount> read_leg_amounts(const record_reader& leg, i
         if (const auto cashflow = cashflow_data->child("Cashflow"))
             for (const auto& amount : cashflow->children("Amount"))
                 append(decimal_text(amount), text_of(amount, "date"));
+    } else if (const auto quantities = commodity_quantities(leg)) {
+        for (const auto& quantity : quantities->children("Quantity"))
+            append(decimal_text(quantity), text_of(quantity, "startDate"));
     }
     return amounts;
 }
@@ -197,10 +225,24 @@ inline constexpr floating_rate_list floating_rate_lists[] = {
     {"Floors", "Floor", "floor"},
 };
 
+/// A commodity fixed leg states its prices.
+inline constexpr floating_rate_list commodity_fixed_rate_lists[] = {
+    {"Prices", "Price", "price"},
+};
+
+/// A commodity floating leg states spreads and gearings, and no caps or floors.
+inline constexpr floating_rate_list commodity_floating_rate_lists[] = {
+    {"Spreads", "Spread", "spread"},
+    {"Gearings", "Gearing", "gearing"},
+};
+
 /// Writes each schedule a floating leg's rows state, in the order the schema
 /// gives them.
-inline void write_floating_rates(record_writer& floating, const std::vector<swap_leg_rate>& rates) {
-    for (const auto& [element, item, role] : floating_rate_lists) {
+template <std::size_t N>
+void write_rate_lists(record_writer& floating,
+                      const std::vector<swap_leg_rate>& rates,
+                      const floating_rate_list (&lists)[N]) {
+    for (const auto& [element, item, role] : lists) {
         const auto states = std::any_of(
             rates.begin(), rates.end(), [&](const auto& rate) { return rate.rate_role == role; });
         if (!states)
@@ -215,6 +257,10 @@ inline void write_floating_rates(record_writer& floating, const std::vector<swap
                 writer.set_text("startDate", to_ore_date(*rate.start_date));
         }
     }
+}
+
+inline void write_floating_rates(record_writer& floating, const std::vector<swap_leg_rate>& rates) {
+    write_rate_lists(floating, rates, floating_rate_lists);
 }
 
 inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int leg_number) {
@@ -242,7 +288,46 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
                 for (const auto& value : list->children(item))
                     append(role, value);
     }
+    if (const auto fixed = leg.child("CommodityFixedLegData")) {
+        if (const auto list = fixed->child("Prices"))
+            for (const auto& price : list->children("Price"))
+                append("price", price);
+    }
+    if (const auto floating = leg.child("CommodityFloatingLegData")) {
+        for (const auto& [element, item, role] : commodity_floating_rate_lists)
+            if (const auto list = floating->child(element))
+                for (const auto& value : list->children(item))
+                    append(role, value);
+    }
     return rates;
+}
+
+/// A leg's explicit payment dates, kept as a dates schedule under the leg.
+template <typename Data>
+void read_payment_dates(Data& result, const record_reader& leg, int leg_number) {
+    const auto group = leg.child("PaymentDates");
+    if (!group)
+        return;
+    trading::domain::instrument_schedule schedule;
+    schedule.owner_role = "swap";
+    schedule.owner_number = leg_number;
+    schedule.schedule_role = "payment_dates";
+    schedule.sequence_number = 1;
+    schedule.schedule_kind = "dates";
+    stamp_row(schedule);
+    result.schedules.push_back(std::move(schedule));
+    int date_number = 0;
+    for (const auto& value : group->values("PaymentDate")) {
+        trading::domain::instrument_schedule_date date;
+        date.owner_role = "swap";
+        date.owner_number = leg_number;
+        date.schedule_role = "payment_dates";
+        date.schedule_sequence_number = 1;
+        date.sequence_number = ++date_number;
+        date.schedule_date = to_domain_date(value);
+        stamp_row(date);
+        result.schedule_dates.push_back(std::move(date));
+    }
 }
 
 template <typename Data>
@@ -256,6 +341,7 @@ void append_leg(Data& result, const record_reader& leg, int leg_number) {
         result.leg_amortizations.push_back(std::move(step));
     if (const auto schedule = leg.child("ScheduleData"))
         option_block::read_schedule(result, *schedule, "swap", leg_number, "schedule");
+    read_payment_dates(result, leg, leg_number);
 }
 
 template <typename Data>
@@ -339,7 +425,9 @@ void write_leg(record_writer& leg,
         return;
     }
 
-    if (!amounts.empty()) {
+    const bool commodity = row.leg_type_code == "CommodityFixed" ||
+                           row.leg_type_code == "CommodityFloating";
+    if (!amounts.empty() && !commodity) {
         auto notionals = leg.child("Notionals");
         for (const auto& amount : amounts) {
             auto writer = notionals.append("Notional");
@@ -384,6 +472,52 @@ void write_leg(record_writer& leg,
                              start_date,
                              maturity_date,
                              payment_frequency_to_tenor(row.payment_frequency_code));
+
+    if (const auto dates =
+            option_block::schedule_dates_of(v, "swap", leg_number, "payment_dates", 1);
+        !dates.empty()) {
+        auto list = leg.child("PaymentDates");
+        for (const auto* date : dates)
+            list.append_value("PaymentDate", to_ore_date(date->schedule_date));
+    }
+
+    const auto write_amounts = [&](record_writer payload) {
+        if (amounts.empty())
+            return;
+        auto list = payload.child("Quantities");
+        for (const auto& amount : amounts) {
+            auto writer = list.append("Quantity");
+            writer.set_own_text(amount.amount.to_string());
+            if (amount.start_date)
+                writer.set_text("startDate", to_ore_date(*amount.start_date));
+        }
+    };
+    if (row.leg_type_code == "CommodityFixed") {
+        auto payload = leg.child("CommodityFixedLegData");
+        write_amounts(payload);
+        write_rate_lists(payload, rates, commodity_fixed_rate_lists);
+        return;
+    }
+    if (row.leg_type_code == "CommodityFloating") {
+        auto payload = leg.child("CommodityFloatingLegData");
+        payload.set_text("Name", row.floating_index_code);
+        if (row.commodity_price_type)
+            set_spelling_or(
+                payload, "PriceType", *row.commodity_price_type, "FutureSettlement", "price type");
+        write_amounts(payload);
+        write_rate_lists(payload, rates, commodity_floating_rate_lists);
+        if (row.pricing_calendar)
+            payload.set_text("PricingCalendar", *row.pricing_calendar);
+        if (row.is_averaged)
+            payload.set_text("IsAveraged", flag_text(*row.is_averaged));
+        if (row.is_in_arrears)
+            payload.set_text("IsInArrears", flag_text(*row.is_in_arrears));
+        if (row.future_month_offset)
+            payload.set_integer("FutureMonthOffset", *row.future_month_offset);
+        if (row.daily_expiry_offset)
+            payload.set_integer("DailyExpiryOffset", *row.daily_expiry_offset);
+        return;
+    }
 
     const auto has_role = [&](std::string_view role) {
         return std::any_of(rates.begin(), rates.end(), [&](const swap_leg_rate& rate) {

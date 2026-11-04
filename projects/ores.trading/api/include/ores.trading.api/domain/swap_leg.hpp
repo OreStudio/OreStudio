@@ -187,6 +187,30 @@ struct swap_leg final {
      */
     std::optional<std::string> payment_calendar;
 
+    /**
+     * @brief The price a commodity floating leg observes, as PriceType states it: Spot or
+     * FutureSettlement. Null for a leg that is not a commodity floating leg.
+     */
+    std::optional<std::string> commodity_price_type;
+
+    /**
+     * @brief How many contract months past the period a commodity floating leg's future settles, as
+     * FutureMonthOffset states it.
+     */
+    std::optional<int> future_month_offset;
+
+    /**
+     * @brief The offset, in business days, of a daily commodity future's expiry, as
+     * DailyExpiryOffset states it.
+     */
+    std::optional<int> daily_expiry_offset;
+
+    /**
+     * @brief The calendar a commodity floating leg's pricing dates are adjusted on, as
+     * PricingCalendar states it.
+     */
+    std::optional<std::string> pricing_calendar;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.

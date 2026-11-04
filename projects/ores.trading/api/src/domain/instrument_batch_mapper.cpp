@@ -291,6 +291,15 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     batch.commodity_basket_constituents.end(),
                     v.constituents.begin(),
                     v.constituents.end());
+                const auto append_rows = [](auto& to, const auto& from) {
+                    to.insert(to.end(), from.begin(), from.end());
+                };
+                append_rows(batch.swap_legs, v.legs);
+                append_rows(batch.swap_leg_amounts, v.leg_amounts);
+                append_rows(batch.swap_leg_rates, v.leg_rates);
+                append_rows(batch.swap_leg_amortizations, v.leg_amortizations);
+                append_rows(batch.instrument_schedules, v.schedules);
+                append_rows(batch.instrument_schedule_dates, v.schedule_dates);
             } else if constexpr (std::is_same_v<T, credit_instrument_data>) {
                 append(batch, v.instrument);
                 batch.swap_legs.insert(batch.swap_legs.end(), v.legs.begin(), v.legs.end());
@@ -433,7 +442,13 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
     }
     if (const auto* v = find(batch.commodity_instruments, trade_id))
         return commodity_instrument_data{*v,
-                                         find_all(batch.commodity_basket_constituents, trade_id)};
+                                         find_all(batch.commodity_basket_constituents, trade_id),
+                                         find_all(batch.swap_legs, trade_id),
+                                         find_all(batch.swap_leg_amounts, trade_id),
+                                         find_all(batch.swap_leg_rates, trade_id),
+                                         find_all(batch.swap_leg_amortizations, trade_id),
+                                         find_all(batch.instrument_schedules, trade_id),
+                                         find_all(batch.instrument_schedule_dates, trade_id)};
     if (const auto* v = find(batch.composite_instruments, trade_id))
         return composite_instrument_data{*v, find_all(batch.composite_legs, trade_id)};
     if (const auto* v = find(batch.scripted_instruments, trade_id))

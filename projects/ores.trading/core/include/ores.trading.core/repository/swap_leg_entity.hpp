@@ -73,6 +73,10 @@ struct swap_leg_entity {
     std::optional<bool> notional_final_exchange;
     std::optional<std::string> payment_lag;
     std::optional<std::string> payment_calendar;
+    std::optional<std::string> commodity_price_type;
+    std::optional<int> future_month_offset;
+    std::optional<int> daily_expiry_offset;
+    std::optional<std::string> pricing_calendar;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -110,6 +114,10 @@ struct swap_leg_entity {
                query_builder::bind("notional_final_exchange", &e::notional_final_exchange) |
                query_builder::bind("payment_lag", &e::payment_lag) |
                query_builder::bind("payment_calendar", &e::payment_calendar) |
+               query_builder::bind("commodity_price_type", &e::commodity_price_type) |
+               query_builder::bind("future_month_offset", &e::future_month_offset) |
+               query_builder::bind("daily_expiry_offset", &e::daily_expiry_offset) |
+               query_builder::bind("pricing_calendar", &e::pricing_calendar) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

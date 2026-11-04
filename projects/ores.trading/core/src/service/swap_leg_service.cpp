@@ -121,6 +121,10 @@ domain::swap_leg swap_leg_to_domain(const messaging::swap_leg_write& write) {
     v.notional_final_exchange = write.notional_final_exchange;
     v.payment_lag = write.payment_lag;
     v.payment_calendar = write.payment_calendar;
+    v.commodity_price_type = write.commodity_price_type;
+    v.future_month_offset = write.future_month_offset;
+    v.daily_expiry_offset = write.daily_expiry_offset;
+    v.pricing_calendar = write.pricing_calendar;
     return v;
 }
 

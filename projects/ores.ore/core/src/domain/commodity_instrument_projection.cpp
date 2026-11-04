@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
@@ -283,18 +284,24 @@ auto read_commodity_option(const record_reader& trade) -> commodity_instrument {
     return r;
 }
 
-auto read_commodity_swap(const record_reader& trade) -> commodity_instrument {
-    auto r = make_row("CommoditySwap");
-    const auto data = trade.child("CommoditySwapData");
+// ORE parses a commodity swap from SwapData, as every ORE example states it;
+// the schema's CommoditySwapData is a spelling ORE does not read. The legs land
+// in the shared leg rows, and the row keeps the floating leg's terms as the
+// trade's summary.
+auto read_commodity_swap(const record_reader& trade) -> commodity_instrument_data {
+    commodity_instrument_data result{make_row("CommoditySwap"), {}};
+    const auto data = trade.child("SwapData");
     if (!data)
-        return r;
+        return result;
+    auto& r = result.instrument;
     const auto terms = floating_leg_terms(data->children("LegData"));
     r.commodity_code = terms.commodity_code;
     r.currency = terms.currency;
     r.quantity = terms.quantity;
     r.start_date = terms.start_date;
     r.maturity_date = terms.maturity_date;
-    return r;
+    leg_block::append_legs(result, *data);
+    return result;
 }
 
 auto read_commodity_swaption(const record_reader& trade) -> commodity_instrument {
@@ -484,8 +491,19 @@ void write_commodity_swaption(record_writer& trade, const commodity_instrument& 
     write_quantity(floating_data.child("Quantities"), v.quantity);
 }
 
-void write_commodity_swap(record_writer& trade, const commodity_instrument& v) {
-    auto data = trade.child("CommoditySwapData");
+void write_commodity_swap(record_writer& trade, const commodity_instrument_data& carrier) {
+    auto data = trade.child("SwapData");
+    if (!carrier.legs.empty()) {
+        leg_block::write_legs(data,
+                              carrier.instrument.start_date,
+                              carrier.instrument.maturity_date,
+                              carrier);
+        return;
+    }
+
+    // A swap stored before its legs were rows states only its summary, so its
+    // legs are rebuilt from it.
+    const auto& v = carrier.instrument;
 
     auto fixed_leg = data.append("LegData");
     write_commodity_leg_header(fixed_leg, "CommodityFixed", false, v);
@@ -601,7 +619,7 @@ auto read_commodity_instrument(xml::record_reader trade, std::string_view trade_
     if (trade_type == "CommodityOption")
         return wrap(read_commodity_option(trade));
     if (trade_type == "CommoditySwap")
-        return wrap(read_commodity_swap(trade));
+        return trading::domain::trade_instrument{read_commodity_swap(trade)};
     if (trade_type == "CommoditySwaption")
         return wrap(read_commodity_swaption(trade));
     if (trade_type == "CommodityVarianceSwap")
@@ -628,7 +646,7 @@ auto write_commodity_instrument(xml::record_writer& trade,
         return true;
     }
     if (trade_type == "CommoditySwap") {
-        write_commodity_swap(trade, v->instrument);
+        write_commodity_swap(trade, *v);
         return true;
     }
     if (trade_type == "CommoditySwaption") {

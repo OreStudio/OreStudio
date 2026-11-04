@@ -318,6 +318,46 @@ such as =2D=. Kept as text, because ORE reads both.
 
 The calendar the leg's payments are adjusted on, as =PaymentCalendar= states it.
 
+** commodity_price_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The price a commodity floating leg observes, as =PriceType= states it: =Spot=
+or =FutureSettlement=. Null for a leg that is not a commodity floating leg.
+
+** future_month_offset
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+How many contract months past the period a commodity floating leg's future
+settles, as =FutureMonthOffset= states it.
+
+** daily_expiry_offset
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The offset, in business days, of a daily commodity future's expiry, as
+=DailyExpiryOffset= states it.
+
+** pricing_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar a commodity floating leg's pricing dates are adjusted on, as
+=PricingCalendar= states it.
+
 * Foreign keys
 
 ** trade_id

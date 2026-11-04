@@ -24,7 +24,9 @@ a list of values that vary over the leg's life, so both land here and
 no spread, because a single column cannot hold a schedule.
 
 =rate_role= is data, not a table: the closed set is =fixed=, =spread=,
-=gearing=, =cap= and =floor=, and the schema states it. A floating leg states
+=gearing=, =cap=, =floor= and =price=, and the schema states it. A commodity
+fixed leg states its prices on =CommodityFixedLegData/Prices=, which land here
+as =price=. A floating leg states
 its spreads, gearings, caps and floors each as a schedule of its own, and a
 value applies from its start date.
 
@@ -192,7 +194,7 @@ is immutable.
 
 | expression |
 |---|
-| "rate_role" in ('fixed', 'spread', 'gearing', 'cap', 'floor') |
+| "rate_role" in ('fixed', 'spread', 'gearing', 'cap', 'floor', 'price') |
 | "sequence_number" >= 1 |
 
 ** Indexes

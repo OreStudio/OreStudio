@@ -145,6 +145,20 @@ using composite_instrument_data = with_legs<composite_instrument, composite_leg>
 struct commodity_instrument_data {
     commodity_instrument instrument;
     std::vector<commodity_basket_constituent> constituents;
+    /**
+     * @brief The legs of a commodity swap, in the shared swap leg rows.
+     *
+     * ORE states a commodity swap's legs as LegData, as it does a rates swap's,
+     * so the legs, their quantities, prices, amortizations and schedules land
+     * in the rows every leg reads and writes. A product with no legs leaves
+     * them empty.
+     */
+    std::vector<swap_leg> legs;
+    std::vector<swap_leg_amount> leg_amounts;
+    std::vector<swap_leg_rate> leg_rates;
+    std::vector<swap_leg_amortization> leg_amortizations;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
 };
 
 // A credit trade states its legs as rows of the shared leg tables, and an index
@@ -600,6 +614,19 @@ inline void stamp_ids(commodity_instrument_data& data,
         constituent.trade_id = trade_id;
         constituent.trade_activity_id = activity_id;
     }
+    for (auto& leg : data.legs) {
+        leg.identity.trade_id = trade_id;
+        leg.identity.trade_activity_id = activity_id;
+    }
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows)
+            stamp_ids(row, trade_id, activity_id);
+    };
+    stamp_one(data.leg_amounts);
+    stamp_one(data.leg_rates);
+    stamp_one(data.leg_amortizations);
+    stamp_one(data.schedules);
+    stamp_one(data.schedule_dates);
 }
 
 inline void stamp_ids(credit_instrument_data& data,

@@ -55,6 +55,10 @@ export interface SwapLegWrite {
     notional_final_exchange: boolean | null;
     payment_lag: string | null;
     payment_calendar: string | null;
+    commodity_price_type: string | null;
+    future_month_offset: number | null;
+    daily_expiry_offset: number | null;
+    pricing_calendar: string | null;
 }
 
 export interface SwapLegChange {

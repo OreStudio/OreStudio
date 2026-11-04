@@ -94,6 +94,14 @@ struct scripted_instrument final {
      */
     std::string description;
 
+    /**
+     * @brief The element of the trade that states the parameters: ScriptedTradeData for a generic
+     * scripted trade, or the named product's element, such as MovingMaxYYIISData. The parameters
+     * are scripted_parameter rows, and the element tells the writer which of the two forms to state
+     * them in.
+     */
+    std::optional<std::string> data_element;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.
@@ -119,6 +127,7 @@ inline constexpr std::string_view scripted_instrument_economic_fields[] = {
     "events_json",
     "underlyings_json",
     "parameters_json",
+    "data_element",
 };
 
 /**

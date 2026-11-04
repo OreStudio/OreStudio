@@ -42,6 +42,7 @@ export interface ScriptedInstrumentWrite {
     underlyings_json: string;
     parameters_json: string;
     description: string;
+    data_element: string | null;
 }
 
 export interface ScriptedInstrumentChange {

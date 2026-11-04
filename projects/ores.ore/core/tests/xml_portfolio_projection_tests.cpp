@@ -34,6 +34,13 @@
 
 namespace {
 
+/// The script's row a scripted instrument carries, or nothing for another family.
+const ores::trading::domain::scripted_instrument*
+scripted_of(const ores::trading::domain::trade_instrument& instrument) {
+    const auto* data = std::get_if<ores::trading::domain::scripted_instrument_data>(&instrument);
+    return data == nullptr ? nullptr : &data->instrument;
+}
+
 using namespace ores::logging;
 using namespace ores::ore::domain;
 namespace pf = ores::ore::xml::generated::portfolio;
@@ -1243,7 +1250,7 @@ TEST_CASE("a_portfolio_document_projects_its_trades_and_their_envelopes",
     CHECK(items[0].envelope->additional_fields->at(0).value == "marco");
 
     const auto* instrument =
-        std::get_if<ores::trading::domain::scripted_instrument>(&items[0].instrument);
+        scripted_of(items[0].instrument);
     REQUIRE(instrument != nullptr);
     CHECK(instrument->script_name == "heston");
     CHECK(instrument->script_body == "Payoff = 1;");
@@ -1268,7 +1275,7 @@ TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
     item.envelope = items[0].envelope;
 
     ores::trading::domain::instrument_batch batch;
-    auto instrument = std::get<ores::trading::domain::scripted_instrument>(items[0].instrument);
+    auto instrument = std::get<ores::trading::domain::scripted_instrument_data>(items[0].instrument).instrument;
     instrument.identity.trade_id = trade_id;
     batch.scripted_instruments.push_back(std::move(instrument));
 
@@ -1285,7 +1292,7 @@ TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
     CHECK(back[0].envelope->additional_fields->at(0).value == "marco");
 
     const auto* round =
-        std::get_if<ores::trading::domain::scripted_instrument>(&back[0].instrument);
+        scripted_of(back[0].instrument);
     REQUIRE(round != nullptr);
     CHECK(round->script_name == "heston");
     CHECK(round->script_body == "Payoff = 1;");
@@ -3213,7 +3220,7 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     // The scripted row states no parameter of its own, so the data element the
     // schema requires carries the script's own result and nothing else.
     const auto* scripted =
-        std::get_if<ores::trading::domain::scripted_instrument>(&items[0].instrument);
+        scripted_of(items[0].instrument);
     REQUIRE(scripted != nullptr);
     CHECK(scripted->script_name == "heston");
     CHECK(scripted->parameters_json == R"({"NPV":"Option"})");
@@ -3222,7 +3229,7 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     // The flat table has no column for an underlying's type, so the type rides
     // in the parameters and comes back out of the document it is written to.
     const auto* double_digital =
-        std::get_if<ores::trading::domain::scripted_instrument>(&items[1].instrument);
+        scripted_of(items[1].instrument);
     REQUIRE(double_digital != nullptr);
     CHECK(double_digital->underlyings_json == R"(["TR20H-EUR-USD","NYMEX:CL"])");
     CHECK(double_digital->parameters_json.find(R"("Underlying2Type":"Commodity")") !=
@@ -3230,7 +3237,7 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
 
     const auto double_digital_round = rebuild(items[1]);
     const auto* double_digital_again =
-        std::get_if<ores::trading::domain::scripted_instrument>(&double_digital_round.instrument);
+        scripted_of(double_digital_round.instrument);
     REQUIRE(double_digital_again != nullptr);
     CHECK(double_digital_again->underlyings_json == double_digital->underlyings_json);
     CHECK(double_digital_again->parameters_json == double_digital->parameters_json);
@@ -3485,7 +3492,7 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
             row.script_name = std::move(script_name);
             row.underlyings_json = R"(["GB0005405286","US0378331005"])";
             row.parameters_json = std::move(parameters);
-            item.instrument = std::move(row);
+            item.instrument = ores::trading::domain::scripted_instrument_data{std::move(row)};
             return item;
         };
 
@@ -3494,7 +3501,7 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
                               "AsianBasketOption",
                               R"({"Notional":"1000000.00","PutCall":"Call","Strike":"1.0500"})"));
     const auto* generic_row =
-        std::get_if<ores::trading::domain::scripted_instrument>(&generic.instrument);
+        scripted_of(generic.instrument);
     REQUIRE(generic_row != nullptr);
     CHECK(generic_row->script_name == "AsianBasketOption");
     CHECK(generic_row->underlyings_json == R"(["GB0005405286","US0378331005"])");
@@ -3505,7 +3512,7 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
         "DoubleDigitalOption",
         R"({"Type1":"Equity","Type2":"Equity","Expiry":"2029-10-31","Settlement":"2029-12-31","Position":"Long","PayCcy":"GBP","BinaryPayout":"1000000.00","BinaryLevel1":"1.0500","BinaryLevel2":"1.2000","Underlying1Type":"Equity","Underlying2Type":"Equity"})"));
     const auto* digital_row =
-        std::get_if<ores::trading::domain::scripted_instrument>(&digital.instrument);
+        scripted_of(digital.instrument);
     REQUIRE(digital_row != nullptr);
     CHECK(digital_row->script_name == "DoubleDigitalOption");
     CHECK(digital_row->parameters_json.find("BinaryPayout") != std::string::npos);
@@ -3515,7 +3522,7 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
         "PerformanceOption_01",
         R"({"NotionalAmount":"1000000.00","ParticipationRate":"1.0","Strike":"0.9000","ValuationDate":"2029-10-31","SettlementDate":"2029-12-31","Position":"Long","PayCcy":"GBP","StrikePrices":"0.9000,1.0000,1.1000","Underlying1Type":"Equity","Underlying2Type":"Equity"})"));
     const auto* performance_row =
-        std::get_if<ores::trading::domain::scripted_instrument>(&performance.instrument);
+        scripted_of(performance.instrument);
     REQUIRE(performance_row != nullptr);
     CHECK(performance_row->script_name == "PerformanceOption_01");
     CHECK(performance_row->parameters_json.find("StrikePrices") != std::string::npos);

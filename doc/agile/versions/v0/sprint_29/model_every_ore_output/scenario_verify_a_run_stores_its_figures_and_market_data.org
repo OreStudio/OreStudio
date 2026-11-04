@@ -76,7 +76,7 @@ rows, and an unknown family name is refused.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Run the report and wait
 
@@ -90,7 +90,8 @@ rows, and an unknown family name is refused.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
+| Notes  | the report completed with errors but i had to manually refresh to see this. |
 
 ** See the NPV results on the run
 
@@ -102,7 +103,8 @@ rows, and an unknown family name is refused.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | the numbers do not have an associated currency with them. |
 
 ** See the run's problems by scope, then one by one
 
@@ -119,7 +121,7 @@ rows, and an unknown family name is refused.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Find the run's files in their tree
 
@@ -136,7 +138,7 @@ rows, and an unknown family name is refused.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open a file and download its schema
 

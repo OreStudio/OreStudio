@@ -127,6 +127,8 @@ function emptyBatch(): InstrumentBatch {
         rate_instruments: [],
         risk_participation_agreement_instruments: [],
         scripted_instruments: [],
+        scripted_parameter_values: [],
+        scripted_parameters: [],
         swap_leg_amortizations: [],
         swap_leg_amounts: [],
         swap_leg_indexings: [],

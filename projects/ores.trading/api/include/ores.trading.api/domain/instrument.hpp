@@ -59,6 +59,9 @@
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
 #include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
+#include "ores.trading.api/domain/scripted_instrument.hpp"
+#include "ores.trading.api/domain/scripted_parameter.hpp"
+#include "ores.trading.api/domain/scripted_parameter_value.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_amortization.hpp"
@@ -143,6 +146,22 @@ struct swap_instrument_data {
 };
 
 using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
+
+/**
+ * @brief A scripted trade: the script's row and its named parameters.
+ *
+ * ORE reads every scripted trade as a script and named parameters of five
+ * kinds. Each parameter is a row; a list parameter's values are rows of their
+ * own, and an event parameter's schedule lands in the shared schedule rows
+ * under the owner "scripted".
+ */
+struct scripted_instrument_data {
+    scripted_instrument instrument;
+    std::vector<scripted_parameter> parameters;
+    std::vector<scripted_parameter_value> parameter_values;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
+};
 
 // A commodity basket states a constituent collection beside the instrument
 // that owns it, so the carrier holds the two together and each constituent
@@ -652,6 +671,20 @@ inline void stamp_ids(swap_instrument_data& data,
     for (auto& tranche_notional : data.tranche_notionals) {
         stamp_ids(tranche_notional, trade_id, activity_id);
     }
+}
+
+inline void stamp_ids(scripted_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    stamp_ids(data.instrument, trade_id, activity_id);
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows)
+            stamp_ids(row, trade_id, activity_id);
+    };
+    stamp_one(data.parameters);
+    stamp_one(data.parameter_values);
+    stamp_one(data.schedules);
+    stamp_one(data.schedule_dates);
 }
 
 inline void stamp_ids(commodity_instrument_data& data,

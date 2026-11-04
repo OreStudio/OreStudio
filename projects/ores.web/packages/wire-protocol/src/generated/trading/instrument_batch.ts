@@ -97,6 +97,8 @@ import type { SwapLegAmount } from './domain/swap_leg_amount.js';
 import type { SwapLegIndexing } from './domain/swap_leg_indexing.js';
 import type { SwapLegAmortization } from './domain/swap_leg_amortization.js';
 import type { SwapLegRate } from './domain/swap_leg_rate.js';
+import type { ScriptedParameter } from './domain/scripted_parameter.js';
+import type { ScriptedParameterValue } from './domain/scripted_parameter_value.js';
 import type { SwaptionInstrument } from './domain/swaption_instrument.js';
 import type { SyntheticCdoInstrument } from './domain/synthetic_cdo_instrument.js';
 import type { VanillaSwapInstrument } from './domain/vanilla_swap_instrument.js';
@@ -185,6 +187,8 @@ export interface InstrumentBatch {
     swap_leg_indexings: SwapLegIndexing[];
     swap_leg_amortizations: SwapLegAmortization[];
     swap_leg_rates: SwapLegRate[];
+    scripted_parameters: ScriptedParameter[];
+    scripted_parameter_values: ScriptedParameterValue[];
     swaption_instruments: SwaptionInstrument[];
     synthetic_cdo_instruments: SyntheticCdoInstrument[];
     vanilla_swap_instruments: VanillaSwapInstrument[];

@@ -118,6 +118,8 @@
 #include "ores.trading.api/domain/rate_instrument_codec.hpp"
 #include "ores.trading.api/domain/risk_participation_agreement_instrument_codec.hpp"
 #include "ores.trading.api/domain/scripted_instrument_codec.hpp"
+#include "ores.trading.api/domain/scripted_parameter_codec.hpp"
+#include "ores.trading.api/domain/scripted_parameter_value_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_amortization_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_amount_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_codec.hpp"
@@ -463,6 +465,14 @@ struct instrument_batch {
      * @brief The swap_leg_rate rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::swap_leg_rate> swap_leg_rates;
+    /**
+     * @brief The scripted_parameter rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::scripted_parameter> scripted_parameters;
+    /**
+     * @brief The scripted_parameter_value rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::scripted_parameter_value> scripted_parameter_values;
     /**
      * @brief The swaption_instrument rows, keyed by trade id.
      */
@@ -1023,6 +1033,20 @@ inline void append(instrument_batch& batch, swap_leg_rate v) {
 }
 
 /**
+ * @brief Adds one scripted_parameter to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, scripted_parameter v) {
+    batch.scripted_parameters.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one scripted_parameter_value to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, scripted_parameter_value v) {
+    batch.scripted_parameter_values.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one swaption_instrument to the array that holds its type.
  */
 inline void append(instrument_batch& batch, swaption_instrument v) {
@@ -1203,6 +1227,10 @@ template <typename T>
         ::ores::utility::codec::field{"swap_leg_amortizations",
                                       &instrument_batch::swap_leg_amortizations},
         ::ores::utility::codec::field{"swap_leg_rates", &instrument_batch::swap_leg_rates},
+        ::ores::utility::codec::field{"scripted_parameters",
+                                      &instrument_batch::scripted_parameters},
+        ::ores::utility::codec::field{"scripted_parameter_values",
+                                      &instrument_batch::scripted_parameter_values},
         ::ores::utility::codec::field{"swaption_instruments",
                                       &instrument_batch::swaption_instruments},
         ::ores::utility::codec::field{"synthetic_cdo_instruments",

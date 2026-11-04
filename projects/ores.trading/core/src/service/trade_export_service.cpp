@@ -33,6 +33,8 @@
 #include "ores.trading.core/repository/instrument_barrier_level_repository.hpp"
 #include "ores.trading.core/repository/instrument_barrier_repository.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
+#include "ores.trading.core/repository/scripted_parameter_repository.hpp"
+#include "ores.trading.core/repository/scripted_parameter_value_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amortization_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_indexing_repository.hpp"
@@ -272,6 +274,14 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::instrument_barrier_level_repository barrier_level_repo;
         auto levels = barrier_level_repo.read_by_instruments_batch(ctx, all_ids);
         take(levels, batch.instrument_barrier_levels);
+    }
+    if (!scripted_ids.empty()) {
+        repository::scripted_parameter_repository parameter_repo;
+        auto parameters = parameter_repo.read_by_instruments_batch(ctx, scripted_ids);
+        take(parameters, batch.scripted_parameters);
+        repository::scripted_parameter_value_repository value_repo;
+        auto values = value_repo.read_by_instruments_batch(ctx, scripted_ids);
+        take(values, batch.scripted_parameter_values);
     }
     if (!composite_ids.empty()) {
         repository::composite_leg_repository comp_leg_repo;

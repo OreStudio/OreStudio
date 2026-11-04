@@ -421,6 +421,8 @@ shape whichever family states the rows.
 | swap_leg_indexing                           |
 | swap_leg_amortization                       |
 | swap_leg_rate                               |
+| scripted_parameter                          |
+| scripted_parameter_value                    |
 | swaption_instrument                         |
 | synthetic_cdo_instrument                    |
 | vanilla_swap_instrument                     |

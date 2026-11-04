@@ -2385,7 +2385,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         using ores::trading::domain::equity_instrument_data;
         using ores::trading::domain::commodity_instrument_data;
         using ores::trading::domain::composite_instrument_data;
-        using ores::trading::domain::scripted_instrument;
+        using ores::trading::domain::scripted_instrument_data;
         std::string instr_error;
 
         const auto save_ok = std::visit(
@@ -3599,17 +3599,17 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     req.legs = r.legs;
                     auto resp = nats_call(delegated_nats, req, instr_error);
                     return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
-                } else if constexpr (std::is_same_v<T, scripted_instrument>) {
+                } else if constexpr (std::is_same_v<T, scripted_instrument_data>) {
                     put_scripted_instrument_request req;
-                    req.change.write.trade_id = r.identity.trade_id;
-                    req.change.write.trade_activity_id = r.identity.trade_activity_id;
-                    req.change.write.trade_type_code = r.identity.trade_type_code;
-                    req.change.write.script_name = r.script_name;
-                    req.change.write.script_body = r.script_body;
-                    req.change.write.events_json = r.events_json;
-                    req.change.write.underlyings_json = r.underlyings_json;
-                    req.change.write.parameters_json = r.parameters_json;
-                    req.change.write.description = r.description;
+                    req.change.write.trade_id = r.instrument.identity.trade_id;
+                    req.change.write.trade_activity_id = r.instrument.identity.trade_activity_id;
+                    req.change.write.trade_type_code = r.instrument.identity.trade_type_code;
+                    req.change.write.script_name = r.instrument.script_name;
+                    req.change.write.script_body = r.instrument.script_body;
+                    req.change.write.events_json = r.instrument.events_json;
+                    req.change.write.underlyings_json = r.instrument.underlyings_json;
+                    req.change.write.parameters_json = r.instrument.parameters_json;
+                    req.change.write.description = r.instrument.description;
                     auto resp = nats_call(delegated_nats, req, instr_error);
                     return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
                 } else {

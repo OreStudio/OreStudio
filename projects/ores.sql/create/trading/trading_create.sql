@@ -161,6 +161,13 @@
 \ir ./trading_instrument_barrier_levels_create.sql
 \ir ./trading_instrument_barrier_levels_notify_trigger_create.sql
 
+-- A scripted trade's parameters and their list values are children of the
+-- trade.
+\ir ./trading_scripted_parameters_create.sql
+\ir ./trading_scripted_parameters_notify_trigger_create.sql
+\ir ./trading_scripted_parameter_values_create.sql
+\ir ./trading_scripted_parameter_values_notify_trigger_create.sql
+
 -- Rates instruments (depend on swap_legs and reference data above). The
 -- header goes first: it owns the family's rows, and its delete rule's cascade
 -- function names every fact and child below.

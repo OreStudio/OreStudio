@@ -98,6 +98,8 @@
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/risk_participation_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
+#include "ores.trading.core/repository/scripted_parameter_repository.hpp"
+#include "ores.trading.core/repository/scripted_parameter_value_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amortization_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_indexing_repository.hpp"
@@ -346,6 +348,10 @@ void write_instrument_batch(ores::database::context ctx,
     write_rows<repository::swap_leg_amortization_repository>(
         ctx, batch.swap_leg_amortizations, keys, stamp, claim);
     write_rows<repository::swap_leg_rate_repository>(ctx, batch.swap_leg_rates, keys, stamp, claim);
+    write_rows<repository::scripted_parameter_repository>(
+        ctx, batch.scripted_parameters, keys, stamp, claim);
+    write_rows<repository::scripted_parameter_value_repository>(
+        ctx, batch.scripted_parameter_values, keys, stamp, claim);
     write_rows<repository::swaption_instrument_repository>(
         ctx, batch.swaption_instruments, keys, stamp, claim);
     write_rows<repository::synthetic_cdo_instrument_repository>(
@@ -563,6 +569,10 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("swap_leg_amortizations");
     if (!batch.swap_leg_rates.empty())
         names.emplace_back("swap_leg_rates");
+    if (!batch.scripted_parameters.empty())
+        names.emplace_back("scripted_parameters");
+    if (!batch.scripted_parameter_values.empty())
+        names.emplace_back("scripted_parameter_values");
     if (!batch.swaption_instruments.empty())
         names.emplace_back("swaption_instruments");
     if (!batch.synthetic_cdo_instruments.empty())

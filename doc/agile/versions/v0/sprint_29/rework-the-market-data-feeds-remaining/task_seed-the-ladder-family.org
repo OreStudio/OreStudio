@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/seed-the-ladder-family
-#+pr:
+#+pr: 4453
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -169,7 +169,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4453][#4453]] | [reporting] Seed the ladder family and state what blocks it |
 
 * Review
 

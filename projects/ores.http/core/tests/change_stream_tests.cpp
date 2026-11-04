@@ -68,8 +68,8 @@ TEST_CASE("a_frame_reaches_every_open_stream", "[change_stream]") {
 
     REQUIRE(first->size() == 1);
     REQUIRE(second->size() == 1);
-    REQUIRE(first->try_pop() == std::optional<std::string>("data: one\n\n"));
-    REQUIRE(second->try_pop() == std::optional<std::string>("data: one\n\n"));
+    REQUIRE(first->try_pop() == std::optional<std::string>("id: 1\ndata: one\n\n"));
+    REQUIRE(second->try_pop() == std::optional<std::string>("id: 1\ndata: one\n\n"));
 }
 
 TEST_CASE("a_stream_that_has_ended_is_forgotten_by_the_next_publish", "[change_stream]") {
@@ -100,9 +100,9 @@ TEST_CASE("a_stream_that_is_not_read_drops_its_oldest_frames", "[change_stream]"
 
     REQUIRE(slow->size() == 3);
     // The newest survive: a screen that fell behind wants where the world is now.
-    REQUIRE(slow->try_pop() == std::optional<std::string>("frame 2"));
-    REQUIRE(slow->try_pop() == std::optional<std::string>("frame 3"));
-    REQUIRE(slow->try_pop() == std::optional<std::string>("frame 4"));
+    REQUIRE(slow->try_pop() == std::optional<std::string>("id: 3\nframe 2"));
+    REQUIRE(slow->try_pop() == std::optional<std::string>("id: 4\nframe 3"));
+    REQUIRE(slow->try_pop() == std::optional<std::string>("id: 5\nframe 4"));
     REQUIRE(!slow->try_pop().has_value());
 }
 
@@ -215,4 +215,62 @@ TEST_CASE("a_stream_whose_source_ended_leaves_the_hub", "[change_stream]") {
     // And nothing is queued for it any more: the next frame has one home.
     hub.publish("acme", "data: one\n\n");
     REQUIRE(hub.open_streams() == 0);
+}
+
+TEST_CASE("every_frame_carries_an_id_and_the_ids_ascend", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a frame states which frame it is";
+
+    change_hub hub(stream_system_tenant);
+    auto stream = hub.subscribe("acme");
+
+    hub.publish("acme", "data: one\n\n");
+    hub.publish("acme", "data: two\n\n");
+
+    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 1\ndata: one\n\n"));
+    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
+}
+
+TEST_CASE("a_resuming_client_is_given_the_frames_it_missed", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that Last-Event-ID replays what was missed";
+
+    change_hub hub(stream_system_tenant);
+    hub.publish("acme", "data: one\n\n");
+    hub.publish("acme", "data: two\n\n");
+    hub.publish("acme", "data: three\n\n");
+
+    auto resumed = hub.subscribe("acme", change_hub::resume_point{.last_seen = 1});
+
+    REQUIRE(resumed->size() == 2);
+    REQUIRE(resumed->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
+    REQUIRE(resumed->try_pop() == std::optional<std::string>("id: 3\ndata: three\n\n"));
+}
+
+TEST_CASE("a_resuming_client_hears_only_its_own_tenant_and_the_system_one", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a replay cannot cross tenants";
+
+    change_hub hub(stream_system_tenant);
+    hub.publish("acme", "data: acme moved\n\n");
+    hub.publish("globex", "data: globex moved\n\n");
+    hub.publish(stream_system_tenant, "data: the catalogue moved\n\n");
+
+    auto resumed = hub.subscribe("acme", change_hub::resume_point{.last_seen = 0});
+
+    REQUIRE(resumed->size() == 2);
+    REQUIRE(resumed->try_pop()->find("acme moved") != std::string::npos);
+    REQUIRE(resumed->try_pop()->find("catalogue moved") != std::string::npos);
+}
+
+TEST_CASE("a_resuming_client_outside_the_window_is_told_to_resync", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that an old id is answered with a resync";
+
+    change_hub hub(stream_system_tenant);
+    // An id this process never issued: the client comes from a previous life.
+    auto resumed = hub.subscribe("acme", change_hub::resume_point{.last_seen = 99});
+
+    REQUIRE(resumed->size() == 1);
+    REQUIRE(resumed->try_pop() == std::optional<std::string>("event: resync\ndata: {}\n\n"));
 }

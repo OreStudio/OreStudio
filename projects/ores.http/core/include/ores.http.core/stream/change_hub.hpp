@@ -152,6 +152,19 @@ private:
 class change_hub final {
 public:
     /**
+     * @brief How many recent frames a reconnecting client may ask for.
+     *
+     * Core NATS has no replay, so the hub keeps a short window of what it
+     * published. A client that says where it stopped and is inside the window is
+     * given the frames it missed; one that is outside it is told to resync.
+     */
+    static constexpr std::size_t default_retention = 64;
+
+    /// What a client's Last-Event-ID asks of the hub.
+    struct resume_point final {
+        std::uint64_t last_seen = 0;
+    };
+    /**
      * @param system_tenant The tenant whose changes every stream hears, because they
      *        are the catalogue every tenant shares.
      */
@@ -160,9 +173,36 @@ public:
         , capacity_(per_stream_capacity) {}
 
     /// Opens a stream for @p tenant, which also hears the system tenant.
-    [[nodiscard]] std::shared_ptr<change_subscription> subscribe(std::string tenant) {
+    /**
+     * @param resumed The id the client last saw, when it reconnects. A client
+     *        inside the retention window is given the frames it missed; one that
+     *        is outside it, or that names an id this process never issued, is
+     *        given one =resync= frame so it knows to reload rather than trust a
+     *        silent gap.
+     */
+    [[nodiscard]] std::shared_ptr<change_subscription>
+    subscribe(std::string tenant, std::optional<resume_point> resumed = std::nullopt) {
         const std::lock_guard lock(mu_);
-        auto subscription = std::make_shared<change_subscription>(std::move(tenant), capacity_);
+        auto subscription = std::make_shared<change_subscription>(tenant, capacity_);
+
+        if (resumed) {
+            const auto eligible = [&](const retained_frame& frame) {
+                return frame.tenant == tenant || frame.tenant == system_tenant_;
+            };
+            const auto oldest = retained_.empty() ? 0 : retained_.front().id;
+            const auto newest = retained_.empty() ? 0 : retained_.back().id;
+            const auto inside =
+                resumed->last_seen <= newest && (oldest == 0 || resumed->last_seen + 1 >= oldest);
+            if (inside) {
+                for (const auto& frame : retained_) {
+                    if (frame.id > resumed->last_seen && eligible(frame))
+                        subscription->push("id: " + std::to_string(frame.id) + "\n" + frame.text);
+                }
+            } else {
+                subscription->push("event: resync\ndata: {}\n\n");
+            }
+        }
+
         subscriptions_.push_back(subscription);
         return subscription;
     }
@@ -174,11 +214,17 @@ public:
             const std::lock_guard lock(mu_);
             std::erase_if(subscriptions_,
                           [](const auto& subscription) { return subscription->closed(); });
+            const auto id = next_id_++;
+            retained_.push_back(retained_frame{id, tenant, frame});
+            while (retained_.size() > retention_)
+                retained_.pop_front();
             open = subscriptions_;
         }
+        const auto id = next_id_ - 1;
+        auto stamped = "id: " + std::to_string(id) + "\n" + frame;
         for (auto& subscription : open) {
             if (subscription->tenant() == tenant || tenant == system_tenant_)
-                subscription->push(frame);
+                subscription->push(stamped);
         }
     }
 
@@ -193,10 +239,19 @@ public:
     }
 
 private:
+    struct retained_frame final {
+        std::uint64_t id = 0;
+        std::string tenant;
+        std::string text;
+    };
+
     std::string system_tenant_;
     mutable std::mutex mu_;
     std::vector<std::shared_ptr<change_subscription>> subscriptions_;
     std::size_t capacity_;
+    std::size_t retention_ = default_retention;
+    std::uint64_t next_id_ = 1;
+    std::deque<retained_frame> retained_;
 };
 
 /**

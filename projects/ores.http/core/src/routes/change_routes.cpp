@@ -71,8 +71,25 @@ change_routes::handle_changes(const domain::http_request& req) {
     const auto tenant = req.authenticated_user ?
                             req.authenticated_user->tenant_id.value_or(std::string{}) :
                             std::string{};
-    resp.body_awaitable =
-        std::make_shared<stream::change_stream_source>(hub_->subscribe(tenant), keep_alive_);
+
+    /*
+     * A reconnecting browser states where it stopped. Inside the hub's short
+     * retention it is given what it missed; outside it, or naming an id this
+     * process never issued, it is told to resync rather than left with a silent
+     * gap it cannot see.
+     */
+    std::optional<stream::change_hub::resume_point> resumed;
+    if (const auto seen = req.get_header("last-event-id"); !seen.empty()) {
+        try {
+            resumed = stream::change_hub::resume_point{
+                .last_seen = static_cast<std::uint64_t>(std::stoull(seen))};
+        } catch (const std::exception&) {
+            BOOST_LOG_SEV(lg(), warn) << "Last-Event-ID is not a frame id: " << seen;
+        }
+    }
+
+    resp.body_awaitable = std::make_shared<stream::change_stream_source>(
+        hub_->subscribe(tenant, resumed), keep_alive_);
     co_return resp;
 }
 

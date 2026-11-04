@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-01
 #+updated: 2026-11-01
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -39,9 +39,21 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The hub stamps the id, not the pump: it is the only place that sees every
+  frame in one order, and the only place that can remember what it published.
+- The hub keeps the last 64 frames it published with their tenant attached, so a
+  replay cannot cross tenants. A reconnecting client inside that window is given
+  the frames it missed, in order, before it hears anything live.
+- Outside the window, or naming an id this process never issued, the client is
+  sent one =event: resync= frame. Core NATS has no replay, so a silent gap would
+  be indistinguishable from a quiet market, and the client would keep a stale
+  screen forever.
+- The route reads =Last-Event-ID=, and a value that is not a number is logged and
+  treated as a fresh stream rather than refused: a corrupt header must not cost
+  the caller its stream.
+- The subscribe call takes the resume point under the hub's lock, so no frame is
+  published between replay and live delivery and the client cannot miss one at
+  the seam.
 
 * Measurements
 
@@ -82,4 +94,27 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Core suite cases | 52 | =ores.http.core.tests= | this branch |
+| Core suite assertions | 206 | =ores.http.core.tests= | this branch |
+| IAM suite assertions | 290 | =ores.http.iam.tests= | this branch |
+
 * Result
+
+A frame now carries =id: <n>=, numbered by the hub, so a client can say which
+frame it last saw. The hub keeps the last 64 frames with their tenant, and a
+reconnecting client that names an id inside that window is given the frames it
+missed, in order and filtered by tenancy, before it hears anything live. A
+client whose id is outside the window, or names one this process never issued,
+is sent one =event: resync= frame: core NATS has no replay, and a silent gap
+would look exactly like a quiet market.
+
+The route honours =Last-Event-ID=, and a header that is not a number is logged
+and treated as a fresh stream rather than refused.
+
+Four cases prove it: ids ascend, a resuming client gets what it missed, a replay
+cannot cross tenants, and an unknown id is answered with a resync. The two cases
+that asserted raw frame text now assert the stamped form.

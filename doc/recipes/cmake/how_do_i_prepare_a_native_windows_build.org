@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :windows:build:setup:recipe:
 #+created: 2026-11-01
-#+updated: 2026-11-01
+#+updated: 2026-11-04
 
 Native Windows builds use the presets in [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 The Linux bootstrap and systemd service launcher do not apply to Windows.
@@ -46,12 +46,24 @@ The wrapper probes both =python3= and =python=: a Microsoft Store
 =python3= alias must not hide an installed =python.exe=.
 It enables Python UTF-8 mode on Windows for source files and Unicode output.
 
-Install PostgreSQL 18 client tools and put =psql.exe= on the process PATH
-when running Compass database commands from Windows. For PostgreSQL in
-Docker bound to IPv4 loopback, use =127.0.0.1= for the database host in the
-local environment. This also avoids native psql reconnect failures through
-IPv6 =localhost=. Service-account population reads passwords directly with
-=psql= =\getenv= on both Windows and Linux.
+The supported local Windows database setup uses PostgreSQL 18 in a Linux
+Docker container. Mount this checkout at =/workspace= in that container.
+Use its Linux =psql= client for setup so the original seed scripts' Unix
+commands read service passwords correctly. This keeps shared SQL, account
+credentials and the upstream schema fingerprint unchanged.
+
+#+begin_src powershell :results verbatim
+python build/scripts/run_container_database.py --container orestudio-windows-postgres --container-root /workspace status
+#+end_src
+
+The wrapper accepts the same =setup= and =recreate= commands as =compass db=;
+use =recreate= only for a dedicated disposable development database. It
+forwards machine-password environment variables into the container by name.
+If its internal port differs from =PGPORT= in =.env=, pass
+=--container-port <port>= before the database command. Native PostgreSQL
+client tools can still be used for ordinary queries. For connections from
+Windows to Docker's published port, use =127.0.0.1= as the database host to
+avoid IPv6 localhost reconnect failures.
 
 In Developer PowerShell, configure and build the application fleet. Read
 the enabled native service targets from the same registry as the launcher:

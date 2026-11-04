@@ -290,38 +290,3 @@ where not exists (
       and avp.tenant_id = ores_utility_system_tenant_id_fn()
       and avp.valid_to = ores_utility_infinity_timestamp_fn()
 );
-
-
--- -------------------------------------------------------------------------
--- ORE App Version Platform Package (x64-windows)
--- Same Engine commit as the Linux 1.8.17.0 package; see package provenance.
--- Bytes are uploaded separately by compute publish-package.
--- -------------------------------------------------------------------------
-insert into ores_compute_app_version_platforms_tbl (
-    tenant_id, app_version_id, platform_id, package_uri, sha256,
-    modified_by, performed_by, change_reason_code, change_commentary,
-    valid_from, valid_to
-)
-select
-    ores_utility_system_tenant_id_fn(), av.id, p.id,
-    '/api/v1/storage/ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-windows.tar.gz',
-    '8b87e41940f1bc7590ec25f6acb7607264f3a6d50c73097f620c085f3ae6e114',
-    current_user, current_user, 'system.new_record', '',
-    current_timestamp, ores_utility_infinity_timestamp_fn()
-from ores_compute_app_versions_tbl av
-join ores_compute_apps_tbl a on a.id = av.app_id
-    and a.tenant_id = ores_utility_system_tenant_id_fn()
-    and a.name = 'ORE'
-    and a.valid_to = ores_utility_infinity_timestamp_fn()
-join ores_compute_platforms_tbl p on p.code = 'x64-windows'
-    and p.valid_to = ores_utility_infinity_timestamp_fn()
-where av.engine_version = '1.8.17.0'
-  and av.wrapper_version = '1.0.0'
-  and av.tenant_id = ores_utility_system_tenant_id_fn()
-  and av.valid_to = ores_utility_infinity_timestamp_fn()
-  and not exists (
-      select 1 from ores_compute_app_version_platforms_tbl avp
-      where avp.app_version_id = av.id and avp.platform_id = p.id
-        and avp.tenant_id = ores_utility_system_tenant_id_fn()
-        and avp.valid_to = ores_utility_infinity_timestamp_fn()
-  );

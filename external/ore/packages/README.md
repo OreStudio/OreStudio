@@ -107,7 +107,9 @@ This adds the Windows platform to the existing application version while
 preserving its Linux platform. Registration and uploading bytes are both
 required; copying a tarball into this directory alone does not publish it.
 The standard Acme provisioning recipe publishes the bundled Windows package
-alongside both Linux packages, and the compute seed registers its checksum.
+alongside both Linux packages. The publisher registers the Windows platform
+and checksum through the existing service API; no shared SQL seed change is
+needed.
 Run the compute grid smoke recipe against the version UUID, dispatching
 15 copies of `TA002_IR_Swap.tar.gz`, then download and compare a result's
 CSVs. Check that all five Windows workers execute successful jobs.

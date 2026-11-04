@@ -37,26 +37,26 @@
 \echo '--- Service Accounts ---'
 
 -- Capture service DB passwords from the environment so they are never stored
--- in plaintext in committed SQL. psql reads them directly, on both Windows
--- and Unix, without involving a platform-specific shell.
-\getenv http_service_pw ORES_HTTP_SERVER_DB_PASSWORD
-\getenv iam_service_pw ORES_IAM_SERVICE_DB_PASSWORD
-\getenv refdata_service_pw ORES_REFDATA_SERVICE_DB_PASSWORD
-\getenv dq_service_pw ORES_DQ_SERVICE_DB_PASSWORD
-\getenv variability_service_pw ORES_VARIABILITY_SERVICE_DB_PASSWORD
-\getenv assets_service_pw ORES_ASSETS_SERVICE_DB_PASSWORD
-\getenv scheduler_service_pw ORES_SCHEDULER_SERVICE_DB_PASSWORD
-\getenv reporting_service_pw ORES_REPORTING_SERVICE_DB_PASSWORD
-\getenv telemetry_service_pw ORES_TELEMETRY_SERVICE_DB_PASSWORD
-\getenv trading_service_pw ORES_TRADING_SERVICE_DB_PASSWORD
-\getenv compute_service_pw ORES_COMPUTE_SERVICE_DB_PASSWORD
-\getenv synthetic_service_pw ORES_SYNTHETIC_SERVICE_DB_PASSWORD
-\getenv workflow_service_pw ORES_WORKFLOW_SERVICE_DB_PASSWORD
-\getenv ore_service_pw ORES_ORE_SERVICE_DB_PASSWORD
-\getenv marketdata_service_pw ORES_MARKETDATA_SERVICE_DB_PASSWORD
-\getenv analytics_service_pw ORES_ANALYTICS_SERVICE_DB_PASSWORD
-\getenv storage_service_pw ORES_STORAGE_SERVICE_DB_PASSWORD
-\getenv inbox_service_pw ORES_INBOX_SERVICE_DB_PASSWORD
+-- in plaintext in committed SQL. The backtick syntax runs a shell command at
+-- psql execution time; the result is bound to the named variable.
+\set http_service_pw        `echo "$ORES_HTTP_SERVER_DB_PASSWORD"`
+\set iam_service_pw    `echo "$ORES_IAM_SERVICE_DB_PASSWORD"`
+\set refdata_service_pw    `echo "$ORES_REFDATA_SERVICE_DB_PASSWORD"`
+\set dq_service_pw    `echo "$ORES_DQ_SERVICE_DB_PASSWORD"`
+\set variability_service_pw    `echo "$ORES_VARIABILITY_SERVICE_DB_PASSWORD"`
+\set assets_service_pw    `echo "$ORES_ASSETS_SERVICE_DB_PASSWORD"`
+\set scheduler_service_pw    `echo "$ORES_SCHEDULER_SERVICE_DB_PASSWORD"`
+\set reporting_service_pw    `echo "$ORES_REPORTING_SERVICE_DB_PASSWORD"`
+\set telemetry_service_pw    `echo "$ORES_TELEMETRY_SERVICE_DB_PASSWORD"`
+\set trading_service_pw    `echo "$ORES_TRADING_SERVICE_DB_PASSWORD"`
+\set compute_service_pw    `echo "$ORES_COMPUTE_SERVICE_DB_PASSWORD"`
+\set synthetic_service_pw    `echo "$ORES_SYNTHETIC_SERVICE_DB_PASSWORD"`
+\set workflow_service_pw    `echo "$ORES_WORKFLOW_SERVICE_DB_PASSWORD"`
+\set ore_service_pw    `echo "$ORES_ORE_SERVICE_DB_PASSWORD"`
+\set marketdata_service_pw    `echo "$ORES_MARKETDATA_SERVICE_DB_PASSWORD"`
+\set analytics_service_pw    `echo "$ORES_ANALYTICS_SERVICE_DB_PASSWORD"`
+\set storage_service_pw    `echo "$ORES_STORAGE_SERVICE_DB_PASSWORD"`
+\set inbox_service_pw    `echo "$ORES_INBOX_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',

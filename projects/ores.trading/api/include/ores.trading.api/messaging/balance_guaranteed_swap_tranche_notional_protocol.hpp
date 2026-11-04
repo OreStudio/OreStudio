@@ -438,7 +438,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_notional_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_key>) {
     return std::tuple{
         utility::codec::field{"trade_id", &balance_guaranteed_swap_tranche_notional_key::trade_id},
         utility::codec::field{"tranche_number",
@@ -456,7 +457,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_notional_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_write>) {
     return std::tuple{
         utility::codec::field{"trade_id",
                               &balance_guaranteed_swap_tranche_notional_write::trade_id},
@@ -481,7 +483,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_notional_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_change>) {
     return std::tuple{
         utility::codec::field{"write", &balance_guaranteed_swap_tranche_notional_change::write},
         utility::codec::field{"precondition",
@@ -497,7 +500,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_notional_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_removal>) {
     return std::tuple{
         utility::codec::field{"key", &balance_guaranteed_swap_tranche_notional_removal::key},
         utility::codec::field{"precondition",
@@ -513,7 +517,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_notional_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &balance_guaranteed_swap_tranche_notional_lookup::key},
         utility::codec::field{"balance_guaranteed_swap_tranche_notional",
@@ -530,7 +535,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_notionals_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notionals_filter>) {
     return std::tuple{
         utility::codec::field{"trade_id",
                               &balance_guaranteed_swap_tranche_notionals_filter::trade_id},
@@ -547,7 +553,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_notional_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_event>) {
     return std::tuple{
         utility::codec::field{"event_id",
                               &balance_guaranteed_swap_tranche_notional_event::event_id},
@@ -570,7 +577,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const balance_guaranteed_swap_tranche_notional_version_key&) {
+wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_version_key>) {
     return std::tuple{
         utility::codec::field{"balance_guaranteed_swap_tranche_notional",
                               &balance_guaranteed_swap_tranche_notional_version_key::
@@ -589,7 +596,7 @@ wire_fields(const balance_guaranteed_swap_tranche_notional_version_key&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const balance_guaranteed_swap_tranche_notional_versions_filter&) {
+wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version",
                               &balance_guaranteed_swap_tranche_notional_versions_filter::version},
@@ -610,7 +617,7 @@ wire_fields(const balance_guaranteed_swap_tranche_notional_versions_filter&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_balance_guaranteed_swap_tranche_notionals_request&) {
+wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notionals_request>) {
     return std::tuple{
         utility::codec::field{"offset",
                               &list_balance_guaranteed_swap_tranche_notionals_request::offset},
@@ -634,7 +641,7 @@ wire_fields(const list_balance_guaranteed_swap_tranche_notionals_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_balance_guaranteed_swap_tranche_notionals_response&) {
+wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notionals_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_balance_guaranteed_swap_tranche_notionals_response::result},
@@ -655,7 +662,7 @@ wire_fields(const list_balance_guaranteed_swap_tranche_notionals_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_balance_guaranteed_swap_tranche_notional_request&) {
+wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_balance_guaranteed_swap_tranche_notional_request::key},
     };
@@ -670,7 +677,7 @@ wire_fields(const get_balance_guaranteed_swap_tranche_notional_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_balance_guaranteed_swap_tranche_notional_response&) {
+wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_balance_guaranteed_swap_tranche_notional_response::result},
@@ -689,7 +696,7 @@ wire_fields(const get_balance_guaranteed_swap_tranche_notional_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_balance_guaranteed_swap_tranche_notionals_request&) {
+wire_fields(std::type_identity<get_many_balance_guaranteed_swap_tranche_notionals_request>) {
     return std::tuple{
         utility::codec::field{"keys",
                               &get_many_balance_guaranteed_swap_tranche_notionals_request::keys},
@@ -705,7 +712,7 @@ wire_fields(const get_many_balance_guaranteed_swap_tranche_notionals_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_balance_guaranteed_swap_tranche_notionals_response&) {
+wire_fields(std::type_identity<get_many_balance_guaranteed_swap_tranche_notionals_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_balance_guaranteed_swap_tranche_notionals_response::result},
@@ -723,7 +730,7 @@ wire_fields(const get_many_balance_guaranteed_swap_tranche_notionals_response&) 
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_balance_guaranteed_swap_tranche_notional_request&) {
+wire_fields(std::type_identity<put_balance_guaranteed_swap_tranche_notional_request>) {
     return std::tuple{
         utility::codec::field{"change",
                               &put_balance_guaranteed_swap_tranche_notional_request::change},
@@ -741,7 +748,7 @@ wire_fields(const put_balance_guaranteed_swap_tranche_notional_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_balance_guaranteed_swap_tranche_notional_response&) {
+wire_fields(std::type_identity<put_balance_guaranteed_swap_tranche_notional_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_balance_guaranteed_swap_tranche_notional_response::result},
@@ -760,7 +767,7 @@ wire_fields(const put_balance_guaranteed_swap_tranche_notional_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_balance_guaranteed_swap_tranche_notionals_request&) {
+wire_fields(std::type_identity<put_many_balance_guaranteed_swap_tranche_notionals_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_balance_guaranteed_swap_tranche_notionals_request::changes},
@@ -778,7 +785,7 @@ wire_fields(const put_many_balance_guaranteed_swap_tranche_notionals_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_balance_guaranteed_swap_tranche_notionals_response&) {
+wire_fields(std::type_identity<put_many_balance_guaranteed_swap_tranche_notionals_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_balance_guaranteed_swap_tranche_notionals_response::result},
@@ -797,7 +804,7 @@ wire_fields(const put_many_balance_guaranteed_swap_tranche_notionals_response&) 
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_balance_guaranteed_swap_tranche_notional_request&) {
+wire_fields(std::type_identity<delete_balance_guaranteed_swap_tranche_notional_request>) {
     return std::tuple{
         utility::codec::field{"removal",
                               &delete_balance_guaranteed_swap_tranche_notional_request::removal},
@@ -815,7 +822,7 @@ wire_fields(const delete_balance_guaranteed_swap_tranche_notional_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_balance_guaranteed_swap_tranche_notional_response&) {
+wire_fields(std::type_identity<delete_balance_guaranteed_swap_tranche_notional_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_balance_guaranteed_swap_tranche_notional_response::result},
@@ -831,7 +838,7 @@ wire_fields(const delete_balance_guaranteed_swap_tranche_notional_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_balance_guaranteed_swap_tranche_notionals_request&) {
+wire_fields(std::type_identity<delete_many_balance_guaranteed_swap_tranche_notionals_request>) {
     return std::tuple{
         utility::codec::field{
             "removals", &delete_many_balance_guaranteed_swap_tranche_notionals_request::removals},
@@ -849,7 +856,7 @@ wire_fields(const delete_many_balance_guaranteed_swap_tranche_notionals_request&
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_balance_guaranteed_swap_tranche_notionals_response&) {
+wire_fields(std::type_identity<delete_many_balance_guaranteed_swap_tranche_notionals_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &delete_many_balance_guaranteed_swap_tranche_notionals_response::result},
@@ -864,8 +871,8 @@ wire_fields(const delete_many_balance_guaranteed_swap_tranche_notionals_response
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request>) {
     return std::tuple{
         utility::codec::field{
             "trade_id",
@@ -891,8 +898,8 @@ wire_fields(const list_by_trade_id_balance_guaranteed_swap_tranche_notionals_req
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response::result},
@@ -913,7 +920,7 @@ wire_fields(const list_by_trade_id_balance_guaranteed_swap_tranche_notionals_res
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_balance_guaranteed_swap_tranche_notional_versions_request&) {
+wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notional_versions_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &list_balance_guaranteed_swap_tranche_notional_versions_request::key},
@@ -937,7 +944,7 @@ wire_fields(const list_balance_guaranteed_swap_tranche_notional_versions_request
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_balance_guaranteed_swap_tranche_notional_versions_response&) {
+wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notional_versions_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_balance_guaranteed_swap_tranche_notional_versions_response::result},
@@ -957,7 +964,7 @@ wire_fields(const list_balance_guaranteed_swap_tranche_notional_versions_respons
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_balance_guaranteed_swap_tranche_notional_version_request&) {
+wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_version_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &get_balance_guaranteed_swap_tranche_notional_version_request::key},
@@ -973,7 +980,7 @@ wire_fields(const get_balance_guaranteed_swap_tranche_notional_version_request&)
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_balance_guaranteed_swap_tranche_notional_version_response&) {
+wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_version_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &get_balance_guaranteed_swap_tranche_notional_version_response::result},

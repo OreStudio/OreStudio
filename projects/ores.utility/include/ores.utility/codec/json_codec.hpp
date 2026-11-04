@@ -123,7 +123,7 @@ template <typename T>
 struct json_codec {
     static yyjson_mut_val* write(yyjson_mut_doc* doc, const T& v) {
         if constexpr (states_wire_form<T>) {
-            return detail::write_object(doc, v, wire_fields(v));
+            return detail::write_object(doc, v, wire_fields(std::type_identity<T>{}));
         } else {
             const auto text = text_form<T>::to_text(v);
             return yyjson_mut_strncpy(doc, text.data(), text.size());
@@ -133,7 +133,7 @@ struct json_codec {
     static T read(yyjson_val* v) {
         if constexpr (states_wire_form<T>) {
             T out;
-            detail::read_object(v, out, wire_fields(out));
+            detail::read_object(v, out, wire_fields(std::type_identity<T>{}));
             return out;
         } else {
             if (!yyjson_is_str(v))

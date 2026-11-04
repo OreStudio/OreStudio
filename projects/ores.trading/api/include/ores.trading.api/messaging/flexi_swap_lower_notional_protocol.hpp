@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const flexi_swap_lower_notional_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_key>) {
     return std::tuple{
         utility::codec::field{"trade_id", &flexi_swap_lower_notional_key::trade_id},
         utility::codec::field{"sequence_number", &flexi_swap_lower_notional_key::sequence_number},
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const flexi_swap_lower_notional_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_write>) {
     return std::tuple{
         utility::codec::field{"trade_id", &flexi_swap_lower_notional_write::trade_id},
         utility::codec::field{"sequence_number", &flexi_swap_lower_notional_write::sequence_number},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const flexi_swap_lower_notional_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_change>) {
     return std::tuple{
         utility::codec::field{"write", &flexi_swap_lower_notional_change::write},
         utility::codec::field{"precondition", &flexi_swap_lower_notional_change::precondition},
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const flexi_swap_lower_notional_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_removal>) {
     return std::tuple{
         utility::codec::field{"key", &flexi_swap_lower_notional_removal::key},
         utility::codec::field{"precondition", &flexi_swap_lower_notional_removal::precondition},
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const flexi_swap_lower_notional_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &flexi_swap_lower_notional_lookup::key},
         utility::codec::field{"flexi_swap_lower_notional",
@@ -490,7 +490,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const flexi_swap_lower_notionals_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notionals_filter>) {
     return std::tuple{
         utility::codec::field{"trade_id", &flexi_swap_lower_notionals_filter::trade_id},
         utility::codec::field{"trade_id_one_of",
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const flexi_swap_lower_notional_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &flexi_swap_lower_notional_event::event_id},
         utility::codec::field{"key", &flexi_swap_lower_notional_event::key},
@@ -525,7 +525,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const flexi_swap_lower_notional_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<flexi_swap_lower_notional_version_key>) {
     return std::tuple{
         utility::codec::field{"flexi_swap_lower_notional",
                               &flexi_swap_lower_notional_version_key::flexi_swap_lower_notional},
@@ -541,7 +542,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const flexi_swap_lower_notional_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<flexi_swap_lower_notional_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &flexi_swap_lower_notional_versions_filter::version},
         utility::codec::field{"from_version",
@@ -558,7 +560,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_flexi_swap_lower_notionals_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_flexi_swap_lower_notionals_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_flexi_swap_lower_notionals_request::offset},
         utility::codec::field{"limit", &list_flexi_swap_lower_notionals_request::limit},
@@ -576,7 +579,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_flexi_swap_lower_notionals_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_flexi_swap_lower_notionals_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_flexi_swap_lower_notionals_response::result},
         utility::codec::field{
@@ -594,7 +598,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_flexi_swap_lower_notional_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_flexi_swap_lower_notional_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_flexi_swap_lower_notional_request::key},
     };
@@ -608,7 +613,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_flexi_swap_lower_notional_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_flexi_swap_lower_notional_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_flexi_swap_lower_notional_response::result},
         utility::codec::field{"flexi_swap_lower_notional",
@@ -624,7 +630,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_flexi_swap_lower_notionals_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_flexi_swap_lower_notionals_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_flexi_swap_lower_notionals_request::keys},
     };
@@ -638,7 +645,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_flexi_swap_lower_notionals_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_flexi_swap_lower_notionals_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_flexi_swap_lower_notionals_response::result},
         utility::codec::field{"entries", &get_many_flexi_swap_lower_notionals_response::entries},
@@ -653,7 +661,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_flexi_swap_lower_notional_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_flexi_swap_lower_notional_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_flexi_swap_lower_notional_request::change},
         utility::codec::field{"intent", &put_flexi_swap_lower_notional_request::intent},
@@ -668,7 +677,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_flexi_swap_lower_notional_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_flexi_swap_lower_notional_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_flexi_swap_lower_notional_response::result},
         utility::codec::field{"flexi_swap_lower_notional",
@@ -684,7 +694,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_flexi_swap_lower_notionals_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_flexi_swap_lower_notionals_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_flexi_swap_lower_notionals_request::changes},
         utility::codec::field{"intent", &put_many_flexi_swap_lower_notionals_request::intent},
@@ -699,7 +710,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_flexi_swap_lower_notionals_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_flexi_swap_lower_notionals_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_flexi_swap_lower_notionals_response::result},
         utility::codec::field{
@@ -716,7 +728,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_flexi_swap_lower_notional_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_flexi_swap_lower_notional_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_flexi_swap_lower_notional_request::removal},
         utility::codec::field{"intent", &delete_flexi_swap_lower_notional_request::intent},
@@ -731,7 +744,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_flexi_swap_lower_notional_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_flexi_swap_lower_notional_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_flexi_swap_lower_notional_response::result},
     };
@@ -745,7 +759,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_flexi_swap_lower_notionals_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_flexi_swap_lower_notionals_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_flexi_swap_lower_notionals_request::removals},
@@ -761,7 +776,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_flexi_swap_lower_notionals_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_flexi_swap_lower_notionals_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_flexi_swap_lower_notionals_response::result},
     };
@@ -776,7 +792,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_trade_id_flexi_swap_lower_notionals_request&) {
+wire_fields(std::type_identity<list_by_trade_id_flexi_swap_lower_notionals_request>) {
     return std::tuple{
         utility::codec::field{"trade_id",
                               &list_by_trade_id_flexi_swap_lower_notionals_request::trade_id},
@@ -799,7 +815,7 @@ wire_fields(const list_by_trade_id_flexi_swap_lower_notionals_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_trade_id_flexi_swap_lower_notionals_response&) {
+wire_fields(std::type_identity<list_by_trade_id_flexi_swap_lower_notionals_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_trade_id_flexi_swap_lower_notionals_response::result},
@@ -819,7 +835,8 @@ wire_fields(const list_by_trade_id_flexi_swap_lower_notionals_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_flexi_swap_lower_notional_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_flexi_swap_lower_notional_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_flexi_swap_lower_notional_versions_request::key},
         utility::codec::field{"offset", &list_flexi_swap_lower_notional_versions_request::offset},
@@ -837,7 +854,8 @@ wire_fields(const list_by_trade_id_flexi_swap_lower_notionals_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_flexi_swap_lower_notional_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_flexi_swap_lower_notional_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_flexi_swap_lower_notional_versions_response::result},
         utility::codec::field{"versions",
@@ -854,7 +872,8 @@ wire_fields(const list_by_trade_id_flexi_swap_lower_notionals_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_flexi_swap_lower_notional_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_flexi_swap_lower_notional_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_flexi_swap_lower_notional_version_request::key},
     };
@@ -868,7 +887,8 @@ wire_fields(const list_by_trade_id_flexi_swap_lower_notionals_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_flexi_swap_lower_notional_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_flexi_swap_lower_notional_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_flexi_swap_lower_notional_version_response::result},
         utility::codec::field{"version", &get_flexi_swap_lower_notional_version_response::version},

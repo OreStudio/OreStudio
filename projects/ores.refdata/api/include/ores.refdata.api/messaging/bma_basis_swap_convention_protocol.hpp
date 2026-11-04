@@ -381,7 +381,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bma_basis_swap_convention_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bma_basis_swap_convention_key>) {
     return std::tuple{
         utility::codec::field{"id", &bma_basis_swap_convention_key::id},
     };
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bma_basis_swap_convention_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bma_basis_swap_convention_write>) {
     return std::tuple{
         utility::codec::field{"id", &bma_basis_swap_convention_write::id},
         utility::codec::field{"index", &bma_basis_swap_convention_write::index},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bma_basis_swap_convention_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bma_basis_swap_convention_change>) {
     return std::tuple{
         utility::codec::field{"write", &bma_basis_swap_convention_change::write},
         utility::codec::field{"precondition", &bma_basis_swap_convention_change::precondition},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bma_basis_swap_convention_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bma_basis_swap_convention_removal>) {
     return std::tuple{
         utility::codec::field{"key", &bma_basis_swap_convention_removal::key},
         utility::codec::field{"precondition", &bma_basis_swap_convention_removal::precondition},
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bma_basis_swap_convention_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bma_basis_swap_convention_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &bma_basis_swap_convention_lookup::key},
         utility::codec::field{"bma_basis_swap_convention",
@@ -475,7 +475,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bma_basis_swap_conventions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bma_basis_swap_conventions_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &bma_basis_swap_conventions_filter::id_one_of},
     };
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bma_basis_swap_convention_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bma_basis_swap_convention_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &bma_basis_swap_convention_event::event_id},
         utility::codec::field{"key", &bma_basis_swap_convention_event::key},
@@ -508,7 +508,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bma_basis_swap_convention_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<bma_basis_swap_convention_version_key>) {
     return std::tuple{
         utility::codec::field{"bma_basis_swap_convention",
                               &bma_basis_swap_convention_version_key::bma_basis_swap_convention},
@@ -524,7 +525,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bma_basis_swap_convention_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<bma_basis_swap_convention_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &bma_basis_swap_convention_versions_filter::version},
         utility::codec::field{"from_version",
@@ -541,7 +543,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bma_basis_swap_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bma_basis_swap_conventions_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_bma_basis_swap_conventions_request::offset},
         utility::codec::field{"limit", &list_bma_basis_swap_conventions_request::limit},
@@ -559,7 +562,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bma_basis_swap_conventions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bma_basis_swap_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_bma_basis_swap_conventions_response::result},
         utility::codec::field{
@@ -577,7 +581,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bma_basis_swap_convention_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bma_basis_swap_convention_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_bma_basis_swap_convention_request::key},
     };
@@ -591,7 +596,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bma_basis_swap_convention_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bma_basis_swap_convention_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_bma_basis_swap_convention_response::result},
         utility::codec::field{"bma_basis_swap_convention",
@@ -607,7 +613,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_bma_basis_swap_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_bma_basis_swap_conventions_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_bma_basis_swap_conventions_request::keys},
     };
@@ -621,7 +628,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_bma_basis_swap_conventions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_bma_basis_swap_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_bma_basis_swap_conventions_response::result},
         utility::codec::field{"entries", &get_many_bma_basis_swap_conventions_response::entries},
@@ -636,7 +644,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_bma_basis_swap_convention_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_bma_basis_swap_convention_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_bma_basis_swap_convention_request::change},
         utility::codec::field{"intent", &put_bma_basis_swap_convention_request::intent},
@@ -651,7 +660,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_bma_basis_swap_convention_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_bma_basis_swap_convention_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_bma_basis_swap_convention_response::result},
         utility::codec::field{"bma_basis_swap_convention",
@@ -667,7 +677,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_bma_basis_swap_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_bma_basis_swap_conventions_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_bma_basis_swap_conventions_request::changes},
         utility::codec::field{"intent", &put_many_bma_basis_swap_conventions_request::intent},
@@ -682,7 +693,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_bma_basis_swap_conventions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_bma_basis_swap_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_bma_basis_swap_conventions_response::result},
         utility::codec::field{
@@ -699,7 +711,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_bma_basis_swap_convention_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_bma_basis_swap_convention_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_bma_basis_swap_convention_request::removal},
         utility::codec::field{"intent", &delete_bma_basis_swap_convention_request::intent},
@@ -714,7 +727,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_bma_basis_swap_convention_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_bma_basis_swap_convention_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_bma_basis_swap_convention_response::result},
     };
@@ -728,7 +742,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_bma_basis_swap_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_bma_basis_swap_conventions_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_bma_basis_swap_conventions_request::removals},
@@ -744,7 +759,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_bma_basis_swap_conventions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_bma_basis_swap_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_bma_basis_swap_conventions_response::result},
     };
@@ -758,7 +774,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bma_basis_swap_convention_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bma_basis_swap_convention_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_bma_basis_swap_convention_versions_request::key},
         utility::codec::field{"offset", &list_bma_basis_swap_convention_versions_request::offset},
@@ -776,7 +793,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bma_basis_swap_convention_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bma_basis_swap_convention_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_bma_basis_swap_convention_versions_response::result},
         utility::codec::field{"versions",
@@ -793,7 +811,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bma_basis_swap_convention_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bma_basis_swap_convention_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_bma_basis_swap_convention_version_request::key},
     };
@@ -807,7 +826,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bma_basis_swap_co
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bma_basis_swap_convention_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bma_basis_swap_convention_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_bma_basis_swap_convention_version_response::result},
         utility::codec::field{"version", &get_bma_basis_swap_convention_version_response::version},

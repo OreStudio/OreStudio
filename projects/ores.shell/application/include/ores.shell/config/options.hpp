@@ -67,7 +67,7 @@ struct options final {
     std::optional<std::string> script_path;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const options&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
     return std::tuple{
         ::ores::utility::codec::field{"logging", &options::logging},
         ::ores::utility::codec::field{"connection", &options::connection},

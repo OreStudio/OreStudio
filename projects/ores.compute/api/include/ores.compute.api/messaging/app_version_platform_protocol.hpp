@@ -304,7 +304,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const app_version_platform_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_key>) {
     return std::tuple{
         utility::codec::field{"app_version_id", &app_version_platform_key::app_version_id},
         utility::codec::field{"platform_id", &app_version_platform_key::platform_id},
@@ -319,7 +319,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const app_version_platform_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_write>) {
     return std::tuple{
         utility::codec::field{"app_version_id", &app_version_platform_write::app_version_id},
         utility::codec::field{"platform_id", &app_version_platform_write::platform_id},
@@ -336,7 +336,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const app_version_platform_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_change>) {
     return std::tuple{
         utility::codec::field{"write", &app_version_platform_change::write},
         utility::codec::field{"precondition", &app_version_platform_change::precondition},
@@ -351,7 +351,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const app_version_platform_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_removal>) {
     return std::tuple{
         utility::codec::field{"key", &app_version_platform_removal::key},
         utility::codec::field{"precondition", &app_version_platform_removal::precondition},
@@ -366,7 +366,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const app_version_platform_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &app_version_platform_lookup::key},
         utility::codec::field{"app_version_platform",
@@ -382,7 +382,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const app_version_platforms_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platforms_filter>) {
     return std::tuple{
         utility::codec::field{"app_version_id", &app_version_platforms_filter::app_version_id},
         utility::codec::field{"app_version_id_one_of",
@@ -398,7 +398,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_app_version_platforms_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_app_version_platforms_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_app_version_platforms_request::offset},
         utility::codec::field{"limit", &list_app_version_platforms_request::limit},
@@ -415,7 +415,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_app_version_platforms_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_app_version_platforms_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_app_version_platforms_response::result},
         utility::codec::field{"app_version_platforms",
@@ -432,7 +432,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_app_version_platform_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_app_version_platform_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_app_version_platform_request::key},
     };
@@ -446,7 +446,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_app_version_platform_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_app_version_platform_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_app_version_platform_response::result},
         utility::codec::field{"app_version_platform",
@@ -462,7 +462,8 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_app_version_platforms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_app_version_platforms_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_app_version_platforms_request::keys},
     };
@@ -476,7 +477,8 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_app_version_platforms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_app_version_platforms_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_app_version_platforms_response::result},
         utility::codec::field{"entries", &get_many_app_version_platforms_response::entries},
@@ -491,7 +493,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_app_version_platform_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_app_version_platform_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_app_version_platform_request::change},
         utility::codec::field{"intent", &put_app_version_platform_request::intent},
@@ -506,7 +508,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_app_version_platform_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_app_version_platform_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_app_version_platform_response::result},
         utility::codec::field{"app_version_platform",
@@ -522,7 +524,8 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_app_version_platforms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_app_version_platforms_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_app_version_platforms_request::changes},
         utility::codec::field{"intent", &put_many_app_version_platforms_request::intent},
@@ -537,7 +540,8 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_app_version_platforms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_app_version_platforms_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_app_version_platforms_response::result},
         utility::codec::field{"app_version_platforms",
@@ -553,7 +557,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_app_version_platform_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_app_version_platform_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_app_version_platform_request::removal},
         utility::codec::field{"intent", &delete_app_version_platform_request::intent},
@@ -568,7 +572,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_app_version_platform_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_app_version_platform_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_app_version_platform_response::result},
     };
@@ -582,7 +586,8 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_app_version_platforms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_app_version_platforms_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_app_version_platforms_request::removals},
         utility::codec::field{"intent", &delete_many_app_version_platforms_request::intent},
@@ -597,7 +602,8 @@ struct list_by_app_version_id_app_version_platforms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_app_version_platforms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_app_version_platforms_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_app_version_platforms_response::result},
     };
@@ -612,7 +618,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_app_version_id_app_version_platforms_request&) {
+wire_fields(std::type_identity<list_by_app_version_id_app_version_platforms_request>) {
     return std::tuple{
         utility::codec::field{
             "app_version_id",
@@ -639,7 +645,7 @@ wire_fields(const list_by_app_version_id_app_version_platforms_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_app_version_id_app_version_platforms_response&) {
+wire_fields(std::type_identity<list_by_app_version_id_app_version_platforms_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_app_version_id_app_version_platforms_response::result},

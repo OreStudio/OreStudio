@@ -4,8 +4,8 @@ Run with:
     python3 -m pytest projects/ores.codegen/tests/test_economic_declaration.py
 
 A column states ``:economic: true`` or ``:economic: false``. The domain header
-carries the answer as an ``economic_fields_of`` overload the economic digest
-reads, so no field is economic or not by its name. A struct declares all of its
+carries the answer as a ``canonical_form`` that renders the economic members,
+which the economic digest hashes, so no field is economic or not by its name. A struct declares all of its
 members or none of them, and the trade-type catalogue's digest section lists
 only entities that declare.
 """
@@ -19,6 +19,7 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.core import generate_from_model  # noqa: E402
 from codegen.org_loader import (  # noqa: E402
+    entity_canonical_members,
     _require_economic_component,
     economic_declaration,
     load_org_field_group_model,
@@ -119,10 +120,10 @@ def test_a_declared_entity_lists_its_economic_members(tmp_path):
 
     header = _header(tmp_path, model)
 
-    assert 'inline constexpr std::string_view widget_economic_fields[] = {\n    "amount",\n};' \
-        in header
-    assert "economic_fields_of(std::type_identity<widget>)" in header
-    assert "#include <span>" in header
+    assert "inline std::string canonical_form(const widget& v) {" in header
+    assert 'append_member(out, "amount", v.amount);' in header
+    assert 'append_member(out, "id"' not in header
+    assert '#include "ores.utility/digest/canonical_form.hpp"' in header
 
 
 def test_the_names_do_not_decide(tmp_path):
@@ -134,11 +135,11 @@ def test_the_names_do_not_decide(tmp_path):
 
     header = _header(tmp_path, model)
 
-    assert '"reference_id"' in header
-    assert '"amount"' not in header
+    assert 'append_member(out, "reference_id", v.reference_id);' in header
+    assert 'append_member(out, "amount"' not in header
 
 
-def test_an_entity_with_no_economic_member_declares_an_empty_list(tmp_path):
+def test_an_entity_with_no_economic_member_renders_an_empty_form(tmp_path):
     model = _widget(
         tmp_path,
         id_economic=":economic: false\n",
@@ -147,17 +148,16 @@ def test_an_entity_with_no_economic_member_declares_an_empty_list(tmp_path):
 
     header = _header(tmp_path, model)
 
-    assert "economic_fields_of(std::type_identity<widget>)" in header
-    assert "widget_economic_fields" not in header
-    assert "return {};" in header
+    assert "inline std::string canonical_form(const widget&) {" in header
+    assert "append_member" not in header
 
 
-def test_an_entity_that_declares_nothing_has_no_overload(tmp_path):
+def test_an_entity_that_declares_nothing_has_no_form(tmp_path):
     model = _widget(tmp_path)
 
     header = _header(tmp_path, model)
 
-    assert "economic_fields_of" not in header
+    assert "canonical_form" not in header
 
 
 def test_a_half_declared_entity_is_refused(tmp_path):
@@ -228,6 +228,83 @@ The second.
 
     assert group["has_economic_declaration"] is True
     assert group["economic_fields"] == ["first"]
+    assert group["canonical_members"] == ["first"]
+
+
+GROUP = """\
+:PROPERTIES:
+:ID: 00000000-0000-0000-0000-0000000000F3
+:END:
+#+title: ores.testcomp.{name}_field_group
+#+type: field_group
+#+component: testcomp
+#+entity_singular: {name}
+#+namespace: ores::testcomp::domain
+
+A group.
+
+* Fields
+
+** code
+:PROPERTIES:
+:cpp_type: std::string
+:economic: {economic}
+:END:
+
+The code.
+"""
+
+
+def _grouped_entity(tmp_path, economic):
+    modeling = tmp_path / "projects" / "ores.testcomp" / "modeling"
+    modeling.mkdir(parents=True, exist_ok=True)
+    name = f"tag_{economic}"
+    (modeling / f"ores.testcomp.{name}_field_group.org").write_text(
+        GROUP.format(name=name, economic=economic), encoding="utf-8")
+    entity = {
+        "domain_identity_group": f"ores.testcomp.{name}",
+        "has_identity_group": True,
+        "columns": [{"name": "amount", "economic": True}],
+    }
+    return modeling / "ores.testcomp.widget.org", entity
+
+
+def test_a_group_whose_model_declares_an_economic_field_is_in_the_form(tmp_path):
+    path, entity = _grouped_entity(tmp_path, "true")
+
+    assert entity_canonical_members(path, entity) == ["identity", "amount"]
+
+
+def test_a_group_whose_model_declares_none_stays_out_of_the_form(tmp_path):
+    path, entity = _grouped_entity(tmp_path, "false")
+
+    assert entity_canonical_members(path, entity) == ["amount"]
+
+
+def test_a_group_model_beside_the_entity_is_found(tmp_path):
+    (tmp_path / "ores.testcomp.tag_field_group.org").write_text(
+        GROUP.format(name="tag", economic="true"), encoding="utf-8")
+    entity = {"domain_identity_group": "ores.testcomp.tag", "has_identity_group": True,
+              "columns": []}
+
+    assert entity_canonical_members(tmp_path / "ores.testcomp.widget.org", entity) == [
+        "identity"]
+
+
+def test_a_group_with_no_model_is_refused(tmp_path):
+    entity = {"domain_identity_group": "ores.testcomp.missing", "has_identity_group": True,
+              "columns": []}
+
+    with pytest.raises(ValueError, match="exactly one model, found 0"):
+        entity_canonical_members(tmp_path / "ores.testcomp.widget.org", entity)
+
+
+def test_a_group_name_that_is_not_three_parts_is_refused(tmp_path):
+    entity = {"domain_identity_group": "trading.tag", "has_identity_group": True,
+              "columns": []}
+
+    with pytest.raises(ValueError, match="3-part dotted name"):
+        entity_canonical_members(tmp_path / "ores.testcomp.widget.org", entity)
 
 
 CATALOGUE_ENTITY = ENTITY.format(

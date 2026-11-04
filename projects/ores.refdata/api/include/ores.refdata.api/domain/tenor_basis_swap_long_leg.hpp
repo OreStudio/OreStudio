@@ -72,7 +72,7 @@ struct tenor_basis_swap_long_leg {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_long_leg&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_long_leg>) {
     return std::tuple{
         utility::codec::field{"long_index", &tenor_basis_swap_long_leg::long_index},
         utility::codec::field{"long_pay_tenor", &tenor_basis_swap_long_leg::long_pay_tenor},

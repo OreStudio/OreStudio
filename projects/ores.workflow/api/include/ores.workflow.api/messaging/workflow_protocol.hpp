@@ -566,7 +566,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const step_log_entry&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<step_log_entry>) {
     return std::tuple{
         ::ores::utility::codec::field{"level", &step_log_entry::level},
         ::ores::utility::codec::field{"message", &step_log_entry::message},
@@ -582,7 +582,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const step_completed_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<step_completed_event>) {
     return std::tuple{
         ::ores::utility::codec::field{"workflow_instance_id",
                                       &step_completed_event::workflow_instance_id},
@@ -602,7 +602,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const start_workflow_message&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<start_workflow_message>) {
     return std::tuple{
         ::ores::utility::codec::field{"type", &start_workflow_message::type},
         ::ores::utility::codec::field{"tenant_id", &start_workflow_message::tenant_id},
@@ -622,7 +622,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_step_result_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_step_result_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"step_id", &get_step_result_request::step_id},
         ::ores::utility::codec::field{"tenant_id", &get_step_result_request::tenant_id},
@@ -637,7 +637,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_step_result_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_step_result_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"found", &get_step_result_response::found},
         ::ores::utility::codec::field{"outcome", &get_step_result_response::outcome},
@@ -657,7 +657,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"id", &workflow_instance_summary::id},
         ::ores::utility::codec::field{"type", &workflow_instance_summary::type},
@@ -682,7 +682,8 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_instance_summaries_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_workflow_instance_summaries_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"limit", &list_workflow_instance_summaries_request::limit},
         ::ores::utility::codec::field{"status_filter",
@@ -706,7 +707,8 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_instance_summaries_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success",
                                       &list_workflow_instance_summaries_response::success},
@@ -725,7 +727,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_step_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_step_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"id", &workflow_step_summary::id},
         ::ores::utility::codec::field{"name", &workflow_step_summary::name},
@@ -749,7 +751,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_steps_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workflow_steps_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"workflow_instance_id",
                                       &get_workflow_steps_request::workflow_instance_id},
@@ -764,7 +766,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_steps_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workflow_steps_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_workflow_steps_response::success},
         ::ores::utility::codec::field{"message", &get_workflow_steps_response::message},
@@ -783,7 +785,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_step_definition_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_step_definition_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"step_index", &workflow_step_definition_summary::step_index},
         ::ores::utility::codec::field{"name", &workflow_step_definition_summary::name},
@@ -804,7 +806,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_definition_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_definition_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"type_name", &workflow_definition_summary::type_name},
         ::ores::utility::codec::field{"description", &workflow_definition_summary::description},
@@ -821,7 +823,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workflow_definitions_request>) {
     return std::tuple{};
 }
 
@@ -833,7 +835,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workflow_definitions_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &list_workflow_definitions_response::success},
         ::ores::utility::codec::field{"message", &list_workflow_definitions_response::message},
@@ -850,7 +852,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const retry_workflow_instance_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<retry_workflow_instance_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"workflow_instance_id",
                                       &retry_workflow_instance_request::workflow_instance_id},
@@ -866,7 +868,7 @@ struct retry_workflow_instance_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const retry_workflow_instance_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<retry_workflow_instance_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &retry_workflow_instance_response::success},
         ::ores::utility::codec::field{"message", &retry_workflow_instance_response::message},

@@ -77,7 +77,7 @@ struct bond_stub_interpolation {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_stub_interpolation&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_stub_interpolation>) {
     return std::tuple{
         utility::codec::field{"short_index", &bond_stub_interpolation::short_index},
         utility::codec::field{"long_index", &bond_stub_interpolation::long_index},

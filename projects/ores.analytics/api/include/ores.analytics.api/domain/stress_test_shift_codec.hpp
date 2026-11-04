@@ -45,7 +45,7 @@ namespace ores::analytics::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_shift&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shift>) {
     return std::tuple{
         utility::codec::field{"version", &stress_test_shift::version},
         utility::codec::field{"tenant_id", &stress_test_shift::tenant_id},

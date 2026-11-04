@@ -74,7 +74,7 @@ struct database_options final {
     std::string pool_backoff = "exponential";
 };
 
-[[nodiscard]] constexpr auto wire_fields(const database_options&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<database_options>) {
     return std::tuple{
         ::ores::utility::codec::field{"user", &database_options::user},
         ::ores::utility::codec::field{"host", &database_options::host},

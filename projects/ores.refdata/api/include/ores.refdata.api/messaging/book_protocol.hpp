@@ -393,7 +393,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_key>) {
     return std::tuple{
         utility::codec::field{"name", &book_key::name},
     };
@@ -407,7 +407,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_write>) {
     return std::tuple{
         utility::codec::field{"id", &book_write::id},
         utility::codec::field{"party_id", &book_write::party_id},
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_change>) {
     return std::tuple{
         utility::codec::field{"write", &book_change::write},
         utility::codec::field{"precondition", &book_change::precondition},
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_removal>) {
     return std::tuple{
         utility::codec::field{"key", &book_removal::key},
         utility::codec::field{"precondition", &book_removal::precondition},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &book_lookup::key},
         utility::codec::field{"book", &book_lookup::book},
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const books_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<books_filter>) {
     return std::tuple{
         utility::codec::field{"parent_portfolio_id", &books_filter::parent_portfolio_id},
         utility::codec::field{"id_one_of", &books_filter::id_one_of},
@@ -499,7 +499,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &book_event::event_id},
         utility::codec::field{"key", &book_event::key},
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_version_key>) {
     return std::tuple{
         utility::codec::field{"book", &book_version_key::book},
         utility::codec::field{"version", &book_version_key::version},
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &book_versions_filter::version},
         utility::codec::field{"from_version", &book_versions_filter::from_version},
@@ -549,7 +549,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_books_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_books_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_books_request::offset},
         utility::codec::field{"limit", &list_books_request::limit},
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_books_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_books_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_books_response::result},
         utility::codec::field{"books", &list_books_response::books},
@@ -583,7 +583,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_book_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_book_request::key},
     };
@@ -597,7 +597,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_book_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_book_response::result},
         utility::codec::field{"book", &get_book_response::book},
@@ -612,7 +612,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_books_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_books_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_books_request::keys},
     };
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_books_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_books_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_books_response::result},
         utility::codec::field{"entries", &get_many_books_response::entries},
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_book_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_book_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_book_request::change},
         utility::codec::field{"intent", &put_book_request::intent},
@@ -656,7 +656,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_book_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_book_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_book_response::result},
         utility::codec::field{"book", &put_book_response::book},
@@ -671,7 +671,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_books_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_books_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_books_request::changes},
         utility::codec::field{"intent", &put_many_books_request::intent},
@@ -686,7 +686,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_books_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_books_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_books_response::result},
         utility::codec::field{"books", &put_many_books_response::books},
@@ -701,7 +701,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_book_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_book_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_book_request::removal},
         utility::codec::field{"intent", &delete_book_request::intent},
@@ -716,7 +716,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_book_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_book_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_book_response::result},
     };
@@ -730,7 +730,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_books_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_books_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_books_request::removals},
         utility::codec::field{"intent", &delete_many_books_request::intent},
@@ -745,7 +745,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_books_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_books_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_books_response::result},
     };
@@ -759,7 +759,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_parent_portfolio_id_books_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_parent_portfolio_id_books_request>) {
     return std::tuple{
         utility::codec::field{"parent_portfolio_id",
                               &list_by_parent_portfolio_id_books_request::parent_portfolio_id},
@@ -779,7 +780,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_parent_portfolio_id_books_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_parent_portfolio_id_books_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_parent_portfolio_id_books_response::result},
         utility::codec::field{"books", &list_by_parent_portfolio_id_books_response::books},
@@ -795,7 +797,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_book_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_book_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_book_versions_request::key},
         utility::codec::field{"offset", &list_book_versions_request::offset},
@@ -813,7 +815,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_book_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_book_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_book_versions_response::result},
         utility::codec::field{"versions", &list_book_versions_response::versions},
@@ -829,7 +831,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_book_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_book_version_request::key},
     };
@@ -843,7 +845,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_book_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_book_version_response::result},
         utility::codec::field{"version", &get_book_version_response::version},

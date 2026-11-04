@@ -72,7 +72,7 @@ public:
     static void verify_schema_fingerprint(const context& ctx, const std::string& database);
 };
 
-[[nodiscard]] constexpr auto wire_fields(const context_factory::configuration&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<context_factory::configuration>) {
     using configuration = context_factory::configuration;
     return std::tuple{
         ::ores::utility::codec::field{"database_options", &configuration::database_options},

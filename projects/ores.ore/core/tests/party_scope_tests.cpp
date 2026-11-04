@@ -20,11 +20,14 @@
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.reporting.api/domain/configuration.hpp"
 #include "ores.reporting.api/domain/configuration_analytic.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <map>
 #include <optional>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 namespace {
@@ -37,6 +40,18 @@ struct mapped_document {
     std::string name;
     std::map<std::string, int> unmodelled;
 };
+
+// The walk reads a struct by its stated shape, as codegen states it for a
+// generated document.
+constexpr auto wire_fields(std::type_identity<mapped_document>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"header", &mapped_document::header},
+                      field{"analytics", &mapped_document::analytics},
+                      field{"extra", &mapped_document::extra},
+                      field{"absent", &mapped_document::absent},
+                      field{"name", &mapped_document::name},
+                      field{"unmodelled", &mapped_document::unmodelled}};
+}
 
 }
 

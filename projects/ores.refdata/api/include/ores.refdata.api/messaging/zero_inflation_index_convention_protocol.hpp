@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const zero_inflation_index_convention_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<zero_inflation_index_convention_key>) {
     return std::tuple{
         utility::codec::field{"id", &zero_inflation_index_convention_key::id},
     };
@@ -402,7 +402,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const zero_inflation_index_convention_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<zero_inflation_index_convention_write>) {
     return std::tuple{
         utility::codec::field{"id", &zero_inflation_index_convention_write::id},
         utility::codec::field{"region_name", &zero_inflation_index_convention_write::region_name},
@@ -424,7 +425,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const zero_inflation_index_convention_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<zero_inflation_index_convention_change>) {
     return std::tuple{
         utility::codec::field{"write", &zero_inflation_index_convention_change::write},
         utility::codec::field{"precondition",
@@ -440,7 +442,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const zero_inflation_index_convention_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<zero_inflation_index_convention_removal>) {
     return std::tuple{
         utility::codec::field{"key", &zero_inflation_index_convention_removal::key},
         utility::codec::field{"precondition",
@@ -456,7 +459,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const zero_inflation_index_convention_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<zero_inflation_index_convention_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &zero_inflation_index_convention_lookup::key},
         utility::codec::field{
@@ -473,7 +477,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const zero_inflation_index_conventions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<zero_inflation_index_conventions_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &zero_inflation_index_conventions_filter::id_one_of},
     };
@@ -487,7 +492,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const zero_inflation_index_convention_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<zero_inflation_index_convention_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &zero_inflation_index_convention_event::event_id},
         utility::codec::field{"key", &zero_inflation_index_convention_event::key},
@@ -507,7 +513,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const zero_inflation_index_convention_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<zero_inflation_index_convention_version_key>) {
     return std::tuple{
         utility::codec::field{
             "zero_inflation_index_convention",
@@ -524,7 +531,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const zero_inflation_index_convention_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<zero_inflation_index_convention_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &zero_inflation_index_convention_versions_filter::version},
         utility::codec::field{"from_version",
@@ -542,7 +550,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_zero_inflation_index_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_zero_inflation_index_conventions_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_zero_inflation_index_conventions_request::offset},
         utility::codec::field{"limit", &list_zero_inflation_index_conventions_request::limit},
@@ -560,7 +569,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_zero_inflation_index_conventions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_zero_inflation_index_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_zero_inflation_index_conventions_response::result},
         utility::codec::field{
@@ -578,7 +588,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_zero_inflation_index_convention_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_zero_inflation_index_convention_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_zero_inflation_index_convention_request::key},
     };
@@ -592,7 +603,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_zero_inflation_index_convention_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_zero_inflation_index_convention_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_zero_inflation_index_convention_response::result},
         utility::codec::field{
@@ -609,7 +621,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_zero_inflation_index_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_zero_inflation_index_conventions_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_zero_inflation_index_conventions_request::keys},
     };
@@ -624,7 +637,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_zero_inflation_index_conventions_response&) {
+wire_fields(std::type_identity<get_many_zero_inflation_index_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_zero_inflation_index_conventions_response::result},
@@ -641,7 +654,8 @@ wire_fields(const get_many_zero_inflation_index_conventions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_zero_inflation_index_convention_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_zero_inflation_index_convention_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_zero_inflation_index_convention_request::change},
         utility::codec::field{"intent", &put_zero_inflation_index_convention_request::intent},
@@ -656,7 +670,8 @@ wire_fields(const get_many_zero_inflation_index_conventions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_zero_inflation_index_convention_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_zero_inflation_index_convention_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_zero_inflation_index_convention_response::result},
         utility::codec::field{
@@ -673,7 +688,8 @@ wire_fields(const get_many_zero_inflation_index_conventions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_zero_inflation_index_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_zero_inflation_index_conventions_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_zero_inflation_index_conventions_request::changes},
@@ -690,7 +706,7 @@ wire_fields(const get_many_zero_inflation_index_conventions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_zero_inflation_index_conventions_response&) {
+wire_fields(std::type_identity<put_many_zero_inflation_index_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_zero_inflation_index_conventions_response::result},
@@ -708,7 +724,8 @@ wire_fields(const put_many_zero_inflation_index_conventions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_zero_inflation_index_convention_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_zero_inflation_index_convention_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_zero_inflation_index_convention_request::removal},
         utility::codec::field{"intent", &delete_zero_inflation_index_convention_request::intent},
@@ -723,7 +740,8 @@ wire_fields(const put_many_zero_inflation_index_conventions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_zero_inflation_index_convention_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_zero_inflation_index_convention_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_zero_inflation_index_convention_response::result},
     };
@@ -738,7 +756,7 @@ wire_fields(const put_many_zero_inflation_index_conventions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_zero_inflation_index_conventions_request&) {
+wire_fields(std::type_identity<delete_many_zero_inflation_index_conventions_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_zero_inflation_index_conventions_request::removals},
@@ -756,7 +774,7 @@ wire_fields(const delete_many_zero_inflation_index_conventions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_zero_inflation_index_conventions_response&) {
+wire_fields(std::type_identity<delete_many_zero_inflation_index_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_zero_inflation_index_conventions_response::result},
@@ -772,7 +790,7 @@ wire_fields(const delete_many_zero_inflation_index_conventions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_zero_inflation_index_convention_versions_request&) {
+wire_fields(std::type_identity<list_zero_inflation_index_convention_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_zero_inflation_index_convention_versions_request::key},
         utility::codec::field{"offset",
@@ -795,7 +813,7 @@ wire_fields(const list_zero_inflation_index_convention_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_zero_inflation_index_convention_versions_response&) {
+wire_fields(std::type_identity<list_zero_inflation_index_convention_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_zero_inflation_index_convention_versions_response::result},
@@ -815,7 +833,7 @@ wire_fields(const list_zero_inflation_index_convention_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_zero_inflation_index_convention_version_request&) {
+wire_fields(std::type_identity<get_zero_inflation_index_convention_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_zero_inflation_index_convention_version_request::key},
     };
@@ -830,7 +848,7 @@ wire_fields(const get_zero_inflation_index_convention_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_zero_inflation_index_convention_version_response&) {
+wire_fields(std::type_identity<get_zero_inflation_index_convention_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_zero_inflation_index_convention_version_response::result},

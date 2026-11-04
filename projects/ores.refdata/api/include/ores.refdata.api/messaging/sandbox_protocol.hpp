@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sandbox_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sandbox_key>) {
     return std::tuple{
         utility::codec::field{"name", &sandbox_key::name},
     };
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sandbox_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sandbox_write>) {
     return std::tuple{
         utility::codec::field{"id", &sandbox_write::id},
         utility::codec::field{"name", &sandbox_write::name},
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sandbox_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sandbox_change>) {
     return std::tuple{
         utility::codec::field{"write", &sandbox_change::write},
         utility::codec::field{"precondition", &sandbox_change::precondition},
@@ -442,7 +442,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sandbox_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sandbox_removal>) {
     return std::tuple{
         utility::codec::field{"key", &sandbox_removal::key},
         utility::codec::field{"precondition", &sandbox_removal::precondition},
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sandbox_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sandbox_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &sandbox_lookup::key},
         utility::codec::field{"sandbox", &sandbox_lookup::sandbox},
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sandboxes_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sandboxes_filter>) {
     return std::tuple{
         utility::codec::field{"anchor_portfolio_id", &sandboxes_filter::anchor_portfolio_id},
         utility::codec::field{"id_one_of", &sandboxes_filter::id_one_of},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sandbox_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sandbox_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &sandbox_event::event_id},
         utility::codec::field{"key", &sandbox_event::key},
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sandbox_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sandbox_version_key>) {
     return std::tuple{
         utility::codec::field{"sandbox", &sandbox_version_key::sandbox},
         utility::codec::field{"version", &sandbox_version_key::version},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sandbox_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sandbox_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &sandbox_versions_filter::version},
         utility::codec::field{"from_version", &sandbox_versions_filter::from_version},
@@ -539,7 +539,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_sandboxes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sandboxes_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_sandboxes_request::offset},
         utility::codec::field{"limit", &list_sandboxes_request::limit},
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_sandboxes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sandboxes_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_sandboxes_response::result},
         utility::codec::field{"sandboxes", &list_sandboxes_response::sandboxes},
@@ -573,7 +573,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_sandbox_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sandbox_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_sandbox_request::key},
     };
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_sandbox_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sandbox_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_sandbox_response::result},
         utility::codec::field{"sandbox", &get_sandbox_response::sandbox},
@@ -602,7 +602,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_sandboxes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_sandboxes_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_sandboxes_request::keys},
     };
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_sandboxes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_sandboxes_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_sandboxes_response::result},
         utility::codec::field{"entries", &get_many_sandboxes_response::entries},
@@ -631,7 +631,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_sandbox_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_sandbox_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_sandbox_request::change},
         utility::codec::field{"intent", &put_sandbox_request::intent},
@@ -646,7 +646,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_sandbox_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_sandbox_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_sandbox_response::result},
         utility::codec::field{"sandbox", &put_sandbox_response::sandbox},
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_sandboxes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_sandboxes_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_sandboxes_request::changes},
         utility::codec::field{"intent", &put_many_sandboxes_request::intent},
@@ -676,7 +676,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_sandboxes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_sandboxes_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_sandboxes_response::result},
         utility::codec::field{"sandboxes", &put_many_sandboxes_response::sandboxes},
@@ -691,7 +691,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_sandbox_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_sandbox_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_sandbox_request::removal},
         utility::codec::field{"intent", &delete_sandbox_request::intent},
@@ -706,7 +706,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_sandbox_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_sandbox_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_sandbox_response::result},
     };
@@ -720,7 +720,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_sandboxes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_sandboxes_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_sandboxes_request::removals},
         utility::codec::field{"intent", &delete_many_sandboxes_request::intent},
@@ -735,7 +735,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_sandboxes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_sandboxes_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_sandboxes_response::result},
     };
@@ -749,7 +749,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_anchor_portfolio_id_sandboxes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_anchor_portfolio_id_sandboxes_request>) {
     return std::tuple{
         utility::codec::field{"anchor_portfolio_id",
                               &list_by_anchor_portfolio_id_sandboxes_request::anchor_portfolio_id},
@@ -769,7 +770,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_anchor_portfolio_id_sandboxes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_anchor_portfolio_id_sandboxes_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_anchor_portfolio_id_sandboxes_response::result},
         utility::codec::field{"sandboxes",
@@ -786,7 +788,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_sandbox_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sandbox_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_sandbox_versions_request::key},
         utility::codec::field{"offset", &list_sandbox_versions_request::offset},
@@ -804,7 +806,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_sandbox_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sandbox_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_sandbox_versions_response::result},
         utility::codec::field{"versions", &list_sandbox_versions_response::versions},
@@ -820,7 +822,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_sandbox_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sandbox_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_sandbox_version_request::key},
     };
@@ -834,7 +836,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.sandboxes.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_sandbox_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sandbox_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_sandbox_version_response::result},
         utility::codec::field{"version", &get_sandbox_version_response::version},

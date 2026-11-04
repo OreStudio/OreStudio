@@ -247,7 +247,7 @@ struct get_nats_stream_samples_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const nats_server_sample&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_server_sample>) {
     return std::tuple{
         ::ores::utility::codec::field{"sampled_at", &nats_server_sample::sampled_at},
         ::ores::utility::codec::field{"in_msgs", &nats_server_sample::in_msgs},
@@ -268,7 +268,7 @@ struct get_nats_stream_samples_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const nats_stream_sample&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_stream_sample>) {
     return std::tuple{
         ::ores::utility::codec::field{"sampled_at", &nats_stream_sample::sampled_at},
         ::ores::utility::codec::field{"stream_name", &nats_stream_sample::stream_name},
@@ -286,7 +286,7 @@ struct get_nats_stream_samples_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const nats_server_samples_query&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_server_samples_query>) {
     return std::tuple{
         ::ores::utility::codec::field{"start_time", &nats_server_samples_query::start_time},
         ::ores::utility::codec::field{"end_time", &nats_server_samples_query::end_time},
@@ -302,7 +302,7 @@ struct get_nats_stream_samples_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const nats_stream_samples_query&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_stream_samples_query>) {
     return std::tuple{
         ::ores::utility::codec::field{"stream_name", &nats_stream_samples_query::stream_name},
         ::ores::utility::codec::field{"start_time", &nats_stream_samples_query::start_time},
@@ -319,7 +319,7 @@ struct get_nats_stream_samples_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_nats_server_samples_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_nats_server_samples_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"query", &get_nats_server_samples_request::query},
     };
@@ -333,7 +333,7 @@ struct get_nats_stream_samples_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_nats_server_samples_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_nats_server_samples_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_nats_server_samples_response::success},
         ::ores::utility::codec::field{"message", &get_nats_server_samples_response::message},
@@ -349,7 +349,7 @@ struct get_nats_stream_samples_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_nats_stream_samples_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_nats_stream_samples_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"query", &get_nats_stream_samples_request::query},
     };
@@ -363,7 +363,7 @@ struct get_nats_stream_samples_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_nats_stream_samples_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_nats_stream_samples_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_nats_stream_samples_response::success},
         ::ores::utility::codec::field{"message", &get_nats_stream_samples_response::message},

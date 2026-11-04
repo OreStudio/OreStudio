@@ -108,7 +108,7 @@ struct publish_bundle_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_bundle_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_bundle_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"bundle_code", &publish_bundle_request::bundle_code},
         ::ores::utility::codec::field{"mode", &publish_bundle_request::mode},
@@ -126,7 +126,7 @@ struct publish_bundle_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_bundle_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_bundle_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &publish_bundle_response::success},
         ::ores::utility::codec::field{"error_message", &publish_bundle_response::error_message},

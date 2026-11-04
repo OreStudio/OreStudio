@@ -409,7 +409,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_collection_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_key>) {
     return std::tuple{
         utility::codec::field{"collection", &todays_market_collection_key::collection},
     };
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_collection_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_write>) {
     return std::tuple{
         utility::codec::field{"id", &todays_market_collection_write::id},
         utility::codec::field{"todays_market_config_id",
@@ -442,7 +442,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_collection_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_change>) {
     return std::tuple{
         utility::codec::field{"write", &todays_market_collection_change::write},
         utility::codec::field{"precondition", &todays_market_collection_change::precondition},
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_collection_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_removal>) {
     return std::tuple{
         utility::codec::field{"key", &todays_market_collection_removal::key},
         utility::codec::field{"precondition", &todays_market_collection_removal::precondition},
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_collection_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &todays_market_collection_lookup::key},
         utility::codec::field{"todays_market_collection",
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_collections_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collections_filter>) {
     return std::tuple{
         utility::codec::field{"todays_market_config_id",
                               &todays_market_collections_filter::todays_market_config_id},
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_collection_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &todays_market_collection_event::event_id},
         utility::codec::field{"key", &todays_market_collection_event::key},
@@ -525,7 +525,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_collection_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_version_key>) {
     return std::tuple{
         utility::codec::field{"todays_market_collection",
                               &todays_market_collection_version_key::todays_market_collection},
@@ -541,7 +541,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_collection_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<todays_market_collection_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &todays_market_collection_versions_filter::version},
         utility::codec::field{"from_version",
@@ -558,7 +559,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_todays_market_collections_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_todays_market_collections_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_todays_market_collections_request::offset},
         utility::codec::field{"limit", &list_todays_market_collections_request::limit},
@@ -576,7 +578,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_todays_market_collections_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_todays_market_collections_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_todays_market_collections_response::result},
         utility::codec::field{"collections", &list_todays_market_collections_response::collections},
@@ -592,7 +595,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_todays_market_collection_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_todays_market_collection_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_todays_market_collection_request::key},
     };
@@ -606,7 +609,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_todays_market_collection_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_todays_market_collection_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_todays_market_collection_response::result},
         utility::codec::field{"todays_market_collection",
@@ -622,7 +626,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_todays_market_collections_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_todays_market_collections_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_todays_market_collections_request::keys},
     };
@@ -636,7 +641,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_todays_market_collections_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_todays_market_collections_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_todays_market_collections_response::result},
         utility::codec::field{"entries", &get_many_todays_market_collections_response::entries},
@@ -651,7 +657,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_todays_market_collection_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_todays_market_collection_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_todays_market_collection_request::change},
         utility::codec::field{"intent", &put_todays_market_collection_request::intent},
@@ -666,7 +672,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_todays_market_collection_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_todays_market_collection_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_todays_market_collection_response::result},
         utility::codec::field{"todays_market_collection",
@@ -682,7 +689,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_todays_market_collections_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_todays_market_collections_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_todays_market_collections_request::changes},
         utility::codec::field{"intent", &put_many_todays_market_collections_request::intent},
@@ -697,7 +705,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_todays_market_collections_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_todays_market_collections_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_todays_market_collections_response::result},
         utility::codec::field{"collections",
@@ -713,7 +722,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_todays_market_collection_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_todays_market_collection_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_todays_market_collection_request::removal},
         utility::codec::field{"intent", &delete_todays_market_collection_request::intent},
@@ -728,7 +738,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_todays_market_collection_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_todays_market_collection_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_todays_market_collection_response::result},
     };
@@ -742,7 +753,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_todays_market_collections_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_todays_market_collections_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_todays_market_collections_request::removals},
         utility::codec::field{"intent", &delete_many_todays_market_collections_request::intent},
@@ -757,7 +769,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_todays_market_collections_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_todays_market_collections_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_todays_market_collections_response::result},
     };
@@ -772,7 +785,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_todays_market_config_id_todays_market_collections_request&) {
+wire_fields(std::type_identity<list_by_todays_market_config_id_todays_market_collections_request>) {
     return std::tuple{
         utility::codec::field{"todays_market_config_id",
                               &list_by_todays_market_config_id_todays_market_collections_request::
@@ -798,8 +811,8 @@ wire_fields(const list_by_todays_market_config_id_todays_market_collections_requ
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const list_by_todays_market_config_id_todays_market_collections_response&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<list_by_todays_market_config_id_todays_market_collections_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_by_todays_market_config_id_todays_market_collections_response::result},
@@ -819,7 +832,8 @@ wire_fields(const list_by_todays_market_config_id_todays_market_collections_resp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_todays_market_collection_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_todays_market_collection_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_todays_market_collection_versions_request::key},
         utility::codec::field{"offset", &list_todays_market_collection_versions_request::offset},
@@ -837,7 +851,8 @@ wire_fields(const list_by_todays_market_config_id_todays_market_collections_resp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_todays_market_collection_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_todays_market_collection_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_todays_market_collection_versions_response::result},
         utility::codec::field{"versions",
@@ -854,7 +869,8 @@ wire_fields(const list_by_todays_market_config_id_todays_market_collections_resp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_todays_market_collection_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_todays_market_collection_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_todays_market_collection_version_request::key},
     };
@@ -868,7 +884,8 @@ wire_fields(const list_by_todays_market_config_id_todays_market_collections_resp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_todays_market_collection_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_todays_market_collection_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_todays_market_collection_version_response::result},
         utility::codec::field{"version", &get_todays_market_collection_version_response::version},

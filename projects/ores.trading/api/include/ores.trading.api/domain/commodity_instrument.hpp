@@ -28,12 +28,11 @@
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -230,47 +229,41 @@ struct commodity_instrument final {
 };
 
 /**
- * @brief The members of commodity_instrument the customer agreed to.
+ * @brief The canonical text of the members of commodity_instrument the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view commodity_instrument_economic_fields[] = {
-    "commodity_code",
-    "currency",
-    "quantity",
-    "unit",
-    "start_date",
-    "maturity_date",
-    "fixed_price",
-    "option_type",
-    "strike_price",
-    "exercise_type",
-    "average_type",
-    "averaging_start_date",
-    "averaging_end_date",
-    "spread_commodity_code",
-    "spread_amount",
-    "strip_frequency_code",
-    "variance_strike",
-    "accumulation_amount",
-    "knock_out_barrier",
-    "barrier_type",
-    "lower_barrier",
-    "upper_barrier",
-    "day_count_fraction_code",
-    "payment_frequency_code",
-    "swaption_expiry_date",
-};
-
-/**
- * @brief Names the members of commodity_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<commodity_instrument>) {
-    return commodity_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const commodity_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "commodity_code", v.commodity_code);
+    ores::utility::digest::append_member(out, "currency", v.currency);
+    ores::utility::digest::append_member(out, "quantity", v.quantity);
+    ores::utility::digest::append_member(out, "unit", v.unit);
+    ores::utility::digest::append_member(out, "start_date", v.start_date);
+    ores::utility::digest::append_member(out, "maturity_date", v.maturity_date);
+    ores::utility::digest::append_member(out, "fixed_price", v.fixed_price);
+    ores::utility::digest::append_member(out, "option_type", v.option_type);
+    ores::utility::digest::append_member(out, "strike_price", v.strike_price);
+    ores::utility::digest::append_member(out, "exercise_type", v.exercise_type);
+    ores::utility::digest::append_member(out, "average_type", v.average_type);
+    ores::utility::digest::append_member(out, "averaging_start_date", v.averaging_start_date);
+    ores::utility::digest::append_member(out, "averaging_end_date", v.averaging_end_date);
+    ores::utility::digest::append_member(out, "spread_commodity_code", v.spread_commodity_code);
+    ores::utility::digest::append_member(out, "spread_amount", v.spread_amount);
+    ores::utility::digest::append_member(out, "strip_frequency_code", v.strip_frequency_code);
+    ores::utility::digest::append_member(out, "variance_strike", v.variance_strike);
+    ores::utility::digest::append_member(out, "accumulation_amount", v.accumulation_amount);
+    ores::utility::digest::append_member(out, "knock_out_barrier", v.knock_out_barrier);
+    ores::utility::digest::append_member(out, "barrier_type", v.barrier_type);
+    ores::utility::digest::append_member(out, "lower_barrier", v.lower_barrier);
+    ores::utility::digest::append_member(out, "upper_barrier", v.upper_barrier);
+    ores::utility::digest::append_member(out, "day_count_fraction_code", v.day_count_fraction_code);
+    ores::utility::digest::append_member(out, "payment_frequency_code", v.payment_frequency_code);
+    ores::utility::digest::append_member(out, "swaption_expiry_date", v.swaption_expiry_date);
+    out.push_back('}');
+    return out;
 }
 
 /**

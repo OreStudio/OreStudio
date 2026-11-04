@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_digital_option_instrument_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_digital_option_instrument_key>) {
     return std::tuple{
         utility::codec::field{"trade_id", &equity_digital_option_instrument_key::trade_id},
     };
@@ -409,7 +409,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_digital_option_instrument_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<equity_digital_option_instrument_write>) {
     return std::tuple{
         utility::codec::field{"trade_id", &equity_digital_option_instrument_write::trade_id},
         utility::codec::field{"trade_type_code",
@@ -442,7 +443,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_digital_option_instrument_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<equity_digital_option_instrument_change>) {
     return std::tuple{
         utility::codec::field{"write", &equity_digital_option_instrument_change::write},
         utility::codec::field{"precondition",
@@ -458,7 +460,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_digital_option_instrument_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<equity_digital_option_instrument_removal>) {
     return std::tuple{
         utility::codec::field{"key", &equity_digital_option_instrument_removal::key},
         utility::codec::field{"precondition",
@@ -474,7 +477,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_digital_option_instrument_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<equity_digital_option_instrument_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &equity_digital_option_instrument_lookup::key},
         utility::codec::field{
@@ -491,7 +495,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_digital_option_instruments_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<equity_digital_option_instruments_filter>) {
     return std::tuple{
         utility::codec::field{"trade_id_one_of",
                               &equity_digital_option_instruments_filter::trade_id_one_of},
@@ -506,7 +511,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_digital_option_instrument_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<equity_digital_option_instrument_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &equity_digital_option_instrument_event::event_id},
         utility::codec::field{"key", &equity_digital_option_instrument_event::key},
@@ -526,7 +532,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_digital_option_instrument_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<equity_digital_option_instrument_version_key>) {
     return std::tuple{
         utility::codec::field{
             "equity_digital_option_instrument",
@@ -543,7 +550,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_digital_option_instrument_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<equity_digital_option_instrument_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version",
                               &equity_digital_option_instrument_versions_filter::version},
@@ -562,7 +570,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_digital_option_instruments_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_equity_digital_option_instruments_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_equity_digital_option_instruments_request::offset},
         utility::codec::field{"limit", &list_equity_digital_option_instruments_request::limit},
@@ -580,7 +589,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_digital_option_instruments_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_equity_digital_option_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_equity_digital_option_instruments_response::result},
         utility::codec::field{
@@ -598,7 +608,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_digital_option_instrument_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_equity_digital_option_instrument_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_equity_digital_option_instrument_request::key},
     };
@@ -612,7 +623,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_digital_option_instrument_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_equity_digital_option_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_equity_digital_option_instrument_response::result},
         utility::codec::field{
@@ -630,7 +642,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_equity_digital_option_instruments_request&) {
+wire_fields(std::type_identity<get_many_equity_digital_option_instruments_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_equity_digital_option_instruments_request::keys},
     };
@@ -645,7 +657,7 @@ wire_fields(const get_many_equity_digital_option_instruments_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_equity_digital_option_instruments_response&) {
+wire_fields(std::type_identity<get_many_equity_digital_option_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_equity_digital_option_instruments_response::result},
@@ -662,7 +674,8 @@ wire_fields(const get_many_equity_digital_option_instruments_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_equity_digital_option_instrument_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_equity_digital_option_instrument_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_equity_digital_option_instrument_request::change},
         utility::codec::field{"intent", &put_equity_digital_option_instrument_request::intent},
@@ -677,7 +690,8 @@ wire_fields(const get_many_equity_digital_option_instruments_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_equity_digital_option_instrument_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_equity_digital_option_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_equity_digital_option_instrument_response::result},
         utility::codec::field{
@@ -695,7 +709,7 @@ wire_fields(const get_many_equity_digital_option_instruments_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_equity_digital_option_instruments_request&) {
+wire_fields(std::type_identity<put_many_equity_digital_option_instruments_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_equity_digital_option_instruments_request::changes},
@@ -713,7 +727,7 @@ wire_fields(const put_many_equity_digital_option_instruments_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_equity_digital_option_instruments_response&) {
+wire_fields(std::type_identity<put_many_equity_digital_option_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_equity_digital_option_instruments_response::result},
@@ -731,7 +745,8 @@ wire_fields(const put_many_equity_digital_option_instruments_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_equity_digital_option_instrument_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_equity_digital_option_instrument_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_equity_digital_option_instrument_request::removal},
         utility::codec::field{"intent", &delete_equity_digital_option_instrument_request::intent},
@@ -746,7 +761,8 @@ wire_fields(const put_many_equity_digital_option_instruments_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_equity_digital_option_instrument_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_equity_digital_option_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_equity_digital_option_instrument_response::result},
     };
@@ -761,7 +777,7 @@ wire_fields(const put_many_equity_digital_option_instruments_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_equity_digital_option_instruments_request&) {
+wire_fields(std::type_identity<delete_many_equity_digital_option_instruments_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_equity_digital_option_instruments_request::removals},
@@ -779,7 +795,7 @@ wire_fields(const delete_many_equity_digital_option_instruments_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_equity_digital_option_instruments_response&) {
+wire_fields(std::type_identity<delete_many_equity_digital_option_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_equity_digital_option_instruments_response::result},
@@ -795,7 +811,7 @@ wire_fields(const delete_many_equity_digital_option_instruments_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_equity_digital_option_instrument_versions_request&) {
+wire_fields(std::type_identity<list_equity_digital_option_instrument_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_equity_digital_option_instrument_versions_request::key},
         utility::codec::field{"offset",
@@ -818,7 +834,7 @@ wire_fields(const list_equity_digital_option_instrument_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_equity_digital_option_instrument_versions_response&) {
+wire_fields(std::type_identity<list_equity_digital_option_instrument_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_equity_digital_option_instrument_versions_response::result},
@@ -838,7 +854,7 @@ wire_fields(const list_equity_digital_option_instrument_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_equity_digital_option_instrument_version_request&) {
+wire_fields(std::type_identity<get_equity_digital_option_instrument_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_equity_digital_option_instrument_version_request::key},
     };
@@ -853,7 +869,7 @@ wire_fields(const get_equity_digital_option_instrument_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_equity_digital_option_instrument_version_response&) {
+wire_fields(std::type_identity<get_equity_digital_option_instrument_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_equity_digital_option_instrument_version_response::result},

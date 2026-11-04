@@ -1145,6 +1145,7 @@ set(files
     "messaging/commodity_price_segment_protocol_codec.cpp"
     "messaging/commodity_protocol_codec.cpp"
     "messaging/commodity_volatility_config_protocol_codec.cpp"
+    "messaging/configuration_document_protocol_codec.cpp"
     "messaging/contact_type_protocol_codec.cpp"
     "messaging/convention_kind_protocol_codec.cpp"
     "messaging/convention_kind_term_protocol_codec.cpp"

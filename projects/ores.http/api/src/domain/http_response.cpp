@@ -31,7 +31,7 @@ struct error_message final {
     std::string error;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const error_message&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<error_message>) {
     return std::tuple{ores::utility::codec::field{"error", &error_message::error}};
 }
 static_assert(ores::utility::codec::names_every_member<error_message>());

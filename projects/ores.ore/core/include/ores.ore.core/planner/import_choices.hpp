@@ -65,7 +65,7 @@ struct trade_defaults {
     std::optional<boost::uuids::uuid> default_counterparty_id;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const trade_defaults&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_defaults>) {
     return std::tuple{
         utility::codec::field{"trade_date", &trade_defaults::trade_date},
         utility::codec::field{"activity_type_code", &trade_defaults::activity_type_code},
@@ -194,7 +194,7 @@ struct import_choices {
     std::string purpose_type = "Internal";
 };
 
-[[nodiscard]] constexpr auto wire_fields(const import_choices&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<import_choices>) {
     using c = import_choices;
     return std::tuple{
         utility::codec::field{"currency_mode", &c::currency_mode},

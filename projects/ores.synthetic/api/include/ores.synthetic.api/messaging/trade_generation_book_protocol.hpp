@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_book_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_book_key>) {
     return std::tuple{
         utility::codec::field{"id", &trade_generation_book_key::id},
     };
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_book_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_book_write>) {
     return std::tuple{
         utility::codec::field{"id", &trade_generation_book_write::id},
         utility::codec::field{"config_id", &trade_generation_book_write::config_id},
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_book_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_book_change>) {
     return std::tuple{
         utility::codec::field{"write", &trade_generation_book_change::write},
         utility::codec::field{"precondition", &trade_generation_book_change::precondition},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_book_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_book_removal>) {
     return std::tuple{
         utility::codec::field{"key", &trade_generation_book_removal::key},
         utility::codec::field{"precondition", &trade_generation_book_removal::precondition},
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_book_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_book_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &trade_generation_book_lookup::key},
         utility::codec::field{"trade_generation_book",
@@ -447,7 +447,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_books_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_books_filter>) {
     return std::tuple{
         utility::codec::field{"config_id", &trade_generation_books_filter::config_id},
         utility::codec::field{"id_one_of", &trade_generation_books_filter::id_one_of},
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_book_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_book_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &trade_generation_book_event::event_id},
         utility::codec::field{"key", &trade_generation_book_event::key},
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_book_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_book_version_key>) {
     return std::tuple{
         utility::codec::field{"trade_generation_book",
                               &trade_generation_book_version_key::trade_generation_book},
@@ -498,7 +498,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_book_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<trade_generation_book_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &trade_generation_book_versions_filter::version},
         utility::codec::field{"from_version", &trade_generation_book_versions_filter::from_version},
@@ -514,7 +515,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_generation_books_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_trade_generation_books_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_trade_generation_books_request::offset},
         utility::codec::field{"limit", &list_trade_generation_books_request::limit},
@@ -532,7 +533,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_generation_books_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_trade_generation_books_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_trade_generation_books_response::result},
         utility::codec::field{"trade_generation_books",
@@ -549,7 +550,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_generation_book_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trade_generation_book_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_trade_generation_book_request::key},
     };
@@ -563,7 +564,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_generation_book_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trade_generation_book_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_trade_generation_book_response::result},
         utility::codec::field{"trade_generation_book",
@@ -579,7 +580,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_trade_generation_books_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_trade_generation_books_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_trade_generation_books_request::keys},
     };
@@ -593,7 +595,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_trade_generation_books_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_trade_generation_books_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_trade_generation_books_response::result},
         utility::codec::field{"entries", &get_many_trade_generation_books_response::entries},
@@ -608,7 +611,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_trade_generation_book_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_trade_generation_book_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_trade_generation_book_request::change},
         utility::codec::field{"intent", &put_trade_generation_book_request::intent},
@@ -623,7 +626,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_trade_generation_book_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_trade_generation_book_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_trade_generation_book_response::result},
         utility::codec::field{"trade_generation_book",
@@ -639,7 +642,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_trade_generation_books_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_trade_generation_books_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_trade_generation_books_request::changes},
         utility::codec::field{"intent", &put_many_trade_generation_books_request::intent},
@@ -654,7 +658,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_trade_generation_books_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_trade_generation_books_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_trade_generation_books_response::result},
         utility::codec::field{"trade_generation_books",
@@ -670,7 +675,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_trade_generation_book_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_trade_generation_book_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_trade_generation_book_request::removal},
         utility::codec::field{"intent", &delete_trade_generation_book_request::intent},
@@ -685,7 +690,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_trade_generation_book_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_trade_generation_book_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_trade_generation_book_response::result},
     };
@@ -699,7 +705,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_trade_generation_books_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_trade_generation_books_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_trade_generation_books_request::removals},
         utility::codec::field{"intent", &delete_many_trade_generation_books_request::intent},
@@ -714,7 +721,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_trade_generation_books_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_trade_generation_books_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_trade_generation_books_response::result},
     };
@@ -728,7 +736,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_generation_book_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_trade_generation_book_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_trade_generation_book_versions_request::key},
         utility::codec::field{"offset", &list_trade_generation_book_versions_request::offset},
@@ -746,7 +755,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_generation_book_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_trade_generation_book_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_trade_generation_book_versions_response::result},
         utility::codec::field{"versions", &list_trade_generation_book_versions_response::versions},
@@ -762,7 +772,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_generation_book_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_trade_generation_book_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_trade_generation_book_version_request::key},
     };
@@ -776,7 +787,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.trade_generatio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_generation_book_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_trade_generation_book_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_trade_generation_book_version_response::result},
         utility::codec::field{"version", &get_trade_generation_book_version_response::version},

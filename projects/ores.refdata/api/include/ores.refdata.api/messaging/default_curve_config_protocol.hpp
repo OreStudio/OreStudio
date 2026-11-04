@@ -368,7 +368,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_config_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_config_key>) {
     return std::tuple{
         utility::codec::field{"id", &default_curve_config_key::id},
     };
@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_config_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_config_write>) {
     return std::tuple{
         utility::codec::field{"id", &default_curve_config_write::id},
         utility::codec::field{"curve_definition_id",
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_config_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_config_change>) {
     return std::tuple{
         utility::codec::field{"write", &default_curve_config_change::write},
         utility::codec::field{"precondition", &default_curve_config_change::precondition},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_config_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_config_removal>) {
     return std::tuple{
         utility::codec::field{"key", &default_curve_config_removal::key},
         utility::codec::field{"precondition", &default_curve_config_removal::precondition},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_config_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_config_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &default_curve_config_lookup::key},
         utility::codec::field{"default_curve_config",
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_configs_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_configs_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &default_curve_configs_filter::id_one_of},
     };
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_config_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_config_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &default_curve_config_event::event_id},
         utility::codec::field{"key", &default_curve_config_event::key},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_config_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_config_version_key>) {
     return std::tuple{
         utility::codec::field{"default_curve_config",
                               &default_curve_config_version_key::default_curve_config},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_config_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_config_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &default_curve_config_versions_filter::version},
         utility::codec::field{"from_version", &default_curve_config_versions_filter::from_version},
@@ -510,7 +510,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_default_curve_configs_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_default_curve_configs_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_default_curve_configs_request::offset},
         utility::codec::field{"limit", &list_default_curve_configs_request::limit},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_default_curve_configs_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_default_curve_configs_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_default_curve_configs_response::result},
         utility::codec::field{"default_curve_configs",
@@ -545,7 +545,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_default_curve_config_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_default_curve_config_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_default_curve_config_request::key},
     };
@@ -559,7 +559,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_default_curve_config_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_default_curve_config_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_default_curve_config_response::result},
         utility::codec::field{"default_curve_config",
@@ -575,7 +575,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_default_curve_configs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_default_curve_configs_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_default_curve_configs_request::keys},
     };
@@ -589,7 +590,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_default_curve_configs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_default_curve_configs_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_default_curve_configs_response::result},
         utility::codec::field{"entries", &get_many_default_curve_configs_response::entries},
@@ -604,7 +606,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_default_curve_config_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_default_curve_config_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_default_curve_config_request::change},
         utility::codec::field{"intent", &put_default_curve_config_request::intent},
@@ -619,7 +621,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_default_curve_config_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_default_curve_config_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_default_curve_config_response::result},
         utility::codec::field{"default_curve_config",
@@ -635,7 +637,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_default_curve_configs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_default_curve_configs_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_default_curve_configs_request::changes},
         utility::codec::field{"intent", &put_many_default_curve_configs_request::intent},
@@ -650,7 +653,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_default_curve_configs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_default_curve_configs_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_default_curve_configs_response::result},
         utility::codec::field{"default_curve_configs",
@@ -666,7 +670,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_default_curve_config_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_default_curve_config_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_default_curve_config_request::removal},
         utility::codec::field{"intent", &delete_default_curve_config_request::intent},
@@ -681,7 +685,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_default_curve_config_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_default_curve_config_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_default_curve_config_response::result},
     };
@@ -695,7 +699,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_default_curve_configs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_default_curve_configs_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_default_curve_configs_request::removals},
         utility::codec::field{"intent", &delete_many_default_curve_configs_request::intent},
@@ -710,7 +715,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_default_curve_configs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_default_curve_configs_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_default_curve_configs_response::result},
     };
@@ -724,7 +730,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_default_curve_config_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_default_curve_config_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_default_curve_config_versions_request::key},
         utility::codec::field{"offset", &list_default_curve_config_versions_request::offset},
@@ -742,7 +749,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_default_curve_config_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_default_curve_config_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_default_curve_config_versions_response::result},
         utility::codec::field{"versions", &list_default_curve_config_versions_response::versions},
@@ -758,7 +766,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_default_curve_config_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_default_curve_config_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_default_curve_config_version_request::key},
     };
@@ -772,7 +781,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_con
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_default_curve_config_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_default_curve_config_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_default_curve_config_version_response::result},
         utility::codec::field{"version", &get_default_curve_config_version_response::version},

@@ -611,7 +611,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_grid_stats_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_stats_request>) {
     return std::tuple{};
 }
 
@@ -623,7 +623,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const node_stats_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<node_stats_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"host_id", &node_stats_summary::host_id},
         ::ores::utility::codec::field{"machine", &node_stats_summary::machine},
@@ -650,7 +650,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_grid_stats_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_stats_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_grid_stats_response::success},
         ::ores::utility::codec::field{"message", &get_grid_stats_response::message},
@@ -685,7 +685,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_grid_series_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_series_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"start_time", &get_grid_series_request::start_time},
         ::ores::utility::codec::field{"end_time", &get_grid_series_request::end_time},
@@ -701,7 +701,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_grid_series_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_series_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_grid_series_response::success},
         ::ores::utility::codec::field{"message", &get_grid_series_response::message},
@@ -739,7 +739,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_node_series_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_node_series_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"start_time", &get_node_series_request::start_time},
         ::ores::utility::codec::field{"end_time", &get_node_series_request::end_time},
@@ -755,7 +755,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const node_series_node&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<node_series_node>) {
     return std::tuple{
         ::ores::utility::codec::field{"host_id", &node_series_node::host_id},
         ::ores::utility::codec::field{"machine", &node_series_node::machine},
@@ -770,7 +770,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_node_series_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_node_series_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_node_series_response::success},
         ::ores::utility::codec::field{"message", &get_node_series_response::message},
@@ -803,7 +803,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const node_sample_message&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<node_sample_message>) {
     return std::tuple{
         ::ores::utility::codec::field{"tenant_id", &node_sample_message::tenant_id},
         ::ores::utility::codec::field{"host_id", &node_sample_message::host_id},
@@ -832,7 +832,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_grid_usage_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_usage_request>) {
     return std::tuple{};
 }
 
@@ -844,7 +844,7 @@ struct get_grid_usage_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_grid_usage_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_usage_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_grid_usage_response::success},
         ::ores::utility::codec::field{"message", &get_grid_usage_response::message},

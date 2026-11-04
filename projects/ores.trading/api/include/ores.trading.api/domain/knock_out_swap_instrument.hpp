@@ -26,13 +26,12 @@
 #define ORES_TRADING_API_DOMAIN_KNOCK_OUT_SWAP_INSTRUMENT_HPP
 
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -142,25 +141,19 @@ struct knock_out_swap_instrument final {
 };
 
 /**
- * @brief The members of knock_out_swap_instrument the customer agreed to.
+ * @brief The canonical text of the members of knock_out_swap_instrument the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view knock_out_swap_instrument_economic_fields[] = {
-    "barrier_start_date",
-    "barrier_level",
-    "barrier_type",
-};
-
-/**
- * @brief Names the members of knock_out_swap_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<knock_out_swap_instrument>) {
-    return knock_out_swap_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const knock_out_swap_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "barrier_start_date", v.barrier_start_date);
+    ores::utility::digest::append_member(out, "barrier_level", v.barrier_level);
+    ores::utility::digest::append_member(out, "barrier_type", v.barrier_type);
+    out.push_back('}');
+    return out;
 }
 
 /**

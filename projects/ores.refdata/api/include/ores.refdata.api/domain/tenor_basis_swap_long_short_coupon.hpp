@@ -72,7 +72,7 @@ struct tenor_basis_swap_long_short_coupon {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_long_short_coupon&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_long_short_coupon>) {
     return std::tuple{
         utility::codec::field{"include_spread",
                               &tenor_basis_swap_long_short_coupon::include_spread},

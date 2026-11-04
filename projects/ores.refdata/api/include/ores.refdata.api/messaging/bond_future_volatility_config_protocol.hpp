@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_future_volatility_config_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_future_volatility_config_key>) {
     return std::tuple{
         utility::codec::field{"id", &bond_future_volatility_config_key::id},
     };
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_future_volatility_config_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_future_volatility_config_write>) {
     return std::tuple{
         utility::codec::field{"id", &bond_future_volatility_config_write::id},
         utility::codec::field{"curve_definition_id",
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_future_volatility_config_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_future_volatility_config_change>) {
     return std::tuple{
         utility::codec::field{"write", &bond_future_volatility_config_change::write},
         utility::codec::field{"precondition", &bond_future_volatility_config_change::precondition},
@@ -450,7 +450,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_future_volatility_config_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<bond_future_volatility_config_removal>) {
     return std::tuple{
         utility::codec::field{"key", &bond_future_volatility_config_removal::key},
         utility::codec::field{"precondition", &bond_future_volatility_config_removal::precondition},
@@ -465,7 +466,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_future_volatility_config_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_future_volatility_config_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &bond_future_volatility_config_lookup::key},
         utility::codec::field{"bond_future_volatility_config",
@@ -481,7 +482,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_future_volatility_configs_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<bond_future_volatility_configs_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &bond_future_volatility_configs_filter::id_one_of},
     };
@@ -495,7 +497,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_future_volatility_config_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_future_volatility_config_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &bond_future_volatility_config_event::event_id},
         utility::codec::field{"key", &bond_future_volatility_config_event::key},
@@ -515,7 +517,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_future_volatility_config_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<bond_future_volatility_config_version_key>) {
     return std::tuple{
         utility::codec::field{
             "bond_future_volatility_config",
@@ -532,7 +535,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_future_volatility_config_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<bond_future_volatility_config_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &bond_future_volatility_config_versions_filter::version},
         utility::codec::field{"from_version",
@@ -550,7 +554,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bond_future_volatility_configs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bond_future_volatility_configs_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_bond_future_volatility_configs_request::offset},
         utility::codec::field{"limit", &list_bond_future_volatility_configs_request::limit},
@@ -568,7 +573,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bond_future_volatility_configs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bond_future_volatility_configs_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_bond_future_volatility_configs_response::result},
         utility::codec::field{
@@ -586,7 +592,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bond_future_volatility_config_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bond_future_volatility_config_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_bond_future_volatility_config_request::key},
     };
@@ -600,7 +607,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bond_future_volatility_config_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bond_future_volatility_config_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_bond_future_volatility_config_response::result},
         utility::codec::field{
@@ -617,7 +625,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_bond_future_volatility_configs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_bond_future_volatility_configs_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_bond_future_volatility_configs_request::keys},
     };
@@ -631,7 +640,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_bond_future_volatility_configs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_bond_future_volatility_configs_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_bond_future_volatility_configs_response::result},
         utility::codec::field{"entries",
@@ -647,7 +657,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_bond_future_volatility_config_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_bond_future_volatility_config_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_bond_future_volatility_config_request::change},
         utility::codec::field{"intent", &put_bond_future_volatility_config_request::intent},
@@ -662,7 +673,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_bond_future_volatility_config_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_bond_future_volatility_config_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_bond_future_volatility_config_response::result},
         utility::codec::field{
@@ -679,7 +691,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_bond_future_volatility_configs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_bond_future_volatility_configs_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_bond_future_volatility_configs_request::changes},
         utility::codec::field{"intent", &put_many_bond_future_volatility_configs_request::intent},
@@ -694,7 +707,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_bond_future_volatility_configs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_bond_future_volatility_configs_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_bond_future_volatility_configs_response::result},
         utility::codec::field{
@@ -711,7 +725,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_bond_future_volatility_config_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_bond_future_volatility_config_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_bond_future_volatility_config_request::removal},
         utility::codec::field{"intent", &delete_bond_future_volatility_config_request::intent},
@@ -726,7 +741,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_bond_future_volatility_config_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_bond_future_volatility_config_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_bond_future_volatility_config_response::result},
     };
@@ -741,7 +757,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_bond_future_volatility_configs_request&) {
+wire_fields(std::type_identity<delete_many_bond_future_volatility_configs_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_bond_future_volatility_configs_request::removals},
@@ -759,7 +775,7 @@ wire_fields(const delete_many_bond_future_volatility_configs_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_bond_future_volatility_configs_response&) {
+wire_fields(std::type_identity<delete_many_bond_future_volatility_configs_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_bond_future_volatility_configs_response::result},
@@ -775,7 +791,7 @@ wire_fields(const delete_many_bond_future_volatility_configs_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_bond_future_volatility_config_versions_request&) {
+wire_fields(std::type_identity<list_bond_future_volatility_config_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_bond_future_volatility_config_versions_request::key},
         utility::codec::field{"offset",
@@ -796,7 +812,7 @@ wire_fields(const list_bond_future_volatility_config_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_bond_future_volatility_config_versions_response&) {
+wire_fields(std::type_identity<list_bond_future_volatility_config_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_bond_future_volatility_config_versions_response::result},
@@ -815,7 +831,8 @@ wire_fields(const list_bond_future_volatility_config_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bond_future_volatility_config_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bond_future_volatility_config_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_bond_future_volatility_config_version_request::key},
     };
@@ -830,7 +847,7 @@ wire_fields(const list_bond_future_volatility_config_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_bond_future_volatility_config_version_response&) {
+wire_fields(std::type_identity<get_bond_future_volatility_config_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_bond_future_volatility_config_version_response::result},

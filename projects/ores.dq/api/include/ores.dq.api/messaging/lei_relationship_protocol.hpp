@@ -170,7 +170,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_relationship_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_relationship_key>) {
     return std::tuple{
         utility::codec::field{"relationship_start_node_node_id",
                               &lei_relationship_key::relationship_start_node_node_id},
@@ -185,7 +185,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_relationship_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_relationship_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &lei_relationship_lookup::key},
         utility::codec::field{"lei_relationship", &lei_relationship_lookup::lei_relationship},
@@ -200,7 +200,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_relationships_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_relationships_filter>) {
     return std::tuple{
         utility::codec::field{"relationship_start_node_node_id_one_of",
                               &lei_relationships_filter::relationship_start_node_node_id_one_of},
@@ -215,7 +215,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_relationship_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_relationship_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &lei_relationship_event::event_id},
         utility::codec::field{"key", &lei_relationship_event::key},
@@ -234,7 +234,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_lei_relationships_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_lei_relationships_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_lei_relationships_request::offset},
         utility::codec::field{"limit", &list_lei_relationships_request::limit},
@@ -251,7 +251,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_lei_relationships_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_lei_relationships_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_lei_relationships_response::result},
         utility::codec::field{"relationships", &list_lei_relationships_response::relationships},
@@ -267,7 +267,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_lei_relationship_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_relationship_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_lei_relationship_request::key},
     };
@@ -281,7 +281,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_lei_relationship_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_relationship_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_lei_relationship_response::result},
         utility::codec::field{"lei_relationship", &get_lei_relationship_response::lei_relationship},
@@ -296,7 +296,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_lei_relationships_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_lei_relationships_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_lei_relationships_request::keys},
     };
@@ -310,7 +310,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_lei_relationships_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_lei_relationships_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_lei_relationships_response::result},
         utility::codec::field{"entries", &get_many_lei_relationships_response::entries},

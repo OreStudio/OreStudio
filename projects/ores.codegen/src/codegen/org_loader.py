@@ -2570,6 +2570,8 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     fg["has_economic_declaration"] = declared
     fg["economic_fields"] = economic
     fg["has_economic_fields"] = bool(economic)
+    fg["canonical_members"] = economic
+    fg["has_canonical_members"] = bool(economic)
 
     return {"field_group": fg}
 
@@ -6148,6 +6150,66 @@ def entity_economic_declaration(
         if c.get("is_identity_group_column") or c.get("sql_only")
     ]
     return economic_declaration(owner, members, carried)
+
+
+def _field_group_model(model_path: Path, dotted: str) -> Path:
+    """The model of the field group named @p dotted, as seen from @p model_path.
+
+    A group's model sits beside the entity that uses it, or in its own
+    component's modeling folder. Exactly one model may answer to the name.
+    """
+    parts = dotted.split(".")
+    if len(parts) != 3:
+        raise ValueError(
+            f"{model_path.name}: field group '{dotted}' must be a 3-part dotted "
+            f"name, such as 'ores.trading.instrument_identity'")
+    name = f"{dotted}_field_group.org"
+    beside = model_path.resolve().parent / name
+    if beside.is_file():
+        return beside
+    projects_dir = next(
+        (q for q in model_path.resolve().parents if q.name == "projects"), None)
+    found = sorted(projects_dir.glob(f"{parts[0]}.{parts[1]}/**/modeling/{name}")) \
+        if projects_dir else []
+    if len(found) != 1:
+        raise ValueError(
+            f"{model_path.name}: field group '{dotted}' needs exactly one model, "
+            f"found {len(found)}: {[str(f) for f in found]}")
+    return found[0]
+
+
+@lru_cache(maxsize=None)
+def _group_declares_economic_fields(group_model: Path) -> bool:
+    """Whether a field group's model declares any economic field.
+
+    A group member takes part in its owner's canonical form exactly when its
+    own model declares one, so the owner's form is decided from the group's
+    model and not from the generated header.
+    """
+    return bool(load_org_field_group_model(group_model)["field_group"]["has_economic_fields"])
+
+
+def entity_canonical_members(path: Path | str, entity: dict[str, Any]) -> list[str]:
+    """The members of the entity's canonical form, in member order.
+
+    These are the columns the model declares economic and each group whose own
+    model declares an economic field. Every other member stays out, so a field
+    the customer did not agree to never moves the digest.
+    """
+    def group(dotted: str) -> bool:
+        return _group_declares_economic_fields(_field_group_model(Path(path), dotted))
+
+    if entity.get("has_domain_groups"):
+        return [g["member"] for g in entity.get("domain_groups") or []
+                if group(g["field_group"])]
+    members: list[str] = []
+    if entity.get("domain_identity_group") and group(entity["domain_identity_group"]):
+        members.append("identity")
+    members.extend(_member_name(c) for c in entity_struct_member_columns(entity)
+                   if c.get("economic") is True)
+    if entity.get("domain_audit_group") and group(entity["domain_audit_group"]):
+        members.append("audit")
+    return members
 
 
 def _entity_domain_ts_member(

@@ -41,7 +41,7 @@ namespace ores::dq::domain {
  * This is the one statement of the type's shape, the same one the generated
  * types make.
  */
-[[nodiscard]] constexpr auto wire_fields(const dataset_dependency&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_dependency>) {
     return std::tuple{
         utility::codec::field{"tenant_id", &dataset_dependency::tenant_id},
         utility::codec::field{"dataset_code", &dataset_dependency::dataset_code},

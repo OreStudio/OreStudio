@@ -46,7 +46,7 @@ struct counterparty_apply_workflow_request {
     std::string request_id;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const counterparty_apply_workflow_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_apply_workflow_request>) {
     return std::tuple{
         utility::codec::field{"request_id", &counterparty_apply_workflow_request::request_id}};
 }

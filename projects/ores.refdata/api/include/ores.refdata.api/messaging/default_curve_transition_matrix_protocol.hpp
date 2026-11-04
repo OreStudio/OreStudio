@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_transition_matrix_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_transition_matrix_key>) {
     return std::tuple{
         utility::codec::field{"id", &default_curve_transition_matrix_key::id},
     };
@@ -396,7 +396,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_transition_matrix_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_transition_matrix_write>) {
     return std::tuple{
         utility::codec::field{"id", &default_curve_transition_matrix_write::id},
         utility::codec::field{
@@ -416,7 +417,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_transition_matrix_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_transition_matrix_change>) {
     return std::tuple{
         utility::codec::field{"write", &default_curve_transition_matrix_change::write},
         utility::codec::field{"precondition",
@@ -432,7 +434,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_transition_matrix_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_transition_matrix_removal>) {
     return std::tuple{
         utility::codec::field{"key", &default_curve_transition_matrix_removal::key},
         utility::codec::field{"precondition",
@@ -448,7 +451,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_transition_matrix_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_transition_matrix_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &default_curve_transition_matrix_lookup::key},
         utility::codec::field{
@@ -465,7 +469,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_transition_matrices_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_transition_matrices_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &default_curve_transition_matrices_filter::id_one_of},
     };
@@ -479,7 +484,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_transition_matrix_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_transition_matrix_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &default_curve_transition_matrix_event::event_id},
         utility::codec::field{"key", &default_curve_transition_matrix_event::key},
@@ -499,7 +505,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_transition_matrix_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_transition_matrix_version_key>) {
     return std::tuple{
         utility::codec::field{
             "default_curve_transition_matrix",
@@ -516,7 +523,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_transition_matrix_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_transition_matrix_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &default_curve_transition_matrix_versions_filter::version},
         utility::codec::field{"from_version",
@@ -534,7 +542,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_default_curve_transition_matrices_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_default_curve_transition_matrices_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_default_curve_transition_matrices_request::offset},
         utility::codec::field{"limit", &list_default_curve_transition_matrices_request::limit},
@@ -552,7 +561,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_default_curve_transition_matrices_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_default_curve_transition_matrices_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_default_curve_transition_matrices_response::result},
         utility::codec::field{
@@ -570,7 +580,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_default_curve_transition_matrix_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_default_curve_transition_matrix_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_default_curve_transition_matrix_request::key},
     };
@@ -584,7 +595,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_default_curve_transition_matrix_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_default_curve_transition_matrix_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_default_curve_transition_matrix_response::result},
         utility::codec::field{
@@ -602,7 +614,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_default_curve_transition_matrices_request&) {
+wire_fields(std::type_identity<get_many_default_curve_transition_matrices_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_default_curve_transition_matrices_request::keys},
     };
@@ -617,7 +629,7 @@ wire_fields(const get_many_default_curve_transition_matrices_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_default_curve_transition_matrices_response&) {
+wire_fields(std::type_identity<get_many_default_curve_transition_matrices_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_default_curve_transition_matrices_response::result},
@@ -634,7 +646,8 @@ wire_fields(const get_many_default_curve_transition_matrices_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_default_curve_transition_matrix_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_default_curve_transition_matrix_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_default_curve_transition_matrix_request::change},
         utility::codec::field{"intent", &put_default_curve_transition_matrix_request::intent},
@@ -649,7 +662,8 @@ wire_fields(const get_many_default_curve_transition_matrices_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_default_curve_transition_matrix_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_default_curve_transition_matrix_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_default_curve_transition_matrix_response::result},
         utility::codec::field{
@@ -667,7 +681,7 @@ wire_fields(const get_many_default_curve_transition_matrices_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_default_curve_transition_matrices_request&) {
+wire_fields(std::type_identity<put_many_default_curve_transition_matrices_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_default_curve_transition_matrices_request::changes},
@@ -685,7 +699,7 @@ wire_fields(const put_many_default_curve_transition_matrices_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_default_curve_transition_matrices_response&) {
+wire_fields(std::type_identity<put_many_default_curve_transition_matrices_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_default_curve_transition_matrices_response::result},
@@ -703,7 +717,8 @@ wire_fields(const put_many_default_curve_transition_matrices_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_default_curve_transition_matrix_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_default_curve_transition_matrix_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_default_curve_transition_matrix_request::removal},
         utility::codec::field{"intent", &delete_default_curve_transition_matrix_request::intent},
@@ -718,7 +733,8 @@ wire_fields(const put_many_default_curve_transition_matrices_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_default_curve_transition_matrix_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_default_curve_transition_matrix_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_default_curve_transition_matrix_response::result},
     };
@@ -733,7 +749,7 @@ wire_fields(const put_many_default_curve_transition_matrices_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_default_curve_transition_matrices_request&) {
+wire_fields(std::type_identity<delete_many_default_curve_transition_matrices_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_default_curve_transition_matrices_request::removals},
@@ -751,7 +767,7 @@ wire_fields(const delete_many_default_curve_transition_matrices_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_default_curve_transition_matrices_response&) {
+wire_fields(std::type_identity<delete_many_default_curve_transition_matrices_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_default_curve_transition_matrices_response::result},
@@ -767,7 +783,7 @@ wire_fields(const delete_many_default_curve_transition_matrices_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_default_curve_transition_matrix_versions_request&) {
+wire_fields(std::type_identity<list_default_curve_transition_matrix_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_default_curve_transition_matrix_versions_request::key},
         utility::codec::field{"offset",
@@ -790,7 +806,7 @@ wire_fields(const list_default_curve_transition_matrix_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_default_curve_transition_matrix_versions_response&) {
+wire_fields(std::type_identity<list_default_curve_transition_matrix_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_default_curve_transition_matrix_versions_response::result},
@@ -810,7 +826,7 @@ wire_fields(const list_default_curve_transition_matrix_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_default_curve_transition_matrix_version_request&) {
+wire_fields(std::type_identity<get_default_curve_transition_matrix_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_default_curve_transition_matrix_version_request::key},
     };
@@ -825,7 +841,7 @@ wire_fields(const get_default_curve_transition_matrix_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_default_curve_transition_matrix_version_response&) {
+wire_fields(std::type_identity<get_default_curve_transition_matrix_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_default_curve_transition_matrix_version_response::result},

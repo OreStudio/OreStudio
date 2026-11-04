@@ -88,7 +88,7 @@ struct convention_identity {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const convention_identity&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<convention_identity>) {
     return std::tuple{
         utility::codec::field{"version", &convention_identity::version},
         utility::codec::field{"tenant_id", &convention_identity::tenant_id},

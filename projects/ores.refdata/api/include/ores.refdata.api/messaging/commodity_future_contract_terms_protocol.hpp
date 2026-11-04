@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_future_contract_terms_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_future_contract_terms_key>) {
     return std::tuple{
         utility::codec::field{"id", &commodity_future_contract_terms_key::id},
     };
@@ -450,7 +450,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_future_contract_terms_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<commodity_future_contract_terms_write>) {
     return std::tuple{
         utility::codec::field{"id", &commodity_future_contract_terms_write::id},
         utility::codec::field{"convention_id",
@@ -498,7 +499,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_future_contract_terms_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<commodity_future_contract_terms_change>) {
     return std::tuple{
         utility::codec::field{"write", &commodity_future_contract_terms_change::write},
         utility::codec::field{"precondition",
@@ -514,7 +516,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_future_contract_terms_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<commodity_future_contract_terms_removal>) {
     return std::tuple{
         utility::codec::field{"key", &commodity_future_contract_terms_removal::key},
         utility::codec::field{"precondition",
@@ -530,7 +533,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_future_contract_terms_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<commodity_future_contract_terms_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &commodity_future_contract_terms_lookup::key},
         utility::codec::field{
@@ -547,7 +551,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_future_contract_terms_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<commodity_future_contract_terms_filter>) {
     return std::tuple{
         utility::codec::field{"convention_id",
                               &commodity_future_contract_terms_filter::convention_id},
@@ -565,7 +570,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_future_contract_terms_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<commodity_future_contract_terms_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &commodity_future_contract_terms_event::event_id},
         utility::codec::field{"key", &commodity_future_contract_terms_event::key},
@@ -585,7 +591,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_future_contract_terms_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<commodity_future_contract_terms_version_key>) {
     return std::tuple{
         utility::codec::field{
             "commodity_future_contract_terms",
@@ -602,7 +609,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_future_contract_terms_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<commodity_future_contract_terms_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &commodity_future_contract_terms_versions_filter::version},
         utility::codec::field{"from_version",
@@ -620,7 +628,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_commodity_future_contract_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_commodity_future_contract_terms_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_commodity_future_contract_terms_request::offset},
         utility::codec::field{"limit", &list_commodity_future_contract_terms_request::limit},
@@ -638,7 +647,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_commodity_future_contract_terms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_commodity_future_contract_terms_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_commodity_future_contract_terms_response::result},
         utility::codec::field{
@@ -656,7 +666,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_commodity_future_contract_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_commodity_future_contract_terms_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_commodity_future_contract_terms_request::key},
     };
@@ -670,7 +681,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_commodity_future_contract_terms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_commodity_future_contract_terms_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_commodity_future_contract_terms_response::result},
         utility::codec::field{
@@ -687,7 +699,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_commodity_future_contract_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_commodity_future_contract_terms_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_commodity_future_contract_terms_request::keys},
     };
@@ -701,7 +714,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_commodity_future_contract_terms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_commodity_future_contract_terms_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_commodity_future_contract_terms_response::result},
         utility::codec::field{"entries",
@@ -717,7 +731,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_commodity_future_contract_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_commodity_future_contract_terms_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_commodity_future_contract_terms_request::change},
         utility::codec::field{"intent", &put_commodity_future_contract_terms_request::intent},
@@ -732,7 +747,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_commodity_future_contract_terms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_commodity_future_contract_terms_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_commodity_future_contract_terms_response::result},
         utility::codec::field{
@@ -749,7 +765,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_commodity_future_contract_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_commodity_future_contract_terms_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_commodity_future_contract_terms_request::changes},
@@ -765,7 +782,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_commodity_future_contract_terms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_commodity_future_contract_terms_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_commodity_future_contract_terms_response::result},
         utility::codec::field{
@@ -782,7 +800,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_commodity_future_contract_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_commodity_future_contract_terms_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_commodity_future_contract_terms_request::removal},
         utility::codec::field{"intent", &delete_commodity_future_contract_terms_request::intent},
@@ -797,7 +816,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_commodity_future_contract_terms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_commodity_future_contract_terms_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_commodity_future_contract_terms_response::result},
     };
@@ -812,7 +832,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_commodity_future_contract_terms_request&) {
+wire_fields(std::type_identity<delete_many_commodity_future_contract_terms_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_commodity_future_contract_terms_request::removals},
@@ -830,7 +850,7 @@ wire_fields(const delete_many_commodity_future_contract_terms_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_commodity_future_contract_terms_response&) {
+wire_fields(std::type_identity<delete_many_commodity_future_contract_terms_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_commodity_future_contract_terms_response::result},
@@ -846,7 +866,7 @@ wire_fields(const delete_many_commodity_future_contract_terms_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_convention_id_commodity_future_contract_terms_request&) {
+wire_fields(std::type_identity<list_by_convention_id_commodity_future_contract_terms_request>) {
     return std::tuple{
         utility::codec::field{
             "convention_id",
@@ -873,7 +893,7 @@ wire_fields(const list_by_convention_id_commodity_future_contract_terms_request&
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_convention_id_commodity_future_contract_terms_response&) {
+wire_fields(std::type_identity<list_by_convention_id_commodity_future_contract_terms_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_by_convention_id_commodity_future_contract_terms_response::result},
@@ -894,7 +914,7 @@ wire_fields(const list_by_convention_id_commodity_future_contract_terms_response
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_commodity_future_contract_terms_versions_request&) {
+wire_fields(std::type_identity<list_commodity_future_contract_terms_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_commodity_future_contract_terms_versions_request::key},
         utility::codec::field{"offset",
@@ -917,7 +937,7 @@ wire_fields(const list_commodity_future_contract_terms_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_commodity_future_contract_terms_versions_response&) {
+wire_fields(std::type_identity<list_commodity_future_contract_terms_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_commodity_future_contract_terms_versions_response::result},
@@ -937,7 +957,7 @@ wire_fields(const list_commodity_future_contract_terms_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_commodity_future_contract_terms_version_request&) {
+wire_fields(std::type_identity<get_commodity_future_contract_terms_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_commodity_future_contract_terms_version_request::key},
     };
@@ -952,7 +972,7 @@ wire_fields(const get_commodity_future_contract_terms_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_commodity_future_contract_terms_version_response&) {
+wire_fields(std::type_identity<get_commodity_future_contract_terms_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_commodity_future_contract_terms_version_response::result},

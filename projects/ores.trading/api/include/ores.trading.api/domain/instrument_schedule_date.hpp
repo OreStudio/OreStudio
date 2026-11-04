@@ -25,13 +25,12 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_SCHEDULE_DATE_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_SCHEDULE_DATE_HPP
 
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -165,28 +164,23 @@ struct instrument_schedule_date final {
 };
 
 /**
- * @brief The members of instrument_schedule_date the customer agreed to.
+ * @brief The canonical text of the members of instrument_schedule_date the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view instrument_schedule_date_economic_fields[] = {
-    "owner_role",
-    "owner_number",
-    "schedule_role",
-    "schedule_sequence_number",
-    "sequence_number",
-    "schedule_date",
-};
-
-/**
- * @brief Names the members of instrument_schedule_date that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<instrument_schedule_date>) {
-    return instrument_schedule_date_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const instrument_schedule_date& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "owner_role", v.owner_role);
+    ores::utility::digest::append_member(out, "owner_number", v.owner_number);
+    ores::utility::digest::append_member(out, "schedule_role", v.schedule_role);
+    ores::utility::digest::append_member(
+        out, "schedule_sequence_number", v.schedule_sequence_number);
+    ores::utility::digest::append_member(out, "sequence_number", v.sequence_number);
+    ores::utility::digest::append_member(out, "schedule_date", v.schedule_date);
+    out.push_back('}');
+    return out;
 }
 
 /**

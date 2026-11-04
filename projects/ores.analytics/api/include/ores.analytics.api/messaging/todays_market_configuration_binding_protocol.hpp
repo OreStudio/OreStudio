@@ -427,7 +427,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_configuration_binding_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<todays_market_configuration_binding_key>) {
     return std::tuple{
         utility::codec::field{"reference", &todays_market_configuration_binding_key::reference},
     };
@@ -441,7 +442,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_configuration_binding_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<todays_market_configuration_binding_write>) {
     return std::tuple{
         utility::codec::field{"id", &todays_market_configuration_binding_write::id},
         utility::codec::field{
@@ -461,7 +463,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_configuration_binding_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<todays_market_configuration_binding_change>) {
     return std::tuple{
         utility::codec::field{"write", &todays_market_configuration_binding_change::write},
         utility::codec::field{"precondition",
@@ -477,7 +480,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_configuration_binding_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<todays_market_configuration_binding_removal>) {
     return std::tuple{
         utility::codec::field{"key", &todays_market_configuration_binding_removal::key},
         utility::codec::field{"precondition",
@@ -493,7 +497,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_configuration_binding_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<todays_market_configuration_binding_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &todays_market_configuration_binding_lookup::key},
         utility::codec::field{
@@ -510,7 +515,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_configuration_bindings_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<todays_market_configuration_bindings_filter>) {
     return std::tuple{
         utility::codec::field{
             "todays_market_configuration_id",
@@ -530,7 +536,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_configuration_binding_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<todays_market_configuration_binding_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &todays_market_configuration_binding_event::event_id},
         utility::codec::field{"key", &todays_market_configuration_binding_event::key},
@@ -551,7 +558,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_configuration_binding_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<todays_market_configuration_binding_version_key>) {
     return std::tuple{
         utility::codec::field{
             "todays_market_configuration_binding",
@@ -569,7 +577,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const todays_market_configuration_binding_versions_filter&) {
+wire_fields(std::type_identity<todays_market_configuration_binding_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version",
                               &todays_market_configuration_binding_versions_filter::version},
@@ -588,7 +596,8 @@ wire_fields(const todays_market_configuration_binding_versions_filter&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_todays_market_configuration_bindings_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_todays_market_configuration_bindings_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_todays_market_configuration_bindings_request::offset},
         utility::codec::field{"limit", &list_todays_market_configuration_bindings_request::limit},
@@ -607,7 +616,7 @@ wire_fields(const todays_market_configuration_binding_versions_filter&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_todays_market_configuration_bindings_response&) {
+wire_fields(std::type_identity<list_todays_market_configuration_bindings_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_todays_market_configuration_bindings_response::result},
@@ -625,7 +634,8 @@ wire_fields(const list_todays_market_configuration_bindings_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_todays_market_configuration_binding_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_todays_market_configuration_binding_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_todays_market_configuration_binding_request::key},
     };
@@ -639,7 +649,8 @@ wire_fields(const list_todays_market_configuration_bindings_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_todays_market_configuration_binding_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_todays_market_configuration_binding_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_todays_market_configuration_binding_response::result},
         utility::codec::field{
@@ -657,7 +668,7 @@ wire_fields(const list_todays_market_configuration_bindings_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_todays_market_configuration_bindings_request&) {
+wire_fields(std::type_identity<get_many_todays_market_configuration_bindings_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_todays_market_configuration_bindings_request::keys},
     };
@@ -672,7 +683,7 @@ wire_fields(const get_many_todays_market_configuration_bindings_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_todays_market_configuration_bindings_response&) {
+wire_fields(std::type_identity<get_many_todays_market_configuration_bindings_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_todays_market_configuration_bindings_response::result},
@@ -689,7 +700,8 @@ wire_fields(const get_many_todays_market_configuration_bindings_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_todays_market_configuration_binding_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_todays_market_configuration_binding_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_todays_market_configuration_binding_request::change},
         utility::codec::field{"intent", &put_todays_market_configuration_binding_request::intent},
@@ -704,7 +716,8 @@ wire_fields(const get_many_todays_market_configuration_bindings_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_todays_market_configuration_binding_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_todays_market_configuration_binding_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_todays_market_configuration_binding_response::result},
         utility::codec::field{
@@ -722,7 +735,7 @@ wire_fields(const get_many_todays_market_configuration_bindings_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_todays_market_configuration_bindings_request&) {
+wire_fields(std::type_identity<put_many_todays_market_configuration_bindings_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_todays_market_configuration_bindings_request::changes},
@@ -740,7 +753,7 @@ wire_fields(const put_many_todays_market_configuration_bindings_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_todays_market_configuration_bindings_response&) {
+wire_fields(std::type_identity<put_many_todays_market_configuration_bindings_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_todays_market_configuration_bindings_response::result},
@@ -758,7 +771,7 @@ wire_fields(const put_many_todays_market_configuration_bindings_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_todays_market_configuration_binding_request&) {
+wire_fields(std::type_identity<delete_todays_market_configuration_binding_request>) {
     return std::tuple{
         utility::codec::field{"removal",
                               &delete_todays_market_configuration_binding_request::removal},
@@ -776,7 +789,7 @@ wire_fields(const delete_todays_market_configuration_binding_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_todays_market_configuration_binding_response&) {
+wire_fields(std::type_identity<delete_todays_market_configuration_binding_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_todays_market_configuration_binding_response::result},
@@ -792,7 +805,7 @@ wire_fields(const delete_todays_market_configuration_binding_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_todays_market_configuration_bindings_request&) {
+wire_fields(std::type_identity<delete_many_todays_market_configuration_bindings_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_todays_market_configuration_bindings_request::removals},
@@ -810,7 +823,7 @@ wire_fields(const delete_many_todays_market_configuration_bindings_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_todays_market_configuration_bindings_response&) {
+wire_fields(std::type_identity<delete_many_todays_market_configuration_bindings_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_todays_market_configuration_bindings_response::result},
@@ -826,8 +839,9 @@ wire_fields(const delete_many_todays_market_configuration_bindings_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(
-    const list_by_todays_market_configuration_id_todays_market_configuration_bindings_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<
+            list_by_todays_market_configuration_id_todays_market_configuration_bindings_request>) {
     return std::tuple{
         utility::codec::field{
             "todays_market_configuration_id",
@@ -865,8 +879,9 @@ wire_fields(const delete_many_todays_market_configuration_bindings_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(
-    const list_by_todays_market_configuration_id_todays_market_configuration_bindings_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<
+            list_by_todays_market_configuration_id_todays_market_configuration_bindings_response>) {
     return std::tuple{
         utility::codec::field{
             "result",
@@ -892,7 +907,7 @@ wire_fields(const delete_many_todays_market_configuration_bindings_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_todays_market_configuration_binding_versions_request&) {
+wire_fields(std::type_identity<list_todays_market_configuration_binding_versions_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &list_todays_market_configuration_binding_versions_request::key},
@@ -916,7 +931,7 @@ wire_fields(const list_todays_market_configuration_binding_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_todays_market_configuration_binding_versions_response&) {
+wire_fields(std::type_identity<list_todays_market_configuration_binding_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_todays_market_configuration_binding_versions_response::result},
@@ -936,7 +951,7 @@ wire_fields(const list_todays_market_configuration_binding_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_todays_market_configuration_binding_version_request&) {
+wire_fields(std::type_identity<get_todays_market_configuration_binding_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_todays_market_configuration_binding_version_request::key},
     };
@@ -951,7 +966,7 @@ wire_fields(const get_todays_market_configuration_binding_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_todays_market_configuration_binding_version_response&) {
+wire_fields(std::type_identity<get_todays_market_configuration_binding_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_todays_market_configuration_binding_version_response::result},

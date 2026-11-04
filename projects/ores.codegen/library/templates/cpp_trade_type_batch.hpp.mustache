@@ -92,7 +92,7 @@ find_all(const std::vector<T>& members, boost::uuids::uuid trade_id) {
  * @brief The arrays of a batch, named as the wire names them and in the order
  * the type declares them.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_batch&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_batch>) {
     return std::tuple{
 {{#batch}}        ::ores::utility::codec::field{"{{name}}", &instrument_batch::{{name}}},
 {{/batch}}    };

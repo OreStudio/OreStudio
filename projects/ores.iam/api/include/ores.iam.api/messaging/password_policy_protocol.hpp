@@ -73,7 +73,7 @@ struct get_password_policy_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_password_policy_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_password_policy_request>) {
     return std::tuple{};
 }
 
@@ -85,7 +85,7 @@ struct get_password_policy_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_password_policy_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_password_policy_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_password_policy_response::success},
         ::ores::utility::codec::field{"message", &get_password_policy_response::message},

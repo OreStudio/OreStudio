@@ -25,15 +25,14 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_LEG_RATE_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_LEG_RATE_HPP
 
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -294,49 +293,47 @@ struct bond_leg_rate final {
 };
 
 /**
- * @brief The members of bond_leg_rate the customer agreed to.
+ * @brief The canonical text of the members of bond_leg_rate the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view bond_leg_rate_economic_fields[] = {
-    "leg_role",
-    "leg_number",
-    "rate_kind",
-    "index",
-    "is_in_arrears",
-    "fixing_days",
-    "fixing_calendar",
-    "last_recent_period",
-    "last_recent_period_calendar",
-    "lookback",
-    "rate_cutoff",
-    "is_averaged",
-    "has_sub_periods",
-    "include_spread",
-    "is_not_resetting_xccy",
-    "naked_option",
-    "local_cap_floor",
-    "stub_use_original_curve",
-    "observation_shift",
-    "front_stub_short_index",
-    "front_stub_long_index",
-    "front_stub_rounding_type",
-    "front_stub_rounding_precision",
-    "back_stub_short_index",
-    "back_stub_long_index",
-    "back_stub_rounding_type",
-    "back_stub_rounding_precision",
-};
-
-/**
- * @brief Names the members of bond_leg_rate that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<bond_leg_rate>) {
-    return bond_leg_rate_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const bond_leg_rate& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "leg_role", v.leg_role);
+    ores::utility::digest::append_member(out, "leg_number", v.leg_number);
+    ores::utility::digest::append_member(out, "rate_kind", v.rate_kind);
+    ores::utility::digest::append_member(out, "index", v.index);
+    ores::utility::digest::append_member(out, "is_in_arrears", v.is_in_arrears);
+    ores::utility::digest::append_member(out, "fixing_days", v.fixing_days);
+    ores::utility::digest::append_member(out, "fixing_calendar", v.fixing_calendar);
+    ores::utility::digest::append_member(out, "last_recent_period", v.last_recent_period);
+    ores::utility::digest::append_member(
+        out, "last_recent_period_calendar", v.last_recent_period_calendar);
+    ores::utility::digest::append_member(out, "lookback", v.lookback);
+    ores::utility::digest::append_member(out, "rate_cutoff", v.rate_cutoff);
+    ores::utility::digest::append_member(out, "is_averaged", v.is_averaged);
+    ores::utility::digest::append_member(out, "has_sub_periods", v.has_sub_periods);
+    ores::utility::digest::append_member(out, "include_spread", v.include_spread);
+    ores::utility::digest::append_member(out, "is_not_resetting_xccy", v.is_not_resetting_xccy);
+    ores::utility::digest::append_member(out, "naked_option", v.naked_option);
+    ores::utility::digest::append_member(out, "local_cap_floor", v.local_cap_floor);
+    ores::utility::digest::append_member(out, "stub_use_original_curve", v.stub_use_original_curve);
+    ores::utility::digest::append_member(out, "observation_shift", v.observation_shift);
+    ores::utility::digest::append_member(out, "front_stub_short_index", v.front_stub_short_index);
+    ores::utility::digest::append_member(out, "front_stub_long_index", v.front_stub_long_index);
+    ores::utility::digest::append_member(
+        out, "front_stub_rounding_type", v.front_stub_rounding_type);
+    ores::utility::digest::append_member(
+        out, "front_stub_rounding_precision", v.front_stub_rounding_precision);
+    ores::utility::digest::append_member(out, "back_stub_short_index", v.back_stub_short_index);
+    ores::utility::digest::append_member(out, "back_stub_long_index", v.back_stub_long_index);
+    ores::utility::digest::append_member(out, "back_stub_rounding_type", v.back_stub_rounding_type);
+    ores::utility::digest::append_member(
+        out, "back_stub_rounding_precision", v.back_stub_rounding_precision);
+    out.push_back('}');
+    return out;
 }
 
 /**

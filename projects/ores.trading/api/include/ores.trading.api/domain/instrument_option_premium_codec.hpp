@@ -45,7 +45,7 @@ namespace ores::trading::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_option_premium&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_option_premium>) {
     return std::tuple{
         utility::codec::field{"version", &instrument_option_premium::version},
         utility::codec::field{"tenant_id", &instrument_option_premium::tenant_id},

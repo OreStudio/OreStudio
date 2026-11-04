@@ -65,7 +65,7 @@ struct step_result_handoff {
     std::optional<std::string> tenant_id;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const step_result_handoff&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<step_result_handoff>) {
     return std::tuple{
         ores::utility::codec::field{"child_instance_id", &step_result_handoff::child_instance_id},
         ores::utility::codec::field{"tenant_id", &step_result_handoff::tenant_id}};

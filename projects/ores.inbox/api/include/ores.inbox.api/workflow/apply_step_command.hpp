@@ -39,7 +39,7 @@ struct apply_step_command {
     std::string request_id;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const apply_step_command&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<apply_step_command>) {
     return std::tuple{utility::codec::field{"request_id", &apply_step_command::request_id}};
 }
 

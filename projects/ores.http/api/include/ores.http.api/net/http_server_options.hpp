@@ -166,7 +166,7 @@ struct http_server_options final {
     std::string server_identifier = "ores-http-server";
 };
 
-[[nodiscard]] constexpr auto wire_fields(const http_server_options&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<http_server_options>) {
     return std::tuple{
         ::ores::utility::codec::field{"address", &http_server_options::address},
         ::ores::utility::codec::field{"port", &http_server_options::port},

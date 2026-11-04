@@ -119,6 +119,7 @@ set(files
     "commodity_protocol_codec_roundtrip_tests.cpp"
     "commodity_volatility_config_codec_roundtrip_tests.cpp"
     "commodity_volatility_config_protocol_codec_roundtrip_tests.cpp"
+    "configuration_document_protocol_codec_roundtrip_tests.cpp"
     "contact_type_codec_roundtrip_tests.cpp"
     "contact_type_protocol_codec_roundtrip_tests.cpp"
     "convention_codec_roundtrip_tests.cpp"

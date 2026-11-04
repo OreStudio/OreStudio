@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_input_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_input_key>) {
     return std::tuple{
         utility::codec::field{"id", &variance_calibration_input_key::id},
     };
@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_input_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_input_write>) {
     return std::tuple{
         utility::codec::field{"id", &variance_calibration_input_write::id},
         utility::codec::field{"fixing_uri", &variance_calibration_input_write::fixing_uri},
@@ -430,7 +430,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_input_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_input_change>) {
     return std::tuple{
         utility::codec::field{"write", &variance_calibration_input_change::write},
         utility::codec::field{"precondition", &variance_calibration_input_change::precondition},
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_input_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_input_removal>) {
     return std::tuple{
         utility::codec::field{"key", &variance_calibration_input_removal::key},
         utility::codec::field{"precondition", &variance_calibration_input_removal::precondition},
@@ -460,7 +460,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_input_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_input_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &variance_calibration_input_lookup::key},
         utility::codec::field{"variance_calibration_input",
@@ -476,7 +476,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_inputs_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_inputs_filter>) {
     return std::tuple{
         utility::codec::field{"base_currency_code",
                               &variance_calibration_inputs_filter::base_currency_code},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_input_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_input_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &variance_calibration_input_event::event_id},
         utility::codec::field{"key", &variance_calibration_input_event::key},
@@ -517,7 +517,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_input_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<variance_calibration_input_version_key>) {
     return std::tuple{
         utility::codec::field{"variance_calibration_input",
                               &variance_calibration_input_version_key::variance_calibration_input},
@@ -533,7 +534,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_input_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<variance_calibration_input_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &variance_calibration_input_versions_filter::version},
         utility::codec::field{"from_version",
@@ -551,7 +553,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_variance_calibration_inputs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_variance_calibration_inputs_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_variance_calibration_inputs_request::offset},
         utility::codec::field{"limit", &list_variance_calibration_inputs_request::limit},
@@ -569,7 +572,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_variance_calibration_inputs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_variance_calibration_inputs_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_variance_calibration_inputs_response::result},
         utility::codec::field{
@@ -587,7 +591,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_variance_calibration_input_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_variance_calibration_input_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_variance_calibration_input_request::key},
     };
@@ -601,7 +606,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_variance_calibration_input_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_variance_calibration_input_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_variance_calibration_input_response::result},
         utility::codec::field{"variance_calibration_input",
@@ -617,7 +623,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_variance_calibration_inputs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_variance_calibration_inputs_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_variance_calibration_inputs_request::keys},
     };
@@ -631,7 +638,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_variance_calibration_inputs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_variance_calibration_inputs_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_variance_calibration_inputs_response::result},
         utility::codec::field{"entries", &get_many_variance_calibration_inputs_response::entries},
@@ -646,7 +654,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_variance_calibration_input_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_variance_calibration_input_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_variance_calibration_input_request::change},
         utility::codec::field{"intent", &put_variance_calibration_input_request::intent},
@@ -661,7 +670,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_variance_calibration_input_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_variance_calibration_input_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_variance_calibration_input_response::result},
         utility::codec::field{"variance_calibration_input",
@@ -677,7 +687,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_variance_calibration_inputs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_variance_calibration_inputs_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_variance_calibration_inputs_request::changes},
         utility::codec::field{"intent", &put_many_variance_calibration_inputs_request::intent},
@@ -692,7 +703,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_variance_calibration_inputs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_variance_calibration_inputs_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_variance_calibration_inputs_response::result},
         utility::codec::field{
@@ -709,7 +721,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_variance_calibration_input_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_variance_calibration_input_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_variance_calibration_input_request::removal},
         utility::codec::field{"intent", &delete_variance_calibration_input_request::intent},
@@ -724,7 +737,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_variance_calibration_input_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_variance_calibration_input_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_variance_calibration_input_response::result},
     };
@@ -738,7 +752,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_variance_calibration_inputs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_variance_calibration_inputs_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_variance_calibration_inputs_request::removals},
@@ -754,7 +769,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_variance_calibration_inputs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_variance_calibration_inputs_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_variance_calibration_inputs_response::result},
     };
@@ -768,7 +784,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_variance_calibration_input_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_variance_calibration_input_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_variance_calibration_input_versions_request::key},
         utility::codec::field{"offset", &list_variance_calibration_input_versions_request::offset},
@@ -786,7 +803,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_variance_calibration_input_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_variance_calibration_input_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_variance_calibration_input_versions_response::result},
         utility::codec::field{"versions",
@@ -803,7 +821,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_variance_calibration_input_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_variance_calibration_input_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_variance_calibration_input_version_request::key},
     };
@@ -817,7 +836,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_variance_calibration_input_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_variance_calibration_input_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_variance_calibration_input_version_response::result},
         utility::codec::field{"version", &get_variance_calibration_input_version_response::version},

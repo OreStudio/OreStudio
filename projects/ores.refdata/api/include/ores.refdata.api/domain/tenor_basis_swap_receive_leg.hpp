@@ -76,7 +76,7 @@ struct tenor_basis_swap_receive_leg {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_receive_leg&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_receive_leg>) {
     return std::tuple{
         utility::codec::field{"receive_index", &tenor_basis_swap_receive_leg::receive_index},
         utility::codec::field{"receive_frequency",

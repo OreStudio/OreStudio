@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_weighted_average_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_weighted_average_key>) {
     return std::tuple{
         utility::codec::field{"id", &curve_segment_weighted_average_key::id},
     };
@@ -398,7 +398,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_weighted_average_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_weighted_average_write>) {
     return std::tuple{
         utility::codec::field{"id", &curve_segment_weighted_average_write::id},
         utility::codec::field{"curve_segment_id",
@@ -420,7 +420,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_weighted_average_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_weighted_average_change>) {
     return std::tuple{
         utility::codec::field{"write", &curve_segment_weighted_average_change::write},
         utility::codec::field{"precondition", &curve_segment_weighted_average_change::precondition},
@@ -435,7 +436,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_weighted_average_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_weighted_average_removal>) {
     return std::tuple{
         utility::codec::field{"key", &curve_segment_weighted_average_removal::key},
         utility::codec::field{"precondition",
@@ -451,7 +453,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_weighted_average_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_weighted_average_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &curve_segment_weighted_average_lookup::key},
         utility::codec::field{
@@ -468,7 +471,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_weighted_averages_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_weighted_averages_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &curve_segment_weighted_averages_filter::id_one_of},
     };
@@ -482,7 +486,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_weighted_average_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_weighted_average_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &curve_segment_weighted_average_event::event_id},
         utility::codec::field{"key", &curve_segment_weighted_average_event::key},
@@ -502,7 +506,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_weighted_average_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_weighted_average_version_key>) {
     return std::tuple{
         utility::codec::field{
             "curve_segment_weighted_average",
@@ -519,7 +524,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_weighted_average_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_weighted_average_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &curve_segment_weighted_average_versions_filter::version},
         utility::codec::field{"from_version",
@@ -537,7 +543,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_segment_weighted_averages_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_segment_weighted_averages_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_curve_segment_weighted_averages_request::offset},
         utility::codec::field{"limit", &list_curve_segment_weighted_averages_request::limit},
@@ -555,7 +562,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_segment_weighted_averages_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_segment_weighted_averages_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_curve_segment_weighted_averages_response::result},
         utility::codec::field{
@@ -573,7 +581,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_weighted_average_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_weighted_average_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_segment_weighted_average_request::key},
     };
@@ -587,7 +596,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_weighted_average_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_weighted_average_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_curve_segment_weighted_average_response::result},
         utility::codec::field{
@@ -604,7 +614,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_segment_weighted_averages_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_curve_segment_weighted_averages_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_curve_segment_weighted_averages_request::keys},
     };
@@ -618,7 +629,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_segment_weighted_averages_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_curve_segment_weighted_averages_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_curve_segment_weighted_averages_response::result},
         utility::codec::field{"entries",
@@ -634,7 +646,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_segment_weighted_average_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_segment_weighted_average_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_curve_segment_weighted_average_request::change},
         utility::codec::field{"intent", &put_curve_segment_weighted_average_request::intent},
@@ -649,7 +662,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_segment_weighted_average_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_segment_weighted_average_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_curve_segment_weighted_average_response::result},
         utility::codec::field{
@@ -666,7 +680,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_segment_weighted_averages_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_curve_segment_weighted_averages_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_curve_segment_weighted_averages_request::changes},
@@ -682,7 +697,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_segment_weighted_averages_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_curve_segment_weighted_averages_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_curve_segment_weighted_averages_response::result},
         utility::codec::field{
@@ -699,7 +715,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_segment_weighted_average_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_segment_weighted_average_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_curve_segment_weighted_average_request::removal},
         utility::codec::field{"intent", &delete_curve_segment_weighted_average_request::intent},
@@ -714,7 +731,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_segment_weighted_average_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_segment_weighted_average_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_curve_segment_weighted_average_response::result},
     };
@@ -729,7 +747,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_curve_segment_weighted_averages_request&) {
+wire_fields(std::type_identity<delete_many_curve_segment_weighted_averages_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_curve_segment_weighted_averages_request::removals},
@@ -747,7 +765,7 @@ wire_fields(const delete_many_curve_segment_weighted_averages_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_curve_segment_weighted_averages_response&) {
+wire_fields(std::type_identity<delete_many_curve_segment_weighted_averages_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_curve_segment_weighted_averages_response::result},
@@ -763,7 +781,7 @@ wire_fields(const delete_many_curve_segment_weighted_averages_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_curve_segment_weighted_average_versions_request&) {
+wire_fields(std::type_identity<list_curve_segment_weighted_average_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_curve_segment_weighted_average_versions_request::key},
         utility::codec::field{"offset",
@@ -786,7 +804,7 @@ wire_fields(const list_curve_segment_weighted_average_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_curve_segment_weighted_average_versions_response&) {
+wire_fields(std::type_identity<list_curve_segment_weighted_average_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_curve_segment_weighted_average_versions_response::result},
@@ -806,7 +824,7 @@ wire_fields(const list_curve_segment_weighted_average_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_curve_segment_weighted_average_version_request&) {
+wire_fields(std::type_identity<get_curve_segment_weighted_average_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_segment_weighted_average_version_request::key},
     };
@@ -821,7 +839,7 @@ wire_fields(const get_curve_segment_weighted_average_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_curve_segment_weighted_average_version_response&) {
+wire_fields(std::type_identity<get_curve_segment_weighted_average_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_curve_segment_weighted_average_version_response::result},

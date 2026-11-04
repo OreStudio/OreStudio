@@ -151,7 +151,7 @@ struct get_request_roles_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ask_for_roles_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ask_for_roles_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"role_ids", &ask_for_roles_request::role_ids},
         ::ores::utility::codec::field{"reason", &ask_for_roles_request::reason},
@@ -166,7 +166,7 @@ struct get_request_roles_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ask_for_roles_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ask_for_roles_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &ask_for_roles_response::result},
         ::ores::utility::codec::field{"request_id", &ask_for_roles_response::request_id},
@@ -181,7 +181,7 @@ struct get_request_roles_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_request_roles_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_request_roles_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id", &get_request_roles_request::request_id},
     };
@@ -195,7 +195,7 @@ struct get_request_roles_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const requested_role&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<requested_role>) {
     return std::tuple{
         ::ores::utility::codec::field{"role", &requested_role::role},
         ::ores::utility::codec::field{"asked_at", &requested_role::asked_at},
@@ -212,7 +212,7 @@ struct get_request_roles_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_request_roles_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_request_roles_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_request_roles_response::result},
         ::ores::utility::codec::field{"roles", &get_request_roles_response::roles},

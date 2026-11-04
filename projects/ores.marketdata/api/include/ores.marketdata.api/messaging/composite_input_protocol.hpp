@@ -367,7 +367,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_input_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_input_key>) {
     return std::tuple{
         utility::codec::field{"oresmd_uri", &composite_input_key::oresmd_uri},
     };
@@ -381,7 +381,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_input_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_input_write>) {
     return std::tuple{
         utility::codec::field{"id", &composite_input_write::id},
         utility::codec::field{"composite_id", &composite_input_write::composite_id},
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_input_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_input_change>) {
     return std::tuple{
         utility::codec::field{"write", &composite_input_change::write},
         utility::codec::field{"precondition", &composite_input_change::precondition},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_input_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_input_removal>) {
     return std::tuple{
         utility::codec::field{"key", &composite_input_removal::key},
         utility::codec::field{"precondition", &composite_input_removal::precondition},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_input_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_input_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &composite_input_lookup::key},
         utility::codec::field{"composite_input", &composite_input_lookup::composite_input},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_inputs_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_inputs_filter>) {
     return std::tuple{
         utility::codec::field{"composite_id", &composite_inputs_filter::composite_id},
         utility::codec::field{"provider_code", &composite_inputs_filter::provider_code},
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_input_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_input_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &composite_input_event::event_id},
         utility::codec::field{"key", &composite_input_event::key},
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_input_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_input_version_key>) {
     return std::tuple{
         utility::codec::field{"composite_input", &composite_input_version_key::composite_input},
         utility::codec::field{"version", &composite_input_version_key::version},
@@ -497,7 +497,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_input_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_input_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &composite_input_versions_filter::version},
         utility::codec::field{"from_version", &composite_input_versions_filter::from_version},
@@ -513,7 +513,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_inputs_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_composite_inputs_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_composite_inputs_request::offset},
         utility::codec::field{"limit", &list_composite_inputs_request::limit},
@@ -531,7 +531,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_inputs_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_composite_inputs_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_composite_inputs_response::result},
         utility::codec::field{"composite_inputs",
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_input_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_input_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_composite_input_request::key},
     };
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_input_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_input_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_composite_input_response::result},
         utility::codec::field{"composite_input", &get_composite_input_response::composite_input},
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_composite_inputs_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_composite_inputs_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_composite_inputs_request::keys},
     };
@@ -591,7 +591,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_composite_inputs_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_composite_inputs_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_composite_inputs_response::result},
         utility::codec::field{"entries", &get_many_composite_inputs_response::entries},
@@ -606,7 +606,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_composite_input_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_composite_input_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_composite_input_request::change},
         utility::codec::field{"intent", &put_composite_input_request::intent},
@@ -621,7 +621,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_composite_input_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_composite_input_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_composite_input_response::result},
         utility::codec::field{"composite_input", &put_composite_input_response::composite_input},
@@ -636,7 +636,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_composite_inputs_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_composite_inputs_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_composite_inputs_request::changes},
         utility::codec::field{"intent", &put_many_composite_inputs_request::intent},
@@ -651,7 +651,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_composite_inputs_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_composite_inputs_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_composite_inputs_response::result},
         utility::codec::field{"composite_inputs",
@@ -667,7 +667,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_composite_input_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_composite_input_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_composite_input_request::removal},
         utility::codec::field{"intent", &delete_composite_input_request::intent},
@@ -682,7 +682,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_composite_input_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_composite_input_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_composite_input_response::result},
     };
@@ -696,7 +696,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_composite_inputs_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_composite_inputs_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_composite_inputs_request::removals},
         utility::codec::field{"intent", &delete_many_composite_inputs_request::intent},
@@ -711,7 +711,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_composite_inputs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_composite_inputs_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_composite_inputs_response::result},
     };
@@ -725,7 +726,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_input_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_composite_input_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_composite_input_versions_request::key},
         utility::codec::field{"offset", &list_composite_input_versions_request::offset},
@@ -743,7 +745,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_input_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_composite_input_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_composite_input_versions_response::result},
         utility::codec::field{"versions", &list_composite_input_versions_response::versions},
@@ -759,7 +762,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_input_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_input_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_composite_input_version_request::key},
     };
@@ -773,7 +776,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composite_inpu
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_input_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_input_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_composite_input_version_response::result},
         utility::codec::field{"version", &get_composite_input_version_response::version},

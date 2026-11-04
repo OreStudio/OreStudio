@@ -362,7 +362,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const legal_entity_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<legal_entity_key>) {
     return std::tuple{
         utility::codec::field{"lei", &legal_entity_key::lei},
     };
@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const legal_entity_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<legal_entity_write>) {
     return std::tuple{
         utility::codec::field{"lei", &legal_entity_write::lei},
         utility::codec::field{"legal_name", &legal_entity_write::legal_name},
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const legal_entity_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<legal_entity_change>) {
     return std::tuple{
         utility::codec::field{"write", &legal_entity_change::write},
         utility::codec::field{"precondition", &legal_entity_change::precondition},
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const legal_entity_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<legal_entity_removal>) {
     return std::tuple{
         utility::codec::field{"key", &legal_entity_removal::key},
         utility::codec::field{"precondition", &legal_entity_removal::precondition},
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const legal_entity_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<legal_entity_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &legal_entity_lookup::key},
         utility::codec::field{"legal_entity", &legal_entity_lookup::legal_entity},
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const legal_entities_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<legal_entities_filter>) {
     return std::tuple{
         utility::codec::field{"lei_one_of", &legal_entities_filter::lei_one_of},
     };
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const legal_entity_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<legal_entity_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &legal_entity_event::event_id},
         utility::codec::field{"key", &legal_entity_event::key},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const legal_entity_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<legal_entity_version_key>) {
     return std::tuple{
         utility::codec::field{"legal_entity", &legal_entity_version_key::legal_entity},
         utility::codec::field{"version", &legal_entity_version_key::version},
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const legal_entity_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<legal_entity_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &legal_entity_versions_filter::version},
         utility::codec::field{"from_version", &legal_entity_versions_filter::from_version},
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_legal_entities_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_legal_entities_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_legal_entities_request::offset},
         utility::codec::field{"limit", &list_legal_entities_request::limit},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_legal_entities_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_legal_entities_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_legal_entities_response::result},
         utility::codec::field{"legal_entities", &list_legal_entities_response::legal_entities},
@@ -538,7 +538,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_legal_entity_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_legal_entity_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_legal_entity_request::key},
     };
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_legal_entity_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_legal_entity_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_legal_entity_response::result},
         utility::codec::field{"legal_entity", &get_legal_entity_response::legal_entity},
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_legal_entities_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_legal_entities_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_legal_entities_request::keys},
     };
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_legal_entities_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_legal_entities_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_legal_entities_response::result},
         utility::codec::field{"entries", &get_many_legal_entities_response::entries},
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_legal_entity_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_legal_entity_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_legal_entity_request::change},
         utility::codec::field{"intent", &put_legal_entity_request::intent},
@@ -611,7 +611,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_legal_entity_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_legal_entity_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_legal_entity_response::result},
         utility::codec::field{"legal_entity", &put_legal_entity_response::legal_entity},
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_legal_entities_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_legal_entities_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_legal_entities_request::changes},
         utility::codec::field{"intent", &put_many_legal_entities_request::intent},
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_legal_entities_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_legal_entities_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_legal_entities_response::result},
         utility::codec::field{"legal_entities", &put_many_legal_entities_response::legal_entities},
@@ -656,7 +656,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_legal_entity_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_legal_entity_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_legal_entity_request::removal},
         utility::codec::field{"intent", &delete_legal_entity_request::intent},
@@ -671,7 +671,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_legal_entity_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_legal_entity_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_legal_entity_response::result},
     };
@@ -685,7 +685,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_legal_entities_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_legal_entities_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_legal_entities_request::removals},
         utility::codec::field{"intent", &delete_many_legal_entities_request::intent},
@@ -700,7 +700,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_legal_entities_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_legal_entities_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_legal_entities_response::result},
     };
@@ -714,7 +714,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_legal_entity_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_legal_entity_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_legal_entity_versions_request::key},
         utility::codec::field{"offset", &list_legal_entity_versions_request::offset},
@@ -732,7 +732,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_legal_entity_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_legal_entity_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_legal_entity_versions_response::result},
         utility::codec::field{"versions", &list_legal_entity_versions_response::versions},
@@ -748,7 +748,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_legal_entity_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_legal_entity_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_legal_entity_version_request::key},
     };
@@ -762,7 +762,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_legal_entity_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_legal_entity_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_legal_entity_version_response::result},
         utility::codec::field{"version", &get_legal_entity_version_response::version},

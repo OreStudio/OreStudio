@@ -362,7 +362,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_swap_period_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_key>) {
     return std::tuple{
         utility::codec::field{"trade_id", &equity_swap_period_key::trade_id},
         utility::codec::field{"trade_activity_id", &equity_swap_period_key::trade_activity_id},
@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_swap_period_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_write>) {
     return std::tuple{
         utility::codec::field{"trade_id", &equity_swap_period_write::trade_id},
         utility::codec::field{"trade_activity_id", &equity_swap_period_write::trade_activity_id},
@@ -398,7 +398,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_swap_period_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_change>) {
     return std::tuple{
         utility::codec::field{"write", &equity_swap_period_change::write},
         utility::codec::field{"precondition", &equity_swap_period_change::precondition},
@@ -413,7 +413,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_swap_period_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_removal>) {
     return std::tuple{
         utility::codec::field{"key", &equity_swap_period_removal::key},
         utility::codec::field{"precondition", &equity_swap_period_removal::precondition},
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_swap_period_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &equity_swap_period_lookup::key},
         utility::codec::field{"equity_swap_period", &equity_swap_period_lookup::equity_swap_period},
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_swap_period_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &equity_swap_period_event::event_id},
         utility::codec::field{"key", &equity_swap_period_event::key},
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_swap_period_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_version_key>) {
     return std::tuple{
         utility::codec::field{"equity_swap_period",
                               &equity_swap_period_version_key::equity_swap_period},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_swap_period_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &equity_swap_period_versions_filter::version},
         utility::codec::field{"from_version", &equity_swap_period_versions_filter::from_version},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_swap_periods_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_swap_periods_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_equity_swap_periods_request::offset},
         utility::codec::field{"limit", &list_equity_swap_periods_request::limit},
@@ -511,7 +511,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_swap_periods_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_swap_periods_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_equity_swap_periods_response::result},
         utility::codec::field{"equity_swap_periods",
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_swap_period_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_swap_period_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_equity_swap_period_request::key},
     };
@@ -542,7 +542,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_swap_period_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_swap_period_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_equity_swap_period_response::result},
         utility::codec::field{"equity_swap_period",
@@ -558,7 +558,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_equity_swap_periods_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_equity_swap_periods_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_equity_swap_periods_request::keys},
     };
@@ -572,7 +572,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_equity_swap_periods_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_equity_swap_periods_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_equity_swap_periods_response::result},
         utility::codec::field{"entries", &get_many_equity_swap_periods_response::entries},
@@ -587,7 +588,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_equity_swap_period_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_swap_period_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_equity_swap_period_request::change},
         utility::codec::field{"intent", &put_equity_swap_period_request::intent},
@@ -602,7 +603,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_equity_swap_period_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_swap_period_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_equity_swap_period_response::result},
         utility::codec::field{"equity_swap_period",
@@ -618,7 +619,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_equity_swap_periods_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_equity_swap_periods_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_equity_swap_periods_request::changes},
         utility::codec::field{"intent", &put_many_equity_swap_periods_request::intent},
@@ -633,7 +634,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_equity_swap_periods_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_equity_swap_periods_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_equity_swap_periods_response::result},
         utility::codec::field{"equity_swap_periods",
@@ -649,7 +651,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_equity_swap_period_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_swap_period_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_equity_swap_period_request::removal},
         utility::codec::field{"intent", &delete_equity_swap_period_request::intent},
@@ -664,7 +666,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_equity_swap_period_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_swap_period_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_equity_swap_period_response::result},
     };
@@ -678,7 +680,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_equity_swap_periods_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_equity_swap_periods_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_equity_swap_periods_request::removals},
         utility::codec::field{"intent", &delete_many_equity_swap_periods_request::intent},
@@ -693,7 +696,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_equity_swap_periods_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_equity_swap_periods_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_equity_swap_periods_response::result},
     };
@@ -707,7 +711,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_swap_period_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_equity_swap_period_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_equity_swap_period_versions_request::key},
         utility::codec::field{"offset", &list_equity_swap_period_versions_request::offset},
@@ -725,7 +730,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_swap_period_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_equity_swap_period_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_equity_swap_period_versions_response::result},
         utility::codec::field{"versions", &list_equity_swap_period_versions_response::versions},
@@ -741,7 +747,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_swap_period_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_equity_swap_period_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_equity_swap_period_version_request::key},
     };
@@ -755,7 +762,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_swap_period_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_equity_swap_period_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_equity_swap_period_version_response::result},
         utility::codec::field{"version", &get_equity_swap_period_version_response::version},

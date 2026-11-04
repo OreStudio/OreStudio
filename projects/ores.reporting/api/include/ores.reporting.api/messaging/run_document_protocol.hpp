@@ -270,7 +270,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_parameter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_parameter>) {
     return std::tuple{
         ::ores::utility::codec::field{"name", &run_parameter::name},
         ::ores::utility::codec::field{"value", &run_parameter::value},
@@ -286,7 +286,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_analytic&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_analytic>) {
     return std::tuple{
         ::ores::utility::codec::field{"analytic", &run_analytic::analytic},
         ::ores::utility::codec::field{"parameters", &run_analytic::parameters},
@@ -301,7 +301,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_file&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_file>) {
     return std::tuple{
         ::ores::utility::codec::field{"parameter", &run_file::parameter},
         ::ores::utility::codec::field{"name", &run_file::name},
@@ -316,7 +316,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_engine_settings&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_engine_settings>) {
     return std::tuple{
         ::ores::utility::codec::field{"settings", &run_engine_settings::settings},
         ::ores::utility::codec::field{"fixings", &run_engine_settings::fixings},
@@ -333,7 +333,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_document&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_document>) {
     return std::tuple{
         ::ores::utility::codec::field{"settings", &run_document::settings},
         ::ores::utility::codec::field{"engine_settings", &run_document::engine_settings},
@@ -351,7 +351,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const save_run_document_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<save_run_document_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"report_definition_id",
                                       &save_run_document_request::report_definition_id},
@@ -367,7 +367,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const save_run_document_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<save_run_document_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &save_run_document_response::success},
         ::ores::utility::codec::field{"message", &save_run_document_response::message},
@@ -382,7 +382,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bind_configuration_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bind_configuration_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"report_definition_id",
                                       &bind_configuration_request::report_definition_id},
@@ -400,7 +400,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bind_configuration_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bind_configuration_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &bind_configuration_response::success},
         ::ores::utility::codec::field{"message", &bind_configuration_response::message},
@@ -417,7 +417,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_run_document_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_document_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"report_definition_id",
                                       &get_run_document_request::report_definition_id},
@@ -432,7 +432,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_run_document_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_document_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_run_document_response::success},
         ::ores::utility::codec::field{"message", &get_run_document_response::message},
@@ -450,7 +450,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_run_document_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_run_document_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"report_definition_id",
                                       &delete_run_document_request::report_definition_id},
@@ -465,7 +465,7 @@ struct delete_run_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_run_document_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_run_document_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &delete_run_document_response::success},
         ::ores::utility::codec::field{"message", &delete_run_document_response::message},

@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const portfolio_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_key>) {
     return std::tuple{
         utility::codec::field{"name", &portfolio_key::name},
     };
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const portfolio_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_write>) {
     return std::tuple{
         utility::codec::field{"id", &portfolio_write::id},
         utility::codec::field{"party_id", &portfolio_write::party_id},
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const portfolio_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_change>) {
     return std::tuple{
         utility::codec::field{"write", &portfolio_change::write},
         utility::codec::field{"precondition", &portfolio_change::precondition},
@@ -447,7 +447,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const portfolio_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_removal>) {
     return std::tuple{
         utility::codec::field{"key", &portfolio_removal::key},
         utility::codec::field{"precondition", &portfolio_removal::precondition},
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const portfolio_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &portfolio_lookup::key},
         utility::codec::field{"portfolio", &portfolio_lookup::portfolio},
@@ -477,7 +477,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const portfolios_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolios_filter>) {
     return std::tuple{
         utility::codec::field{"sandbox_id", &portfolios_filter::sandbox_id},
         utility::codec::field{"id_one_of", &portfolios_filter::id_one_of},
@@ -493,7 +493,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const portfolio_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &portfolio_event::event_id},
         utility::codec::field{"key", &portfolio_event::key},
@@ -512,7 +512,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const portfolio_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_version_key>) {
     return std::tuple{
         utility::codec::field{"portfolio", &portfolio_version_key::portfolio},
         utility::codec::field{"version", &portfolio_version_key::version},
@@ -527,7 +527,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const portfolio_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &portfolio_versions_filter::version},
         utility::codec::field{"from_version", &portfolio_versions_filter::from_version},
@@ -543,7 +543,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_portfolios_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_portfolios_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_portfolios_request::offset},
         utility::codec::field{"limit", &list_portfolios_request::limit},
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_portfolios_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_portfolios_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_portfolios_response::result},
         utility::codec::field{"portfolios", &list_portfolios_response::portfolios},
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_portfolio_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_portfolio_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_portfolio_request::key},
     };
@@ -591,7 +591,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_portfolio_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_portfolio_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_portfolio_response::result},
         utility::codec::field{"portfolio", &get_portfolio_response::portfolio},
@@ -606,7 +606,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_portfolios_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_portfolios_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_portfolios_request::keys},
     };
@@ -620,7 +620,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_portfolios_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_portfolios_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_portfolios_response::result},
         utility::codec::field{"entries", &get_many_portfolios_response::entries},
@@ -635,7 +635,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_portfolio_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_portfolio_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_portfolio_request::change},
         utility::codec::field{"intent", &put_portfolio_request::intent},
@@ -650,7 +650,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_portfolio_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_portfolio_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_portfolio_response::result},
         utility::codec::field{"portfolio", &put_portfolio_response::portfolio},
@@ -665,7 +665,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_portfolios_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_portfolios_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_portfolios_request::changes},
         utility::codec::field{"intent", &put_many_portfolios_request::intent},
@@ -680,7 +680,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_portfolios_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_portfolios_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_portfolios_response::result},
         utility::codec::field{"portfolios", &put_many_portfolios_response::portfolios},
@@ -695,7 +695,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_portfolio_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_portfolio_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_portfolio_request::removal},
         utility::codec::field{"intent", &delete_portfolio_request::intent},
@@ -710,7 +710,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_portfolio_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_portfolio_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_portfolio_response::result},
     };
@@ -724,7 +724,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_portfolios_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_portfolios_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_portfolios_request::removals},
         utility::codec::field{"intent", &delete_many_portfolios_request::intent},
@@ -739,7 +739,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_portfolios_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_portfolios_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_portfolios_response::result},
     };
@@ -753,7 +753,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_sandbox_id_portfolios_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_sandbox_id_portfolios_request>) {
     return std::tuple{
         utility::codec::field{"sandbox_id", &list_by_sandbox_id_portfolios_request::sandbox_id},
         utility::codec::field{"scope", &list_by_sandbox_id_portfolios_request::scope},
@@ -772,7 +773,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_sandbox_id_portfolios_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_sandbox_id_portfolios_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_sandbox_id_portfolios_response::result},
         utility::codec::field{"portfolios", &list_by_sandbox_id_portfolios_response::portfolios},
@@ -788,7 +790,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_portfolio_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_portfolio_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_portfolio_versions_request::key},
         utility::codec::field{"offset", &list_portfolio_versions_request::offset},
@@ -806,7 +808,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_portfolio_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_portfolio_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_portfolio_versions_response::result},
         utility::codec::field{"versions", &list_portfolio_versions_response::versions},
@@ -822,7 +824,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_portfolio_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_portfolio_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_portfolio_version_request::key},
     };
@@ -836,7 +838,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_portfolio_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_portfolio_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_portfolio_version_response::result},
         utility::codec::field{"version", &get_portfolio_version_response::version},

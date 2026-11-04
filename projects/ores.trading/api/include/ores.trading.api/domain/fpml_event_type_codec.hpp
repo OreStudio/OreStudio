@@ -45,7 +45,7 @@ namespace ores::trading::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const fpml_event_type&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fpml_event_type>) {
     return std::tuple{
         utility::codec::field{"version", &fpml_event_type::version},
         utility::codec::field{"tenant_id", &fpml_event_type::tenant_id},

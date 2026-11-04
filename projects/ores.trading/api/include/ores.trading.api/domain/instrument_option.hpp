@@ -26,15 +26,14 @@
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_HPP
 
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -318,53 +317,50 @@ struct instrument_option final {
 };
 
 /**
- * @brief The members of instrument_option the customer agreed to.
+ * @brief The canonical text of the members of instrument_option the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view instrument_option_economic_fields[] = {
-    "long_short",
-    "option_type",
-    "payoff_type",
-    "payoff_type_2",
-    "style",
-    "notice_period",
-    "notice_calendar",
-    "notice_convention",
-    "mid_coupon_exercise",
-    "settlement",
-    "settlement_method",
-    "pay_off_at_expiry",
-    "premium_amount",
-    "premium_currency",
-    "premium_pay_date",
-    "exercise_fee_settlement_period",
-    "exercise_fee_settlement_calendar",
-    "exercise_fee_settlement_convention",
-    "automatic_exercise",
-    "has_exercise_data",
-    "exercise_date",
-    "exercise_price",
-    "has_payment_data",
-    "payment_lag",
-    "payment_calendar",
-    "payment_convention",
-    "payment_relative_to",
-    "has_settlement_data",
-    "settlement_pay_currency",
-    "settlement_fx_index",
-    "settlement_fixing_date",
-};
-
-/**
- * @brief Names the members of instrument_option that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<instrument_option>) {
-    return instrument_option_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const instrument_option& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "long_short", v.long_short);
+    ores::utility::digest::append_member(out, "option_type", v.option_type);
+    ores::utility::digest::append_member(out, "payoff_type", v.payoff_type);
+    ores::utility::digest::append_member(out, "payoff_type_2", v.payoff_type_2);
+    ores::utility::digest::append_member(out, "style", v.style);
+    ores::utility::digest::append_member(out, "notice_period", v.notice_period);
+    ores::utility::digest::append_member(out, "notice_calendar", v.notice_calendar);
+    ores::utility::digest::append_member(out, "notice_convention", v.notice_convention);
+    ores::utility::digest::append_member(out, "mid_coupon_exercise", v.mid_coupon_exercise);
+    ores::utility::digest::append_member(out, "settlement", v.settlement);
+    ores::utility::digest::append_member(out, "settlement_method", v.settlement_method);
+    ores::utility::digest::append_member(out, "pay_off_at_expiry", v.pay_off_at_expiry);
+    ores::utility::digest::append_member(out, "premium_amount", v.premium_amount);
+    ores::utility::digest::append_member(out, "premium_currency", v.premium_currency);
+    ores::utility::digest::append_member(out, "premium_pay_date", v.premium_pay_date);
+    ores::utility::digest::append_member(
+        out, "exercise_fee_settlement_period", v.exercise_fee_settlement_period);
+    ores::utility::digest::append_member(
+        out, "exercise_fee_settlement_calendar", v.exercise_fee_settlement_calendar);
+    ores::utility::digest::append_member(
+        out, "exercise_fee_settlement_convention", v.exercise_fee_settlement_convention);
+    ores::utility::digest::append_member(out, "automatic_exercise", v.automatic_exercise);
+    ores::utility::digest::append_member(out, "has_exercise_data", v.has_exercise_data);
+    ores::utility::digest::append_member(out, "exercise_date", v.exercise_date);
+    ores::utility::digest::append_member(out, "exercise_price", v.exercise_price);
+    ores::utility::digest::append_member(out, "has_payment_data", v.has_payment_data);
+    ores::utility::digest::append_member(out, "payment_lag", v.payment_lag);
+    ores::utility::digest::append_member(out, "payment_calendar", v.payment_calendar);
+    ores::utility::digest::append_member(out, "payment_convention", v.payment_convention);
+    ores::utility::digest::append_member(out, "payment_relative_to", v.payment_relative_to);
+    ores::utility::digest::append_member(out, "has_settlement_data", v.has_settlement_data);
+    ores::utility::digest::append_member(out, "settlement_pay_currency", v.settlement_pay_currency);
+    ores::utility::digest::append_member(out, "settlement_fx_index", v.settlement_fx_index);
+    ores::utility::digest::append_member(out, "settlement_fixing_date", v.settlement_fixing_date);
+    out.push_back('}');
+    return out;
 }
 
 /**

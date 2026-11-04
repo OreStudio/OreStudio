@@ -93,7 +93,7 @@ struct mint_storage_capability_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const mint_storage_capability_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<mint_storage_capability_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"tenant_id", &mint_storage_capability_request::tenant_id},
         ::ores::utility::codec::field{"grants", &mint_storage_capability_request::grants},
@@ -108,7 +108,7 @@ struct mint_storage_capability_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const mint_storage_capability_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<mint_storage_capability_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &mint_storage_capability_response::success},
         ::ores::utility::codec::field{"message", &mint_storage_capability_response::message},

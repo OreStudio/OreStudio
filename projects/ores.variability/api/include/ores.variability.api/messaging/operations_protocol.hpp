@@ -157,7 +157,7 @@ struct get_setting_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const clear_bootstrap_mode_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_bootstrap_mode_request>) {
     return std::tuple{};
 }
 
@@ -169,7 +169,7 @@ struct get_setting_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const clear_bootstrap_mode_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_bootstrap_mode_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &clear_bootstrap_mode_response::result},
     };
@@ -183,7 +183,7 @@ struct get_setting_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const complete_system_onboarding_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<complete_system_onboarding_request>) {
     return std::tuple{};
 }
 
@@ -195,7 +195,7 @@ struct get_setting_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const complete_system_onboarding_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<complete_system_onboarding_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &complete_system_onboarding_response::result},
     };
@@ -209,7 +209,7 @@ struct get_setting_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const complete_party_onboarding_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<complete_party_onboarding_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"party_id", &complete_party_onboarding_request::party_id},
     };
@@ -223,7 +223,7 @@ struct get_setting_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const complete_party_onboarding_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<complete_party_onboarding_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &complete_party_onboarding_response::result},
     };
@@ -237,7 +237,7 @@ struct get_setting_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_setting_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_setting_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"name", &get_setting_request::name},
     };
@@ -251,7 +251,7 @@ struct get_setting_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_setting_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_setting_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_setting_response::result},
         ::ores::utility::codec::field{"value", &get_setting_response::value},

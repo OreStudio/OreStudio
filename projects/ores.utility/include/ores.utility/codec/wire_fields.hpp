@@ -22,6 +22,7 @@
 
 #include <optional>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 
 namespace ores::utility::codec {
@@ -34,13 +35,16 @@ namespace ores::utility::codec {
  * therefore written once, beside the struct that has it, and the encoding is
  * written once, in the two carriers.
  *
+ * =wire_fields= takes the type's =std::type_identity= and not a value, because
+ * the shape is a property of the type.
+ *
  * This header holds no encoder: a type's own header can state its field list
  * without pulling yyjson or MessagePack behind it.
  */
 template <typename T, typename Member>
 struct field {
     std::string_view name;
-    Member T::*member;
+    Member T::* member;
 };
 
 /**
@@ -67,7 +71,20 @@ inline constexpr bool is_optional_member<std::optional<Member>> = true;
  * uuid, a container -- answers no and keeps the form its own carrier gives it.
  */
 template <typename T>
-concept states_wire_form = requires(const T& v) { wire_fields(v); };
+concept states_wire_form = requires { wire_fields(std::type_identity<T>{}); };
+
+/**
+ * @brief Calls @p f with the name and the value of each member of @p v.
+ *
+ * The members come in the order of the type's stated shape. A member is const
+ * when @p v is const.
+ */
+template <typename T, typename F>
+    requires states_wire_form<std::remove_const_t<T>>
+constexpr void for_each_field(T& v, F&& f) {
+    std::apply([&](const auto&... fields) { (f(fields.name, v.*(fields.member)), ...); },
+               wire_fields(std::type_identity<std::remove_const_t<T>>{}));
+}
 
 }
 

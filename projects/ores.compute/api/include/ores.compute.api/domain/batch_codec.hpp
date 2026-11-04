@@ -45,7 +45,7 @@ namespace ores::compute::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const batch&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batch>) {
     return std::tuple{
         utility::codec::field{"version", &batch::version},
         utility::codec::field{"tenant_id", &batch::tenant_id},

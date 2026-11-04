@@ -56,7 +56,7 @@ struct inner {
  * depend on a value, so it carries no name and draws no unused-parameter
  * warning.
  */
-inline constexpr auto wire_fields(const inner&) {
+inline constexpr auto wire_fields(std::type_identity<inner>) {
     return std::tuple{field{"count", &inner::count}, field{"label", &inner::label}};
 }
 
@@ -72,7 +72,7 @@ struct outer {
     std::optional<std::string> note;
 };
 
-inline constexpr auto wire_fields(const outer&) {
+inline constexpr auto wire_fields(std::type_identity<outer>) {
     return std::tuple{field{"name", &outer::name},
                       field{"one", &outer::one},
                       field{"many", &outer::many},
@@ -89,7 +89,7 @@ struct tally {
     std::map<std::string, inner> parts;
 };
 
-inline constexpr auto wire_fields(const tally&) {
+inline constexpr auto wire_fields(std::type_identity<tally>) {
     return std::tuple{field{"counts", &tally::counts}, field{"parts", &tally::parts}};
 }
 
@@ -101,7 +101,7 @@ struct timed {
     std::chrono::milliseconds pause{250};
 };
 
-inline constexpr auto wire_fields(const timed&) {
+inline constexpr auto wire_fields(std::type_identity<timed>) {
     return std::tuple{field{"interval", &timed::interval}, field{"pause", &timed::pause}};
 }
 
@@ -112,7 +112,7 @@ struct located {
     std::filesystem::path dir;
 };
 
-inline constexpr auto wire_fields(const located&) {
+inline constexpr auto wire_fields(std::type_identity<located>) {
     return std::tuple{field{"dir", &located::dir}};
 }
 
@@ -126,7 +126,7 @@ struct forgetful {
     int port = 0;
 };
 
-inline constexpr auto wire_fields(const forgetful&) {
+inline constexpr auto wire_fields(std::type_identity<forgetful>) {
     return std::tuple{field{"user", &forgetful::user}, field{"port", &forgetful::port}};
 }
 

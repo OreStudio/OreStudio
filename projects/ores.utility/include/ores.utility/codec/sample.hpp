@@ -101,7 +101,8 @@ template <typename T>
 struct sampler {
     static T make(std::size_t which) {
         if constexpr (states_wire_form<T>) {
-            constexpr std::size_t count = std::tuple_size_v<decltype(wire_fields(T{}))>;
+            constexpr std::size_t count =
+                std::tuple_size_v<decltype(wire_fields(std::type_identity<T>{}))>;
             const std::size_t base = 2 * count * (which / 2);
             const auto unlike = [base](const T& avoid) {
                 T out{};
@@ -112,7 +113,7 @@ struct sampler {
                               sample_unlike(avoid.*(fields.member), base + 2 * j++)),
                          ...);
                     },
-                    wire_fields(out));
+                    wire_fields(std::type_identity<T>{}));
                 return out;
             };
             // The second sample differs from the first in every member, so two

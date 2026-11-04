@@ -27,12 +27,10 @@
 
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <optional>
-#include <span>
 #include <string>
-#include <string_view>
 #include <tuple>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -89,7 +87,7 @@ struct bond_amortization_data {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_amortization_data&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_amortization_data>) {
     return std::tuple{
         utility::codec::field{"type", &bond_amortization_data::type},
         utility::codec::field{"value", &bond_amortization_data::value},
@@ -101,26 +99,22 @@ struct bond_amortization_data {
 }
 
 /**
- * @brief The members of bond_amortization_data the customer agreed to.
- */
-inline constexpr std::string_view bond_amortization_data_economic_fields[] = {
-    "type",
-    "value",
-    "start_date",
-    "end_date",
-    "frequency",
-    "underflow",
-};
-
-/**
- * @brief Names the members of bond_amortization_data that are economic.
+ * @brief The canonical text of the members of bond_amortization_data the customer agreed to.
  *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
+ * Renders, in member order, the fields the model declares economic. The
+ * economic digest hashes this text, so a field the customer did not agree to
+ * never moves it.
  */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<bond_amortization_data>) {
-    return bond_amortization_data_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const bond_amortization_data& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "type", v.type);
+    ores::utility::digest::append_member(out, "value", v.value);
+    ores::utility::digest::append_member(out, "start_date", v.start_date);
+    ores::utility::digest::append_member(out, "end_date", v.end_date);
+    ores::utility::digest::append_member(out, "frequency", v.frequency);
+    ores::utility::digest::append_member(out, "underflow", v.underflow);
+    out.push_back('}');
+    return out;
 }
 
 }

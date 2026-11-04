@@ -366,7 +366,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const booking_nature_type_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_type_key>) {
     return std::tuple{
         utility::codec::field{"code", &booking_nature_type_key::code},
     };
@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const booking_nature_type_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_type_write>) {
     return std::tuple{
         utility::codec::field{"code", &booking_nature_type_write::code},
         utility::codec::field{"description", &booking_nature_type_write::description},
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const booking_nature_type_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_type_change>) {
     return std::tuple{
         utility::codec::field{"write", &booking_nature_type_change::write},
         utility::codec::field{"precondition", &booking_nature_type_change::precondition},
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const booking_nature_type_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_type_removal>) {
     return std::tuple{
         utility::codec::field{"key", &booking_nature_type_removal::key},
         utility::codec::field{"precondition", &booking_nature_type_removal::precondition},
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const booking_nature_type_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_type_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &booking_nature_type_lookup::key},
         utility::codec::field{"booking_nature_type",
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const booking_nature_types_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_types_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &booking_nature_types_filter::code_one_of},
     };
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const booking_nature_type_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_type_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &booking_nature_type_event::event_id},
         utility::codec::field{"key", &booking_nature_type_event::key},
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const booking_nature_type_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_type_version_key>) {
     return std::tuple{
         utility::codec::field{"booking_nature_type",
                               &booking_nature_type_version_key::booking_nature_type},
@@ -490,7 +490,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const booking_nature_type_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_type_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &booking_nature_type_versions_filter::version},
         utility::codec::field{"from_version", &booking_nature_type_versions_filter::from_version},
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_booking_nature_types_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_booking_nature_types_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_booking_nature_types_request::offset},
         utility::codec::field{"limit", &list_booking_nature_types_request::limit},
@@ -524,7 +524,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_booking_nature_types_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_booking_nature_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_booking_nature_types_response::result},
         utility::codec::field{"booking_nature_types",
@@ -541,7 +541,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_booking_nature_type_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_booking_nature_type_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_booking_nature_type_request::key},
     };
@@ -555,7 +555,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_booking_nature_type_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_booking_nature_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_booking_nature_type_response::result},
         utility::codec::field{"booking_nature_type",
@@ -571,7 +571,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_booking_nature_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_booking_nature_types_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_booking_nature_types_request::keys},
     };
@@ -585,7 +586,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_booking_nature_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_booking_nature_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_booking_nature_types_response::result},
         utility::codec::field{"entries", &get_many_booking_nature_types_response::entries},
@@ -600,7 +602,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_booking_nature_type_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_booking_nature_type_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_booking_nature_type_request::change},
         utility::codec::field{"intent", &put_booking_nature_type_request::intent},
@@ -615,7 +617,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_booking_nature_type_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_booking_nature_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_booking_nature_type_response::result},
         utility::codec::field{"booking_nature_type",
@@ -631,7 +633,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_booking_nature_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_booking_nature_types_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_booking_nature_types_request::changes},
         utility::codec::field{"intent", &put_many_booking_nature_types_request::intent},
@@ -646,7 +649,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_booking_nature_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_booking_nature_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_booking_nature_types_response::result},
         utility::codec::field{"booking_nature_types",
@@ -662,7 +666,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_booking_nature_type_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_booking_nature_type_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_booking_nature_type_request::removal},
         utility::codec::field{"intent", &delete_booking_nature_type_request::intent},
@@ -677,7 +681,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_booking_nature_type_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_booking_nature_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_booking_nature_type_response::result},
     };
@@ -691,7 +695,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_booking_nature_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_booking_nature_types_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_booking_nature_types_request::removals},
         utility::codec::field{"intent", &delete_many_booking_nature_types_request::intent},
@@ -706,7 +711,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_booking_nature_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_booking_nature_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_booking_nature_types_response::result},
     };
@@ -720,7 +726,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_booking_nature_type_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_booking_nature_type_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_booking_nature_type_versions_request::key},
         utility::codec::field{"offset", &list_booking_nature_type_versions_request::offset},
@@ -738,7 +745,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_booking_nature_type_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_booking_nature_type_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_booking_nature_type_versions_response::result},
         utility::codec::field{"versions", &list_booking_nature_type_versions_response::versions},
@@ -754,7 +762,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_booking_nature_type_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_booking_nature_type_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_booking_nature_type_version_request::key},
     };
@@ -768,7 +777,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.booking_nature_ty
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_booking_nature_type_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_booking_nature_type_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_booking_nature_type_version_response::result},
         utility::codec::field{"version", &get_booking_nature_type_version_response::version},

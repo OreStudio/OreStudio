@@ -45,7 +45,7 @@ namespace ores::reporting::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_family&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_family>) {
     return std::tuple{
         utility::codec::field{"version", &cut_family::version},
         utility::codec::field{"tenant_id", &cut_family::tenant_id},

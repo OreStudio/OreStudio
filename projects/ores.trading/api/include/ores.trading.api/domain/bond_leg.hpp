@@ -25,15 +25,14 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_LEG_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_LEG_HPP
 
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -233,37 +232,32 @@ and never carry a role here.
 };
 
 /**
- * @brief The members of bond_leg the customer agreed to.
+ * @brief The canonical text of the members of bond_leg the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view bond_leg_economic_fields[] = {
-    "leg_role",
-    "leg_number",
-    "payer",
-    "leg_type",
-    "currency",
-    "payment_convention",
-    "payment_lag",
-    "payment_calendar",
-    "day_counter",
-    "last_period_day_counter",
-    "notional_payment_lag",
-    "strict_notional_dates",
-    "indexings_from_asset_leg",
-    "settlement_fx_index",
-    "settlement_fixing_date",
-};
-
-/**
- * @brief Names the members of bond_leg that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<bond_leg>) {
-    return bond_leg_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const bond_leg& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "leg_role", v.leg_role);
+    ores::utility::digest::append_member(out, "leg_number", v.leg_number);
+    ores::utility::digest::append_member(out, "payer", v.payer);
+    ores::utility::digest::append_member(out, "leg_type", v.leg_type);
+    ores::utility::digest::append_member(out, "currency", v.currency);
+    ores::utility::digest::append_member(out, "payment_convention", v.payment_convention);
+    ores::utility::digest::append_member(out, "payment_lag", v.payment_lag);
+    ores::utility::digest::append_member(out, "payment_calendar", v.payment_calendar);
+    ores::utility::digest::append_member(out, "day_counter", v.day_counter);
+    ores::utility::digest::append_member(out, "last_period_day_counter", v.last_period_day_counter);
+    ores::utility::digest::append_member(out, "notional_payment_lag", v.notional_payment_lag);
+    ores::utility::digest::append_member(out, "strict_notional_dates", v.strict_notional_dates);
+    ores::utility::digest::append_member(
+        out, "indexings_from_asset_leg", v.indexings_from_asset_leg);
+    ores::utility::digest::append_member(out, "settlement_fx_index", v.settlement_fx_index);
+    ores::utility::digest::append_member(out, "settlement_fixing_date", v.settlement_fixing_date);
+    out.push_back('}');
+    return out;
 }
 
 /**

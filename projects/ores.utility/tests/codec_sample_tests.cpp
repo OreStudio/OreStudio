@@ -33,7 +33,7 @@ struct sample_probe_leaf {
     friend bool operator==(const sample_probe_leaf&, const sample_probe_leaf&) = default;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const sample_probe_leaf&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sample_probe_leaf>) {
     return std::tuple{
         utility::codec::field{"name", &sample_probe_leaf::name},
         utility::codec::field{"tint", &sample_probe_leaf::tint},
@@ -69,7 +69,7 @@ struct sample_probe_every_member {
                            const sample_probe_every_member&) = default;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const sample_probe_every_member&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sample_probe_every_member>) {
     return std::tuple{
         utility::codec::field{"text", &sample_probe_every_member::text},
         utility::codec::field{"flag", &sample_probe_every_member::flag},
@@ -122,7 +122,7 @@ struct sample_probe_twins {
     friend bool operator==(const sample_probe_twins&, const sample_probe_twins&) = default;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const sample_probe_twins&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sample_probe_twins>) {
     return std::tuple{
         utility::codec::field{"text_a", &sample_probe_twins::text_a},
         utility::codec::field{"text_b", &sample_probe_twins::text_b},

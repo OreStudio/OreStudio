@@ -27,9 +27,13 @@
 #include "ores.analytics.api/domain/credit_simulation_netting_set_config.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/xml/generated/credit_simulation.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <array>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 namespace ores::ore::domain {
@@ -60,6 +64,25 @@ struct mapped_credit_simulation {
     std::vector<analytics::domain::credit_simulation_matrix_row_config> rows;
     std::vector<analytics::domain::credit_simulation_netting_set_config> netting_sets;
 };
+
+/**
+ * @brief The members of mapped_credit_simulation, in the order it declares them.
+ *
+ * The party walk reads a struct by this shape, so a document that is not
+ * generated states it by hand. The assertion below fails when a member is
+ * added to the struct and not here.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<mapped_credit_simulation>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"config", &mapped_credit_simulation::config},
+                      field{"entities", &mapped_credit_simulation::entities},
+                      field{"matrices", &mapped_credit_simulation::matrices},
+                      field{"rows", &mapped_credit_simulation::rows},
+                      field{"netting_sets", &mapped_credit_simulation::netting_sets}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<mapped_credit_simulation>(),
+              "mapped_credit_simulation gained a member its wire_fields does not name.");
 
 /**
  * @brief Maps between an ORE CreditSimulation XML document and the analytics

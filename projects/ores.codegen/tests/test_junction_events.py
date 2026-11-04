@@ -47,7 +47,7 @@ def test_the_events_are_published_on_the_junctions_collection(tmp_path):
     header = render(tmp_path, "cpp_nats_changed_event.hpp.mustache", EVENTS)
     registrar = render(tmp_path, "cpp_nats_event_registrar.cpp.mustache", EVENTS)
 
-    assert 'subject_prefix = "testcomp.v1.test_links_events"' in header
+    assert 'subject_prefix = "testcomp.v1.events.test_links"' in header
     assert "test_link_key" in header
     assert "register_test_link_event_mapping" in registrar
     assert '"ores_testcomp_test_links"' in registrar

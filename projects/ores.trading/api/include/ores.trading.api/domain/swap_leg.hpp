@@ -137,6 +137,56 @@ struct swap_leg final {
      */
     std::optional<std::string> leg_group;
 
+    /**
+     * @brief The fixing days of a floating leg's index, as FixingDays states them. Null when the
+     * leg states none and the index's own convention applies.
+     */
+    std::optional<int> fixing_days;
+
+    /**
+     * @brief Whether a floating leg fixes in arrears, as IsInArrears states it. Null when the leg
+     * states none.
+     */
+    std::optional<bool> is_in_arrears;
+
+    /**
+     * @brief Whether an overnight leg compounds its spread, as IncludeSpread states it.
+     */
+    std::optional<bool> include_spread;
+
+    /**
+     * @brief Whether an overnight leg averages rather than compounds, as IsAveraged states it.
+     */
+    std::optional<bool> is_averaged;
+
+    /**
+     * @brief Whether a floating leg pays on sub periods, as HasSubPeriods states it.
+     */
+    std::optional<bool> has_sub_periods;
+
+    /**
+     * @brief Whether the leg exchanges its notional at the start, as
+     * Notionals/Exchanges/NotionalInitialExchange states it.
+     */
+    std::optional<bool> notional_initial_exchange;
+
+    /**
+     * @brief Whether the leg exchanges its notional at the end, as
+     * Notionals/Exchanges/NotionalFinalExchange states it.
+     */
+    std::optional<bool> notional_final_exchange;
+
+    /**
+     * @brief The leg's payment lag as the document spells it, a number of days or a period such as
+     * 2D. Kept as text, because ORE reads both.
+     */
+    std::optional<std::string> payment_lag;
+
+    /**
+     * @brief The calendar the leg's payments are adjusted on, as PaymentCalendar states it.
+     */
+    std::optional<std::string> payment_calendar;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.

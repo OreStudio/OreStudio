@@ -112,6 +112,15 @@ domain::swap_leg swap_leg_to_domain(const messaging::swap_leg_write& write) {
     v.floating_index_code = write.floating_index_code;
     v.currency = write.currency;
     v.leg_group = write.leg_group;
+    v.fixing_days = write.fixing_days;
+    v.is_in_arrears = write.is_in_arrears;
+    v.include_spread = write.include_spread;
+    v.is_averaged = write.is_averaged;
+    v.has_sub_periods = write.has_sub_periods;
+    v.notional_initial_exchange = write.notional_initial_exchange;
+    v.notional_final_exchange = write.notional_final_exchange;
+    v.payment_lag = write.payment_lag;
+    v.payment_calendar = write.payment_calendar;
     return v;
 }
 

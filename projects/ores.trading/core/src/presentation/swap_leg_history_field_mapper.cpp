@@ -51,6 +51,31 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     fields.push_back({.name = "Floating Index Code", .value = v.floating_index_code});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Leg Group", .value = v.leg_group.value_or(std::string{})});
+    fields.push_back({.name = "Fixing Days",
+                      .value = v.fixing_days ? std::to_string(*v.fixing_days) : std::string{}});
+    fields.push_back(
+        {.name = "Is In Arrears",
+         .value = v.is_in_arrears ? (*v.is_in_arrears ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Include Spread",
+         .value = v.include_spread ? (*v.include_spread ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Is Averaged",
+         .value = v.is_averaged ? (*v.is_averaged ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Has Sub Periods",
+         .value = v.has_sub_periods ? (*v.has_sub_periods ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Notional Initial Exchange",
+                      .value = v.notional_initial_exchange ?
+                                   (*v.notional_initial_exchange ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Notional Final Exchange",
+                      .value = v.notional_final_exchange ?
+                                   (*v.notional_final_exchange ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Payment Lag", .value = v.payment_lag.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Payment Calendar", .value = v.payment_calendar.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

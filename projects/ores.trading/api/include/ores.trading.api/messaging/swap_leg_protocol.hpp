@@ -60,6 +60,15 @@ struct swap_leg_write {
     std::string floating_index_code;
     std::string currency;
     std::optional<std::string> leg_group;
+    std::optional<int> fixing_days;
+    std::optional<bool> is_in_arrears;
+    std::optional<bool> include_spread;
+    std::optional<bool> is_averaged;
+    std::optional<bool> has_sub_periods;
+    std::optional<bool> notional_initial_exchange;
+    std::optional<bool> notional_final_exchange;
+    std::optional<std::string> payment_lag;
+    std::optional<std::string> payment_calendar;
 
     friend bool operator==(const swap_leg_write&, const swap_leg_write&) = default;
 };
@@ -422,6 +431,16 @@ inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted
         utility::codec::field{"floating_index_code", &swap_leg_write::floating_index_code},
         utility::codec::field{"currency", &swap_leg_write::currency},
         utility::codec::field{"leg_group", &swap_leg_write::leg_group},
+        utility::codec::field{"fixing_days", &swap_leg_write::fixing_days},
+        utility::codec::field{"is_in_arrears", &swap_leg_write::is_in_arrears},
+        utility::codec::field{"include_spread", &swap_leg_write::include_spread},
+        utility::codec::field{"is_averaged", &swap_leg_write::is_averaged},
+        utility::codec::field{"has_sub_periods", &swap_leg_write::has_sub_periods},
+        utility::codec::field{"notional_initial_exchange",
+                              &swap_leg_write::notional_initial_exchange},
+        utility::codec::field{"notional_final_exchange", &swap_leg_write::notional_final_exchange},
+        utility::codec::field{"payment_lag", &swap_leg_write::payment_lag},
+        utility::codec::field{"payment_calendar", &swap_leg_write::payment_calendar},
     };
 }
 

@@ -64,6 +64,15 @@ struct swap_leg_entity {
     std::optional<std::string> floating_index_code;
     std::string currency;
     std::optional<std::string> leg_group;
+    std::optional<int> fixing_days;
+    std::optional<bool> is_in_arrears;
+    std::optional<bool> include_spread;
+    std::optional<bool> is_averaged;
+    std::optional<bool> has_sub_periods;
+    std::optional<bool> notional_initial_exchange;
+    std::optional<bool> notional_final_exchange;
+    std::optional<std::string> payment_lag;
+    std::optional<std::string> payment_calendar;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -92,6 +101,15 @@ struct swap_leg_entity {
                query_builder::bind("floating_index_code", &e::floating_index_code) |
                query_builder::bind("currency", &e::currency) |
                query_builder::bind("leg_group", &e::leg_group) |
+               query_builder::bind("fixing_days", &e::fixing_days) |
+               query_builder::bind("is_in_arrears", &e::is_in_arrears) |
+               query_builder::bind("include_spread", &e::include_spread) |
+               query_builder::bind("is_averaged", &e::is_averaged) |
+               query_builder::bind("has_sub_periods", &e::has_sub_periods) |
+               query_builder::bind("notional_initial_exchange", &e::notional_initial_exchange) |
+               query_builder::bind("notional_final_exchange", &e::notional_final_exchange) |
+               query_builder::bind("payment_lag", &e::payment_lag) |
+               query_builder::bind("payment_calendar", &e::payment_calendar) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

@@ -141,7 +141,9 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "add <leg_number> <trade_activity_id> <payer> <leg_type_code> <day_count_fraction_code> "
         "<business_day_convention_code> <payment_frequency_code> <floating_index_code> <currency> "
-        "<leg_group> <reason> <commentary>");
+        "<leg_group> <fixing_days> <is_in_arrears> <include_spread> <is_averaged> "
+        "<has_sub_periods> <notional_initial_exchange> <notional_final_exchange> <payment_lag> "
+        "<payment_calendar> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,7 +152,10 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "set <trade_id> <leg_number> <trade_activity_id> <payer> <leg_type_code> "
         "<day_count_fraction_code> <business_day_convention_code> <payment_frequency_code> "
-        "<floating_index_code> <currency> <leg_group> <reason> <commentary> [--version <n>]");
+        "<floating_index_code> <currency> <leg_group> <fixing_days> <is_in_arrears> "
+        "<include_spread> <is_averaged> <has_sub_periods> <notional_initial_exchange> "
+        "<notional_final_exchange> <payment_lag> <payment_calendar> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +164,9 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "put-many --count <n> <trade_id> <leg_number> <trade_activity_id> <payer> <leg_type_code> "
         "<day_count_fraction_code> <business_day_convention_code> <payment_frequency_code> "
-        "<floating_index_code> <currency> <leg_group> <reason> <commentary>");
+        "<floating_index_code> <currency> <leg_group> <fixing_days> <is_in_arrears> "
+        "<include_spread> <is_averaged> <has_sub_periods> <notional_initial_exchange> "
+        "<notional_final_exchange> <payment_lag> <payment_calendar> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -369,8 +376,8 @@ void swap_leg_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 19 + 2) {
+            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -395,6 +402,26 @@ void swap_leg_commands::process_add(std::ostream& out,
                             "floating_index_code");
         swap_leg_read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         swap_leg_read_token(req.change.write.leg_group, parsed->positionals[next++], "leg_group");
+        swap_leg_read_token(
+            req.change.write.fixing_days, parsed->positionals[next++], "fixing_days");
+        swap_leg_read_token(
+            req.change.write.is_in_arrears, parsed->positionals[next++], "is_in_arrears");
+        swap_leg_read_token(
+            req.change.write.include_spread, parsed->positionals[next++], "include_spread");
+        swap_leg_read_token(
+            req.change.write.is_averaged, parsed->positionals[next++], "is_averaged");
+        swap_leg_read_token(
+            req.change.write.has_sub_periods, parsed->positionals[next++], "has_sub_periods");
+        swap_leg_read_token(req.change.write.notional_initial_exchange,
+                            parsed->positionals[next++],
+                            "notional_initial_exchange");
+        swap_leg_read_token(req.change.write.notional_final_exchange,
+                            parsed->positionals[next++],
+                            "notional_final_exchange");
+        swap_leg_read_token(
+            req.change.write.payment_lag, parsed->positionals[next++], "payment_lag");
+        swap_leg_read_token(
+            req.change.write.payment_calendar, parsed->positionals[next++], "payment_calendar");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -439,8 +466,8 @@ void swap_leg_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 20 + 2) {
+            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -465,6 +492,26 @@ void swap_leg_commands::process_set(std::ostream& out,
                             "floating_index_code");
         swap_leg_read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         swap_leg_read_token(req.change.write.leg_group, parsed->positionals[next++], "leg_group");
+        swap_leg_read_token(
+            req.change.write.fixing_days, parsed->positionals[next++], "fixing_days");
+        swap_leg_read_token(
+            req.change.write.is_in_arrears, parsed->positionals[next++], "is_in_arrears");
+        swap_leg_read_token(
+            req.change.write.include_spread, parsed->positionals[next++], "include_spread");
+        swap_leg_read_token(
+            req.change.write.is_averaged, parsed->positionals[next++], "is_averaged");
+        swap_leg_read_token(
+            req.change.write.has_sub_periods, parsed->positionals[next++], "has_sub_periods");
+        swap_leg_read_token(req.change.write.notional_initial_exchange,
+                            parsed->positionals[next++],
+                            "notional_initial_exchange");
+        swap_leg_read_token(req.change.write.notional_final_exchange,
+                            parsed->positionals[next++],
+                            "notional_final_exchange");
+        swap_leg_read_token(
+            req.change.write.payment_lag, parsed->positionals[next++], "payment_lag");
+        swap_leg_read_token(
+            req.change.write.payment_calendar, parsed->positionals[next++], "payment_calendar");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -521,8 +568,8 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 20 + 2) {
+            fail(out) << "Expected " << (change_count * 20 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -549,6 +596,26 @@ void swap_leg_commands::process_put_many(std::ostream& out,
                                 "floating_index_code");
             swap_leg_read_token(change.write.currency, parsed->positionals[next++], "currency");
             swap_leg_read_token(change.write.leg_group, parsed->positionals[next++], "leg_group");
+            swap_leg_read_token(
+                change.write.fixing_days, parsed->positionals[next++], "fixing_days");
+            swap_leg_read_token(
+                change.write.is_in_arrears, parsed->positionals[next++], "is_in_arrears");
+            swap_leg_read_token(
+                change.write.include_spread, parsed->positionals[next++], "include_spread");
+            swap_leg_read_token(
+                change.write.is_averaged, parsed->positionals[next++], "is_averaged");
+            swap_leg_read_token(
+                change.write.has_sub_periods, parsed->positionals[next++], "has_sub_periods");
+            swap_leg_read_token(change.write.notional_initial_exchange,
+                                parsed->positionals[next++],
+                                "notional_initial_exchange");
+            swap_leg_read_token(change.write.notional_final_exchange,
+                                parsed->positionals[next++],
+                                "notional_final_exchange");
+            swap_leg_read_token(
+                change.write.payment_lag, parsed->positionals[next++], "payment_lag");
+            swap_leg_read_token(
+                change.write.payment_calendar, parsed->positionals[next++], "payment_calendar");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

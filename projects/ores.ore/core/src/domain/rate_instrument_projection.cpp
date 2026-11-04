@@ -575,6 +575,14 @@ void rate_instrument_projection_read_option_block(swap_instrument_data& result,
 // Reading: the legs and their economics
 // ---------------------------------------------------------------------------
 
+/// A flag the element states, or nothing when it states none.
+std::optional<bool> rate_instrument_projection_optional_flag(const record_reader& r,
+                                                             std::string_view name) {
+    if (!r.has(name))
+        return std::nullopt;
+    return rate_instrument_projection_is_flag_on(rate_instrument_projection_text_of(r, name));
+}
+
 swap_leg rate_instrument_projection_read_leg(const record_reader& leg, int leg_number) {
     swap_leg row;
     row.identity.leg_number = leg_number;
@@ -587,8 +595,32 @@ swap_leg rate_instrument_projection_read_leg(const record_reader& leg, int leg_n
         rate_instrument_projection_spelling_of(leg, "PaymentConvention");
     row.payment_frequency_code = tenor_to_payment_frequency(
         rate_instrument_projection_first_tenor(leg.child("ScheduleData")));
-    if (const auto floating = leg.child("FloatingLegData"))
+    if (leg.has("PaymentLag"))
+        row.payment_lag = rate_instrument_projection_text_of(leg, "PaymentLag");
+    if (leg.has("PaymentCalendar"))
+        row.payment_calendar = rate_instrument_projection_text_of(leg, "PaymentCalendar");
+    if (const auto notionals = leg.child("Notionals")) {
+        if (const auto all = notionals->children("Exchanges"); !all.empty()) {
+            const auto& exchanges = all.front();
+            const auto spelled = [&](std::string_view name) -> std::optional<bool> {
+                const auto value = exchanges.spelling(name);
+                if (!value)
+                    return std::nullopt;
+                return rate_instrument_projection_is_flag_on(*value);
+            };
+            row.notional_initial_exchange = spelled("NotionalInitialExchange");
+            row.notional_final_exchange = spelled("NotionalFinalExchange");
+        }
+    }
+    if (const auto floating = leg.child("FloatingLegData")) {
         row.floating_index_code = rate_instrument_projection_text_of(*floating, "Index");
+        if (const auto days = floating->integer("FixingDays"))
+            row.fixing_days = static_cast<int>(*days);
+        row.is_in_arrears = rate_instrument_projection_optional_flag(*floating, "IsInArrears");
+        row.include_spread = rate_instrument_projection_optional_flag(*floating, "IncludeSpread");
+        row.is_averaged = rate_instrument_projection_optional_flag(*floating, "IsAveraged");
+        row.has_sub_periods = rate_instrument_projection_optional_flag(*floating, "HasSubPeriods");
+    }
     rate_instrument_projection_stamp(row);
     return row;
 }
@@ -1445,6 +1477,10 @@ void rate_instrument_projection_write_leg(record_writer& leg,
                                                    row.business_day_convention_code,
                                                    "MF",
                                                    "business day convention");
+    if (row.payment_lag)
+        leg.set_text("PaymentLag", *row.payment_lag);
+    if (row.payment_calendar)
+        leg.set_text("PaymentCalendar", *row.payment_calendar);
 
     // A cashflow leg has dated payments and no notional or schedule.
     if (row.leg_type_code == "Cashflow") {
@@ -1467,6 +1503,19 @@ void rate_instrument_projection_write_leg(record_writer& leg,
                 writer.set_text("startDate",
                                 rate_instrument_projection_to_ore_date(*amount.start_date));
         }
+    }
+    if (row.notional_initial_exchange || row.notional_final_exchange) {
+        auto exchanges = leg.child("Notionals").append("Exchanges");
+        if (row.notional_initial_exchange)
+            exchanges.set_spelling(
+                "NotionalInitialExchange",
+                rate_instrument_projection_flag_text(*row.notional_initial_exchange),
+                "boolean");
+        if (row.notional_final_exchange)
+            exchanges.set_spelling(
+                "NotionalFinalExchange",
+                rate_instrument_projection_flag_text(*row.notional_final_exchange),
+                "boolean");
     }
 
     // The leg's own schedule is the one the document stated; a leg stored
@@ -1493,6 +1542,17 @@ void rate_instrument_projection_write_leg(record_writer& leg,
     } else if (row.leg_type_code == "Floating") {
         auto floating = leg.child("FloatingLegData");
         floating.set_text("Index", row.floating_index_code);
+        if (row.fixing_days)
+            floating.set_integer("FixingDays", *row.fixing_days);
+        const auto write_flag = [&floating](std::string_view name,
+                                            const std::optional<bool>& flag) {
+            if (flag)
+                floating.set_text(name, rate_instrument_projection_flag_text(*flag));
+        };
+        write_flag("IsInArrears", row.is_in_arrears);
+        write_flag("IncludeSpread", row.include_spread);
+        write_flag("IsAveraged", row.is_averaged);
+        write_flag("HasSubPeriods", row.has_sub_periods);
         write_floating_rates(floating, rates);
     }
 }

@@ -233,6 +233,91 @@ group tells them apart: =premium=, =independent=, =contingent=, =default=,
 =recovery= or =underlying=. The legs are keyed by the trade, so one table holds
 every family's legs and the group is the one column the credit family adds.
 
+
+** fixing_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The fixing days of a floating leg's index, as =FixingDays= states them. Null when
+the leg states none and the index's own convention applies.
+
+** is_in_arrears
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a floating leg fixes in arrears, as =IsInArrears= states it. Null when
+the leg states none.
+
+** include_spread
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether an overnight leg compounds its spread, as =IncludeSpread= states it.
+
+** is_averaged
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether an overnight leg averages rather than compounds, as =IsAveraged= states it.
+
+** has_sub_periods
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a floating leg pays on sub periods, as =HasSubPeriods= states it.
+
+** notional_initial_exchange
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the leg exchanges its notional at the start, as =Notionals/Exchanges/NotionalInitialExchange= states it.
+
+** notional_final_exchange
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the leg exchanges its notional at the end, as =Notionals/Exchanges/NotionalFinalExchange= states it.
+
+** payment_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The leg's payment lag as the document spells it, a number of days or a period
+such as =2D=. Kept as text, because ORE reads both.
+
+** payment_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar the leg's payments are adjusted on, as =PaymentCalendar= states it.
+
 * Foreign keys
 
 ** trade_id

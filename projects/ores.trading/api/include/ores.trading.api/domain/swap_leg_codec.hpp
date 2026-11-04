@@ -57,6 +57,15 @@ namespace ores::trading::domain {
         utility::codec::field{"floating_index_code", &swap_leg::floating_index_code},
         utility::codec::field{"currency", &swap_leg::currency},
         utility::codec::field{"leg_group", &swap_leg::leg_group},
+        utility::codec::field{"fixing_days", &swap_leg::fixing_days},
+        utility::codec::field{"is_in_arrears", &swap_leg::is_in_arrears},
+        utility::codec::field{"include_spread", &swap_leg::include_spread},
+        utility::codec::field{"is_averaged", &swap_leg::is_averaged},
+        utility::codec::field{"has_sub_periods", &swap_leg::has_sub_periods},
+        utility::codec::field{"notional_initial_exchange", &swap_leg::notional_initial_exchange},
+        utility::codec::field{"notional_final_exchange", &swap_leg::notional_final_exchange},
+        utility::codec::field{"payment_lag", &swap_leg::payment_lag},
+        utility::codec::field{"payment_calendar", &swap_leg::payment_calendar},
         utility::codec::field{"audit", &swap_leg::audit},
     };
 }

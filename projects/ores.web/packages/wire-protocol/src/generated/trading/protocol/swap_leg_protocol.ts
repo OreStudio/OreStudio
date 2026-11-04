@@ -46,6 +46,15 @@ export interface SwapLegWrite {
     floating_index_code: string;
     currency: string;
     leg_group: string | null;
+    fixing_days: number | null;
+    is_in_arrears: boolean | null;
+    include_spread: boolean | null;
+    is_averaged: boolean | null;
+    has_sub_periods: boolean | null;
+    notional_initial_exchange: boolean | null;
+    notional_final_exchange: boolean | null;
+    payment_lag: string | null;
+    payment_calendar: string | null;
 }
 
 export interface SwapLegChange {

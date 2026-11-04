@@ -73,6 +73,17 @@ struct swap_leg_write {
     std::optional<int> future_month_offset;
     std::optional<int> daily_expiry_offset;
     std::optional<std::string> pricing_calendar;
+    std::optional<std::string> equity_return_type;
+    std::optional<std::string> equity_name;
+    std::optional<std::string> equity_underlying_type;
+    std::optional<std::string> equity_underlying_identifier_type;
+    std::optional<ores::utility::decimal::decimal> equity_quantity;
+    std::optional<ores::utility::decimal::decimal> equity_initial_price;
+    std::optional<std::string> equity_initial_price_currency;
+    std::optional<ores::utility::decimal::decimal> equity_dividend_factor;
+    std::optional<bool> equity_notional_reset;
+    std::optional<std::string> equity_currency;
+    std::optional<std::string> fx_index;
 
     friend bool operator==(const swap_leg_write&, const swap_leg_write&) = default;
 };
@@ -449,6 +460,19 @@ inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted
         utility::codec::field{"future_month_offset", &swap_leg_write::future_month_offset},
         utility::codec::field{"daily_expiry_offset", &swap_leg_write::daily_expiry_offset},
         utility::codec::field{"pricing_calendar", &swap_leg_write::pricing_calendar},
+        utility::codec::field{"equity_return_type", &swap_leg_write::equity_return_type},
+        utility::codec::field{"equity_name", &swap_leg_write::equity_name},
+        utility::codec::field{"equity_underlying_type", &swap_leg_write::equity_underlying_type},
+        utility::codec::field{"equity_underlying_identifier_type",
+                              &swap_leg_write::equity_underlying_identifier_type},
+        utility::codec::field{"equity_quantity", &swap_leg_write::equity_quantity},
+        utility::codec::field{"equity_initial_price", &swap_leg_write::equity_initial_price},
+        utility::codec::field{"equity_initial_price_currency",
+                              &swap_leg_write::equity_initial_price_currency},
+        utility::codec::field{"equity_dividend_factor", &swap_leg_write::equity_dividend_factor},
+        utility::codec::field{"equity_notional_reset", &swap_leg_write::equity_notional_reset},
+        utility::codec::field{"equity_currency", &swap_leg_write::equity_currency},
+        utility::codec::field{"fx_index", &swap_leg_write::fx_index},
     };
 }
 

@@ -211,6 +211,64 @@ struct swap_leg final {
      */
     std::optional<std::string> pricing_calendar;
 
+    /**
+     * @brief What an equity leg pays, as ReturnType states it: Price or Total.
+     */
+    std::optional<std::string> equity_return_type;
+
+    /**
+     * @brief The equity an equity leg observes, as Name or Underlying/Name states it.
+     */
+    std::optional<std::string> equity_name;
+
+    /**
+     * @brief The type of the equity leg's Underlying block, such as Equity. Null when the leg names
+     * its equity with a bare Name, so the writer knows which form the document used.
+     */
+    std::optional<std::string> equity_underlying_type;
+
+    /**
+     * @brief The identifier type of the equity leg's Underlying block, such as RIC.
+     */
+    std::optional<std::string> equity_underlying_identifier_type;
+
+    /**
+     * @brief The number of shares an equity leg pays on, as Quantity states it.
+     */
+    std::optional<ores::utility::decimal::decimal> equity_quantity;
+
+    /**
+     * @brief The equity's price at the start of the first period, as InitialPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> equity_initial_price;
+
+    /**
+     * @brief The currency of the initial price, as InitialPriceCurrency states it.
+     */
+    std::optional<std::string> equity_initial_price_currency;
+
+    /**
+     * @brief The share of dividends a total return equity leg pays, as DividendFactor states it.
+     */
+    std::optional<ores::utility::decimal::decimal> equity_dividend_factor;
+
+    /**
+     * @brief Whether an equity leg resets its notional each period, as NotionalReset states it.
+     */
+    std::optional<bool> equity_notional_reset;
+
+    /**
+     * @brief The currency the equity is quoted in, when it differs from the leg's, as
+     * FXTerms/EquityCurrency states it.
+     */
+    std::optional<std::string> equity_currency;
+
+    /**
+     * @brief The FX index that converts the equity currency into the leg's, as FXTerms/FXIndex
+     * states it.
+     */
+    std::optional<std::string> fx_index;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.

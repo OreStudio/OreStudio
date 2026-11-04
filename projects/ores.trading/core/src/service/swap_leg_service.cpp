@@ -125,6 +125,17 @@ domain::swap_leg swap_leg_to_domain(const messaging::swap_leg_write& write) {
     v.future_month_offset = write.future_month_offset;
     v.daily_expiry_offset = write.daily_expiry_offset;
     v.pricing_calendar = write.pricing_calendar;
+    v.equity_return_type = write.equity_return_type;
+    v.equity_name = write.equity_name;
+    v.equity_underlying_type = write.equity_underlying_type;
+    v.equity_underlying_identifier_type = write.equity_underlying_identifier_type;
+    v.equity_quantity = write.equity_quantity;
+    v.equity_initial_price = write.equity_initial_price;
+    v.equity_initial_price_currency = write.equity_initial_price_currency;
+    v.equity_dividend_factor = write.equity_dividend_factor;
+    v.equity_notional_reset = write.equity_notional_reset;
+    v.equity_currency = write.equity_currency;
+    v.fx_index = write.fx_index;
     return v;
 }
 

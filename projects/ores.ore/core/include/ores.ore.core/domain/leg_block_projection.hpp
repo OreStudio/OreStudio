@@ -142,6 +142,32 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         row.is_in_arrears = optional_flag(*commodity, "IsInArrears");
         row.is_averaged = optional_flag(*commodity, "IsAveraged");
     }
+    if (const auto equity = leg.child("EquityLegData")) {
+        if (equity->has("ReturnType"))
+            row.equity_return_type = text_of(*equity, "ReturnType");
+        if (equity->has("Name")) {
+            row.equity_name = text_of(*equity, "Name");
+        } else if (const auto underlying = equity->child("Underlying")) {
+            row.equity_underlying_type = text_of(*underlying, "Type");
+            row.equity_name = text_of(*underlying, "Name");
+            if (underlying->has("IdentifierType"))
+                row.equity_underlying_identifier_type = text_of(*underlying, "IdentifierType");
+        }
+        row.equity_quantity = equity->decimal("Quantity");
+        row.equity_initial_price = equity->decimal("InitialPrice");
+        if (equity->has("InitialPriceCurrency"))
+            row.equity_initial_price_currency = text_of(*equity, "InitialPriceCurrency");
+        row.equity_dividend_factor = equity->decimal("DividendFactor");
+        row.equity_notional_reset = optional_flag(*equity, "NotionalReset");
+        if (const auto days = equity->integer("FixingDays"))
+            row.fixing_days = static_cast<int>(*days);
+        if (const auto terms = equity->child("FXTerms")) {
+            if (terms->has("EquityCurrency"))
+                row.equity_currency = text_of(*terms, "EquityCurrency");
+            if (terms->has("FXIndex"))
+                row.fx_index = text_of(*terms, "FXIndex");
+        }
+    }
     stamp_leg(row);
     return row;
 }
@@ -516,6 +542,41 @@ void write_leg(record_writer& leg,
             payload.set_integer("FutureMonthOffset", *row.future_month_offset);
         if (row.daily_expiry_offset)
             payload.set_integer("DailyExpiryOffset", *row.daily_expiry_offset);
+        return;
+    }
+
+    if (row.leg_type_code == "Equity") {
+        auto payload = leg.child("EquityLegData");
+        if (row.equity_quantity)
+            payload.set_decimal("Quantity", *row.equity_quantity);
+        if (row.equity_return_type)
+            payload.set_text("ReturnType", *row.equity_return_type);
+        if (row.equity_underlying_type) {
+            auto underlying = payload.child("Underlying");
+            underlying.set_text("Type", *row.equity_underlying_type);
+            underlying.set_text("Name", row.equity_name.value_or(""));
+            if (row.equity_underlying_identifier_type)
+                underlying.set_text("IdentifierType", *row.equity_underlying_identifier_type);
+        } else if (row.equity_name) {
+            payload.set_text("Name", *row.equity_name);
+        }
+        if (row.equity_initial_price)
+            payload.set_decimal("InitialPrice", *row.equity_initial_price);
+        if (row.equity_initial_price_currency)
+            payload.set_text("InitialPriceCurrency", *row.equity_initial_price_currency);
+        if (row.equity_dividend_factor)
+            payload.set_decimal("DividendFactor", *row.equity_dividend_factor);
+        if (row.equity_notional_reset)
+            payload.set_text("NotionalReset", flag_text(*row.equity_notional_reset));
+        if (row.fixing_days)
+            payload.set_integer("FixingDays", *row.fixing_days);
+        if (row.equity_currency || row.fx_index) {
+            auto terms = payload.child("FXTerms");
+            if (row.equity_currency)
+                terms.set_text("EquityCurrency", *row.equity_currency);
+            if (row.fx_index)
+                terms.set_text("FXIndex", *row.fx_index);
+        }
         return;
     }
 

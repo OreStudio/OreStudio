@@ -139,7 +139,11 @@ as_equity(const instrument_batch& batch, const Leaf& leaf, boost::uuids::uuid tr
                                   find_all(batch.instrument_option_payment_dates, trade_id),
                                   find_all(batch.instrument_option_exercise_prices, trade_id),
                                   find_all(batch.instrument_schedules, trade_id),
-                                  find_all(batch.instrument_schedule_dates, trade_id)};
+                                  find_all(batch.instrument_schedule_dates, trade_id),
+                                  find_all(batch.swap_legs, trade_id),
+                                  find_all(batch.swap_leg_amounts, trade_id),
+                                  find_all(batch.swap_leg_rates, trade_id),
+                                  find_all(batch.swap_leg_amortizations, trade_id)};
 }
 
 /**
@@ -285,6 +289,10 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 append_rows(batch.instrument_option_exercise_prices, v.option_exercise_prices);
                 append_rows(batch.instrument_schedules, v.schedules);
                 append_rows(batch.instrument_schedule_dates, v.schedule_dates);
+                append_rows(batch.swap_legs, v.legs);
+                append_rows(batch.swap_leg_amounts, v.leg_amounts);
+                append_rows(batch.swap_leg_rates, v.leg_rates);
+                append_rows(batch.swap_leg_amortizations, v.leg_amortizations);
             } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
                 append(batch, v.instrument);
                 batch.commodity_basket_constituents.insert(

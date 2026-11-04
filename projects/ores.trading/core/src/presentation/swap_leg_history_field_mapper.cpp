@@ -86,6 +86,30 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
          .value = v.daily_expiry_offset ? std::to_string(*v.daily_expiry_offset) : std::string{}});
     fields.push_back(
         {.name = "Pricing Calendar", .value = v.pricing_calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Equity Return Type", .value = v.equity_return_type.value_or(std::string{})});
+    fields.push_back({.name = "Equity Name", .value = v.equity_name.value_or(std::string{})});
+    fields.push_back({.name = "Equity Underlying Type",
+                      .value = v.equity_underlying_type.value_or(std::string{})});
+    fields.push_back({.name = "Equity Underlying Identifier Type",
+                      .value = v.equity_underlying_identifier_type.value_or(std::string{})});
+    fields.push_back({.name = "Equity Quantity",
+                      .value = v.equity_quantity ? v.equity_quantity->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Equity Initial Price",
+         .value = v.equity_initial_price ? v.equity_initial_price->to_string() : std::string{}});
+    fields.push_back({.name = "Equity Initial Price Currency",
+                      .value = v.equity_initial_price_currency.value_or(std::string{})});
+    fields.push_back({.name = "Equity Dividend Factor",
+                      .value = v.equity_dividend_factor ? v.equity_dividend_factor->to_string() :
+                                                          std::string{}});
+    fields.push_back({.name = "Equity Notional Reset",
+                      .value = v.equity_notional_reset ?
+                                   (*v.equity_notional_reset ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back(
+        {.name = "Equity Currency", .value = v.equity_currency.value_or(std::string{})});
+    fields.push_back({.name = "FX Index", .value = v.fx_index.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

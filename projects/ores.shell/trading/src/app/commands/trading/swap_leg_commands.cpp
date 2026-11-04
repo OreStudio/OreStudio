@@ -144,7 +144,10 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<leg_group> <fixing_days> <is_in_arrears> <include_spread> <is_averaged> "
         "<has_sub_periods> <notional_initial_exchange> <notional_final_exchange> <payment_lag> "
         "<payment_calendar> <commodity_price_type> <future_month_offset> <daily_expiry_offset> "
-        "<pricing_calendar> <reason> <commentary>");
+        "<pricing_calendar> <equity_return_type> <equity_name> <equity_underlying_type> "
+        "<equity_underlying_identifier_type> <equity_quantity> <equity_initial_price> "
+        "<equity_initial_price_currency> <equity_dividend_factor> <equity_notional_reset> "
+        "<equity_currency> <fx_index> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -156,8 +159,11 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<floating_index_code> <currency> <leg_group> <fixing_days> <is_in_arrears> "
         "<include_spread> <is_averaged> <has_sub_periods> <notional_initial_exchange> "
         "<notional_final_exchange> <payment_lag> <payment_calendar> <commodity_price_type> "
-        "<future_month_offset> <daily_expiry_offset> <pricing_calendar> <reason> <commentary> "
-        "[--version <n>]");
+        "<future_month_offset> <daily_expiry_offset> <pricing_calendar> <equity_return_type> "
+        "<equity_name> <equity_underlying_type> <equity_underlying_identifier_type> "
+        "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
+        "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -169,7 +175,11 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<floating_index_code> <currency> <leg_group> <fixing_days> <is_in_arrears> "
         "<include_spread> <is_averaged> <has_sub_periods> <notional_initial_exchange> "
         "<notional_final_exchange> <payment_lag> <payment_calendar> <commodity_price_type> "
-        "<future_month_offset> <daily_expiry_offset> <pricing_calendar> <reason> <commentary>");
+        "<future_month_offset> <daily_expiry_offset> <pricing_calendar> <equity_return_type> "
+        "<equity_name> <equity_underlying_type> <equity_underlying_identifier_type> "
+        "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
+        "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -379,8 +389,8 @@ void swap_leg_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 23 + 2) {
-            fail(out) << "Expected " << (23 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 34 + 2) {
+            fail(out) << "Expected " << (34 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -436,6 +446,33 @@ void swap_leg_commands::process_add(std::ostream& out,
                             "daily_expiry_offset");
         swap_leg_read_token(
             req.change.write.pricing_calendar, parsed->positionals[next++], "pricing_calendar");
+        swap_leg_read_token(
+            req.change.write.equity_return_type, parsed->positionals[next++], "equity_return_type");
+        swap_leg_read_token(
+            req.change.write.equity_name, parsed->positionals[next++], "equity_name");
+        swap_leg_read_token(req.change.write.equity_underlying_type,
+                            parsed->positionals[next++],
+                            "equity_underlying_type");
+        swap_leg_read_token(req.change.write.equity_underlying_identifier_type,
+                            parsed->positionals[next++],
+                            "equity_underlying_identifier_type");
+        swap_leg_read_token(
+            req.change.write.equity_quantity, parsed->positionals[next++], "equity_quantity");
+        swap_leg_read_token(req.change.write.equity_initial_price,
+                            parsed->positionals[next++],
+                            "equity_initial_price");
+        swap_leg_read_token(req.change.write.equity_initial_price_currency,
+                            parsed->positionals[next++],
+                            "equity_initial_price_currency");
+        swap_leg_read_token(req.change.write.equity_dividend_factor,
+                            parsed->positionals[next++],
+                            "equity_dividend_factor");
+        swap_leg_read_token(req.change.write.equity_notional_reset,
+                            parsed->positionals[next++],
+                            "equity_notional_reset");
+        swap_leg_read_token(
+            req.change.write.equity_currency, parsed->positionals[next++], "equity_currency");
+        swap_leg_read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -480,8 +517,8 @@ void swap_leg_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 24 + 2) {
-            fail(out) << "Expected " << (24 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 35 + 2) {
+            fail(out) << "Expected " << (35 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -537,6 +574,33 @@ void swap_leg_commands::process_set(std::ostream& out,
                             "daily_expiry_offset");
         swap_leg_read_token(
             req.change.write.pricing_calendar, parsed->positionals[next++], "pricing_calendar");
+        swap_leg_read_token(
+            req.change.write.equity_return_type, parsed->positionals[next++], "equity_return_type");
+        swap_leg_read_token(
+            req.change.write.equity_name, parsed->positionals[next++], "equity_name");
+        swap_leg_read_token(req.change.write.equity_underlying_type,
+                            parsed->positionals[next++],
+                            "equity_underlying_type");
+        swap_leg_read_token(req.change.write.equity_underlying_identifier_type,
+                            parsed->positionals[next++],
+                            "equity_underlying_identifier_type");
+        swap_leg_read_token(
+            req.change.write.equity_quantity, parsed->positionals[next++], "equity_quantity");
+        swap_leg_read_token(req.change.write.equity_initial_price,
+                            parsed->positionals[next++],
+                            "equity_initial_price");
+        swap_leg_read_token(req.change.write.equity_initial_price_currency,
+                            parsed->positionals[next++],
+                            "equity_initial_price_currency");
+        swap_leg_read_token(req.change.write.equity_dividend_factor,
+                            parsed->positionals[next++],
+                            "equity_dividend_factor");
+        swap_leg_read_token(req.change.write.equity_notional_reset,
+                            parsed->positionals[next++],
+                            "equity_notional_reset");
+        swap_leg_read_token(
+            req.change.write.equity_currency, parsed->positionals[next++], "equity_currency");
+        swap_leg_read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -593,8 +657,8 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 24 + 2) {
-            fail(out) << "Expected " << (change_count * 24 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 35 + 2) {
+            fail(out) << "Expected " << (change_count * 35 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -652,6 +716,33 @@ void swap_leg_commands::process_put_many(std::ostream& out,
                                 "daily_expiry_offset");
             swap_leg_read_token(
                 change.write.pricing_calendar, parsed->positionals[next++], "pricing_calendar");
+            swap_leg_read_token(
+                change.write.equity_return_type, parsed->positionals[next++], "equity_return_type");
+            swap_leg_read_token(
+                change.write.equity_name, parsed->positionals[next++], "equity_name");
+            swap_leg_read_token(change.write.equity_underlying_type,
+                                parsed->positionals[next++],
+                                "equity_underlying_type");
+            swap_leg_read_token(change.write.equity_underlying_identifier_type,
+                                parsed->positionals[next++],
+                                "equity_underlying_identifier_type");
+            swap_leg_read_token(
+                change.write.equity_quantity, parsed->positionals[next++], "equity_quantity");
+            swap_leg_read_token(change.write.equity_initial_price,
+                                parsed->positionals[next++],
+                                "equity_initial_price");
+            swap_leg_read_token(change.write.equity_initial_price_currency,
+                                parsed->positionals[next++],
+                                "equity_initial_price_currency");
+            swap_leg_read_token(change.write.equity_dividend_factor,
+                                parsed->positionals[next++],
+                                "equity_dividend_factor");
+            swap_leg_read_token(change.write.equity_notional_reset,
+                                parsed->positionals[next++],
+                                "equity_notional_reset");
+            swap_leg_read_token(
+                change.write.equity_currency, parsed->positionals[next++], "equity_currency");
+            swap_leg_read_token(change.write.fx_index, parsed->positionals[next++], "fx_index");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

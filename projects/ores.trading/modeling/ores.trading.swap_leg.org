@@ -358,6 +358,105 @@ The offset, in business days, of a daily commodity future's expiry, as
 The calendar a commodity floating leg's pricing dates are adjusted on, as
 =PricingCalendar= states it.
 
+** equity_return_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What an equity leg pays, as =ReturnType= states it: =Price= or =Total=.
+
+** equity_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The equity an equity leg observes, as =Name= or =Underlying/Name= states it.
+
+** equity_underlying_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The type of the equity leg's =Underlying= block, such as =Equity=. Null when the leg names its equity with a bare =Name=, so the writer knows which form the document used.
+
+** equity_underlying_identifier_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The identifier type of the equity leg's =Underlying= block, such as =RIC=.
+
+** equity_quantity
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The number of shares an equity leg pays on, as =Quantity= states it.
+
+** equity_initial_price
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The equity's price at the start of the first period, as =InitialPrice= states it.
+
+** equity_initial_price_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of the initial price, as =InitialPriceCurrency= states it.
+
+** equity_dividend_factor
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The share of dividends a total return equity leg pays, as =DividendFactor= states it.
+
+** equity_notional_reset
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether an equity leg resets its notional each period, as =NotionalReset= states it.
+
+** equity_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency the equity is quoted in, when it differs from the leg's, as =FXTerms/EquityCurrency= states it.
+
+** fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The FX index that converts the equity currency into the leg's, as =FXTerms/FXIndex= states it.
+
 * Foreign keys
 
 ** trade_id

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
@@ -271,11 +272,16 @@ auto read_equity_forward(const record_reader& trade) -> equity_forward_instrumen
 // The equity leg states the underlying and the return, the funding leg the
 // currency, the notional and the schedule; a leg that states both overwrites
 // the other's values in the order the document wrote them.
-auto read_equity_swap(const record_reader& trade) -> equity_swap_instrument {
-    auto r = equity_instrument_projection_make_row<equity_swap_instrument>("EquitySwap");
+// The row keeps the swap's summary; the legs themselves land in the shared
+// leg rows, as a rates swap's do.
+auto read_equity_swap(const record_reader& trade) -> equity_instrument_data {
+    equity_instrument_data result{
+        equity_instrument_projection_make_row<equity_swap_instrument>("EquitySwap"), {}};
+    auto& r = std::get<equity_swap_instrument>(result.instrument);
     const auto data = trade.child("EquitySwapData");
     if (!data)
-        return r;
+        return result;
+    leg_block::append_legs(result, *data);
     for (const auto& leg : data->children("LegData")) {
         if (const auto equity = leg.child("EquityLegData")) {
             r.underlying_name = equity_instrument_projection_underlying_name_of(*equity);
@@ -304,7 +310,7 @@ auto read_equity_swap(const record_reader& trade) -> equity_swap_instrument {
             }
         }
     }
-    return r;
+    return result;
 }
 
 auto read_equity_variance_swap(const record_reader& trade) -> equity_variance_swap_instrument {
@@ -726,8 +732,20 @@ void write_equity_forward(record_writer& trade, const equity_forward_instrument&
 
 // The per-type row states one notional and the document states it on two legs,
 // so the same amount is written to both.
-void write_equity_swap(record_writer& trade, const equity_swap_instrument& v) {
+void write_equity_swap(record_writer& trade,
+                       const equity_swap_instrument& v,
+                       const equity_instrument_data& carrier) {
     auto data = trade.child("EquitySwapData");
+    if (!carrier.legs.empty()) {
+        const auto stated = [](const std::chrono::year_month_day& d) {
+            return d.ok() ? std::optional(d) : std::nullopt;
+        };
+        leg_block::write_legs(data, stated(v.start_date), stated(v.maturity_date), carrier);
+        return;
+    }
+
+    // A swap stored before its legs were rows states only its summary, so its
+    // legs are rebuilt from it.
 
     auto equity_leg = data.append("LegData");
     equity_leg.set_spelling("LegType", "Equity", "leg type");
@@ -1090,7 +1108,7 @@ auto read_equity_product(const xml::record_reader& trade, std::string_view trade
     if (trade_type == "EquityForward")
         return wrap(read_equity_forward(trade));
     if (trade_type == "EquitySwap")
-        return wrap(read_equity_swap(trade));
+        return trading::domain::trade_instrument{read_equity_swap(trade)};
     if (trade_type == "EquityVarianceSwap")
         return wrap(read_equity_variance_swap(trade));
     if (trade_type == "EquityBarrierOption")
@@ -1177,7 +1195,7 @@ auto write_equity_instrument(xml::record_writer& trade,
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_swap_instrument>) {
                 if (trade_type == "EquitySwap") {
-                    write_equity_swap(trade, row);
+                    write_equity_swap(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "EquityWorstOfBasketSwap") {
                     write_equity_worst_of_basket_swap(

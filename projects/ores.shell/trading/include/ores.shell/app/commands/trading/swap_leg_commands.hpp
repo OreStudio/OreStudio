@@ -92,7 +92,10 @@ public:
      * <leg_group> <fixing_days> <is_in_arrears> <include_spread> <is_averaged> <has_sub_periods>
      * <notional_initial_exchange> <notional_final_exchange> <payment_lag> <payment_calendar>
      * <commodity_price_type> <future_month_offset> <daily_expiry_offset> <pricing_calendar>
-     * <reason> <commentary>
+     * <equity_return_type> <equity_name> <equity_underlying_type>
+     * <equity_underlying_identifier_type> <equity_quantity> <equity_initial_price>
+     * <equity_initial_price_currency> <equity_dividend_factor> <equity_notional_reset>
+     * <equity_currency> <fx_index> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +107,10 @@ public:
      * <floating_index_code> <currency> <leg_group> <fixing_days> <is_in_arrears> <include_spread>
      * <is_averaged> <has_sub_periods> <notional_initial_exchange> <notional_final_exchange>
      * <payment_lag> <payment_calendar> <commodity_price_type> <future_month_offset>
-     * <daily_expiry_offset> <pricing_calendar> <reason> <commentary> [--version <n>]
+     * <daily_expiry_offset> <pricing_calendar> <equity_return_type> <equity_name>
+     * <equity_underlying_type> <equity_underlying_identifier_type> <equity_quantity>
+     * <equity_initial_price> <equity_initial_price_currency> <equity_dividend_factor>
+     * <equity_notional_reset> <equity_currency> <fx_index> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -116,7 +122,10 @@ public:
      * <payment_frequency_code> <floating_index_code> <currency> <leg_group> <fixing_days>
      * <is_in_arrears> <include_spread> <is_averaged> <has_sub_periods> <notional_initial_exchange>
      * <notional_final_exchange> <payment_lag> <payment_calendar> <commodity_price_type>
-     * <future_month_offset> <daily_expiry_offset> <pricing_calendar> <reason> <commentary>
+     * <future_month_offset> <daily_expiry_offset> <pricing_calendar> <equity_return_type>
+     * <equity_name> <equity_underlying_type> <equity_underlying_identifier_type> <equity_quantity>
+     * <equity_initial_price> <equity_initial_price_currency> <equity_dividend_factor>
+     * <equity_notional_reset> <equity_currency> <fx_index> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

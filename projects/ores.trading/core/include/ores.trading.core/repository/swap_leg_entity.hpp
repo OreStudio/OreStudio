@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -77,6 +78,17 @@ struct swap_leg_entity {
     std::optional<int> future_month_offset;
     std::optional<int> daily_expiry_offset;
     std::optional<std::string> pricing_calendar;
+    std::optional<std::string> equity_return_type;
+    std::optional<std::string> equity_name;
+    std::optional<std::string> equity_underlying_type;
+    std::optional<std::string> equity_underlying_identifier_type;
+    std::optional<ores::utility::decimal::decimal> equity_quantity;
+    std::optional<ores::utility::decimal::decimal> equity_initial_price;
+    std::optional<std::string> equity_initial_price_currency;
+    std::optional<ores::utility::decimal::decimal> equity_dividend_factor;
+    std::optional<bool> equity_notional_reset;
+    std::optional<std::string> equity_currency;
+    std::optional<std::string> fx_index;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -118,6 +130,19 @@ struct swap_leg_entity {
                query_builder::bind("future_month_offset", &e::future_month_offset) |
                query_builder::bind("daily_expiry_offset", &e::daily_expiry_offset) |
                query_builder::bind("pricing_calendar", &e::pricing_calendar) |
+               query_builder::bind("equity_return_type", &e::equity_return_type) |
+               query_builder::bind("equity_name", &e::equity_name) |
+               query_builder::bind("equity_underlying_type", &e::equity_underlying_type) |
+               query_builder::bind("equity_underlying_identifier_type",
+                                   &e::equity_underlying_identifier_type) |
+               query_builder::bind("equity_quantity", &e::equity_quantity) |
+               query_builder::bind("equity_initial_price", &e::equity_initial_price) |
+               query_builder::bind("equity_initial_price_currency",
+                                   &e::equity_initial_price_currency) |
+               query_builder::bind("equity_dividend_factor", &e::equity_dividend_factor) |
+               query_builder::bind("equity_notional_reset", &e::equity_notional_reset) |
+               query_builder::bind("equity_currency", &e::equity_currency) |
+               query_builder::bind("fx_index", &e::fx_index) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

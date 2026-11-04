@@ -352,6 +352,17 @@ struct equity_instrument_data {
     std::vector<instrument_option_exercise_price> option_exercise_prices;
     std::vector<instrument_schedule> schedules;
     std::vector<instrument_schedule_date> schedule_dates;
+    /**
+     * @brief The legs of an equity swap, in the shared swap leg rows.
+     *
+     * ORE states an equity swap's legs as LegData, as it does a rates swap's,
+     * so the equity leg and the funding leg land in the rows every leg reads
+     * and writes. A product with no legs leaves them empty.
+     */
+    std::vector<swap_leg> legs;
+    std::vector<swap_leg_amount> leg_amounts;
+    std::vector<swap_leg_rate> leg_rates;
+    std::vector<swap_leg_amortization> leg_amortizations;
 };
 
 /**
@@ -722,7 +733,13 @@ inline void stamp_ids(equity_instrument_data& data,
     stamp_one(data.option_payment_dates);
     stamp_one(data.option_exercise_prices);
     stamp_one(data.schedules);
-    stamp_one(data.schedule_dates);
+    stamp_one(data.schedule_dates);    for (auto& leg : data.legs) {
+        leg.identity.trade_id = trade_id;
+        leg.identity.trade_activity_id = activity_id;
+    }
+    stamp_one(data.leg_amounts);
+    stamp_one(data.leg_rates);
+    stamp_one(data.leg_amortizations);
 }
 
 inline void stamp_ids(fx_instrument_data& data,

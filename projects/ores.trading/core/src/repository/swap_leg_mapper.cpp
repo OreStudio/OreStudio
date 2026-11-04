@@ -28,6 +28,7 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/swap_leg_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -72,6 +73,17 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.future_month_offset = v.future_month_offset;
     r.daily_expiry_offset = v.daily_expiry_offset;
     r.pricing_calendar = v.pricing_calendar;
+    r.equity_return_type = v.equity_return_type;
+    r.equity_name = v.equity_name;
+    r.equity_underlying_type = v.equity_underlying_type;
+    r.equity_underlying_identifier_type = v.equity_underlying_identifier_type;
+    r.equity_quantity = v.equity_quantity;
+    r.equity_initial_price = v.equity_initial_price;
+    r.equity_initial_price_currency = v.equity_initial_price_currency;
+    r.equity_dividend_factor = v.equity_dividend_factor;
+    r.equity_notional_reset = v.equity_notional_reset;
+    r.equity_currency = v.equity_currency;
+    r.fx_index = v.fx_index;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -114,6 +126,17 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.future_month_offset = v.future_month_offset;
     r.daily_expiry_offset = v.daily_expiry_offset;
     r.pricing_calendar = v.pricing_calendar;
+    r.equity_return_type = v.equity_return_type;
+    r.equity_name = v.equity_name;
+    r.equity_underlying_type = v.equity_underlying_type;
+    r.equity_underlying_identifier_type = v.equity_underlying_identifier_type;
+    r.equity_quantity = v.equity_quantity;
+    r.equity_initial_price = v.equity_initial_price;
+    r.equity_initial_price_currency = v.equity_initial_price_currency;
+    r.equity_dividend_factor = v.equity_dividend_factor;
+    r.equity_notional_reset = v.equity_notional_reset;
+    r.equity_currency = v.equity_currency;
+    r.fx_index = v.fx_index;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

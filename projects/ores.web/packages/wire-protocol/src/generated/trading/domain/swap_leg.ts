@@ -55,5 +55,16 @@ export interface SwapLeg {
     future_month_offset: number | null;
     daily_expiry_offset: number | null;
     pricing_calendar: string | null;
+    equity_return_type: string | null;
+    equity_name: string | null;
+    equity_underlying_type: string | null;
+    equity_underlying_identifier_type: string | null;
+    equity_quantity: string | null;
+    equity_initial_price: string | null;
+    equity_initial_price_currency: string | null;
+    equity_dividend_factor: string | null;
+    equity_notional_reset: boolean | null;
+    equity_currency: string | null;
+    fx_index: string | null;
     audit: AuditRecord;
 }

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen:serialisation:replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/state-a-type-s-wire-shape-by-its-type
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ A type's wire shape is a property of the type, not of a value. The four walks th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -41,9 +41,21 @@ A type's wire shape is a property of the type, not of a value. The four walks th
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. =wire_fields= takes =std::type_identity<T>=, by a codemod over every
+   definition, template and hand-written header. The carriers call it so.
+2. The digest is generated. Each type that declares its economic columns gets
+   a plain =canonical_form(const T&)= beside its struct, which renders the
+   declared columns, and each group whose own model declares economic fields,
+   in member order. The leaf rendering moves to =ores.utility=, so a group in
+   any component can state its form. =economic_fields_of= and the compile-time
+   name search go.
+3. =stamp_document=, =assign_party= and the bond check walk the generated
+   shape with a plain =std::apply=. They need no member name as a constant,
+   so nothing else is generated for them: the shape is already stated for
+   every type, and a second per-type list for 15,000 messages would cost more
+   to parse than the fold costs to instantiate.
+4. A test pins three digests measured with =rfl::to_view= on main at
+   f8adc1abcc: a bond instrument, a classified trade and a fixed leg.
 
 * Measurements
 
@@ -57,9 +69,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Definitions moved to the type | 15,608 in 1,254 files | =shape_by_type.py= codemod, then =check_component_drift.py --changed --write= | 88cb72757c |
+| Digests pinned against reflect-cpp | 3 of 3 equal | =ores.trading.api.tests economic_digest_is_unchanged_by_the_generated_canonical_form=; values from a probe on main | f8adc1abcc (main), 5a187e9675 (branch) |
+| Types with a generated canonical form | 64 | the economic declarations in the regenerated headers | 3e6c1e304c |
 
 * Notes
+
+A guard in =stamp_document= and =assign_party= refuses a struct with no stated
+shape, where the reflect-cpp walk would have walked it. It found four that the
+walk would otherwise have skipped without a word, and so left unstamped: the
+refdata curve configuration document, whose model had no wire codec, two
+hand-written test documents, and =mapped_credit_simulation= in ores.ore.
 
 * Test Scenarios
 
@@ -85,3 +105,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=wire_fields= takes =std::type_identity<T>= everywhere, so a type's wire shape
+is a property of the type. The economic digest no longer walks a value: every
+type that declares its economic columns has a generated =canonical_form=, which
+renders those columns, and each group whose own model declares economic
+fields, in member order. The leaf rendering moved to =ores.utility=, and
+=economic_fields_of= and its compile-time name search are gone. The party
+stamp, the audit stamp and the bond part check walk the stated shape with one
+=std::apply=, and none of the four walks names rfl. A test pins three digests
+measured with the reflect-cpp walk on main, and all three are unchanged, so no
+stored digest moves.

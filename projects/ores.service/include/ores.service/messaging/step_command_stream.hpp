@@ -27,6 +27,7 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include <chrono>
 #include <cstddef>
+#include <exception>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -387,15 +388,32 @@ private:
                             }
                         }
                     });
-                handler(std::move(msg));
+                const auto ran_for = [&started] {
+                    return std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
+                        .count();
+                };
+                try {
+                    handler(std::move(msg));
+                } catch (const std::exception& e) {
+                    renewer.reset();
+                    if (!claimed_step.empty())
+                        BOOST_LOG_SEV(detail::lg(), error)
+                            << "Step " << claimed_step << " handler for " << served
+                            << " threw after " << ran_for() << "s: " << e.what();
+                    throw;
+                } catch (...) {
+                    renewer.reset();
+                    if (!claimed_step.empty())
+                        BOOST_LOG_SEV(detail::lg(), error)
+                            << "Step " << claimed_step << " handler for " << served
+                            << " threw a non-standard exception after " << ran_for() << "s";
+                    throw;
+                }
                 renewer.reset();
                 if (!claimed_step.empty())
                     BOOST_LOG_SEV(detail::lg(), info)
                         << "Step " << claimed_step << " handler for " << served
-                        << " returned after "
-                        << std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
-                               .count()
-                        << "s";
+                        << " returned after " << ran_for() << "s";
                 return;
             }
             // The consumer filters exactly the declared subjects, so a delivery

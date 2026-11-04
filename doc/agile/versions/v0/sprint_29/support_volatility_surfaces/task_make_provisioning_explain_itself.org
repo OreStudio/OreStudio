@@ -108,7 +108,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A throwing handler leaves no closing log line | step_command_stream.hpp | Accept | The handler's exception is logged with its step and duration, then rethrown. |
+| 2 | A handler that lost its claim keeps running | step_command_stream.hpp | Decline | Cancelling a handler mid-write needs a cancellation contract in every handler; the idempotency check still prevents a second completion. The error line names the loss. |
+| 3 | Assert the lease holds several renewals | workflow_claim_messages.hpp | Accept | =static_assert(step_claim_lease >= 4 * step_claim_renew_interval)=. |
+| 4 | Failed renewals log at warn on the server | workflow_claim_handler.cpp | Decline | The reviewer calls it the intended signal; no change. |
+| 5 | The long-step warning reads =claimed_at= each sweep | workflow_engine.cpp | Decline | Note only; the sweep already made that read. |
+| 6 | =_log_to_file= is hidden module state; stray blank line | systemd_generate.py | Accept | Now a =log_to_file= parameter, as =log_level= is. The global defaulted on, so Quadlet units got the file flags too; they no longer do. Tests added. Blank line removed. |
+| 7 | Say which directory =../log= is relative to | systemd_generate.py | Accept | A comment says ExecStart runs from =publish/bin=. |
+| 8 | Log volume of the new info lines | several | Decline | The reviewer finds it small; the 10,000-trade run logged 21 renewal lines. |
+| - | Run the full ctest before merge | - | Accept | Run after these fixes; result in the PR reply. |
 
 * Result
 

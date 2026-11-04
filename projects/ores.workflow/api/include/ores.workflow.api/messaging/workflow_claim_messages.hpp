@@ -71,6 +71,8 @@ inline constexpr std::chrono::seconds step_claim_lease{120};
  * lost reply, before the lease can end under a holder that is still working.
  */
 inline constexpr std::chrono::seconds step_claim_renew_interval{step_claim_lease / 4};
+static_assert(step_claim_lease >= 4 * step_claim_renew_interval,
+              "a lease must hold at least three failed renewals before it can end");
 
 /**
  * @brief How long a delivery that lost the claim waits before asking again.

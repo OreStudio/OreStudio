@@ -101,6 +101,7 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "equity_notional_reset" boolean null,
     "equity_currency" text null,
     "fx_index" text null,
+    "indexings_from_asset_leg" boolean null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -290,6 +290,12 @@ widening them.
 :column: trade_id
 :END:
 
+** swap_leg_indexings
+:PROPERTIES:
+:table:  ores_trading_swap_leg_indexings_tbl
+:column: trade_id
+:END:
+
 ** instrument_strikes
 :PROPERTIES:
 :table:  ores_trading_instrument_strikes_tbl

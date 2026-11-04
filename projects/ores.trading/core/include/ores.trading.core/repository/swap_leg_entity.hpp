@@ -89,6 +89,7 @@ struct swap_leg_entity {
     std::optional<bool> equity_notional_reset;
     std::optional<std::string> equity_currency;
     std::optional<std::string> fx_index;
+    std::optional<bool> indexings_from_asset_leg;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -143,6 +144,7 @@ struct swap_leg_entity {
                query_builder::bind("equity_notional_reset", &e::equity_notional_reset) |
                query_builder::bind("equity_currency", &e::equity_currency) |
                query_builder::bind("fx_index", &e::fx_index) |
+               query_builder::bind("indexings_from_asset_leg", &e::indexings_from_asset_leg) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

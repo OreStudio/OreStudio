@@ -55,7 +55,8 @@ swap_instrument_data as_swap(const instrument_batch& batch,
         find_all(batch.flexi_swap_lower_notionals, trade_id),
         find_all(batch.balance_guaranteed_swap_tranches, trade_id),
         find_all(batch.balance_guaranteed_swap_tranche_notionals, trade_id),
-        find_all(batch.swap_leg_amortizations, trade_id)};
+        find_all(batch.swap_leg_amortizations, trade_id),
+        find_all(batch.swap_leg_indexings, trade_id)};
 }
 
 /**
@@ -143,7 +144,8 @@ as_equity(const instrument_batch& batch, const Leaf& leaf, boost::uuids::uuid tr
                                   find_all(batch.swap_legs, trade_id),
                                   find_all(batch.swap_leg_amounts, trade_id),
                                   find_all(batch.swap_leg_rates, trade_id),
-                                  find_all(batch.swap_leg_amortizations, trade_id)};
+                                  find_all(batch.swap_leg_amortizations, trade_id),
+        find_all(batch.swap_leg_indexings, trade_id)};
 }
 
 /**
@@ -227,6 +229,9 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 batch.swap_leg_amortizations.insert(batch.swap_leg_amortizations.end(),
                                                     v.leg_amortizations.begin(),
                                                     v.leg_amortizations.end());
+                batch.swap_leg_indexings.insert(batch.swap_leg_indexings.end(),
+                                                v.leg_indexings.begin(),
+                                                v.leg_indexings.end());
                 batch.callable_swap_call_dates.insert(
                     batch.callable_swap_call_dates.end(), v.call_dates.begin(), v.call_dates.end());
                 batch.instrument_strikes.insert(
@@ -293,6 +298,7 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 append_rows(batch.swap_leg_amounts, v.leg_amounts);
                 append_rows(batch.swap_leg_rates, v.leg_rates);
                 append_rows(batch.swap_leg_amortizations, v.leg_amortizations);
+                append_rows(batch.swap_leg_indexings, v.leg_indexings);
             } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
                 append(batch, v.instrument);
                 batch.commodity_basket_constituents.insert(
@@ -306,6 +312,7 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 append_rows(batch.swap_leg_amounts, v.leg_amounts);
                 append_rows(batch.swap_leg_rates, v.leg_rates);
                 append_rows(batch.swap_leg_amortizations, v.leg_amortizations);
+                append_rows(batch.swap_leg_indexings, v.leg_indexings);
                 append_rows(batch.instrument_schedules, v.schedules);
                 append_rows(batch.instrument_schedule_dates, v.schedule_dates);
                 append_rows(batch.instrument_options, v.options);
@@ -460,6 +467,7 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
                                          find_all(batch.swap_leg_amounts, trade_id),
                                          find_all(batch.swap_leg_rates, trade_id),
                                          find_all(batch.swap_leg_amortizations, trade_id),
+                                         find_all(batch.swap_leg_indexings, trade_id),
                                          find_all(batch.instrument_schedules, trade_id),
                                          find_all(batch.instrument_schedule_dates, trade_id),
                                          find_all(batch.instrument_options, trade_id),

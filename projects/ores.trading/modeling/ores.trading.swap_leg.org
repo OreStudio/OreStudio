@@ -457,6 +457,17 @@ The currency the equity is quoted in, when it differs from the leg's, as =FXTerm
 
 The FX index that converts the equity currency into the leg's, as =FXTerms/FXIndex= states it.
 
+** indexings_from_asset_leg
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the leg takes its indexings from the asset leg, as
+=Indexings/FromAssetLeg= states it. The indexings themselves are
+=swap_leg_indexing= rows.
+
 * Foreign keys
 
 ** trade_id

@@ -84,6 +84,7 @@ struct swap_leg_write {
     std::optional<bool> equity_notional_reset;
     std::optional<std::string> equity_currency;
     std::optional<std::string> fx_index;
+    std::optional<bool> indexings_from_asset_leg;
 
     friend bool operator==(const swap_leg_write&, const swap_leg_write&) = default;
 };
@@ -473,6 +474,8 @@ inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted
         utility::codec::field{"equity_notional_reset", &swap_leg_write::equity_notional_reset},
         utility::codec::field{"equity_currency", &swap_leg_write::equity_currency},
         utility::codec::field{"fx_index", &swap_leg_write::fx_index},
+        utility::codec::field{"indexings_from_asset_leg",
+                              &swap_leg_write::indexings_from_asset_leg},
     };
 }
 

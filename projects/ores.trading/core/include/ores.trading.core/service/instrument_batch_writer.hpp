@@ -98,6 +98,7 @@
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amortization_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_indexing_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_rate_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/repository/swaption_instrument_repository.hpp"
@@ -334,6 +335,8 @@ void write_instrument_batch(ores::database::context ctx,
     write_rows<repository::swap_leg_repository>(ctx, batch.swap_legs, keys, stamp, claim);
     write_rows<repository::swap_leg_amount_repository>(
         ctx, batch.swap_leg_amounts, keys, stamp, claim);
+    write_rows<repository::swap_leg_indexing_repository>(
+        ctx, batch.swap_leg_indexings, keys, stamp, claim);
     write_rows<repository::swap_leg_amortization_repository>(
         ctx, batch.swap_leg_amortizations, keys, stamp, claim);
     write_rows<repository::swap_leg_rate_repository>(ctx, batch.swap_leg_rates, keys, stamp, claim);
@@ -544,6 +547,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("swap_legs");
     if (!batch.swap_leg_amounts.empty())
         names.emplace_back("swap_leg_amounts");
+    if (!batch.swap_leg_indexings.empty())
+        names.emplace_back("swap_leg_indexings");
     if (!batch.swap_leg_amortizations.empty())
         names.emplace_back("swap_leg_amortizations");
     if (!batch.swap_leg_rates.empty())

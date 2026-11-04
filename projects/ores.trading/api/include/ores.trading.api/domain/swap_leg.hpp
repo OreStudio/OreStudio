@@ -269,6 +269,12 @@ struct swap_leg final {
      */
     std::optional<std::string> fx_index;
 
+    /**
+     * @brief Whether the leg takes its indexings from the asset leg, as Indexings/FromAssetLeg
+     * states it. The indexings themselves are swap_leg_indexing rows.
+     */
+    std::optional<bool> indexings_from_asset_leg;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.

@@ -110,6 +110,10 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     fields.push_back(
         {.name = "Equity Currency", .value = v.equity_currency.value_or(std::string{})});
     fields.push_back({.name = "FX Index", .value = v.fx_index.value_or(std::string{})});
+    fields.push_back({.name = "Indexings From Asset Leg",
+                      .value = v.indexings_from_asset_leg ?
+                                   (*v.indexings_from_asset_leg ? "true" : "false") :
+                                   std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

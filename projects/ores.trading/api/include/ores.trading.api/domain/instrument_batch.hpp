@@ -119,6 +119,7 @@
 #include "ores.trading.api/domain/swap_leg_amortization_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_amount_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_codec.hpp"
+#include "ores.trading.api/domain/swap_leg_indexing_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_rate_codec.hpp"
 #include "ores.trading.api/domain/swaption_instrument_codec.hpp"
 #include "ores.trading.api/domain/synthetic_cdo_instrument_codec.hpp"
@@ -440,6 +441,10 @@ struct instrument_batch {
      * @brief The swap_leg_amount rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::swap_leg_amount> swap_leg_amounts;
+    /**
+     * @brief The swap_leg_indexing rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::swap_leg_indexing> swap_leg_indexings;
     /**
      * @brief The swap_leg_amortization rows, keyed by trade id.
      */
@@ -973,6 +978,13 @@ inline void append(instrument_batch& batch, swap_leg_amount v) {
 }
 
 /**
+ * @brief Adds one swap_leg_indexing to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, swap_leg_indexing v) {
+    batch.swap_leg_indexings.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one swap_leg_amortization to the array that holds its type.
  */
 inline void append(instrument_batch& batch, swap_leg_amortization v) {
@@ -1159,6 +1171,7 @@ template <typename T>
                                       &instrument_batch::risk_participation_agreement_instruments},
         ::ores::utility::codec::field{"swap_legs", &instrument_batch::swap_legs},
         ::ores::utility::codec::field{"swap_leg_amounts", &instrument_batch::swap_leg_amounts},
+        ::ores::utility::codec::field{"swap_leg_indexings", &instrument_batch::swap_leg_indexings},
         ::ores::utility::codec::field{"swap_leg_amortizations",
                                       &instrument_batch::swap_leg_amortizations},
         ::ores::utility::codec::field{"swap_leg_rates", &instrument_batch::swap_leg_rates},

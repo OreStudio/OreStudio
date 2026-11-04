@@ -143,14 +143,16 @@
 \ir ./trading_swap_legs_create.sql
 \ir ./trading_swap_legs_notify_trigger_create.sql
 
--- A swap leg's notionals, its rates or spreads and its amortization steps are
--- child rows, so they come after the leg they belong to.
+-- A swap leg's notionals, its rates or spreads, its amortization steps and
+-- its indexings are child rows, so they come after the leg they belong to.
 \ir ./trading_swap_leg_amounts_create.sql
 \ir ./trading_swap_leg_amounts_notify_trigger_create.sql
 \ir ./trading_swap_leg_rates_create.sql
 \ir ./trading_swap_leg_rates_notify_trigger_create.sql
 \ir ./trading_swap_leg_amortizations_create.sql
 \ir ./trading_swap_leg_amortizations_notify_trigger_create.sql
+\ir ./trading_swap_leg_indexings_create.sql
+\ir ./trading_swap_leg_indexings_notify_trigger_create.sql
 
 -- Rates instruments (depend on swap_legs and reference data above). The
 -- header goes first: it owns the family's rows, and its delete rule's cascade

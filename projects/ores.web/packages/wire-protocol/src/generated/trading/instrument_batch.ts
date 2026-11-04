@@ -92,6 +92,7 @@ import type { RangeBound } from './domain/range_bound.js';
 import type { RiskParticipationAgreementInstrument } from './domain/risk_participation_agreement_instrument.js';
 import type { SwapLeg } from './domain/swap_leg.js';
 import type { SwapLegAmount } from './domain/swap_leg_amount.js';
+import type { SwapLegIndexing } from './domain/swap_leg_indexing.js';
 import type { SwapLegAmortization } from './domain/swap_leg_amortization.js';
 import type { SwapLegRate } from './domain/swap_leg_rate.js';
 import type { SwaptionInstrument } from './domain/swaption_instrument.js';
@@ -177,6 +178,7 @@ export interface InstrumentBatch {
     risk_participation_agreement_instruments: RiskParticipationAgreementInstrument[];
     swap_legs: SwapLeg[];
     swap_leg_amounts: SwapLegAmount[];
+    swap_leg_indexings: SwapLegIndexing[];
     swap_leg_amortizations: SwapLegAmortization[];
     swap_leg_rates: SwapLegRate[];
     swaption_instruments: SwaptionInstrument[];

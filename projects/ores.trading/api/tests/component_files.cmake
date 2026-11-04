@@ -278,6 +278,8 @@ set(files
     "swap_leg_amount_protocol_codec_roundtrip_tests.cpp"
     "swap_leg_codec_roundtrip_tests.cpp"
     "swap_leg_identity_codec_roundtrip_tests.cpp"
+    "swap_leg_indexing_codec_roundtrip_tests.cpp"
+    "swap_leg_indexing_protocol_codec_roundtrip_tests.cpp"
     "swap_leg_protocol_codec_roundtrip_tests.cpp"
     "swap_leg_rate_codec_roundtrip_tests.cpp"
     "swap_leg_rate_protocol_codec_roundtrip_tests.cpp"

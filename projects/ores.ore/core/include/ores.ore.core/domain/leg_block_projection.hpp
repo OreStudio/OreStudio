@@ -27,6 +27,7 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amortization.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
+#include "ores.trading.api/domain/swap_leg_indexing.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include <algorithm>
 #include <cstddef>
@@ -54,6 +55,7 @@ using ores::utility::decimal::decimal;
 using trading::domain::swap_leg;
 using trading::domain::swap_leg_amortization;
 using trading::domain::swap_leg_amount;
+using trading::domain::swap_leg_indexing;
 using trading::domain::swap_leg_rate;
 using xml::record_reader;
 using xml::record_writer;
@@ -168,8 +170,85 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
                 row.fx_index = text_of(*terms, "FXIndex");
         }
     }
+    if (const auto indexings = leg.child("Indexings"))
+        row.indexings_from_asset_leg = optional_flag(*indexings, "FromAssetLeg");
     stamp_leg(row);
     return row;
+}
+
+/// The schedule role an indexing's valuation schedule is kept under.
+inline std::string indexing_valuation_role(int sequence_number) {
+    return "indexing_" + std::to_string(sequence_number) + "_valuation";
+}
+
+template <typename Data>
+void read_leg_indexings(Data& result, const record_reader& leg, int leg_number) {
+    const auto indexings = leg.child("Indexings");
+    if (!indexings)
+        return;
+    int sequence_number = 0;
+    for (const auto& indexing : indexings->children("Indexing")) {
+        swap_leg_indexing row;
+        row.leg_number = leg_number;
+        row.sequence_number = ++sequence_number;
+        row.index_name = text_of(indexing, "Index");
+        row.quantity = indexing.decimal("Quantity");
+        row.initial_fixing = indexing.decimal("InitialFixing");
+        if (const auto days = indexing.integer("FixingDays"))
+            row.fixing_days = static_cast<int>(*days);
+        if (indexing.has("FixingCalendar"))
+            row.fixing_calendar = text_of(indexing, "FixingCalendar");
+        if (indexing.has("FixingConvention"))
+            row.fixing_convention = spelling_of(indexing, "FixingConvention");
+        row.is_in_arrears = optional_flag(indexing, "IsInArrears");
+        stamp_row(row);
+        result.leg_indexings.push_back(std::move(row));
+        if (const auto schedule = indexing.child("ValuationSchedule"))
+            option_block::read_schedule(result,
+                                        *schedule,
+                                        "swap",
+                                        leg_number,
+                                        indexing_valuation_role(sequence_number));
+    }
+}
+
+template <typename Data>
+void write_leg_indexings(record_writer& leg, const swap_leg& row, const Data& v) {
+    const auto leg_number = row.identity.leg_number;
+    const bool any = std::any_of(v.leg_indexings.begin(),
+                                 v.leg_indexings.end(),
+                                 [&](const auto& i) { return i.leg_number == leg_number; });
+    if (!any && !row.indexings_from_asset_leg)
+        return;
+    auto group = leg.child("Indexings");
+    if (row.indexings_from_asset_leg)
+        group.set_text("FromAssetLeg", flag_text(*row.indexings_from_asset_leg));
+    for (const auto& indexing : v.leg_indexings) {
+        if (indexing.leg_number != leg_number)
+            continue;
+        auto writer = group.append("Indexing");
+        if (indexing.quantity)
+            writer.set_decimal("Quantity", *indexing.quantity);
+        writer.set_text("Index", indexing.index_name);
+        if (indexing.initial_fixing)
+            writer.set_decimal("InitialFixing", *indexing.initial_fixing);
+        const auto role = indexing_valuation_role(indexing.sequence_number);
+        if (!option_block::schedules_of(v, "swap", leg_number, role).empty())
+            option_block::write_stored_schedule(
+                writer.child("ValuationSchedule"), v, "swap", leg_number, role);
+        if (indexing.fixing_days)
+            writer.set_integer("FixingDays", *indexing.fixing_days);
+        if (indexing.fixing_calendar)
+            writer.set_text("FixingCalendar", *indexing.fixing_calendar);
+        if (indexing.fixing_convention)
+            set_spelling_or(writer,
+                            "FixingConvention",
+                            *indexing.fixing_convention,
+                            "U",
+                            "business day convention");
+        if (indexing.is_in_arrears)
+            writer.set_text("IsInArrears", flag_text(*indexing.is_in_arrears));
+    }
 }
 
 /// A commodity leg states its notional as quantities on its own payload.
@@ -368,6 +447,7 @@ void append_leg(Data& result, const record_reader& leg, int leg_number) {
     if (const auto schedule = leg.child("ScheduleData"))
         option_block::read_schedule(result, *schedule, "swap", leg_number, "schedule");
     read_payment_dates(result, leg, leg_number);
+    read_leg_indexings(result, leg, leg_number);
 }
 
 template <typename Data>
@@ -491,6 +571,8 @@ void write_leg(record_writer& leg,
         if (step.underflow)
             writer.set_text("Underflow", flag_text(*step.underflow));
     }
+
+    write_leg_indexings(leg, row, v);
 
     auto schedule = leg.child("ScheduleData");
     if (!option_block::write_stored_schedule(schedule, v, "swap", leg_number, "schedule"))

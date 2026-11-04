@@ -70,6 +70,7 @@ export interface SwapLegWrite {
     equity_notional_reset: boolean | null;
     equity_currency: string | null;
     fx_index: string | null;
+    indexings_from_asset_leg: boolean | null;
 }
 
 export interface SwapLegChange {

@@ -33,6 +33,7 @@
 #include "ores.trading.core/repository/range_bound_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amortization_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_indexing_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_rate_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
@@ -238,6 +239,9 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::swap_leg_amortization_repository amortization_repo;
         auto amortizations = amortization_repo.read_by_instruments_batch(ctx, all_ids);
         take(amortizations, batch.swap_leg_amortizations);
+        repository::swap_leg_indexing_repository indexing_repo;
+        auto indexings = indexing_repo.read_by_instruments_batch(ctx, all_ids);
+        take(indexings, batch.swap_leg_indexings);
 
         auto schedules = repository::read_schedules_by_trade_ids(ctx, all_ids);
         take(schedules, batch.instrument_schedules);

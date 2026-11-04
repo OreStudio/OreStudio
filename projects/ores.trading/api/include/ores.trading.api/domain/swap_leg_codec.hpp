@@ -83,6 +83,7 @@ namespace ores::trading::domain {
         utility::codec::field{"equity_notional_reset", &swap_leg::equity_notional_reset},
         utility::codec::field{"equity_currency", &swap_leg::equity_currency},
         utility::codec::field{"fx_index", &swap_leg::fx_index},
+        utility::codec::field{"indexings_from_asset_leg", &swap_leg::indexings_from_asset_leg},
         utility::codec::field{"audit", &swap_leg::audit},
     };
 }

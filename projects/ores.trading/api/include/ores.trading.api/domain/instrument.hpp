@@ -60,6 +60,7 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_amortization.hpp"
+#include "ores.trading.api/domain/swap_leg_indexing.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -134,6 +135,7 @@ struct swap_instrument_data {
     std::vector<balance_guaranteed_swap_tranche> tranches;
     std::vector<balance_guaranteed_swap_tranche_notional> tranche_notionals;
     std::vector<swap_leg_amortization> leg_amortizations;
+    std::vector<swap_leg_indexing> leg_indexings;
 };
 
 using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
@@ -157,6 +159,7 @@ struct commodity_instrument_data {
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
     std::vector<swap_leg_amortization> leg_amortizations;
+    std::vector<swap_leg_indexing> leg_indexings;
     std::vector<instrument_schedule> schedules;
     std::vector<instrument_schedule_date> schedule_dates;
     /**
@@ -363,6 +366,7 @@ struct equity_instrument_data {
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
     std::vector<swap_leg_amortization> leg_amortizations;
+    std::vector<swap_leg_indexing> leg_indexings;
 };
 
 /**
@@ -615,6 +619,9 @@ inline void stamp_ids(swap_instrument_data& data,
     for (auto& amortization : data.leg_amortizations) {
         stamp_ids(amortization, trade_id, activity_id);
     }
+    for (auto& indexing : data.leg_indexings) {
+        stamp_ids(indexing, trade_id, activity_id);
+    }
     for (auto& lower_notional : data.lower_notionals) {
         stamp_ids(lower_notional, trade_id, activity_id);
     }
@@ -645,6 +652,7 @@ inline void stamp_ids(commodity_instrument_data& data,
     stamp_one(data.leg_amounts);
     stamp_one(data.leg_rates);
     stamp_one(data.leg_amortizations);
+    stamp_one(data.leg_indexings);
     stamp_one(data.schedules);
     stamp_one(data.schedule_dates);
     stamp_one(data.options);
@@ -740,6 +748,7 @@ inline void stamp_ids(equity_instrument_data& data,
     stamp_one(data.leg_amounts);
     stamp_one(data.leg_rates);
     stamp_one(data.leg_amortizations);
+    stamp_one(data.leg_indexings);
 }
 
 inline void stamp_ids(fx_instrument_data& data,

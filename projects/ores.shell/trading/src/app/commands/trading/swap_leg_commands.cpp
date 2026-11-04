@@ -147,7 +147,7 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<pricing_calendar> <equity_return_type> <equity_name> <equity_underlying_type> "
         "<equity_underlying_identifier_type> <equity_quantity> <equity_initial_price> "
         "<equity_initial_price_currency> <equity_dividend_factor> <equity_notional_reset> "
-        "<equity_currency> <fx_index> <reason> <commentary>");
+        "<equity_currency> <fx_index> <indexings_from_asset_leg> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -162,8 +162,8 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<future_month_offset> <daily_expiry_offset> <pricing_calendar> <equity_return_type> "
         "<equity_name> <equity_underlying_type> <equity_underlying_identifier_type> "
         "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
-        "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> <reason> "
-        "<commentary> [--version <n>]");
+        "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> "
+        "<indexings_from_asset_leg> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -178,8 +178,8 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<future_month_offset> <daily_expiry_offset> <pricing_calendar> <equity_return_type> "
         "<equity_name> <equity_underlying_type> <equity_underlying_identifier_type> "
         "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
-        "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> <reason> "
-        "<commentary>");
+        "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> "
+        "<indexings_from_asset_leg> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -389,8 +389,8 @@ void swap_leg_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 34 + 2) {
-            fail(out) << "Expected " << (34 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 35 + 2) {
+            fail(out) << "Expected " << (35 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -473,6 +473,9 @@ void swap_leg_commands::process_add(std::ostream& out,
         swap_leg_read_token(
             req.change.write.equity_currency, parsed->positionals[next++], "equity_currency");
         swap_leg_read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
+        swap_leg_read_token(req.change.write.indexings_from_asset_leg,
+                            parsed->positionals[next++],
+                            "indexings_from_asset_leg");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -517,8 +520,8 @@ void swap_leg_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 35 + 2) {
-            fail(out) << "Expected " << (35 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 36 + 2) {
+            fail(out) << "Expected " << (36 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -601,6 +604,9 @@ void swap_leg_commands::process_set(std::ostream& out,
         swap_leg_read_token(
             req.change.write.equity_currency, parsed->positionals[next++], "equity_currency");
         swap_leg_read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
+        swap_leg_read_token(req.change.write.indexings_from_asset_leg,
+                            parsed->positionals[next++],
+                            "indexings_from_asset_leg");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -657,8 +663,8 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 35 + 2) {
-            fail(out) << "Expected " << (change_count * 35 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 36 + 2) {
+            fail(out) << "Expected " << (change_count * 36 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -743,6 +749,9 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             swap_leg_read_token(
                 change.write.equity_currency, parsed->positionals[next++], "equity_currency");
             swap_leg_read_token(change.write.fx_index, parsed->positionals[next++], "fx_index");
+            swap_leg_read_token(change.write.indexings_from_asset_leg,
+                                parsed->positionals[next++],
+                                "indexings_from_asset_leg");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -35,6 +35,7 @@ export interface CapFloorInstrumentKey {
 export interface CapFloorInstrumentWrite {
     trade_id: string;
     trade_activity_id: string;
+    long_short: string | null;
 }
 
 export interface CapFloorInstrumentChange {

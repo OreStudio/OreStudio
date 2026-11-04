@@ -22,6 +22,7 @@
 
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
+#include "ores.ore.core/xml/binding.hpp"
 #include "ores.trading.api/domain/instrument_schedule.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
@@ -71,6 +72,43 @@ using option_block::text_of;
 using option_block::to_domain_date;
 using option_block::to_optional_domain_date;
 using option_block::to_ore_date;
+
+/**
+ * @brief Whether a leg's record type declares a field.
+ *
+ * ORE states a leg with more than one record type: a cap/floor's LegData
+ * declares fewer sections than a swap's, and states its currency as an
+ * enumeration rather than text. Asking a type for a field it does not declare
+ * is an error, so the block asks first.
+ */
+template <typename Record>
+bool declares(const Record& r, std::string_view name) {
+    return xml::find_field(r.type(), name, false) != nullptr;
+}
+
+inline std::optional<record_reader> child_if(const record_reader& r, std::string_view name) {
+    return declares(r, name) ? r.child(name) : std::nullopt;
+}
+
+inline bool has_if(const record_reader& r, std::string_view name) {
+    return declares(r, name) && r.has(name);
+}
+
+/// A scalar the record states as text or as an enumeration, read as written.
+inline std::string scalar_of(const record_reader& r, std::string_view name) {
+    const auto* f = xml::find_field(r.type(), name, false);
+    if (f == nullptr)
+        return {};
+    return f->kind == xml::field_kind::enumeration ? spelling_of(r, name) : text_of(r, name);
+}
+
+inline void set_scalar(record_writer& w, std::string_view name, const std::string& value) {
+    const auto* f = xml::find_field(w.type(), name, false);
+    if (f != nullptr && f->kind == xml::field_kind::enumeration)
+        w.set_spelling(name, value, name);
+    else
+        w.set_text(name, value);
+}
 
 inline void stamp_leg(swap_leg& row) {
     row.audit.modified_by = std::string(option_block::block_actor);
@@ -123,15 +161,15 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
     row.identity.leg_number = leg_number;
     row.payer = is_flag_on(text_of(leg, "Payer"));
     row.leg_type_code = spelling_of(leg, "LegType");
-    row.currency = text_of(leg, "Currency");
+    row.currency = scalar_of(leg, "Currency");
     row.day_count_fraction_code = spelling_of(leg, "DayCounter");
     row.business_day_convention_code = spelling_of(leg, "PaymentConvention");
-    row.payment_frequency_code = tenor_to_payment_frequency(first_tenor(leg.child("ScheduleData")));
-    if (leg.has("PaymentLag"))
+    row.payment_frequency_code = tenor_to_payment_frequency(first_tenor(child_if(leg, "ScheduleData")));
+    if (has_if(leg, "PaymentLag"))
         row.payment_lag = text_of(leg, "PaymentLag");
-    if (leg.has("PaymentCalendar"))
+    if (has_if(leg, "PaymentCalendar"))
         row.payment_calendar = text_of(leg, "PaymentCalendar");
-    if (const auto notionals = leg.child("Notionals")) {
+    if (const auto notionals = child_if(leg, "Notionals")) {
         if (const auto all = notionals->children("Exchanges"); !all.empty()) {
             const auto& exchanges = all.front();
             const auto spelled = [&](std::string_view name) -> std::optional<bool> {
@@ -144,7 +182,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
             row.notional_final_exchange = spelled("NotionalFinalExchange");
         }
     }
-    if (const auto floating = leg.child("FloatingLegData")) {
+    if (const auto floating = child_if(leg, "FloatingLegData")) {
         row.floating_index_code = text_of(*floating, "Index");
         if (const auto days = floating->integer("FixingDays"))
             row.fixing_days = static_cast<int>(*days);
@@ -160,7 +198,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
             row.rate_cutoff = static_cast<int>(*cutoff);
     }
     for (const auto& payload : cms_payloads) {
-        const auto cms = leg.child(payload.element);
+        const auto cms = child_if(leg, payload.element);
         if (!cms)
             continue;
         row.floating_index_code = text_of(*cms, payload.index);
@@ -174,7 +212,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         row.is_in_arrears = optional_flag(*cms, "IsInArrears");
         row.naked_option = optional_flag(*cms, "NakedOption");
     }
-    if (const auto commodity = leg.child("CommodityFloatingLegData")) {
+    if (const auto commodity = child_if(leg, "CommodityFloatingLegData")) {
         row.floating_index_code = text_of(*commodity, "Name");
         if (commodity->has("PriceType"))
             row.commodity_price_type = spelling_of(*commodity, "PriceType");
@@ -187,7 +225,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         row.is_in_arrears = optional_flag(*commodity, "IsInArrears");
         row.is_averaged = optional_flag(*commodity, "IsAveraged");
     }
-    if (const auto equity = leg.child("EquityLegData")) {
+    if (const auto equity = child_if(leg, "EquityLegData")) {
         if (equity->has("ReturnType"))
             row.equity_return_type = text_of(*equity, "ReturnType");
         if (equity->has("Name")) {
@@ -213,7 +251,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
                 row.fx_index = text_of(*terms, "FXIndex");
         }
     }
-    if (const auto indexings = leg.child("Indexings"))
+    if (const auto indexings = child_if(leg, "Indexings"))
         row.indexings_from_asset_leg = optional_flag(*indexings, "FromAssetLeg");
     stamp_leg(row);
     return row;
@@ -226,7 +264,7 @@ inline std::string indexing_valuation_role(int sequence_number) {
 
 template <typename Data>
 void read_leg_indexings(Data& result, const record_reader& leg, int leg_number) {
-    const auto indexings = leg.child("Indexings");
+    const auto indexings = child_if(leg, "Indexings");
     if (!indexings)
         return;
     int sequence_number = 0;
@@ -296,9 +334,9 @@ void write_leg_indexings(record_writer& leg, const swap_leg& row, const Data& v)
 
 /// A commodity leg states its notional as quantities on its own payload.
 inline std::optional<record_reader> commodity_quantities(const record_reader& leg) {
-    if (const auto fixed = leg.child("CommodityFixedLegData"))
+    if (const auto fixed = child_if(leg, "CommodityFixedLegData"))
         return fixed->child("Quantities");
-    if (const auto floating = leg.child("CommodityFloatingLegData"))
+    if (const auto floating = child_if(leg, "CommodityFloatingLegData"))
         return floating->child("Quantities");
     return std::nullopt;
 }
@@ -320,10 +358,10 @@ inline std::vector<swap_leg_amount> read_leg_amounts(const record_reader& leg, i
     // amounts as dated payments. Both arms land in the same column. An
     // amortization schedule is a rule over the notional, not an amount, so it
     // keeps rows of its own.
-    if (const auto notionals = leg.child("Notionals")) {
+    if (const auto notionals = child_if(leg, "Notionals")) {
         for (const auto& notional : notionals->children("Notional"))
             append(decimal_text(notional), text_of(notional, "startDate"));
-    } else if (const auto cashflow_data = leg.child("CashflowData")) {
+    } else if (const auto cashflow_data = child_if(leg, "CashflowData")) {
         if (const auto cashflow = cashflow_data->child("Cashflow"))
             for (const auto& amount : cashflow->children("Amount"))
                 append(decimal_text(amount), text_of(amount, "date"));
@@ -337,7 +375,7 @@ inline std::vector<swap_leg_amount> read_leg_amounts(const record_reader& leg, i
 inline std::vector<swap_leg_amortization> read_leg_amortizations(const record_reader& leg,
                                                                  int leg_number) {
     std::vector<swap_leg_amortization> steps;
-    const auto amortizations = leg.child("Amortizations");
+    const auto amortizations = child_if(leg, "Amortizations");
     if (!amortizations)
         return steps;
     for (const auto& step : amortizations->children("AmortizationData")) {
@@ -425,29 +463,29 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
         rates.push_back(std::move(row));
     };
 
-    if (const auto fixed = leg.child("FixedLegData")) {
+    if (const auto fixed = child_if(leg, "FixedLegData")) {
         if (const auto list = fixed->child("Rates"))
             for (const auto& rate : list->children("Rate"))
                 append("fixed", rate);
     }
-    if (const auto floating = leg.child("FloatingLegData")) {
+    if (const auto floating = child_if(leg, "FloatingLegData")) {
         for (const auto& [element, item, role] : floating_rate_lists)
             if (const auto list = floating->child(element))
                 for (const auto& value : list->children(item))
                     append(role, value);
     }
     for (const auto& payload : cms_payloads)
-        if (const auto cms = leg.child(payload.element))
+        if (const auto cms = child_if(leg, payload.element))
             for (const auto& [element, item, role] : floating_rate_lists)
                 if (const auto list = cms->child(element))
                     for (const auto& value : list->children(item))
                         append(role, value);
-    if (const auto fixed = leg.child("CommodityFixedLegData")) {
+    if (const auto fixed = child_if(leg, "CommodityFixedLegData")) {
         if (const auto list = fixed->child("Prices"))
             for (const auto& price : list->children("Price"))
                 append("price", price);
     }
-    if (const auto floating = leg.child("CommodityFloatingLegData")) {
+    if (const auto floating = child_if(leg, "CommodityFloatingLegData")) {
         for (const auto& [element, item, role] : commodity_floating_rate_lists)
             if (const auto list = floating->child(element))
                 for (const auto& value : list->children(item))
@@ -459,7 +497,7 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
 /// A leg's explicit payment dates, kept as a dates schedule under the leg.
 template <typename Data>
 void read_payment_dates(Data& result, const record_reader& leg, int leg_number) {
-    const auto group = leg.child("PaymentDates");
+    const auto group = child_if(leg, "PaymentDates");
     if (!group)
         return;
     trading::domain::instrument_schedule schedule;
@@ -493,7 +531,7 @@ void append_leg(Data& result, const record_reader& leg, int leg_number) {
         result.leg_rates.push_back(std::move(rate));
     for (auto& step : read_leg_amortizations(leg, leg_number))
         result.leg_amortizations.push_back(std::move(step));
-    if (const auto schedule = leg.child("ScheduleData"))
+    if (const auto schedule = child_if(leg, "ScheduleData"))
         option_block::read_schedule(result, *schedule, "swap", leg_number, "schedule");
     read_payment_dates(result, leg, leg_number);
     read_leg_indexings(result, leg, leg_number);
@@ -554,7 +592,7 @@ void write_leg(record_writer& leg,
 
     leg.set_spelling("LegType", row.leg_type_code, "leg type");
     leg.set_text("Payer", flag_text(row.payer.value_or(false)));
-    leg.set_text("Currency", row.currency);
+    set_scalar(leg, "Currency", row.currency);
     if (!row.day_count_fraction_code.empty())
         set_spelling_or(leg, "DayCounter", row.day_count_fraction_code, "A360", "day counter");
     if (!row.business_day_convention_code.empty())

@@ -51,6 +51,7 @@ struct cap_floor_instrument_key {
 struct cap_floor_instrument_write {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
+    std::optional<std::string> long_short;
 
     friend bool operator==(const cap_floor_instrument_write&,
                            const cap_floor_instrument_write&) = default;
@@ -385,6 +386,7 @@ inline constexpr std::string_view deleted = "trading.v1.cap_floor_instruments_ev
     return std::tuple{
         utility::codec::field{"trade_id", &cap_floor_instrument_write::trade_id},
         utility::codec::field{"trade_activity_id", &cap_floor_instrument_write::trade_activity_id},
+        utility::codec::field{"long_short", &cap_floor_instrument_write::long_short},
     };
 }
 

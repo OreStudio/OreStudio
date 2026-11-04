@@ -28,7 +28,9 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <span>
+#include <string>
 #include <string_view>
 #include <type_traits>
 
@@ -69,6 +71,12 @@ struct cap_floor_instrument final {
      * @brief The activity that wrote this version.
      */
     boost::uuids::uuid trade_activity_id;
+
+    /**
+     * @brief Whether the trade buys or sells the cap or floor, as LongShort states it. Null for a
+     * row written before the direction was kept, which the writer states as Long.
+     */
+    std::optional<std::string> long_short;
 
     /**
      * @brief Username of the person who last modified this cap/floor instrument.
@@ -117,6 +125,15 @@ struct cap_floor_instrument final {
 };
 
 /**
+ * @brief The members of cap_floor_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view cap_floor_instrument_economic_fields[] = {
+    "long_short",
+};
+
+/**
  * @brief Names the members of cap_floor_instrument that are economic.
  *
  * The economic digest reads this at compile time and decides nothing by a
@@ -124,7 +141,7 @@ struct cap_floor_instrument final {
  */
 [[nodiscard]] constexpr std::span<const std::string_view>
 economic_fields_of(std::type_identity<cap_floor_instrument>) {
-    return {};
+    return cap_floor_instrument_economic_fields;
 }
 
 /**

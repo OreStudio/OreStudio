@@ -370,57 +370,13 @@ auto read_capfloor(const record_reader& trade) -> swap_instrument_data {
         result.header.maturity_date = end_date_of(*schedule);
     }
 
-    swap_leg row;
-    row.identity.leg_number = 1;
-    row.leg_type_code = rate_instrument_projection_spelling_of(*leg, "LegType");
-    row.currency = rate_instrument_projection_spelling_of(*leg, "Currency");
-    row.day_count_fraction_code = rate_instrument_projection_spelling_of(*leg, "DayCounter");
-    row.business_day_convention_code =
-        rate_instrument_projection_spelling_of(*leg, "PaymentConvention");
-    row.payment_frequency_code = tenor_to_payment_frequency(
-        leg_block::first_tenor(leg->child("ScheduleData")));
-    if (const auto floating = leg->child("FloatingLegData"))
-        row.floating_index_code = rate_instrument_projection_text_of(*floating, "Index");
-    rate_instrument_projection_stamp(row);
-    result.legs.push_back(std::move(row));
+    leg_block::append_leg(result, *leg, 1);
 
-    int amount_number = 0;
-    if (const auto notionals = leg->child("Notionals"))
-        for (const auto& notional : notionals->children("Notional")) {
-            swap_leg_amount amount;
-            amount.leg_number = 1;
-            amount.sequence_number = ++amount_number;
-            amount.amount = rate_instrument_projection_decimal_text(notional);
-            rate_instrument_projection_stamp_row(amount);
-            result.leg_amounts.push_back(std::move(amount));
-        }
-
-    int rate_number = 0;
-    if (const auto fixed = leg->child("FixedLegData")) {
-        if (const auto list = fixed->child("Rates"))
-            for (const auto& rate : list->children("Rate")) {
-                swap_leg_rate leg_rate;
-                leg_rate.leg_number = 1;
-                leg_rate.rate_role = "fixed";
-                leg_rate.sequence_number = ++rate_number;
-                leg_rate.value = rate_instrument_projection_decimal_text(rate);
-                rate_instrument_projection_stamp_row(leg_rate);
-                result.leg_rates.push_back(std::move(leg_rate));
-            }
-    }
-    int spread_number = 0;
-    if (const auto floating = leg->child("FloatingLegData")) {
-        if (const auto list = floating->child("Spreads"))
-            for (const auto& spread : list->children("Spread")) {
-                swap_leg_rate leg_rate;
-                leg_rate.leg_number = 1;
-                leg_rate.rate_role = "spread";
-                leg_rate.sequence_number = ++spread_number;
-                leg_rate.value = rate_instrument_projection_decimal_text(spread);
-                rate_instrument_projection_stamp_row(leg_rate);
-                result.leg_rates.push_back(std::move(leg_rate));
-            }
-    }
+    cap_floor_instrument fact;
+    if (data->has("LongShort"))
+        fact.long_short = rate_instrument_projection_spelling_of(*data, "LongShort");
+    result.facts = std::move(fact);
+    option_block::read_premiums(result, *data);
 
     // The schema states a cap/floor's strikes as two lists, so every cap and
     // every floor is its own row, carrying the list it came from and its
@@ -442,9 +398,6 @@ auto read_capfloor(const record_reader& trade) -> swap_instrument_data {
         append_strikes(*caps, "Cap", "cap");
     if (const auto floors = data->child("Floors"))
         append_strikes(*floors, "Floor", "floor");
-
-    if (const auto schedule = leg->child("ScheduleData"))
-        option_block::read_schedule(result, *schedule, "swap", 1, "schedule");
     return result;
 }
 
@@ -721,8 +674,9 @@ void write_fra(record_writer& trade, const swap_instrument_data& v) {
 }
 
 void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
+    const auto& fact = std::get<cap_floor_instrument>(v.facts);
     auto data = trade.child("CapFloorData");
-    data.set_spelling("LongShort", "Long", "long short");
+    data.set_spelling("LongShort", fact.long_short.value_or("Long"), "long short");
 
     // A cap or a floor pays on the floating leg, so that is the leg the
     // document states. Taking the first leg would write a fixed one for a
@@ -733,44 +687,9 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
     if (!v.legs.empty()) {
         const auto& row = floating != v.legs.end() ? *floating : v.legs.front();
         auto leg = data.child("LegData");
-        rate_instrument_projection_set_spelling_or(
-            leg, "LegType", row.leg_type_code, "Floating", "leg type");
-        leg.set_spelling("Currency", row.currency, "currency");
-        rate_instrument_projection_set_spelling_or(
-            leg,
-            "DayCounter",
-            row.day_count_fraction_code.empty() ? "ACT/365" : row.day_count_fraction_code,
-            "ACT/365",
-            "day counter");
-        if (!row.business_day_convention_code.empty())
-            rate_instrument_projection_set_spelling_or(leg,
-                                                       "PaymentConvention",
-                                                       row.business_day_convention_code,
-                                                       "MF",
-                                                       "business day convention");
-
-        // The stored schedule is the document's own; a row written before the
-        // schedule children existed falls back to the header's dates.
-        auto schedule = leg.child("ScheduleData");
-        if (!option_block::write_stored_schedule(schedule, v, "swap", 1, "schedule"))
-            leg_block::write_schedule_rules(
-                schedule,
-                v.header.start_date,
-                v.header.maturity_date,
-                payment_frequency_to_tenor(row.payment_frequency_code));
-
-        if (!v.leg_amounts.empty()) {
-            auto notionals = leg.child("Notionals");
-            for (const auto& amount : v.leg_amounts)
-                notionals.append("Notional").set_own_text(amount.amount.to_string());
-        }
-
-        if (row.leg_type_code == "Floating") {
-            auto floating = leg.child("FloatingLegData");
-            floating.set_text("Index", row.floating_index_code);
-            leg_block::write_floating_rates(floating, v.leg_rates);
-        }
+        leg_block::write_leg(leg, v.header.start_date, v.header.maturity_date, row, v);
     }
+    option_block::write_premiums(data, v);
 
     // Each stored strike returns to the list its role names, so a floor comes
     // back as a floor and a collar keeps both arms. The row's ordinal decides

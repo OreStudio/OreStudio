@@ -607,6 +607,27 @@ std::vector<std::chrono::year_month_day> exercise_dates_of(const Data& v) {
     return out;
 }
 
+/// Writes the Premiums block a holder states, from the premium rows.
+template <typename Data>
+void write_premiums(record_writer& holder, const Data& v) {
+    if (v.option_premiums.empty())
+        return;
+    auto block = holder.child("Premiums");
+    for (const auto& premium : v.option_premiums) {
+        auto writer = block.append("Premium");
+        writer.set_decimal("Amount", premium.amount);
+        writer.set_text("Currency", premium.currency);
+        writer.set_text("PayDate", to_ore_date(premium.pay_date));
+        if (premium.has_settlement) {
+            auto settlement = writer.child("SettlementData");
+            settlement.set_spelling(
+                "PayCurrency", premium.settlement_pay_currency.value_or(""), "currency");
+            settlement.set_text("FXIndex", premium.settlement_fx_index.value_or(""));
+            set_optional_date(settlement, "FixingDate", premium.settlement_fixing_date);
+        }
+    }
+}
+
 template <typename Data>
 void write_option_block(record_writer& option, const Data& v) {
     if (v.options.empty())
@@ -639,22 +660,7 @@ void write_option_block(record_writer& option, const Data& v) {
     if (row.automatic_exercise)
         set_spelling_or(option, "AutomaticExercise", *row.automatic_exercise, "N", "boolean");
 
-    if (!v.option_premiums.empty()) {
-        auto block = option.child("Premiums");
-        for (const auto& premium : v.option_premiums) {
-            auto writer = block.append("Premium");
-            writer.set_decimal("Amount", premium.amount);
-            writer.set_text("Currency", premium.currency);
-            writer.set_text("PayDate", to_ore_date(premium.pay_date));
-            if (premium.has_settlement) {
-                auto settlement = writer.child("SettlementData");
-                settlement.set_spelling(
-                    "PayCurrency", premium.settlement_pay_currency.value_or(""), "currency");
-                settlement.set_text("FXIndex", premium.settlement_fx_index.value_or(""));
-                set_optional_date(settlement, "FixingDate", premium.settlement_fixing_date);
-            }
-        }
-    }
+    write_premiums(option, v);
 
     if (!v.option_exercise_fees.empty()) {
         auto block = option.child("ExerciseFees");

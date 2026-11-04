@@ -8,7 +8,7 @@
 #+filetags: :tooling:ci:local_checks:run_only_the_checks_a_change_needs:sprint_29:v0:
 #+owner: marco
 #+branch: feature/skip-the-fleet-checks-for-a-test-only-change
-#+pr:
+#+pr: 4457
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4457][#4457]] | [build] Skip the fleet checks for a change that compiles only into tests |
 
 * Review
 

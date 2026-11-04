@@ -212,8 +212,13 @@ publish_service::resolve_publication_order(const std::vector<boost::uuids::uuid>
     result.reserve(codes.size());
     for (const auto& code : codes) {
         const auto it = datasets_by_code.find(code);
-        if (it != datasets_by_code.end())
-            result.push_back(it->second);
+        if (it == datasets_by_code.end()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Dataset " << code
+                << " is a dependency of the publication but has no dataset row; it is left out";
+            continue;
+        }
+        result.push_back(it->second);
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Publication order resolved: " << result.size() << " datasets";

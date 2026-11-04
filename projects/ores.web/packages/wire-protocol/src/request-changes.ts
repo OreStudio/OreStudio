@@ -367,6 +367,7 @@ export interface BookLineInput {
     readonly bookPurposeType: string;
     readonly ledgerFeedType: string;
     readonly isSweepable: boolean;
+    readonly restrictsProductTypes: boolean;
     readonly ratesCentreCode: string;
     readonly sandboxId: string | null;
 }
@@ -423,6 +424,7 @@ function wireLine(
         book_purpose_type: line.bookPurposeType,
         ledger_feed_type: line.ledgerFeedType,
         is_sweepable: line.isSweepable,
+        restricts_product_types: line.restrictsProductTypes,
         rates_centre_code: line.ratesCentreCode,
         sandbox_id: line.sandboxId,
         modified_by: '',

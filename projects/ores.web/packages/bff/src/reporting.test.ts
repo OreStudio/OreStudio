@@ -301,6 +301,7 @@ describe('the list of reports the parties run', () => {
             partyName: 'ACME Corporation',
             partyCode: 'ACMCOR',
             scheduleExpression: '0 0 9 * * ?',
+            scheduled: true,
             health: 'completed with errors',
             stateName: 'completed',
             latestRun: {
@@ -919,6 +920,7 @@ describe('one report definition', () => {
             party_name: 'ACME Hong Kong',
             party_code: 'ACCOHK',
             schedule_expression: '0 0 9 * * ?',
+            scheduled: true,
             concurrency_policy: 'forbid',
             is_official: true,
             regulatory_book_type: null,
@@ -1259,5 +1261,184 @@ describe('one report definition', () => {
             },
         });
         expect(response.statusCode).toBe(400);
+    });
+});
+
+const MY_ROLES = 'iam.v1.ops.get_my_roles';
+const SCHEDULE = 'reporting.v1.ops.schedule_report_definitions';
+const UNSCHEDULE = 'reporting.v1.ops.unschedule_report_definitions';
+const WRITE_DEFINITIONS = 'reporting::report_definitions:write';
+const REMOVE_DEFINITIONS = 'reporting::report_definitions:delete';
+
+/** The roles the session's own account holds, as the access read answers them. */
+function accessReply(codes: readonly string[]): Record<string, unknown> {
+    return {
+        result: ok,
+        roles: [
+            {
+                role: {
+                    id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+                    version: 1,
+                    name: 'Report scheduler',
+                    description: 'Schedules the reports of a party',
+                },
+                permission_codes: [...codes],
+                assigned_by: 'priya',
+                assigned_at: '2026-10-04 09:00:00Z',
+                change_reason_code: 'access.new_joiner',
+                change_commentary: '',
+            },
+        ],
+    };
+}
+
+/** The Hong Kong definition as an on-demand report: no job, and an expression that never fires. */
+const ON_DEMAND = {
+    ...definition(AUDIT_ELSEWHERE, AUDIT_NAME, 'risk', OTHER_PARTY),
+    schedule_expression: '0 0 31 2 *',
+    scheduler_job_id: null,
+};
+
+describe('the schedule of a report', () => {
+    it('schedules the definitions the ids name, and answers the count the operation stated', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [MY_ROLES]: accessReply([WRITE_DEFINITIONS]),
+            [SCHEDULE]: { success: true, message: '', scheduled_count: 1, failed_ids: [] },
+        });
+
+        const response = await send(server, sessionId, 'POST', '/api/reporting/reports/schedule', {
+            ids: [AUDIT_ELSEWHERE],
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ changed: 1, failedIds: [], message: '' });
+        // The operation the shell calls is the one called here, with the ids and
+        // nothing else, on the person's own session.
+        expect(calls.find((call) => call.subject === SCHEDULE)?.body).toEqual({
+            ids: [AUDIT_ELSEWHERE],
+        });
+    });
+
+    it('writes the expression an on-demand report fires on, then schedules it', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [MY_ROLES]: accessReply([WRITE_DEFINITIONS]),
+            [DEFINITIONS]: { result: ok, definitions: [ON_DEMAND], total: 1 },
+            [PUT]: { result: ok, report_definition: { ...ON_DEMAND, version: 4 } },
+            [SCHEDULE]: { success: true, message: '', scheduled_count: 1, failed_ids: [] },
+        });
+
+        const response = await send(server, sessionId, 'POST', '/api/reporting/reports/schedule', {
+            ids: [AUDIT_ELSEWHERE],
+            schedule_expression: '0 0 9 * * ?',
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ changed: 1, failedIds: [], message: '' });
+        expect(calls.map((call) => call.subject)).toEqual([MY_ROLES, DEFINITIONS, PUT, SCHEDULE]);
+        const put = calls.find((call) => call.subject === PUT)?.body as {
+            change: { write: Record<string, unknown>; precondition: unknown };
+        };
+        expect(put.change.write['schedule_expression']).toBe('0 0 9 * * ?');
+        // The write is the read it was rebuilt from, so nothing else changes and a
+        // schedule the definition does not hold yet stays absent.
+        expect(put.change.write['scheduler_job_id']).toBeNull();
+        expect(put.change.write['name']).toBe(AUDIT_NAME);
+        expect(put.change.precondition).toEqual({ kind: 'must_match_version', version: 3 });
+    });
+
+    it('surfaces a refusal the operation answered, and never as a schedule', async () => {
+        const { server, sessionId } = buildTestServer({
+            [MY_ROLES]: accessReply([WRITE_DEFINITIONS]),
+            [SCHEDULE]: {
+                success: false,
+                message:
+                    'Act for the definition’s party to schedule it: its runs act in that party, with your consent.',
+                scheduled_count: 0,
+                failed_ids: [AUDIT_ELSEWHERE],
+            },
+        });
+
+        const response = await send(server, sessionId, 'POST', '/api/reporting/reports/schedule', {
+            ids: [AUDIT_ELSEWHERE],
+        });
+
+        // The call ran and refused, so the answer states the refusal rather than
+        // failing the request with a status the page cannot read a reason from.
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            changed: 0,
+            failedIds: [AUDIT_ELSEWHERE],
+            message:
+                'Act for the definition’s party to schedule it: its runs act in that party, with your consent.',
+        });
+    });
+
+    it('refuses a caller who may not change a definition, before anything is written', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [MY_ROLES]: accessReply(['reporting::report_definitions:read']),
+        });
+
+        const response = await send(server, sessionId, 'POST', '/api/reporting/reports/schedule', {
+            ids: [AUDIT_ELSEWHERE],
+            schedule_expression: '0 0 9 * * ?',
+        });
+
+        expect(response.statusCode).toBe(403);
+        expect(response.json().message).toContain('change report definitions');
+        // The gate is before the write, so nothing reached the server at all.
+        expect(calls.map((call) => call.subject)).toEqual([MY_ROLES]);
+    });
+
+    it('refuses an expression that names more than one definition', async () => {
+        const { server, sessionId } = buildTestServer({
+            [MY_ROLES]: accessReply([WRITE_DEFINITIONS]),
+        });
+
+        const response = await send(server, sessionId, 'POST', '/api/reporting/reports/schedule', {
+            ids: [AUDIT_ELSEWHERE, DAILY],
+            schedule_expression: '0 0 9 * * ?',
+        });
+
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('unschedules the definitions the ids name, and answers how many it removed', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [MY_ROLES]: accessReply([REMOVE_DEFINITIONS]),
+            [UNSCHEDULE]: { success: true, message: '', unscheduled_count: 1, failed_ids: [] },
+        });
+
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/reporting/reports/unschedule',
+            { ids: [AUDIT_ELSEWHERE] },
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ changed: 1, failedIds: [], message: '' });
+        expect(calls.find((call) => call.subject === UNSCHEDULE)?.body).toEqual({
+            ids: [AUDIT_ELSEWHERE],
+        });
+    });
+
+    it('refuses an unschedule to a caller who may change but not remove a definition', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [MY_ROLES]: accessReply([WRITE_DEFINITIONS]),
+        });
+
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/reporting/reports/unschedule',
+            { ids: [AUDIT_ELSEWHERE] },
+        );
+
+        // The unschedule operation checks the delete, so the write does not reach it.
+        expect(response.statusCode).toBe(403);
+        expect(response.json().message).toContain('remove report definitions');
+        expect(calls.map((call) => call.subject)).toEqual([MY_ROLES]);
     });
 });

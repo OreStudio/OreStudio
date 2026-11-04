@@ -463,6 +463,7 @@ export {
     reportNameChoicesSchema,
     reportRowViewSchema,
     reportRunViewSchema,
+    reportScheduleOutcomeSchema,
     reportUnreadSchema,
     reportsPageSchema,
 } from './reporting.js';
@@ -479,6 +480,7 @@ export type {
     ReportNameChoices,
     ReportRowView,
     ReportRunView,
+    ReportScheduleOutcome,
     ReportUnread,
     ReportsPage,
 } from './reporting.js';

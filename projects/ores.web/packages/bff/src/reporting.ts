@@ -21,7 +21,8 @@
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { readMyParties } from '@ores/wire-protocol';
+import { permissionCovers } from '@ores/contracts';
+import { readMyAccess, readMyParties } from '@ores/wire-protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as typeSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_type_protocol';
 import { subjects as bookTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/regulatory_book_type_protocol';
@@ -34,7 +35,7 @@ import { subjects as analyticTypeSubjects } from '@ores/wire-protocol/generated/
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
 import { subjects as errorSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_error_event_protocol';
 import { subjects as operationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
-import { HttpFailure, invalidRequest, notFound } from './errors.js';
+import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { intentSchema, readAll, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
@@ -119,6 +120,8 @@ interface ReportRow {
     readonly partyName: string;
     readonly partyCode: string | null;
     readonly scheduleExpression: string;
+    /** Whether the definition holds a scheduler job, which is what makes it fire. */
+    readonly scheduled: boolean;
     readonly health: HealthWord | null;
     readonly stateName: string;
     readonly latestRun: RunView | null;
@@ -212,6 +215,16 @@ const nullableText = (value: unknown): string | null => {
     const stated = text(value);
     return stated === '' ? null : stated;
 };
+
+/**
+ * The scheduler job the definition records, or null when it has none.
+ *
+ * A definition with no job fires on nothing, so this is the fact that says
+ * whether a report is scheduled: the expression only says what it would do if it
+ * were.
+ */
+const schedulerJobOf = (definition: Record<string, unknown>): string | null =>
+    nullableText(definition['scheduler_job_id']);
 
 const countOf = (value: unknown): number => (typeof value === 'number' ? value : 0);
 
@@ -636,6 +649,7 @@ function rowOf(
         partyName: party?.name ?? '',
         partyCode: party === undefined || party.shortCode === '' ? null : party.shortCode,
         scheduleExpression: text(definition['schedule_expression']),
+        scheduled: schedulerJobOf(definition) !== null,
         health: healthOfRow(run, stated, decorated.runs),
         stateName: stated?.stateName ?? '',
         latestRun:
@@ -736,6 +750,7 @@ function definitionRowOf(
         party_name: party?.name ?? '',
         party_code: party === undefined || party.shortCode === '' ? null : party.shortCode,
         schedule_expression: text(definition['schedule_expression']),
+        scheduled: schedulerJobOf(definition) !== null,
         concurrency_policy: text(definition['concurrency_policy']),
         is_official: definition['is_official'] === true,
         regulatory_book_type: nullableText(definition['regulatory_book_type']),
@@ -955,6 +970,30 @@ const editBodySchema = z.object({
     intent: intentSchema,
 });
 
+/** The largest list of definitions one schedule call may name, as the shell allows. */
+const SCHEDULE_ID_LIMIT = 100;
+
+/**
+ * What a schedule asks for: the definitions, and the expression one of them
+ * fires on.
+ *
+ * The operation takes a list of ids, so the body does too. An expression is one
+ * definition's, because it is written onto that definition, so a body that states
+ * one names a single definition and no other.
+ */
+const scheduleBodySchema = z
+    .object({
+        ids: z.array(idSchema).min(1).max(SCHEDULE_ID_LIMIT),
+        schedule_expression: z.string().trim().min(1).max(200).optional(),
+    })
+    .refine((body) => body.schedule_expression === undefined || body.ids.length === 1, {
+        message: 'A schedule expression names one definition.',
+    });
+
+const unscheduleBodySchema = z.object({
+    ids: z.array(idSchema).min(1).max(SCHEDULE_ID_LIMIT),
+});
+
 /**
  * The write the edit form makes, rebuilt from the read.
  *
@@ -990,6 +1029,160 @@ function writeOf(
             change.regulatory_book_type === undefined
                 ? nullableText(definition['regulatory_book_type'])
                 : change.regulatory_book_type,
+    };
+}
+
+/**
+ * The permission the schedule operation checks, as the service states it.
+ *
+ * The service checks this code again and its check decides; naming it here is
+ * not a second rule but the same one, read before the route writes. Activating an
+ * on-demand report writes the expression the job will fire on, so a caller who
+ * may not write hears that in the permission's own terms instead of being
+ * refused halfway through.
+ */
+const SCHEDULE_PERMISSION = 'reporting::report_definitions:write';
+
+/** The permission the unschedule operation checks, which is the delete of a definition. */
+const UNSCHEDULE_PERMISSION = 'reporting::report_definitions:delete';
+
+/**
+ * The reason a schedule change is recorded under.
+ *
+ * The expression is written by the route and not by a record dialog, so no
+ * person states a reason of their own; the change is the one a schedule implies
+ * and carries no material change to the definition besides when it fires.
+ */
+const SCHEDULE_REASON = 'common.non_material_update';
+
+/** Refuses a caller who does not hold the permission the operation behind a route checks. */
+async function requireDefinitionPermission(
+    session: LiveSession,
+    code: string,
+    refusal: string,
+): Promise<void> {
+    const access = await readMyAccess(session.client);
+    const granted = access.roles.flatMap((role) => role.permissionCodes);
+    if (!permissionCovers(granted, code)) {
+        throw notPermitted(refusal);
+    }
+}
+
+/**
+ * Writes the expression a definition will fire on.
+ *
+ * The scheduler builds a job from the expression the definition holds, so
+ * activating an on-demand report has to store the schedule before the operation
+ * reads it. The write is rebuilt from the definition the route read, so it
+ * changes the expression and nothing else, and the version that read carried
+ * makes a definition somebody else changed a conflict rather than a silent
+ * overwrite.
+ */
+async function setScheduleExpression(
+    session: LiveSession,
+    definition: Record<string, unknown>,
+    expression: string,
+): Promise<void> {
+    const reply = await session.client.callAuthenticated(
+        definitionSubjects.put_report_definition_request,
+        {
+            change: {
+                write: writeOf(definition, {
+                    description: text(definition['description']),
+                    report_type: text(definition['report_type']),
+                    concurrency_policy: text(definition['concurrency_policy']),
+                    schedule_expression: expression,
+                    is_official: definition['is_official'] === true,
+                    regulatory_book_type: nullableText(definition['regulatory_book_type']),
+                    pre_processing: text(definition['pre_processing']),
+                    prepared_input_key: text(definition['prepared_input_key']),
+                    post_processing: text(definition['post_processing']),
+                    skipped_families: text(definition['skipped_families']),
+                }),
+                precondition: {
+                    kind: 'must_match_version',
+                    version: countOf(definition['version']),
+                },
+            },
+            intent: {
+                reason_code: SCHEDULE_REASON,
+                commentary: 'The schedule was changed from the report page.',
+            },
+        },
+        z.looseObject({ result: resultSchema, report_definition: row.nullable().default(null) }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusalOf(reply.result);
+    }
+}
+
+/** What the schedule and unschedule operations answer, as this module passes it on. */
+interface ScheduleOutcome {
+    /** How many definitions the operation changed. */
+    readonly changed: number;
+    /** The ids it refused, which the message explains. */
+    readonly failedIds: readonly string[];
+    /** Its own words for the first refusal, or nothing when it refused none. */
+    readonly message: string;
+}
+
+/**
+ * Schedules the definitions named, and answers what the operation did.
+ *
+ * The expression is optional and names one definition, because a schedule is one
+ * definition's: it is written first, and a person who gives no expression
+ * schedules the one the definition already holds. The operation is the shell's
+ * own, so it is sent the ids the shell sends and its count, its refusals and its
+ * words travel back unchanged.
+ */
+async function scheduleDefinitions(
+    session: LiveSession,
+    ids: readonly string[],
+    expression: string | null,
+): Promise<ScheduleOutcome> {
+    if (expression !== null) {
+        await setScheduleExpression(
+            session,
+            await readDefinition(session, ids[0] ?? ''),
+            expression,
+        );
+    }
+    const reply = await session.client.callAuthenticated(
+        operationSubjects.schedule_report_definitions_request,
+        { ids: [...ids] },
+        z.looseObject({
+            success: z.boolean().default(false),
+            message: z.string().default(''),
+            scheduled_count: z.int().nonnegative().default(0),
+            failed_ids: z.array(z.string()).default([]),
+        }),
+    );
+    return {
+        changed: reply.scheduled_count,
+        failedIds: reply.failed_ids,
+        message: reply.message,
+    };
+}
+
+/** Removes the schedules of the definitions named, and answers what the operation did. */
+async function unscheduleDefinitions(
+    session: LiveSession,
+    ids: readonly string[],
+): Promise<ScheduleOutcome> {
+    const reply = await session.client.callAuthenticated(
+        operationSubjects.unschedule_report_definitions_request,
+        { ids: [...ids] },
+        z.looseObject({
+            success: z.boolean().default(false),
+            message: z.string().default(''),
+            unscheduled_count: z.int().nonnegative().default(0),
+            failed_ids: z.array(z.string()).default([]),
+        }),
+    );
+    return {
+        changed: reply.unscheduled_count,
+        failedIds: reply.failed_ids,
+        message: reply.message,
     };
 }
 
@@ -1213,5 +1406,44 @@ export function registerReportingRoutes(
             throw refusalOf(reply.result);
         }
         return detailOf(session, reply.report_definition ?? (await readDefinition(session, id)));
+    });
+
+    /*
+     * The schedule of one or more definitions, as the shell sets and clears it.
+     *
+     * The person's own session makes the call, so the service reads the
+     * definitions it may see and acts for the party they belong to; a definition
+     * of another party is refused in the operation's own words. What the route
+     * answers is the operation's result and nothing else: how many definitions it
+     * changed, which it refused, and why.
+     */
+    server.post('/api/reporting/reports/schedule', async (request) => {
+        const session = requireSession(request);
+        await requireDefinitionPermission(
+            session,
+            SCHEDULE_PERMISSION,
+            'Scheduling a report needs the permission to change report definitions.',
+        );
+        const body = parseInput(
+            scheduleBodySchema,
+            request.body,
+            'A schedule names the definitions and, for one of them, the expression it fires on.',
+        );
+        return scheduleDefinitions(session, body.ids, body.schedule_expression ?? null);
+    });
+
+    server.post('/api/reporting/reports/unschedule', async (request) => {
+        const session = requireSession(request);
+        await requireDefinitionPermission(
+            session,
+            UNSCHEDULE_PERMISSION,
+            'Unscheduling a report needs the permission to remove report definitions.',
+        );
+        const body = parseInput(
+            unscheduleBodySchema,
+            request.body,
+            'An unschedule names the definitions.',
+        );
+        return unscheduleDefinitions(session, body.ids);
     });
 }

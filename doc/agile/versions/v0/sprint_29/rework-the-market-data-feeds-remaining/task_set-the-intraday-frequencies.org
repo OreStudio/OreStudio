@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/set-the-intraday-frequencies
-#+pr:
+#+pr: 4456
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -139,7 +139,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4456][#4456]] | [reporting] Set the intraday cadences a desk expects |
 
 * Review
 

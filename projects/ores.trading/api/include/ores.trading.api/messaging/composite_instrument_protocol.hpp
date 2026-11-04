@@ -58,6 +58,22 @@ struct composite_instrument_write {
     std::optional<ores::utility::decimal::decimal> notional_override;
     std::optional<std::string> portfolio_basket;
     std::optional<ores::utility::decimal::decimal> index_quantity;
+    std::optional<std::string> return_payer;
+    std::optional<std::string> return_currency;
+    std::optional<std::string> return_observation_lag;
+    std::optional<std::string> return_observation_convention;
+    std::optional<std::string> return_observation_calendar;
+    std::optional<std::string> return_payment_lag;
+    std::optional<std::string> return_payment_convention;
+    std::optional<std::string> return_payment_calendar;
+    std::optional<ores::utility::decimal::decimal> return_initial_price;
+    std::optional<std::string> return_initial_price_currency;
+    std::optional<std::string> return_fx_index;
+    std::optional<std::string> return_pay_underlying_cash_flows_immediately;
+    std::optional<std::string> funding_notional_types;
+    std::optional<std::string> underlying_basket_name;
+    std::optional<std::string> underlying_index_quantity;
+    std::optional<std::string> underlying_price_is_per_unit;
 
     friend bool operator==(const composite_instrument_write&,
                            const composite_instrument_write&) = default;
@@ -400,6 +416,36 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
         utility::codec::field{"notional_override", &composite_instrument_write::notional_override},
         utility::codec::field{"portfolio_basket", &composite_instrument_write::portfolio_basket},
         utility::codec::field{"index_quantity", &composite_instrument_write::index_quantity},
+        utility::codec::field{"return_payer", &composite_instrument_write::return_payer},
+        utility::codec::field{"return_currency", &composite_instrument_write::return_currency},
+        utility::codec::field{"return_observation_lag",
+                              &composite_instrument_write::return_observation_lag},
+        utility::codec::field{"return_observation_convention",
+                              &composite_instrument_write::return_observation_convention},
+        utility::codec::field{"return_observation_calendar",
+                              &composite_instrument_write::return_observation_calendar},
+        utility::codec::field{"return_payment_lag",
+                              &composite_instrument_write::return_payment_lag},
+        utility::codec::field{"return_payment_convention",
+                              &composite_instrument_write::return_payment_convention},
+        utility::codec::field{"return_payment_calendar",
+                              &composite_instrument_write::return_payment_calendar},
+        utility::codec::field{"return_initial_price",
+                              &composite_instrument_write::return_initial_price},
+        utility::codec::field{"return_initial_price_currency",
+                              &composite_instrument_write::return_initial_price_currency},
+        utility::codec::field{"return_fx_index", &composite_instrument_write::return_fx_index},
+        utility::codec::field{
+            "return_pay_underlying_cash_flows_immediately",
+            &composite_instrument_write::return_pay_underlying_cash_flows_immediately},
+        utility::codec::field{"funding_notional_types",
+                              &composite_instrument_write::funding_notional_types},
+        utility::codec::field{"underlying_basket_name",
+                              &composite_instrument_write::underlying_basket_name},
+        utility::codec::field{"underlying_index_quantity",
+                              &composite_instrument_write::underlying_index_quantity},
+        utility::codec::field{"underlying_price_is_per_unit",
+                              &composite_instrument_write::underlying_price_is_per_unit},
     };
 }
 

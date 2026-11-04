@@ -56,6 +56,9 @@ generate_synthetic_composite_instrument(utility::generation::generation_context&
     r.index_quantity = ores::utility::decimal::decimal::from_string(
                            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                            .value();
+    r.return_initial_price = ores::utility::decimal::decimal::from_string(
+                                 std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                                 .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

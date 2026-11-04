@@ -85,6 +85,9 @@ insert into ores_trading_structure_templates_tbl (
      'Typed', current_user, 'system.initial_load', 'Seed structure templates'),
     ('CompositeTrade', ores_utility_system_tenant_id_fn(), 0,
      'An ORE composite trade: a trade that states other trades inline and is priced as their sum',
+     'Typed', current_user, 'system.initial_load', 'Seed structure templates'),
+    ('TotalReturnSwap', ores_utility_system_tenant_id_fn(), 0,
+     'An ORE total return swap or contract for difference and the underlying trades it pays the return of',
      'Typed', current_user, 'system.initial_load', 'Seed structure templates')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -143,6 +146,21 @@ insert into ores_trading_structure_template_roles_tbl (
      current_user, 'system.initial_load', 'Seed structure template roles'),
     ('CompositeTrade', 'sub_trade', ores_utility_system_tenant_id_fn(), 0, 0, 0,
      'A component the composite states as a SubTrade',
+     current_user, 'system.initial_load', 'Seed structure template roles'),
+    ('TotalReturnSwap', 'total_return_swap', ores_utility_system_tenant_id_fn(), 0, 1, 1,
+     'The total return swap or contract for difference itself',
+     current_user, 'system.initial_load', 'Seed structure template roles'),
+    ('TotalReturnSwap', 'trade', ores_utility_system_tenant_id_fn(), 0, 0, 0,
+     'An underlying stated as a Trade',
+     current_user, 'system.initial_load', 'Seed structure template roles'),
+    ('TotalReturnSwap', 'sub_trade', ores_utility_system_tenant_id_fn(), 0, 0, 0,
+     'An underlying stated as a SubTrade',
+     current_user, 'system.initial_load', 'Seed structure template roles'),
+    ('TotalReturnSwap', 'derivative_trade', ores_utility_system_tenant_id_fn(), 0, 0, 0,
+     'An underlying stated as a Trade inside a Derivative, whose Id names it',
+     current_user, 'system.initial_load', 'Seed structure template roles'),
+    ('TotalReturnSwap', 'derivative_sub_trade', ores_utility_system_tenant_id_fn(), 0, 0, 0,
+     'An underlying stated as a SubTrade inside a Derivative, whose Id names it',
      current_user, 'system.initial_load', 'Seed structure template roles')
 on conflict (tenant_id, template_code, role)
 where valid_to = ores_utility_infinity_timestamp_fn()

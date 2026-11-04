@@ -112,6 +112,23 @@ composite_instrument_to_domain(const messaging::composite_instrument_write& writ
     v.notional_override = write.notional_override;
     v.portfolio_basket = write.portfolio_basket;
     v.index_quantity = write.index_quantity;
+    v.return_payer = write.return_payer;
+    v.return_currency = write.return_currency;
+    v.return_observation_lag = write.return_observation_lag;
+    v.return_observation_convention = write.return_observation_convention;
+    v.return_observation_calendar = write.return_observation_calendar;
+    v.return_payment_lag = write.return_payment_lag;
+    v.return_payment_convention = write.return_payment_convention;
+    v.return_payment_calendar = write.return_payment_calendar;
+    v.return_initial_price = write.return_initial_price;
+    v.return_initial_price_currency = write.return_initial_price_currency;
+    v.return_fx_index = write.return_fx_index;
+    v.return_pay_underlying_cash_flows_immediately =
+        write.return_pay_underlying_cash_flows_immediately;
+    v.funding_notional_types = write.funding_notional_types;
+    v.underlying_basket_name = write.underlying_basket_name;
+    v.underlying_index_quantity = write.underlying_index_quantity;
+    v.underlying_price_is_per_unit = write.underlying_price_is_per_unit;
     return v;
 }
 

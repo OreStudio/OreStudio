@@ -49,6 +49,22 @@ create table if not exists "ores_trading_composite_instruments_tbl" (
     "notional_override" numeric(38, 12) null,
     "portfolio_basket" text null,
     "index_quantity" numeric(38, 12) null,
+    "return_payer" text null,
+    "return_currency" text null,
+    "return_observation_lag" text null,
+    "return_observation_convention" text null,
+    "return_observation_calendar" text null,
+    "return_payment_lag" text null,
+    "return_payment_convention" text null,
+    "return_payment_calendar" text null,
+    "return_initial_price" numeric(38, 12) null,
+    "return_initial_price_currency" text null,
+    "return_fx_index" text null,
+    "return_pay_underlying_cash_flows_immediately" text null,
+    "funding_notional_types" text null,
+    "underlying_basket_name" text null,
+    "underlying_index_quantity" text null,
+    "underlying_price_is_per_unit" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -184,8 +200,43 @@ create or replace trigger ores_trading_composite_instruments_insert_trg
 before insert on "ores_trading_composite_instruments_tbl"
 for each row execute function ores_trading_composite_instruments_insert_fn();
 
+-- The rows this row owns, closed when it is deleted. A function and not a
+-- rule body, because the rule resolves the tables it names when it is
+-- created and a child may be created after its parent; a plpgsql body
+-- resolves them when it runs.
+create or replace function ores_trading_composite_instruments_cascade_delete_fn(
+    p_row "ores_trading_composite_instruments_tbl")
+returns void as $$
+begin
+    -- Close every row this row owns, so one delete removes the family and
+    -- not the header alone. The store enforces it, so every caller gets it.
+    delete from "ores_trading_swap_legs_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_amounts_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_rates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_amortizations_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_indexings_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedules_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedule_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
 create or replace rule ores_trading_composite_instruments_delete_rule as
 on delete to "ores_trading_composite_instruments_tbl" do instead (
+    select ores_trading_composite_instruments_cascade_delete_fn(OLD);
     update "ores_trading_composite_instruments_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id

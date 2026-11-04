@@ -21,6 +21,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
+#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
@@ -623,12 +624,13 @@ boost::uuids::uuid composite_structure_id(const boost::uuids::uuid& composite_id
 }
 
 /**
- * @brief Joins each booked composite trade to its booked components.
+ * @brief Joins each booked parent trade to the trades it states inline.
  *
- * A composite trade states its components inline, and the import books each
- * as a trade of its own. A structure of the CompositeTrade template holds the
- * composite in its composite role and each component in the role and place it
- * held in the document, which is what the export nests them back by.
+ * A composite trade states its components, and a total return swap or a
+ * contract for difference its underlyings. The import books each as a trade
+ * of its own. A structure of the parent type's template holds the parent in
+ * its parent role and each embedded trade in the role and place it held in
+ * the document, which is what the export nests them back by.
  */
 template <typename Nats>
 std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
@@ -639,7 +641,8 @@ std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
     std::vector<ores::ore::messaging::ore_import_item_error> errors;
     std::unordered_map<std::string, const ores::ore::xml::trade_import_item*> composite_of;
     for (const auto& item : trades)
-        if (!item.membership && item.anchor.trade_type == "CompositeTrade")
+        if (!item.membership &&
+            ores::ore::domain::portfolio_projection::structure_of(item.anchor.trade_type))
             composite_of.emplace(item.ore_id, &item);
 
     const auto intent = ores::utility::domain::change_intent{
@@ -675,24 +678,26 @@ std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
                               .message = std::move(message)});
         };
         if (found == composite_of.end()) {
-            failed("The composite trade " + item.membership->parent_ore_id +
-                   " this component belongs to is not in the import.");
+            failed("The trade " + item.membership->parent_ore_id +
+                   " this one is stated inside is not in the import.");
             continue;
         }
         const auto& composite = *found->second;
         const auto composite_tid = boost::uuids::to_string(composite.anchor.id);
         const auto counterparty = booked.find(composite_tid);
         if (counterparty == booked.end()) {
-            failed("The composite trade " + composite.ore_id + " was not booked.");
+            failed("The trade " + composite.ore_id + " this one is stated inside was not booked.");
             continue;
         }
         const auto structure_id = composite_structure_id(composite.anchor.id);
+        const auto joined =
+            ores::ore::domain::portfolio_projection::structure_of(composite.anchor.trade_type);
         if (made.insert(composite_tid).second) {
             ores::trading::messaging::put_structure_request req;
             req.change.write.id = structure_id;
             req.change.write.counterparty_id = counterparty->second.value_or(boost::uuids::nil_uuid());
             req.change.write.kind = "Typed";
-            req.change.write.template_code = "CompositeTrade";
+            req.change.write.template_code = std::string(joined->template_code);
             req.intent = intent;
             std::string error;
             auto resp = nats_call(nats, req, error);
@@ -700,7 +705,9 @@ std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
                 failed(error.empty() ? resp ? resp->result.message : "put_structure failed" : error);
                 continue;
             }
-            if (auto error = join(composite.anchor.id, structure_id, "composite", 1); !error.empty()) {
+            if (auto error =
+                    join(composite.anchor.id, structure_id, std::string(joined->parent_role), 1);
+                !error.empty()) {
                 failed(error);
                 continue;
             }

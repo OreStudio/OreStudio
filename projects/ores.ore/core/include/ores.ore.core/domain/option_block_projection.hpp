@@ -652,6 +652,56 @@ bool write_product_schedule(record_writer& product,
     return write_stored_schedule(product.child(element), v, "option", 1, role);
 }
 
+/**
+ * @brief Reads a list of dates, such as a leg's PaymentDates, as a dates
+ * schedule under the owner and role.
+ */
+template <typename Data>
+void read_date_list(Data& result,
+                    const record_reader& group,
+                    std::string_view element,
+                    std::string_view owner_role,
+                    int owner_number,
+                    std::string_view schedule_role) {
+    instrument_schedule schedule;
+    schedule.owner_role = std::string(owner_role);
+    schedule.owner_number = owner_number;
+    schedule.schedule_role = std::string(schedule_role);
+    schedule.sequence_number = 1;
+    schedule.schedule_kind = "dates";
+    stamp_row(schedule);
+    result.schedules.push_back(std::move(schedule));
+    int date_number = 0;
+    for (const auto& value : group.values(element)) {
+        instrument_schedule_date date;
+        date.owner_role = std::string(owner_role);
+        date.owner_number = owner_number;
+        date.schedule_role = std::string(schedule_role);
+        date.schedule_sequence_number = 1;
+        date.sequence_number = ++date_number;
+        date.schedule_date = to_domain_date(value);
+        stamp_row(date);
+        result.schedule_dates.push_back(std::move(date));
+    }
+}
+
+/// Writes a list of dates kept as a dates schedule, when the rows keep one.
+template <typename Data>
+void write_date_list(record_writer& holder,
+                     std::string_view group_element,
+                     std::string_view element,
+                     const Data& v,
+                     std::string_view owner_role,
+                     int owner_number,
+                     std::string_view schedule_role) {
+    const auto dates = schedule_dates_of(v, owner_role, owner_number, schedule_role, 1);
+    if (dates.empty())
+        return;
+    auto group = holder.child(group_element);
+    for (const auto* date : dates)
+        group.append_value(element, to_ore_date(date->schedule_date));
+}
+
 /// Writes the Premiums block a holder states, from the premium rows.
 template <typename Data>
 void write_premiums(record_writer& holder, const Data& v) {

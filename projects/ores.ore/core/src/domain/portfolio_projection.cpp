@@ -23,6 +23,7 @@
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <algorithm>
+#include <span>
 #include <format>
 #include <stdexcept>
 #include <unordered_map>
@@ -220,17 +221,66 @@ auto map_trade(const xml::record_reader& trade,
     return item;
 }
 
-/// A composite's component lists: the element, the type field and the role.
-struct component_list {
+/**
+ * @brief One list of trades a parent states inline: the element, the field
+ * that states each one's type, the structure role it is joined in, and
+ * whether each sits in a Derivative wrapper that carries its own Id.
+ */
+struct embedded_list {
     std::string_view element;
     std::string_view type_field;
     std::string_view role;
+    bool wrapped;
 };
 
-constexpr component_list component_lists[] = {
-    {"Trade", "TradeType", "trade"},
-    {"SubTrade", "SubTradeType", "sub_trade"},
+constexpr embedded_list component_lists[] = {
+    {"Trade", "TradeType", "trade", false},
+    {"SubTrade", "SubTradeType", "sub_trade", false},
 };
+
+constexpr embedded_list underlying_lists[] = {
+    {"Trade", "TradeType", "trade", false},
+    {"SubTrade", "SubTradeType", "sub_trade", false},
+    {"Trade", "TradeType", "derivative_trade", true},
+    {"SubTrade", "SubTradeType", "derivative_sub_trade", true},
+};
+
+/**
+ * @brief A trade type that states other trades inline, and where.
+ *
+ * A composite trade states its components, and a total return swap or a
+ * contract for difference its underlyings. Each embedded trade is booked as
+ * a trade of its own and joined to its parent by a structure of the named
+ * template, in which the parent holds the parent role.
+ */
+struct embedding {
+    std::string_view parent_type;
+    std::string_view data_element;
+    std::string_view holder_element;
+    std::string_view template_code;
+    std::string_view parent_role;
+    std::span<const embedded_list> lists;
+};
+
+constexpr embedding embeddings[] = {
+    {"CompositeTrade", "CompositeTradeData", "Components", "CompositeTrade", "composite",
+     component_lists},
+    {"TotalReturnSwap", "TotalReturnSwapData", "UnderlyingData", "TotalReturnSwap",
+     "total_return_swap", underlying_lists},
+    {"ContractForDifference", "ContractForDifferenceData", "UnderlyingData", "TotalReturnSwap",
+     "total_return_swap", underlying_lists},
+};
+
+auto embedding_of(std::string_view trade_type) -> const embedding* {
+    for (const auto& e : embeddings)
+        if (e.parent_type == trade_type)
+            return &e;
+    return nullptr;
+}
+
+auto is_parent_role(std::string_view role) -> bool {
+    return std::ranges::any_of(embeddings, [&](const auto& e) { return e.parent_role == role; });
+}
 
 /**
  * @brief The ORE id a component without one of its own is booked under.
@@ -246,34 +296,65 @@ auto derived_component_id(std::string_view parent_ore_id,
 }
 
 /**
- * @brief Maps each component a composite trade states as a trade of its own.
+ * @brief Maps each trade a parent states inline as a trade of its own.
  *
- * A component is a Trade or a SubTrade, each a list of its own, and its place
- * is its ordinal within its list, which is the structure role's ordinal.
+ * A list's place is the ordinal within its list, which is the structure
+ * role's ordinal. The Derivative wrappers are one list whose entries hold a
+ * Trade or a SubTrade, so their ordinal is the wrapper's place, and the
+ * wrapper's Id is the embedded trade's ORE id when the trade states none.
  */
-void map_components(const xml::record_reader& trade,
-                    const std::string& parent_ore_id,
-                    std::string_view origin,
-                    std::vector<xml::trade_import_item>& out) {
-    const auto data = trade.child("CompositeTradeData");
+void map_embedded(const xml::record_reader& trade,
+                  const embedding& e,
+                  const std::string& parent_ore_id,
+                  std::string_view origin,
+                  std::vector<xml::trade_import_item>& out) {
+    const auto data = trade.child(e.data_element);
     if (!data)
         return;
-    const auto components = data->child("Components");
-    if (!components)
+    const auto holder = data->child(e.holder_element);
+    if (!holder)
         return;
-    for (const auto& list : component_lists) {
+    const auto add = [&](const xml::record_reader& embedded,
+                         const embedded_list& list,
+                         int sequence_number,
+                         std::optional<std::string> wrapper_id) {
+        auto item = map_trade(embedded, list.type_field, origin);
+        item.membership =
+            xml::trade_membership{parent_ore_id, std::string(list.role), sequence_number};
+        // A Derivative's Id names the underlying within the swap, so it is
+        // the ORE id the trade is booked under, before any id of its own.
+        if (wrapper_id && !wrapper_id->empty())
+            item.ore_id = *wrapper_id;
+        if (item.ore_id.empty())
+            item.ore_id = derived_component_id(parent_ore_id, list.role, sequence_number);
+        out.push_back(std::move(item));
+    };
+    for (const auto& list : e.lists) {
+        if (list.wrapped)
+            continue;
         int sequence_number = 0;
-        for (const auto& component : components->children(list.element)) {
-            auto item = map_trade(component, list.type_field, origin);
-            item.membership =
-                xml::trade_membership{parent_ore_id, std::string(list.role), ++sequence_number};
-            if (item.ore_id.empty())
-                item.ore_id = derived_component_id(parent_ore_id, list.role, sequence_number);
-            out.push_back(std::move(item));
-        }
+        for (const auto& embedded : holder->children(list.element))
+            add(embedded, list, ++sequence_number, std::nullopt);
+    }
+    if (!std::ranges::any_of(e.lists, &embedded_list::wrapped))
+        return;
+    int sequence_number = 0;
+    for (const auto& wrapper : holder->children("Derivative")) {
+        ++sequence_number;
+        for (const auto& list : e.lists)
+            if (list.wrapped)
+                if (const auto embedded = wrapper.child(list.element))
+                    add(*embedded, list, sequence_number, wrapper.text("Id"));
     }
 }
 
+}
+
+std::optional<parent_structure> portfolio_projection::structure_of(std::string_view trade_type) {
+    const auto* e = embedding_of(trade_type);
+    if (e == nullptr)
+        return std::nullopt;
+    return parent_structure{e->template_code, e->parent_role};
 }
 
 std::vector<xml::trade_import_item> portfolio_projection::map(const document& v,
@@ -284,11 +365,11 @@ std::vector<xml::trade_import_item> portfolio_projection::map(const document& v,
     std::vector<xml::trade_import_item> r;
     for (const auto& trade : root.children("Trade")) {
         auto item = map_trade(trade, "TradeType", origin);
-        const bool composite = item.anchor.trade_type == "CompositeTrade";
+        const auto* e = embedding_of(item.anchor.trade_type);
         const auto parent_ore_id = item.ore_id;
         r.push_back(std::move(item));
-        if (composite)
-            map_components(trade, parent_ore_id, origin, r);
+        if (e != nullptr)
+            map_embedded(trade, *e, parent_ore_id, origin, r);
     }
     return r;
 }
@@ -332,48 +413,99 @@ portfolio_projection::reverse(const std::vector<trading::messaging::trade_export
                 break;
     };
 
-    const auto write_components = [&](xml::record_writer& trade,
-                                      const trading::messaging::trade_export_item& composite_item) {
-        const auto& composite_id = composite_item.anchor.id;
-        const auto composite = member_of.find(composite_id);
-        if (composite == member_of.end())
+    const auto members_in_role = [&](const boost::uuids::uuid& structure_id,
+                                     std::string_view role) {
+        std::vector<const trading::domain::structure_member*> members;
+        for (const auto& member : instruments.structure_members)
+            if (member.structure_id == structure_id && member.role == role)
+                members.push_back(&member);
+        return members;
+    };
+
+    const auto write_embedded_trade = [&](xml::record_writer& writer,
+                                          const embedded_list& list,
+                                          const trading::messaging::trade_export_item& child,
+                                          bool states_id) {
+        if (states_id)
+            writer.set_text("id", child.ore_id);
+        writer.set_spelling(list.type_field, child.anchor.trade_type, "trade type");
+        if (child.envelope)
+            write_envelope(writer, *child.envelope);
+        write_instrument(writer, child);
+    };
+
+    // Writes the trades a parent states inline, from the structure that joins
+    // them to it, in the lists and the order the document stated them.
+    const auto write_embedded = [&](xml::record_writer& trade,
+                                    const trading::messaging::trade_export_item& parent,
+                                    const embedding& e) {
+        const auto self = member_of.find(parent.anchor.id);
+        if (self == member_of.end())
             return;
-        auto data = trade.chosen_child("CompositeTradeData");
+        const auto structure_id = self->second->structure_id;
+        // A parent whose own terms were not kept writes no data element, and
+        // the schema requires more of one than the embedded trades fill.
+        auto data = trade.chosen_child(e.data_element);
         if (!data)
             return;
-        std::optional<xml::record_writer> components;
-        for (const auto& list : component_lists) {
-            std::vector<const trading::domain::structure_member*> members;
-            for (const auto& member : instruments.structure_members)
-                if (member.structure_id == composite->second->structure_id &&
-                    member.role == list.role)
-                    members.push_back(&member);
-            std::sort(members.begin(), members.end(), [](const auto* a, const auto* b) {
-                return a->sequence_number < b->sequence_number;
-            });
+        std::optional<xml::record_writer> holder;
+        const auto holder_of = [&]() -> xml::record_writer& {
+            if (!holder)
+                holder = data->child(e.holder_element);
+            return *holder;
+        };
+        const auto child_of = [&](const trading::domain::structure_member* member)
+            -> const trading::messaging::trade_export_item* {
+            const auto found = item_of.find(member->trade_id);
+            return found == item_of.end() ? nullptr : found->second;
+        };
+        const auto derived = [&](const embedded_list& list, int sequence_number) {
+            return derived_component_id(parent.ore_id, list.role, sequence_number);
+        };
+
+        for (const auto& list : e.lists) {
+            if (list.wrapped)
+                continue;
+            auto members = members_in_role(structure_id, list.role);
+            std::ranges::sort(members, {}, &trading::domain::structure_member::sequence_number);
             for (const auto* member : members) {
-                const auto found = item_of.find(member->trade_id);
-                if (found == item_of.end())
+                const auto* child = child_of(member);
+                if (child == nullptr)
                     continue;
-                const auto& child = *found->second;
-                if (!components)
-                    components = data->child("Components");
-                auto writer = components->append(list.element);
-                const auto derived = derived_component_id(
-                    composite_item.ore_id, list.role, member->sequence_number);
-                if (!child.ore_id.empty() && child.ore_id != derived)
-                    writer.set_text("id", child.ore_id);
-                writer.set_spelling(list.type_field, child.anchor.trade_type, "trade type");
-                if (child.envelope)
-                    write_envelope(writer, *child.envelope);
-                write_instrument(writer, child);
+                auto writer = holder_of().append(list.element);
+                const bool states_id = !child->ore_id.empty() &&
+                                       child->ore_id != derived(list, member->sequence_number);
+                write_embedded_trade(writer, list, *child, states_id);
             }
+        }
+
+        // The Derivative wrappers are one list whatever they hold, so their
+        // members are merged and ordered by the wrapper's place.
+        std::vector<std::pair<const trading::domain::structure_member*, const embedded_list*>>
+            wrapped;
+        for (const auto& list : e.lists)
+            if (list.wrapped)
+                for (const auto* member : members_in_role(structure_id, list.role))
+                    wrapped.emplace_back(member, &list);
+        std::ranges::sort(wrapped, {}, [](const auto& entry) {
+            return entry.first->sequence_number;
+        });
+        for (const auto& [member, list] : wrapped) {
+            const auto* child = child_of(member);
+            if (child == nullptr)
+                continue;
+            auto wrapper = holder_of().append("Derivative");
+            if (!child->ore_id.empty() &&
+                child->ore_id != derived(*list, member->sequence_number))
+                wrapper.set_text("Id", child->ore_id);
+            auto writer = wrapper.child(list->element);
+            write_embedded_trade(writer, *list, *child, false);
         }
     };
 
     for (const auto& item : items) {
         const auto role = role_of(item.anchor.id);
-        if (role == "trade" || role == "sub_trade")
+        if (!role.empty() && !is_parent_role(role))
             continue;
 
         if (!portfolio_projection_accepts_spelling(
@@ -393,8 +525,8 @@ portfolio_projection::reverse(const std::vector<trading::messaging::trade_export
         if (item.envelope)
             write_envelope(trade, *item.envelope);
         write_instrument(trade, item);
-        if (role == "composite")
-            write_components(trade, item);
+        if (const auto* e = embedding_of(item.anchor.trade_type); e != nullptr && !role.empty())
+            write_embedded(trade, item, *e);
     }
 
     root.state("Trade");

@@ -602,9 +602,10 @@ trade_export_service::export_trades(const std::vector<std::string>& page_ids,
         return {};
 
     /*
-     * A composite trade is written with its components inside it, so a page
-     * that holds a composite reads its components too, wherever they are paged.
-     * A component whose composite is on another page is written there, nested,
+     * A composite trade is written with its components inside it, and a total
+     * return swap or a contract for difference with its underlyings, so a page
+     * that holds such a parent reads the trades it states too, wherever they
+     * are paged. One whose parent is on another page is written there, nested,
      * and the writer leaves it out of this one.
      */
     auto trade_ids = page_ids;
@@ -617,10 +618,10 @@ trade_export_service::export_trades(const std::vector<std::string>& page_ids,
              "AND component.structure_id = composite.structure_id "
              "AND component.valid_to = ores_utility_infinity_timestamp_fn() "
              "WHERE composite.tenant_id = ores_iam_current_tenant_id_fn() "
-             "AND composite.role = 'composite' "
+             "AND composite.role IN ('composite', 'total_return_swap') "
              "AND composite.valid_to = ores_utility_infinity_timestamp_fn() "
              "AND composite.trade_id = ANY($1::uuid[]) "
-             "AND component.role <> 'composite'",
+             "AND component.role NOT IN ('composite', 'total_return_swap')",
              {to_uuid_array(page_ids)},
              lg(),
              "Reading the components of the page's composite trades."))

@@ -209,10 +209,14 @@ portfolio_roundtrip roundtrip_portfolio(std::string_view text, std::string_view 
         const auto parent = position_of.find(membership->parent_ore_id);
         if (parent == position_of.end())
             continue;
+        const auto joined =
+            domain::portfolio_projection::structure_of(items[parent->second].anchor.trade_type);
+        if (!joined)
+            continue;
         auto [structure, created] = structure_of.try_emplace(membership->parent_ore_id);
         if (created) {
             structure->second = uuid_gen();
-            join(parent->second, "composite", 1, structure->second);
+            join(parent->second, std::string(joined->parent_role), 1, structure->second);
         }
         join(i, membership->role, membership->sequence_number, structure->second);
     }

@@ -63,6 +63,22 @@ struct composite_instrument_entity {
     std::optional<ores::utility::decimal::decimal> notional_override;
     std::optional<std::string> portfolio_basket;
     std::optional<ores::utility::decimal::decimal> index_quantity;
+    std::optional<std::string> return_payer;
+    std::optional<std::string> return_currency;
+    std::optional<std::string> return_observation_lag;
+    std::optional<std::string> return_observation_convention;
+    std::optional<std::string> return_observation_calendar;
+    std::optional<std::string> return_payment_lag;
+    std::optional<std::string> return_payment_convention;
+    std::optional<std::string> return_payment_calendar;
+    std::optional<ores::utility::decimal::decimal> return_initial_price;
+    std::optional<std::string> return_initial_price_currency;
+    std::optional<std::string> return_fx_index;
+    std::optional<std::string> return_pay_underlying_cash_flows_immediately;
+    std::optional<std::string> funding_notional_types;
+    std::optional<std::string> underlying_basket_name;
+    std::optional<std::string> underlying_index_quantity;
+    std::optional<std::string> underlying_price_is_per_unit;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -88,6 +104,26 @@ struct composite_instrument_entity {
                query_builder::bind("notional_override", &e::notional_override) |
                query_builder::bind("portfolio_basket", &e::portfolio_basket) |
                query_builder::bind("index_quantity", &e::index_quantity) |
+               query_builder::bind("return_payer", &e::return_payer) |
+               query_builder::bind("return_currency", &e::return_currency) |
+               query_builder::bind("return_observation_lag", &e::return_observation_lag) |
+               query_builder::bind("return_observation_convention",
+                                   &e::return_observation_convention) |
+               query_builder::bind("return_observation_calendar", &e::return_observation_calendar) |
+               query_builder::bind("return_payment_lag", &e::return_payment_lag) |
+               query_builder::bind("return_payment_convention", &e::return_payment_convention) |
+               query_builder::bind("return_payment_calendar", &e::return_payment_calendar) |
+               query_builder::bind("return_initial_price", &e::return_initial_price) |
+               query_builder::bind("return_initial_price_currency",
+                                   &e::return_initial_price_currency) |
+               query_builder::bind("return_fx_index", &e::return_fx_index) |
+               query_builder::bind("return_pay_underlying_cash_flows_immediately",
+                                   &e::return_pay_underlying_cash_flows_immediately) |
+               query_builder::bind("funding_notional_types", &e::funding_notional_types) |
+               query_builder::bind("underlying_basket_name", &e::underlying_basket_name) |
+               query_builder::bind("underlying_index_quantity", &e::underlying_index_quantity) |
+               query_builder::bind("underlying_price_is_per_unit",
+                                   &e::underlying_price_is_per_unit) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

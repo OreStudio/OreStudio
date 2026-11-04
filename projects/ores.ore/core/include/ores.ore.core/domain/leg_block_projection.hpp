@@ -540,29 +540,8 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
 /// A leg's explicit payment dates, kept as a dates schedule under the leg.
 template <typename Data>
 void read_payment_dates(Data& result, const record_reader& leg, int leg_number) {
-    const auto group = child_if(leg, "PaymentDates");
-    if (!group)
-        return;
-    trading::domain::instrument_schedule schedule;
-    schedule.owner_role = "swap";
-    schedule.owner_number = leg_number;
-    schedule.schedule_role = "payment_dates";
-    schedule.sequence_number = 1;
-    schedule.schedule_kind = "dates";
-    stamp_row(schedule);
-    result.schedules.push_back(std::move(schedule));
-    int date_number = 0;
-    for (const auto& value : group->values("PaymentDate")) {
-        trading::domain::instrument_schedule_date date;
-        date.owner_role = "swap";
-        date.owner_number = leg_number;
-        date.schedule_role = "payment_dates";
-        date.schedule_sequence_number = 1;
-        date.sequence_number = ++date_number;
-        date.schedule_date = to_domain_date(value);
-        stamp_row(date);
-        result.schedule_dates.push_back(std::move(date));
-    }
+    if (const auto group = child_if(leg, "PaymentDates"))
+        option_block::read_date_list(result, *group, "PaymentDate", "swap", leg_number, "payment_dates");
 }
 
 template <typename Data>
@@ -716,13 +695,8 @@ void write_leg(record_writer& leg,
                              maturity_date,
                              payment_frequency_to_tenor(row.payment_frequency_code));
 
-    if (const auto dates =
-            option_block::schedule_dates_of(v, "swap", leg_number, "payment_dates", 1);
-        !dates.empty()) {
-        auto list = leg.child("PaymentDates");
-        for (const auto* date : dates)
-            list.append_value("PaymentDate", to_ore_date(date->schedule_date));
-    }
+    option_block::write_date_list(
+        leg, "PaymentDates", "PaymentDate", v, "swap", leg_number, "payment_dates");
 
     const auto write_amounts = [&](record_writer payload) {
         if (amounts.empty())

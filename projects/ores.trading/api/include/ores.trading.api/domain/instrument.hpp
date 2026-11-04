@@ -140,13 +140,23 @@ struct swap_instrument_data {
 
 /**
  * @brief A composite trade, a total return swap or a contract for
- * difference: the composite's own row.
+ * difference: the row, and a swap's funding legs and return schedules.
  *
- * A composite trade's components are trades of their own, joined to it by a
- * structure, so the carrier holds no list of them.
+ * The trades a composite states inline, and a swap's underlyings, are trades
+ * of their own, joined to it by a structure, so the carrier holds no list of
+ * them. A total return swap's funding legs are rows of the shared leg tables,
+ * and its return schedule and payment dates rows of the shared schedule
+ * tables under the owner "trs".
  */
 struct composite_instrument_data {
     composite_instrument instrument;
+    std::vector<swap_leg> legs;
+    std::vector<swap_leg_amount> leg_amounts;
+    std::vector<swap_leg_rate> leg_rates;
+    std::vector<swap_leg_amortization> leg_amortizations;
+    std::vector<swap_leg_indexing> leg_indexings;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
 };
 
 /**
@@ -603,6 +613,20 @@ inline void stamp_ids(composite_instrument_data& data,
                       boost::uuids::uuid trade_id,
                       boost::uuids::uuid activity_id = {}) {
     stamp_ids(data.instrument, trade_id, activity_id);
+    for (auto& leg : data.legs) {
+        leg.identity.trade_id = trade_id;
+        leg.identity.trade_activity_id = activity_id;
+    }
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows)
+            stamp_ids(row, trade_id, activity_id);
+    };
+    stamp_one(data.leg_amounts);
+    stamp_one(data.leg_rates);
+    stamp_one(data.leg_amortizations);
+    stamp_one(data.leg_indexings);
+    stamp_one(data.schedules);
+    stamp_one(data.schedule_dates);
 }
 
 inline void stamp_ids(swap_instrument_data& data,

@@ -159,6 +159,166 @@ Whether the composite is a portfolio basket, as =PortfolioBasket= states it.
 
 The quantity of a portfolio basket's index, as =IndexQuantity= states it.
 
+** return_payer
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the trade pays the underlying's return, as =ReturnData/Payer= states it.
+
+** return_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The currency the return is paid in, as =ReturnData/Currency= states it.
+
+** return_observation_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How far before each period the return is observed, as =ReturnData/ObservationLag= states it.
+
+** return_observation_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The business day convention of the observations, as =ReturnData/ObservationConvention= states it.
+
+** return_observation_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar the observations are adjusted on, as =ReturnData/ObservationCalendar= states it.
+
+** return_payment_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How far after each period the return is paid, as =ReturnData/PaymentLag= states it.
+
+** return_payment_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The business day convention of the return payments, as =ReturnData/PaymentConvention= states it.
+
+** return_payment_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar the return payments are adjusted on, as =ReturnData/PaymentCalendar= states it.
+
+** return_initial_price
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The underlying's price at the start, as =ReturnData/InitialPrice= states it.
+
+** return_initial_price_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The currency of the initial price, as =ReturnData/InitialPriceCurrency= states it.
+
+** return_fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The FX indices that convert the underlyings' currencies into the return's, as =ReturnData/FXTerms/FXIndex= states them, in order and separated by spaces.
+
+** return_pay_underlying_cash_flows_immediately
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the underlying's cash flows are paid when they occur, as =ReturnData/PayUnderlyingCashFlowsImmediately= states it.
+
+** funding_notional_types
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The notional type of each funding leg, as =FundingData/NotionalType= states them, in order and separated by spaces.
+
+** underlying_basket_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The name of the portfolio index the trade pays the return of, as =UnderlyingData/PortfolioIndexTradeData/BasketName= states it.
+
+** underlying_index_quantity
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The quantity of that index, as =PortfolioIndexTradeData/IndexQuantity= states it.
+
+** underlying_price_is_per_unit
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the index's price is per unit, as =PortfolioIndexTradeData/PriceIsPerUnit= states it.
+
 * Foreign keys
 
 ** trade_id
@@ -209,6 +369,54 @@ is immutable.
         v.identity.trade_activity_id = activity.id;
     }
 #+end_src
+
+* Delete cascade
+
+The rows a total return swap or a contract for difference owns: its funding
+legs and their children, and its return schedule and payment dates. Each is
+keyed by the trade, so the delete rule closes them with the instrument.
+
+** swap_legs
+:PROPERTIES:
+:table:  ores_trading_swap_legs_tbl
+:column: trade_id
+:END:
+
+** swap_leg_amounts
+:PROPERTIES:
+:table:  ores_trading_swap_leg_amounts_tbl
+:column: trade_id
+:END:
+
+** swap_leg_rates
+:PROPERTIES:
+:table:  ores_trading_swap_leg_rates_tbl
+:column: trade_id
+:END:
+
+** swap_leg_amortizations
+:PROPERTIES:
+:table:  ores_trading_swap_leg_amortizations_tbl
+:column: trade_id
+:END:
+
+** swap_leg_indexings
+:PROPERTIES:
+:table:  ores_trading_swap_leg_indexings_tbl
+:column: trade_id
+:END:
+
+** instrument_schedules
+:PROPERTIES:
+:table:  ores_trading_instrument_schedules_tbl
+:column: trade_id
+:END:
+
+** instrument_schedule_dates
+:PROPERTIES:
+:table:  ores_trading_instrument_schedule_dates_tbl
+:column: trade_id
+:END:
 
 * SQL
 

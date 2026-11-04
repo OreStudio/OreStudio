@@ -3101,7 +3101,9 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components",
     const auto items = portfolio_projection::map(document);
     // Each component is a trade of its own, placed right after its composite
     // and naming it, so the import can join them in a structure.
-    REQUIRE(items.size() == 5);
+    // The total return swap's and the contract for difference's underlyings
+    // follow each of them in the same way.
+    REQUIRE(items.size() == 7);
     CHECK(items[0].anchor.trade_type == "CompositeTrade");
     CHECK(!items[0].membership);
     // A component's ordinal counts within its list: the Trade and the SubTrade
@@ -3118,7 +3120,12 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components",
     CHECK(items[1].ore_id == "component-swap");
     CHECK(items[2].ore_id == "component-fx");
     CHECK(items[3].anchor.trade_type == "TotalReturnSwap");
-    CHECK(items[4].anchor.trade_type == "ContractForDifference");
+    CHECK(items[5].anchor.trade_type == "ContractForDifference");
+    for (const int i : {4, 6}) {
+        INFO("underlying " << i);
+        REQUIRE(items[i].membership.has_value());
+        CHECK(items[i].membership->parent_ore_id == items[i - 1].ore_id);
+    }
 
     const auto* composite =
         std::get_if<ores::trading::domain::composite_instrument_data>(&items[0].instrument);
@@ -3151,7 +3158,7 @@ TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_
 
     const auto document = portfolio_projection::read(composite_document_text);
     const auto items = portfolio_projection::map(document);
-    REQUIRE(items.size() == 5);
+    REQUIRE(items.size() == 7);
 
     const auto* trs =
         std::get_if<ores::trading::domain::composite_instrument_data>(&items[3].instrument);
@@ -3160,7 +3167,7 @@ TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_
     CHECK(trs->instrument.description == "EquityPosition");
 
     const auto* cfd =
-        std::get_if<ores::trading::domain::composite_instrument_data>(&items[4].instrument);
+        std::get_if<ores::trading::domain::composite_instrument_data>(&items[5].instrument);
     REQUIRE(cfd != nullptr);
     CHECK(cfd->instrument.identity.trade_type_code == "ContractForDifference");
     CHECK(cfd->instrument.description == "Swap");
@@ -3172,7 +3179,7 @@ TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_
     CHECK(std::get<ores::trading::domain::composite_instrument_data>(trs_again.instrument)
               .instrument.identity.trade_type_code == "TotalReturnSwap");
 
-    const auto cfd_again = rebuild(items[4]);
+    const auto cfd_again = rebuild(items[5]);
     REQUIRE(std::get_if<ores::trading::domain::composite_instrument_data>(&cfd_again.instrument) !=
             nullptr);
     CHECK(cfd_again.anchor.trade_type == "ContractForDifference");

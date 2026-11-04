@@ -26,12 +26,12 @@ The ladder family is seeded for ACME and Northwind with its configs and cut, fai
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The ten rows of the design's list are seeded for the four Acme parties and Northwind, at the cycles the design states, and applied to this environment. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Next         | Nothing: the ladders wait on the same three gaps the rest of the sensitivity reports do. |
+| Last touched | 2026-11-04                             |
 
 * Acceptance
 
@@ -42,9 +42,38 @@ The ladder family is seeded for ACME and Northwind with its configs and cut, fai
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The product owner overruled the design's decision to hold the ladder family back,
+so the design's =* Reports to build= list is the seed list. Rows 1 to 10 are the
+family; rows 11 to 14 wait on swaption, cap and floor, credit and equity
+volatility data and stay stated and unseeded.
+
+- the catalogue gains the ten reports through =report_catalogue.json= and the two
+  generators, so the artefact populates are regenerated rather than hand written.
+  A row the design marks =eod and intraday= is two catalogue entries, because a
+  definition states one cut selection. That is fifteen definitions per party.
+- the report names are the ones the ladder pages already carry, because the index
+  lists a report by its page. The design's rates delta ladder is the Rho ladder and
+  its currency pair spot ladder is the Delta ladder, which is the family's general
+  first-order reader.
+- every ladder runs =npv= and =sensitivity=, except the par-rate DV01 ladder, which
+  reads the par column and asks for no valuation. The two analytics already have
+  profiles, so a ladder binds the run settings the sensitivity reports already
+  bind: the same rows, which name =sensitivity.xml= and =simulation.xml=.
+- the engines are =Risk Sensitivities=, the same set the delta, gamma and DV01
+  reports use, because a bump wants the prices that carry analytic sensitivities.
+  A close twin takes the default official engines, as the pricing table says.
+- the definition binds the six configuration types through the existing artefact
+  pattern, so nothing about the binding mechanism is new.
+- the ladder family is decided before the party rules. A definition that produces
+  no figure costs nothing to hold, and the catalogue should state what the platform
+  runs. Every party therefore holds the fifteen, the holding company included, and
+  Northwind holds them through the London rows its catalogue reads.
+- the environment is shared and already provisioned, so the seeds reach it by being
+  applied: the artefact populates are staged again and the publish carries them onto
+  the rows the parties hold. =evidence/apply_the_ladder_family.sql= does that and
+  states the two secrets of the order: run settings before definitions, and the
+  Northwind rows staged and not published, because this environment holds no
+  Northwind tenant.
 
 * Measurements
 
@@ -58,9 +87,72 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reports in the catalogue | 57 | =python3 -c "import json; print(len(json.load(open('report_catalogue.json'))))"= in the ACME dataset | 670948cf8f |
+| Ladder definitions per party | 15, being 5 =LIVE= and 10 =EOD= | =evidence/the_ladder_family_live_list.txt= | 670948cf8f |
+| Ladder definitions staged for Northwind | 15, waiting for the tenant | same file, last table | 670948cf8f |
+| Bindings each ladder definition writes | 6, one per configuration type | same file, third table | 670948cf8f |
+| Sensitivity files each ladder's run settings name | =sensitivity.xml= and =simulation.xml= | same file, fourth table | 670948cf8f |
+| Definitions held by the parties after the publish | ACMCOR 25, ACCOUK 55, ACCOUS 46, ACCOHK 46 | =compass sql= count by party | 879b09fece |
+| Reporting pgTAP suites | 5 files, 62 tests, pass | =projects/ores.sql/test/run_tests.sh test/reporting_*.sql= | 879b09fece |
+| Sensitivity analytics pgTAP suites | 2 files, 18 tests, pass | =... test/analytics_sensitivity_*_test.sql= | 879b09fece |
 
 * Notes
+
+** The cycle each row runs on
+
+The design's cycle column is the whole rule. Five rows are =eod and intraday=: the
+rates delta, the ATM and surface vega ladders, and the two derived volatility
+ladders. Each of those is a live definition that runs every half hour through the
+day on the =LIVE= cut and an "(EOD)" twin that runs at the close on the =EOD= cut.
+The other five are end of day alone. A sensitivity run reprices the whole scope, so
+the live definitions run on the half hour like the intraday risk monitor rather than
+every fifteen minutes like the triple vol spot ladder.
+
+** The two ladders the design's list does not seed
+
+The Volga and the Vanna are not in rows 1 to 10 and no definition states them. The
+Three-pillar is the surface shift under its other name, so the surface vega ladder
+is the report and the page says so. Nothing about those three is a defect: the
+design's list does not reach them, and the design is what the seed follows.
+
+** Why the holding company holds them
+
+The ladder family is decided before the party rules that say the holding company
+runs no trading analytics (D2) and that only London runs the option reports (D8).
+That is the product owner's call on 2026-11-04 and the pages state it, in
+[[file:../../../knowledge/reports/reports.org][Report pages]], under "Which entity
+runs which report". A reviewer who disagrees can remove the holding company and the
+two core entities from =LADDER_REPORTS= in =generate_report_data.py= and regenerate;
+nothing else would change.
+
+** What a run stops on
+
+No definition was run for this task. Each ladder binds run settings that name
+=sensitivity.xml=, and no table holds a =SensitivityAnalysis= document and no mapper
+reads one, so the engine has nothing to shift. The dataset also holds no
+=FX_OPTION/RATE_LNVOL= quote and no FX spot, so a volatility ladder has no factor to
+bump even with the document in place. The acceptance put this out of scope: a
+definition exists and fails for the same reasons the rest do.
+
+** The new definitions hold no scheduler job
+
+The provisioner's =schedule_reports= step creates a job and a run grant for each
+published definition whose schedule is a real cron expression. It runs while a
+tenant is provisioned, and these fifteen definitions reached a tenant that was
+already up, so they are published and unscheduled. The schedule column still states
+when each one would fire, and a re-provision asks for the jobs. A report a reader
+opens from its page is unaffected: the schedule action is a separate feature.
+
+** An environment that carries an older catalogue
+
+The ACME parties in this environment also hold five, three and three definitions
+named "Bump and Reprice Spot Greeks", "Bump and Reprice Spot Ladder" and "Bump and
+Reprice Triple Vol Spot Ladder", published on 2026-11-03 from a catalogue that used
+the Northwind names. They are current rows with scheduler jobs, they are not this
+task's, and the publish left them alone. The catalogue on this branch names those
+reports "Spot Greeks", "Spot Ladder" and "Triple Vol Spot Ladder", so the publish
+inserted those names beside them. A re-provision returns the parties to one name
+each.
 
 * Test Scenarios
 
@@ -86,3 +178,63 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The ladder family is stated in the report catalogue and applied to this
+environment. The ten rows of the design's list are fifteen definitions per party,
+because five of the rows run on both cycles and each cycle is a definition:
+
+#+ATTR_HTML: :class hug-leading
+| # | Row | Seeded as | Cycle |
+|---+-----+-----------+-------|
+| 1 | Rates delta ladder | Bump and Reprice Rho Ladder | LIVE and (EOD) |
+| 2 | Rates gamma ladder | Bump and Reprice Gamma Ladder | EOD |
+| 3 | Theta ladder | Bump and Reprice Theta Ladder | EOD |
+| 4 | Rates cross-gamma ladder | Bump and Reprice Cross-gamma Ladder | EOD |
+| 5 | .1 ATM vol ladder | Bump and Reprice ATM Vega Ladder | LIVE and (EOD) |
+| 6 | .1 surface vol ladder | Bump and Reprice Surface Vega Ladder | LIVE and (EOD) |
+| 7 | .1 risk-reversal ladder | Bump and Reprice Risk-reversal Vega Ladder | LIVE and (EOD) |
+| 8 | .1 strangle ladder | Bump and Reprice Butterfly Vega Ladder | LIVE and (EOD) |
+| 9 | Par-rate DV01 ladder | Bump and Reprice DV01 Ladder | EOD |
+| 10 | FX spot delta ladder | Bump and Reprice Delta Ladder | EOD |
+
+Each definition binds the six configuration types: =conventions=,
+=todays_market=, =curve_configuration=, =pricing_engines= — =Risk Sensitivities=
+for the plain name and the official engines for a close twin — =risk_report_config=
+and =engine_settings=. The run settings are the party's existing sensitivity rows,
+so the =sensitivity= analytic carries =recalibrateModels= =Y=,
+=outputSensitivityThreshold= =0.000001=, =parSensitivity= =Y=,
+=sensitivityConfigFile= = sensitivity.xml and =marketConfigFile= = simulation.xml.
+The definitions run through the existing publish, so no table had to be invented
+for the shift: the size is still a setting no table holds, and the pages say so.
+
+Rows 11 to 14 are stated and not seeded, because they wait on swaption, cap and
+floor, credit and equity volatility data.
+
+*What the run stops on.* Nothing was run. No table holds a =SensitivityAnalysis=
+document and no mapper reads one, no table states a shift size, the dataset holds
+no volatility quote and no FX spot, and the report inputs story is open. That is
+the same list that stops "Delta and Gamma" and every other sensitivity report, so
+the ladder fails like the rest rather than in a way of its own.
+
+*Docs.* The index's ladder table states the definitions and their cuts, "what is not
+built" names the four gaps in one place, the pages of the five dual-cycle ladders
+state both cycles, and the design page records the overrule and the name each row is
+seeded as.
+
+*Tests.* The two seed generators run and a re-run produces no diff. The five
+reporting pgTAP suites pass (62 tests) and the two sensitivity analytics suites pass
+(18 tests). The docs checks pass: =lint=, =site-page= on the changed pages,
+=org-links=, =heading-numbers=, =structure-notes= and =pattern-uses=. The SQL and
+codegen checks pass: =sql-hygiene=, =populate-refs=, =sql-reachability=,
+=generated-column-refs=, =entity-writes=, =handler-permissions=, =rls-widenings=
+and =cmake-sources=. =er-diagram= fails on
+=ores_schema.dq_staging.puml=, which the commit that added =cut_kind_code= to the DQ
+artefact table left unregenerated; that failure is on =origin/main= and this branch
+does not touch a schema file. The codegen checks need the codegen virtual
+environment, which this worktree does not hold, so they were run with the one in the
+main checkout.
+
+*Evidence.* =evidence/apply_the_ladder_family.sql= is the apply, and
+=evidence/the_ladder_family_live_list.txt= is what the database answers: the counts
+by party and cut, the live list with each definition's schedule and run settings, the
+six bindings, the two files, and Northwind's staged rows.

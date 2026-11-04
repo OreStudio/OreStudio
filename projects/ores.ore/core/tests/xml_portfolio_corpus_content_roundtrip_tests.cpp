@@ -99,7 +99,6 @@ const std::set<std::string>& known_losses() {
         "CommodityVarianceSwap lost Trade/CommodityVarianceSwapData/MomentType",
         "CommodityVarianceSwap lost Trade/CommodityVarianceSwapData/Underlying/Name",
         "CommodityVarianceSwap lost Trade/CommodityVarianceSwapData/Underlying/Type",
-        "CompositeTrade lost Trade/CompositeTradeData/NotionalCalculation",
         "ContractForDifference lost Trade/ContractForDifferenceData/ReturnData/Currency",
         "ContractForDifference lost Trade/ContractForDifferenceData/ReturnData/InitialPrice",
         "ContractForDifference lost Trade/ContractForDifferenceData/ReturnData/InitialPriceCurrency",

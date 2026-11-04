@@ -107,6 +107,56 @@ Optional free-text description.
 std::string(faker::lorem::sentence())
 #+end_src
 
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The currency a composite trade is priced in, as =Currency= states it. Null for a total return swap or a contract for difference, which state no such field.
+
+** notional_calculation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How the composite's notional is formed from its components', as =NotionalCalculation= states it: =Sum=, =Mean=, =First=, =Last=, =Min=, =Max= or =Override=.
+
+** notional_override
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The notional the composite states outright, as =NotionalOverride= states it, when the calculation is =Override=.
+
+** portfolio_basket
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the composite is a portfolio basket, as =PortfolioBasket= states it.
+
+** index_quantity
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The quantity of a portfolio basket's index, as =IndexQuantity= states it.
+
 * Foreign keys
 
 ** trade_id
@@ -383,7 +433,9 @@ the derivation owns only the CRUD surface.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

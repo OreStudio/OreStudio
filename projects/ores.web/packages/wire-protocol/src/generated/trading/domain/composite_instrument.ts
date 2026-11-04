@@ -35,5 +35,10 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
 export interface CompositeInstrument {
     identity: InstrumentIdentity;
     description: string;
+    currency: string | null;
+    notional_calculation: string | null;
+    notional_override: string | null;
+    portfolio_basket: string | null;
+    index_quantity: string | null;
     audit: AuditRecord;
 }

@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -57,6 +58,11 @@ struct composite_instrument_entity {
     boost::uuids::uuid party_id;
     boost::uuids::uuid trade_activity_id;
     std::optional<std::string> description;
+    std::optional<std::string> currency;
+    std::optional<std::string> notional_calculation;
+    std::optional<ores::utility::decimal::decimal> notional_override;
+    std::optional<std::string> portfolio_basket;
+    std::optional<ores::utility::decimal::decimal> index_quantity;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -77,6 +83,11 @@ struct composite_instrument_entity {
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("trade_activity_id", &e::trade_activity_id) |
                query_builder::bind("description", &e::description) |
+               query_builder::bind("currency", &e::currency) |
+               query_builder::bind("notional_calculation", &e::notional_calculation) |
+               query_builder::bind("notional_override", &e::notional_override) |
+               query_builder::bind("portfolio_basket", &e::portfolio_basket) |
+               query_builder::bind("index_quantity", &e::index_quantity) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

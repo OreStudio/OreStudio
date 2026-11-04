@@ -110,6 +110,11 @@ composite_instrument_to_domain(const messaging::composite_instrument_write& writ
     v.identity.trade_type_code = write.trade_type_code;
     v.identity.trade_activity_id = write.trade_activity_id;
     v.description = write.description;
+    v.currency = write.currency;
+    v.notional_calculation = write.notional_calculation;
+    v.notional_override = write.notional_override;
+    v.portfolio_basket = write.portfolio_basket;
+    v.index_quantity = write.index_quantity;
     return v;
 }
 

@@ -28,6 +28,7 @@
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/composite_instrument_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -52,6 +53,11 @@ composite_instrument_mapper::map(const composite_instrument_entity& v) {
     r.identity.party_id = v.party_id;
     r.identity.trade_activity_id = v.trade_activity_id;
     r.description = v.description.value_or("");
+    r.currency = v.currency;
+    r.notional_calculation = v.notional_calculation;
+    r.notional_override = v.notional_override;
+    r.portfolio_basket = v.portfolio_basket;
+    r.index_quantity = v.index_quantity;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -74,6 +80,11 @@ composite_instrument_mapper::map(const domain::composite_instrument& v) {
     r.party_id = v.identity.party_id;
     r.trade_activity_id = v.identity.trade_activity_id;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.currency = v.currency;
+    r.notional_calculation = v.notional_calculation;
+    r.notional_override = v.notional_override;
+    r.portfolio_basket = v.portfolio_basket;
+    r.index_quantity = v.index_quantity;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

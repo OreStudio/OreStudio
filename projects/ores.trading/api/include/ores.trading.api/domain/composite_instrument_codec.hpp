@@ -49,6 +49,11 @@ namespace ores::trading::domain {
     return std::tuple{
         utility::codec::field{"identity", &composite_instrument::identity},
         utility::codec::field{"description", &composite_instrument::description},
+        utility::codec::field{"currency", &composite_instrument::currency},
+        utility::codec::field{"notional_calculation", &composite_instrument::notional_calculation},
+        utility::codec::field{"notional_override", &composite_instrument::notional_override},
+        utility::codec::field{"portfolio_basket", &composite_instrument::portfolio_basket},
+        utility::codec::field{"index_quantity", &composite_instrument::index_quantity},
         utility::codec::field{"audit", &composite_instrument::audit},
     };
 }

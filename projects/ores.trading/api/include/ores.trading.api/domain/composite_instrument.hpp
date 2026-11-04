@@ -27,7 +27,9 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -56,6 +58,34 @@ struct composite_instrument final {
      */
     std::string description;
 
+    /**
+     * @brief The currency a composite trade is priced in, as Currency states it. Null for a total
+     * return swap or a contract for difference, which state no such field.
+     */
+    std::optional<std::string> currency;
+
+    /**
+     * @brief How the composite's notional is formed from its components', as NotionalCalculation
+     * states it: Sum, Mean, First, Last, Min, Max or Override.
+     */
+    std::optional<std::string> notional_calculation;
+
+    /**
+     * @brief The notional the composite states outright, as NotionalOverride states it, when the
+     * calculation is Override.
+     */
+    std::optional<ores::utility::decimal::decimal> notional_override;
+
+    /**
+     * @brief Whether the composite is a portfolio basket, as PortfolioBasket states it.
+     */
+    std::optional<std::string> portfolio_basket;
+
+    /**
+     * @brief The quantity of a portfolio basket's index, as IndexQuantity states it.
+     */
+    std::optional<ores::utility::decimal::decimal> index_quantity;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.
@@ -71,6 +101,19 @@ struct composite_instrument final {
 };
 
 /**
+ * @brief The members of composite_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view composite_instrument_economic_fields[] = {
+    "currency",
+    "notional_calculation",
+    "notional_override",
+    "portfolio_basket",
+    "index_quantity",
+};
+
+/**
  * @brief Names the members of composite_instrument that are economic.
  *
  * The economic digest reads this at compile time and decides nothing by a
@@ -78,7 +121,7 @@ struct composite_instrument final {
  */
 [[nodiscard]] constexpr std::span<const std::string_view>
 economic_fields_of(std::type_identity<composite_instrument>) {
-    return {};
+    return composite_instrument_economic_fields;
 }
 
 /**

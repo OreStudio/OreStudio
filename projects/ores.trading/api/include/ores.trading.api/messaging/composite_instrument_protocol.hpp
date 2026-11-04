@@ -54,6 +54,11 @@ struct composite_instrument_write {
     std::string trade_type_code;
     boost::uuids::uuid trade_activity_id;
     std::string description;
+    std::optional<std::string> currency;
+    std::optional<std::string> notional_calculation;
+    std::optional<ores::utility::decimal::decimal> notional_override;
+    std::optional<std::string> portfolio_basket;
+    std::optional<ores::utility::decimal::decimal> index_quantity;
 
     friend bool operator==(const composite_instrument_write&,
                            const composite_instrument_write&) = default;
@@ -448,6 +453,12 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
         utility::codec::field{"trade_type_code", &composite_instrument_write::trade_type_code},
         utility::codec::field{"trade_activity_id", &composite_instrument_write::trade_activity_id},
         utility::codec::field{"description", &composite_instrument_write::description},
+        utility::codec::field{"currency", &composite_instrument_write::currency},
+        utility::codec::field{"notional_calculation",
+                              &composite_instrument_write::notional_calculation},
+        utility::codec::field{"notional_override", &composite_instrument_write::notional_override},
+        utility::codec::field{"portfolio_basket", &composite_instrument_write::portfolio_basket},
+        utility::codec::field{"index_quantity", &composite_instrument_write::index_quantity},
     };
 }
 

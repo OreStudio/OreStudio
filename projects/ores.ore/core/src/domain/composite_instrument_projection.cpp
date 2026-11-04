@@ -81,12 +81,19 @@ auto underlying_type(const xml::record_reader& underlying) -> std::optional<std:
 
 auto write_composite_trade(xml::record_writer& trade, const composite_instrument& r) {
     auto data = trade.child("CompositeTradeData");
-    // compositeTradeData requires a Currency element, and the composite
-    // instrument carries no currency: the basket's constituents state their
-    // own. USD is the structural placeholder the old mapper wrote.
-    data.set_spelling("Currency", "USD", "currency");
+    // The schema requires a currency. A row stored before the composite kept
+    // its own states none, and USD is the placeholder the old mapper wrote.
+    data.set_spelling("Currency", r.currency.value_or("USD"), "currency");
+    if (r.notional_calculation)
+        data.set_spelling("NotionalCalculation", *r.notional_calculation, "notional calculation");
+    if (r.notional_override)
+        data.set_decimal("NotionalOverride", *r.notional_override);
+    if (r.portfolio_basket)
+        data.set_text("PortfolioBasket", *r.portfolio_basket);
     if (!r.description.empty())
         data.set_text("BasketName", r.description);
+    if (r.index_quantity)
+        data.set_decimal("IndexQuantity", *r.index_quantity);
 }
 
 }
@@ -100,8 +107,14 @@ auto read_composite_instrument(xml::record_reader trade, std::string_view trade_
 
     if (trade_type == "CompositeTrade") {
         if (const auto data = trade.child("CompositeTradeData")) {
+            auto& row = r.instrument;
             if (const auto name = data->text("BasketName"))
-                r.instrument.description = *name;
+                row.description = *name;
+            row.currency = data->spelling("Currency");
+            row.notional_calculation = data->spelling("NotionalCalculation");
+            row.notional_override = data->decimal("NotionalOverride");
+            row.portfolio_basket = data->text("PortfolioBasket");
+            row.index_quantity = data->decimal("IndexQuantity");
         }
     } else {
         const auto element =

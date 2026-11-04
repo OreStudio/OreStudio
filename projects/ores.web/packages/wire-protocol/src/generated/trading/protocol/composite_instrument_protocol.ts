@@ -38,6 +38,11 @@ export interface CompositeInstrumentWrite {
     trade_type_code: string;
     trade_activity_id: string;
     description: string;
+    currency: string | null;
+    notional_calculation: string | null;
+    notional_override: string | null;
+    portfolio_basket: string | null;
+    index_quantity: string | null;
 }
 
 export interface CompositeInstrumentChange {

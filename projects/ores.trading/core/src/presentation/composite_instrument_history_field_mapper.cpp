@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -43,6 +44,16 @@ render_composite_instrument_fields(const domain::composite_instrument& v) {
     fields.push_back({.name = "Trade Activity ID",
                       .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Currency", .value = v.currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Notional Calculation", .value = v.notional_calculation.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Notional Override",
+         .value = v.notional_override ? v.notional_override->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Portfolio Basket", .value = v.portfolio_basket.value_or(std::string{})});
+    fields.push_back({.name = "Index Quantity",
+                      .value = v.index_quantity ? v.index_quantity->to_string() : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

@@ -87,7 +87,8 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <description> <reason>
+     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <description> <currency>
+     * <notional_calculation> <notional_override> <portfolio_basket> <index_quantity> <reason>
      * <commentary>
      */
     static void process_add(std::ostream& out,
@@ -95,7 +96,8 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <description> <reason>
+     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <description> <currency>
+     * <notional_calculation> <notional_override> <portfolio_basket> <index_quantity> <reason>
      * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -104,6 +106,7 @@ public:
 
     /**
      * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <description>
+     * <currency> <notional_calculation> <notional_override> <portfolio_basket> <index_quantity>
      * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

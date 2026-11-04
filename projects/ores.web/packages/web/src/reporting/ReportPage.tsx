@@ -101,7 +101,7 @@ function shortId(id: string): string {
  */
 export type ScheduleNotice =
     | { readonly kind: 'scheduled' }
-    | { readonly kind: 'already-scheduled' }
+    | { readonly kind: 'already-scheduled'; readonly expressionChanged?: boolean }
     | { readonly kind: 'unscheduled' }
     | { readonly kind: 'not-scheduled' }
     | { readonly kind: 'refused'; readonly message: string };
@@ -114,7 +114,11 @@ export type ScheduleNotice =
  * server's to state: it is the party the definition belongs to, a cron the
  * scheduler cannot read, or a grant it would not make.
  */
-export function noticeOfSchedule(outcome: ReportScheduleOutcome, id: string): ScheduleNotice {
+export function noticeOfSchedule(
+    outcome: ReportScheduleOutcome,
+    id: string,
+    expressionGiven = false,
+): ScheduleNotice {
     if (outcome.failedIds.includes(id)) {
         return {
             kind: 'refused',
@@ -124,7 +128,9 @@ export function noticeOfSchedule(outcome: ReportScheduleOutcome, id: string): Sc
                     : outcome.message,
         };
     }
-    return outcome.changed > 0 ? { kind: 'scheduled' } : { kind: 'already-scheduled' };
+    return outcome.changed > 0
+        ? { kind: 'scheduled' }
+        : { kind: 'already-scheduled', ...(expressionGiven ? { expressionChanged: true } : {}) };
 }
 
 /** What the unschedule operation's answer means for the definition asked about. */
@@ -154,7 +160,13 @@ export function ScheduleNoticeView({ notice }: { readonly notice: ScheduleNotice
         case 'scheduled':
             return <Notice tone="success">{t('reporting.schedule.scheduled')}</Notice>;
         case 'already-scheduled':
-            return <Notice tone="info">{t('reporting.schedule.alreadyScheduled')}</Notice>;
+            return (
+                <Notice tone="info">
+                    {notice.expressionChanged
+                        ? t('reporting.schedule.alreadyScheduledExpression')
+                        : t('reporting.schedule.alreadyScheduled')}
+                </Notice>
+            );
         case 'unscheduled':
             return <Notice tone="success">{t('reporting.schedule.unscheduled')}</Notice>;
         case 'not-scheduled':
@@ -337,13 +349,14 @@ function ReportBody(): ReactNode {
             setNotice(
                 asked.unschedule
                     ? noticeOfUnschedule(outcome, asked.id)
-                    : noticeOfSchedule(outcome, asked.id),
+                    : noticeOfSchedule(outcome, asked.id, asked.expression !== undefined),
             );
             setChoosingSchedule(false);
             void queries.invalidateQueries({ queryKey: reportKey(asked.id) });
         },
         onError: (error: Error) => {
             setNotice({ kind: 'refused', message: error.message });
+            setChoosingSchedule(false);
         },
     });
     const area = useAreaRoot('reporting');
@@ -498,7 +511,7 @@ function ReportBody(): ReactNode {
                                 {t('reporting.run.start')}
                             </Button>
                         )}
-                        {definition.scheduled
+                        {!isOnDemand(definition.scheduled, definition.schedule_expression)
                             ? mayUnschedule && (
                                   <Button
                                       icon="remove"

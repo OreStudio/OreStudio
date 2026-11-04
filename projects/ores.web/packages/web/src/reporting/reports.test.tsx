@@ -832,10 +832,14 @@ describe('the write an edit of a report makes', () => {
  * The detail page of the Hong Kong definition, as scheduled or on demand, and as
  * a person with the codes the test names may change it.
  */
-function schedulePage(codes: readonly string[], scheduled: boolean): string {
+function schedulePage(codes: readonly string[], scheduled: boolean, expression?: string): string {
     const page: ReportDetail = {
         report: { ...AUDIT_ROW, scheduled },
-        definition: { ...DETAIL.definition, scheduled },
+        definition: {
+            ...DETAIL.definition,
+            scheduled,
+            ...(expression === undefined ? {} : { schedule_expression: expression }),
+        },
         unread: [],
     };
     return renderRecords(
@@ -887,6 +891,17 @@ describe('the schedule of one report', () => {
         // rather than inventing one or calling the report on demand.
         expect(page).toContain('The scheduler states no next run.');
         expect(page).not.toContain('On demand');
+    });
+
+    it('reads a job with the never-firing expression as on demand, and offers Schedule', () => {
+        const page = textOf(schedulePage([WRITE], true, '0 0 31 2 *'));
+        const buttons = buttonWords(schedulePage([WRITE], true, '0 0 31 2 *'));
+
+        // The page and the buttons agree: a job that never fires is on demand, so
+        // a person can give it a real schedule without unscheduling it first.
+        expect(page).toContain('On demand');
+        expect(buttons).toContain('Schedule');
+        expect(buttons).not.toContain('Unschedule');
     });
 
     it('offers Schedule to a person who may change a definition, and no Unschedule', () => {

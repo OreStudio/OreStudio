@@ -7691,6 +7691,8 @@ export const en: SourceCatalogue = {
             scheduled: 'Scheduled. The report now runs when the schedule fires.',
             alreadyScheduled:
                 'Nothing changed. The report already had a schedule, so it was left as it was.',
+            alreadyScheduledExpression:
+                'Nothing changed. The report already had a schedule; the new expression was written.',
             unscheduled:
                 'Unscheduled. The report runs only when a person asks, so it is on demand.',
             notScheduled: 'Nothing changed. The report had no schedule to remove.',

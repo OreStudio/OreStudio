@@ -1346,6 +1346,38 @@ describe('the schedule of a report', () => {
         expect(put.change.precondition).toEqual({ kind: 'must_match_version', version: 3 });
     });
 
+    it('puts the old expression back when the schedule is refused', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [MY_ROLES]: accessReply([WRITE_DEFINITIONS]),
+            [DEFINITIONS]: { result: ok, definitions: [ON_DEMAND], total: 1 },
+            [PUT]: { result: ok, report_definition: { ...ON_DEMAND, version: 4 } },
+            [SCHEDULE]: {
+                success: false,
+                message: 'The scheduler refused the job.',
+                scheduled_count: 0,
+                failed_ids: [AUDIT_ELSEWHERE],
+            },
+        });
+
+        const response = await send(server, sessionId, 'POST', '/api/reporting/reports/schedule', {
+            ids: [AUDIT_ELSEWHERE],
+            schedule_expression: '0 0 9 * * ?',
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().failedIds).toEqual([AUDIT_ELSEWHERE]);
+        const writes = calls
+            .filter((call) => call.subject === PUT)
+            .map(
+                (call) =>
+                    (call.body as { change: { write: Record<string, unknown> } }).change.write[
+                        'schedule_expression'
+                    ],
+            );
+        // The new expression, then the one the definition held before the refusal.
+        expect(writes).toEqual(['0 0 9 * * ?', '0 0 31 2 *']);
+    });
+
     it('surfaces a refusal the operation answered, and never as a schedule', async () => {
         const { server, sessionId } = buildTestServer({
             [MY_ROLES]: accessReply([WRITE_DEFINITIONS]),

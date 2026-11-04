@@ -7809,6 +7809,8 @@ const fr: SourceCatalogue = {
                 'Planifié. Le rapport s’exécute maintenant quand la planification se déclenche.',
             alreadyScheduled:
                 'Aucun changement. Le rapport avait déjà une planification, il est donc resté tel quel.',
+            alreadyScheduledExpression:
+                'Rien n’a changé. Le rapport avait déjà un calendrier ; la nouvelle expression a été écrite.',
             unscheduled:
                 'Déplanifié. Le rapport ne s’exécute que sur demande, il est donc à la demande.',
             notScheduled: 'Aucun changement. Le rapport n’avait aucune planification à retirer.',

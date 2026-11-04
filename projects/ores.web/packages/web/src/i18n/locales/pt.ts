@@ -7747,6 +7747,8 @@ const pt: SourceCatalogue = {
             scheduled: 'Agendado. O relatório passa a ser executado quando o agendamento dispara.',
             alreadyScheduled:
                 'Nada mudou. O relatório já tinha um agendamento, por isso ficou como estava.',
+            alreadyScheduledExpression:
+                'Nada mudou. O relatório já tinha um calendário; a nova expressão foi escrita.',
             unscheduled:
                 'Desagendado. O relatório só é executado a pedido, por isso está a pedido.',
             notScheduled: 'Nada mudou. O relatório não tinha agendamento para remover.',

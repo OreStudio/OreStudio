@@ -35,7 +35,7 @@ import { subjects as analyticTypeSubjects } from '@ores/wire-protocol/generated/
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
 import { subjects as errorSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_error_event_protocol';
 import { subjects as operationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
-import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
+import { HttpFailure, invalidRequest, notFound, notPermitted, otherParty } from './errors.js';
 import { intentSchema, readAll, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
@@ -1140,28 +1140,59 @@ async function scheduleDefinitions(
     ids: readonly string[],
     expression: string | null,
 ): Promise<ScheduleOutcome> {
+    // The expression is written first, and it is a change to the definition, so
+    // the party rule is enforced before the write rather than by the schedule
+    // call that follows it.
+    let previous: { readonly expression: string } | null = null;
     if (expression !== null) {
-        await setScheduleExpression(
-            session,
-            await readDefinition(session, ids[0] ?? ''),
-            expression,
-        );
+        const definition = await readDefinition(session, ids[0] ?? '');
+        const partyId = text(definition['party_id']);
+        const acting = session.party?.id ?? '';
+        if (acting !== '' && partyId !== acting) {
+            throw otherParty(partyId);
+        }
+        previous = { expression: text(definition['schedule_expression']) };
+        await setScheduleExpression(session, definition, expression);
     }
-    const reply = await session.client.callAuthenticated(
-        operationSubjects.schedule_report_definitions_request,
-        { ids: [...ids] },
-        z.looseObject({
-            success: z.boolean().default(false),
-            message: z.string().default(''),
-            scheduled_count: z.int().nonnegative().default(0),
-            failed_ids: z.array(z.string()).default([]),
-        }),
-    );
-    return {
-        changed: reply.scheduled_count,
-        failedIds: reply.failed_ids,
-        message: reply.message,
-    };
+    let outcome: ScheduleOutcome;
+    try {
+        const reply = await session.client.callAuthenticated(
+            operationSubjects.schedule_report_definitions_request,
+            { ids: [...ids] },
+            z.looseObject({
+                success: z.boolean().default(false),
+                message: z.string().default(''),
+                scheduled_count: z.int().nonnegative().default(0),
+                failed_ids: z.array(z.string()).default([]),
+            }),
+        );
+        outcome = {
+            changed: reply.scheduled_count,
+            failedIds: reply.failed_ids,
+            message: reply.message,
+        };
+    } catch (error) {
+        if (previous !== null) {
+            try {
+                const current = await readDefinition(session, ids[0] ?? '');
+                await setScheduleExpression(session, current, previous.expression);
+            } catch {
+                // The failure is the answer; the restore is best effort.
+            }
+        }
+        throw error;
+    }
+    // The expression was written but no job was made: a refusal must not leave
+    // a definition silently carrying a schedule nobody asked for.
+    if (previous !== null && (outcome.changed === 0 || outcome.failedIds.includes(ids[0] ?? ''))) {
+        try {
+            const current = await readDefinition(session, ids[0] ?? '');
+            await setScheduleExpression(session, current, previous.expression);
+        } catch {
+            // The refusal is the answer; the restore is best effort.
+        }
+    }
+    return outcome;
 }
 
 /** Removes the schedules of the definitions named, and answers what the operation did. */

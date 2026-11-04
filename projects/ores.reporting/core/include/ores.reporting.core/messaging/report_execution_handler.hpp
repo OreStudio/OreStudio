@@ -27,6 +27,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/service/engine_log_row.hpp"
+#include "ores.reporting.core/service/run_failure_message.hpp"
 #include "ores.service/service/cache/run_token_cache.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <cstddef>
@@ -124,10 +125,13 @@ private:
      * A run is stored against its errors once, so the rows of all its results
      * are gathered here and written together. A call per result would keep only
      * the first, because the recorder knows when a run already holds its errors.
+     *
+     * @return What the run holds after the write, which is what a reader finds
+     * in its Errors, and nothing when the write did not happen.
      */
-    void record_run_logs(const std::string& tenant_id,
-                         const std::string& report_instance_id,
-                         const std::vector<std::string>& result_ids);
+    service::run_problems record_run_logs(const std::string& tenant_id,
+                                          const std::string& report_instance_id,
+                                          const std::vector<std::string>& result_ids);
 
     /**
      * @brief A client that carries the run's token, for calls to an owner.

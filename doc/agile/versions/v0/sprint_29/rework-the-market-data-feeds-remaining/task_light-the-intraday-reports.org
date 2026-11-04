@@ -26,11 +26,11 @@ The intraday reports select the LIVE cut, their configs say live market data, an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Each cycle has its own run settings, the sensitivity runs name the files they read, every intraday report has a page, and a run reaches the ORE package step. |
+| Now          | Nothing. |
 | Waiting on   | The environment's service binaries, which predate this branch. |
-| Next         | Rebuild the services from this branch and re-run, to see the package step complete and the engine answer. |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance

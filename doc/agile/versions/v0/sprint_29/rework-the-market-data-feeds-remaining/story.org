@@ -89,7 +89,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:A08B6E4B-45AD-4487-8134-41648A074F0A][Remove the committed session cookie]] | DONE | 2026-10-31 | 2026-10-31 | build/cj.txt holds a live curl session cookie and is tracked in git. |
 | [[id:95F9EEE9-0D19-4A59-BBEF-F1C6F18FD250][Build the cut take and its authorisation]] | DONE | 2026-10-31 | 2026-11-01 | The cut screens read only; the take flow, the body assembly and the approval request it raises are the next unit. |
 | [[id:45C1929E-9B92-489F-8E44-FA1819E5372D][Decide a cut's authorisation and apply it]] | DONE | 2026-11-01 | 2026-11-01 | The take raises the request; the inbox decides and the reporting side must stamp the authorisation. |
-| [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]] | STARTED | 2026-11-03 | | The intraday reports exist unconfigured or unselected; every definition has a NULL cut and the configs say eod. |
+| [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]] | DONE | 2026-11-03 | 2026-11-03 | The intraday reports exist unconfigured or unselected; every definition has a NULL cut and the configs say eod. |
 | [[id:9271AE36-7C6F-4193-A4B0-CCCB3A4DA76E][Schedule the catalogue when Acme is provisioned]] | DONE | 2026-11-03 | 2026-11-03 | A provisioned Acme ticks nothing: the catalogue states schedules but no one schedules the reports. The provisioner should, as the run's administrator, with its own credentials. |
 | [[id:C744E1F5-AFAA-4147-9F42-87A3909934F8][Design the .1 and greek ladder reports]] | STARTED | 2026-11-03 | | The .1 family and the wider greek ladders are prose only; research ORE and design the reports before seeding. |
 | [[id:8A951C62-4081-4CF1-9051-862533FA17B9][Bind a sensitivity configuration to a report definition]] | BACKLOG | | | A sensitivity run must name the factors it shifts: bind a SensitivityAnalysis document into the configuration slot a report definition already has for it. |
@@ -100,6 +100,8 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:0C0F9826-403E-4C62-B03F-050888E9F88B][Derive the risk reversal and strangle ladders]] | BACKLOG | | | The engine has no risk reversal factor, so the RR and STR ladders are a change of basis over the surface-point deltas of the surface run. |
 | [[id:CC276A2C-4676-4DE3-8114-C496CAB0C082][Build the cross-gamma ladder]] | BACKLOG | | | The cross terms are present in the sensitivity report as rows with two factors; crossgamma.csv has no writer at 1.8.17.0, so the ladder reads the rows. |
 | [[id:62655D66-B68E-4E5A-9D23-1D142B74E086][Fix the post-merge checks]] | DONE | 2026-11-03 | 2026-11-03 | The merged reports pages do not link their structure notes, and four web files are not formatted. |
+| [[id:6D6A3804-3E49-4B12-9F84-A8C5C2162949][Parse the engine log when a run fails]] | DONE | 2026-11-03 | 2026-11-04 | A failed compute records the engine's whole output as one error; the parsed trade failures exist in the log but never reach the run's errors. |
+>>>>>>> a7dd502a68 ([agile] Close the engine log parse task)
 
 * Decisions
 

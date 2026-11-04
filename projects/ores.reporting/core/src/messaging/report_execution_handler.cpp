@@ -633,9 +633,10 @@ report_execution_handler::read_package_log_rows(const std::string& tenant_id,
     }
 }
 
-void report_execution_handler::record_run_logs(const std::string& tenant_id,
-                                               const std::string& report_instance_id,
-                                               const std::vector<std::string>& result_ids) {
+service::run_problems
+report_execution_handler::record_run_logs(const std::string& tenant_id,
+                                          const std::string& report_instance_id,
+                                          const std::vector<std::string>& result_ids) {
     auto rows = read_package_log_rows(tenant_id, report_instance_id);
     for (const auto& result_id : result_ids) {
         auto read = read_run_log_rows(tenant_id, report_instance_id, result_id);
@@ -643,23 +644,27 @@ void report_execution_handler::record_run_logs(const std::string& tenant_id,
             rows.end(), std::make_move_iterator(read.begin()), std::make_move_iterator(read.end()));
     }
     if (rows.empty())
-        return;
+        return {};
 
     try {
         // One write for the run, whatever it took to read it: the recorder keeps
         // a run's account once, and a call per result would keep only the first.
         service::report_error_recorder recorder(
             ores::database::service::tenant_context::with_tenant(ctx_, tenant_id));
-        const auto failure = recorder.record_engine_errors(report_instance_id, rows);
-        if (!failure.empty()) {
-            BOOST_LOG_SEV(lg(), error) << failure;
-            return;
+        const auto recorded = recorder.record_engine_errors(report_instance_id, rows);
+        if (!recorded.failure.empty()) {
+            BOOST_LOG_SEV(lg(), error) << recorded.failure;
+            return {};
         }
         BOOST_LOG_SEV(lg(), info) << "Recorded the log of " << result_ids.size()
-                                  << " result(s) for report instance " << report_instance_id;
+                                  << " result(s) for report instance " << report_instance_id
+                                  << ": " << recorded.stored.errors << " error(s), "
+                                  << recorded.stored.warnings << " warning(s)";
+        return recorded.stored;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "The log rows of report instance " << report_instance_id
                                   << " were not recorded: " << e.what();
+        return {};
     }
 }
 
@@ -741,12 +746,9 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
                     // The node uploads the log it wrote even when the engine
                     // failed, so the run's account of the failure is its own rows
                     // rather than one sentence.
-                    record_run_logs(
+                    const auto recorded = record_run_logs(
                         req.tenant_id, req.report_instance_id, {boost::uuids::to_string(one.id)});
-                    refuse(std::format("The run's compute job failed with outcome {}: {}",
-                                       one.outcome,
-                                       one.error_message.empty() ? "(no message)" :
-                                                                   one.error_message));
+                    refuse(service::run_failure_message(one.outcome, one.error_message, recorded));
                     return;
                 }
                 if (output_uri.empty())
@@ -938,10 +940,13 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             }
             for (const auto& one : results->results) {
                 if (one.outcome != compute_outcome_success) {
-                    refuse(std::format("The run's compute job failed with outcome {}: {}",
-                                       one.outcome,
-                                       one.error_message.empty() ? "(no message)" :
-                                                                   one.error_message));
+                    // The engine's log is written whatever became of the run, so
+                    // a failure is stated from its rows here too. This step can
+                    // be the first to see the failed result, and it would
+                    // otherwise record the node's transcript in place of them.
+                    const auto recorded = record_run_logs(
+                        req.tenant_id, req.report_instance_id, {boost::uuids::to_string(one.id)});
+                    refuse(service::run_failure_message(one.outcome, one.error_message, recorded));
                     return;
                 }
                 result_ids.push_back(boost::uuids::to_string(one.id));

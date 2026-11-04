@@ -23,10 +23,21 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/service/engine_log_row.hpp"
+#include "ores.reporting.core/service/run_failure_message.hpp"
 #include <string>
 #include <vector>
 
 namespace ores::reporting::service {
+
+/**
+ * @brief What a read of a run's log put on the run.
+ */
+struct recorded_engine_errors {
+    /// The rows the run holds from the read, counted apart by severity.
+    run_problems stored;
+    /// An empty string on success, or why the errors were not written.
+    std::string failure;
+};
 
 /**
  * @brief Writes a run's errors against the run.
@@ -50,10 +61,12 @@ public:
      * @c error or @c warning are written, and the rest are dropped, because a
      * notice is not a reason.
      *
-     * @return An empty string on success, or why the errors were not written.
+     * @return The rows the run holds from this read, or why they were not
+     * written.
      */
-    [[nodiscard]] std::string record_engine_errors(const std::string& report_instance_id,
-                                                   const std::vector<engine_log_row>& errors);
+    [[nodiscard]] recorded_engine_errors
+    record_engine_errors(const std::string& report_instance_id,
+                         const std::vector<engine_log_row>& errors);
 
     /**
      * @brief Writes the platform's own reason the run failed.

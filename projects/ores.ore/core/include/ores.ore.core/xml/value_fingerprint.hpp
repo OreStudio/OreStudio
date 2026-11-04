@@ -22,6 +22,7 @@
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/xml/document.hpp"
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::ore::xml {
@@ -54,6 +55,40 @@ struct value_entry {
  * @return The values, sorted.
  */
 ORES_ORE_CORE_EXPORT auto value_fingerprint(const document& doc) -> std::vector<value_entry>;
+
+/**
+ * @brief The values of one occurrence of an element, and the key it states.
+ */
+struct keyed_fingerprint {
+    /// The value of the element's key attribute, or empty when it states none.
+    std::string key;
+    /// The element's values, sorted, with paths that start at the element.
+    std::vector<value_entry> values;
+};
+
+/**
+ * @brief The fingerprint of each occurrence of an element, in document order.
+ *
+ * A portfolio holds many trades, and a difference is only useful when it says
+ * which trade it is in. Fingerprinting each trade on its own, keyed by its id,
+ * lets two portfolios be compared trade by trade even when the writing orders
+ * the trades differently.
+ *
+ * An occurrence nested inside another occurrence of the same element belongs
+ * to the outer one.
+ *
+ * Unlike the whole document's fingerprint, an element that repeats among its
+ * siblings is labelled with its position, from one, such as =LegData[2]=, so
+ * the values of one leg are not compared with those of another.
+ *
+ * @param doc The document to read.
+ * @param element The name of the element to fingerprint, such as =Trade=.
+ * @param key_attribute The attribute that names an occurrence, such as =id=.
+ * @return One fingerprint per occurrence, in the order the document states them.
+ */
+ORES_ORE_CORE_EXPORT auto
+value_fingerprints_of(const document& doc, std::string_view element, std::string_view key_attribute)
+    -> std::vector<keyed_fingerprint>;
 
 }
 

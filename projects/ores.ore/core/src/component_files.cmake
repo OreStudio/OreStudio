@@ -107,6 +107,7 @@ set(files
     "xml/run_document_files.cpp"
     "xml/run_package.cpp"
     "xml/scanner.cpp"
+    "xml/value_differ.cpp"
     "xml/value_fingerprint.cpp"
 )
 
@@ -179,6 +180,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/run_package.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/scanner.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/trade_import_item.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/value_differ.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/value_fingerprint.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/xml.hpp"
 )

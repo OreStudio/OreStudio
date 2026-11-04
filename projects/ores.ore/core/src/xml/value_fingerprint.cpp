@@ -20,7 +20,12 @@
 #include "ores.ore.core/xml/lexical.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
+#include <map>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace ores::ore::xml {
 
@@ -62,64 +67,181 @@ auto join(const std::vector<std::string>& path, std::string_view leaf) -> std::s
     return out;
 }
 
-}
+/**
+ * @brief Walks a run of tokens and records the values they state.
+ *
+ * The walker is fed one token at a time, so a caller can walk a whole document
+ * or switch the list it records into as it meets the elements it cares about.
+ */
+class value_walker {
+public:
+    explicit value_walker(const document& doc)
+        : doc_(doc) {}
 
-auto value_fingerprint(const document& doc) -> std::vector<value_entry> {
-    std::vector<value_entry> values;
-    std::vector<std::string> path;
-    std::string text;
-    // An element that holds a child element cannot also be a leaf, so the
-    // walk remembers whether one arrived and records its own text as mixed
-    // content rather than as the element's value.
-    std::vector<bool> has_child;
-
-    for (const auto& token : doc.tokens()) {
-        switch (token.kind) {
+    /**
+     * @brief Records what a token states.
+     *
+     * @param label The name the path gives a begin token, when it is not the
+     * element's own name: a repeated element is labelled with its position.
+     */
+    auto feed(const token& t, std::vector<value_entry>& values, std::string_view label = {})
+        -> void {
+        switch (t.kind) {
             case token_kind::begin_element:
-                path.emplace_back(doc.name(token));
-                has_child.push_back(false);
-                text.clear();
+                path_.emplace_back(label.empty() ? doc_.name(t) : label);
+                has_child_.push_back(false);
+                text_.clear();
                 break;
             case token_kind::attribute:
                 values.push_back(
-                    {join(path, "@" + std::string(doc.name(token))), canonical(doc.value(token))});
+                    {join(path_, "@" + std::string(doc_.name(t))), canonical(doc_.value(t))});
                 break;
             case token_kind::text:
-                text.append(doc.value(token));
+                text_.append(doc_.value(t));
                 break;
             case token_kind::end_element: {
                 // Text that is the whole content of an element is that
                 // element's value even when it is empty, because the schema
                 // may spell a value that way. Text beside a child element is
                 // data only when it is not formatting.
-                const bool leaf = !has_child.empty() && !has_child.back();
+                const bool leaf = !has_child_.empty() && !has_child_.back();
                 if (leaf) {
                     // Whitespace alone is formatting rather than data: a
                     // document writes an empty list as an element with a line
                     // break in it, and the value is the empty string.
                     values.push_back(
-                        {join(path, {}), is_blank(text) ? std::string{} : canonical(text)});
-                } else if (!is_blank(text)) {
-                    values.push_back({join(path, "text()"), canonical(text)});
+                        {join(path_, {}), is_blank(text_) ? std::string{} : canonical(text_)});
+                } else if (!is_blank(text_)) {
+                    values.push_back({join(path_, "text()"), canonical(text_)});
                 }
-                text.clear();
-                if (!path.empty())
-                    path.pop_back();
-                if (!has_child.empty())
-                    has_child.pop_back();
-                if (!has_child.empty())
-                    has_child.back() = true;
+                text_.clear();
+                if (!path_.empty())
+                    path_.pop_back();
+                if (!has_child_.empty())
+                    has_child_.pop_back();
+                if (!has_child_.empty())
+                    has_child_.back() = true;
                 break;
             }
         }
     }
 
+    [[nodiscard]] auto depth() const -> std::size_t {
+        return path_.size();
+    }
+
+private:
+    const document& doc_;
+    std::vector<std::string> path_;
+    std::string text_;
+    // An element that holds a child element cannot also be a leaf, so the
+    // walk remembers whether one arrived and records its own text as mixed
+    // content rather than as the element's value.
+    std::vector<bool> has_child_;
+};
+
+/**
+ * @brief The label of each begin token in a run that repeats among its
+ * siblings, keyed by the token's position: the name and its position, from one.
+ *
+ * A sequence such as the legs of a swap states the same element more than
+ * once, and a value of the second leg is not a value of the first. Labelling
+ * the repeats keeps them apart, so a value one leg lost is not read as a value
+ * the other changed.
+ */
+auto sibling_labels(const document& doc, std::size_t from, std::size_t to)
+    -> std::map<std::size_t, std::string> {
+    const auto& tokens = doc.tokens();
+    // The parent of each begin token, by the parent's position; the run's
+    // first element has none.
+    std::map<std::size_t, std::size_t> parent_of;
+    std::vector<std::size_t> open;
+    std::map<std::pair<std::size_t, std::string_view>, std::size_t> totals;
+    constexpr std::size_t no_parent = static_cast<std::size_t>(-1);
+    for (auto at = from; at < to; ++at) {
+        const auto& t = tokens[at];
+        if (t.kind == token_kind::begin_element) {
+            const auto parent = open.empty() ? no_parent : open.back();
+            parent_of[at] = parent;
+            ++totals[{parent, doc.name(t)}];
+            open.push_back(at);
+        } else if (t.kind == token_kind::end_element && !open.empty()) {
+            open.pop_back();
+        }
+    }
+
+    std::map<std::size_t, std::string> labels;
+    std::map<std::pair<std::size_t, std::string_view>, std::size_t> seen;
+    for (const auto& [at, parent] : parent_of) {
+        const auto name = doc.name(tokens[at]);
+        if (totals[{parent, name}] < 2)
+            continue;
+        const auto position = ++seen[{parent, name}];
+        labels[at] = std::string(name) + "[" + std::to_string(position) + "]";
+    }
+    return labels;
+}
+
+auto sorted(std::vector<value_entry> values) -> std::vector<value_entry> {
     std::sort(values.begin(), values.end(), [](const value_entry& lhs, const value_entry& rhs) {
         if (lhs.path != rhs.path)
             return lhs.path < rhs.path;
         return lhs.value < rhs.value;
     });
     return values;
+}
+
+}
+
+auto value_fingerprint(const document& doc) -> std::vector<value_entry> {
+    std::vector<value_entry> values;
+    value_walker walker(doc);
+    for (const auto& t : doc.tokens())
+        walker.feed(t, values);
+    return sorted(std::move(values));
+}
+
+auto value_fingerprints_of(const document& doc,
+                           std::string_view element,
+                           std::string_view key_attribute) -> std::vector<keyed_fingerprint> {
+    std::vector<keyed_fingerprint> result;
+    const auto& tokens = doc.tokens();
+    for (std::size_t at = 0; at < tokens.size(); ++at) {
+        const auto& t = tokens[at];
+        if (t.kind != token_kind::begin_element || doc.name(t) != element)
+            continue;
+
+        // The occurrence ends with the end token that closes it, at the same
+        // depth it began.
+        auto end = at + 1;
+        for (std::size_t depth = 1; end < tokens.size() && depth > 0; ++end) {
+            if (tokens[end].kind == token_kind::begin_element)
+                ++depth;
+            else if (tokens[end].kind == token_kind::end_element)
+                --depth;
+        }
+        const auto labels = sibling_labels(doc, at + 1, end);
+
+        // The occurrence is walked on its own, so its paths start at the
+        // element.
+        keyed_fingerprint occurrence;
+        value_walker walker(doc);
+        walker.feed(t, occurrence.values);
+        for (++at; at < end; ++at) {
+            const auto& inner = tokens[at];
+            if (inner.kind == token_kind::attribute && walker.depth() == 1 &&
+                doc.name(inner) == key_attribute)
+                occurrence.key = std::string(doc.value(inner));
+            const auto label = labels.find(at);
+            walker.feed(inner,
+                        occurrence.values,
+                        label == labels.end() ? std::string_view{} : label->second);
+        }
+        --at;
+        occurrence.values = sorted(std::move(occurrence.values));
+        result.push_back(std::move(occurrence));
+    }
+    return result;
 }
 
 }

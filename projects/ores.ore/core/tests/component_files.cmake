@@ -57,6 +57,7 @@ set(files
     "xml_fx_convention_mapper_roundtrip_tests.cpp"
     "xml_importer_tests.cpp"
     "xml_ore_run_document_projection_roundtrip_tests.cpp"
+    "xml_portfolio_corpus_content_roundtrip_tests.cpp"
     "xml_portfolio_projection_tests.cpp"
     "xml_pricing_engine_projection_tests.cpp"
     "xml_rates_corpus_roundtrip_tests.cpp"
@@ -69,4 +70,5 @@ set(files
     "xml_scanner_tests.cpp"
     "xml_todays_market_projection_tests.cpp"
     "xml_trade_import_tests.cpp"
+    "xml_value_differ_tests.cpp"
 )

@@ -42,7 +42,7 @@ TEST_CASE("a_change_recorded_between_ticks_reaches_the_stream", "[change_ticker]
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
-    auto stream = hub.subscribe("acme");
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
@@ -66,7 +66,7 @@ TEST_CASE("a_stopped_ticker_publishes_nothing_further", "[change_ticker]") {
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
-    auto stream = hub.subscribe("acme");
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
@@ -89,7 +89,7 @@ TEST_CASE("a_tick_with_nothing_recorded_writes_nothing", "[change_ticker]") {
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
-    auto stream = hub.subscribe("acme");
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;

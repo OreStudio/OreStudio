@@ -48,6 +48,14 @@ A client can follow the changes over one long response, and a quiet market does 
 | [[id:DD3D0CB3-A9D6-4835-BF0A-1981404F8150][Keep each stream to its own tenant, and let a dead one go]] | DONE | 2026-11-01 | 2026-11-01 | The stream fans every frame to every open stream, so one tenant reads another's changes, and a stream whose client is gone stays in the hub for the life of the process. Filter frames by the caller's tenant, close the subscription when its source dies, and hold the waker's timer safely. |
 | [[id:1BE53CE9-1B99-4A95-83C6-9918E7631E37][Give the events a subject of their own]] | DONE | | 2026-11-03 | The feed subscribes to *.v1.> because a NATS wildcard is a whole token, so *_events cannot be matched. That delivers every versioned request in the fleet to the gateway and throws it away, and it couples the stream to the request protocol. Move the events to <component>.v1.events.<collection>.<action> so one subscription hears events and nothing else. |
 | [[id:36EFB17F-5606-449D-81FF-A6E09D58D58E][Give every frame an identity, so a client can resume]] | DONE | 2026-11-04 | 2026-11-04 | A frame carries no id: a client that reconnects cannot say what it last saw, so the stream cannot replay and cannot tell a reconnecting screen to resync. Number the frames, honour Last-Event-ID, and state the gap rule. |
+| [[id:08C87AD6-D572-46FA-9784-316D99C1B31E][Keep a member to the parties it works in]] | BACKLOG | | | A stream hears its whole tenant, so a member reads the changes of parties they never look at. Filter the frames by party: a member hears their own party and the tenant-wide changes, and an administrator hears every party of the tenant. |
+
+* Decisions
+
+*A party is the second axis of a stream, and the tenant is still the first.* A
+change that names no party concerns the whole tenant and reaches every party; one
+that names a party reaches that party and the administrator. The hub applies the
+rule on replay as well as on delivery, so a resume cannot widen a client's view.
 
 * Decisions
 

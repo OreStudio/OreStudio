@@ -88,8 +88,25 @@ change_routes::handle_changes(const domain::http_request& req) {
         }
     }
 
+    /*
+     * A member hears their own party and the tenant-wide changes; an administrator
+     * hears every party of the tenant. The party travels in the token, so the
+     * gateway filters with what the caller already proved rather than asking IAM.
+     */
+    std::string party;
+    auto sees_all_parties = false;
+    if (req.authenticated_user) {
+        party = req.authenticated_user->party_id.value_or(std::string{});
+        for (const auto& role : req.authenticated_user->roles) {
+            if (role == "TenantAdmin" || role == "SuperAdmin")
+                sees_all_parties = true;
+        }
+    }
+
+    const stream::stream_scope scope{
+        .tenant = tenant, .party = party, .sees_all_parties = sees_all_parties};
     resp.body_awaitable = std::make_shared<stream::change_stream_source>(
-        hub_->subscribe(tenant, resumed), keep_alive_);
+        hub_->subscribe(scope, resumed), keep_alive_);
     co_return resp;
 }
 

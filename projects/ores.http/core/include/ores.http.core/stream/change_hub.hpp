@@ -44,6 +44,19 @@
 namespace ores::http::stream {
 
 /**
+ * @brief Whose changes one stream hears.
+ *
+ * The tenant is the boundary a session may never cross. The party narrows it
+ * within the tenant: a change to a party's data is the business of that party and
+ * of an administrator; a tenant-wide change, which names no party, is everyone's.
+ */
+struct stream_scope final {
+    std::string tenant;
+    std::string party;
+    bool sees_all_parties = false;
+};
+
+/**
  * @brief What one stream has been given and not yet written.
  *
  * The queue is bounded because a stream nobody reads must not grow without limit: a
@@ -56,8 +69,8 @@ namespace ores::http::stream {
  */
 class change_subscription final {
 public:
-    explicit change_subscription(std::string tenant, std::size_t capacity)
-        : tenant_(std::move(tenant))
+    explicit change_subscription(stream_scope scope, std::size_t capacity)
+        : scope_(std::move(scope))
         , capacity_(capacity) {}
 
     change_subscription(const change_subscription&) = delete;
@@ -114,9 +127,9 @@ public:
             waker();
     }
 
-    /// The tenant this stream was opened for.
-    [[nodiscard]] const std::string& tenant() const {
-        return tenant_;
+    /// Whose changes this stream hears.
+    [[nodiscard]] const stream_scope& scope() const {
+        return scope_;
     }
 
     [[nodiscard]] bool closed() const {
@@ -130,7 +143,7 @@ public:
     }
 
 private:
-    std::string tenant_;
+    stream_scope scope_;
     mutable std::mutex mu_;
     std::deque<std::string> queue_;
     std::function<void()> waker_;
@@ -181,13 +194,19 @@ public:
      *        silent gap.
      */
     [[nodiscard]] std::shared_ptr<change_subscription>
-    subscribe(std::string tenant, std::optional<resume_point> resumed = std::nullopt) {
+    subscribe(stream_scope scope, std::optional<resume_point> resumed = std::nullopt) {
         const std::lock_guard lock(mu_);
-        auto subscription = std::make_shared<change_subscription>(tenant, capacity_);
+        auto subscription = std::make_shared<change_subscription>(scope, capacity_);
+
+        const auto hears = [&](const std::string& tenant, const std::string& party) {
+            if (tenant != scope.tenant && tenant != system_tenant_)
+                return false;
+            return party.empty() || scope.sees_all_parties || party == scope.party;
+        };
 
         if (resumed) {
             const auto eligible = [&](const retained_frame& frame) {
-                return frame.tenant == tenant || frame.tenant == system_tenant_;
+                return hears(frame.tenant, frame.party);
             };
             const auto oldest = retained_.empty() ? 0 : retained_.front().id;
             const auto newest = retained_.empty() ? 0 : retained_.back().id;
@@ -208,14 +227,14 @@ public:
     }
 
     /// Gives the frame to every open stream that hears what owns it.
-    void publish(const std::string& tenant, std::string frame) {
+    void publish(const std::string& tenant, const std::string& party, std::string frame) {
         std::vector<std::shared_ptr<change_subscription>> open;
         {
             const std::lock_guard lock(mu_);
             std::erase_if(subscriptions_,
                           [](const auto& subscription) { return subscription->closed(); });
             const auto id = next_id_++;
-            retained_.push_back(retained_frame{id, tenant, frame});
+            retained_.push_back(retained_frame{id, tenant, party, frame});
             while (retained_.size() > retention_)
                 retained_.pop_front();
             open = subscriptions_;
@@ -223,7 +242,11 @@ public:
         const auto id = next_id_ - 1;
         auto stamped = "id: " + std::to_string(id) + "\n" + frame;
         for (auto& subscription : open) {
-            if (subscription->tenant() == tenant || tenant == system_tenant_)
+            const auto& scope = subscription->scope();
+            const auto hears = (tenant == scope.tenant || tenant == system_tenant_) &&
+                               (party.empty() || scope.sees_all_parties ||
+                                party == scope.party);
+            if (hears)
                 subscription->push(stamped);
         }
     }
@@ -242,6 +265,7 @@ private:
     struct retained_frame final {
         std::uint64_t id = 0;
         std::string tenant;
+        std::string party;
         std::string text;
     };
 

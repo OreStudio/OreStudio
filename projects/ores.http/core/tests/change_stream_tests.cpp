@@ -60,11 +60,11 @@ TEST_CASE("a_frame_reaches_every_open_stream", "[change_stream]") {
     BOOST_LOG_SEV(lg, info) << "Testing that one frame reaches every subscription";
 
     change_hub hub(stream_system_tenant);
-    auto first = hub.subscribe("acme");
-    auto second = hub.subscribe("acme");
+    auto first = hub.subscribe({.tenant = "acme"});
+    auto second = hub.subscribe({.tenant = "acme"});
     REQUIRE(hub.open_streams() == 2);
 
-    hub.publish("acme", "data: one\n\n");
+    hub.publish("acme", "", "data: one\n\n");
 
     REQUIRE(first->size() == 1);
     REQUIRE(second->size() == 1);
@@ -77,11 +77,11 @@ TEST_CASE("a_stream_that_has_ended_is_forgotten_by_the_next_publish", "[change_s
     BOOST_LOG_SEV(lg, info) << "Testing that a closed stream does not accumulate";
 
     change_hub hub(stream_system_tenant);
-    auto ended = hub.subscribe("acme");
+    auto ended = hub.subscribe({.tenant = "acme"});
     ended->close();
-    auto open = hub.subscribe("acme");
+    auto open = hub.subscribe({.tenant = "acme"});
 
-    hub.publish("acme", "data: one\n\n");
+    hub.publish("acme", "", "data: one\n\n");
 
     REQUIRE(hub.open_streams() == 1);
     REQUIRE(ended->size() == 0);
@@ -93,10 +93,10 @@ TEST_CASE("a_stream_that_is_not_read_drops_its_oldest_frames", "[change_stream]"
     BOOST_LOG_SEV(lg, info) << "Testing that a stream's queue is bounded";
 
     change_hub hub(stream_system_tenant, 3);
-    auto slow = hub.subscribe("acme");
+    auto slow = hub.subscribe({.tenant = "acme"});
 
     for (auto index = 0; index < 5; ++index)
-        hub.publish("acme", "frame " + std::to_string(index));
+        hub.publish("acme", "", "frame " + std::to_string(index));
 
     REQUIRE(slow->size() == 3);
     // The newest survive: a screen that fell behind wants where the world is now.
@@ -110,7 +110,7 @@ TEST_CASE("the_source_writes_a_queued_frame", "[change_stream]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that the source writes what the hub published";
 
-    auto subscription = std::make_shared<change_subscription>("acme", 8);
+    auto subscription = std::make_shared<change_subscription>(stream_scope{.tenant = "acme"}, 8);
     change_stream_source source(subscription, std::chrono::milliseconds(50));
     subscription->push("data: hello\n\n");
 
@@ -121,7 +121,7 @@ TEST_CASE("the_source_writes_a_keep_alive_when_nothing_arrives", "[change_stream
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a quiet stream is kept alive";
 
-    auto subscription = std::make_shared<change_subscription>("acme", 8);
+    auto subscription = std::make_shared<change_subscription>(stream_scope{.tenant = "acme"}, 8);
     change_stream_source source(subscription, std::chrono::milliseconds(10));
 
     const auto started = std::chrono::steady_clock::now();
@@ -134,7 +134,7 @@ TEST_CASE("a_frame_ends_the_wait_before_the_keep_alive_interval", "[change_strea
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a frame does not wait out the keep-alive";
 
-    auto subscription = std::make_shared<change_subscription>("acme", 8);
+    auto subscription = std::make_shared<change_subscription>(stream_scope{.tenant = "acme"}, 8);
     change_stream_source source(subscription, std::chrono::seconds(30));
 
     boost::asio::io_context io;
@@ -164,7 +164,7 @@ TEST_CASE("the_source_ends_when_its_subscription_closes", "[change_stream]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a closed subscription ends the source";
 
-    auto subscription = std::make_shared<change_subscription>("acme", 8);
+    auto subscription = std::make_shared<change_subscription>(stream_scope{.tenant = "acme"}, 8);
     change_stream_source source(subscription, std::chrono::milliseconds(10));
     subscription->close();
 
@@ -176,10 +176,10 @@ TEST_CASE("a_frame_reaches_only_the_streams_that_hear_its_tenant", "[change_stre
     BOOST_LOG_SEV(lg, info) << "Testing that a stream is kept to its own tenant";
 
     change_hub hub(stream_system_tenant);
-    auto acme = hub.subscribe("acme");
-    auto globex = hub.subscribe("globex");
+    auto acme = hub.subscribe({.tenant = "acme"});
+    auto globex = hub.subscribe({.tenant = "globex"});
 
-    hub.publish("acme", "data: acme moved\n\n");
+    hub.publish("acme", "", "data: acme moved\n\n");
 
     REQUIRE(acme->size() == 1);
     REQUIRE(globex->size() == 0);
@@ -190,10 +190,10 @@ TEST_CASE("a_system_tenant_frame_reaches_every_stream", "[change_stream]") {
     BOOST_LOG_SEV(lg, info) << "Testing that the shared catalogue reaches every tenant";
 
     change_hub hub(stream_system_tenant);
-    auto acme = hub.subscribe("acme");
-    auto globex = hub.subscribe("globex");
+    auto acme = hub.subscribe({.tenant = "acme"});
+    auto globex = hub.subscribe({.tenant = "globex"});
 
-    hub.publish(stream_system_tenant, "data: currencies moved\n\n");
+    hub.publish(stream_system_tenant, "", "data: currencies moved\n\n");
 
     REQUIRE(acme->size() == 1);
     REQUIRE(globex->size() == 1);
@@ -205,7 +205,7 @@ TEST_CASE("a_stream_whose_source_ended_leaves_the_hub", "[change_stream]") {
 
     change_hub hub(stream_system_tenant);
     {
-        change_stream_source source(hub.subscribe("acme"), std::chrono::milliseconds(10));
+        change_stream_source source(hub.subscribe({.tenant = "acme"}), std::chrono::milliseconds(10));
         REQUIRE(hub.open_streams() == 1);
     }
 
@@ -213,7 +213,7 @@ TEST_CASE("a_stream_whose_source_ended_leaves_the_hub", "[change_stream]") {
     REQUIRE(hub.open_streams() == 0);
 
     // And nothing is queued for it any more: the next frame has one home.
-    hub.publish("acme", "data: one\n\n");
+    hub.publish("acme", "", "data: one\n\n");
     REQUIRE(hub.open_streams() == 0);
 }
 
@@ -222,10 +222,10 @@ TEST_CASE("every_frame_carries_an_id_and_the_ids_ascend", "[change_stream]") {
     BOOST_LOG_SEV(lg, info) << "Testing that a frame states which frame it is";
 
     change_hub hub(stream_system_tenant);
-    auto stream = hub.subscribe("acme");
+    auto stream = hub.subscribe({.tenant = "acme"});
 
-    hub.publish("acme", "data: one\n\n");
-    hub.publish("acme", "data: two\n\n");
+    hub.publish("acme", "", "data: one\n\n");
+    hub.publish("acme", "", "data: two\n\n");
 
     REQUIRE(stream->try_pop() == std::optional<std::string>("id: 1\ndata: one\n\n"));
     REQUIRE(stream->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
@@ -236,11 +236,11 @@ TEST_CASE("a_resuming_client_is_given_the_frames_it_missed", "[change_stream]") 
     BOOST_LOG_SEV(lg, info) << "Testing that Last-Event-ID replays what was missed";
 
     change_hub hub(stream_system_tenant);
-    hub.publish("acme", "data: one\n\n");
-    hub.publish("acme", "data: two\n\n");
-    hub.publish("acme", "data: three\n\n");
+    hub.publish("acme", "", "data: one\n\n");
+    hub.publish("acme", "", "data: two\n\n");
+    hub.publish("acme", "", "data: three\n\n");
 
-    auto resumed = hub.subscribe("acme", change_hub::resume_point{.last_seen = 1});
+    auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 1});
 
     REQUIRE(resumed->size() == 2);
     REQUIRE(resumed->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
@@ -252,11 +252,11 @@ TEST_CASE("a_resuming_client_hears_only_its_own_tenant_and_the_system_one", "[ch
     BOOST_LOG_SEV(lg, info) << "Testing that a replay cannot cross tenants";
 
     change_hub hub(stream_system_tenant);
-    hub.publish("acme", "data: acme moved\n\n");
-    hub.publish("globex", "data: globex moved\n\n");
-    hub.publish(stream_system_tenant, "data: the catalogue moved\n\n");
+    hub.publish("acme", "", "data: acme moved\n\n");
+    hub.publish("globex", "", "data: globex moved\n\n");
+    hub.publish(stream_system_tenant, "", "data: the catalogue moved\n\n");
 
-    auto resumed = hub.subscribe("acme", change_hub::resume_point{.last_seen = 0});
+    auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 0});
 
     REQUIRE(resumed->size() == 2);
     REQUIRE(resumed->try_pop()->find("acme moved") != std::string::npos);
@@ -269,8 +269,57 @@ TEST_CASE("a_resuming_client_outside_the_window_is_told_to_resync", "[change_str
 
     change_hub hub(stream_system_tenant);
     // An id this process never issued: the client comes from a previous life.
-    auto resumed = hub.subscribe("acme", change_hub::resume_point{.last_seen = 99});
+    auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 99});
 
     REQUIRE(resumed->size() == 1);
     REQUIRE(resumed->try_pop() == std::optional<std::string>("event: resync\ndata: {}\n\n"));
+}
+
+TEST_CASE("a_member_hears_their_party_and_the_tenant_wide_changes",
+          "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a party's changes stay that party's";
+
+    change_hub hub(stream_system_tenant);
+    auto ops = hub.subscribe({.tenant = "acme", .party = "ops"});
+
+    hub.publish("acme", "ops", "data: ops moved\n\n");
+    hub.publish("acme", "sales", "data: sales moved\n\n");
+    hub.publish("acme", "", "data: the tenant moved\n\n");
+
+    REQUIRE(ops->size() == 2);
+    REQUIRE(ops->try_pop()->find("ops moved") != std::string::npos);
+    REQUIRE(ops->try_pop()->find("tenant moved") != std::string::npos);
+}
+
+TEST_CASE("an_administrator_hears_every_party_of_the_tenant", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that an administrator is not narrowed by party";
+
+    change_hub hub(stream_system_tenant);
+    auto admin = hub.subscribe(
+        {.tenant = "acme", .party = "ops", .sees_all_parties = true});
+
+    hub.publish("acme", "ops", "data: ops moved\n\n");
+    hub.publish("acme", "sales", "data: sales moved\n\n");
+    hub.publish("globex", "sales", "data: another tenant moved\n\n");
+
+    REQUIRE(admin->size() == 2);
+}
+
+TEST_CASE("a_replay_respects_the_parties_the_caller_works_in", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a resume cannot widen the party";
+
+    change_hub hub(stream_system_tenant);
+    hub.publish("acme", "ops", "data: ops moved\n\n");
+    hub.publish("acme", "sales", "data: sales moved\n\n");
+    hub.publish("acme", "", "data: the tenant moved\n\n");
+
+    auto resumed = hub.subscribe(
+        {.tenant = "acme", .party = "sales"}, change_hub::resume_point{.last_seen = 0});
+
+    REQUIRE(resumed->size() == 2);
+    REQUIRE(resumed->try_pop()->find("sales moved") != std::string::npos);
+    REQUIRE(resumed->try_pop()->find("tenant moved") != std::string::npos);
 }

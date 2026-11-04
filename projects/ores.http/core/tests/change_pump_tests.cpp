@@ -56,8 +56,8 @@ TEST_CASE("a_pump_gives_every_open_stream_the_window", "[change_pump]") {
 
     change_coalescer coalescer;
     change_hub hub(pump_system_tenant);
-    auto first = hub.subscribe("acme");
-    auto second = hub.subscribe("acme");
+    auto first = hub.subscribe({.tenant = "acme", .party = "ops"});
+    auto second = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_pump pump(coalescer, hub);
 
     coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
@@ -75,7 +75,7 @@ TEST_CASE("a_window_with_nothing_in_it_publishes_nothing", "[change_pump]") {
 
     change_coalescer coalescer;
     change_hub hub(pump_system_tenant);
-    auto stream = hub.subscribe("acme");
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_pump pump(coalescer, hub);
 
     REQUIRE(pump.pump() == 0);
@@ -88,8 +88,8 @@ TEST_CASE("a_stream_that_ended_is_not_given_the_next_window", "[change_pump]") {
 
     change_coalescer coalescer;
     change_hub hub(pump_system_tenant);
-    auto ended = hub.subscribe("acme");
-    auto open = hub.subscribe("acme");
+    auto ended = hub.subscribe({.tenant = "acme", .party = "ops"});
+    auto open = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_pump pump(coalescer, hub);
 
     ended->close();

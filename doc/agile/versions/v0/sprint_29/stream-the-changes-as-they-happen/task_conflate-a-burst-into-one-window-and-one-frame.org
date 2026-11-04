@@ -119,9 +119,21 @@ via its "Verifies task" field.
 
 * Review
 
+Review round 1, on PR #4460: one bot review with five points and four minor
+notes. Every comment has a decision; the ones taken are in the commits after the
+first push.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Frame ids restart with the process, so a stale Last-Event-ID can replay wrongly | change_hub.hpp, change_routes.cpp | Applied | An id now carries the mark of the process that issued it: the process start in nanoseconds, a dash, and the sequence. A mark this process did not issue is answered with one resync, which is the gap case. Three cases pin it: the id grammar, a stranger's mark, and the replay bound. |
+| 2 | publish() reads next_id_ outside the lock | change_hub.hpp | Applied | The id is taken inside the locked block and used after it, so two publishers cannot stamp the same frame. |
+| 3 | A burst larger than the subscription capacity is dropped without a resync | change_hub.hpp | Applied for a replay, declined for a live drop | A replay the stream cannot hold whole is answered as no replay at all: one resync, one case. A live drop still follows the design's policy, drop the oldest and let the client refetch, and the policy's other half, marking the collection dirty again, belongs with the coalescer and is not built. |
+| 4 | stop() before run() leaves the loop running forever | change_ticker.cpp | Applied | run() reads the owner's stop as well as the window's, so a stop with no executor to post to is honoured. One case calls stop() before the loop starts. |
+| 5 | window fields are unsynchronised, so they depend on a single-threaded executor | change_ticker.hpp | Applied | The class states the requirement: one thread at a time, a single-threaded io_context or a strand. The flags stay plain, because the design gives each core one thread. |
+| 6 | TenantAdmin and SuperAdmin are string literals | change_routes.cpp | Declined | ores.http.core depends on ores.iam.core, not ores.iam.api, where those constants live. Adding the API library to the core for two names is the wrong direction, and the names are the token's contract; if they should be shared, the constants belong where both may include them. |
+| 7 | stoull("-1") wraps, and 12abc reads as 12 | change_routes.cpp | Applied | The hub parses the id grammar itself and refuses anything else, so the route hands an unreadable id to the hub as a gap instead of guessing a number. |
+| 8 | The resync frame carries no id | change_hub.hpp | Declined | A resync is not a change. Stamping it would move the client's Last-Event-ID past frames it never saw, which is worse than answering a second reconnect with a second resync. |
+| 9 | No live stream was run against a deployment | | Accepted as a limitation | Already recorded on the PR. Points 1 and 3 are the ones a live run would settle, and neither is reachable from the suites alone. |
 
 * Result
 

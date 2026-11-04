@@ -126,6 +126,11 @@ struct equity_digital_option_instrument final {
     std::optional<std::string> barrier_fixing_index;
 
     /**
+     * @brief The number of units the option pays on, as Quantity states it.
+     */
+    std::optional<ores::utility::decimal::decimal> quantity;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -164,6 +169,7 @@ inline constexpr std::string_view equity_digital_option_instrument_economic_fiel
     "barrier_start_date",
     "barrier_calendar",
     "barrier_fixing_index",
+    "quantity",
 };
 
 /**

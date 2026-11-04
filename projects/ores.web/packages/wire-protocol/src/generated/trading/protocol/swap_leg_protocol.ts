@@ -83,6 +83,9 @@ export interface SwapLegWrite {
     digital_is_put_atm_included: boolean | null;
     equity_margin_initial_margin_factor: string | null;
     equity_margin_multiplier: string | null;
+    commodity_pay_relative_to: string | null;
+    commodity_quantity_frequency: string | null;
+    pricing_date_rule: string | null;
     indexings_from_asset_leg: boolean | null;
     floating_index_code_2: string | null;
     cms_duration: number | null;

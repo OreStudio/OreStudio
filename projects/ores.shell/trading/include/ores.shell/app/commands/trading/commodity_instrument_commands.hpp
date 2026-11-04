@@ -92,7 +92,9 @@ public:
      * <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
      * <spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike>
      * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
-     * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description>
+     * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar>
+     * <moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency>
+     * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <description>
      * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
@@ -105,7 +107,9 @@ public:
      * <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
      * <spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike>
      * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
-     * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description>
+     * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar>
+     * <moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency>
+     * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <description>
      * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -118,7 +122,9 @@ public:
      * <strike_price> <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
      * <spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike>
      * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
-     * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description>
+     * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar>
+     * <moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency>
+     * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <description>
      * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

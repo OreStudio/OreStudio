@@ -44,6 +44,18 @@ export interface EquityOptionInstrument {
     long_short: string;
     settlement_type: string;
     cliquet_frequency: string;
+    strike_currency: string | null;
+    local_cap: string | null;
+    local_floor: string | null;
+    global_cap: string | null;
+    global_floor: string | null;
+    settlement_days: number | null;
+    premium: string | null;
+    premium_payment_date: string | null;
+    initial_price_1: string | null;
+    initial_price_2: string | null;
+    knock_in_price: string | null;
+    knock_out_price: string | null;
     description: string;
     audit: AuditRecord;
 }

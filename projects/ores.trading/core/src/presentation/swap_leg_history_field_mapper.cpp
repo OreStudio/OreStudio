@@ -146,6 +146,12 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
                       .value = v.equity_margin_multiplier ?
                                    v.equity_margin_multiplier->to_string() :
                                    std::string{}});
+    fields.push_back({.name = "Commodity Pay Relative To",
+                      .value = v.commodity_pay_relative_to.value_or(std::string{})});
+    fields.push_back({.name = "Commodity Quantity Frequency",
+                      .value = v.commodity_quantity_frequency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Pricing Date Rule", .value = v.pricing_date_rule.value_or(std::string{})});
     fields.push_back({.name = "Indexings From Asset Leg",
                       .value = v.indexings_from_asset_leg ?
                                    (*v.indexings_from_asset_leg ? "true" : "false") :

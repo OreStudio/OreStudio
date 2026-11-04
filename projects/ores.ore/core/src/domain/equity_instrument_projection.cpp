@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
@@ -1107,6 +1108,57 @@ void write_equity_option_position(record_writer& trade,
  * Listed rather than probed, because asking a record type for a field it does
  * not declare is an error.
  */
+/// The single-valued terms each equity product row keeps, by its element.
+constexpr scalar_terms::term<equity_variance_swap_instrument> equity_variance_swap_terms[] = {
+    {"Calendar", &equity_variance_swap_instrument::calendar},
+    {"MomentType", &equity_variance_swap_instrument::moment_type},
+    {"AddPastDividends", &equity_variance_swap_instrument::add_past_dividends},
+};
+
+constexpr scalar_terms::term<equity_accumulator_instrument> equity_accumulator_terms[] = {
+    {"SettlementLag", &equity_accumulator_instrument::settlement_lag},
+    {"SettlementCalendar", &equity_accumulator_instrument::settlement_calendar},
+    {"SettlementConvention", &equity_accumulator_instrument::settlement_convention},
+};
+
+constexpr scalar_terms::term<equity_option_instrument> equity_option_terms[] = {
+    {"StrikeCurrency", &equity_option_instrument::strike_currency},
+    {"LocalCap", &equity_option_instrument::local_cap},
+    {"LocalFloor", &equity_option_instrument::local_floor},
+    {"GlobalCap", &equity_option_instrument::global_cap},
+    {"GlobalFloor", &equity_option_instrument::global_floor},
+    {"SettlementDays", &equity_option_instrument::settlement_days},
+    {"Premium", &equity_option_instrument::premium},
+    {"PremiumPaymentDate", &equity_option_instrument::premium_payment_date},
+    {"InitialPrice1", &equity_option_instrument::initial_price_1},
+    {"InitialPrice2", &equity_option_instrument::initial_price_2},
+    {"KnockInPrice", &equity_option_instrument::knock_in_price},
+    {"KnockOutPrice", &equity_option_instrument::knock_out_price},
+};
+
+constexpr scalar_terms::term<equity_asian_option_instrument> equity_asian_option_terms[] = {
+    {"Settlement", &equity_asian_option_instrument::settlement},
+};
+
+constexpr scalar_terms::term<equity_digital_option_instrument> equity_digital_option_terms[] = {
+    {"Quantity", &equity_digital_option_instrument::quantity},
+};
+
+/// Calls the function with the row's term table, for a row that keeps terms.
+template <typename Row, typename Fn>
+void with_equity_terms(Fn&& fn) {
+    if constexpr (std::is_same_v<Row, equity_variance_swap_instrument>)
+        fn(equity_variance_swap_terms);
+    else if constexpr (std::is_same_v<Row, equity_accumulator_instrument>)
+        fn(equity_accumulator_terms);
+    else if constexpr (std::is_same_v<Row, equity_option_instrument>)
+        fn(equity_option_terms);
+    else if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
+        fn(equity_asian_option_terms);
+    else if constexpr (std::is_same_v<Row, equity_digital_option_instrument>)
+        fn(equity_digital_option_terms);
+}
+
 /// Where an equity product states its underlyings.
 constexpr underlying_block::underlying_holder equity_underlying_holders[] = {
     {"EquityOption", "", "Underlying", "underlying"},
@@ -1234,8 +1286,15 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
                 option_block::read_range_bounds(*data, *product);
             std::visit(
                 [&](auto& row) {
-                    if constexpr (barrier_block::monitored<std::decay_t<decltype(row)>>)
+                    using Row = std::decay_t<decltype(row)>;
+                    if constexpr (barrier_block::monitored<Row>)
                         barrier_block::read_monitoring(row, *product, "EQIndex");
+                    with_equity_terms<Row>(
+                        [&](const auto& terms) { scalar_terms::read_terms(row, *product, terms); });
+                    if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
+                        if (const auto strike = product->child("StrikeData"))
+                            if (strike->has("Currency"))
+                                row.strike_currency = scalar_terms::read_text(*strike, "Currency");
                 },
                 data->instrument);
         }
@@ -1339,8 +1398,16 @@ auto write_equity_instrument(xml::record_writer& trade,
         if (auto product = trade.chosen_child(element)) {
             std::visit(
                 [&](const auto& row) {
-                    if constexpr (barrier_block::monitored<std::decay_t<decltype(row)>>)
+                    using Row = std::decay_t<decltype(row)>;
+                    if constexpr (barrier_block::monitored<Row>)
                         barrier_block::write_monitoring(*product, row, "EQIndex");
+                    with_equity_terms<Row>(
+                        [&](const auto& terms) { scalar_terms::write_terms(*product, row, terms); });
+                    if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
+                        if (row.strike_currency) {
+                            auto strike = product->child("StrikeData");
+                            scalar_terms::write_text(strike, "Currency", *row.strike_currency);
+                        }
                 },
                 v->instrument);
         }

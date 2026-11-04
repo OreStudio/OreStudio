@@ -347,6 +347,23 @@ struct swap_leg final {
     std::optional<ores::utility::decimal::decimal> equity_margin_multiplier;
 
     /**
+     * @brief What a commodity leg's payment dates are relative to, as CommodityPayRelativeTo states
+     * it.
+     */
+    std::optional<std::string> commodity_pay_relative_to;
+
+    /**
+     * @brief How often a commodity floating leg's quantity applies, as CommodityQuantityFrequency
+     * states it.
+     */
+    std::optional<std::string> commodity_quantity_frequency;
+
+    /**
+     * @brief How a commodity floating leg's pricing dates are chosen, as PricingDateRule states it.
+     */
+    std::optional<std::string> pricing_date_rule;
+
+    /**
      * @brief Whether the leg takes its indexings from the asset leg, as Indexings/FromAssetLeg
      * states it. The indexings themselves are swap_leg_indexing rows.
      */

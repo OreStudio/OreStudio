@@ -1542,7 +1542,10 @@ void write_bond_trs(record_writer trade,
     if (fixed) {
         if (leg_type_from_row)
             funding_leg.set_spelling("LegType", "Fixed", "leg type");
-        if (data.trs && data.trs->funding_rate && !data.trs->funding_rate->is_zero()) {
+        // The leg states its own rates when it was read whole; the row's rate
+        // stands in only for a leg stored before the legs were kept.
+        if (data.trs && data.trs->funding_rate && !data.trs->funding_rate->is_zero() &&
+            !(data.trs_funding_leg.rate && data.trs_funding_leg.rate->fixed)) {
             auto rates = funding_leg.child("FixedLegData").child("Rates");
             bond_float_data rate;
             rate.value = *data.trs->funding_rate;
@@ -1578,7 +1581,8 @@ void write_bond_repo(record_writer trade,
         auto floating_leg = leg.child("FloatingLegData");
         if (data.repo->repo_index)
             floating_leg.set_text("Index", *data.repo->repo_index);
-    } else if (data.repo && data.repo->repo_rate && !data.repo->repo_rate->is_zero()) {
+    } else if (data.repo && data.repo->repo_rate && !data.repo->repo_rate->is_zero() &&
+               !(data.repo_leg.rate && data.repo_leg.rate->fixed)) {
         auto rates = leg.child("FixedLegData").child("Rates");
         bond_float_data rate;
         rate.value = *data.repo->repo_rate;

@@ -61,6 +61,8 @@ namespace ores::trading::domain {
                               &equity_asian_option_instrument::averaging_start_date},
         utility::codec::field{"averaging_end_date",
                               &equity_asian_option_instrument::averaging_end_date},
+        utility::codec::field{"settlement", &equity_asian_option_instrument::settlement},
+        utility::codec::field{"strike_currency", &equity_asian_option_instrument::strike_currency},
         utility::codec::field{"description", &equity_asian_option_instrument::description},
         utility::codec::field{"audit", &equity_asian_option_instrument::audit},
     };

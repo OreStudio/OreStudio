@@ -22,6 +22,7 @@
 
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.trading.api/domain/instrument_schedule.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
@@ -259,6 +260,17 @@ inline void read_equity_terms(swap_leg& row, const record_reader& equity) {
     }
 }
 
+/// A commodity leg's single-valued terms, by the payload that states them.
+inline constexpr scalar_terms::term<swap_leg> commodity_fixed_leg_terms[] = {
+    {"CommodityPayRelativeTo", &swap_leg::commodity_pay_relative_to},
+};
+
+inline constexpr scalar_terms::term<swap_leg> commodity_floating_leg_terms[] = {
+    {"CommodityPayRelativeTo", &swap_leg::commodity_pay_relative_to},
+    {"CommodityQuantityFrequency", &swap_leg::commodity_quantity_frequency},
+    {"PricingDateRule", &swap_leg::pricing_date_rule},
+};
+
 inline swap_leg read_leg(const record_reader& leg, int leg_number) {
     swap_leg row;
     row.identity.leg_number = leg_number;
@@ -338,7 +350,10 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         if (formula->has("FixingCalendar"))
             row.fixing_calendar = text_of(*formula, "FixingCalendar");
     }
+    if (const auto fixed = child_if(leg, "CommodityFixedLegData"))
+        scalar_terms::read_terms(row, *fixed, commodity_fixed_leg_terms);
     if (const auto commodity = child_if(leg, "CommodityFloatingLegData")) {
+        scalar_terms::read_terms(row, *commodity, commodity_floating_leg_terms);
         row.floating_index_code = text_of(*commodity, "Name");
         if (commodity->has("PriceType"))
             row.commodity_price_type = spelling_of(*commodity, "PriceType");
@@ -945,11 +960,13 @@ void write_leg(record_writer& leg,
         auto payload = leg.child("CommodityFixedLegData");
         write_amounts(payload);
         write_rate_lists(payload, rates, commodity_fixed_rate_lists);
+        scalar_terms::write_terms(payload, row, commodity_fixed_leg_terms);
         return;
     }
     if (row.leg_type_code == "CommodityFloating") {
         auto payload = leg.child("CommodityFloatingLegData");
         payload.set_text("Name", row.floating_index_code);
+        scalar_terms::write_terms(payload, row, commodity_floating_leg_terms);
         if (row.commodity_price_type)
             set_spelling_or(
                 payload, "PriceType", *row.commodity_price_type, "FutureSettlement", "price type");

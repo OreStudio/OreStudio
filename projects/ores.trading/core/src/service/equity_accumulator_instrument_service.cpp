@@ -118,6 +118,9 @@ domain::equity_accumulator_instrument equity_accumulator_instrument_to_domain(
     v.target_amount = write.target_amount;
     v.target_type = write.target_type;
     v.payoff_type = write.payoff_type;
+    v.settlement_lag = write.settlement_lag;
+    v.settlement_calendar = write.settlement_calendar;
+    v.settlement_convention = write.settlement_convention;
     v.description = write.description;
     return v;
 }

@@ -126,6 +126,21 @@ struct equity_accumulator_instrument final {
     std::string payoff_type;
 
     /**
+     * @brief The lag from a fixing to its settlement, as SettlementLag states it.
+     */
+    std::optional<std::string> settlement_lag;
+
+    /**
+     * @brief The calendar the settlement lag counts in, as SettlementCalendar states it.
+     */
+    std::optional<std::string> settlement_calendar;
+
+    /**
+     * @brief The convention the settlement date is adjusted by, as SettlementConvention states it.
+     */
+    std::optional<std::string> settlement_convention;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -163,6 +178,9 @@ inline constexpr std::string_view equity_accumulator_instrument_economic_fields[
     "target_amount",
     "target_type",
     "payoff_type",
+    "settlement_lag",
+    "settlement_calendar",
+    "settlement_convention",
 };
 
 /**

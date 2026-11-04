@@ -114,6 +114,8 @@ fx_variance_swap_instrument_to_domain(const messaging::fx_variance_swap_instrume
     v.strike = write.strike;
     v.notional = write.notional;
     v.moment_type = write.moment_type;
+    v.calendar = write.calendar;
+    v.add_past_dividends = write.add_past_dividends;
     v.description = write.description;
     return v;
 }

@@ -120,6 +120,11 @@ struct fx_asian_forward_instrument final {
     std::optional<ores::utility::decimal::decimal> strike;
 
     /**
+     * @brief Whether the holder pays the fixed rate, as FixedPayer states it.
+     */
+    std::optional<bool> fixed_payer;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -156,6 +161,7 @@ inline constexpr std::string_view fx_asian_forward_instrument_economic_fields[] 
     "fixing_amount",
     "target_amount",
     "strike",
+    "fixed_payer",
 };
 
 /**

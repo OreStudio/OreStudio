@@ -103,6 +103,16 @@ struct fx_variance_swap_instrument final {
     std::string moment_type;
 
     /**
+     * @brief The calendar the swap observes in, as Calendar states it.
+     */
+    std::optional<std::string> calendar;
+
+    /**
+     * @brief Whether past dividends count, as AddPastDividends states it.
+     */
+    std::optional<bool> add_past_dividends;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -136,6 +146,8 @@ inline constexpr std::string_view fx_variance_swap_instrument_economic_fields[] 
     "strike",
     "notional",
     "moment_type",
+    "calendar",
+    "add_past_dividends",
 };
 
 /**

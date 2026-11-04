@@ -102,6 +102,9 @@ struct swap_leg_entity {
     std::optional<bool> digital_is_put_atm_included;
     std::optional<ores::utility::decimal::decimal> equity_margin_initial_margin_factor;
     std::optional<ores::utility::decimal::decimal> equity_margin_multiplier;
+    std::optional<std::string> commodity_pay_relative_to;
+    std::optional<std::string> commodity_quantity_frequency;
+    std::optional<std::string> pricing_date_rule;
     std::optional<bool> indexings_from_asset_leg;
     std::optional<std::string> floating_index_code_2;
     std::optional<int> cms_duration;
@@ -186,6 +189,10 @@ struct swap_leg_entity {
                query_builder::bind("equity_margin_initial_margin_factor",
                                    &e::equity_margin_initial_margin_factor) |
                query_builder::bind("equity_margin_multiplier", &e::equity_margin_multiplier) |
+               query_builder::bind("commodity_pay_relative_to", &e::commodity_pay_relative_to) |
+               query_builder::bind("commodity_quantity_frequency",
+                                   &e::commodity_quantity_frequency) |
+               query_builder::bind("pricing_date_rule", &e::pricing_date_rule) |
                query_builder::bind("indexings_from_asset_leg", &e::indexings_from_asset_leg) |
                query_builder::bind("floating_index_code_2", &e::floating_index_code_2) |
                query_builder::bind("cms_duration", &e::cms_duration) |

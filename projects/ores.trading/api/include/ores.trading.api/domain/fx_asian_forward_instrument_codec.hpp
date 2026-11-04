@@ -63,6 +63,7 @@ namespace ores::trading::domain {
         utility::codec::field{"fixing_amount", &fx_asian_forward_instrument::fixing_amount},
         utility::codec::field{"target_amount", &fx_asian_forward_instrument::target_amount},
         utility::codec::field{"strike", &fx_asian_forward_instrument::strike},
+        utility::codec::field{"fixed_payer", &fx_asian_forward_instrument::fixed_payer},
         utility::codec::field{"description", &fx_asian_forward_instrument::description},
         utility::codec::field{"audit", &fx_asian_forward_instrument::audit},
     };

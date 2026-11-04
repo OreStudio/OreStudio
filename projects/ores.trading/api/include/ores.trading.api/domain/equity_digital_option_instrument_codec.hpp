@@ -65,6 +65,7 @@ namespace ores::trading::domain {
                               &equity_digital_option_instrument::barrier_calendar},
         utility::codec::field{"barrier_fixing_index",
                               &equity_digital_option_instrument::barrier_fixing_index},
+        utility::codec::field{"quantity", &equity_digital_option_instrument::quantity},
         utility::codec::field{"description", &equity_digital_option_instrument::description},
         utility::codec::field{"audit", &equity_digital_option_instrument::audit},
     };

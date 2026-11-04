@@ -65,6 +65,7 @@ struct equity_digital_option_instrument_write {
     std::optional<std::chrono::year_month_day> barrier_start_date;
     std::optional<std::string> barrier_calendar;
     std::optional<std::string> barrier_fixing_index;
+    std::optional<ores::utility::decimal::decimal> quantity;
     std::string description;
 
     friend bool operator==(const equity_digital_option_instrument_write&,
@@ -439,6 +440,7 @@ inline constexpr std::string_view deleted =
                               &equity_digital_option_instrument_write::barrier_calendar},
         utility::codec::field{"barrier_fixing_index",
                               &equity_digital_option_instrument_write::barrier_fixing_index},
+        utility::codec::field{"quantity", &equity_digital_option_instrument_write::quantity},
         utility::codec::field{"description", &equity_digital_option_instrument_write::description},
     };
 }

@@ -113,6 +113,9 @@ domain::equity_variance_swap_instrument equity_variance_swap_instrument_to_domai
     v.start_date = write.start_date;
     v.maturity_date = write.maturity_date;
     v.long_short = write.long_short;
+    v.calendar = write.calendar;
+    v.moment_type = write.moment_type;
+    v.add_past_dividends = write.add_past_dividends;
     v.description = write.description;
     return v;
 }

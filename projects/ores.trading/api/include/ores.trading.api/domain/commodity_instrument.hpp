@@ -211,6 +211,58 @@ struct commodity_instrument final {
     std::optional<std::chrono::year_month_day> swaption_expiry_date;
 
     /**
+     * @brief The calendar a commodity variance swap observes in, as Calendar states it.
+     */
+    std::optional<std::string> calendar;
+
+    /**
+     * @brief Whether a commodity variance swap pays on variance or volatility, as MomentType states
+     * it.
+     */
+    std::optional<std::string> moment_type;
+
+    /**
+     * @brief Whether a commodity variance swap counts past dividends, as AddPastDividends states
+     * it.
+     */
+    std::optional<bool> add_past_dividends;
+
+    /**
+     * @brief What an average price option's payment date is relative to, as CommodityPayRelativeTo
+     * states it.
+     */
+    std::optional<std::string> pay_relative_to;
+
+    /**
+     * @brief How often an average price option's quantity applies, as CommodityQuantityFrequency
+     * states it.
+     */
+    std::optional<std::string> quantity_frequency;
+
+    /**
+     * @brief The days before expiry an average price option rolls to the next future, as
+     * DeliveryRollDays states it.
+     */
+    std::optional<int> delivery_roll_days;
+
+    /**
+     * @brief The future months ahead an average price option observes, as FutureMonthOffset states
+     * it.
+     */
+    std::optional<int> future_month_offset;
+
+    /**
+     * @brief Whether an average price option's averaging includes its period end, as
+     * IncludePeriodEnd states it.
+     */
+    std::optional<bool> include_period_end;
+
+    /**
+     * @brief Whether a commodity forward is long or short, as Position states it.
+     */
+    std::optional<std::string> position;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -260,6 +312,15 @@ inline constexpr std::string_view commodity_instrument_economic_fields[] = {
     "day_count_fraction_code",
     "payment_frequency_code",
     "swaption_expiry_date",
+    "calendar",
+    "moment_type",
+    "add_past_dividends",
+    "pay_relative_to",
+    "quantity_frequency",
+    "delivery_roll_days",
+    "future_month_offset",
+    "include_period_end",
+    "position",
 };
 
 /**

@@ -152,6 +152,7 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<fx_reset_fixing_calendar> <fixing_calendar> <digital_call_position> "
         "<digital_is_call_atm_included> <digital_put_position> <digital_is_put_atm_included> "
         "<equity_margin_initial_margin_factor> <equity_margin_multiplier> "
+        "<commodity_pay_relative_to> <commodity_quantity_frequency> <pricing_date_rule> "
         "<indexings_from_asset_leg> <floating_index_code_2> <cms_duration> <naked_option> "
         "<lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> "
         "<cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
@@ -175,11 +176,12 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<fx_reset_fx_index> <fx_reset_fixing_days> <fx_reset_fixing_calendar> <fixing_calendar> "
         "<digital_call_position> <digital_is_call_atm_included> <digital_put_position> "
         "<digital_is_put_atm_included> <equity_margin_initial_margin_factor> "
-        "<equity_margin_multiplier> <indexings_from_asset_leg> <floating_index_code_2> "
-        "<cms_duration> <naked_option> <lookback> <rate_cutoff> <local_cap_floor> "
-        "<observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation> <cpi_interpolated> "
-        "<subtract_inflation_notional> <zero_coupon_compounding> <zero_coupon_subtract_notional> "
-        "<reason> <commentary> [--version <n>]");
+        "<equity_margin_multiplier> <commodity_pay_relative_to> <commodity_quantity_frequency> "
+        "<pricing_date_rule> <indexings_from_asset_leg> <floating_index_code_2> <cms_duration> "
+        "<naked_option> <lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> "
+        "<cpi_start_date> <cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
+        "<zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -199,11 +201,11 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<fx_reset_fx_index> <fx_reset_fixing_days> <fx_reset_fixing_calendar> <fixing_calendar> "
         "<digital_call_position> <digital_is_call_atm_included> <digital_put_position> "
         "<digital_is_put_atm_included> <equity_margin_initial_margin_factor> "
-        "<equity_margin_multiplier> <indexings_from_asset_leg> <floating_index_code_2> "
-        "<cms_duration> <naked_option> <lookback> <rate_cutoff> <local_cap_floor> "
-        "<observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation> <cpi_interpolated> "
-        "<subtract_inflation_notional> <zero_coupon_compounding> <zero_coupon_subtract_notional> "
-        "<reason> <commentary>");
+        "<equity_margin_multiplier> <commodity_pay_relative_to> <commodity_quantity_frequency> "
+        "<pricing_date_rule> <indexings_from_asset_leg> <floating_index_code_2> <cms_duration> "
+        "<naked_option> <lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> "
+        "<cpi_start_date> <cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
+        "<zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -413,8 +415,8 @@ void swap_leg_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 62 + 2) {
-            fail(out) << "Expected " << (62 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 65 + 2) {
+            fail(out) << "Expected " << (65 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -534,6 +536,14 @@ void swap_leg_commands::process_add(std::ostream& out,
         swap_leg_read_token(req.change.write.equity_margin_multiplier,
                             parsed->positionals[next++],
                             "equity_margin_multiplier");
+        swap_leg_read_token(req.change.write.commodity_pay_relative_to,
+                            parsed->positionals[next++],
+                            "commodity_pay_relative_to");
+        swap_leg_read_token(req.change.write.commodity_quantity_frequency,
+                            parsed->positionals[next++],
+                            "commodity_quantity_frequency");
+        swap_leg_read_token(
+            req.change.write.pricing_date_rule, parsed->positionals[next++], "pricing_date_rule");
         swap_leg_read_token(req.change.write.indexings_from_asset_leg,
                             parsed->positionals[next++],
                             "indexings_from_asset_leg");
@@ -611,8 +621,8 @@ void swap_leg_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 63 + 2) {
-            fail(out) << "Expected " << (63 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 66 + 2) {
+            fail(out) << "Expected " << (66 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -732,6 +742,14 @@ void swap_leg_commands::process_set(std::ostream& out,
         swap_leg_read_token(req.change.write.equity_margin_multiplier,
                             parsed->positionals[next++],
                             "equity_margin_multiplier");
+        swap_leg_read_token(req.change.write.commodity_pay_relative_to,
+                            parsed->positionals[next++],
+                            "commodity_pay_relative_to");
+        swap_leg_read_token(req.change.write.commodity_quantity_frequency,
+                            parsed->positionals[next++],
+                            "commodity_quantity_frequency");
+        swap_leg_read_token(
+            req.change.write.pricing_date_rule, parsed->positionals[next++], "pricing_date_rule");
         swap_leg_read_token(req.change.write.indexings_from_asset_leg,
                             parsed->positionals[next++],
                             "indexings_from_asset_leg");
@@ -821,8 +839,8 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 63 + 2) {
-            fail(out) << "Expected " << (change_count * 63 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 66 + 2) {
+            fail(out) << "Expected " << (change_count * 66 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -944,6 +962,14 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             swap_leg_read_token(change.write.equity_margin_multiplier,
                                 parsed->positionals[next++],
                                 "equity_margin_multiplier");
+            swap_leg_read_token(change.write.commodity_pay_relative_to,
+                                parsed->positionals[next++],
+                                "commodity_pay_relative_to");
+            swap_leg_read_token(change.write.commodity_quantity_frequency,
+                                parsed->positionals[next++],
+                                "commodity_quantity_frequency");
+            swap_leg_read_token(
+                change.write.pricing_date_rule, parsed->positionals[next++], "pricing_date_rule");
             swap_leg_read_token(change.write.indexings_from_asset_leg,
                                 parsed->positionals[next++],
                                 "indexings_from_asset_leg");

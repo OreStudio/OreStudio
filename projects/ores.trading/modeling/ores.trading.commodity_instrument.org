@@ -146,7 +146,7 @@ Contract quantity. Must be positive.
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :economic: true
 :END:
 
@@ -402,6 +402,96 @@ Swaption expiry date for CommoditySwaption.
 std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 #+end_src
 
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar a commodity variance swap observes in, as =Calendar= states it.
+
+** moment_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether a commodity variance swap pays on variance or volatility, as =MomentType= states it.
+
+** add_past_dividends
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether a commodity variance swap counts past dividends, as =AddPastDividends= states it.
+
+** pay_relative_to
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+What an average price option's payment date is relative to, as =CommodityPayRelativeTo= states it.
+
+** quantity_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How often an average price option's quantity applies, as =CommodityQuantityFrequency= states it.
+
+** delivery_roll_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:economic: true
+:END:
+
+The days before expiry an average price option rolls to the next future, as =DeliveryRollDays= states it.
+
+** future_month_offset
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:economic: true
+:END:
+
+The future months ahead an average price option observes, as =FutureMonthOffset= states it.
+
+** include_period_end
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether an average price option's averaging includes its period end, as =IncludePeriodEnd= states it.
+
+** position
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether a commodity forward is long or short, as =Position= states it.
+
 ** description
 :PROPERTIES:
 :type:     text
@@ -546,7 +636,7 @@ with the instrument and the legs do not outlive it.
 | "quantity" > 0 |
 | "commodity_code" <> '' |
 | "currency" <> '' |
-| "unit" <> '' |
+| "unit" is null or "unit" <> '' |
 | "option_type" is null or "option_type" in ('Call', 'Put') |
 | "exercise_type" is null or "exercise_type" in ('European', 'American') |
 | "average_type" is null or "average_type" in ('Arithmetic', 'Geometric') |

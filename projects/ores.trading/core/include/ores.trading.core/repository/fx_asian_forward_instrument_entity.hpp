@@ -68,6 +68,7 @@ struct fx_asian_forward_instrument_entity {
     std::optional<ores::utility::decimal::decimal> fixing_amount;
     std::optional<ores::utility::decimal::decimal> target_amount;
     std::optional<ores::utility::decimal::decimal> strike;
+    std::optional<bool> fixed_payer;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -99,6 +100,7 @@ struct fx_asian_forward_instrument_entity {
                query_builder::bind("fixing_amount", &e::fixing_amount) |
                query_builder::bind("target_amount", &e::target_amount) |
                query_builder::bind("strike", &e::strike) |
+               query_builder::bind("fixed_payer", &e::fixed_payer) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

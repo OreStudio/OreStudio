@@ -97,6 +97,9 @@ struct swap_leg_write {
     std::optional<bool> digital_is_put_atm_included;
     std::optional<ores::utility::decimal::decimal> equity_margin_initial_margin_factor;
     std::optional<ores::utility::decimal::decimal> equity_margin_multiplier;
+    std::optional<std::string> commodity_pay_relative_to;
+    std::optional<std::string> commodity_quantity_frequency;
+    std::optional<std::string> pricing_date_rule;
     std::optional<bool> indexings_from_asset_leg;
     std::optional<std::string> floating_index_code_2;
     std::optional<int> cms_duration;
@@ -520,6 +523,11 @@ inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted
                               &swap_leg_write::equity_margin_initial_margin_factor},
         utility::codec::field{"equity_margin_multiplier",
                               &swap_leg_write::equity_margin_multiplier},
+        utility::codec::field{"commodity_pay_relative_to",
+                              &swap_leg_write::commodity_pay_relative_to},
+        utility::codec::field{"commodity_quantity_frequency",
+                              &swap_leg_write::commodity_quantity_frequency},
+        utility::codec::field{"pricing_date_rule", &swap_leg_write::pricing_date_rule},
         utility::codec::field{"indexings_from_asset_leg",
                               &swap_leg_write::indexings_from_asset_leg},
         utility::codec::field{"floating_index_code_2", &swap_leg_write::floating_index_code_2},

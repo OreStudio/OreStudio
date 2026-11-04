@@ -77,6 +77,15 @@ struct commodity_instrument_write {
     std::string day_count_fraction_code;
     std::string payment_frequency_code;
     std::optional<std::chrono::year_month_day> swaption_expiry_date;
+    std::optional<std::string> calendar;
+    std::optional<std::string> moment_type;
+    std::optional<bool> add_past_dividends;
+    std::optional<std::string> pay_relative_to;
+    std::optional<std::string> quantity_frequency;
+    std::optional<int> delivery_roll_days;
+    std::optional<int> future_month_offset;
+    std::optional<bool> include_period_end;
+    std::optional<std::string> position;
     std::string description;
 
     friend bool operator==(const commodity_instrument_write&,
@@ -446,6 +455,20 @@ inline constexpr std::string_view deleted = "trading.v1.commodity_instruments_ev
                               &commodity_instrument_write::payment_frequency_code},
         utility::codec::field{"swaption_expiry_date",
                               &commodity_instrument_write::swaption_expiry_date},
+        utility::codec::field{"calendar", &commodity_instrument_write::calendar},
+        utility::codec::field{"moment_type", &commodity_instrument_write::moment_type},
+        utility::codec::field{"add_past_dividends",
+                              &commodity_instrument_write::add_past_dividends},
+        utility::codec::field{"pay_relative_to", &commodity_instrument_write::pay_relative_to},
+        utility::codec::field{"quantity_frequency",
+                              &commodity_instrument_write::quantity_frequency},
+        utility::codec::field{"delivery_roll_days",
+                              &commodity_instrument_write::delivery_roll_days},
+        utility::codec::field{"future_month_offset",
+                              &commodity_instrument_write::future_month_offset},
+        utility::codec::field{"include_period_end",
+                              &commodity_instrument_write::include_period_end},
+        utility::codec::field{"position", &commodity_instrument_write::position},
         utility::codec::field{"description", &commodity_instrument_write::description},
     };
 }

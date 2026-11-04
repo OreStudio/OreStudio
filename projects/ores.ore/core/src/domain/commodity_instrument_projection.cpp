@@ -20,6 +20,7 @@
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
@@ -698,6 +699,19 @@ void write_commodity_product(xml::record_writer& trade,
 
 }
 
+/// The single-valued terms a commodity product row keeps, by its element.
+constexpr scalar_terms::term<commodity_instrument> commodity_terms[] = {
+    {"Calendar", &commodity_instrument::calendar},
+    {"MomentType", &commodity_instrument::moment_type},
+    {"AddPastDividends", &commodity_instrument::add_past_dividends},
+    {"CommodityPayRelativeTo", &commodity_instrument::pay_relative_to},
+    {"CommodityQuantityFrequency", &commodity_instrument::quantity_frequency},
+    {"DeliveryRollDays", &commodity_instrument::delivery_roll_days},
+    {"FutureMonthOffset", &commodity_instrument::future_month_offset},
+    {"IncludePeriodEnd", &commodity_instrument::include_period_end},
+    {"Position", &commodity_instrument::position},
+};
+
 /// Where a commodity product states its underlyings.
 constexpr underlying_block::underlying_holder commodity_underlying_holders[] = {
     {"CommodityVarianceSwap", "", "Underlying", "underlying"},
@@ -720,6 +734,10 @@ auto read_commodity_instrument(xml::record_reader trade, std::string_view trade_
         }
         underlying_block::read_product_underlyings(
             *data, trade, trade_type, commodity_underlying_holders);
+        const auto element = std::string(trade_type) + "Data";
+        if (trade.declares(element))
+            if (const auto product = trade.child(element))
+                scalar_terms::read_terms(data->instrument, *product, commodity_terms);
     }
     return instrument;
 }
@@ -733,6 +751,9 @@ auto write_commodity_instrument(xml::record_writer& trade,
         return false;
 
     write_commodity_product(trade, trade_type, *v);
+    if (const auto element = std::string(trade_type) + "Data"; trade.declares(element))
+        if (auto product = trade.chosen_child(element))
+            scalar_terms::write_terms(*product, v->instrument, commodity_terms);
     if (!v->options.empty()) {
         if (const auto element = commodity_option_data_element(trade_type)) {
             if (auto product = trade.chosen_child(*element)) {

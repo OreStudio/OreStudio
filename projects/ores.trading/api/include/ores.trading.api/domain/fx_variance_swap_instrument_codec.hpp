@@ -56,6 +56,9 @@ namespace ores::trading::domain {
         utility::codec::field{"strike", &fx_variance_swap_instrument::strike},
         utility::codec::field{"notional", &fx_variance_swap_instrument::notional},
         utility::codec::field{"moment_type", &fx_variance_swap_instrument::moment_type},
+        utility::codec::field{"calendar", &fx_variance_swap_instrument::calendar},
+        utility::codec::field{"add_past_dividends",
+                              &fx_variance_swap_instrument::add_past_dividends},
         utility::codec::field{"description", &fx_variance_swap_instrument::description},
         utility::codec::field{"audit", &fx_variance_swap_instrument::audit},
     };

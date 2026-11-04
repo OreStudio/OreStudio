@@ -63,11 +63,13 @@ struct equity_asian_option_instrument_entity {
     std::string option_type;
     ores::utility::decimal::decimal strike;
     std::chrono::year_month_day expiry_date;
-    std::string exercise_type;
+    std::optional<std::string> exercise_type;
     std::string long_short;
     std::string average_type;
     std::chrono::year_month_day averaging_start_date;
     std::chrono::year_month_day averaging_end_date;
+    std::optional<std::string> settlement;
+    std::optional<std::string> strike_currency;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -99,6 +101,8 @@ struct equity_asian_option_instrument_entity {
                query_builder::bind("average_type", &e::average_type) |
                query_builder::bind("averaging_start_date", &e::averaging_start_date) |
                query_builder::bind("averaging_end_date", &e::averaging_end_date) |
+               query_builder::bind("settlement", &e::settlement) |
+               query_builder::bind("strike_currency", &e::strike_currency) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

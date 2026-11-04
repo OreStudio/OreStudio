@@ -42,6 +42,8 @@ export interface FxVarianceSwapInstrument {
     strike: number;
     notional: string;
     moment_type: string;
+    calendar: string | null;
+    add_past_dividends: boolean | null;
     description: string;
     audit: AuditRecord;
 }

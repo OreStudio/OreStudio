@@ -127,6 +127,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/pricing_engine_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/pricing_engines_import.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/run_document_projection.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/scalar_terms_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/todays_market_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/underlying_block_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/export.hpp"

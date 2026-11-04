@@ -117,6 +117,66 @@ struct equity_option_instrument final {
     std::string cliquet_frequency;
 
     /**
+     * @brief The currency the strike is stated in, as StrikeCurrency states it.
+     */
+    std::optional<std::string> strike_currency;
+
+    /**
+     * @brief A cliquet's cap on each period's return, as LocalCap states it.
+     */
+    std::optional<ores::utility::decimal::decimal> local_cap;
+
+    /**
+     * @brief A cliquet's floor on each period's return, as LocalFloor states it.
+     */
+    std::optional<ores::utility::decimal::decimal> local_floor;
+
+    /**
+     * @brief A cliquet's cap on the summed return, as GlobalCap states it.
+     */
+    std::optional<ores::utility::decimal::decimal> global_cap;
+
+    /**
+     * @brief A cliquet's floor on the summed return, as GlobalFloor states it.
+     */
+    std::optional<ores::utility::decimal::decimal> global_floor;
+
+    /**
+     * @brief The days from a cliquet's last fixing to its settlement, as SettlementDays states it.
+     */
+    std::optional<int> settlement_days;
+
+    /**
+     * @brief A cliquet's premium, as Premium states it.
+     */
+    std::optional<ores::utility::decimal::decimal> premium;
+
+    /**
+     * @brief The date a cliquet's premium is paid, as PremiumPaymentDate states it.
+     */
+    std::optional<std::chrono::year_month_day> premium_payment_date;
+
+    /**
+     * @brief An outperformance option's first initial price, as InitialPrice1 states it.
+     */
+    std::optional<ores::utility::decimal::decimal> initial_price_1;
+
+    /**
+     * @brief An outperformance option's second initial price, as InitialPrice2 states it.
+     */
+    std::optional<ores::utility::decimal::decimal> initial_price_2;
+
+    /**
+     * @brief An outperformance option's knock-in price, as KnockInPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> knock_in_price;
+
+    /**
+     * @brief An outperformance option's knock-out price, as KnockOutPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> knock_out_price;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -142,16 +202,14 @@ struct equity_option_instrument final {
  * Declared by the model's :economic: property on each column.
  */
 inline constexpr std::string_view equity_option_instrument_economic_fields[] = {
-    "underlying_name",
-    "currency",
-    "notional",
-    "option_type",
-    "strike",
-    "expiry_date",
-    "exercise_type",
-    "long_short",
-    "settlement_type",
-    "cliquet_frequency",
+    "underlying_name",   "currency",        "notional",
+    "option_type",       "strike",          "expiry_date",
+    "exercise_type",     "long_short",      "settlement_type",
+    "cliquet_frequency", "strike_currency", "local_cap",
+    "local_floor",       "global_cap",      "global_floor",
+    "settlement_days",   "premium",         "premium_payment_date",
+    "initial_price_1",   "initial_price_2", "knock_in_price",
+    "knock_out_price",
 };
 
 /**

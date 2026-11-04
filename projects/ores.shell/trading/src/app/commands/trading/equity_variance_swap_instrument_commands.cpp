@@ -143,8 +143,8 @@ void equity_variance_swap_instrument_commands::register_commands(cli::Menu& root
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
-        "<notional> <variance_strike> <start_date> <maturity_date> <long_short> <description> "
-        "<reason> <commentary>");
+        "<notional> <variance_strike> <start_date> <maturity_date> <long_short> <calendar> "
+        "<moment_type> <add_past_dividends> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -152,8 +152,8 @@ void equity_variance_swap_instrument_commands::register_commands(cli::Menu& root
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
-        "<notional> <variance_strike> <start_date> <maturity_date> <long_short> <description> "
-        "<reason> <commentary> [--version <n>]");
+        "<notional> <variance_strike> <start_date> <maturity_date> <long_short> <calendar> "
+        "<moment_type> <add_past_dividends> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -162,7 +162,7 @@ void equity_variance_swap_instrument_commands::register_commands(cli::Menu& root
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> "
         "<currency> <notional> <variance_strike> <start_date> <maturity_date> <long_short> "
-        "<description> <reason> <commentary>");
+        "<calendar> <moment_type> <add_past_dividends> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -364,8 +364,8 @@ void equity_variance_swap_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -389,6 +389,12 @@ void equity_variance_swap_instrument_commands::process_add(std::ostream& out,
             req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
         equity_variance_swap_instrument_read_token(
             req.change.write.long_short, parsed->positionals[next++], "long_short");
+        equity_variance_swap_instrument_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        equity_variance_swap_instrument_read_token(
+            req.change.write.moment_type, parsed->positionals[next++], "moment_type");
+        equity_variance_swap_instrument_read_token(
+            req.change.write.add_past_dividends, parsed->positionals[next++], "add_past_dividends");
         equity_variance_swap_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -435,8 +441,8 @@ void equity_variance_swap_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -460,6 +466,12 @@ void equity_variance_swap_instrument_commands::process_set(std::ostream& out,
             req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
         equity_variance_swap_instrument_read_token(
             req.change.write.long_short, parsed->positionals[next++], "long_short");
+        equity_variance_swap_instrument_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        equity_variance_swap_instrument_read_token(
+            req.change.write.moment_type, parsed->positionals[next++], "moment_type");
+        equity_variance_swap_instrument_read_token(
+            req.change.write.add_past_dividends, parsed->positionals[next++], "add_past_dividends");
         equity_variance_swap_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -517,8 +529,8 @@ void equity_variance_swap_instrument_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -544,6 +556,12 @@ void equity_variance_swap_instrument_commands::process_put_many(
                 change.write.maturity_date, parsed->positionals[next++], "maturity_date");
             equity_variance_swap_instrument_read_token(
                 change.write.long_short, parsed->positionals[next++], "long_short");
+            equity_variance_swap_instrument_read_token(
+                change.write.calendar, parsed->positionals[next++], "calendar");
+            equity_variance_swap_instrument_read_token(
+                change.write.moment_type, parsed->positionals[next++], "moment_type");
+            equity_variance_swap_instrument_read_token(
+                change.write.add_past_dividends, parsed->positionals[next++], "add_past_dividends");
             equity_variance_swap_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

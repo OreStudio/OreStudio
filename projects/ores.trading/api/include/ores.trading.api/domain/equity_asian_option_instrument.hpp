@@ -119,6 +119,16 @@ struct equity_asian_option_instrument final {
     std::chrono::year_month_day averaging_end_date;
 
     /**
+     * @brief How the option settles, as Settlement states it.
+     */
+    std::optional<std::string> settlement;
+
+    /**
+     * @brief The currency the strike is stated in, as StrikeData/Currency states it.
+     */
+    std::optional<std::string> strike_currency;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -155,6 +165,8 @@ inline constexpr std::string_view equity_asian_option_instrument_economic_fields
     "average_type",
     "averaging_start_date",
     "averaging_end_date",
+    "settlement",
+    "strike_currency",
 };
 
 /**

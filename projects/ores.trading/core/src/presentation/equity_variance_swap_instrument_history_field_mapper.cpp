@@ -52,6 +52,11 @@ render_equity_variance_swap_instrument_fields(const domain::equity_variance_swap
     fields.push_back({.name = "Maturity Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
+    fields.push_back({.name = "Calendar", .value = v.calendar.value_or(std::string{})});
+    fields.push_back({.name = "Moment Type", .value = v.moment_type.value_or(std::string{})});
+    fields.push_back({.name = "Add Past Dividends",
+                      .value = v.add_past_dividends ? (*v.add_past_dividends ? "true" : "false") :
+                                                      std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

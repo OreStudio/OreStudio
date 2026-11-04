@@ -99,7 +99,8 @@ public:
      * <fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days>
      * <fx_reset_fixing_calendar> <fixing_calendar> <digital_call_position>
      * <digital_is_call_atm_included> <digital_put_position> <digital_is_put_atm_included>
-     * <equity_margin_initial_margin_factor> <equity_margin_multiplier> <indexings_from_asset_leg>
+     * <equity_margin_initial_margin_factor> <equity_margin_multiplier> <commodity_pay_relative_to>
+     * <commodity_quantity_frequency> <pricing_date_rule> <indexings_from_asset_leg>
      * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
      * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
      * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>
@@ -122,7 +123,8 @@ public:
      * <fx_reset_start_date> <fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days>
      * <fx_reset_fixing_calendar> <fixing_calendar> <digital_call_position>
      * <digital_is_call_atm_included> <digital_put_position> <digital_is_put_atm_included>
-     * <equity_margin_initial_margin_factor> <equity_margin_multiplier> <indexings_from_asset_leg>
+     * <equity_margin_initial_margin_factor> <equity_margin_multiplier> <commodity_pay_relative_to>
+     * <commodity_quantity_frequency> <pricing_date_rule> <indexings_from_asset_leg>
      * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
      * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
      * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>
@@ -145,7 +147,8 @@ public:
      * <fx_reset_start_date> <fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days>
      * <fx_reset_fixing_calendar> <fixing_calendar> <digital_call_position>
      * <digital_is_call_atm_included> <digital_put_position> <digital_is_put_atm_included>
-     * <equity_margin_initial_margin_factor> <equity_margin_multiplier> <indexings_from_asset_leg>
+     * <equity_margin_initial_margin_factor> <equity_margin_multiplier> <commodity_pay_relative_to>
+     * <commodity_quantity_frequency> <pricing_date_rule> <indexings_from_asset_leg>
      * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
      * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
      * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>

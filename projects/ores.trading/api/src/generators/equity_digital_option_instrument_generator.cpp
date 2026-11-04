@@ -62,6 +62,9 @@ generate_synthetic_equity_digital_option_instrument(utility::generation::generat
                           .value();
     r.barrier_start_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.quantity = ores::utility::decimal::decimal::from_string(
+                     std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                     .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

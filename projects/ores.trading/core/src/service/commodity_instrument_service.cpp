@@ -131,6 +131,15 @@ commodity_instrument_to_domain(const messaging::commodity_instrument_write& writ
     v.day_count_fraction_code = write.day_count_fraction_code;
     v.payment_frequency_code = write.payment_frequency_code;
     v.swaption_expiry_date = write.swaption_expiry_date;
+    v.calendar = write.calendar;
+    v.moment_type = write.moment_type;
+    v.add_past_dividends = write.add_past_dividends;
+    v.pay_relative_to = write.pay_relative_to;
+    v.quantity_frequency = write.quantity_frequency;
+    v.delivery_roll_days = write.delivery_roll_days;
+    v.future_month_offset = write.future_month_offset;
+    v.include_period_end = write.include_period_end;
+    v.position = write.position;
     v.description = write.description;
     return v;
 }

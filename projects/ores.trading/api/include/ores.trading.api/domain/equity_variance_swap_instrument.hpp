@@ -89,6 +89,21 @@ struct equity_variance_swap_instrument final {
     std::string long_short;
 
     /**
+     * @brief The calendar the swap observes in, as Calendar states it.
+     */
+    std::optional<std::string> calendar;
+
+    /**
+     * @brief Whether the swap pays on variance or volatility, as MomentType states it.
+     */
+    std::optional<std::string> moment_type;
+
+    /**
+     * @brief Whether dividends already paid count, as AddPastDividends states it.
+     */
+    std::optional<bool> add_past_dividends;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -121,6 +136,9 @@ inline constexpr std::string_view equity_variance_swap_instrument_economic_field
     "start_date",
     "maturity_date",
     "long_short",
+    "calendar",
+    "moment_type",
+    "add_past_dividends",
 };
 
 /**

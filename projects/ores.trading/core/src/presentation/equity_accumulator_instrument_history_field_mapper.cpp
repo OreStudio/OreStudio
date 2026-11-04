@@ -59,6 +59,11 @@ render_equity_accumulator_instrument_fields(const domain::equity_accumulator_ins
                       .value = v.target_amount ? v.target_amount->to_string() : std::string{}});
     fields.push_back({.name = "Target Type", .value = v.target_type});
     fields.push_back({.name = "Payoff Type", .value = v.payoff_type});
+    fields.push_back({.name = "Settlement Lag", .value = v.settlement_lag.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Settlement Calendar", .value = v.settlement_calendar.value_or(std::string{})});
+    fields.push_back({.name = "Settlement Convention",
+                      .value = v.settlement_convention.value_or(std::string{})});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

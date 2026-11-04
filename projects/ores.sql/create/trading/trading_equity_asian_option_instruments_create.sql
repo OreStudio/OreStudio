@@ -45,11 +45,13 @@ create table if not exists "ores_trading_equity_asian_option_instruments_tbl" (
     "option_type" text not null,
     "strike" numeric(38, 12) not null,
     "expiry_date" date not null,
-    "exercise_type" text not null,
+    "exercise_type" text null,
     "long_short" text not null,
     "average_type" text not null,
     "averaging_start_date" date not null,
     "averaging_end_date" date not null,
+    "settlement" text null,
+    "strike_currency" text null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -71,7 +73,7 @@ create table if not exists "ores_trading_equity_asian_option_instruments_tbl" (
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
     check ("option_type" in ('Call', 'Put')),
-    check ("exercise_type" in ('European', 'Bermudan', 'American'))
+    check ("exercise_type" is null or "exercise_type" in ('European', 'Bermudan', 'American'))
 );
 
 -- Version uniqueness for optimistic concurrency

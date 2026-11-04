@@ -47,6 +47,7 @@ export interface FxAsianForwardInstrumentWrite {
     fixing_amount: string | null;
     target_amount: string | null;
     strike: string | null;
+    fixed_payer: boolean | null;
     description: string;
 }
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
@@ -383,6 +384,8 @@ auto read_fx_digital_barrier_option(const record_reader& trade) -> fx_digital_op
     if (!data)
         return r;
     read_fx_digital_fields(*data, r);
+    if (data->has("PayoffCurrency"))
+        r.payoff_currency = fx_instrument_projection_spelling_of(*data, "PayoffCurrency");
     if (const auto barrier = data->child("BarrierData")) {
         const auto levels = levels_of(*barrier);
         if (!levels.empty()) {
@@ -440,7 +443,7 @@ auto read_fx_variance_swap(const record_reader& trade) -> fx_variance_swap_instr
     r.strike = decimal_as_double(*data, "Strike").value_or(0.0);
     r.notional = fx_instrument_projection_decimal_of(*data, "Notional");
     r.currency = fx_instrument_projection_spelling_of(*data, "Currency");
-    r.moment_type = "Variance";
+    r.moment_type = scalar_terms::read_text(*data, "MomentType").value_or("Variance");
     return r;
 }
 
@@ -690,6 +693,8 @@ void write_fx_digital_barrier_option(record_writer& trade,
     data.set_spelling("DomesticCurrency", v.domestic_currency, "currency");
     data.set_decimal("Strike", v.strike.value_or(decimal{}));
     data.set_decimal("PayoffAmount", v.payoff_amount);
+    if (!v.payoff_currency.empty())
+        data.set_spelling("PayoffCurrency", v.payoff_currency, "currency");
     fx_instrument_projection_write_option_entry(
         data.child("OptionData"), v.option_type, v.expiry_date, v.long_short);
     if (!barrier_block::write_kept_barriers(data, "", carrier, "barrier") &&
@@ -851,6 +856,24 @@ constexpr underlying_block::underlying_holder fx_underlying_holders[] = {
     {"FxTaRF", "", "Underlying", "underlying"},
 };
 
+/// The single-valued terms each FX product row keeps, by its element.
+constexpr scalar_terms::term<fx_variance_swap_instrument> fx_variance_swap_terms[] = {
+    {"Calendar", &fx_variance_swap_instrument::calendar},
+    {"AddPastDividends", &fx_variance_swap_instrument::add_past_dividends},
+};
+
+constexpr scalar_terms::term<fx_asian_forward_instrument> fx_asian_forward_terms[] = {
+    {"FixedPayer", &fx_asian_forward_instrument::fixed_payer},
+};
+
+template <typename Row, typename Fn>
+void with_fx_terms(Fn&& fn) {
+    if constexpr (std::is_same_v<Row, fx_variance_swap_instrument>)
+        fn(fx_variance_swap_terms);
+    else if constexpr (std::is_same_v<Row, fx_asian_forward_instrument>)
+        fn(fx_asian_forward_terms);
+}
+
 constexpr barrier_block::barrier_holder fx_barrier_holders[] = {
     {"FxBarrierOption", "", "barrier"},
     {"FxDoubleBarrierOption", "", "barrier"},
@@ -955,6 +978,10 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
             barrier_block::read_monitoring(row, *product, "FXIndex");
         for (auto& row : data.digital_options)
             barrier_block::read_monitoring(row, *product, "FXIndex");
+        for (auto& row : data.variance_swaps)
+            scalar_terms::read_terms(row, *product, fx_variance_swap_terms);
+        for (auto& row : data.asian_forwards)
+            scalar_terms::read_terms(row, *product, fx_asian_forward_terms);
     }
     return trading::domain::trade_instrument{std::move(data)};
 }
@@ -1042,8 +1069,14 @@ auto write_fx_instrument(xml::record_writer& trade,
         if (auto product = trade.chosen_child(element)) {
             trading::domain::visit_fx_products(
                 [&](const auto& row) {
-                    if constexpr (barrier_block::monitored<std::decay_t<decltype(row)>>)
+                    using Row = std::decay_t<decltype(row)>;
+                    if constexpr (barrier_block::monitored<Row>)
                         barrier_block::write_monitoring(*product, row, "FXIndex");
+                    with_fx_terms<Row>(
+                        [&](const auto& terms) { scalar_terms::write_terms(*product, row, terms); });
+                    if constexpr (std::is_same_v<Row, fx_variance_swap_instrument>)
+                        if (!row.moment_type.empty())
+                            scalar_terms::write_text(*product, "MomentType", row.moment_type);
                 },
                 *v);
         }

@@ -149,6 +149,9 @@ domain::swap_leg swap_leg_to_domain(const messaging::swap_leg_write& write) {
     v.digital_is_put_atm_included = write.digital_is_put_atm_included;
     v.equity_margin_initial_margin_factor = write.equity_margin_initial_margin_factor;
     v.equity_margin_multiplier = write.equity_margin_multiplier;
+    v.commodity_pay_relative_to = write.commodity_pay_relative_to;
+    v.commodity_quantity_frequency = write.commodity_quantity_frequency;
+    v.pricing_date_rule = write.pricing_date_rule;
     v.indexings_from_asset_leg = write.indexings_from_asset_leg;
     v.floating_index_code_2 = write.floating_index_code_2;
     v.cms_duration = write.cms_duration;

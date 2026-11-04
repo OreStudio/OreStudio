@@ -145,7 +145,7 @@ void equity_digital_option_instrument_commands::register_commands(cli::Menu& roo
         "add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<notional> <option_type> <strike> <barrier_level> <barrier_type> <expiry_date> "
         "<long_short> <payout_amount> <barrier_start_date> <barrier_calendar> "
-        "<barrier_fixing_index> <description> <reason> <commentary>");
+        "<barrier_fixing_index> <quantity> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -155,7 +155,7 @@ void equity_digital_option_instrument_commands::register_commands(cli::Menu& roo
         "set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<notional> <option_type> <strike> <barrier_level> <barrier_type> <expiry_date> "
         "<long_short> <payout_amount> <barrier_start_date> <barrier_calendar> "
-        "<barrier_fixing_index> <description> <reason> <commentary> [--version <n>]");
+        "<barrier_fixing_index> <quantity> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -165,7 +165,7 @@ void equity_digital_option_instrument_commands::register_commands(cli::Menu& roo
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> "
         "<currency> <notional> <option_type> <strike> <barrier_level> <barrier_type> <expiry_date> "
         "<long_short> <payout_amount> <barrier_start_date> <barrier_calendar> "
-        "<barrier_fixing_index> <description> <reason> <commentary>");
+        "<barrier_fixing_index> <quantity> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -367,8 +367,8 @@ void equity_digital_option_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -405,6 +405,8 @@ void equity_digital_option_instrument_commands::process_add(std::ostream& out,
         equity_digital_option_instrument_read_token(req.change.write.barrier_fixing_index,
                                                     parsed->positionals[next++],
                                                     "barrier_fixing_index");
+        equity_digital_option_instrument_read_token(
+            req.change.write.quantity, parsed->positionals[next++], "quantity");
         equity_digital_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -451,8 +453,8 @@ void equity_digital_option_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -489,6 +491,8 @@ void equity_digital_option_instrument_commands::process_set(std::ostream& out,
         equity_digital_option_instrument_read_token(req.change.write.barrier_fixing_index,
                                                     parsed->positionals[next++],
                                                     "barrier_fixing_index");
+        equity_digital_option_instrument_read_token(
+            req.change.write.quantity, parsed->positionals[next++], "quantity");
         equity_digital_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -546,8 +550,8 @@ void equity_digital_option_instrument_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 17 + 2) {
-            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 18 + 2) {
+            fail(out) << "Expected " << (change_count * 18 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -586,6 +590,8 @@ void equity_digital_option_instrument_commands::process_put_many(
             equity_digital_option_instrument_read_token(change.write.barrier_fixing_index,
                                                         parsed->positionals[next++],
                                                         "barrier_fixing_index");
+            equity_digital_option_instrument_read_token(
+                change.write.quantity, parsed->positionals[next++], "quantity");
             equity_digital_option_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

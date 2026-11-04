@@ -99,6 +99,9 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.digital_is_put_atm_included = v.digital_is_put_atm_included;
     r.equity_margin_initial_margin_factor = v.equity_margin_initial_margin_factor;
     r.equity_margin_multiplier = v.equity_margin_multiplier;
+    r.commodity_pay_relative_to = v.commodity_pay_relative_to;
+    r.commodity_quantity_frequency = v.commodity_quantity_frequency;
+    r.pricing_date_rule = v.pricing_date_rule;
     r.indexings_from_asset_leg = v.indexings_from_asset_leg;
     r.floating_index_code_2 = v.floating_index_code_2;
     r.cms_duration = v.cms_duration;
@@ -184,6 +187,9 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.digital_is_put_atm_included = v.digital_is_put_atm_included;
     r.equity_margin_initial_margin_factor = v.equity_margin_initial_margin_factor;
     r.equity_margin_multiplier = v.equity_margin_multiplier;
+    r.commodity_pay_relative_to = v.commodity_pay_relative_to;
+    r.commodity_quantity_frequency = v.commodity_quantity_frequency;
+    r.pricing_date_rule = v.pricing_date_rule;
     r.indexings_from_asset_leg = v.indexings_from_asset_leg;
     r.floating_index_code_2 = v.floating_index_code_2;
     r.cms_duration = v.cms_duration;

@@ -143,8 +143,8 @@ void fx_variance_swap_instrument_commands::register_commands(cli::Menu& root_men
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <start_date> <end_date> <currency> "
-        "<underlying_code> <long_short> <strike> <notional> <moment_type> <description> <reason> "
-        "<commentary>");
+        "<underlying_code> <long_short> <strike> <notional> <moment_type> <calendar> "
+        "<add_past_dividends> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -152,8 +152,8 @@ void fx_variance_swap_instrument_commands::register_commands(cli::Menu& root_men
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <start_date> <end_date> <currency> "
-        "<underlying_code> <long_short> <strike> <notional> <moment_type> <description> <reason> "
-        "<commentary> [--version <n>]");
+        "<underlying_code> <long_short> <strike> <notional> <moment_type> <calendar> "
+        "<add_past_dividends> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -162,7 +162,7 @@ void fx_variance_swap_instrument_commands::register_commands(cli::Menu& root_men
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <start_date> "
         "<end_date> <currency> <underlying_code> <long_short> <strike> <notional> <moment_type> "
-        "<description> <reason> <commentary>");
+        "<calendar> <add_past_dividends> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -365,8 +365,8 @@ void fx_variance_swap_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -392,6 +392,10 @@ void fx_variance_swap_instrument_commands::process_add(std::ostream& out,
             req.change.write.notional, parsed->positionals[next++], "notional");
         fx_variance_swap_instrument_read_token(
             req.change.write.moment_type, parsed->positionals[next++], "moment_type");
+        fx_variance_swap_instrument_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        fx_variance_swap_instrument_read_token(
+            req.change.write.add_past_dividends, parsed->positionals[next++], "add_past_dividends");
         fx_variance_swap_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -438,8 +442,8 @@ void fx_variance_swap_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -465,6 +469,10 @@ void fx_variance_swap_instrument_commands::process_set(std::ostream& out,
             req.change.write.notional, parsed->positionals[next++], "notional");
         fx_variance_swap_instrument_read_token(
             req.change.write.moment_type, parsed->positionals[next++], "moment_type");
+        fx_variance_swap_instrument_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        fx_variance_swap_instrument_read_token(
+            req.change.write.add_past_dividends, parsed->positionals[next++], "add_past_dividends");
         fx_variance_swap_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -523,8 +531,8 @@ void fx_variance_swap_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -552,6 +560,10 @@ void fx_variance_swap_instrument_commands::process_put_many(std::ostream& out,
                 change.write.notional, parsed->positionals[next++], "notional");
             fx_variance_swap_instrument_read_token(
                 change.write.moment_type, parsed->positionals[next++], "moment_type");
+            fx_variance_swap_instrument_read_token(
+                change.write.calendar, parsed->positionals[next++], "calendar");
+            fx_variance_swap_instrument_read_token(
+                change.write.add_past_dividends, parsed->positionals[next++], "add_past_dividends");
             fx_variance_swap_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

@@ -67,6 +67,7 @@ equity_digital_option_instrument_mapper::map(const equity_digital_option_instrum
     r.barrier_start_date = v.barrier_start_date;
     r.barrier_calendar = v.barrier_calendar;
     r.barrier_fixing_index = v.barrier_fixing_index;
+    r.quantity = v.quantity;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -102,6 +103,7 @@ equity_digital_option_instrument_mapper::map(const domain::equity_digital_option
     r.barrier_start_date = v.barrier_start_date;
     r.barrier_calendar = v.barrier_calendar;
     r.barrier_fixing_index = v.barrier_fixing_index;
+    r.quantity = v.quantity;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

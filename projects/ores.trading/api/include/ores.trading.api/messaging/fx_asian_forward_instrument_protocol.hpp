@@ -63,6 +63,7 @@ struct fx_asian_forward_instrument_write {
     std::optional<ores::utility::decimal::decimal> fixing_amount;
     std::optional<ores::utility::decimal::decimal> target_amount;
     std::optional<ores::utility::decimal::decimal> strike;
+    std::optional<bool> fixed_payer;
     std::string description;
 
     friend bool operator==(const fx_asian_forward_instrument_write&,
@@ -423,6 +424,7 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"fixing_amount", &fx_asian_forward_instrument_write::fixing_amount},
         utility::codec::field{"target_amount", &fx_asian_forward_instrument_write::target_amount},
         utility::codec::field{"strike", &fx_asian_forward_instrument_write::strike},
+        utility::codec::field{"fixed_payer", &fx_asian_forward_instrument_write::fixed_payer},
         utility::codec::field{"description", &fx_asian_forward_instrument_write::description},
     };
 }

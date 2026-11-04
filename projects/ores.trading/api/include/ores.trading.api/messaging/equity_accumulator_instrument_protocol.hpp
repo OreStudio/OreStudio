@@ -64,6 +64,9 @@ struct equity_accumulator_instrument_write {
     std::optional<ores::utility::decimal::decimal> target_amount;
     std::string target_type;
     std::string payoff_type;
+    std::optional<std::string> settlement_lag;
+    std::optional<std::string> settlement_calendar;
+    std::optional<std::string> settlement_convention;
     std::string description;
 
     friend bool operator==(const equity_accumulator_instrument_write&,
@@ -432,6 +435,12 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"target_amount", &equity_accumulator_instrument_write::target_amount},
         utility::codec::field{"target_type", &equity_accumulator_instrument_write::target_type},
         utility::codec::field{"payoff_type", &equity_accumulator_instrument_write::payoff_type},
+        utility::codec::field{"settlement_lag",
+                              &equity_accumulator_instrument_write::settlement_lag},
+        utility::codec::field{"settlement_calendar",
+                              &equity_accumulator_instrument_write::settlement_calendar},
+        utility::codec::field{"settlement_convention",
+                              &equity_accumulator_instrument_write::settlement_convention},
         utility::codec::field{"description", &equity_accumulator_instrument_write::description},
     };
 }

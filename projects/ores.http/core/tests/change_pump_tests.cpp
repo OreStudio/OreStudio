@@ -135,7 +135,8 @@ TEST_CASE("two_windows_for_one_collection_leave_one_pending_frame", "[change_pum
 
     REQUIRE(slow->size() == 1);
     REQUIRE(slow->try_pop() ==
-            std::optional<std::string>("id: 2\nevent: iam.book\ndata: {\"tenant\":\"acme\","
-                                       "\"party\":\"ops\",\"component\":\"iam\","
-                                       "\"entity\":\"book\"}\n\n"));
+            std::optional<std::string>(
+                "id: " + hub.id_of(2) +
+                "\nevent: iam.book\ndata: {\"tenant\":\"acme\",\"party\":\"ops\","
+                "\"component\":\"iam\",\"entity\":\"book\"}\n\n"));
 }

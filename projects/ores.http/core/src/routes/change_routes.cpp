@@ -74,17 +74,17 @@ change_routes::handle_changes(const domain::http_request& req) {
 
     /*
      * A reconnecting browser states where it stopped. Inside the hub's short
-     * retention it is given what it missed; outside it, or naming an id this
-     * process never issued, it is told to resync rather than left with a silent
-     * gap it cannot see.
+     * retention it is given what it missed; outside it, or naming an id another
+     * process issued or no frame at all, it is told to resync rather than left with
+     * a silent gap it cannot see.
      */
     std::optional<stream::change_hub::resume_point> resumed;
     if (const auto seen = req.get_header("last-event-id"); !seen.empty()) {
-        try {
-            resumed = stream::change_hub::resume_point{
-                .last_seen = static_cast<std::uint64_t>(std::stoull(seen))};
-        } catch (const std::exception&) {
+        resumed = stream::change_hub::read_id(seen);
+        if (!resumed) {
             BOOST_LOG_SEV(lg(), warn) << "Last-Event-ID is not a frame id: " << seen;
+            // An id no frame of this process could have carried is answered as a gap.
+            resumed = stream::change_hub::resume_point{};
         }
     }
 

@@ -25,6 +25,7 @@
 #include <boost/asio/io_context.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <cstdint>
 #include <string>
 #include <thread>
 #include <vector>
@@ -36,6 +37,14 @@ namespace {
 
 /// The tenant every stream hears beside its own.
 const std::string stream_system_tenant = "ffffffff-ffff-ffff-ffff-ffffffffffff";
+
+/// Where a browser resumes when the hub's @p seen'th frame is the last it read, or
+/// where it starts when it read none.
+change_hub::resume_point resumed_at(const change_hub& hub, std::uint64_t seen) {
+    const auto point = change_hub::read_id(hub.id_of(seen));
+    REQUIRE(point.has_value());
+    return *point;
+}
 
 /// Reads one buffer's worth from the source on a running io_context.
 std::string read_once(change_stream_source& source, std::size_t bytes) {
@@ -68,8 +77,10 @@ TEST_CASE("a_frame_reaches_every_open_stream", "[change_stream]") {
 
     REQUIRE(first->size() == 1);
     REQUIRE(second->size() == 1);
-    REQUIRE(first->try_pop() == std::optional<std::string>("id: 1\ndata: one\n\n"));
-    REQUIRE(second->try_pop() == std::optional<std::string>("id: 1\ndata: one\n\n"));
+    REQUIRE(first->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(1) + "\ndata: one\n\n"));
+    REQUIRE(second->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(1) + "\ndata: one\n\n"));
 }
 
 TEST_CASE("a_stream_that_has_ended_is_forgotten_by_the_next_publish", "[change_stream]") {
@@ -100,9 +111,9 @@ TEST_CASE("a_stream_that_is_not_read_drops_its_oldest_frames", "[change_stream]"
 
     REQUIRE(slow->size() == 3);
     // The newest survive: a screen that fell behind wants where the world is now.
-    REQUIRE(slow->try_pop() == std::optional<std::string>("id: 3\nframe 2"));
-    REQUIRE(slow->try_pop() == std::optional<std::string>("id: 4\nframe 3"));
-    REQUIRE(slow->try_pop() == std::optional<std::string>("id: 5\nframe 4"));
+    REQUIRE(slow->try_pop() == std::optional<std::string>("id: " + hub.id_of(3) + "\nframe 2"));
+    REQUIRE(slow->try_pop() == std::optional<std::string>("id: " + hub.id_of(4) + "\nframe 3"));
+    REQUIRE(slow->try_pop() == std::optional<std::string>("id: " + hub.id_of(5) + "\nframe 4"));
     REQUIRE(!slow->try_pop().has_value());
 }
 
@@ -228,8 +239,10 @@ TEST_CASE("every_frame_carries_an_id_and_the_ids_ascend", "[change_stream]") {
     hub.publish("acme", "", "iam.book", "data: one\n\n");
     hub.publish("acme", "", "iam.trade", "data: two\n\n");
 
-    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 1\ndata: one\n\n"));
-    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
+    REQUIRE(stream->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(1) + "\ndata: one\n\n"));
+    REQUIRE(stream->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(2) + "\ndata: two\n\n"));
 }
 
 TEST_CASE("a_resuming_client_is_given_the_frames_it_missed", "[change_stream]") {
@@ -241,11 +254,13 @@ TEST_CASE("a_resuming_client_is_given_the_frames_it_missed", "[change_stream]") 
     hub.publish("acme", "", "iam.trade", "data: two\n\n");
     hub.publish("acme", "", "iam.account", "data: three\n\n");
 
-    auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 1});
+    auto resumed = hub.subscribe({.tenant = "acme"}, resumed_at(hub, 1));
 
     REQUIRE(resumed->size() == 2);
-    REQUIRE(resumed->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
-    REQUIRE(resumed->try_pop() == std::optional<std::string>("id: 3\ndata: three\n\n"));
+    REQUIRE(resumed->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(2) + "\ndata: two\n\n"));
+    REQUIRE(resumed->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(3) + "\ndata: three\n\n"));
 }
 
 TEST_CASE("a_resuming_client_hears_only_its_own_tenant_and_the_system_one", "[change_stream]") {
@@ -257,7 +272,7 @@ TEST_CASE("a_resuming_client_hears_only_its_own_tenant_and_the_system_one", "[ch
     hub.publish("globex", "", "iam.book", "data: globex moved\n\n");
     hub.publish(stream_system_tenant, "", "iam.book", "data: the catalogue moved\n\n");
 
-    auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 0});
+    auto resumed = hub.subscribe({.tenant = "acme"}, resumed_at(hub, 0));
 
     REQUIRE(resumed->size() == 2);
     REQUIRE(resumed->try_pop()->find("acme moved") != std::string::npos);
@@ -270,7 +285,7 @@ TEST_CASE("a_resuming_client_outside_the_window_is_told_to_resync", "[change_str
 
     change_hub hub(stream_system_tenant);
     // An id this process never issued: the client comes from a previous life.
-    auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 99});
+    auto resumed = hub.subscribe({.tenant = "acme"}, resumed_at(hub, 99));
 
     REQUIRE(resumed->size() == 1);
     REQUIRE(resumed->try_pop() == std::optional<std::string>("event: resync\ndata: {}\n\n"));
@@ -315,8 +330,7 @@ TEST_CASE("a_replay_respects_the_parties_the_caller_works_in", "[change_stream]"
     hub.publish("acme", "sales", "iam.book", "data: sales moved\n\n");
     hub.publish("acme", "", "iam.book", "data: the tenant moved\n\n");
 
-    auto resumed = hub.subscribe({.tenant = "acme", .party = "sales"},
-                                 change_hub::resume_point{.last_seen = 0});
+    auto resumed = hub.subscribe({.tenant = "acme", .party = "sales"}, resumed_at(hub, 0));
 
     REQUIRE(resumed->size() == 2);
     REQUIRE(resumed->try_pop()->find("sales moved") != std::string::npos);
@@ -336,7 +350,8 @@ TEST_CASE("a_newer_frame_replaces_the_one_a_stream_has_not_written", "[change_st
     // The client refetches the collection, so the frame it never read carried
     // nothing it could have used.
     REQUIRE(stream->size() == 1);
-    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
+    REQUIRE(stream->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(2) + "\ndata: two\n\n"));
     REQUIRE(!stream->try_pop().has_value());
 }
 
@@ -352,8 +367,10 @@ TEST_CASE("a_conflated_frame_moves_behind_the_others_so_its_ids_ascend", "[chang
     hub.publish("acme", "ops", "iam.book", "data: three\n\n");
 
     REQUIRE(stream->size() == 2);
-    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
-    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 3\ndata: three\n\n"));
+    REQUIRE(stream->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(2) + "\ndata: two\n\n"));
+    REQUIRE(stream->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(3) + "\ndata: three\n\n"));
 }
 
 TEST_CASE("one_collection_heard_for_two_parties_is_two_frames", "[change_stream]") {
@@ -378,9 +395,46 @@ TEST_CASE("a_replay_conflates_a_collection_into_its_newest_frame", "[change_stre
     hub.publish("acme", "", "iam.book", "data: two\n\n");
     hub.publish("acme", "", "iam.trade", "data: three\n\n");
 
-    auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 0});
+    auto resumed = hub.subscribe({.tenant = "acme"}, resumed_at(hub, 0));
 
     REQUIRE(resumed->size() == 2);
-    REQUIRE(resumed->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
-    REQUIRE(resumed->try_pop() == std::optional<std::string>("id: 3\ndata: three\n\n"));
+    REQUIRE(resumed->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(2) + "\ndata: two\n\n"));
+    REQUIRE(resumed->try_pop() ==
+            std::optional<std::string>("id: " + hub.id_of(3) + "\ndata: three\n\n"));
+}
+
+TEST_CASE("an_id_from_an_earlier_process_is_answered_with_a_resync", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a restarted hub does not replay a stranger's gap";
+
+    // The previous process issued its first id; a restart numbers from one again,
+    // so the number alone would land inside the new window.
+    const auto before = change_hub(stream_system_tenant);
+    const auto stale = before.id_of(1);
+
+    change_hub hub(stream_system_tenant);
+    hub.publish("acme", "", "iam.book", "data: one\n\n");
+
+    auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::read_id(stale));
+
+    REQUIRE(resumed->size() == 1);
+    REQUIRE(resumed->try_pop() == std::optional<std::string>("event: resync\ndata: {}\n\n"));
+}
+
+TEST_CASE("an_id_that_is_not_a_frame_id_is_refused", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that only an id of the frame grammar is read";
+
+    REQUIRE(!change_hub::read_id("").has_value());
+    REQUIRE(!change_hub::read_id("12").has_value());
+    REQUIRE(!change_hub::read_id("-1").has_value());
+    REQUIRE(!change_hub::read_id("123-").has_value());
+    REQUIRE(!change_hub::read_id("123-12abc").has_value());
+    REQUIRE(!change_hub::read_id("123--12").has_value());
+
+    const auto point = change_hub::read_id("123-45");
+    REQUIRE(point.has_value());
+    REQUIRE(point->epoch == "123");
+    REQUIRE(point->last_seen == 45);
 }

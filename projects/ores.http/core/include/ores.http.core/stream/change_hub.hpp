@@ -33,17 +33,36 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <limits>
 #include <list>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 namespace ores::http::stream {
+
+namespace detail {
+
+/**
+ * @brief The mark a hub puts on every id it issues.
+ *
+ * The process start, in nanoseconds, because an id from an earlier process must
+ * never look like one of ours: a client that reconnects across a restart would
+ * otherwise be replayed a gap that is not its own, and sequence numbers restart
+ * with the process. A restart is exactly what this mark changes.
+ */
+inline std::string make_epoch() {
+    const auto started = std::chrono::system_clock::now().time_since_epoch();
+    return std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(started).count());
+}
+
+}
 
 /**
  * @brief Whose changes one stream hears.
@@ -208,14 +227,48 @@ public:
 
     /// What a client's Last-Event-ID asks of the hub.
     struct resume_point final {
+        /// The mark of the process that issued the id the client last saw.
+        std::string epoch;
+        /// How many frames that process had given the client when it stopped.
         std::uint64_t last_seen = 0;
     };
+
+    /// The event-stream id this hub gives its @p sequence'th frame.
+    [[nodiscard]] std::string id_of(std::uint64_t sequence) const {
+        return epoch_ + '-' + std::to_string(sequence);
+    }
+
+    /**
+     * @brief Reads an event-stream id, or nothing when it is not one of this form.
+     *
+     * An id is the mark of the process that issued it, a dash, and the frame's
+     * sequence within that process. Anything else names no frame this hub could
+     * place, so the caller answers it as it answers a gap: with one resync.
+     */
+    static std::optional<resume_point> read_id(std::string_view id) {
+        const auto dash = id.find('-');
+        if (dash == std::string_view::npos || dash == 0 || dash + 1 == id.size())
+            return std::nullopt;
+
+        std::uint64_t sequence = 0;
+        for (const auto ch : id.substr(dash + 1)) {
+            if (ch < '0' || ch > '9')
+                return std::nullopt;
+            const auto digit = static_cast<std::uint64_t>(ch - '0');
+            if (sequence > (std::numeric_limits<std::uint64_t>::max() - digit) / 10)
+                return std::nullopt;
+            sequence = sequence * 10 + digit;
+        }
+        return resume_point{std::string(id.substr(0, dash)), sequence};
+    }
+
     /**
      * @param system_tenant The tenant whose changes every stream hears, because they
      *        are the catalogue every tenant shares.
      */
     explicit change_hub(std::string system_tenant, std::size_t per_stream_capacity = 256)
         : system_tenant_(std::move(system_tenant))
+        , epoch_(detail::make_epoch())
         , capacity_(per_stream_capacity) {}
 
     /// Opens a stream for @p tenant, which also hears the system tenant.
@@ -243,14 +296,14 @@ public:
             };
             const auto oldest = retained_.empty() ? 0 : retained_.front().id;
             const auto newest = retained_.empty() ? 0 : retained_.back().id;
-            const auto inside =
-                resumed->last_seen <= newest && (oldest == 0 || resumed->last_seen + 1 >= oldest);
+            const auto inside = resumed->epoch == epoch_ && resumed->last_seen <= newest &&
+                                (oldest == 0 || resumed->last_seen + 1 >= oldest);
             if (inside) {
                 for (const auto& frame : retained_) {
                     if (frame.id > resumed->last_seen && eligible(frame))
                         subscription->push(
                             conflation_key(frame.tenant, frame.party, frame.collection),
-                            "id: " + std::to_string(frame.id) + "\n" + frame.text);
+                            "id: " + id_of(frame.id) + "\n" + frame.text);
                 }
             } else {
                 // No publish builds this key: every one it builds holds a separator.
@@ -286,7 +339,7 @@ public:
             open = subscriptions_;
         }
         const auto id = next_id_ - 1;
-        auto stamped = "id: " + std::to_string(id) + "\n" + frame;
+        auto stamped = "id: " + id_of(id) + "\n" + frame;
         const auto key = conflation_key(tenant, party, collection);
         for (auto& subscription : open) {
             const auto& scope = subscription->scope();
@@ -331,6 +384,7 @@ private:
     }
 
     std::string system_tenant_;
+    std::string epoch_;
     mutable std::mutex mu_;
     std::vector<std::shared_ptr<change_subscription>> subscriptions_;
     std::size_t capacity_;

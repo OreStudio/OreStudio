@@ -370,6 +370,20 @@ struct fx_instrument_data {
      * the visitor that picks the product never reads it.
      */
     std::vector<range_bound> range_bounds;
+    /**
+     * @brief The OptionData block of an FX option, in the shared option rows.
+     *
+     * An FX product's own row states its option type and expiry; the block's
+     * other terms, its style, settlement, payoff timing and premiums, are the
+     * ones every option family states and they live in the shared rows.
+     */
+    std::vector<instrument_option> options;
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<instrument_option_payment_date> option_payment_dates;
+    std::vector<instrument_option_exercise_price> option_exercise_prices;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
 
     /**
      * @brief Value equality.
@@ -407,7 +421,15 @@ inline constexpr auto fx_instrument_arrays = std::tuple{&fx_instrument_data::for
  * list. Every walk that stamps or joins the carrier reads it, because a child
  * row is keyed by the same trade the product row is.
  */
-inline constexpr auto fx_instrument_child_arrays = std::tuple{&fx_instrument_data::range_bounds};
+inline constexpr auto fx_instrument_child_arrays =
+    std::tuple{&fx_instrument_data::range_bounds,
+               &fx_instrument_data::options,
+               &fx_instrument_data::option_premiums,
+               &fx_instrument_data::option_exercise_fees,
+               &fx_instrument_data::option_payment_dates,
+               &fx_instrument_data::option_exercise_prices,
+               &fx_instrument_data::schedules,
+               &fx_instrument_data::schedule_dates};
 
 /**
  * @brief Calls a function on the first row the carrier holds, and on no other.

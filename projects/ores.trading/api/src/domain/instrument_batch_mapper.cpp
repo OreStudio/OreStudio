@@ -169,8 +169,18 @@ inline constexpr auto fx_batch_arrays = std::tuple{
  * make_tuple, because tuple's pair deduction guide flattens a lone pair into
  * its two members, and the walk reads one pair per child.
  */
-inline constexpr auto fx_batch_child_arrays =
-    std::make_tuple(std::pair{&fx_instrument_data::range_bounds, &instrument_batch::range_bounds});
+inline constexpr auto fx_batch_child_arrays = std::make_tuple(
+    std::pair{&fx_instrument_data::range_bounds, &instrument_batch::range_bounds},
+    std::pair{&fx_instrument_data::options, &instrument_batch::instrument_options},
+    std::pair{&fx_instrument_data::option_premiums, &instrument_batch::instrument_option_premiums},
+    std::pair{&fx_instrument_data::option_exercise_fees,
+              &instrument_batch::instrument_option_exercise_fees},
+    std::pair{&fx_instrument_data::option_payment_dates,
+              &instrument_batch::instrument_option_payment_dates},
+    std::pair{&fx_instrument_data::option_exercise_prices,
+              &instrument_batch::instrument_option_exercise_prices},
+    std::pair{&fx_instrument_data::schedules, &instrument_batch::instrument_schedules},
+    std::pair{&fx_instrument_data::schedule_dates, &instrument_batch::instrument_schedule_dates});
 
 /**
  * A family carrier whose parts are typed arrays rather than alternatives. Each

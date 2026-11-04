@@ -225,6 +225,15 @@ public:
     /// States a child element and returns the writer over it.
     auto child(std::string_view name) -> record_writer;
 
+    /**
+     * @brief The writer over a child element already stated, or nothing when
+     * none is.
+     *
+     * child() states an alternative afresh and refuses a second one, so a
+     * writer that adds to a product another writer stated reaches it here.
+     */
+    auto chosen_child(std::string_view name) -> std::optional<record_writer>;
+
     /// States a repeated child, appends one iteration and returns its writer.
     auto append(std::string_view name) -> record_writer;
 

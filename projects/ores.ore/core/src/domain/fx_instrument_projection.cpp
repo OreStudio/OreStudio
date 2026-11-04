@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
@@ -818,6 +819,34 @@ void write_fx_tarf(record_writer& trade, const fx_asian_forward_instrument& v) {
 
 }
 
+/**
+ * @brief The element of an FX product that states an OptionData block, or
+ * nothing for a product that states none.
+ *
+ * Listed rather than probed, because asking a record type for a field it does
+ * not declare is an error.
+ */
+std::optional<std::string> fx_option_data_element(std::string_view trade_type) {
+    static constexpr std::string_view with_option_data[] = {
+        "FxOption",
+        "FxBarrierOption",
+        "FxDigitalOption",
+        "FxDigitalBarrierOption",
+        "FxTouchOption",
+        "FxDoubleTouchOption",
+        "FxDoubleBarrierOption",
+        "FxEuropeanBarrierOption",
+        "FxKIKOBarrierOption",
+        "FxGenericBarrierOption",
+        "FxAccumulator",
+        "FxTaRF",
+    };
+    for (const auto type : with_option_data)
+        if (type == trade_type)
+            return std::string(trade_type) + "Data";
+    return std::nullopt;
+}
+
 auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument> {
     if (!is_fx_trade_type(trade_type))
@@ -859,6 +888,15 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
             read_barrier_product(trade, "FxEuropeanBarrierOptionData", trade_type));
     } else if (trade_type == "FxKIKOBarrierOption") {
         data.barrier_options.push_back(read_fx_kiko_barrier_option(trade));
+    }
+
+    // The product's row keeps its own terms; the block's shared terms land in
+    // the option rows every option family reads and writes.
+    if (const auto element = fx_option_data_element(trade_type)) {
+        if (const auto product = trade.child(*element)) {
+            if (const auto option = product->child("OptionData"))
+                option_block::read_option_block(data, *option);
+        }
     }
     return trading::domain::trade_instrument{std::move(data)};
 }
@@ -933,6 +971,15 @@ auto write_fx_instrument(xml::record_writer& trade,
             }
         },
         *v);
+
+    if (matched && !v->options.empty()) {
+        if (const auto element = fx_option_data_element(trade_type)) {
+            if (auto product = trade.chosen_child(*element)) {
+                auto option = product->child("OptionData");
+                option_block::write_option_block(option, *v);
+            }
+        }
+    }
     return matched;
 }
 

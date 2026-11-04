@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 702359B7-93D5-4B0D-AD70-41724F9AF5B5
+:END:
+#+title: Task: Package and validate native Windows pricing
+#+description: Deliver the Windows engine package, build portability fixes, reproducible scripts and validation evidence for the existing Windows branch.
+#+type: task
+#+level: s1
+#+filetags: :build:compute:native_windows_pricing:sprint_29:v0:
+#+owner: alexhock
+#+branch: fix/windows-upstream-sync
+#+pr: 4461
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+#+environment: orestudio
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A5920AD8-3AF8-4D7D-B98E-976D3F3EF4DE][Support native Windows pricing and local services]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the native Windows implementation and its limitations reviewable in one upstream PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A5920AD8-3AF8-4D7D-B98E-976D3F3EF4DE][Support native Windows pricing and local services]] |
+| Now          | Implementation and scoped validation complete.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Review the upstream PR; retain the documented validation limitations.                  |
+| Last touched | 2026-11-04                               |
+
+* Acceptance
+
+- Reproducible native engine build and package scripts, manifest, runtime libraries and provenance are committed.
+- Native worker pricing is demonstrated and Linux packages remain available.
+- Shared SQL and password verification match upstream, with strict-schema account-preservation evidence attached.
+
+
+* Plan
+
+Build the pinned Engine fork with MSVC, package its executable and runtime dependencies using the existing package shape, and exercise it through the native compute wrapper. Keep native development fixes scoped to portability. Merge upstream, preserve its shared SQL bytes, then check existing credentials on an isolated current-main test clone.
+
+* Measurements
+
+| What | Value | Command / evidence | Commit |
+|------+-------+--------------------+--------|
+| Linux debug and release | Both passed | [[https://github.com/alexhock/OreStudio/actions/runs/41883006026][Continuous Linux run 41883006026]] | e73c8f6098 |
+| Native IAM release target | Built successfully | cmake --build build/output/login-upgrade-audit --target ores.iam.service.exe --parallel 8 | 43e2ad9d50 source, built before the naming fixes were committed |
+| Existing account authentication | One human and all 18 service passwords passed | [[file:evidence/login-validation.json][Isolated strict-schema login evidence]] | 43e2ad9d50 source |
+| Account and credential preservation | All 24 account and 24 credential rows unchanged | [[file:evidence/login-validation.json][Before/after aggregate checksums]] | 43e2ad9d50 source |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4461][#4461]] | [build,compute] Add native Windows services and ORE pricing |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered the native Windows ORE package and reproducible build/package workflow, native service launcher and developer recipe, MSVC portability fixes, Windows-compatible filesystem tests, and Linux runner disk improvements. The pinned engine revision is 3d75a69087911a7e2cf1e6882da7bc27135c0762; the package uses the same executable/args manifest contract as Linux and declares x64-windows in its package metadata.
+
+The local Windows installation completed a pricing batch of 15 jobs across five workers after the native environment handoff fix. This fleet exercise predates the upstream merge; it is not presented as a full fleet test of the merged branch. Package numerical and Linux parity reports are committed under external/ore/packages/.
+
+Shared SQL and password hashing/verification remain identical to upstream f8adc1abcc. A fresh current-main test baseline was populated with synthetic accounts and cloned once. The rebuilt IAM service passed three schema checks with ORES_REQUIRE_SCHEMA_MATCH=1, accepted the existing human and service passwords, issued valid signed JWTs and rejected incorrect passwords. Account and credential snapshots were unchanged. The clone was never recreated or reseeded; the live installation was untouched.
+
+The broad local gate was attempted with --exclude-heavy to preserve the installed database and services. Its POSIX launchers and venv paths are not usable on this native Windows host, so it did not pass. Focused native checks and the linked Linux build evidence are reported separately. The Windows nightly at 43e2ad9d50 failed before compilation in upstream's unchanged embedded-XSD seed: CRLF content violates its recorded byte count. The owner explicitly requested that this upstream fix remain outside this PR. Migration of the old local database and the full merged application/fleet gate remain unverified.
+
+Focused final pre-submission checks: 112 Windows launcher, venv, adapter, Boost, catalogue and template-parity tests passed under the working Git Bash environment; all six package failure-path tests and documentation validation for all 39 components passed. The initial sandboxed invocation could not launch Git Bash; the same tests passed outside that restricted launcher. Upstream PR #4458 separately addresses the Windows CRLF nightly failure.

@@ -192,8 +192,8 @@ exporter::export_pricing_engines(const analytics::messaging::pricing_engines_doc
 
 std::string exporter::export_pricing_engines(const pricing_engines_document& v) {
     pugi::xml_document document;
-    auto declaration = document.append_child(pugi::node_declaration);
-    declaration.append_attribute("version").set_value("1.0");
+    auto xml_declaration = document.append_child(pugi::node_declaration);
+    xml_declaration.append_attribute("version").set_value("1.0");
 
     auto root = document.append_child("PricingEngines");
     for (const auto& product : v.product) {

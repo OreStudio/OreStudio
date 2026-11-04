@@ -1,0 +1,52 @@
+{
+  "candidate_commit": "e73c8f6098c42af0df3b5fec2607af7ee8d500d5",
+  "baseline_upstream_sql": "f8adc1abccb60f1f0d878c8de4650d24264f80ee",
+  "require_schema_match": true,
+  "schema_fingerprint": "67cf1f35242dc0b1",
+  "authentication": {
+    "human_login": true,
+    "same_existing_account_id": true,
+    "service_logins": 18,
+    "jwt_signatures_and_identity_verified": true,
+    "wrong_human_password_rejected": true,
+    "wrong_service_password_rejected": true,
+    "answering_build": "v0.0.29 [x64-windows] (local e73c8f6098-dirty)",
+    "database_fingerprint": "67cf1f35242dc0b1"
+  },
+  "accounts_and_credentials_unchanged": true,
+  "schema_checks_passed": 3,
+  "baseline_unchanged": true,
+  "clone_recreated_or_reseeded": false,
+  "live_database_contacted": false,
+  "before": {
+    "accounts": {
+      "sha256": "d872670bc12e14092bf34d1586fdad7938e866199efc911d85f80f39d543ef2b",
+      "rows": 24
+    },
+    "credentials": {
+      "sha256": "356caeb04aa5bdaf3a4f78cefa2149e31c6be014d7aa71cba8285d8cb5a9f84a",
+      "rows": 24
+    }
+  },
+  "after": {
+    "accounts": {
+      "sha256": "d872670bc12e14092bf34d1586fdad7938e866199efc911d85f80f39d543ef2b",
+      "rows": 24
+    },
+    "credentials": {
+      "sha256": "356caeb04aa5bdaf3a4f78cefa2149e31c6be014d7aa71cba8285d8cb5a9f84a",
+      "rows": 24
+    }
+  },
+  "scope": "Synthetic existing accounts on current-main schema; does not validate migration from the old local database.",
+  "human_fixture": "Upstream initial-admin SQL function, production scrypt ln=14/r=8/p=1, 16-byte salt, 64-byte key; created before cloning.",
+  "candidate_has_local_build_fix": true,
+  "local_build_fix_sha256": "7549d2657451ef57cdc1a64b0498cfdb2d5cd71204ca74ae6d4157314585d225",
+  "rebuilt_iam_executable_sha256": "cc43d8e43aa3e9c57bc62e0ce7f7c4286738b1186c3f307dbb5f6ebad2e04989",
+  "audit_container": "orestudio-login-upgrade-audit",
+  "audit_container_stopped_and_preserved": true,
+  "private_database_and_role_backups_preserved": true,
+  "audit_processes_stopped": true,
+  "compiler_fixes_pushed_commit": "43e2ad9d500478b289f2344f705dfceef7a71507",
+  "compiler_fixes_pushed_branch": "alexhock/OreStudio:fix/windows-local-installation"
+}

@@ -162,9 +162,9 @@ boost::asio::awaitable<http_response> auth_session_routes::sign_in(const http_re
         if (!decoded->success || decoded->token.empty()) {
             // The service states why in its own words and code; the browser is told
             // them rather than a status.
-            auto body = ores::utility::codec::wire_traits<request_type::response_type>::write_json(
+            auto response_body = ores::utility::codec::wire_traits<request_type::response_type>::write_json(
                 *decoded);
-            co_return http_response::json(body, http::domain::http_status::unauthorized);
+            co_return http_response::json(response_body, http::domain::http_status::unauthorized);
         }
 
         auto claims_result = verifier->validate(decoded->token);

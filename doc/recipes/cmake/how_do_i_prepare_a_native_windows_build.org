@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: A7290468-7041-4D85-AD45-15FBC9541B34
+:END:
+#+title: How do I prepare a native Windows build?
+#+description: Install native Windows build prerequisites, bootstrap Compass, configure the release preset, and run the development fleet without changing the Linux systemd deployment.
+#+type: recipe
+#+level: cross
+#+filetags: :windows:build:setup:recipe:
+#+created: 2026-11-01
+#+updated: 2026-11-04
+
+Native Windows builds use the presets in [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
+The Linux bootstrap and systemd service launcher do not apply to Windows.
+
+* Question
+
+How do I install the prerequisites and attempt a native Windows release build?
+
+* Answer
+
+Install Git for Windows, Python 3, CMake, and Visual Studio 2022 Build Tools
+with the C++ workload and Windows SDK. For example, in PowerShell:
+
+#+begin_src powershell :results verbatim
+winget install --id Python.Python.3.13 --exact --scope user
+winget install --id Kitware.CMake --exact
+winget install --id Microsoft.VisualStudio.2022.BuildTools --exact --override '--wait --quiet --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'
+#+end_src
+
+Open a new Developer PowerShell for Visual Studio with the x64 host and
+target architecture. Ensure =python=, =cmake=, =ninja=, and =cl= resolve.
+Use the installed CMake version, at least 3.28; Visual Studio also ships
+its own copy. Git Bash supplies =bash= and =openssl=.
+
+From the checkout root, fetch the pinned dependency manager:
+
+#+begin_src powershell :results verbatim
+git submodule update --init --depth 1 vcpkg
+#+end_src
+
+Follow [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] from Git Bash,
+substituting =windows-msvc-release-ninja= for the Linux preset. Supply
+the password of a dedicated local PostgreSQL instance. Never run
+=db recreate= against a database containing data you need to keep.
+The wrapper probes both =python3= and =python=: a Microsoft Store
+=python3= alias must not hide an installed =python.exe=.
+It enables Python UTF-8 mode on Windows for source files and Unicode output.
+
+The supported local Windows database setup uses PostgreSQL 18 in a Linux
+Docker container. Mount this checkout at =/workspace= in that container.
+Use its Linux =psql= client for setup so the original seed scripts' Unix
+commands read service passwords correctly. This keeps shared SQL, account
+credentials and the upstream schema fingerprint unchanged.
+
+#+begin_src powershell :results verbatim
+python build/scripts/run_container_database.py --container orestudio-windows-postgres --container-root /workspace status
+#+end_src
+
+The wrapper accepts the same =setup= and =recreate= commands as =compass db=;
+use =recreate= only for a dedicated disposable development database. It
+forwards machine-password environment variables into the container by name.
+If its internal port differs from =PGPORT= in =.env=, pass
+=--container-port <port>= before the database command. Native PostgreSQL
+client tools can still be used for ordinary queries. For connections from
+Windows to Docker's published port, use =127.0.0.1= as the database host to
+avoid IPv6 localhost reconnect failures.
+
+In Developer PowerShell, configure and build the application fleet. Read
+the enabled native service targets from the same registry as the launcher:
+
+#+begin_src powershell :results verbatim
+cmake --preset windows-msvc-release-ninja
+$targets = @(& ./projects/ores.compass/venv/Scripts/python.exe -c @'
+import sys
+from pathlib import Path
+sys.path.insert(0, 'projects/ores.compass/src')
+from systemd_generate import load_service_registry
+for service in load_service_registry(Path.cwd()):
+    if service['enabled'] and service.get('runtime', 'native') != 'node':
+        print(service['name'] + '.exe')
+'@)
+$targets += @('ores.shell.exe', 'ores_web', 'vendor_compute_packages')
+cmake --build --preset windows-msvc-release-ninja --target $targets --parallel 4
+#+end_src
+
+This builds the local services, shell, web application, and bundled engine
+archives. It does not build every test executable. Reduce the parallel job
+count if the machine runs short of memory.
+
+The first configure builds vcpkg dependencies and needs internet access.
+A transient download failure can be retried with the same configure
+command; completed packages are reused. The Windows nightly workflow
+currently runs release presets only and documents cold builds taking
+hours. Successful prerequisite installation does not establish that the
+current source compiles on Windows.
+
+The native NATS binary is vendored and can be unpacked without downloading
+another server:
+
+#+begin_src powershell :results verbatim
+./build/scripts/setup_nats_server.ps1
+./build/nats/vendored/windows-amd64/nats-server.exe --config build/config/nats-<label>.conf
+#+end_src
+
+Replace =<label>= with =ORES_CHECKOUT_LABEL= from the generated environment.
+The setup script writes =GITHUB_PATH= in CI; locally, invoke the executable
+by path or add its directory to the current process PATH.
+
+* Starting the Windows development fleet
+
+=compass services start/stop/status= continue to use =systemctl --user= on
+Linux. Windows has a separate development entry point; it reads the same
+service registry and starts native executables and the Node BFF. PostgreSQL
+may run in a local Linux Docker container. NATS must already be running.
+
+#+begin_src powershell :results verbatim
+./projects/ores.compass/venv/Scripts/python.exe build/scripts/run_windows_services.py --dry-run
+./projects/ores.compass/venv/Scripts/python.exe build/scripts/run_windows_services.py
+#+end_src
+
+The launcher waits for prerequisite services, writes per-process logs under
+=publish/log/windows=, and owns its child processes through a Windows job.
+Ctrl+C, launcher exit, or a service failure stops that fleet and its
+descendants. PostgreSQL and NATS remain independently managed. This is a
+foreground development supervisor; the Linux systemd deployment retains its
+existing startup, restart, and resource-management behavior.
+
+The vendored ORE engine archives include =x64-linux= packages and a matching
+=x64-windows= 1.8.17.0 package. The Acme provisioning recipe publishes both
+platforms. To add Windows pricing to an existing installation, publish the
+Windows package as the system administrator; no database recreation is needed.
+See =external/ore/packages/README.md= for pinned source checkout, Windows
+build/package commands, and the compute-grid acceptance test. Starting the
+application services alone does not verify pricing.
+
+Stop any independently started BFF before running the full fleet, since
+both would otherwise bind the same HTTP port. The launcher generates a
+checkout-specific BFF site configuration with local NATS settings and
+certificate paths. Its environment ID uses the lowercase checkout label.
+
+The web build can be checked independently:
+
+#+begin_src powershell :results verbatim
+Push-Location projects/ores.web
+npm.cmd ci --no-audit --no-fund
+npm.cmd run build
+Pop-Location
+#+end_src
+
+When running the BFF separately, use =ORES_WEB_SITE_CONFIG= and
+=ORES_WEB_ENV= to select a local configuration with the generated NATS
+port, subject prefix, and certificate paths. Environment IDs must be
+lowercase and match =[a-z][a-z0-9_]*=; the default folder name =OreStudio=
+is not a valid ID.
+
+* Script
+
+=projects/ores.compass/compass.sh= bootstraps the Python toolkit.
+=.github/workflows/nightly-windows.yml= defines the CI build prerequisites.
+
+* Tested by
+
+Manual Windows installation on 2026-11-02: the MSVC release application
+targets and TypeScript web build succeeded. PostgreSQL 18 in Linux Docker
+was initialized with native Windows psql. All 25 application processes
+started natively, and the browser rendered the sign-in screen.
+
+Acme provisioning completed with 1,000 trades. Real system-administrator
+and tenant-administrator sign-ins, party membership reads, and tenant setup
+completion passed. The tenant administrator had five party memberships.
+Bootstrap mode was disabled and the fleet remained healthy.
+
+Focused Windows Python, launcher, catalogue-generator, and template checks:
+97 passed. Native billing checks: 21 cases, 82 assertions, including wide
+intermediate products. Targeted web path/scenario checks and wire fixtures
+passed; the full web suite still has permission/symlink assumptions and
+stale mock-response failures.
+
+Linux regression checks: eleven shared tests and fifty-five systemd/service
+tests passed. GCC reflection/layout and billing checks passed, as did a
+shared-library export/consumer check. A full Linux C++ build was not run.
+
+The reflectcpp overlay carries an MSVC-only duplicate-field check that avoids
+quadratic template instantiation. Verify both accepted names and compile-time
+rejection of duplicates from Developer PowerShell:
+
+#+begin_src powershell :results verbatim
+python build/scripts/check_reflectcpp_field_names.py --compiler cl.exe --include-dir build/output/windows-msvc-release-ninja/vcpkg_installed/x64-windows/include
+#+end_src
+
+The same tool accepts =--compiler g++= on Linux. It also compares the MSVC
+tuple-position calculation with the original implementation, including
+alignment padding and an empty tuple. The tuple patch retains the original
+implementation for other compilers.
+
+Billing uses Boost.Multiprecision 128-bit integers on MSVC and keeps the
+original GCC 128-bit type on Linux. Billing tests include products exceeding
+64 bits to check that the intermediate calculations remain exact.
+
+The output catalogue generator also emits bounded literals for MSVC; its
+data checksum is unchanged on both
+MSVC and GCC, and its boundary tests include long rows and UTF-8 characters.
+
+* See also
+
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]]
+- [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][Ubuntu, Debian, and WSL setup]]

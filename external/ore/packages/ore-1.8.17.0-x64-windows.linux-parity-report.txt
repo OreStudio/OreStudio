@@ -1,0 +1,12 @@
+Same-commit Windows/Linux comparison; commit 3d75a69087911a7e2cf1e6882da7bc27135c0762
+Linux package SHA256: 8099ac8f51067cf59378137a327f273b073390e1cc47ea862f5cfcc2ab519868
+Windows package SHA256: 8b87e41940f1bc7590ec25f6acb7607264f3a6d50c73097f620c085f3ae6e114
+
+curves.csv:
+  OK: 240 row(s) x 4 shared column(s) match within rtol=1e-06.
+
+flows.csv:
+  OK: 60 row(s) x 29 shared column(s) match within rtol=1e-06.
+
+npv.csv:
+  OK: 1 row(s) x 13 shared column(s) match within rtol=1e-06.

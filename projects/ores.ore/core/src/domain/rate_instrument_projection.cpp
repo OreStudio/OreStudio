@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <boost/numeric/conversion/cast.hpp>
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
@@ -513,7 +514,7 @@ void rate_instrument_projection_read_option_block(swap_instrument_data& result,
     if (const auto payment = od.child("PaymentData")) {
         if (const auto rules = payment->child("Rules")) {
             if (const auto lag = rules->integer("Lag"))
-                row.payment_lag = *lag;
+                row.payment_lag = boost::numeric_cast<int>(*lag);
             row.payment_calendar = rate_instrument_projection_text_of(*rules, "Calendar");
             row.payment_convention = rate_instrument_projection_spelling_of(*rules, "Convention");
             if (rules->has("RelativeTo"))
@@ -1571,14 +1572,14 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
     auto data = trade.child("CapFloorData");
     data.set_spelling("LongShort", "Long", "long short");
 
-    // A cap or a floor pays on the floating leg, so that is the leg the
+    // A cap or a floor pays on the floating_leg leg, so that is the leg the
     // document states. Taking the first leg would write a fixed one for a
     // trade whose fixed side happens to be numbered first.
-    const auto floating = std::find_if(v.legs.begin(), v.legs.end(), [](const auto& candidate) {
+    const auto floating_row = std::find_if(v.legs.begin(), v.legs.end(), [](const auto& candidate) {
         return candidate.leg_type_code == "Floating";
     });
     if (!v.legs.empty()) {
-        const auto& row = floating != v.legs.end() ? *floating : v.legs.front();
+        const auto& row = floating_row != v.legs.end() ? *floating_row : v.legs.front();
         auto leg = data.child("LegData");
         rate_instrument_projection_set_spelling_or(
             leg, "LegType", row.leg_type_code, "Floating", "leg type");
@@ -1613,14 +1614,14 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
         }
 
         if (row.leg_type_code == "Floating") {
-            auto floating = leg.child("FloatingLegData");
-            floating.set_text("Index", row.floating_index_code);
+            auto floating_leg = leg.child("FloatingLegData");
+            floating_leg.set_text("Index", row.floating_index_code);
             const auto spreads =
                 std::count_if(v.leg_rates.begin(), v.leg_rates.end(), [](const auto& rate) {
                     return rate.rate_role == "spread";
                 });
             if (spreads != 0) {
-                auto list = floating.child("Spreads");
+                auto list = floating_leg.child("Spreads");
                 for (const auto& rate : v.leg_rates)
                     if (rate.rate_role == "spread")
                         list.append("Spread").set_own_text(rate.value.to_string());

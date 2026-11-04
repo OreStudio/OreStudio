@@ -1,0 +1,21 @@
+Worker-produced output comparison; batch windows-engine-20261103-115216
+15/15 results succeeded; all 5 workers exercised.
+Academy/curves.csv:
+  OK: 240 row(s) x 4 shared column(s) match within rtol=1e-06.
+
+Academy/flows.csv:
+  NEW COLUMNS (in this build, not in the reference -- review before sign-off):
+    ['EffectiveFloorVolatility', 'EffectiveCapVolatility', 'Amount(Base)', 'DiscountFactor(Base)']
+  OK: 60 row(s) x 25 shared column(s) match within rtol=1e-06.
+
+Academy/npv.csv:
+  OK: 1 row(s) x 13 shared column(s) match within rtol=1e-06.
+
+Linux/curves.csv:
+  OK: 240 row(s) x 4 shared column(s) match within rtol=1e-06.
+
+Linux/flows.csv:
+  OK: 60 row(s) x 29 shared column(s) match within rtol=1e-06.
+
+Linux/npv.csv:
+  OK: 1 row(s) x 13 shared column(s) match within rtol=1e-06.

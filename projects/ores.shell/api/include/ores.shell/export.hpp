@@ -22,7 +22,10 @@
 
 #include <boost/config.hpp>
 
-#ifdef ORES_SHELL_LIBRARY
+#if defined(_WIN32)
+// The shell's API, command modules, and application are static libraries.
+#    define ORES_SHELL_EXPORT
+#elif defined(ORES_SHELL_LIBRARY)
 #    define ORES_SHELL_EXPORT BOOST_SYMBOL_EXPORT
 #else
 #    define ORES_SHELL_EXPORT BOOST_SYMBOL_IMPORT

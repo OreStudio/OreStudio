@@ -28,12 +28,13 @@ import {
     renameSync,
     rmSync,
     statSync,
-    symlinkSync,
     writeFileSync,
 } from 'node:fs';
+import { readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { symlinkForTest } from '../test-support/symlink.js';
 import { FileScenarioStore, sprintOf } from './file-scenario-store.js';
 import { UnknownStepError, type RunInput, type StepOutcome } from './scenario-doc.js';
 import { MAX_IMAGE_BYTES } from '@ores/contracts';
@@ -44,6 +45,11 @@ import {
     ScenarioNotFoundError,
     StepNumberError,
 } from './scenario-store.js';
+
+vi.mock('node:fs/promises', async (importOriginal) => {
+    const fs = await importOriginal<typeof import('node:fs/promises')>();
+    return { ...fs, readdir: vi.fn(fs.readdir) };
+});
 
 const fixture = (name: string): string =>
     readFileSync(new URL(`../../../org/src/fixtures/${name}`, import.meta.url), 'utf8');
@@ -95,6 +101,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+    vi.mocked(readdir).mockReset();
     rmSync(join(root, '..'), { recursive: true, force: true });
 });
 
@@ -177,7 +184,7 @@ describe('listing scenarios', () => {
         expect(list.some((s) => s.id === STORY)).toBe(false);
     });
 
-    it('does not follow a symbolic link out of the root', async () => {
+    it('does not follow a symbolic link out of the root', async (context) => {
         writeFileSync(
             join(outside, 'scenario_escape.org'),
             fixture('single_client_scenario.org').replace(
@@ -185,10 +192,12 @@ describe('listing scenarios', () => {
                 'D0000000-0000-4000-8000-000000000002',
             ),
         );
-        symlinkSync(outside, join(root, 'linked'));
-        symlinkSync(
+        await symlinkForTest(context, outside, join(root, 'linked'), 'dir');
+        await symlinkForTest(
+            context,
             join(outside, 'scenario_escape.org'),
             join(root, 'sprint_23/story/scenario_link.org'),
+            'file',
         );
         const list = await store().list();
         expect(list.map((s) => s.id)).toEqual([MULTI, SINGLE]);
@@ -278,16 +287,27 @@ describe('scanning', () => {
 
     it('tries again at once after a scan that failed', async () => {
         const s = new FileScenarioStore(root, { rescanAfterMs: 600_000 });
-        const locked = join(root, 'sprint_23/locked');
-        mkdirSync(locked);
-        chmodSync(locked, 0o000);
-        try {
-            await expect(s.list()).rejects.toThrow();
-        } finally {
-            chmodSync(locked, 0o755);
-        }
+        const denied = Object.assign(new Error('Access denied while scanning'), { code: 'EACCES' });
+        vi.mocked(readdir).mockRejectedValueOnce(denied);
+        await expect(s.list()).rejects.toBe(denied);
         expect(await s.list()).toHaveLength(2);
     });
+
+    it.skipIf(process.platform === 'win32' || process.getuid?.() === 0)(
+        'retries after Unix directory permissions deny access (requires a non-root Unix user)',
+        async () => {
+            const s = new FileScenarioStore(root, { rescanAfterMs: 600_000 });
+            const locked = join(root, 'sprint_23/locked');
+            mkdirSync(locked);
+            chmodSync(locked, 0o000);
+            try {
+                await expect(s.list()).rejects.toThrow();
+            } finally {
+                chmodSync(locked, 0o755);
+            }
+            expect(await s.list()).toHaveLength(2);
+        },
+    );
 
     it('lists a scenario whose #+type: sits past the first chunk of the file', async () => {
         const id = 'A1111111-1111-4111-8111-111111111111';
@@ -371,17 +391,27 @@ describe('recording a run', () => {
         ).rejects.toThrow(/No scenario/);
     });
 
-    it('keeps the mode of the file and leaves no temporary file', async () => {
-        chmodSync(file(), 0o640);
+    it('leaves no temporary file after recording', async () => {
         await store().record(
             MULTI,
             input([{ client: 'blue', title: 'Read', status: 'PASS', notes: '' }]),
         );
-        expect(statSync(file()).mode & 0o777).toBe(0o640);
         expect(
             readdirSync(join(root, 'sprint_23/story')).filter((n) => n.endsWith('.tmp')),
         ).toEqual([]);
     });
+
+    it.skipIf(process.platform === 'win32')(
+        'preserves Unix permission bits when recording',
+        async () => {
+            chmodSync(file(), 0o640);
+            await store().record(
+                MULTI,
+                input([{ client: 'blue', title: 'Read', status: 'PASS', notes: '' }]),
+            );
+            expect(statSync(file()).mode & 0o777).toBe(0o640);
+        },
+    );
 
     it('lets the last save to name a step win it, and keeps the rest', async () => {
         const s = store();
@@ -429,13 +459,13 @@ describe('recording a run', () => {
         expect(back?.steps.find((x) => x.title === 'Update')?.notes).toBe('only first');
     });
 
-    it('does not write through a file that now points outside the root', async () => {
+    it('does not write through a file that now points outside the root', async (context) => {
         const s = store();
         await s.list();
         const target = join(outside, 'victim.org');
         writeFileSync(target, fixture('multi_client_scenario.org'));
         rmSync(file());
-        symlinkSync(target, file());
+        await symlinkForTest(context, target, file(), 'file');
         const before = readFileSync(target, 'utf8');
         await expect(
             s.record(MULTI, input([{ client: 'blue', title: 'Read', status: 'PASS', notes: '' }])),
@@ -550,13 +580,13 @@ describe('keeping a screenshot of a step', () => {
         );
     });
 
-    it('does not write beside a doc that now points outside the root', async () => {
+    it('does not write beside a doc that now points outside the root', async (context) => {
         const s = timed();
         await s.list();
         const target = join(outside, 'victim.org');
         writeFileSync(target, fixture('multi_client_scenario.org'));
         rmSync(join(dir(), 'scenario_multi.org'));
-        symlinkSync(target, join(dir(), 'scenario_multi.org'));
+        await symlinkForTest(context, target, join(dir(), 'scenario_multi.org'), 'file');
         await expect(s.saveImage(MULTI, 1, PNG)).rejects.toBeInstanceOf(PathEscapeError);
         expect(readdirSync(outside)).toEqual(['victim.org']);
     });
@@ -624,9 +654,14 @@ describe('reading an image kept beside a scenario', () => {
         expect(await timed().readImage(MULTI, 'real.dat')).toBeNull();
     });
 
-    it('does not follow a link, so a link cannot lead out of the folder', async () => {
+    it('does not follow a link, so a link cannot lead out of the folder', async (context) => {
         writeFileSync(join(outside, 'secret.png'), PNG);
-        symlinkSync(join(outside, 'secret.png'), join(dir(), 'linked.png'));
+        await symlinkForTest(
+            context,
+            join(outside, 'secret.png'),
+            join(dir(), 'linked.png'),
+            'file',
+        );
         expect(await timed().readImage(MULTI, 'linked.png')).toBeNull();
     });
 

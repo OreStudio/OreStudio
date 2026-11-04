@@ -127,12 +127,12 @@ public:
             std::vector<ores::synthetic::domain::ir_curve_template_entry> entries;
             entries.reserve(req->entries.size());
             for (const auto& row : req->entries) {
-                ores::synthetic::domain::ir_curve_template_entry e;
-                e.sequence_index = row.sequence_index;
-                e.start_tenor_code = row.start_tenor_code;
-                e.end_tenor_code = row.end_tenor_code;
-                e.instrument_code = row.instrument_code;
-                entries.push_back(std::move(e));
+                ores::synthetic::domain::ir_curve_template_entry entry;
+                entry.sequence_index = row.sequence_index;
+                entry.start_tenor_code = row.start_tenor_code;
+                entry.end_tenor_code = row.end_tenor_code;
+                entry.instrument_code = row.instrument_code;
+                entries.push_back(std::move(entry));
             }
 
             const auto resolved = resolve(entries, *refctx, req->fixed_leg_payment_frequency_code);

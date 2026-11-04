@@ -138,8 +138,8 @@ std::string format_date(const year_month_day& date) {
  * the 29th of a year that has none.
  */
 year_month_day state_day(year y, month m, day d) {
-    const auto last = year_month_day_last{y, month_day_last{m}};
-    return year_month_day{y, m, d > last.day() ? last.day() : d};
+    const auto last_day = year_month_day_last{y, month_day_last{m}};
+    return year_month_day{y, m, d > last_day.day() ? last_day.day() : d};
 }
 
 year_month_day add_years(const year_month_day& date, int years) {
@@ -528,13 +528,13 @@ construct_bond_product(const domain::bond_terms& terms,
         return tdom::construct_bond_future(future_terms());
 
     if (type == "BondFutureOption") {
-        tdom::bond_future_option_terms terms;
-        terms.future = future_terms();
-        terms.option_type = option_type;
-        terms.strike = strike;
-        terms.redemption = "100";
-        terms.price_type = "Clean";
-        return tdom::construct_bond_future_option(terms);
+        tdom::bond_future_option_terms option_terms;
+        option_terms.future = future_terms();
+        option_terms.option_type = option_type;
+        option_terms.strike = strike;
+        option_terms.redemption = "100";
+        option_terms.price_type = "Clean";
+        return tdom::construct_bond_future_option(option_terms);
     }
 
     if (type == "BondRepo") {

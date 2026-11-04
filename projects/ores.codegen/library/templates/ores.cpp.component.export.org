@@ -13,6 +13,8 @@
 #+updated: 2026-06-08
 
 Per-component shared-library export/import macros. All component profiles.
+Components built as static libraries on Windows omit DLL annotations there;
+their shared-library visibility on other platforms is unchanged.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -24,7 +26,7 @@ The full template source. Edit here and re-tangle with
 =library/templates/cpp_export.hpp.mustache=.
 
 #+begin_src mustache :tangle cpp_export.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.component.export.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #ifndef {{full_name_upper}}_EXPORT_HPP
@@ -32,11 +34,19 @@ The full template source. Edit here and re-tangle with
 
 #include <boost/config.hpp>
 
+{{#win32_static_library}}
+#if defined(_WIN32)
+#  define {{full_name_upper}}_EXPORT
+#else
+{{/win32_static_library}}
 #ifdef {{full_name_upper}}_LIBRARY
 #  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_EXPORT
 #else
 #  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_IMPORT
 #endif
+{{#win32_static_library}}
+#endif
+{{/win32_static_library}}
 
 #endif
 {{/component}}

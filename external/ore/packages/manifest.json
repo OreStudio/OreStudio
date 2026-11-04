@@ -33,6 +33,22 @@
       "size_bytes": 58946608,
       "built_by": "external/ore/tools/package_ore.sh",
       "verified_against": "external/ore/packages/TA002_IR_Swap.tar.gz, tolerantly diffed against external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput -- see ore-1.8.17.0-x64-linux.diff-report.txt in this directory. That report is identical to the 1.8.16.0 one, line for line apart from the paths and the version: same 240x4 curves.csv and 60x25 flows.csv and 1x13 npv.csv, and the same four report columns the engine emits beyond the reference (EffectiveFloorVolatility, EffectiveCapVolatility, Amount(Base), DiscountFactor(Base)). So the two engines agree on the sample within rtol=1e-6, and the column difference is pre-existing, not introduced by v17."
+    },
+    {
+      "file": "ore-1.8.17.0-x64-windows.tar.gz",
+      "platform": "x64-windows",
+      "engine_version": "1.8.17.0",
+      "engine_commit": "3d75a69087911a7e2cf1e6882da7bc27135c0762",
+      "engine_commit_date": "2026-09-11T17:26:17Z",
+      "built_at": "2026-11-03T11:44:57.6564722Z",
+      "built_with": "MSVC 19.44.35229.0, windows-ninja-x64-release, Boost 1.92.0, dynamic MSVC/Boost runtime; ORE/QuantLib libraries statically linked; 15 redistributable DLLs bundled beside ore.exe. Windows-only Boost uBLAS overlay restores the MSVC iterator macro (boostorg/ublas issue 77); ORE source is unmodified.",
+      "sha256": "8b87e41940f1bc7590ec25f6acb7607264f3a6d50c73097f620c085f3ae6e114",
+      "size_bytes": 28129364,
+      "built_by": "external/ore/tools/build_ore_windows.ps1",
+      "packaged_by": "external/ore/tools/package_ore_windows.ps1",
+      "provenance_file": "ore-1.8.17.0-x64-windows.provenance.json",
+      "verified_against": "TA002_IR_Swap: curves.csv (240x4), flows.csv (60x25), npv.csv (1x13) match Academy ExpectedOutput at rtol=1e-6. Same-commit Linux parity also passes all 29 flows.csv columns; see .diff-report.txt and .linux-parity-report.txt. Native Windows grid acceptance batch windows-engine-20261103-115216: 15/15 successes across all 5 workers; downloaded output also matches Academy and Linux (see .grid-diff-report.txt).",
+      "dependency_patch": "external/ore/tools/windows/overlays/boost-ublas/msvc-iterator-debug-level.patch"
     }
   ],
   "sample_packages": [

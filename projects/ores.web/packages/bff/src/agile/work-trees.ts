@@ -124,7 +124,8 @@ export function parseWorktreeList(output: string): ListedTree[] {
 
 /** The label of a work tree: its directory name without the `ores_dev_` prefix. */
 export function labelOf(root: string): string {
-    const name = root.replace(/\/+$/, '').split('/').pop() ?? '';
+    const normalized = /^[A-Za-z]:[\\/]|^\\\\/.test(root) ? root.replaceAll('\\', '/') : root;
+    const name = normalized.replace(/\/+$/, '').split('/').pop() ?? '';
     return name.startsWith('ores_dev_') ? name.slice('ores_dev_'.length) : name;
 }
 

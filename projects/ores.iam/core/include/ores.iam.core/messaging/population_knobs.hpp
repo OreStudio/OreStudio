@@ -237,9 +237,9 @@ apply_population_knobs(std::vector<trade_generation_assignment>& assignments,
          * its share rather than a rounded-down version of it.
          */
         const auto base = target / static_cast<std::uint32_t>(configs.size());
-        const auto spare = target % static_cast<std::uint32_t>(configs.size());
+        const auto config_spare = target % static_cast<std::uint32_t>(configs.size());
         for (std::size_t i = 0; i < configs.size(); ++i) {
-            const auto extra = i < spare ? 1 : 0;
+            const auto extra = i < config_spare ? 1 : 0;
             configs[i]->trades_per_book = base + static_cast<std::uint32_t>(extra);
         }
     }

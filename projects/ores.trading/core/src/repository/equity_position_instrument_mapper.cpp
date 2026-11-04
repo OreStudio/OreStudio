@@ -53,7 +53,7 @@ equity_position_instrument_mapper::map(const equity_position_instrument_entity& 
     r.identity.party_id = v.party_id;
     r.identity.trade_activity_id = v.trade_activity_id;
     r.underlying_name = v.underlying_name;
-    r.currency = v.currency;
+    r.currency = v.currency.value_or("");
     r.quantity = v.quantity;
     r.price = v.price;
     r.description = v.description.value_or("");
@@ -79,7 +79,7 @@ equity_position_instrument_mapper::map(const domain::equity_position_instrument&
     r.party_id = v.identity.party_id;
     r.trade_activity_id = v.identity.trade_activity_id;
     r.underlying_name = v.underlying_name;
-    r.currency = v.currency;
+    r.currency = v.currency.empty() ? std::nullopt : std::optional(v.currency);
     r.quantity = v.quantity;
     r.price = v.price;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

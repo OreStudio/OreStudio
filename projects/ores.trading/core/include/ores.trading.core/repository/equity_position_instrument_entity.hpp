@@ -58,7 +58,7 @@ struct equity_position_instrument_entity {
     boost::uuids::uuid party_id;
     boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
-    std::string currency;
+    std::optional<std::string> currency;
     double quantity = 0.0;
     std::optional<ores::utility::decimal::decimal> price;
     std::optional<std::string> description;

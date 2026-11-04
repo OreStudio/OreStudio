@@ -110,11 +110,13 @@ std::string("ACME Corp")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :economic: true
 :END:
 
-ISO 4217 currency code.
+ISO 4217 currency code, when the position states one. ORE's
+EquityPositionData states only a quantity and its underlyings, so a
+position read from ORE has none.
 
 Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
 
@@ -226,7 +228,7 @@ is immutable.
 | expression |
 |---|
 | "underlying_name" <> '' |
-| "currency" <> '' |
+| "currency" is null or "currency" <> '' |
 
 ** Indexes
 

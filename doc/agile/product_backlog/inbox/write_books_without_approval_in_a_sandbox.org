@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: A29C530A-D816-4E76-B6AA-BA5F72E90123
+:END:
+#+title: Write books without an approval request where no approval is needed
+#+description: Every book write now passes an approval gate, so the ORE import cannot create the books it imports into, and a sandbox import fails the same way. A sandbox, and any context that needs no four-eyes control, must be able to write books directly.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:approval:ore:import:sandbox:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Let a book be written without raising an approval request where no
+four-eyes control applies: in a sandbox, whose virtual books hold only
+drafts, tests and hypotheticals, and in the ORE import, which creates the
+books a document's directory tree names. Today the book service refuses
+every write it is not handed an approved request for.
+
+* Why
+
+The ORE import cannot create its books, so it fails on its first write
+unless it is pointed at an existing book with a choices file, and the
+recipe that round trips an ORE document through the database cannot run as
+written. An import into a sandbox fails the same way, though nothing there
+is an actual deal.
+
+* References
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] — where the import hit the gate.
+- =projects/ores.refdata/core/src/service/book_service.cpp= — the gate.
+
+* See also
+
+-

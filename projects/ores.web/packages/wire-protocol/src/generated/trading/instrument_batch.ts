@@ -79,6 +79,8 @@ import type { FraInstrument } from './domain/fra_instrument.js';
 import type { IndexCreditDefaultSwapInstrument } from './domain/index_credit_default_swap_instrument.js';
 import type { IndexCreditDefaultSwapOptionInstrument } from './domain/index_credit_default_swap_option_instrument.js';
 import type { InflationSwapInstrument } from './domain/inflation_swap_instrument.js';
+import type { InstrumentBarrier } from './domain/instrument_barrier.js';
+import type { InstrumentBarrierLevel } from './domain/instrument_barrier_level.js';
 import type { InstrumentOption } from './domain/instrument_option.js';
 import type { InstrumentOptionExerciseFee } from './domain/instrument_option_exercise_fee.js';
 import type { InstrumentOptionExercisePrice } from './domain/instrument_option_exercise_price.js';
@@ -165,6 +167,8 @@ export interface InstrumentBatch {
     index_credit_default_swap_instruments: IndexCreditDefaultSwapInstrument[];
     index_credit_default_swap_option_instruments: IndexCreditDefaultSwapOptionInstrument[];
     inflation_swap_instruments: InflationSwapInstrument[];
+    instrument_barriers: InstrumentBarrier[];
+    instrument_barrier_levels: InstrumentBarrierLevel[];
     instrument_options: InstrumentOption[];
     instrument_option_exercise_fees: InstrumentOptionExerciseFee[];
     instrument_option_exercise_prices: InstrumentOptionExercisePrice[];

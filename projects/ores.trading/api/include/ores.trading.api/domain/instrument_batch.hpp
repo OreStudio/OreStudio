@@ -103,6 +103,8 @@
 #include "ores.trading.api/domain/index_credit_default_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/instrument_barrier_codec.hpp"
+#include "ores.trading.api/domain/instrument_barrier_level_codec.hpp"
 #include "ores.trading.api/domain/instrument_option_codec.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee_codec.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price_codec.hpp"
@@ -385,6 +387,14 @@ struct instrument_batch {
      * @brief The inflation_swap_instrument rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::inflation_swap_instrument> inflation_swap_instruments;
+    /**
+     * @brief The instrument_barrier rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::instrument_barrier> instrument_barriers;
+    /**
+     * @brief The instrument_barrier_level rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::instrument_barrier_level> instrument_barrier_levels;
     /**
      * @brief The instrument_option rows, keyed by trade id.
      */
@@ -887,6 +897,20 @@ inline void append(instrument_batch& batch, inflation_swap_instrument v) {
 }
 
 /**
+ * @brief Adds one instrument_barrier to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_barrier v) {
+    batch.instrument_barriers.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_barrier_level to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_barrier_level v) {
+    batch.instrument_barrier_levels.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one instrument_option to the array that holds its type.
  */
 inline void append(instrument_batch& batch, instrument_option v) {
@@ -1150,6 +1174,10 @@ template <typename T>
             &instrument_batch::index_credit_default_swap_option_instruments},
         ::ores::utility::codec::field{"inflation_swap_instruments",
                                       &instrument_batch::inflation_swap_instruments},
+        ::ores::utility::codec::field{"instrument_barriers",
+                                      &instrument_batch::instrument_barriers},
+        ::ores::utility::codec::field{"instrument_barrier_levels",
+                                      &instrument_batch::instrument_barrier_levels},
         ::ores::utility::codec::field{"instrument_options", &instrument_batch::instrument_options},
         ::ores::utility::codec::field{"instrument_option_exercise_fees",
                                       &instrument_batch::instrument_option_exercise_fees},

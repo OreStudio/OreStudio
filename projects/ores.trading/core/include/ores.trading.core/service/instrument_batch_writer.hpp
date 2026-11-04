@@ -83,6 +83,8 @@
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/instrument_barrier_level_repository.hpp"
+#include "ores.trading.core/repository/instrument_barrier_repository.hpp"
 #include "ores.trading.core/repository/instrument_option_exercise_fee_repository.hpp"
 #include "ores.trading.core/repository/instrument_option_exercise_price_repository.hpp"
 #include "ores.trading.core/repository/instrument_option_payment_date_repository.hpp"
@@ -311,6 +313,10 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.index_credit_default_swap_option_instruments, keys, stamp, claim);
     write_rows<repository::inflation_swap_instrument_repository>(
         ctx, batch.inflation_swap_instruments, keys, stamp, claim);
+    write_rows<repository::instrument_barrier_repository>(
+        ctx, batch.instrument_barriers, keys, stamp, claim);
+    write_rows<repository::instrument_barrier_level_repository>(
+        ctx, batch.instrument_barrier_levels, keys, stamp, claim);
     write_rows<repository::instrument_option_repository>(
         ctx, batch.instrument_options, keys, stamp, claim);
     write_rows<repository::instrument_option_exercise_fee_repository>(
@@ -521,6 +527,10 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("index_credit_default_swap_option_instruments");
     if (!batch.inflation_swap_instruments.empty())
         names.emplace_back("inflation_swap_instruments");
+    if (!batch.instrument_barriers.empty())
+        names.emplace_back("instrument_barriers");
+    if (!batch.instrument_barrier_levels.empty())
+        names.emplace_back("instrument_barrier_levels");
     if (!batch.instrument_options.empty())
         names.emplace_back("instrument_options");
     if (!batch.instrument_option_exercise_fees.empty())

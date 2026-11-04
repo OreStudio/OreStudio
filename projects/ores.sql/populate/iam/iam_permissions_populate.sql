@@ -1582,6 +1582,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::inflation_swap_instruments:read',            'View inflation swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::inflation_swap_instruments:write',           'Create and modify inflation swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::inflation_swap_instruments:delete',          'Delete inflation swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barriers:read',                         'View instrument barriers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barriers:write',                        'Create and modify instrument barriers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barriers:delete',                       'Delete instrument barriers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barrier_levels:read',                         'View instrument barrier levels');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barrier_levels:write',                        'Create and modify instrument barrier levels');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barrier_levels:delete',                       'Delete instrument barrier levels');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_fees:read',       'View instrument option exercise fees');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_fees:write',      'Create and modify instrument option exercise fees');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_fees:delete',     'Delete instrument option exercise fees');

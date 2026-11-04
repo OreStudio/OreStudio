@@ -403,6 +403,8 @@ shape whichever family states the rows.
 | index_credit_default_swap_instrument        |
 | index_credit_default_swap_option_instrument |
 | inflation_swap_instrument                   |
+| instrument_barrier                          |
+| instrument_barrier_level                    |
 | instrument_option                           |
 | instrument_option_exercise_fee              |
 | instrument_option_exercise_price            |

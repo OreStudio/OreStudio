@@ -296,6 +296,18 @@ widening them.
 :column: trade_id
 :END:
 
+** instrument_barriers
+:PROPERTIES:
+:table:  ores_trading_instrument_barriers_tbl
+:column: trade_id
+:END:
+
+** instrument_barrier_levels
+:PROPERTIES:
+:table:  ores_trading_instrument_barrier_levels_tbl
+:column: trade_id
+:END:
+
 ** instrument_strikes
 :PROPERTIES:
 :table:  ores_trading_instrument_strikes_tbl

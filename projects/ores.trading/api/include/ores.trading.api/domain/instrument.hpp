@@ -45,6 +45,8 @@
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
+#include "ores.trading.api/domain/instrument_barrier.hpp"
+#include "ores.trading.api/domain/instrument_barrier_level.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
@@ -136,6 +138,8 @@ struct swap_instrument_data {
     std::vector<balance_guaranteed_swap_tranche_notional> tranche_notionals;
     std::vector<swap_leg_amortization> leg_amortizations;
     std::vector<swap_leg_indexing> leg_indexings;
+    std::vector<instrument_barrier> barriers;
+    std::vector<instrument_barrier_level> barrier_levels;
 };
 
 using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
@@ -171,6 +175,8 @@ struct commodity_instrument_data {
     std::vector<instrument_option_exercise_fee> option_exercise_fees;
     std::vector<instrument_option_payment_date> option_payment_dates;
     std::vector<instrument_option_exercise_price> option_exercise_prices;
+    std::vector<instrument_barrier> barriers;
+    std::vector<instrument_barrier_level> barrier_levels;
 };
 
 // A credit trade states its legs as rows of the shared leg tables, and an index
@@ -367,6 +373,8 @@ struct equity_instrument_data {
     std::vector<swap_leg_rate> leg_rates;
     std::vector<swap_leg_amortization> leg_amortizations;
     std::vector<swap_leg_indexing> leg_indexings;
+    std::vector<instrument_barrier> barriers;
+    std::vector<instrument_barrier_level> barrier_levels;
 };
 
 /**
@@ -438,6 +446,11 @@ struct fx_instrument_data {
     std::vector<instrument_option_exercise_price> option_exercise_prices;
     std::vector<instrument_schedule> schedules;
     std::vector<instrument_schedule_date> schedule_dates;
+    /**
+     * @brief The product's barriers and their levels, one row per BarrierData.
+     */
+    std::vector<instrument_barrier> barriers;
+    std::vector<instrument_barrier_level> barrier_levels;
 
     /**
      * @brief Value equality.
@@ -483,7 +496,9 @@ inline constexpr auto fx_instrument_child_arrays =
                &fx_instrument_data::option_payment_dates,
                &fx_instrument_data::option_exercise_prices,
                &fx_instrument_data::schedules,
-               &fx_instrument_data::schedule_dates};
+               &fx_instrument_data::schedule_dates,
+               &fx_instrument_data::barriers,
+               &fx_instrument_data::barrier_levels};
 
 /**
  * @brief Calls a function on the first row the carrier holds, and on no other.
@@ -622,6 +637,12 @@ inline void stamp_ids(swap_instrument_data& data,
     for (auto& indexing : data.leg_indexings) {
         stamp_ids(indexing, trade_id, activity_id);
     }
+    for (auto& barrier : data.barriers) {
+        stamp_ids(barrier, trade_id, activity_id);
+    }
+    for (auto& level : data.barrier_levels) {
+        stamp_ids(level, trade_id, activity_id);
+    }
     for (auto& lower_notional : data.lower_notionals) {
         stamp_ids(lower_notional, trade_id, activity_id);
     }
@@ -653,6 +674,8 @@ inline void stamp_ids(commodity_instrument_data& data,
     stamp_one(data.leg_rates);
     stamp_one(data.leg_amortizations);
     stamp_one(data.leg_indexings);
+    stamp_one(data.barriers);
+    stamp_one(data.barrier_levels);
     stamp_one(data.schedules);
     stamp_one(data.schedule_dates);
     stamp_one(data.options);
@@ -749,6 +772,8 @@ inline void stamp_ids(equity_instrument_data& data,
     stamp_one(data.leg_rates);
     stamp_one(data.leg_amortizations);
     stamp_one(data.leg_indexings);
+    stamp_one(data.barriers);
+    stamp_one(data.barrier_levels);
 }
 
 inline void stamp_ids(fx_instrument_data& data,

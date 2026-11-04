@@ -500,6 +500,18 @@ with the instrument and the legs do not outlive it.
 :column: trade_id
 :END:
 
+** instrument_barriers
+:PROPERTIES:
+:table:  ores_trading_instrument_barriers_tbl
+:column: trade_id
+:END:
+
+** instrument_barrier_levels
+:PROPERTIES:
+:table:  ores_trading_instrument_barrier_levels_tbl
+:column: trade_id
+:END:
+
 ** instrument_schedules
 :PROPERTIES:
 :table:  ores_trading_instrument_schedules_tbl

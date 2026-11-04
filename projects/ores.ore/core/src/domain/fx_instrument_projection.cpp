@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/barrier_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -628,7 +629,8 @@ void write_fx_option(record_writer& trade, const fx_vanilla_option_instrument& v
 
 void write_barrier_product(record_writer& trade,
                            std::string_view element,
-                           const fx_barrier_option_instrument& v) {
+                           const fx_barrier_option_instrument& v,
+                           const fx_instrument_data& carrier) {
     auto data = trade.child(element);
     data.set_spelling("BoughtCurrency", v.bought_currency, "currency");
     data.set_decimal("BoughtAmount", v.bought_amount);
@@ -637,11 +639,14 @@ void write_barrier_product(record_writer& trade,
     auto option = data.child("OptionData");
     fx_instrument_projection_write_option_entry(option, v.option_type, v.expiry_date);
     write_settlement(option, v.settlement);
-    if (!v.barrier_type.empty())
+    if (!barrier_block::write_kept_barriers(data, "", carrier, "barrier") &&
+        !v.barrier_type.empty())
         write_barrier_group(data, v.barrier_type, v.lower_barrier, v.upper_barrier);
 }
 
-void write_fx_kiko_barrier_option(record_writer& trade, const fx_barrier_option_instrument& v) {
+void write_fx_kiko_barrier_option(record_writer& trade,
+                                  const fx_barrier_option_instrument& v,
+                                  const fx_instrument_data& carrier) {
     auto data = trade.child("FxKIKOBarrierOptionData");
     data.set_spelling("BoughtCurrency", v.bought_currency, "currency");
     data.set_decimal("BoughtAmount", v.bought_amount);
@@ -649,10 +654,13 @@ void write_fx_kiko_barrier_option(record_writer& trade, const fx_barrier_option_
     data.set_decimal("SoldAmount", v.sold_amount);
     fx_instrument_projection_write_option_entry(
         data.child("OptionData"), v.option_type, v.expiry_date);
-    write_barrier_pair(data, v);
+    if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier"))
+        write_barrier_pair(data, v);
 }
 
-void write_fx_generic_barrier_option(record_writer& trade, const fx_barrier_option_instrument& v) {
+void write_fx_generic_barrier_option(record_writer& trade,
+                                     const fx_barrier_option_instrument& v,
+                                     const fx_instrument_data& carrier) {
     auto data = trade.child("FxGenericBarrierOptionData");
     if (!v.bought_currency.empty())
         data.set_spelling("PayCurrency", v.bought_currency, "currency");
@@ -660,7 +668,9 @@ void write_fx_generic_barrier_option(record_writer& trade, const fx_barrier_opti
         data.set_text("Name", v.underlying_code);
     fx_instrument_projection_write_option_entry(
         data.child("OptionData"), v.option_type, v.expiry_date);
-    write_barrier_pair(data, v);
+    if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier"))
+        write_barrier_pair(data, v);
+    barrier_block::write_kept_barriers(data, "TransatlanticBarrier", carrier, "transatlantic");
 }
 
 void write_fx_digital_option(record_writer& trade, const fx_digital_option_instrument& v) {
@@ -673,7 +683,9 @@ void write_fx_digital_option(record_writer& trade, const fx_digital_option_instr
         data.child("OptionData"), v.option_type, v.expiry_date, v.long_short);
 }
 
-void write_fx_digital_barrier_option(record_writer& trade, const fx_digital_option_instrument& v) {
+void write_fx_digital_barrier_option(record_writer& trade,
+                                     const fx_digital_option_instrument& v,
+                                     const fx_instrument_data& carrier) {
     auto data = trade.child("FxDigitalBarrierOptionData");
     data.set_spelling("ForeignCurrency", v.foreign_currency, "currency");
     data.set_spelling("DomesticCurrency", v.domestic_currency, "currency");
@@ -681,13 +693,15 @@ void write_fx_digital_barrier_option(record_writer& trade, const fx_digital_opti
     data.set_decimal("PayoffAmount", v.payoff_amount);
     fx_instrument_projection_write_option_entry(
         data.child("OptionData"), v.option_type, v.expiry_date, v.long_short);
-    if (!v.barrier_type.empty())
+    if (!barrier_block::write_kept_barriers(data, "", carrier, "barrier") &&
+        !v.barrier_type.empty())
         write_barrier_group(data, v.barrier_type, v.lower_barrier, v.upper_barrier);
 }
 
 void write_fx_touch_option(record_writer& trade,
                            std::string_view trade_type,
-                           const fx_digital_option_instrument& v) {
+                           const fx_digital_option_instrument& v,
+                           const fx_instrument_data& carrier) {
     const auto double_touch = trade_type == "FxDoubleTouchOption";
     auto data = trade.child(double_touch ? "FxDoubleTouchOptionData" : "FxTouchOptionData");
     if (!v.foreign_currency.empty())
@@ -701,7 +715,8 @@ void write_fx_touch_option(record_writer& trade,
     // block's LongShort and its side is the barrier's own style.
     fx_instrument_projection_write_option_entry(
         data.child("OptionData"), "", v.expiry_date, v.long_short);
-    if (!v.barrier_type.empty())
+    if (!barrier_block::write_kept_barriers(data, "", carrier, "barrier") &&
+        !v.barrier_type.empty())
         write_barrier_group(data, v.barrier_type, v.lower_barrier, v.upper_barrier);
 }
 
@@ -797,7 +812,8 @@ void write_fx_accumulator(record_writer& trade,
             writer.set_decimal("StrikeAdjustment", *row->strike_adjustment);
     }
 
-    if (v.knock_out_barrier.has_value()) {
+    if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier") &&
+        v.knock_out_barrier.has_value()) {
         auto barrier = data.child("Barriers").append("BarrierData");
         push_barrier(barrier, "UpAndOut", *v.knock_out_barrier);
     }
@@ -822,7 +838,8 @@ void write_fx_tarf(record_writer& trade,
     if (!option_block::write_product_schedule(data, carrier, "ScheduleData", "product_schedule"))
         write_schedule_rule(data.child("ScheduleData"), "", "1Y");
 
-    if (v.target_amount.has_value())
+    if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier") &&
+        v.target_amount.has_value())
         push_barrier(
             data.child("Barriers").append("BarrierData"), "CumulatedProfitCap", *v.target_amount);
 }
@@ -836,6 +853,21 @@ void write_fx_tarf(record_writer& trade,
  * Listed rather than probed, because asking a record type for a field it does
  * not declare is an error.
  */
+/// Where an FX product states its barriers.
+constexpr barrier_block::barrier_holder fx_barrier_holders[] = {
+    {"FxBarrierOption", "", "barrier"},
+    {"FxDoubleBarrierOption", "", "barrier"},
+    {"FxEuropeanBarrierOption", "", "barrier"},
+    {"FxDigitalBarrierOption", "", "barrier"},
+    {"FxTouchOption", "", "barrier"},
+    {"FxDoubleTouchOption", "", "barrier"},
+    {"FxKIKOBarrierOption", "Barriers", "barrier"},
+    {"FxGenericBarrierOption", "Barriers", "barrier"},
+    {"FxGenericBarrierOption", "TransatlanticBarrier", "transatlantic"},
+    {"FxAccumulator", "Barriers", "barrier"},
+    {"FxTaRF", "Barriers", "barrier"},
+};
+
 /// The schedules an FX product states on its own element.
 constexpr option_block::product_schedule fx_product_schedules[] = {
     {"FxAverageForward", "ObservationDates", "observation_schedule"},
@@ -916,6 +948,7 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
         }
     }
     option_block::read_product_schedules(data, trade, trade_type, fx_product_schedules);
+    barrier_block::read_product_barriers(data, trade, trade_type, fx_barrier_holders);
     return trading::domain::trade_instrument{std::move(data)};
 }
 
@@ -946,19 +979,19 @@ auto write_fx_instrument(xml::record_writer& trade,
                 matched = true;
             } else if constexpr (std::is_same_v<Row, fx_barrier_option_instrument>) {
                 if (trade_type == "FxBarrierOption") {
-                    write_barrier_product(trade, "FxBarrierOptionData", row);
+                    write_barrier_product(trade, "FxBarrierOptionData", row, *v);
                     matched = true;
                 } else if (trade_type == "FxGenericBarrierOption") {
-                    write_fx_generic_barrier_option(trade, row);
+                    write_fx_generic_barrier_option(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "FxDoubleBarrierOption") {
-                    write_barrier_product(trade, "FxDoubleBarrierOptionData", row);
+                    write_barrier_product(trade, "FxDoubleBarrierOptionData", row, *v);
                     matched = true;
                 } else if (trade_type == "FxEuropeanBarrierOption") {
-                    write_barrier_product(trade, "FxEuropeanBarrierOptionData", row);
+                    write_barrier_product(trade, "FxEuropeanBarrierOptionData", row, *v);
                     matched = true;
                 } else if (trade_type == "FxKIKOBarrierOption") {
-                    write_fx_kiko_barrier_option(trade, row);
+                    write_fx_kiko_barrier_option(trade, row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, fx_digital_option_instrument>) {
@@ -966,10 +999,10 @@ auto write_fx_instrument(xml::record_writer& trade,
                     write_fx_digital_option(trade, row);
                     matched = true;
                 } else if (trade_type == "FxDigitalBarrierOption") {
-                    write_fx_digital_barrier_option(trade, row);
+                    write_fx_digital_barrier_option(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "FxTouchOption" || trade_type == "FxDoubleTouchOption") {
-                    write_fx_touch_option(trade, trade_type, row);
+                    write_fx_touch_option(trade, trade_type, row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, fx_asian_forward_instrument>) {

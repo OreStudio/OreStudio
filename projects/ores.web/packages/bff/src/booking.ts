@@ -112,6 +112,8 @@ function emptyBatch(): InstrumentBatch {
         index_credit_default_swap_instruments: [],
         index_credit_default_swap_option_instruments: [],
         inflation_swap_instruments: [],
+        instrument_barrier_levels: [],
+        instrument_barriers: [],
         instrument_option_exercise_fees: [],
         instrument_option_exercise_prices: [],
         instrument_option_payment_dates: [],

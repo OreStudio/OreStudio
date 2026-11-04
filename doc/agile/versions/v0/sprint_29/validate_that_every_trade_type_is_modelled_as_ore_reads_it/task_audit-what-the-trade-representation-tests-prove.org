@@ -152,7 +152,26 @@ writer stores and the export reader never reads back.
   would make a forgotten table impossible. Open.
 - ORE parses a commodity swap from =SwapData=, which every ORE example uses.
   The projection reads and writes =CommoditySwapData=, the XSD's spelling,
-  so ORE cannot price a commodity swap we export.
+  so ORE cannot price a commodity swap we export. Fixed.
+
+** Modelling decisions for the remaining families
+
+Agreed with the product owner on 2026-11-04.
+
+- Barriers are entities. Each =BarrierData= block is an =instrument_barrier=
+  row (type, style, rebate and the other terms), keyed by trade, role and
+  ordinal, and its levels are =instrument_barrier_level= rows. One row with
+  one level is a single barrier, one row with two levels is a double
+  barrier, and several rows are a multi barrier. The 15 holders of
+  =BarrierData= share the one table.
+- Scripted trades model every parameter. ORE reads any scripted trade,
+  generic or named, as named parameters of five kinds (Event, Number,
+  Index, Currency, Daycounter), each a scalar, a list of values or, for an
+  event, a schedule or a derived schedule (=scriptedtrade.cpp=). A
+  parameter table covers every scripted product.
+- A total return swap, a composite trade and a contract for difference
+  embed whole trades. Each embedded trade becomes a trade of its own,
+  projected by its own family and linked from the parent.
 
 * Test Scenarios
 

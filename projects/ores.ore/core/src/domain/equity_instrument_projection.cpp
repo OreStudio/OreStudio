@@ -116,23 +116,23 @@ auto equity_instrument_projection_to_ore_date(const std::chrono::year_month_day&
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto equity_instrument_projection_text_of(const record_reader& r,
-                                          std::string_view name) -> std::string {
+auto equity_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto equity_instrument_projection_spelling_of(const record_reader& r,
-                                              std::string_view name) -> std::string {
+auto equity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
 /// A schema decimal element as the domain's exact decimal, zero when absent.
-auto equity_instrument_projection_decimal_of(const record_reader& r,
-                                             std::string_view name) -> decimal {
+auto equity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
@@ -236,8 +236,8 @@ struct range_bound_text final {
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_equity_option(const record_reader& trade,
-                        std::string_view trade_type) -> equity_option_instrument {
+auto read_equity_option(const record_reader& trade, std::string_view trade_type)
+    -> equity_option_instrument {
     auto r = equity_instrument_projection_make_row<equity_option_instrument>(trade_type);
     const auto data = trade.child("EquityOptionData");
     if (!data)
@@ -516,6 +516,7 @@ auto read_equity_cliquet_option(const record_reader& trade) -> equity_option_ins
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.notional = equity_instrument_projection_decimal_of(*data, "Notional");
     r.option_type = equity_instrument_projection_spelling_of(*data, "OptionType");
+    r.long_short = equity_instrument_projection_spelling_of(*data, "LongShort");
 
     const auto schedule = data->child("ScheduleData");
     if (!schedule)
@@ -915,7 +916,7 @@ void write_equity_cliquet_option(record_writer& trade, const equity_option_instr
     data.set_text("Name", v.underlying_name);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Notional", v.notional);
-    data.set_spelling("LongShort", "Long", "long short");
+    data.set_spelling("LongShort", v.long_short.empty() ? "Long" : v.long_short, "long short");
     if (v.option_type == "Put" || v.option_type == "Call")
         data.set_spelling("OptionType", v.option_type, "option type");
     else

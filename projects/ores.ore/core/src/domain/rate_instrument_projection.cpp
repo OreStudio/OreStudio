@@ -135,15 +135,15 @@ auto rate_instrument_projection_to_ore_date(const std::optional<std::chrono::yea
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto rate_instrument_projection_text_of(const record_reader& r,
-                                        std::string_view name) -> std::string {
+auto rate_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto rate_instrument_projection_spelling_of(const record_reader& r,
-                                            std::string_view name) -> std::string {
+auto rate_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -166,8 +166,8 @@ auto rate_instrument_projection_decimal_text(const record_reader& r) -> decimal 
 }
 
 /// A schema decimal element as the domain's exact decimal.
-auto rate_instrument_projection_decimal_of(const record_reader& r,
-                                           std::string_view name) -> decimal {
+auto rate_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -629,15 +629,54 @@ std::vector<swap_leg_amount> rate_instrument_projection_read_leg_amounts(const r
     return amounts;
 }
 
+/// The schedules a floating leg states, each as its list, its item and the
+/// role a rate row keeps it under.
+struct floating_rate_list {
+    std::string_view element;
+    std::string_view item;
+    std::string_view role;
+};
+
+constexpr floating_rate_list floating_rate_lists[] = {
+    {"Spreads", "Spread", "spread"},
+    {"Gearings", "Gearing", "gearing"},
+    {"Caps", "Cap", "cap"},
+    {"Floors", "Floor", "floor"},
+};
+
+/// Writes each schedule a floating leg's rows state, in the order the schema
+/// gives them.
+void write_floating_rates(record_writer& floating, const std::vector<swap_leg_rate>& rates) {
+    for (const auto& [element, item, role] : floating_rate_lists) {
+        const auto states = std::any_of(
+            rates.begin(), rates.end(), [&](const auto& rate) { return rate.rate_role == role; });
+        if (!states)
+            continue;
+        auto list = floating.child(element);
+        for (const auto& rate : rates) {
+            if (rate.rate_role != role)
+                continue;
+            auto writer = list.append(item);
+            writer.set_own_text(rate.value.to_string());
+            if (rate.start_date)
+                writer.set_text("startDate",
+                                rate_instrument_projection_to_ore_date(*rate.start_date));
+        }
+    }
+}
+
 std::vector<swap_leg_rate> rate_instrument_projection_read_leg_rates(const record_reader& leg,
                                                                      int leg_number) {
     std::vector<swap_leg_rate> rates;
-    const auto append = [&](std::string_view role, const decimal& value) {
+    const auto append = [&](std::string_view role, const record_reader& value) {
         swap_leg_rate row;
         row.leg_number = leg_number;
         row.rate_role = std::string(role);
         row.sequence_number = static_cast<int>(rates.size()) + 1;
-        row.value = value;
+        row.value = rate_instrument_projection_decimal_text(value);
+        if (const auto start = rate_instrument_projection_text_of(value, "startDate");
+            !start.empty())
+            row.start_date = rate_instrument_projection_to_domain_date(start);
         rate_instrument_projection_stamp_row(row);
         rates.push_back(std::move(row));
     };
@@ -645,12 +684,13 @@ std::vector<swap_leg_rate> rate_instrument_projection_read_leg_rates(const recor
     if (const auto fixed = leg.child("FixedLegData")) {
         if (const auto list = fixed->child("Rates"))
             for (const auto& rate : list->children("Rate"))
-                append("fixed", rate_instrument_projection_decimal_text(rate));
+                append("fixed", rate);
     }
     if (const auto floating = leg.child("FloatingLegData")) {
-        if (const auto list = floating->child("Spreads"))
-            for (const auto& spread : list->children("Spread"))
-                append("spread", rate_instrument_projection_decimal_text(spread));
+        for (const auto& [element, item, role] : floating_rate_lists)
+            if (const auto list = floating->child(element))
+                for (const auto& value : list->children(item))
+                    append(role, value);
     }
     return rates;
 }
@@ -1446,15 +1486,7 @@ void rate_instrument_projection_write_leg(record_writer& leg,
     } else if (row.leg_type_code == "Floating") {
         auto floating = leg.child("FloatingLegData");
         floating.set_text("Index", row.floating_index_code);
-        const auto spreads = std::count_if(rates.begin(), rates.end(), [](const auto& rate) {
-            return rate.rate_role == "spread";
-        });
-        if (spreads != 0) {
-            auto list = floating.child("Spreads");
-            for (const auto& rate : rates)
-                if (rate.rate_role == "spread")
-                    list.append("Spread").set_own_text(rate.value.to_string());
-        }
+        write_floating_rates(floating, rates);
     }
 }
 
@@ -1615,16 +1647,7 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
         if (row.leg_type_code == "Floating") {
             auto floating = leg.child("FloatingLegData");
             floating.set_text("Index", row.floating_index_code);
-            const auto spreads =
-                std::count_if(v.leg_rates.begin(), v.leg_rates.end(), [](const auto& rate) {
-                    return rate.rate_role == "spread";
-                });
-            if (spreads != 0) {
-                auto list = floating.child("Spreads");
-                for (const auto& rate : v.leg_rates)
-                    if (rate.rate_role == "spread")
-                        list.append("Spread").set_own_text(rate.value.to_string());
-            }
+            write_floating_rates(floating, v.leg_rates);
         }
     }
 

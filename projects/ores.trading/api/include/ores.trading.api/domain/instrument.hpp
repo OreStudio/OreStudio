@@ -313,6 +313,20 @@ struct equity_instrument_data {
      * accumulator states them beside its facts as the FX accumulator does.
      */
     std::vector<range_bound> range_bounds;
+    /**
+     * @brief The OptionData block of an equity option, in the shared option rows.
+     *
+     * The product's own row states its option type and expiry; the block's
+     * other terms, its direction, style, settlement and premiums, live in the
+     * rows every option family reads and writes.
+     */
+    std::vector<instrument_option> options;
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<instrument_option_payment_date> option_payment_dates;
+    std::vector<instrument_option_exercise_price> option_exercise_prices;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
 };
 
 /**
@@ -652,6 +666,17 @@ inline void stamp_ids(equity_instrument_data& data,
         underlying.trade_id = trade_id;
         underlying.trade_activity_id = activity_id;
     }
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows)
+            stamp_ids(row, trade_id, activity_id);
+    };
+    stamp_one(data.options);
+    stamp_one(data.option_premiums);
+    stamp_one(data.option_exercise_fees);
+    stamp_one(data.option_payment_dates);
+    stamp_one(data.option_exercise_prices);
+    stamp_one(data.schedules);
+    stamp_one(data.schedule_dates);
 }
 
 inline void stamp_ids(fx_instrument_data& data,

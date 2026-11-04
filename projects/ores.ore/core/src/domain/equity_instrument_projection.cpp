@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -1047,13 +1048,34 @@ void write_equity_option_position(record_writer& trade,
     }
 }
 
+/**
+ * @brief The element of an equity product that states an OptionData block, or
+ * nothing for a product that states none.
+ *
+ * Listed rather than probed, because asking a record type for a field it does
+ * not declare is an error.
+ */
+std::optional<std::string> equity_option_data_element(std::string_view trade_type) {
+    static constexpr std::string_view with_option_data[] = {
+        "EquityOption",
+        "EquityBarrierOption",
+        "EquityDoubleBarrierOption",
+        "EquityEuropeanBarrierOption",
+        "EquityAsianOption",
+        "EquityDigitalOption",
+        "EquityTouchOption",
+        "EquityOutperformanceOption",
+        "EquityAccumulator",
+        "EquityTaRF",
+    };
+    for (const auto type : with_option_data)
+        if (type == trade_type)
+            return std::string(trade_type) + "Data";
+    return std::nullopt;
 }
 
-auto read_equity_instrument(xml::record_reader trade, std::string_view trade_type)
-    -> std::optional<trading::domain::trade_instrument> {
-    if (!is_equity_trade_type(trade_type))
-        return std::nullopt;
-
+auto read_equity_product(const xml::record_reader& trade, std::string_view trade_type)
+    -> trading::domain::trade_instrument {
     if (trade_type == "EquityPosition")
         return trading::domain::trade_instrument{read_equity_position(trade)};
     if (trade_type == "EquityOptionPosition")
@@ -1093,6 +1115,27 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
     if (trade_type == "EquityCliquetOption")
         return wrap(read_equity_cliquet_option(trade));
     return read_equity_worst_of_basket_swap(trade);
+}
+
+}
+
+auto read_equity_instrument(xml::record_reader trade, std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument> {
+    if (!is_equity_trade_type(trade_type))
+        return std::nullopt;
+
+    auto instrument = read_equity_product(trade, trade_type);
+    // The product's row keeps its own terms; the block's shared terms land in
+    // the option rows every option family reads and writes.
+    if (auto* data = std::get_if<equity_instrument_data>(&instrument)) {
+        if (const auto element = equity_option_data_element(trade_type)) {
+            if (const auto product = trade.child(*element)) {
+                if (const auto option = product->child("OptionData"))
+                    option_block::read_option_block(*data, *option);
+            }
+        }
+    }
+    return instrument;
 }
 
 auto write_equity_instrument(xml::record_writer& trade,
@@ -1178,6 +1221,15 @@ auto write_equity_instrument(xml::record_writer& trade,
             }
         },
         v->instrument);
+
+    if (matched && !v->options.empty()) {
+        if (const auto element = equity_option_data_element(trade_type)) {
+            if (auto product = trade.chosen_child(*element)) {
+                auto option = product->child("OptionData");
+                option_block::write_option_block(option, *v);
+            }
+        }
+    }
     return matched;
 }
 

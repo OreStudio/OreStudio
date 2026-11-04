@@ -32,6 +32,25 @@
 namespace ores::ore::xml {
 
 /**
+ * @brief Where a trade sits inside another trade the document states.
+ *
+ * A composite trade states its components inline, each a whole trade or a
+ * sub trade. Each component is booked as a trade of its own, and this names
+ * the trade that holds it, the role it holds it in and its place in the list,
+ * so the import can join them in a structure and the export can nest them
+ * back.
+ */
+struct trade_membership {
+    /// The ORE id of the trade that states this one.
+    std::string parent_ore_id;
+    /// The structure role: "trade" for a component Trade, "sub_trade" for a
+    /// component SubTrade.
+    std::string role;
+    /// 1-based place of this trade in the parent's list.
+    int sequence_number = 0;
+};
+
+/**
  * @brief A trade read from an ORE document, ready to book.
  *
  * Carries what the import books: the trade's anchor and booking, the
@@ -52,6 +71,8 @@ struct trade_import_item {
     std::optional<trading::domain::trade_envelope_data> envelope;
     std::filesystem::path source_file;
     trading::domain::trade_instrument instrument;
+    /// The trade that states this one inline, when it is a component.
+    std::optional<trade_membership> membership;
 };
 
 }

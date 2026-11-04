@@ -423,6 +423,7 @@ shape whichever family states the rows.
 | swap_leg_rate                               |
 | scripted_parameter                          |
 | scripted_parameter_value                    |
+| structure_member                            |
 | swaption_instrument                         |
 | synthetic_cdo_instrument                    |
 | vanilla_swap_instrument                     |

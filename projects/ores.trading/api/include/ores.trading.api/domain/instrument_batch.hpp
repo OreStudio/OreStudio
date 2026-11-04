@@ -120,6 +120,7 @@
 #include "ores.trading.api/domain/scripted_instrument_codec.hpp"
 #include "ores.trading.api/domain/scripted_parameter_codec.hpp"
 #include "ores.trading.api/domain/scripted_parameter_value_codec.hpp"
+#include "ores.trading.api/domain/structure_member_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_amortization_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_amount_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_codec.hpp"
@@ -473,6 +474,10 @@ struct instrument_batch {
      * @brief The scripted_parameter_value rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::scripted_parameter_value> scripted_parameter_values;
+    /**
+     * @brief The structure_member rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::structure_member> structure_members;
     /**
      * @brief The swaption_instrument rows, keyed by trade id.
      */
@@ -1047,6 +1052,13 @@ inline void append(instrument_batch& batch, scripted_parameter_value v) {
 }
 
 /**
+ * @brief Adds one structure_member to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, structure_member v) {
+    batch.structure_members.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one swaption_instrument to the array that holds its type.
  */
 inline void append(instrument_batch& batch, swaption_instrument v) {
@@ -1231,6 +1243,7 @@ template <typename T>
                                       &instrument_batch::scripted_parameters},
         ::ores::utility::codec::field{"scripted_parameter_values",
                                       &instrument_batch::scripted_parameter_values},
+        ::ores::utility::codec::field{"structure_members", &instrument_batch::structure_members},
         ::ores::utility::codec::field{"swaption_instruments",
                                       &instrument_batch::swaption_instruments},
         ::ores::utility::codec::field{"synthetic_cdo_instruments",

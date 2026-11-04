@@ -30,6 +30,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <variant>
 
 namespace ores::ore::xml {
@@ -173,11 +174,47 @@ portfolio_roundtrip roundtrip_portfolio(std::string_view text, std::string_view 
         export_item.ore_id = item.ore_id;
         export_item.envelope = item.envelope;
         trading::domain::append_instrument(instruments, instrument);
-        if (std::holds_alternative<std::monostate>(instrument))
-            result.passthrough_types.push_back(item.anchor.trade_type);
-        else
-            ++result.trades_mapped;
+        // A component is written inside its composite, so only the trades the
+        // document states at its top level are counted.
+        if (!item.membership) {
+            if (std::holds_alternative<std::monostate>(instrument))
+                result.passthrough_types.push_back(item.anchor.trade_type);
+            else
+                ++result.trades_mapped;
+        }
         export_items.push_back(std::move(export_item));
+    }
+
+    // A composite's components are trades of their own, joined to the
+    // composite by a structure. The import builds it from each component's
+    // membership; this round trip has no import, so it builds it here.
+    std::unordered_map<std::string, std::size_t> position_of;
+    for (std::size_t i = 0; i < items.size(); ++i)
+        if (!items[i].membership)
+            position_of.emplace(items[i].ore_id, i);
+    std::unordered_map<std::string, boost::uuids::uuid> structure_of;
+    const auto join = [&](std::size_t i, const std::string& role, int sequence_number,
+                          const boost::uuids::uuid& structure_id) {
+        trading::domain::structure_member member;
+        member.trade_id = export_items[i].anchor.id;
+        member.structure_id = structure_id;
+        member.role = role;
+        member.sequence_number = sequence_number;
+        instruments.structure_members.push_back(std::move(member));
+    };
+    for (std::size_t i = 0; i < items.size(); ++i) {
+        const auto& membership = items[i].membership;
+        if (!membership)
+            continue;
+        const auto parent = position_of.find(membership->parent_ore_id);
+        if (parent == position_of.end())
+            continue;
+        auto [structure, created] = structure_of.try_emplace(membership->parent_ore_id);
+        if (created) {
+            structure->second = uuid_gen();
+            join(parent->second, "composite", 1, structure->second);
+        }
+        join(i, membership->role, membership->sequence_number, structure->second);
     }
 
     result.xml = exporter::export_portfolio(export_items, instruments);

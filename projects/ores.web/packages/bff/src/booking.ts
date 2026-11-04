@@ -134,6 +134,7 @@ function emptyBatch(): InstrumentBatch {
         swap_leg_indexings: [],
         swap_leg_rates: [],
         swap_legs: [],
+        structure_members: [],
         swaption_instruments: [],
         synthetic_cdo_instruments: [],
         vanilla_swap_instruments: [],

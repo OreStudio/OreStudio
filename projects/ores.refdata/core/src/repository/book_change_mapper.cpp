@@ -66,6 +66,7 @@ domain::book_change book_change_mapper::map(const book_change_entity& v) {
     r.book_purpose_type = v.book_purpose_type;
     r.ledger_feed_type = v.ledger_feed_type;
     r.is_sweepable = v.is_sweepable;
+    r.restricts_product_types = v.restricts_product_types;
     r.rates_centre_code = v.rates_centre_code;
     r.sandbox_id = v.sandbox_id;
     r.modified_by = v.modified_by;
@@ -104,6 +105,7 @@ book_change_entity book_change_mapper::map(const domain::book_change& v) {
     r.book_purpose_type = v.book_purpose_type;
     r.ledger_feed_type = v.ledger_feed_type;
     r.is_sweepable = v.is_sweepable;
+    r.restricts_product_types = v.restricts_product_types;
     r.rates_centre_code = v.rates_centre_code;
     r.sandbox_id = v.sandbox_id;
     r.modified_by = v.modified_by;

@@ -69,6 +69,7 @@ domain::book_change generate_synthetic_book_change(utility::generation::generati
     r.book_purpose_type = std::string("Trading");
     r.ledger_feed_type = std::string("None");
     r.is_sweepable = false;
+    r.restricts_product_types = false;
     r.rates_centre_code = std::string("WRLD");
     r.sandbox_id = std::nullopt;
     r.modified_by = modified_by;

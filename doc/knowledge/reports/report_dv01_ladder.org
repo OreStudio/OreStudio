@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :report:market-risk:greeks:rates:sensitivity:eod:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-04
 #+report_code: bump_and_reprice_dv01_ladder
 #+startup: inlineimages
 
@@ -42,9 +42,10 @@ carries which.
 
 * Frequency
 
-Every ladder in this family is end of day. A ladder is read as the risk statement
-of record and compared across days, and a live ladder would be priced against a
-body that is not reproducible.
+This ladder is end of day, and so are the gamma, theta, cross-gamma and par DV01
+readers. A ladder is read as the risk statement of record and compared across days.
+The volatility ladders and the rates delta ladder also hold a live definition, which
+their own pages state, and a live ladder is indicative where this one stands.
 
 #+ATTR_HTML: :class hug-leading
 | Field     | Value       |

@@ -81,6 +81,25 @@ ANALYTICS = {
     "Option Map": ["portfolio_details"],
     "Intraday Change": ["npv"],
     "Trades Since Last In": ["portfolio_details"],
+    # The ladder family bumps one factor and reprices the book, so every ladder
+    # runs the sensitivity analytic beside the valuation it changes. The par-rate
+    # DV01 ladder is the exception: it reads the par column of the sensitivity
+    # output and asks for no valuation of its own.
+    "Bump and Reprice Rho Ladder": ["npv", "sensitivity"],
+    "Bump and Reprice Rho Ladder (EOD)": ["npv", "sensitivity"],
+    "Bump and Reprice Gamma Ladder": ["npv", "sensitivity"],
+    "Bump and Reprice Theta Ladder": ["npv", "sensitivity"],
+    "Bump and Reprice Cross-gamma Ladder": ["npv", "sensitivity"],
+    "Bump and Reprice ATM Vega Ladder": ["npv", "sensitivity"],
+    "Bump and Reprice ATM Vega Ladder (EOD)": ["npv", "sensitivity"],
+    "Bump and Reprice Surface Vega Ladder": ["npv", "sensitivity"],
+    "Bump and Reprice Surface Vega Ladder (EOD)": ["npv", "sensitivity"],
+    "Bump and Reprice Risk-reversal Vega Ladder": ["npv", "sensitivity"],
+    "Bump and Reprice Risk-reversal Vega Ladder (EOD)": ["npv", "sensitivity"],
+    "Bump and Reprice Butterfly Vega Ladder": ["npv", "sensitivity"],
+    "Bump and Reprice Butterfly Vega Ladder (EOD)": ["npv", "sensitivity"],
+    "Bump and Reprice DV01 Ladder": ["sensitivity"],
+    "Bump and Reprice Delta Ladder": ["npv", "sensitivity"],
 }
 
 # The name of each set of analytics, for the name of the configuration.

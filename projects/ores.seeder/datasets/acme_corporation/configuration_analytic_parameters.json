@@ -51,6 +51,56 @@
   },
   {
     "company_code": "acme_group",
+    "id": "c9578a50-f09c-55a2-a652-35c677e6b8c5",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "81346f7b-f504-579e-8a4b-cff06c299137",
+    "parameter_name": "recalibrateModels",
+    "value": "Y",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "id": "cef2e914-ed29-52c7-a0c8-86c953beb105",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "81346f7b-f504-579e-8a4b-cff06c299137",
+    "parameter_name": "outputSensitivityThreshold",
+    "value": "0.000001",
+    "position": 2
+  },
+  {
+    "company_code": "acme_group",
+    "id": "38b30dbe-75f1-5cfe-a06a-cbf3d996bebf",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "81346f7b-f504-579e-8a4b-cff06c299137",
+    "parameter_name": "parSensitivity",
+    "value": "Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_group",
+    "id": "99d3e2cc-5775-5ad7-b54e-78883b2b1ad5",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "81346f7b-f504-579e-8a4b-cff06c299137",
+    "parameter_name": "sensitivityConfigFile",
+    "value": "sensitivity.xml",
+    "position": 4
+  },
+  {
+    "company_code": "acme_group",
+    "id": "91ea09ac-1ecf-54e7-969c-3e0191cd5ede",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "81346f7b-f504-579e-8a4b-cff06c299137",
+    "parameter_name": "marketConfigFile",
+    "value": "simulation.xml",
+    "position": 5
+  },
+  {
+    "company_code": "acme_group",
     "id": "bbc88c96-627a-5d5e-b74f-b396380e8b82",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -68,6 +118,126 @@
     "parameter_name": "simmVersion",
     "value": "2.1",
     "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "id": "78cc6fa5-788a-536e-b3d7-1696f063b7a4",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "bff96a19-aa1c-54e1-bed0-6cbecf772af4",
+    "parameter_name": "baseCurrency",
+    "value": "GBP",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "id": "6c4fe3da-b06d-57e6-a576-41ee2e286f04",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "75c12fc7-cf6a-55cf-b307-840e3dcc4c42",
+    "parameter_name": "recalibrateModels",
+    "value": "Y",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "id": "025917a4-51d6-5dfd-ab82-9f07e91e0428",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "75c12fc7-cf6a-55cf-b307-840e3dcc4c42",
+    "parameter_name": "outputSensitivityThreshold",
+    "value": "0.000001",
+    "position": 2
+  },
+  {
+    "company_code": "acme_group",
+    "id": "68d582d8-6b92-5db7-aebb-7bc5fe71590c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "75c12fc7-cf6a-55cf-b307-840e3dcc4c42",
+    "parameter_name": "parSensitivity",
+    "value": "Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_group",
+    "id": "893fd826-1da7-5713-b2d3-192e70719686",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "75c12fc7-cf6a-55cf-b307-840e3dcc4c42",
+    "parameter_name": "sensitivityConfigFile",
+    "value": "sensitivity.xml",
+    "position": 4
+  },
+  {
+    "company_code": "acme_group",
+    "id": "010f15de-2784-5a81-a65b-691dfe671129",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "75c12fc7-cf6a-55cf-b307-840e3dcc4c42",
+    "parameter_name": "marketConfigFile",
+    "value": "simulation.xml",
+    "position": 5
+  },
+  {
+    "company_code": "acme_group",
+    "id": "15310d0d-65a2-5d54-be5b-2994cc1c1209",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "9f47567f-6ea8-5724-b5ae-4183add0b395",
+    "parameter_name": "baseCurrency",
+    "value": "GBP",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "id": "961d2348-36dc-5298-beea-02c17cf55182",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "cf3fa689-32ef-582f-ad3f-e214116b4ec5",
+    "parameter_name": "recalibrateModels",
+    "value": "Y",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "id": "69abfa1b-32f2-5397-8741-a51e925fe756",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "cf3fa689-32ef-582f-ad3f-e214116b4ec5",
+    "parameter_name": "outputSensitivityThreshold",
+    "value": "0.000001",
+    "position": 2
+  },
+  {
+    "company_code": "acme_group",
+    "id": "76031764-4f17-527c-9254-c5d728dfed12",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "cf3fa689-32ef-582f-ad3f-e214116b4ec5",
+    "parameter_name": "parSensitivity",
+    "value": "Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_group",
+    "id": "17d249f1-7def-5c51-8109-ba3e019991fa",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "cf3fa689-32ef-582f-ad3f-e214116b4ec5",
+    "parameter_name": "sensitivityConfigFile",
+    "value": "sensitivity.xml",
+    "position": 4
+  },
+  {
+    "company_code": "acme_group",
+    "id": "9c3080d9-508c-5cb4-b976-beeda0c2c21d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "cf3fa689-32ef-582f-ad3f-e214116b4ec5",
+    "parameter_name": "marketConfigFile",
+    "value": "simulation.xml",
+    "position": 5
   },
   {
     "company_code": "acme_uk",
@@ -1081,6 +1251,56 @@
   },
   {
     "company_code": "acme_us",
+    "id": "17f2afba-9235-5b30-be16-85c53f68fbab",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "3af88df5-b824-545e-9048-5ef35f80d12b",
+    "parameter_name": "recalibrateModels",
+    "value": "Y",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
+    "id": "5b117983-5a24-58f6-88bc-0a3cf41724da",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "3af88df5-b824-545e-9048-5ef35f80d12b",
+    "parameter_name": "outputSensitivityThreshold",
+    "value": "0.000001",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "id": "9e0a17e7-d07b-5f3a-9b54-3b561ea1578f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "3af88df5-b824-545e-9048-5ef35f80d12b",
+    "parameter_name": "parSensitivity",
+    "value": "Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "id": "647847ff-8ea1-541f-8c66-a3e4f36d5ae9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "3af88df5-b824-545e-9048-5ef35f80d12b",
+    "parameter_name": "sensitivityConfigFile",
+    "value": "sensitivity.xml",
+    "position": 4
+  },
+  {
+    "company_code": "acme_us",
+    "id": "1d68b693-9074-5651-b5b6-a95c3d3e1d8d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "3af88df5-b824-545e-9048-5ef35f80d12b",
+    "parameter_name": "marketConfigFile",
+    "value": "simulation.xml",
+    "position": 5
+  },
+  {
+    "company_code": "acme_us",
     "id": "08714427-aecc-5e3a-ab66-f7c96b4117c3",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -1758,6 +1978,56 @@
     "parameter_name": "parSensitivity",
     "value": "Y",
     "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "6e1ad535-8896-5d0f-910c-31d99a099195",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "f28e689d-8bb7-5274-8411-918c9e7b7a0c",
+    "parameter_name": "recalibrateModels",
+    "value": "Y",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f9b67d3d-9d76-52d6-ba53-0f535ff1fbac",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "f28e689d-8bb7-5274-8411-918c9e7b7a0c",
+    "parameter_name": "outputSensitivityThreshold",
+    "value": "0.000001",
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "d14e6a35-0e9d-5fd7-b40f-e8e92fb7f2a8",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "f28e689d-8bb7-5274-8411-918c9e7b7a0c",
+    "parameter_name": "parSensitivity",
+    "value": "Y",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "564cdf0a-edf0-50ae-9140-755de063bd7b",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "f28e689d-8bb7-5274-8411-918c9e7b7a0c",
+    "parameter_name": "sensitivityConfigFile",
+    "value": "sensitivity.xml",
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "1c673e16-516a-5235-91df-78f9a83ddcb0",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_analytic_id": "f28e689d-8bb7-5274-8411-918c9e7b7a0c",
+    "parameter_name": "marketConfigFile",
+    "value": "simulation.xml",
+    "position": 5
   },
   {
     "company_code": "acme_hk",

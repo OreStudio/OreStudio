@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/barrier_block_projection.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
@@ -784,7 +785,8 @@ void write_equity_variance_swap(record_writer& trade, const equity_variance_swap
 void write_equity_barrier_option(record_writer& trade,
                                  std::string_view element,
                                  const equity_barrier_option_instrument& v,
-                                 bool writes_upper) {
+                                 bool writes_upper,
+                                 const equity_instrument_data& carrier) {
     auto data = trade.child(element);
     write_option_entry(data.child("OptionData"), v);
     data.set_text("Name", v.underlying_name);
@@ -792,6 +794,8 @@ void write_equity_barrier_option(record_writer& trade,
     data.set_decimal("Quantity", v.notional);
     if (!v.strike.is_zero())
         data.set_text("Strike", v.strike.to_string());
+    if (barrier_block::write_kept_barriers(data, "", carrier, "barrier"))
+        return;
     if (v.lower_barrier_type.empty())
         return;
     auto barrier = data.child("BarrierData");
@@ -831,12 +835,16 @@ void write_equity_digital_option(record_writer& trade, const equity_digital_opti
     data.set_decimal("Quantity", decimal_from_double(1.0));
 }
 
-void write_equity_touch_option(record_writer& trade, const equity_digital_option_instrument& v) {
+void write_equity_touch_option(record_writer& trade,
+                               const equity_digital_option_instrument& v,
+                               const equity_instrument_data& carrier) {
     auto data = trade.child("EquityTouchOptionData");
     write_option_entry(data.child("OptionData"), v);
     data.set_text("Name", v.underlying_name);
     data.set_spelling("PayoffCurrency", v.currency, "currency");
     data.set_decimal("PayoffAmount", v.notional);
+    if (barrier_block::write_kept_barriers(data, "", carrier, "barrier"))
+        return;
     if (v.barrier_type.empty())
         return;
     auto barrier = data.child("BarrierData");
@@ -916,6 +924,7 @@ void write_equity_accumulator(record_writer& trade,
                 set_decimal_from_double(bound, "Leverage", *row.leverage);
         }
     }
+    barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier");
 }
 
 void write_equity_tarf(record_writer& trade,
@@ -933,11 +942,13 @@ void write_equity_tarf(record_writer& trade,
     if (!option_block::write_product_schedule(data, carrier, "ScheduleData", "product_schedule"))
         write_schedule_rule(data.child("ScheduleData"), "", "1Y");
 
-    // The schema requires a barrier, and the cap the row keeps is the one the
-    // document states.
-    auto barrier = data.child("Barriers").append("BarrierData");
-    barrier.set_spelling("Type", "FixingCap", "barrier type");
-    barrier.child("Levels").append_decimal("Level", v.knock_out_level.value_or(decimal{}));
+    // The schema requires a barrier. A row stored before the barriers were kept
+    // states only its cap, and that is the barrier it writes.
+    if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier")) {
+        auto barrier = data.child("Barriers").append("BarrierData");
+        barrier.set_spelling("Type", "FixingCap", "barrier type");
+        barrier.child("Levels").append_decimal("Level", v.knock_out_level.value_or(decimal{}));
+    }
 }
 
 void write_equity_cliquet_option(record_writer& trade,
@@ -1092,6 +1103,16 @@ void write_equity_option_position(record_writer& trade,
  * Listed rather than probed, because asking a record type for a field it does
  * not declare is an error.
  */
+/// Where an equity product states its barriers.
+constexpr barrier_block::barrier_holder equity_barrier_holders[] = {
+    {"EquityBarrierOption", "", "barrier"},
+    {"EquityDoubleBarrierOption", "", "barrier"},
+    {"EquityEuropeanBarrierOption", "", "barrier"},
+    {"EquityTouchOption", "", "barrier"},
+    {"EquityAccumulator", "Barriers", "barrier"},
+    {"EquityTaRF", "Barriers", "barrier"},
+};
+
 /// The schedules an equity product states on its own element.
 constexpr option_block::product_schedule equity_product_schedules[] = {
     {"EquityAccumulator", "ObservationDates", "observation_schedule"},
@@ -1183,6 +1204,7 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
             }
         }
         option_block::read_product_schedules(*data, trade, trade_type, equity_product_schedules);
+        barrier_block::read_product_barriers(*data, trade, trade_type, equity_barrier_holders);
     }
     return instrument;
 }
@@ -1238,14 +1260,14 @@ auto write_equity_instrument(xml::record_writer& trade,
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_barrier_option_instrument>) {
                 if (trade_type == "EquityBarrierOption") {
-                    write_equity_barrier_option(trade, "EquityBarrierOptionData", row, false);
+                    write_equity_barrier_option(trade, "EquityBarrierOptionData", row, false, *v);
                     matched = true;
                 } else if (trade_type == "EquityDoubleBarrierOption") {
-                    write_equity_barrier_option(trade, "EquityDoubleBarrierOptionData", row, true);
+                    write_equity_barrier_option(trade, "EquityDoubleBarrierOptionData", row, true, *v);
                     matched = true;
                 } else if (trade_type == "EquityEuropeanBarrierOption") {
                     write_equity_barrier_option(
-                        trade, "EquityEuropeanBarrierOptionData", row, true);
+                        trade, "EquityEuropeanBarrierOptionData", row, true, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_asian_option_instrument>) {
@@ -1256,7 +1278,7 @@ auto write_equity_instrument(xml::record_writer& trade,
                     write_equity_digital_option(trade, row);
                     matched = true;
                 } else if (trade_type == "EquityTouchOption") {
-                    write_equity_touch_option(trade, row);
+                    write_equity_touch_option(trade, row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_accumulator_instrument>) {

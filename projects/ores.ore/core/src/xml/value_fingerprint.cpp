@@ -101,16 +101,15 @@ public:
                 break;
             case token_kind::end_element: {
                 // Text that is the whole content of an element is that
-                // element's value even when it is empty, because the schema
-                // may spell a value that way. Text beside a child element is
-                // data only when it is not formatting.
+                // element's value. An element with no text, or with only the
+                // whitespace a document formats an empty list with, states no
+                // value: ORE reads <FirstDate/> as it reads no FirstDate, so
+                // the two are not a difference. Text beside a child element
+                // is data only when it is not formatting.
                 const bool leaf = !has_child_.empty() && !has_child_.back();
                 if (leaf) {
-                    // Whitespace alone is formatting rather than data: a
-                    // document writes an empty list as an element with a line
-                    // break in it, and the value is the empty string.
-                    values.push_back(
-                        {join(path_, {}), is_blank(text_) ? std::string{} : canonical(text_)});
+                    if (!is_blank(text_))
+                        values.push_back({join(path_, {}), canonical(text_)});
                 } else if (!is_blank(text_)) {
                     values.push_back({join(path_, "text()"), canonical(text_)});
                 }

@@ -98,6 +98,14 @@ TEST_CASE("a number spelled two ways is one value", "[ore][xml][differ]") {
         differences("<A><B>1.0</B><C>0.0000000001</C></A>", "<A><B>1</B><C>1e-10</C></A>").empty());
 }
 
+TEST_CASE("an empty element is the same as an absent one", "[ore][xml][differ]") {
+    auto lg(make_logger(test_suite));
+    CHECK(differences("<A><B>1</B><C/><D>\n  </D></A>", "<A><B>1</B></A>").empty());
+    CHECK(differences("<A><B>1</B></A>", "<A><B>1</B><C></C></A>").empty());
+    CHECK(differences("<A><B>1</B><C/></A>", "<A><B>1</B><C>2</C></A>") ==
+          std::vector<std::string>{"added A/C: '2'"});
+}
+
 TEST_CASE("the order of siblings is not a difference", "[ore][xml][differ]") {
     auto lg(make_logger(test_suite));
     CHECK(differences("<A><B>1</B><C>2</C></A>", "<A><C>2</C><B>1</B></A>").empty());
@@ -207,7 +215,6 @@ TEST_CASE("a value one leg lost is not read as a value the other changed", "[ore
     const auto found = diff_values(value_fingerprints_of(*read, "Trade", "id")[0].values,
                                    value_fingerprints_of(*written, "Trade", "id")[0].values);
 
-    REQUIRE(found.size() == 2);
-    CHECK(describe(found[0]) == "added Trade/LegData[2]: ''");
-    CHECK(describe(found[1]) == "lost Trade/LegData[2]/Rate: '2'");
+    REQUIRE(found.size() == 1);
+    CHECK(describe(found[0]) == "lost Trade/LegData[2]/Rate: '2'");
 }

@@ -275,6 +275,41 @@ struct swap_leg final {
      */
     std::optional<bool> indexings_from_asset_leg;
 
+    /**
+     * @brief The second index of a CMS spread leg, as Index2 states it. The first is
+     * floating_index_code.
+     */
+    std::optional<std::string> floating_index_code_2;
+
+    /**
+     * @brief The duration, in years, a duration adjusted CMS leg scales its rate by, as Duration
+     * states it.
+     */
+    std::optional<int> cms_duration;
+
+    /**
+     * @brief Whether a capped or floored leg pays only the embedded option, as NakedOption states
+     * it.
+     */
+    std::optional<bool> naked_option;
+
+    /**
+     * @brief The lookback period of an overnight floating leg, as Lookback states it, such as 2D.
+     */
+    std::optional<std::string> lookback;
+
+    /**
+     * @brief The number of days before the period end at which an overnight rate stops fixing, as
+     * RateCutoff states it.
+     */
+    std::optional<int> rate_cutoff;
+
+    /**
+     * @brief Whether an overnight leg's cap and floor apply to each daily rate rather than to the
+     * period's rate, as LocalCapFloor states it.
+     */
+    std::optional<bool> local_cap_floor;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.

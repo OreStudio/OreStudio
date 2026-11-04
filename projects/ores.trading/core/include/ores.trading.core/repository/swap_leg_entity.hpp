@@ -90,6 +90,12 @@ struct swap_leg_entity {
     std::optional<std::string> equity_currency;
     std::optional<std::string> fx_index;
     std::optional<bool> indexings_from_asset_leg;
+    std::optional<std::string> floating_index_code_2;
+    std::optional<int> cms_duration;
+    std::optional<bool> naked_option;
+    std::optional<std::string> lookback;
+    std::optional<int> rate_cutoff;
+    std::optional<bool> local_cap_floor;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -145,6 +151,12 @@ struct swap_leg_entity {
                query_builder::bind("equity_currency", &e::equity_currency) |
                query_builder::bind("fx_index", &e::fx_index) |
                query_builder::bind("indexings_from_asset_leg", &e::indexings_from_asset_leg) |
+               query_builder::bind("floating_index_code_2", &e::floating_index_code_2) |
+               query_builder::bind("cms_duration", &e::cms_duration) |
+               query_builder::bind("naked_option", &e::naked_option) |
+               query_builder::bind("lookback", &e::lookback) |
+               query_builder::bind("rate_cutoff", &e::rate_cutoff) |
+               query_builder::bind("local_cap_floor", &e::local_cap_floor) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

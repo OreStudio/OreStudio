@@ -114,6 +114,19 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
                       .value = v.indexings_from_asset_leg ?
                                    (*v.indexings_from_asset_leg ? "true" : "false") :
                                    std::string{}});
+    fields.push_back({.name = "Floating Index Code 2",
+                      .value = v.floating_index_code_2.value_or(std::string{})});
+    fields.push_back({.name = "Cms Duration",
+                      .value = v.cms_duration ? std::to_string(*v.cms_duration) : std::string{}});
+    fields.push_back(
+        {.name = "Naked Option",
+         .value = v.naked_option ? (*v.naked_option ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Lookback", .value = v.lookback.value_or(std::string{})});
+    fields.push_back({.name = "Rate Cutoff",
+                      .value = v.rate_cutoff ? std::to_string(*v.rate_cutoff) : std::string{}});
+    fields.push_back(
+        {.name = "Local Cap Floor",
+         .value = v.local_cap_floor ? (*v.local_cap_floor ? "true" : "false") : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

@@ -85,6 +85,12 @@ struct swap_leg_write {
     std::optional<std::string> equity_currency;
     std::optional<std::string> fx_index;
     std::optional<bool> indexings_from_asset_leg;
+    std::optional<std::string> floating_index_code_2;
+    std::optional<int> cms_duration;
+    std::optional<bool> naked_option;
+    std::optional<std::string> lookback;
+    std::optional<int> rate_cutoff;
+    std::optional<bool> local_cap_floor;
 
     friend bool operator==(const swap_leg_write&, const swap_leg_write&) = default;
 };
@@ -476,6 +482,12 @@ inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted
         utility::codec::field{"fx_index", &swap_leg_write::fx_index},
         utility::codec::field{"indexings_from_asset_leg",
                               &swap_leg_write::indexings_from_asset_leg},
+        utility::codec::field{"floating_index_code_2", &swap_leg_write::floating_index_code_2},
+        utility::codec::field{"cms_duration", &swap_leg_write::cms_duration},
+        utility::codec::field{"naked_option", &swap_leg_write::naked_option},
+        utility::codec::field{"lookback", &swap_leg_write::lookback},
+        utility::codec::field{"rate_cutoff", &swap_leg_write::rate_cutoff},
+        utility::codec::field{"local_cap_floor", &swap_leg_write::local_cap_floor},
     };
 }
 

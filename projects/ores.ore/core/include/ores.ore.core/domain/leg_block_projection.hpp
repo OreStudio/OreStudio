@@ -96,6 +96,28 @@ inline auto first_tenor(const std::optional<record_reader>& schedule) -> std::st
     return text_of(rules.front(), "Tenor");
 }
 
+/**
+ * @brief A CMS payload: a leg type, the element that carries it and the index
+ * fields it names.
+ *
+ * The three CMS payloads have the floating leg's shape (arrears, fixing days,
+ * naked option and the four rate lists) and differ only in their index fields
+ * and, for the duration adjusted one, a duration.
+ */
+struct cms_payload {
+    std::string_view leg_type;
+    std::string_view element;
+    std::string_view index;
+    std::string_view index_2;
+    bool has_duration;
+};
+
+inline constexpr cms_payload cms_payloads[] = {
+    {"CMS", "CMSLegData", "Index", "", false},
+    {"DurationAdjustedCMS", "DurationAdjustedCMSLegData", "Index", "", true},
+    {"CMSSpread", "CMSSpreadLegData", "Index1", "Index2", false},
+};
+
 inline swap_leg read_leg(const record_reader& leg, int leg_number) {
     swap_leg row;
     row.identity.leg_number = leg_number;
@@ -130,6 +152,27 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         row.include_spread = optional_flag(*floating, "IncludeSpread");
         row.is_averaged = optional_flag(*floating, "IsAveraged");
         row.has_sub_periods = optional_flag(*floating, "HasSubPeriods");
+        row.naked_option = optional_flag(*floating, "NakedOption");
+        row.local_cap_floor = optional_flag(*floating, "LocalCapFloor");
+        if (floating->has("Lookback"))
+            row.lookback = text_of(*floating, "Lookback");
+        if (const auto cutoff = floating->integer("RateCutoff"))
+            row.rate_cutoff = static_cast<int>(*cutoff);
+    }
+    for (const auto& payload : cms_payloads) {
+        const auto cms = leg.child(payload.element);
+        if (!cms)
+            continue;
+        row.floating_index_code = text_of(*cms, payload.index);
+        if (!payload.index_2.empty())
+            row.floating_index_code_2 = text_of(*cms, payload.index_2);
+        if (payload.has_duration)
+            if (const auto duration = cms->integer("Duration"))
+                row.cms_duration = static_cast<int>(*duration);
+        if (const auto days = cms->integer("FixingDays"))
+            row.fixing_days = static_cast<int>(*days);
+        row.is_in_arrears = optional_flag(*cms, "IsInArrears");
+        row.naked_option = optional_flag(*cms, "NakedOption");
     }
     if (const auto commodity = leg.child("CommodityFloatingLegData")) {
         row.floating_index_code = text_of(*commodity, "Name");
@@ -393,6 +436,12 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
                 for (const auto& value : list->children(item))
                     append(role, value);
     }
+    for (const auto& payload : cms_payloads)
+        if (const auto cms = leg.child(payload.element))
+            for (const auto& [element, item, role] : floating_rate_lists)
+                if (const auto list = cms->child(element))
+                    for (const auto& value : list->children(item))
+                        append(role, value);
     if (const auto fixed = leg.child("CommodityFixedLegData")) {
         if (const auto list = fixed->child("Prices"))
             for (const auto& price : list->children("Price"))
@@ -662,6 +711,25 @@ void write_leg(record_writer& leg,
         return;
     }
 
+    for (const auto& payload : cms_payloads) {
+        if (row.leg_type_code != payload.leg_type)
+            continue;
+        auto cms = leg.child(payload.element);
+        cms.set_text(payload.index, row.floating_index_code);
+        if (!payload.index_2.empty())
+            cms.set_text(payload.index_2, row.floating_index_code_2.value_or(""));
+        if (payload.has_duration && row.cms_duration)
+            cms.set_integer("Duration", *row.cms_duration);
+        if (row.is_in_arrears)
+            cms.set_text("IsInArrears", flag_text(*row.is_in_arrears));
+        if (row.fixing_days)
+            cms.set_integer("FixingDays", *row.fixing_days);
+        write_floating_rates(cms, rates);
+        if (row.naked_option)
+            cms.set_text("NakedOption", flag_text(*row.naked_option));
+        return;
+    }
+
     const auto has_role = [&](std::string_view role) {
         return std::any_of(rates.begin(), rates.end(), [&](const swap_leg_rate& rate) {
             return rate.rate_role == role;
@@ -686,7 +754,13 @@ void write_leg(record_writer& leg,
         write_flag("IncludeSpread", row.include_spread);
         write_flag("IsAveraged", row.is_averaged);
         write_flag("HasSubPeriods", row.has_sub_periods);
+        if (row.lookback)
+            floating.set_text("Lookback", *row.lookback);
+        if (row.rate_cutoff)
+            floating.set_integer("RateCutoff", *row.rate_cutoff);
         write_floating_rates(floating, rates);
+        write_flag("NakedOption", row.naked_option);
+        write_flag("LocalCapFloor", row.local_cap_floor);
     }
 }
 

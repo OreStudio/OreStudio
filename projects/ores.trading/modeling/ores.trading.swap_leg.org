@@ -468,6 +468,60 @@ Whether the leg takes its indexings from the asset leg, as
 =Indexings/FromAssetLeg= states it. The indexings themselves are
 =swap_leg_indexing= rows.
 
+** floating_index_code_2
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The second index of a CMS spread leg, as =Index2= states it. The first is =floating_index_code=.
+
+** cms_duration
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The duration, in years, a duration adjusted CMS leg scales its rate by, as =Duration= states it.
+
+** naked_option
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a capped or floored leg pays only the embedded option, as =NakedOption= states it.
+
+** lookback
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The lookback period of an overnight floating leg, as =Lookback= states it, such as =2D=.
+
+** rate_cutoff
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The number of days before the period end at which an overnight rate stops fixing, as =RateCutoff= states it.
+
+** local_cap_floor
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether an overnight leg's cap and floor apply to each daily rate rather than to the period's rate, as =LocalCapFloor= states it.
+
 * Foreign keys
 
 ** trade_id

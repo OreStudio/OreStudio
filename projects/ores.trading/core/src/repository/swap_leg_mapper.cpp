@@ -85,6 +85,12 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.equity_currency = v.equity_currency;
     r.fx_index = v.fx_index;
     r.indexings_from_asset_leg = v.indexings_from_asset_leg;
+    r.floating_index_code_2 = v.floating_index_code_2;
+    r.cms_duration = v.cms_duration;
+    r.naked_option = v.naked_option;
+    r.lookback = v.lookback;
+    r.rate_cutoff = v.rate_cutoff;
+    r.local_cap_floor = v.local_cap_floor;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -139,6 +145,12 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.equity_currency = v.equity_currency;
     r.fx_index = v.fx_index;
     r.indexings_from_asset_leg = v.indexings_from_asset_leg;
+    r.floating_index_code_2 = v.floating_index_code_2;
+    r.cms_duration = v.cms_duration;
+    r.naked_option = v.naked_option;
+    r.lookback = v.lookback;
+    r.rate_cutoff = v.rate_cutoff;
+    r.local_cap_floor = v.local_cap_floor;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

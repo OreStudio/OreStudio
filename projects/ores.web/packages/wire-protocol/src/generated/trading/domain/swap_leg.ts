@@ -67,5 +67,11 @@ export interface SwapLeg {
     equity_currency: string | null;
     fx_index: string | null;
     indexings_from_asset_leg: boolean | null;
+    floating_index_code_2: string | null;
+    cms_duration: number | null;
+    naked_option: boolean | null;
+    lookback: string | null;
+    rate_cutoff: number | null;
+    local_cap_floor: boolean | null;
     audit: AuditRecord;
 }

@@ -84,6 +84,12 @@ namespace ores::trading::domain {
         utility::codec::field{"equity_currency", &swap_leg::equity_currency},
         utility::codec::field{"fx_index", &swap_leg::fx_index},
         utility::codec::field{"indexings_from_asset_leg", &swap_leg::indexings_from_asset_leg},
+        utility::codec::field{"floating_index_code_2", &swap_leg::floating_index_code_2},
+        utility::codec::field{"cms_duration", &swap_leg::cms_duration},
+        utility::codec::field{"naked_option", &swap_leg::naked_option},
+        utility::codec::field{"lookback", &swap_leg::lookback},
+        utility::codec::field{"rate_cutoff", &swap_leg::rate_cutoff},
+        utility::codec::field{"local_cap_floor", &swap_leg::local_cap_floor},
         utility::codec::field{"audit", &swap_leg::audit},
     };
 }

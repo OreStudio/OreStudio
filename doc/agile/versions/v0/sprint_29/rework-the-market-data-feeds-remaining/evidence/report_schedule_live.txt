@@ -1,0 +1,116 @@
+Live evidence for the task Schedule a report from its own page
+=============================================================
+
+Environment: eager_maxwell, web at http://localhost:21402, tenant Acme Corporation
+(482df22b-ee2c-4482-b741-ea937154a2f7), signed in as tenant_admin@acme_corporation
+acting for ACME Corporation US Inc (6ec95a8a-0991-48d6-82bd-a247f80200f7).
+
+The browser was driven by the reporting harness, which signs in through the form a
+person uses: projects/ores.web/packages/harness/tests/report-schedule.spec.ts.
+
+Build under test: the bundle and the BFF built from the working tree at 12:36, with
+ores.web.service restarted at 12:38.
+
+1. Activating an on-demand report whose expression never fires
+-------------------------------------------------------------
+
+Report: Bump and Reprice Spot Ladder, definition 0821d244-d73a-4b60-b4c3-57fbbb9a324a.
+
+The page stated "On demand". Schedule opened the dialog, the dialog opened the
+schedule builder, Save took the first common schedule, and Schedule sent it. The
+page then stated:
+
+    Scheduled. The report now runs when the schedule fires.
+
+and the header offered Unschedule.
+
+The definition's own history, from
+
+  select version, schedule_expression, scheduler_job_id, run_grant_id, modified_by,
+         change_commentary, valid_from
+    from ores_reporting_report_definitions_tbl
+   where id='0821d244-d73a-4b60-b4c3-57fbbb9a324a'
+   order by version
+
+ version | schedule_expression |           scheduler_job_id           |             run_grant_id             | modified_by |               change_commentary                |          valid_from
+---------+---------------------+--------------------------------------+--------------------------------------+-------------+------------------------------------------------+-------------------------------
+       1 | 0 0 31 2 *          |                                      |                                      | ores_eager_maxwell_reporting_service | Published from DQ dataset                      | 2026-11-03 21:08:31.960066+00
+       2 | 0 7 * * 1-5         |                                      |                                      | tenant_admin                         | The schedule was changed from the report page. | 2026-11-04 12:44:45.398065+00
+       3 | 0 7 * * 1-5         | c8e64024-c775-4282-b22b-a40c363b3f50 | 1ce44e9f-8bca-4ff8-a77d-6f1ee897b483 | tenant_admin                         | Linked to scheduler job                        | 2026-11-04 12:44:45.459463+00
+       4 | 0 7 * * 1-5         |                                      | 1ce44e9f-8bca-4ff8-a77d-6f1ee897b483 | tenant_admin                         | Scheduler job removed                          | 2026-11-04 12:44:57.197656+00
+(4 rows)
+
+The scheduler job the schedule created:
+
+  select id, job_name, schedule_expression, action_type, is_active, version, valid_to
+    from ores_scheduler_job_definitions_tbl
+   where id='c8e64024-c775-4282-b22b-a40c363b3f50'
+
+                  id                  |                        job_name                        | schedule_expression | action_type  | is_active | version |        valid_to
+--------------------------------------+--------------------------------------------------------+---------------------+--------------+-----------+---------+------------------------
+ c8e64024-c775-4282-b22b-a40c363b3f50 | report_definition.0821d244-d73a-4b60-b4c3-57fbbb9a324a | 0 7 * * 1-5         | nats_publish | t         |       1 | 9999-12-31 23:59:59+00
+(1 row)
+
+That row was read while the report was scheduled. After Unschedule its valid_to was
+2026-11-04 12:44:57.178133+00, so the scheduler no longer holds a live job for it.
+
+The grant the person consented to, in the definition's party:
+
+  select id, resource, audience, party_id, not_after, revoked_at
+    from ores_iam_run_grants_tbl
+   where id='1ce44e9f-8bca-4ff8-a77d-6f1ee897b483'
+
+                  id                  |                             resource                             |                  audience                  |               party_id               | not_after | revoked_at
+--------------------------------------+------------------------------------------------------------------+--------------------------------------------+--------------------------------------+-----------+------------
+ 1ce44e9f-8bca-4ff8-a77d-6f1ee897b483 | reporting.report_definition/0821d244-d73a-4b60-b4c3-57fbbb9a324a | ReportingService,OreService,ComputeService | 6ec95a8a-0991-48d6-82bd-a247f80200f7 |           |
+(1 row)
+
+Unschedule then answered, on the page:
+
+    Unscheduled. The report runs only when a person asks, so it is on demand.
+
+and the page stated "On demand" again, with Schedule in the header. Version 4 of the
+definition keeps the run grant and records no scheduler job, which is the state the
+task asks for: the schedule is withdrawn and the consent to run is not.
+
+2. Scheduling and unscheduling a report that already held an expression
+-----------------------------------------------------------------------
+
+Report: Large Exposures, definition 00358e33-cf20-4ead-bd24-80b383e2f0c8. The tenant's
+reconciliation had cleared its seeded job (version 4, "Cleared a scheduler job with no
+run grant"), so the page stated "On demand" while the definition still held
+0 7 * * 1-5.
+
+The page stated:
+
+    Scheduled. The report now runs when the schedule fires.
+
+and then, after Unschedule:
+
+    Unscheduled. The report runs only when a person asks, so it is on demand.
+
+Its history, from the same query with id='00358e33-cf20-4ead-bd24-80b383e2f0c8':
+versions 5 to 7 are the round trip: the expression written by the page (5), the job
+linked (6, job f9c012d0-cd50-4e4b-886a-6789d98b4af7, grant
+0efaccef-f93b-4a6f-886f-9fa06869222c) and the job removed (7). The scheduler's row for
+that job was created at 12:40:56.114612 and closed at 12:41:31.584909.
+
+3. The party guard
+------------------
+
+With the session acting for System Party, the page of Large Exposures (owned by ACME
+Corporation US Inc) stated:
+
+    This report belongs to ACME Corporation US Inc. Act for that party to schedule it
+    or take its schedule away.
+
+and Schedule was disabled. The harness check
+"offers no schedule for a report of a party the session does not act for" asserts both.
+
+4. What could not be seen
+-------------------------
+
+Nothing about the schedule was left unverified. What the browser could not state is
+the fire itself: no report was allowed to fire, because the harness leaves the demo
+tenant as it found it, so the evidence that the job would fire is the job row with
+is_active true and the scheduler's own expression, and not a run it produced.

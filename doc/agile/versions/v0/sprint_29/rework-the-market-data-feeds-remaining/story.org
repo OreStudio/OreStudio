@@ -102,11 +102,22 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:62655D66-B68E-4E5A-9D23-1D142B74E086][Fix the post-merge checks]] | DONE | 2026-11-03 | 2026-11-03 | The merged reports pages do not link their structure notes, and four web files are not formatted. |
 | [[id:6D6A3804-3E49-4B12-9F84-A8C5C2162949][Parse the engine log when a run fails]] | DONE | 2026-11-03 | 2026-11-04 | A failed compute records the engine's whole output as one error; the parsed trade failures exist in the log but never reach the run's errors. |
 | [[id:B124F617-0859-4F78-9F81-85DEA485D97B][Seed the ladder family and let it fail like the rest]] | STARTED | 2026-11-04 | | The thirteen ladder reports are documented but no definition states them; they can be created and fail at the engine like every other report until the inputs and the vol data arrive. |
->>>>>>> a7dd502a68 ([agile] Close the engine log parse task)
-
+| [[id:38DDC0B4-A56D-42B4-B260-6C98BA356E0B][Schedule a report from its own page]] | DONE | 2026-11-04 | 2026-11-04 | Only the shell and the provisioner can schedule a report; the app has no Schedule action and no way to activate an on-demand report. |
 * Decisions
 
 - The ladder family is stated in the catalogue at every party and fails at the engine (2026-11-04). The product owner overruled the design's decision to hold it back until the report inputs and the volatility data arrive: a definition that produces no figure costs nothing to hold, and the list should show what the platform runs. Ten of the design's fourteen rows are seeded as fifteen definitions per party, because five of them run on both cycles, and they bind the sensitivity run settings a party already holds. Rows 11 to 14 stay unseeded on their market data. See [[id:B124F617-0859-4F78-9F81-85DEA485D97B][Seed the ladder family and let it fail like the rest]].
+- A schedule is made by the one operation the shell calls, and a screen adds no
+  schedule of its own (2026-11-04). The BFF relays =schedule_report_definitions=
+  and =unschedule_report_definitions= on the person's own session and answers
+  their count, their failed ids and their words, gated on the permission each
+  operation checks — the definition's write to schedule it, its delete to take
+  the schedule away. Activating an on-demand report writes the expression the
+  job will fire on and schedules it in one call, because the scheduler reads the
+  expression from the definition. A definition with no scheduler job is on
+  demand, and so is one whose expression never fires, so the list and the page
+  read one word. See [[id:38DDC0B4-A56D-42B4-B260-6C98BA356E0B][Schedule a
+  report from its own page]].
+
 - The tick store holds one tick for each source, owned by the system tenant, and the history read checks the subscription (2026-10-25). The per-party copy added 80% of the store on the measured tenant, and neither the usage recorder nor the delivery meter reads the store. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
 
 - Split from [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.

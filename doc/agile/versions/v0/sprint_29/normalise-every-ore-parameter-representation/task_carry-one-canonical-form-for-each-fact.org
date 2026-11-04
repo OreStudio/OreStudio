@@ -548,10 +548,12 @@ $ select count(*) from ores_reporting_canonical_value_violations_fn();
 0
 #+end_src
 
-Three checks fail on this story's branches and all three fail in a clean worktree
-of =origin/main= too: =codegen-tests= expects a =subject_prefix= the events
-template no longer emits; =component-drift= names the =msgpack-c= lines
-a337e95529 added by hand to =projects/ores.storage/service/src/CMakeLists.txt=;
-and =er-diagram= wants =cut_kind_code= drawn on =ores_schema.dq_staging.puml=.
-All three are recorded, with the command that reproduces each, in
-[[id:266E1110-C980-4693-B0DE-E2D023D8C2C0][The local check gate is red on main three ways]].
+Three checks failed on this story's branches, and all three failed in a clean
+worktree of =origin/main= too. Two are fixed in #4444, because the branch could
+not go green until they were: the junction-events test now states the
+=subject_prefix= the template emits since the events namespace landed, and
+=ores_schema.dq_staging.puml= is regenerated. The third,
+=component-drift=, names the =msgpack-c= lines a337e95529 added by hand to
+=projects/ores.storage/service/src/CMakeLists.txt=; it belongs to the storage
+model and stays open. All three are recorded in
+[[id:266E1110-C980-4693-B0DE-E2D023D8C2C0][The local check gate is red on main]].

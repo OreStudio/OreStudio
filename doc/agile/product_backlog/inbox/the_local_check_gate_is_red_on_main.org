@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 266E1110-C980-4693-B0DE-E2D023D8C2C0
 :END:
-#+title: The local check gate is red on main three ways
-#+description: local_checks fails three checks on main: a junction-events case expects a subject_prefix the events template no longer emits, the storage CMakeLists carries a msgpack-c dependency its model does not state, and the dq_staging ER diagram has not been redrawn since a column was added.
+#+title: The local check gate is red on main
+#+description: local_checks failed three checks on main: a junction-events case expected a subject_prefix the events template no longer emits, the storage CMakeLists carries a msgpack-c dependency its model does not state, and the dq_staging ER diagram was not redrawn when a column was added. The first two are fixed; the storage model is open.
 #+type: capture
 #+level: cross
 #+filetags: 
@@ -13,9 +13,9 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-=local_checks --exclude-heavy= fails three checks on =origin/main=, and none of
-the three comes from the branch that finds it. Each was reproduced in a clean
-worktree of =origin/main=.
+=local_checks --exclude-heavy= failed three checks on =origin/main=, and none of
+the three came from the branch that found it. Each was reproduced in a clean
+worktree of =origin/main=. Two are fixed; the third is open.
 
 1. =codegen-tests=: =projects/ores.codegen/tests/test_junction_events.py:50=
    asserts =subject_prefix = "testcomp.v1.test_links_events"= and the rendered
@@ -66,3 +66,24 @@ diagram committed, and the reports story owns it.
 
 - [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter
   representation]] — the story whose branch found both failures.
+
+* What is fixed, and what remains (2026-11-04)
+
+Two of the three are fixed in #4444, because the branch could not go green until
+they were:
+
+- =codegen-tests=: the test now states the prefix the template emits.
+  =event_prefix= became ={component}.v1.events.{plural}= when the events
+  namespace landed in #4447, and =test_entity_events.py= was updated with it;
+  =test_junction_events.py= still asserted the old =test_links_events= suffix. The
+  test was the stale half.
+- =er-diagram=: =ores_schema.dq_staging.puml= is regenerated, which adds
+  =cut_kind_code= to =ores_dq_report_definitions_artefact_tbl=. Only the =.puml=
+  is committed: the generator also redraws the =SVG= files, and on this machine
+  the installed PlantUML is not the version that drew the committed ones, so a
+  redraw changes every diagram's layout for no reason. The =.svg= files stay as
+  they were until someone redraws the set with one version.
+
+The storage model's missing =msgpack-c= dependency remains. It needs its owner:
+either the model states the dependency so the generator emits the lines, or the
+hand edit goes and the build breaks.

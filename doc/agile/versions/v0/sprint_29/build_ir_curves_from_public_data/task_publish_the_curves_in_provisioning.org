@@ -1,44 +1,43 @@
 :PROPERTIES:
-:ID: E9F41943-12D6-47AB-BA60-6FC0931F1A99
+:ID: 317DE09B-BE7B-4D47-B210-9D64B4558A97
 :END:
-#+title: Task: Check that IR calibration is set up for every supported currency
-#+description: Check, currency by currency, that each synthetic IR curve feed has a public calibration source, a calibration policy and a stored history, and set up or record what is missing.
+#+title: Task: Bootstrap and publish the curves in the provisioning system run
+#+description: The system run of provisioning bootstraps each seeded overnight-index curve from its quotes and publishes it, so a fresh environment holds a published curve per currency with no person acting.
 #+type: task
 #+level: s1
-#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-11-03
-#+updated: 2026-11-03
+#+created: 2026-11-04
+#+updated: 2026-11-04
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Every supported currency's synthetic IR curve starts from public data, or the gap is stated. Today only FX has a calibration policy: the seed in synthetic_calibration_policies_populate.sql covers FX alone, while the IR curve configs cover about twenty currencies. The public curve sources documented so far are the US Treasury par curve, SOFR, SONIA and the ECB's euro short-term rate. For each supported currency, find its overnight rate or par curve publisher, read its terms, and set up the source, the policy and the history, or record why not.
+After provisioning, each currency with a bootstrap config has a published curve in the system tenant at the provisioning as-of, so the FX volatility surface and pricing can read forwards at once. A curve that cannot bootstrap is reported by name with its reason and does not fail the run.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-03                               |
+| Last touched | 2026-11-04                               |
 
 * Acceptance
 
-- A table lists every currency an IR curve config supports, with its public source, the state of that source's terms, its calibration policy and its stored history.
-- Every currency with a usable public source has a calibration policy, and its IR curve feed starts from the latest published value.
-- Every currency without one keeps a stated fixed level, and the reason is recorded in the calibration sources note.
-- The calibration screen shows the IR coverage, as it shows the FX coverage.
+- A step of the provisioning system run bootstraps and publishes each config, after the IR feeds have published their first quotes.
+- A fresh environment holds a published curve for each of the eight currencies of the derived FX pairs, and the step's result names each curve and its as-of.
+- A curve that fails to bootstrap is named in the result and the log with its reason, and the run completes.
 
 * Plan
 

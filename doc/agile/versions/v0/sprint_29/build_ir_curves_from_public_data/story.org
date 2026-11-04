@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 9AE251D9-F9B9-4690-98C6-0D71F81FB3E1
+:END:
+#+title: Story: Build the IR curves of every supported currency from public data
+#+description: Each supported currency has an overnight-index curve bootstrapped from its synthetic quotes and published in the system tenant, and the synthetic IR feeds start from public rates; today only USD has a bootstrap config, it was never published, and no currency's synthetic feed is calibrated.
+#+type: story
+#+level: s2
+#+filetags: :ir:curves:marketdata:synthetic:sprint_29:v0:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every currency the synthetic IR feeds support has a published overnight-index curve in the system tenant, bootstrapped from that currency's quotes, and those quotes start from the currency's public overnight rate. The FX volatility surface reads the forward to each expiry from the published curves of both currencies of a pair, so the eight currencies of the derived FX pairs (AUD, CAD, CHF, EUR, GBP, JPY, NZD and USD) come first; the remaining twenty of the twenty-eight follow.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-04                               |
+
+* Acceptance
+
+- A table names, for each of the 28 currencies, its overnight index, its public source and the state of its terms, its calibration policy, its bootstrap config and its latest published curve.
+- A freshly provisioned environment holds a published curve for each of the eight currencies of the derived FX pairs, with no person acting.
+- Each synthetic overnight-index feed with a usable public source starts from the latest public rate, and each without one keeps a stated fixed level with the reason recorded.
+- The development database holds no curve publish that a test wrote.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A177002A-05F2-40D7-963F-7CCEA5EE4AB6][Find the public overnight rate of each supported currency]] | BACKLOG | | | For each of the 28 currencies the synthetic IR feeds support, name its overnight index, the body that publishes it, how it can be read and on what terms, and record the result in the calibration sources note. |
+| [[id:C0BA69C1-6E68-4AD2-896C-0F6283BD3BAF][Read the public overnight rates through an adapter]] | BACKLOG | | | Each usable public overnight-rate source is a provider in the catalogue, read through an adapter as the public FX rates are through Frankfurter, with its terms accepted at setup and its history stored as fixings. |
+| [[id:619CE2BF-C972-47CF-8900-AC2742AC2CD9][Calibrate the synthetic IR feeds from the public rates]] | BACKLOG | | | The IR asset class gets a calibration policy, as FX has, so each synthetic overnight-index feed starts from its currency's latest public rate and its fit is reviewed like an FX fit. |
+| [[id:62D6A678-3B07-4A43-89C6-B79FA52500E6][Seed a bootstrap config for each currency's overnight-index curve]] | BACKLOG | | | Each supported currency gets a bootstrap config, its pillars and its output series for its overnight-index curve, reading that currency's synthetic overnight-index feed, as USD-SOFR-FOMC does for USD; the eight currencies of the derived FX pairs come first. |
+| [[id:317DE09B-BE7B-4D47-B210-9D64B4558A97][Bootstrap and publish the curves in the provisioning system run]] | BACKLOG | | | The system run of provisioning bootstraps each seeded overnight-index curve from its quotes and publishes it, so a fresh environment holds a published curve per currency with no person acting. |
+| [[id:E033D8BF-BB5A-4AC1-A41F-49A722395694][Bootstrap the curves again as their quotes move]] | BACKLOG | | | The scheduler bootstraps and publishes each curve again on a stated cadence, so the published curves follow the synthetic quotes rather than stay at the provisioning as-of. |
+| [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic LIBOR feeds of USD, GBP, JPY and CHF]] | BACKLOG | | | The system tenant still runs synthetic LIBOR feeds for USD, GBP, JPY and CHF, whose publication has ceased; decide per currency what replaces each, such as a term rate or nothing, and remove or replace the feed. |
+| [[id:37E35846-59E3-41E8-A9AF-6B9F1E167EB3][Keep the curve publishes of the integration tests out of the development database]] | BACKLOG | | | The integration tests leave curve publishes, withdrawals and supersessions in the development database under random users and a test as-of, so a provisioned tenant appears to hold published curves it never published. |
+| [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]] | BACKLOG | | | A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage. |
+| [[id:E9F41943-12D6-47AB-BA60-6FC0931F1A99][Check that IR calibration is set up for every supported currency]] | ABANDONED | | | Check, currency by currency, that each synthetic IR curve feed has a public calibration source, a calibration policy and a stored history, and set up or record what is missing. |
+
+* Decisions
+
+* Notes
+
+** What the system holds today
+
+Measured on a provisioned environment on 2026-11-04, at commit ca336730cd.
+
+| Currency | Synthetic IR feeds in the system tenant | Bootstrap config | Published curve |
+|----------+-----------------------------------------+------------------+-----------------|
+| USD | SOFR, SOFR FOMC, LIBOR 1M and 6M | =USD-SOFR-FOMC=, 7 pillars | none |
+| EUR | ESTR, EURIBOR 1M and 6M | none | none |
+| GBP | SONIA, LIBOR 1M and 3M | none | none |
+| JPY | TONA, LIBOR 1M and 3M | none | none |
+| CHF | SARON, LIBOR 3M and 6M | none | none |
+| AUD | AONIA | none | none |
+| CAD | CORRA | none | none |
+| NZD | NZONIA | none | none |
+
+The synthetic IR feeds cover 28 currencies: AUD BRL CAD CHF CLP CNH CNY COP CZK DKK EUR GBP HKD HUF ILS INR JPY KRW MXN NOK NZD PLN SEK SGD TRY TWD USD ZAR. Every one starts from a fixed level: the calibration policies cover FX alone.
+
+Acme held 82 bootstrap configs, per-party copies of one USD SOFR curve across 79 parties, and 75 curve publishes. Every publish was written by the integration tests, not by the system: random user names and an as-of of 2026-03-02.
+
+** Why this comes before the FX volatility surface
+
+A surface's strike labels resolve to strikes through the pair's delta and ATM conventions and the forward to each expiry, which the compute reads from the published curves of the two currencies. The derived FX pairs need the curves of AUD, CAD, CHF, EUR, GBP, JPY, NZD and USD, and none is published.
+
+* Out of scope
+
+- The FX volatility surface itself, which reads these curves: [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]].
+- Projection curves of term rates such as EURIBOR, beyond what the LIBOR decision needs.
+- Per-party curves in a tenant: this story publishes the system tenant's curves.

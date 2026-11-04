@@ -101,6 +101,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:CC276A2C-4676-4DE3-8114-C496CAB0C082][Build the cross-gamma ladder]] | BACKLOG | | | The cross terms are present in the sensitivity report as rows with two factors; crossgamma.csv has no writer at 1.8.17.0, so the ladder reads the rows. |
 | [[id:62655D66-B68E-4E5A-9D23-1D142B74E086][Fix the post-merge checks]] | DONE | 2026-11-03 | 2026-11-03 | The merged reports pages do not link their structure notes, and four web files are not formatted. |
 | [[id:6D6A3804-3E49-4B12-9F84-A8C5C2162949][Parse the engine log when a run fails]] | DONE | 2026-11-03 | 2026-11-04 | A failed compute records the engine's whole output as one error; the parsed trade failures exist in the log but never reach the run's errors. |
+| [[id:B124F617-0859-4F78-9F81-85DEA485D97B][Seed the ladder family and let it fail like the rest]] | STARTED | 2026-11-04 | | The thirteen ladder reports are documented but no definition states them; they can be created and fail at the engine like every other report until the inputs and the vol data arrive. |
 >>>>>>> a7dd502a68 ([agile] Close the engine log parse task)
 
 * Decisions

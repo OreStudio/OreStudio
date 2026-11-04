@@ -134,6 +134,26 @@ task and name that file in the Command column.
 - The values sweep compares content, but only through the XML binding layer
   (document to generated record to document), never through our trade model.
 
+** What the roundtrip loop found beyond the corpus test
+
+The corpus test compares document to trade model to document in memory. It
+does not pass through the database, so it cannot see a row that the batch
+writer stores and the export reader never reads back.
+
+- The export reader read the shared child tables (schedules, the option
+  block, strikes, range bounds) only for rates and credit trades. The FX and
+  equity option rows, and an equity accumulator's range bounds, were stored
+  and never exported. Fixed: the reader now reads the shared children once
+  for every trade on the page, except bonds, whose own reader reads them.
+- Equity basket constituents and equity swap periods have no batch read, so
+  the export reader never reads them. Open.
+- The export reader is hand-written, while the batch writer is generated
+  from the catalogue's batch members. A reader generated from the same list
+  would make a forgotten table impossible. Open.
+- ORE parses a commodity swap from =SwapData=, which every ORE example uses.
+  The projection reads and writes =CommoditySwapData=, the XSD's spelling,
+  so ORE cannot price a commodity swap we export.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

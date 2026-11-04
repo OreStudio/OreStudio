@@ -125,6 +125,7 @@ void populate_instruments_for_trades(const Ctx& ctx,
         rate_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids,
         eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
         eq_acc_ids, eq_pos_ids;
+    std::vector<std::string> all_ids;
 
     for (const auto& item : items) {
         const auto& t = item.anchor;
@@ -136,6 +137,10 @@ void populate_instruments_for_trades(const Ctx& ctx,
         // The instrument is keyed by the trade it belongs to, so the
         // trade's own id is the key the product tables are read by.
         const auto id = boost::uuids::to_string(t.id);
+        // A bond's reader reads its own children, so the bond is left out of
+        // the shared reads that would carry them a second time.
+        if (*table != instrument_table::bond_instrument)
+            all_ids.push_back(id);
         switch (*table) {
             case instrument_table::bond_instrument:
                 bond_ids.push_back(id);
@@ -215,25 +220,45 @@ void populate_instruments_for_trades(const Ctx& ctx,
 
     // Phase 2: the children, one read per table over the whole page. A child
     // carries the trade id its instrument does, so the reads need no pairing.
-    {
-        // The legs are shared tables keyed by the trade, so a credit trade's
-        // legs are read with the rates family's.
-        std::vector<std::string> all_swap = rate_ids;
-        all_swap.insert(all_swap.end(), credit_ids.begin(), credit_ids.end());
-        if (!all_swap.empty()) {
-            repository::swap_leg_repository leg_repo;
-            auto legs = leg_repo.read_by_instruments_batch(ctx, all_swap);
-            take(legs, batch.swap_legs);
-            repository::swap_leg_amount_repository amount_repo;
-            auto amounts = amount_repo.read_by_instruments_batch(ctx, all_swap);
-            take(amounts, batch.swap_leg_amounts);
-            repository::swap_leg_rate_repository rate_repo;
-            auto rates = rate_repo.read_by_instruments_batch(ctx, all_swap);
-            take(rates, batch.swap_leg_rates);
-            repository::swap_leg_amortization_repository amortization_repo;
-            auto amortizations = amortization_repo.read_by_instruments_batch(ctx, all_swap);
-            take(amortizations, batch.swap_leg_amortizations);
-        }
+    //
+    // The shared children (legs, schedules, the option block, strikes and
+    // range bounds) are keyed by the trade whatever its family, and every
+    // family may write them, so they are read once over the whole page. A read
+    // per family drops the rows of any family the read forgets.
+    if (!all_ids.empty()) {
+        repository::swap_leg_repository leg_repo;
+        auto legs = leg_repo.read_by_instruments_batch(ctx, all_ids);
+        take(legs, batch.swap_legs);
+        repository::swap_leg_amount_repository amount_repo;
+        auto amounts = amount_repo.read_by_instruments_batch(ctx, all_ids);
+        take(amounts, batch.swap_leg_amounts);
+        repository::swap_leg_rate_repository rate_repo;
+        auto rates = rate_repo.read_by_instruments_batch(ctx, all_ids);
+        take(rates, batch.swap_leg_rates);
+        repository::swap_leg_amortization_repository amortization_repo;
+        auto amortizations = amortization_repo.read_by_instruments_batch(ctx, all_ids);
+        take(amortizations, batch.swap_leg_amortizations);
+
+        auto schedules = repository::read_schedules_by_trade_ids(ctx, all_ids);
+        take(schedules, batch.instrument_schedules);
+        auto schedule_dates = repository::read_schedule_dates_by_trade_ids(ctx, all_ids);
+        take(schedule_dates, batch.instrument_schedule_dates);
+        auto options = repository::read_options_by_trade_ids(ctx, all_ids);
+        take(options, batch.instrument_options);
+        auto premiums = repository::read_option_premiums_by_trade_ids(ctx, all_ids);
+        take(premiums, batch.instrument_option_premiums);
+        auto fees = repository::read_option_exercise_fees_by_trade_ids(ctx, all_ids);
+        take(fees, batch.instrument_option_exercise_fees);
+        auto payment_dates = repository::read_option_payment_dates_by_trade_ids(ctx, all_ids);
+        take(payment_dates, batch.instrument_option_payment_dates);
+        auto exercise_prices = repository::read_option_exercise_prices_by_trade_ids(ctx, all_ids);
+        take(exercise_prices, batch.instrument_option_exercise_prices);
+        auto strikes = repository::read_strikes_by_trade_ids(ctx, all_ids);
+        take(strikes, batch.instrument_strikes);
+
+        repository::range_bound_repository bound_repo;
+        auto bounds = bound_repo.read_by_instruments_batch(ctx, all_ids);
+        take(bounds, batch.range_bounds);
     }
     if (!composite_ids.empty()) {
         repository::composite_leg_repository comp_leg_repo;
@@ -257,49 +282,11 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::balance_guaranteed_swap_tranche_notional_repository tranche_notional_repo;
         auto tranche_notionals = tranche_notional_repo.read_by_instruments_batch(ctx, rate_ids);
         take(tranche_notionals, batch.balance_guaranteed_swap_tranche_notionals);
-        // The shared children the rates family writes: the strikes, the
-        // schedules and the option block, read for the same trade ids.
-        auto schedules = repository::read_schedules_by_trade_ids(ctx, rate_ids);
-        take(schedules, batch.instrument_schedules);
-        auto schedule_dates = repository::read_schedule_dates_by_trade_ids(ctx, rate_ids);
-        take(schedule_dates, batch.instrument_schedule_dates);
-        auto options = repository::read_options_by_trade_ids(ctx, rate_ids);
-        take(options, batch.instrument_options);
-        auto premiums = repository::read_option_premiums_by_trade_ids(ctx, rate_ids);
-        take(premiums, batch.instrument_option_premiums);
-        auto fees = repository::read_option_exercise_fees_by_trade_ids(ctx, rate_ids);
-        take(fees, batch.instrument_option_exercise_fees);
-        auto payment_dates = repository::read_option_payment_dates_by_trade_ids(ctx, rate_ids);
-        take(payment_dates, batch.instrument_option_payment_dates);
-        auto exercise_prices = repository::read_option_exercise_prices_by_trade_ids(ctx, rate_ids);
-        take(exercise_prices, batch.instrument_option_exercise_prices);
-        auto strikes = repository::read_strikes_by_trade_ids(ctx, rate_ids);
-        take(strikes, batch.instrument_strikes);
     }
     if (!credit_ids.empty()) {
         repository::credit_basket_constituent_repository constituent_repo;
         auto constituents = constituent_repo.read_by_instruments_batch(ctx, credit_ids);
         take(constituents, batch.credit_basket_constituents);
-
-        // The shared strikes and schedules the credit family writes, read for
-        // the same trade ids.
-        auto strikes = repository::read_strikes_by_trade_ids(ctx, credit_ids);
-        take(strikes, batch.instrument_strikes);
-        auto schedules = repository::read_schedules_by_trade_ids(ctx, credit_ids);
-        take(schedules, batch.instrument_schedules);
-        auto schedule_dates = repository::read_schedule_dates_by_trade_ids(ctx, credit_ids);
-        take(schedule_dates, batch.instrument_schedule_dates);
-        auto options = repository::read_options_by_trade_ids(ctx, credit_ids);
-        take(options, batch.instrument_options);
-        auto premiums = repository::read_option_premiums_by_trade_ids(ctx, credit_ids);
-        take(premiums, batch.instrument_option_premiums);
-        auto fees = repository::read_option_exercise_fees_by_trade_ids(ctx, credit_ids);
-        take(fees, batch.instrument_option_exercise_fees);
-        auto payment_dates = repository::read_option_payment_dates_by_trade_ids(ctx, credit_ids);
-        take(payment_dates, batch.instrument_option_payment_dates);
-        auto exercise_prices =
-            repository::read_option_exercise_prices_by_trade_ids(ctx, credit_ids);
-        take(exercise_prices, batch.instrument_option_exercise_prices);
     }
     if (!commodity_ids.empty()) {
         repository::commodity_basket_constituent_repository constituent_repo;
@@ -458,10 +445,6 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::fx_accumulator_instrument_service svc(ctx);
         auto rows = svc.get_fx_accumulator_instruments(fxacc_ids);
         take(rows, batch.fx_accumulator_instruments);
-
-        repository::range_bound_repository bound_repo;
-        auto bounds = bound_repo.read_by_instruments_batch(ctx, fxacc_ids);
-        take(bounds, batch.range_bounds);
     }
     if (!fxvar_ids.empty()) {
         service::fx_variance_swap_instrument_service svc(ctx);

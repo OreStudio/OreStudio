@@ -1,0 +1,222 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_ROLE_PRODUCT_TYPE_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_ROLE_PRODUCT_TYPE_REPOSITORY_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.iam.api/domain/role_product_type.hpp"
+#include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace ores::iam::repository {
+
+/**
+ * @brief One version of a permitted product type, with the end of its validity.
+ *
+ * A link is closed by ending its validity, not by deleting the row, so a closed
+ * link is a row whose end is in the past. @c closed_at is set on a version that
+ * ended because the link was closed, and empty on a version that a later
+ * version replaced and on a link that is open. @c closed_by names the account
+ * that closed it, and is empty on the same versions. The domain type does not carry
+ * it, and it is final, so the history row holds the link beside it. The actor
+ * and the time stand flat on the row as well, which is the shape the history
+ * builder reads.
+ */
+struct role_product_type_history_row {
+    domain::role_product_type link;
+    std::string modified_by;
+    std::chrono::system_clock::time_point recorded_at;
+    std::optional<std::chrono::system_clock::time_point> closed_at;
+    std::string closed_by;
+};
+
+/**
+ * @brief Reads and writes permitted product types to data storage.
+ */
+class ORES_IAM_CORE_EXPORT role_product_type_repository {
+private:
+    inline static std::string_view logger_name = "ores.iam.repository.role_product_type_repository";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    explicit role_product_type_repository(context ctx);
+
+    std::string sql();
+
+    /**
+     * @brief Writes permitted product types to database.
+     *
+     * The plain form replaces the link the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a
+     * silent overwrite.
+     */
+    /**@{*/
+    void write(const domain::role_product_type& v);
+    void write(const std::vector<domain::role_product_type>& v);
+    /**@}*/
+
+    /**
+     * @brief Writes a permitted product type, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void write(const domain::role_product_type& v,
+               const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of permitted product types, each honouring its own claim, as
+     * one statement.
+     */
+    void write(const std::vector<domain::role_product_type>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
+
+    std::vector<domain::role_product_type> read_latest();
+    std::vector<domain::role_product_type> read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Reads the permitted product type rows for the given pair of keys.
+     *
+     * A junction key is the whole pair the link names, so a read that states
+     * only one half addresses a set and not a row.
+     */
+    std::vector<domain::role_product_type> read_latest(const boost::uuids::uuid& role_id,
+                                                       const std::string& product_type_code);
+
+    /**
+     * @brief Gets the total count of active permitted product types.
+     */
+    std::uint32_t get_total_role_product_type_count();
+    std::vector<domain::role_product_type> read_latest_by_role(const boost::uuids::uuid& role_id);
+    /**
+     * @brief Reads latest permitted product types filtered by role_id, with pagination.
+     */
+    std::vector<domain::role_product_type> read_latest_by_role(const boost::uuids::uuid& role_id,
+                                                               std::uint32_t offset,
+                                                               std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active permitted product types filtered by role_id.
+     */
+    std::uint32_t get_total_role_product_type_count_by_role(const boost::uuids::uuid& role_id);
+
+    std::vector<domain::role_product_type>
+    read_latest_by_product_type(const std::string& product_type_code);
+    /**
+     * @brief Reads latest permitted product types filtered by product_type_code, with pagination.
+     */
+    std::vector<domain::role_product_type> read_latest_by_product_type(
+        const std::string& product_type_code, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active permitted product types filtered by product_type_code.
+     */
+    std::uint32_t
+    get_total_role_product_type_count_by_product_type(const std::string& product_type_code);
+
+    /**
+     * @brief Reads every version of every permitted product type of one role.
+     *
+     * Closed links are included. The rows are grouped by product type
+     * and run newest first within a group, so a caller numbers and diffs the
+     * versions of one link by walking a group.
+     */
+    std::vector<role_product_type_history_row> read_all_by_role(const boost::uuids::uuid& role_id);
+
+    /**
+     * @brief Deletes a permitted product type by its pair of keys.
+     */
+    void remove(const boost::uuids::uuid& role_id, const std::string& product_type_code);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a permitted product type, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status remove(const boost::uuids::uuid& role_id,
+                         const std::string& product_type_code,
+                         std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes permitted product types by their pairs of keys.
+     */
+    void remove(const std::vector<boost::uuids::uuid>& role_ids,
+                const std::vector<std::string>& product_type_codes);
+
+    void remove_by_role(const boost::uuids::uuid& role_id);
+
+private:
+    context ctx_;
+
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(const domain::role_product_type& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::role_product_type apply_claim(const domain::role_product_type& v,
+                                          const ores::utility::domain::precondition& claim);
+};
+
+}
+
+#endif

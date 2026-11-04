@@ -41,6 +41,8 @@ set(files
     "book_change_codec_roundtrip_tests.cpp"
     "book_change_protocol_codec_roundtrip_tests.cpp"
     "book_codec_roundtrip_tests.cpp"
+    "book_product_type_codec_roundtrip_tests.cpp"
+    "book_product_type_protocol_codec_roundtrip_tests.cpp"
     "book_protocol_codec_roundtrip_tests.cpp"
     "book_purpose_type_codec_roundtrip_tests.cpp"
     "book_purpose_type_protocol_codec_roundtrip_tests.cpp"

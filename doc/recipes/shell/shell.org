@@ -2107,3 +2107,23 @@ tangled into the runnable script library
 * Fx Vol Surface Pillars
 
 - [[id:5CC2D8E2-53FB-5DA1-AAC1-957B08F79539][How do I run the fx_vol_surface_pillars commands from the shell?]]
+
+* Book Product Types
+
+- [[id:D899F282-F4EF-5C91-94B7-5546BB9147F5][How do I run the book_product_types commands from the shell?]]
+
+* Role Product Types
+
+- [[id:1E0E2129-DFC2-5C77-B903-DE571F672FCB][How do I run the role_product_types commands from the shell?]]
+
+* Variance Calibration Input Points
+
+- [[id:C255FA1E-15E8-5945-9CA0-8702B775BDB1][How do I run the variance_calibration_input_points commands from the shell?]]
+
+* Variance Calibration Inputs
+
+- [[id:ECAB1838-E58C-5F87-AE1E-F56A089862DA][How do I run the variance_calibration_inputs commands from the shell?]]
+
+* Variance Calibrations
+
+- [[id:00D9ABEB-CF5C-5B5D-A107-3D0651440DC5][How do I run the variance_calibrations commands from the shell?]]

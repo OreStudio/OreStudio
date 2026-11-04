@@ -3766,12 +3766,14 @@ declare
     v_portfolio_dataset_code text;
     v_root_party_id uuid;
     v_portfolio_dataset_id uuid;
+    v_actor text;
     v_inserted bigint := 0;
 begin
     -- A publish is an upsert by design: it replaces the row it finds.
     -- Stating version 0 asserts the row does not exist, so the publish
     -- asks for the version replace the store grants a bulk writer.
     perform ores_utility_allow_version_replace_fn();
+    v_actor := coalesce(ores_iam_current_service_fn(), current_user);
     v_root_party_id := coalesce(
         (p_params ->> 'party_id')::uuid,
         (select id from ores_refdata_parties_tbl
@@ -3839,40 +3841,71 @@ begin
         where a.dataset_id = v_portfolio_dataset_id;
     end if;
 
-    insert into ores_refdata_books_tbl (
-        tenant_id, id, version, party_id, name,
-        parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
-        book_status, regulatory_book_type, book_purpose_type, ledger_feed_type,
-        is_sweepable, rates_centre_code, owner_unit_id,
-        modified_by, performed_by, change_reason_code, change_commentary
+    -- A book published from a curated dataset states the product types it
+    -- allows rather than leaving the question open: it carries
+    -- restricts_product_types = true and takes every code the system
+    -- catalogue holds. A later restriction and a deliberately narrow book
+    -- are both a row removed from the junction, which is a data change.
+    -- The books are held aside so the junction can name them and the
+    -- inserted count still reports books.
+    drop table if exists published_book_map;
+    create temp table published_book_map (
+        id uuid primary key
+    ) on commit drop;
+
+    with published as (
+        insert into ores_refdata_books_tbl (
+            tenant_id, id, version, party_id, name,
+            parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
+            book_status, regulatory_book_type, book_purpose_type, ledger_feed_type,
+            is_sweepable, rates_centre_code, owner_unit_id,
+            restricts_product_types,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select
+            p_target_tenant_id,
+            gen_random_uuid(), 0, v_root_party_id, a.name,
+            pmap.published_id, a.functional_currency, a.gl_account_ref, a.cost_center,
+            a.book_status, a.regulatory_book_type, a.book_purpose_type, a.ledger_feed_type,
+            a.is_sweepable,
+            -- The artefact template can't know which party it will be
+            -- published to, so a region-agnostic book (e.g. a group-level
+            -- regulatory capital book) leaves rates_centre_code null in the
+            -- artefact, meaning "inherit the publishing party's own
+            -- location" rather than a hardcoded region. Desk-level books
+            -- keep their real, party-independent region code in the
+            -- artefact (a GBP rates desk trades out of London regardless of
+            -- which legal entity owns the book).
+            coalesce(a.rates_centre_code, v_root_party.business_center_code),
+            pmap.published_owner_unit_id,
+            true,
+            v_actor, current_user, 'system.external_data_import',
+            'Published from organisation dataset'
+        from ores_dq_books_artefact_tbl a
+        join portfolio_ref_map pmap on pmap.artefact_id = a.parent_portfolio_id
+        cross join ores_refdata_parties_tbl v_root_party
+        where a.dataset_id = p_dataset_id
+          and v_root_party.id = v_root_party_id
+          and v_root_party.tenant_id = p_target_tenant_id
+          and v_root_party.valid_to = ores_utility_infinity_timestamp_fn()
+        returning id
     )
-    select
-        p_target_tenant_id,
-        gen_random_uuid(), 0, v_root_party_id, a.name,
-        pmap.published_id, a.functional_currency, a.gl_account_ref, a.cost_center,
-        a.book_status, a.regulatory_book_type, a.book_purpose_type, a.ledger_feed_type,
-        a.is_sweepable,
-        -- The artefact template can't know which party it will be
-        -- published to, so a region-agnostic book (e.g. a group-level
-        -- regulatory capital book) leaves rates_centre_code null in the
-        -- artefact, meaning "inherit the publishing party's own
-        -- location" rather than a hardcoded region. Desk-level books
-        -- keep their real, party-independent region code in the
-        -- artefact (a GBP rates desk trades out of London regardless of
-        -- which legal entity owns the book).
-        coalesce(a.rates_centre_code, v_root_party.business_center_code),
-        pmap.published_owner_unit_id,
-        coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
-        'Published from organisation dataset'
-    from ores_dq_books_artefact_tbl a
-    join portfolio_ref_map pmap on pmap.artefact_id = a.parent_portfolio_id
-    cross join ores_refdata_parties_tbl v_root_party
-    where a.dataset_id = p_dataset_id
-      and v_root_party.id = v_root_party_id
-      and v_root_party.tenant_id = p_target_tenant_id
-      and v_root_party.valid_to = ores_utility_infinity_timestamp_fn();
+    insert into published_book_map (id)
+    select id from published;
 
     get diagnostics v_inserted = row_count;
+
+    insert into ores_refdata_book_product_types_tbl (
+        book_id, tenant_id, product_type_code, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select m.id, p_target_tenant_id, c.code, 0,
+        v_actor, current_user, 'system.external_data_import',
+        'Published from organisation dataset'
+    from published_book_map m
+    cross join ores_trading_product_types_tbl c
+    where c.tenant_id = ores_utility_system_tenant_id_fn()
+      and c.valid_to = ores_utility_infinity_timestamp_fn();
 
     return query
     select 'inserted'::text, v_inserted

@@ -118,6 +118,7 @@ domain::book book_to_domain(const messaging::book_write& write) {
     v.book_purpose_type = write.book_purpose_type;
     v.ledger_feed_type = write.ledger_feed_type;
     v.is_sweepable = write.is_sweepable;
+    v.restricts_product_types = write.restricts_product_types;
     v.rates_centre_code = write.rates_centre_code;
     v.sandbox_id = write.sandbox_id;
     return v;
@@ -155,6 +156,8 @@ std::vector<std::string> book_columns_changed(const std::vector<domain::book>& l
     note("book_purpose_type", created || live.front().book_purpose_type != next.book_purpose_type);
     note("ledger_feed_type", created || live.front().ledger_feed_type != next.ledger_feed_type);
     note("is_sweepable", created || live.front().is_sweepable != next.is_sweepable);
+    note("restricts_product_types",
+         created || live.front().restricts_product_types != next.restricts_product_types);
     note("rates_centre_code", created || live.front().rates_centre_code != next.rates_centre_code);
     note("sandbox_id", created || live.front().sandbox_id != next.sandbox_id);
     return names;

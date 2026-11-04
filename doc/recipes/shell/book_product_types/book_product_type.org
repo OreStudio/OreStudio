@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: D899F282-F4EF-5C91-94B7-5546BB9147F5
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the book_product_types commands from the shell?
+#+description: Every command the book_product_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:book_product_types:
+
+This file documents the book_product_types resource at the shell, one section per command. Every command is a subcommand of =book_product_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4C34F4FF-2399-5708-BF50-22AB92C631FD
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.list=.
+
+#+name: book_product_types-list
+#+begin_src ores-shell :tangle book_product_types-list.ores :exports none
+book_product_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7E3668D3-2A24-52AC-8247-8BD3C5BE674D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types get <book_id> <product_type_code>
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.get=.
+
+#+name: book_product_types-get
+#+begin_src ores-shell :tangle book_product_types-get.ores :exports none
+book_product_types get 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: DB728037-67B4-5F07-A01A-ACEF9D00A0E6
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types get-many <book_id> <product_type_code>
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.get_many=.
+
+#+name: book_product_types-get-many
+#+begin_src ores-shell :tangle book_product_types-get-many.ores :exports none
+book_product_types get-many 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B17C9C9D-059A-5405-AE8A-CA0C9B008FA1
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types add <book_id> <product_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.put=.
+
+#+name: book_product_types-add
+#+begin_src ores-shell :tangle book_product_types-add.ores :exports none
+book_product_types add 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 04396FAB-7415-5F16-A551-729DD0E2D50C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types set <book_id> <product_type_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.put=.
+
+#+name: book_product_types-set
+#+begin_src ores-shell :tangle book_product_types-set.ores :exports none
+book_product_types set 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 247BD33F-86C2-5F2D-9DFD-F70FFD9229B2
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types put-many --count <n> <book_id> <product_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.put_many=.
+
+#+name: book_product_types-put-many
+#+begin_src ores-shell :tangle book_product_types-put-many.ores :exports none
+book_product_types put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 39742A34-18DE-543A-AE9C-CF80D52F8373
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types delete <book_id> <product_type_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.delete=.
+
+#+name: book_product_types-delete
+#+begin_src ores-shell :tangle book_product_types-delete.ores :exports none
+book_product_types delete 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D9D05028-E3B8-5FDD-9FE5-CA54F2A6D4DA
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types delete-many <book_id> <product_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.delete_many=.
+
+#+name: book_product_types-delete-many
+#+begin_src ores-shell :tangle book_product_types-delete-many.ores :exports none
+book_product_types delete-many 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =by-book-id=
+:PROPERTIES:
+:ID: 19404040-A2C3-5E26-890B-E1999058A1C1
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types by-book-id <book_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.list_by_book_id=.
+
+#+name: book_product_types-by-book-id
+#+begin_src ores-shell :tangle book_product_types-by-book-id.ores :exports none
+book_product_types by-book-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =by-product-type-code=
+:PROPERTIES:
+:ID: ABE901E6-E726-53C6-A92E-A99AC9B2886B
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_product_types by-product-type-code <product_type_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.book_product_types.list_by_product_type_code=.
+
+#+name: book_product_types-by-product-type-code
+#+begin_src ores-shell :tangle book_product_types-by-product-type-code.ores :exports none
+book_product_types by-product-type-code __none__ --limit 1
+#+end_src
+

@@ -721,7 +721,9 @@ void write_fx_variance_swap(record_writer& trade, const fx_variance_swap_instrum
     data.set_text("Calendar", "TARGET");
 }
 
-void write_fx_average_forward(record_writer& trade, const fx_asian_forward_instrument& v) {
+void write_fx_average_forward(record_writer& trade,
+                              const fx_asian_forward_instrument& v,
+                              const fx_instrument_data& carrier) {
     auto data = trade.child("FxAverageForwardData");
     data.set_text("PaymentDate", fx_instrument_projection_to_ore_date(v.payment_date));
     if (!v.reference_currency.empty())
@@ -732,15 +734,17 @@ void write_fx_average_forward(record_writer& trade, const fx_asian_forward_instr
     data.set_decimal("SettlementNotional", v.settlement_notional.value_or(decimal{}));
     data.set_text("FXIndex", v.fx_index);
     data.set_flag("FixedPayer", false);
-    // An average forward observes monthly and the row holds no start date, so
-    // the rule states the tenor with an empty start rather than a date the row
-    // does not have.
-    write_schedule_rule(data.child("ObservationDates"), "", "1M");
+    // An average forward stored before its schedule was kept observes monthly
+    // from no start date the row has, so the rule states the tenor alone.
+    if (!option_block::write_product_schedule(
+            data, carrier, "ObservationDates", "observation_schedule"))
+        write_schedule_rule(data.child("ObservationDates"), "", "1M");
 }
 
 void write_fx_accumulator(record_writer& trade,
                           const fx_accumulator_instrument& v,
-                          const std::vector<range_bound>& rows) {
+                          const std::vector<range_bound>& rows,
+                          const fx_instrument_data& carrier) {
     // The document states at least one range bound, so the refusal runs before
     // the trade is written rather than after half of it is.
     if (rows.empty())
@@ -762,8 +766,11 @@ void write_fx_accumulator(record_writer& trade,
     if (v.start_date.ok())
         data.set_text("StartDate", fx_instrument_projection_to_ore_date(v.start_date));
 
-    write_schedule_rule(
-        data.child("ObservationDates"), fx_instrument_projection_to_ore_date(v.start_date), "1D");
+    if (!option_block::write_product_schedule(
+            data, carrier, "ObservationDates", "observation_schedule"))
+        write_schedule_rule(data.child("ObservationDates"),
+                            fx_instrument_projection_to_ore_date(v.start_date),
+                            "1D");
 
     std::vector<const range_bound*> ordered;
     ordered.reserve(rows.size());
@@ -796,7 +803,9 @@ void write_fx_accumulator(record_writer& trade,
     }
 }
 
-void write_fx_tarf(record_writer& trade, const fx_asian_forward_instrument& v) {
+void write_fx_tarf(record_writer& trade,
+                   const fx_asian_forward_instrument& v,
+                   const fx_instrument_data& carrier) {
     auto data = trade.child("FxTaRFData");
     if (!v.currency.empty())
         data.set_spelling("Currency", v.currency, "currency");
@@ -808,9 +817,10 @@ void write_fx_tarf(record_writer& trade, const fx_asian_forward_instrument& v) {
     underlying.set_text("Name", v.fx_index);
     underlying.set_text("Type", "FX");
     data.child("OptionData").set_text("LongShort", v.long_short.empty() ? "Long" : v.long_short);
-    // A TaRF's schedule is annual and the row holds no start date; the rule
-    // states the tenor with an empty start.
-    write_schedule_rule(data.child("ScheduleData"), "", "1Y");
+    // A TaRF stored before its schedule was kept is annual from no start date
+    // the row has, so the rule states the tenor alone.
+    if (!option_block::write_product_schedule(data, carrier, "ScheduleData", "product_schedule"))
+        write_schedule_rule(data.child("ScheduleData"), "", "1Y");
 
     if (v.target_amount.has_value())
         push_barrier(
@@ -826,6 +836,13 @@ void write_fx_tarf(record_writer& trade, const fx_asian_forward_instrument& v) {
  * Listed rather than probed, because asking a record type for a field it does
  * not declare is an error.
  */
+/// The schedules an FX product states on its own element.
+constexpr option_block::product_schedule fx_product_schedules[] = {
+    {"FxAverageForward", "ObservationDates", "observation_schedule"},
+    {"FxAccumulator", "ObservationDates", "observation_schedule"},
+    {"FxTaRF", "ScheduleData", "product_schedule"},
+};
+
 std::optional<std::string> fx_option_data_element(std::string_view trade_type) {
     static constexpr std::string_view with_option_data[] = {
         "FxOption",
@@ -898,6 +915,7 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
                 option_block::read_option_block(data, *option);
         }
     }
+    option_block::read_product_schedules(data, trade, trade_type, fx_product_schedules);
     return trading::domain::trade_instrument{std::move(data)};
 }
 
@@ -956,14 +974,14 @@ auto write_fx_instrument(xml::record_writer& trade,
                 }
             } else if constexpr (std::is_same_v<Row, fx_asian_forward_instrument>) {
                 if (trade_type == "FxAverageForward") {
-                    write_fx_average_forward(trade, row);
+                    write_fx_average_forward(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "FxTaRF") {
-                    write_fx_tarf(trade, row);
+                    write_fx_tarf(trade, row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, fx_accumulator_instrument>) {
-                write_fx_accumulator(trade, row, v->range_bounds);
+                write_fx_accumulator(trade, row, v->range_bounds, *v);
                 matched = true;
             } else if constexpr (std::is_same_v<Row, fx_variance_swap_instrument>) {
                 write_fx_variance_swap(trade, row);

@@ -32,6 +32,7 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <algorithm>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -605,6 +606,50 @@ std::vector<std::chrono::year_month_day> exercise_dates_of(const Data& v) {
     for (const auto* row : schedule_dates_of(v, "option", 1, "exercise_dates", 1))
         out.push_back(row->schedule_date);
     return out;
+}
+
+/**
+ * @brief A schedule a product states on its own element, such as an
+ * accumulator's ObservationDates, kept under the option owner by its role.
+ */
+struct product_schedule {
+    std::string_view trade_type;
+    std::string_view element;
+    std::string_view role;
+};
+
+/// Reads every schedule the table names for the trade type from the product.
+template <typename Data, std::size_t N>
+void read_product_schedules(Data& result,
+                            const record_reader& trade,
+                            std::string_view trade_type,
+                            const product_schedule (&table)[N]) {
+    for (const auto& entry : table) {
+        if (entry.trade_type != trade_type)
+            continue;
+        const auto product = trade.child(std::string(trade_type) + "Data");
+        if (!product)
+            return;
+        if (const auto schedule = product->child(entry.element))
+            read_schedule(result, *schedule, "option", 1, entry.role);
+    }
+}
+
+/// Whether the rows keep a product schedule under the role.
+template <typename Data>
+bool has_product_schedule(const Data& v, std::string_view role) {
+    return !schedules_of(v, "option", 1, role).empty();
+}
+
+/// Writes a kept product schedule into its element, when the rows keep one.
+template <typename Data>
+bool write_product_schedule(record_writer& product,
+                            const Data& v,
+                            std::string_view element,
+                            std::string_view role) {
+    if (!has_product_schedule(v, role))
+        return false;
+    return write_stored_schedule(product.child(element), v, "option", 1, role);
 }
 
 /// Writes the Premiums block a holder states, from the premium rows.

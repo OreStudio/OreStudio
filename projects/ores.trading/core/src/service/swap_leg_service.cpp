@@ -143,6 +143,14 @@ domain::swap_leg swap_leg_to_domain(const messaging::swap_leg_write& write) {
     v.lookback = write.lookback;
     v.rate_cutoff = write.rate_cutoff;
     v.local_cap_floor = write.local_cap_floor;
+    v.observation_lag = write.observation_lag;
+    v.cpi_base = write.cpi_base;
+    v.cpi_start_date = write.cpi_start_date;
+    v.cpi_interpolation = write.cpi_interpolation;
+    v.cpi_interpolated = write.cpi_interpolated;
+    v.subtract_inflation_notional = write.subtract_inflation_notional;
+    v.zero_coupon_compounding = write.zero_coupon_compounding;
+    v.zero_coupon_subtract_notional = write.zero_coupon_subtract_notional;
     return v;
 }
 

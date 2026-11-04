@@ -127,6 +127,29 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     fields.push_back(
         {.name = "Local Cap Floor",
          .value = v.local_cap_floor ? (*v.local_cap_floor ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Observation Lag", .value = v.observation_lag.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Cpi Base", .value = v.cpi_base ? v.cpi_base->to_string() : std::string{}});
+    fields.push_back({.name = "Cpi Start Date",
+                      .value = v.cpi_start_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                      *v.cpi_start_date) :
+                                                  std::string{}});
+    fields.push_back(
+        {.name = "Cpi Interpolation", .value = v.cpi_interpolation.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Cpi Interpolated",
+         .value = v.cpi_interpolated ? (*v.cpi_interpolated ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Subtract Inflation Notional",
+                      .value = v.subtract_inflation_notional ?
+                                   (*v.subtract_inflation_notional ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Zero Coupon Compounding",
+                      .value = v.zero_coupon_compounding.value_or(std::string{})});
+    fields.push_back({.name = "Zero Coupon Subtract Notional",
+                      .value = v.zero_coupon_subtract_notional ?
+                                   (*v.zero_coupon_subtract_notional ? "true" : "false") :
+                                   std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

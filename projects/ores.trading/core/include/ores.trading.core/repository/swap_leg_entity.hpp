@@ -96,6 +96,14 @@ struct swap_leg_entity {
     std::optional<std::string> lookback;
     std::optional<int> rate_cutoff;
     std::optional<bool> local_cap_floor;
+    std::optional<std::string> observation_lag;
+    std::optional<ores::utility::decimal::decimal> cpi_base;
+    std::optional<std::chrono::year_month_day> cpi_start_date;
+    std::optional<std::string> cpi_interpolation;
+    std::optional<bool> cpi_interpolated;
+    std::optional<bool> subtract_inflation_notional;
+    std::optional<std::string> zero_coupon_compounding;
+    std::optional<bool> zero_coupon_subtract_notional;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -157,6 +165,15 @@ struct swap_leg_entity {
                query_builder::bind("lookback", &e::lookback) |
                query_builder::bind("rate_cutoff", &e::rate_cutoff) |
                query_builder::bind("local_cap_floor", &e::local_cap_floor) |
+               query_builder::bind("observation_lag", &e::observation_lag) |
+               query_builder::bind("cpi_base", &e::cpi_base) |
+               query_builder::bind("cpi_start_date", &e::cpi_start_date) |
+               query_builder::bind("cpi_interpolation", &e::cpi_interpolation) |
+               query_builder::bind("cpi_interpolated", &e::cpi_interpolated) |
+               query_builder::bind("subtract_inflation_notional", &e::subtract_inflation_notional) |
+               query_builder::bind("zero_coupon_compounding", &e::zero_coupon_compounding) |
+               query_builder::bind("zero_coupon_subtract_notional",
+                                   &e::zero_coupon_subtract_notional) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

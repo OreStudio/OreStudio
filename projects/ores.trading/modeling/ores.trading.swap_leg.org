@@ -522,6 +522,78 @@ The number of days before the period end at which an overnight rate stops fixing
 
 Whether an overnight leg's cap and floor apply to each daily rate rather than to the period's rate, as =LocalCapFloor= states it.
 
+** observation_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The observation lag of an inflation leg's index, as =ObservationLag= states it, such as =3M=.
+
+** cpi_base
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The base CPI a CPI leg indexes from, as =BaseCPI= states it.
+
+** cpi_start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+The date a CPI leg's base CPI applies from, as =StartDate= states it.
+
+** cpi_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How a CPI leg interpolates its index, as =Interpolation= states it: =Flat= or =Linear=.
+
+** cpi_interpolated
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a CPI leg interpolates its index, as the older =Interpolated= flag states it.
+
+** subtract_inflation_notional
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a CPI leg's final flow subtracts the notional, as =SubtractInflationNotional= states it.
+
+** zero_coupon_compounding
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How a zero coupon fixed leg compounds its rate, as =Compounding= states it: =Simple= or =Compounded=.
+
+** zero_coupon_subtract_notional
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a zero coupon fixed leg's flow subtracts the notional, as =SubtractNotional= states it.
+
 * Foreign keys
 
 ** trade_id
@@ -647,6 +719,8 @@ nest.
 
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
 #include <string>
 #include "ores.utility/decimal/decimal.hpp"
 #+end_src

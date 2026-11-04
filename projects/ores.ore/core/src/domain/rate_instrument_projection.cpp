@@ -623,22 +623,20 @@ void write_inflation_swap(record_writer& trade, const swap_instrument_data& v) {
     const auto& fact = std::get<inflation_swap_instrument>(v.facts);
     auto data = trade.child("InflationSwapData");
 
-    // The shared leg writer states a cashflow, fixed or floating payload and
-    // nothing for a CPI leg, so the product's own fields are written here.
-    bool cpi_written = false;
-    for (const auto& leg : v.legs) {
+    // A CPI leg keeps its index, base and lag on its own row. A row stored
+    // before the leg kept them states them only on the swap's fact, so the
+    // fact fills them in.
+    for (auto leg : v.legs) {
+        if (leg.leg_type_code == "CPI") {
+            if (leg.floating_index_code.empty())
+                leg.floating_index_code = fact.inflation_index_code;
+            if (!leg.cpi_base && fact.base_cpi)
+                leg.cpi_base = decimal_from_double(*fact.base_cpi);
+            if (!leg.observation_lag && !fact.lag_convention.empty())
+                leg.observation_lag = fact.lag_convention;
+        }
         auto writer = data.append("LegData");
         leg_block::write_leg(writer, v.header.start_date, v.header.maturity_date, leg, v);
-        if (cpi_written || leg.leg_type_code != "CPI")
-            continue;
-        cpi_written = true;
-        auto cpi = writer.child("CPILegData");
-        if (!fact.inflation_index_code.empty())
-            cpi.append_value("Index", fact.inflation_index_code);
-        if (fact.base_cpi)
-            cpi.append_decimal("BaseCPI", decimal_from_double(*fact.base_cpi));
-        if (!fact.lag_convention.empty())
-            cpi.append_value("ObservationLag", fact.lag_convention);
     }
 }
 

@@ -90,6 +90,16 @@ namespace ores::trading::domain {
         utility::codec::field{"lookback", &swap_leg::lookback},
         utility::codec::field{"rate_cutoff", &swap_leg::rate_cutoff},
         utility::codec::field{"local_cap_floor", &swap_leg::local_cap_floor},
+        utility::codec::field{"observation_lag", &swap_leg::observation_lag},
+        utility::codec::field{"cpi_base", &swap_leg::cpi_base},
+        utility::codec::field{"cpi_start_date", &swap_leg::cpi_start_date},
+        utility::codec::field{"cpi_interpolation", &swap_leg::cpi_interpolation},
+        utility::codec::field{"cpi_interpolated", &swap_leg::cpi_interpolated},
+        utility::codec::field{"subtract_inflation_notional",
+                              &swap_leg::subtract_inflation_notional},
+        utility::codec::field{"zero_coupon_compounding", &swap_leg::zero_coupon_compounding},
+        utility::codec::field{"zero_coupon_subtract_notional",
+                              &swap_leg::zero_coupon_subtract_notional},
         utility::codec::field{"audit", &swap_leg::audit},
     };
 }

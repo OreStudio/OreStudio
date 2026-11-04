@@ -30,6 +30,7 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -309,6 +310,50 @@ struct swap_leg final {
      * period's rate, as LocalCapFloor states it.
      */
     std::optional<bool> local_cap_floor;
+
+    /**
+     * @brief The observation lag of an inflation leg's index, as ObservationLag states it, such as
+     * 3M.
+     */
+    std::optional<std::string> observation_lag;
+
+    /**
+     * @brief The base CPI a CPI leg indexes from, as BaseCPI states it.
+     */
+    std::optional<ores::utility::decimal::decimal> cpi_base;
+
+    /**
+     * @brief The date a CPI leg's base CPI applies from, as StartDate states it.
+     */
+    std::optional<std::chrono::year_month_day> cpi_start_date;
+
+    /**
+     * @brief How a CPI leg interpolates its index, as Interpolation states it: Flat or Linear.
+     */
+    std::optional<std::string> cpi_interpolation;
+
+    /**
+     * @brief Whether a CPI leg interpolates its index, as the older Interpolated flag states it.
+     */
+    std::optional<bool> cpi_interpolated;
+
+    /**
+     * @brief Whether a CPI leg's final flow subtracts the notional, as SubtractInflationNotional
+     * states it.
+     */
+    std::optional<bool> subtract_inflation_notional;
+
+    /**
+     * @brief How a zero coupon fixed leg compounds its rate, as Compounding states it: Simple or
+     * Compounded.
+     */
+    std::optional<std::string> zero_coupon_compounding;
+
+    /**
+     * @brief Whether a zero coupon fixed leg's flow subtracts the notional, as SubtractNotional
+     * states it.
+     */
+    std::optional<bool> zero_coupon_subtract_notional;
 
     ores::dq::domain::audit_record audit;
     /**

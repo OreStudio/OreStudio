@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/swap_leg_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/swap_leg_entity.hpp"
@@ -33,6 +34,7 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -91,6 +93,14 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.lookback = v.lookback;
     r.rate_cutoff = v.rate_cutoff;
     r.local_cap_floor = v.local_cap_floor;
+    r.observation_lag = v.observation_lag;
+    r.cpi_base = v.cpi_base;
+    r.cpi_start_date = v.cpi_start_date;
+    r.cpi_interpolation = v.cpi_interpolation;
+    r.cpi_interpolated = v.cpi_interpolated;
+    r.subtract_inflation_notional = v.subtract_inflation_notional;
+    r.zero_coupon_compounding = v.zero_coupon_compounding;
+    r.zero_coupon_subtract_notional = v.zero_coupon_subtract_notional;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -151,6 +161,14 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.lookback = v.lookback;
     r.rate_cutoff = v.rate_cutoff;
     r.local_cap_floor = v.local_cap_floor;
+    r.observation_lag = v.observation_lag;
+    r.cpi_base = v.cpi_base;
+    r.cpi_start_date = v.cpi_start_date;
+    r.cpi_interpolation = v.cpi_interpolation;
+    r.cpi_interpolated = v.cpi_interpolated;
+    r.subtract_inflation_notional = v.subtract_inflation_notional;
+    r.zero_coupon_compounding = v.zero_coupon_compounding;
+    r.zero_coupon_subtract_notional = v.zero_coupon_subtract_notional;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

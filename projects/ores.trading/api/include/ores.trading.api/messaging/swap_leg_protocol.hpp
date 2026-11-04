@@ -91,6 +91,14 @@ struct swap_leg_write {
     std::optional<std::string> lookback;
     std::optional<int> rate_cutoff;
     std::optional<bool> local_cap_floor;
+    std::optional<std::string> observation_lag;
+    std::optional<ores::utility::decimal::decimal> cpi_base;
+    std::optional<std::chrono::year_month_day> cpi_start_date;
+    std::optional<std::string> cpi_interpolation;
+    std::optional<bool> cpi_interpolated;
+    std::optional<bool> subtract_inflation_notional;
+    std::optional<std::string> zero_coupon_compounding;
+    std::optional<bool> zero_coupon_subtract_notional;
 
     friend bool operator==(const swap_leg_write&, const swap_leg_write&) = default;
 };
@@ -488,6 +496,16 @@ inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted
         utility::codec::field{"lookback", &swap_leg_write::lookback},
         utility::codec::field{"rate_cutoff", &swap_leg_write::rate_cutoff},
         utility::codec::field{"local_cap_floor", &swap_leg_write::local_cap_floor},
+        utility::codec::field{"observation_lag", &swap_leg_write::observation_lag},
+        utility::codec::field{"cpi_base", &swap_leg_write::cpi_base},
+        utility::codec::field{"cpi_start_date", &swap_leg_write::cpi_start_date},
+        utility::codec::field{"cpi_interpolation", &swap_leg_write::cpi_interpolation},
+        utility::codec::field{"cpi_interpolated", &swap_leg_write::cpi_interpolated},
+        utility::codec::field{"subtract_inflation_notional",
+                              &swap_leg_write::subtract_inflation_notional},
+        utility::codec::field{"zero_coupon_compounding", &swap_leg_write::zero_coupon_compounding},
+        utility::codec::field{"zero_coupon_subtract_notional",
+                              &swap_leg_write::zero_coupon_subtract_notional},
     };
 }
 

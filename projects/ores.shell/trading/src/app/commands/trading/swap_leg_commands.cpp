@@ -148,8 +148,10 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<equity_underlying_identifier_type> <equity_quantity> <equity_initial_price> "
         "<equity_initial_price_currency> <equity_dividend_factor> <equity_notional_reset> "
         "<equity_currency> <fx_index> <indexings_from_asset_leg> <floating_index_code_2> "
-        "<cms_duration> <naked_option> <lookback> <rate_cutoff> <local_cap_floor> <reason> "
-        "<commentary>");
+        "<cms_duration> <naked_option> <lookback> <rate_cutoff> <local_cap_floor> "
+        "<observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation> <cpi_interpolated> "
+        "<subtract_inflation_notional> <zero_coupon_compounding> <zero_coupon_subtract_notional> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -166,7 +168,10 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
         "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> "
         "<indexings_from_asset_leg> <floating_index_code_2> <cms_duration> <naked_option> "
-        "<lookback> <rate_cutoff> <local_cap_floor> <reason> <commentary> [--version <n>]");
+        "<lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> "
+        "<cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
+        "<zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -183,7 +188,9 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
         "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> "
         "<indexings_from_asset_leg> <floating_index_code_2> <cms_duration> <naked_option> "
-        "<lookback> <rate_cutoff> <local_cap_floor> <reason> <commentary>");
+        "<lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> "
+        "<cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
+        "<zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -393,8 +400,8 @@ void swap_leg_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 41 + 2) {
-            fail(out) << "Expected " << (41 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 49 + 2) {
+            fail(out) << "Expected " << (49 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -492,6 +499,24 @@ void swap_leg_commands::process_add(std::ostream& out,
             req.change.write.rate_cutoff, parsed->positionals[next++], "rate_cutoff");
         swap_leg_read_token(
             req.change.write.local_cap_floor, parsed->positionals[next++], "local_cap_floor");
+        swap_leg_read_token(
+            req.change.write.observation_lag, parsed->positionals[next++], "observation_lag");
+        swap_leg_read_token(req.change.write.cpi_base, parsed->positionals[next++], "cpi_base");
+        swap_leg_read_token(
+            req.change.write.cpi_start_date, parsed->positionals[next++], "cpi_start_date");
+        swap_leg_read_token(
+            req.change.write.cpi_interpolation, parsed->positionals[next++], "cpi_interpolation");
+        swap_leg_read_token(
+            req.change.write.cpi_interpolated, parsed->positionals[next++], "cpi_interpolated");
+        swap_leg_read_token(req.change.write.subtract_inflation_notional,
+                            parsed->positionals[next++],
+                            "subtract_inflation_notional");
+        swap_leg_read_token(req.change.write.zero_coupon_compounding,
+                            parsed->positionals[next++],
+                            "zero_coupon_compounding");
+        swap_leg_read_token(req.change.write.zero_coupon_subtract_notional,
+                            parsed->positionals[next++],
+                            "zero_coupon_subtract_notional");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -536,8 +561,8 @@ void swap_leg_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 42 + 2) {
-            fail(out) << "Expected " << (42 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 50 + 2) {
+            fail(out) << "Expected " << (50 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -635,6 +660,24 @@ void swap_leg_commands::process_set(std::ostream& out,
             req.change.write.rate_cutoff, parsed->positionals[next++], "rate_cutoff");
         swap_leg_read_token(
             req.change.write.local_cap_floor, parsed->positionals[next++], "local_cap_floor");
+        swap_leg_read_token(
+            req.change.write.observation_lag, parsed->positionals[next++], "observation_lag");
+        swap_leg_read_token(req.change.write.cpi_base, parsed->positionals[next++], "cpi_base");
+        swap_leg_read_token(
+            req.change.write.cpi_start_date, parsed->positionals[next++], "cpi_start_date");
+        swap_leg_read_token(
+            req.change.write.cpi_interpolation, parsed->positionals[next++], "cpi_interpolation");
+        swap_leg_read_token(
+            req.change.write.cpi_interpolated, parsed->positionals[next++], "cpi_interpolated");
+        swap_leg_read_token(req.change.write.subtract_inflation_notional,
+                            parsed->positionals[next++],
+                            "subtract_inflation_notional");
+        swap_leg_read_token(req.change.write.zero_coupon_compounding,
+                            parsed->positionals[next++],
+                            "zero_coupon_compounding");
+        swap_leg_read_token(req.change.write.zero_coupon_subtract_notional,
+                            parsed->positionals[next++],
+                            "zero_coupon_subtract_notional");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -691,8 +734,8 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 42 + 2) {
-            fail(out) << "Expected " << (change_count * 42 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 50 + 2) {
+            fail(out) << "Expected " << (change_count * 50 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -792,6 +835,24 @@ void swap_leg_commands::process_put_many(std::ostream& out,
                 change.write.rate_cutoff, parsed->positionals[next++], "rate_cutoff");
             swap_leg_read_token(
                 change.write.local_cap_floor, parsed->positionals[next++], "local_cap_floor");
+            swap_leg_read_token(
+                change.write.observation_lag, parsed->positionals[next++], "observation_lag");
+            swap_leg_read_token(change.write.cpi_base, parsed->positionals[next++], "cpi_base");
+            swap_leg_read_token(
+                change.write.cpi_start_date, parsed->positionals[next++], "cpi_start_date");
+            swap_leg_read_token(
+                change.write.cpi_interpolation, parsed->positionals[next++], "cpi_interpolation");
+            swap_leg_read_token(
+                change.write.cpi_interpolated, parsed->positionals[next++], "cpi_interpolated");
+            swap_leg_read_token(change.write.subtract_inflation_notional,
+                                parsed->positionals[next++],
+                                "subtract_inflation_notional");
+            swap_leg_read_token(change.write.zero_coupon_compounding,
+                                parsed->positionals[next++],
+                                "zero_coupon_compounding");
+            swap_leg_read_token(change.write.zero_coupon_subtract_notional,
+                                parsed->positionals[next++],
+                                "zero_coupon_subtract_notional");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

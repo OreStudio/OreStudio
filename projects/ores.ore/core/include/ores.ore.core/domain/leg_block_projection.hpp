@@ -251,6 +251,39 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
                 row.fx_index = text_of(*terms, "FXIndex");
         }
     }
+    if (const auto cpi = child_if(leg, "CPILegData")) {
+        const auto first = [&](std::string_view name) -> std::optional<std::string> {
+            const auto values = cpi->values(name);
+            if (values.empty())
+                return std::nullopt;
+            return values.front();
+        };
+        row.floating_index_code = first("Index").value_or("");
+        if (const auto base = cpi->decimals("BaseCPI"); !base.empty())
+            row.cpi_base = base.front();
+        if (const auto start = first("StartDate"))
+            row.cpi_start_date = to_domain_date(*start);
+        row.observation_lag = first("ObservationLag");
+        row.cpi_interpolation = first("Interpolation");
+        if (const auto flags = cpi->spellings("Interpolated"); !flags.empty())
+            row.cpi_interpolated = is_flag_on(flags.front());
+        if (const auto flags = cpi->spellings("SubtractInflationNotional"); !flags.empty())
+            row.subtract_inflation_notional = is_flag_on(flags.front());
+    }
+    if (const auto yy = child_if(leg, "YYLegData")) {
+        row.floating_index_code = text_of(*yy, "Index");
+        if (const auto days = yy->integer("FixingDays"))
+            row.fixing_days = static_cast<int>(*days);
+        if (yy->has("ObservationLag"))
+            row.observation_lag = text_of(*yy, "ObservationLag");
+        row.naked_option = optional_flag(*yy, "NakedOption");
+    }
+    if (const auto zero = child_if(leg, "ZeroCouponFixedLegData")) {
+        if (const auto values = zero->values("Compounding"); !values.empty())
+            row.zero_coupon_compounding = values.front();
+        if (const auto values = zero->values("SubtractNotional"); !values.empty())
+            row.zero_coupon_subtract_notional = is_flag_on(values.front());
+    }
     if (const auto indexings = child_if(leg, "Indexings"))
         row.indexings_from_asset_leg = optional_flag(*indexings, "FromAssetLeg");
     stamp_leg(row);
@@ -474,6 +507,16 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
                 for (const auto& value : list->children(item))
                     append(role, value);
     }
+    for (const auto* element : {"CPILegData", "ZeroCouponFixedLegData"})
+        if (const auto payload = child_if(leg, element))
+            for (const auto& list : payload->children("Rates"))
+                for (const auto& rate : list.children("Rate"))
+                    append("fixed", rate);
+    if (const auto yy = child_if(leg, "YYLegData"))
+        for (const auto& [element, item, role] : floating_rate_lists)
+            if (const auto list = yy->child(element))
+                for (const auto& value : list->children(item))
+                    append(role, value);
     for (const auto& payload : cms_payloads)
         if (const auto cms = child_if(leg, payload.element))
             for (const auto& [element, item, role] : floating_rate_lists)
@@ -554,6 +597,11 @@ inline void write_schedule_rules(record_writer& schedule,
         rule.set_text("EndDate", to_ore_date(*end_date));
     rule.set_text("Tenor", tenor);
     rule.set_spelling("Convention", "MF", "business day convention");
+}
+
+inline bool has_role_in(const std::vector<swap_leg_rate>& rates, std::string_view role) {
+    return std::any_of(
+        rates.begin(), rates.end(), [&](const swap_leg_rate& rate) { return rate.rate_role == role; });
 }
 
 template <typename Data>
@@ -746,6 +794,56 @@ void write_leg(record_writer& leg,
             if (row.fx_index)
                 terms.set_text("FXIndex", *row.fx_index);
         }
+        return;
+    }
+
+    const auto write_fixed_rates = [&](record_writer& payload) {
+        if (!has_role_in(rates, "fixed"))
+            return;
+        auto list = payload.append("Rates");
+        for (const auto& rate : rates)
+            if (rate.rate_role == "fixed")
+                list.append("Rate").set_own_text(rate.value.to_string());
+    };
+    if (row.leg_type_code == "CPI") {
+        auto cpi = leg.child("CPILegData");
+        cpi.append_value("Index", row.floating_index_code);
+        write_fixed_rates(cpi);
+        if (row.cpi_base)
+            cpi.append_decimal("BaseCPI", *row.cpi_base);
+        if (row.cpi_start_date)
+            cpi.append_value("StartDate", to_ore_date(*row.cpi_start_date));
+        if (row.observation_lag)
+            cpi.append_value("ObservationLag", *row.observation_lag);
+        if (row.cpi_interpolation)
+            cpi.append_value("Interpolation", *row.cpi_interpolation);
+        if (row.cpi_interpolated)
+            cpi.append_spelling("Interpolated", flag_text(*row.cpi_interpolated), "boolean");
+        if (row.subtract_inflation_notional)
+            cpi.append_spelling("SubtractInflationNotional",
+                                flag_text(*row.subtract_inflation_notional),
+                                "boolean");
+        return;
+    }
+    if (row.leg_type_code == "YY") {
+        auto yy = leg.child("YYLegData");
+        yy.set_text("Index", row.floating_index_code);
+        if (row.fixing_days)
+            yy.set_integer("FixingDays", *row.fixing_days);
+        if (row.observation_lag)
+            yy.set_text("ObservationLag", *row.observation_lag);
+        write_floating_rates(yy, rates);
+        if (row.naked_option)
+            yy.set_text("NakedOption", flag_text(*row.naked_option));
+        return;
+    }
+    if (row.leg_type_code == "ZeroCouponFixed") {
+        auto zero = leg.child("ZeroCouponFixedLegData");
+        write_fixed_rates(zero);
+        if (row.zero_coupon_compounding)
+            zero.append_value("Compounding", *row.zero_coupon_compounding);
+        if (row.zero_coupon_subtract_notional)
+            zero.append_value("SubtractNotional", flag_text(*row.zero_coupon_subtract_notional));
         return;
     }
 

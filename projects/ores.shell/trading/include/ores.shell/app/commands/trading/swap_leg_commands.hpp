@@ -96,8 +96,10 @@ public:
      * <equity_underlying_identifier_type> <equity_quantity> <equity_initial_price>
      * <equity_initial_price_currency> <equity_dividend_factor> <equity_notional_reset>
      * <equity_currency> <fx_index> <indexings_from_asset_leg> <floating_index_code_2>
-     * <cms_duration> <naked_option> <lookback> <rate_cutoff> <local_cap_floor> <reason>
-     * <commentary>
+     * <cms_duration> <naked_option> <lookback> <rate_cutoff> <local_cap_floor> <observation_lag>
+     * <cpi_base> <cpi_start_date> <cpi_interpolation> <cpi_interpolated>
+     * <subtract_inflation_notional> <zero_coupon_compounding> <zero_coupon_subtract_notional>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -114,7 +116,9 @@ public:
      * <equity_initial_price> <equity_initial_price_currency> <equity_dividend_factor>
      * <equity_notional_reset> <equity_currency> <fx_index> <indexings_from_asset_leg>
      * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
-     * <local_cap_floor> <reason> <commentary> [--version <n>]
+     * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
+     * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>
+     * <zero_coupon_subtract_notional> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -131,7 +135,9 @@ public:
      * <equity_initial_price> <equity_initial_price_currency> <equity_dividend_factor>
      * <equity_notional_reset> <equity_currency> <fx_index> <indexings_from_asset_leg>
      * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
-     * <local_cap_floor> <reason> <commentary>
+     * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
+     * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>
+     * <zero_coupon_subtract_notional> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

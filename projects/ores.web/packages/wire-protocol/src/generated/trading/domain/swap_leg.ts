@@ -73,5 +73,13 @@ export interface SwapLeg {
     lookback: string | null;
     rate_cutoff: number | null;
     local_cap_floor: boolean | null;
+    observation_lag: string | null;
+    cpi_base: string | null;
+    cpi_start_date: string | null;
+    cpi_interpolation: string | null;
+    cpi_interpolated: boolean | null;
+    subtract_inflation_notional: boolean | null;
+    zero_coupon_compounding: string | null;
+    zero_coupon_subtract_notional: boolean | null;
     audit: AuditRecord;
 }

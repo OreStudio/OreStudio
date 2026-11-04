@@ -29,6 +29,8 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace {
 
@@ -846,6 +848,16 @@ auto rebuild(const ores::ore::xml::trade_import_item& item) -> ores::ore::xml::t
     return back.front();
 }
 
+/// The rows of one owner, so a test about one schedule ignores the legs' own.
+template <typename Row>
+std::vector<const Row*> owned_by(const std::vector<Row>& rows, std::string_view owner_role) {
+    std::vector<const Row*> out;
+    for (const auto& row : rows)
+        if (row.owner_role == owner_role)
+            out.push_back(&row);
+    return out;
+}
+
 }
 
 TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap",
@@ -1013,9 +1025,9 @@ TEST_CASE("a_portfolio_document_projects_a_swaption_and_its_option",
     REQUIRE(instrument->leg_rates.size() == 1);
     CHECK(instrument->leg_rates[0].value.to_string() == "0.045");
 
-    REQUIRE(instrument->schedules.size() == 1);
-    CHECK(instrument->schedules[0].owner_role == "option");
-    CHECK(instrument->schedules[0].schedule_role == "exercise_dates");
+    const auto option_schedules = owned_by(instrument->schedules, "option");
+    REQUIRE(option_schedules.size() == 1);
+    CHECK(option_schedules[0]->schedule_role == "exercise_dates");
     REQUIRE(instrument->schedule_dates.size() == 1);
     CHECK(instrument->schedule_dates[0].schedule_date == date_of(2024, 6, 15));
 
@@ -1127,8 +1139,7 @@ TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products",
     REQUIRE(balance->tranche_notionals.size() == 1);
     CHECK(balance->tranche_notionals[0].tranche_number == 1);
     CHECK(balance->tranche_notionals[0].notional.to_string() == "750000");
-    REQUIRE(balance->schedules.size() == 1);
-    CHECK(balance->schedules[0].owner_role == "tranches");
+    CHECK(owned_by(balance->schedules, "tranches").size() == 1);
 
     const auto* callable =
         std::get_if<ores::trading::domain::swap_instrument_data>(&items[5].instrument);

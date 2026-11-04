@@ -703,6 +703,8 @@ void rate_instrument_projection_append_leg(swap_instrument_data& result,
         result.leg_amounts.push_back(std::move(amount));
     for (auto& rate : rate_instrument_projection_read_leg_rates(leg, leg_number))
         result.leg_rates.push_back(std::move(rate));
+    if (const auto schedule = leg.child("ScheduleData"))
+        rate_instrument_projection_read_schedule(result, *schedule, "swap", leg_number, "schedule");
 }
 
 void append_legs(swap_instrument_data& result, const record_reader& data) {
@@ -1429,7 +1431,8 @@ void rate_instrument_projection_write_leg(record_writer& leg,
                                           const rate_instrument& header,
                                           const swap_leg& row,
                                           const std::vector<swap_leg_amount>& amounts,
-                                          const std::vector<swap_leg_rate>& rates) {
+                                          const std::vector<swap_leg_rate>& rates,
+                                          const swap_instrument_data& v) {
     leg.set_spelling("LegType", row.leg_type_code, "leg type");
     leg.set_text("Payer", rate_instrument_projection_flag_text(row.payer.value_or(false)));
     leg.set_text("Currency", row.currency);
@@ -1466,12 +1469,16 @@ void rate_instrument_projection_write_leg(record_writer& leg,
         }
     }
 
+    // The leg's own schedule is the one the document stated; a leg stored
+    // before its schedule rows existed falls back to the header's dates.
     auto schedule = leg.child("ScheduleData");
-    rate_instrument_projection_write_schedule_rules(
-        schedule,
-        header.start_date,
-        header.maturity_date,
-        payment_frequency_to_tenor(row.payment_frequency_code));
+    if (!rate_instrument_projection_write_stored_schedule(
+            schedule, v, "swap", row.identity.leg_number, "schedule"))
+        rate_instrument_projection_write_schedule_rules(
+            schedule,
+            header.start_date,
+            header.maturity_date,
+            payment_frequency_to_tenor(row.payment_frequency_code));
 
     const auto has_role = [&](std::string_view role) {
         return std::any_of(rates.begin(), rates.end(), [&](const swap_leg_rate& rate) {
@@ -1498,7 +1505,8 @@ void write_legs(record_writer& data, const swap_instrument_data& v) {
             v.header,
             leg,
             rate_instrument_projection_amounts_for_leg(v, leg.identity.leg_number),
-            rate_instrument_projection_rates_for_leg(v, leg.identity.leg_number));
+            rate_instrument_projection_rates_for_leg(v, leg.identity.leg_number),
+            v);
     }
 }
 
@@ -1554,7 +1562,8 @@ void write_inflation_swap(record_writer& trade, const swap_instrument_data& v) {
             v.header,
             leg,
             rate_instrument_projection_amounts_for_leg(v, leg.identity.leg_number),
-            rate_instrument_projection_rates_for_leg(v, leg.identity.leg_number));
+            rate_instrument_projection_rates_for_leg(v, leg.identity.leg_number),
+            v);
         if (cpi_written || leg.leg_type_code != "CPI")
             continue;
         cpi_written = true;

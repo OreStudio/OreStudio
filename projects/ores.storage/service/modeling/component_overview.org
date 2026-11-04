@@ -156,14 +156,7 @@ find_package(msgpack-c CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        msgpack-c
-        ores.service.lib
-        ores.security.lib
-        ores.storage.core.lib
-        ores.nats.lib
-        ores.database.lib
-        ores.utility.lib
-        ores.telemetry.core.lib)
+        msgpack-c)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

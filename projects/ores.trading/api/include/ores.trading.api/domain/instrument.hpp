@@ -59,6 +59,7 @@
 #include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
+#include "ores.trading.api/domain/swap_leg_amortization.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -132,6 +133,7 @@ struct swap_instrument_data {
     std::vector<flexi_swap_lower_notional> lower_notionals;
     std::vector<balance_guaranteed_swap_tranche> tranches;
     std::vector<balance_guaranteed_swap_tranche_notional> tranche_notionals;
+    std::vector<swap_leg_amortization> leg_amortizations;
 };
 
 using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
@@ -575,6 +577,9 @@ inline void stamp_ids(swap_instrument_data& data,
     }
     for (auto& exercise_price : data.option_exercise_prices) {
         stamp_ids(exercise_price, trade_id, activity_id);
+    }
+    for (auto& amortization : data.leg_amortizations) {
+        stamp_ids(amortization, trade_id, activity_id);
     }
     for (auto& lower_notional : data.lower_notionals) {
         stamp_ids(lower_notional, trade_id, activity_id);

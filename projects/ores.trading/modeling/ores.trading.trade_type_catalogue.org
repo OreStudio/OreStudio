@@ -416,6 +416,7 @@ shape whichever family states the rows.
 | risk_participation_agreement_instrument     |
 | swap_leg                                    |
 | swap_leg_amount                             |
+| swap_leg_amortization                       |
 | swap_leg_rate                               |
 | swaption_instrument                         |
 | synthetic_cdo_instrument                    |

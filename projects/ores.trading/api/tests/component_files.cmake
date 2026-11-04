@@ -272,6 +272,8 @@ set(files
     "structure_template_protocol_codec_roundtrip_tests.cpp"
     "structure_template_role_codec_roundtrip_tests.cpp"
     "structure_template_role_protocol_codec_roundtrip_tests.cpp"
+    "swap_leg_amortization_codec_roundtrip_tests.cpp"
+    "swap_leg_amortization_protocol_codec_roundtrip_tests.cpp"
     "swap_leg_amount_codec_roundtrip_tests.cpp"
     "swap_leg_amount_protocol_codec_roundtrip_tests.cpp"
     "swap_leg_codec_roundtrip_tests.cpp"

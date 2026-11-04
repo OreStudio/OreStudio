@@ -54,7 +54,8 @@ swap_instrument_data as_swap(const instrument_batch& batch,
         find_all(batch.instrument_option_exercise_prices, trade_id),
         find_all(batch.flexi_swap_lower_notionals, trade_id),
         find_all(batch.balance_guaranteed_swap_tranches, trade_id),
-        find_all(batch.balance_guaranteed_swap_tranche_notionals, trade_id)};
+        find_all(batch.balance_guaranteed_swap_tranche_notionals, trade_id),
+        find_all(batch.swap_leg_amortizations, trade_id)};
 }
 
 /**
@@ -219,6 +220,9 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     batch.swap_leg_amounts.end(), v.leg_amounts.begin(), v.leg_amounts.end());
                 batch.swap_leg_rates.insert(
                     batch.swap_leg_rates.end(), v.leg_rates.begin(), v.leg_rates.end());
+                batch.swap_leg_amortizations.insert(batch.swap_leg_amortizations.end(),
+                                                    v.leg_amortizations.begin(),
+                                                    v.leg_amortizations.end());
                 batch.callable_swap_call_dates.insert(
                     batch.callable_swap_call_dates.end(), v.call_dates.begin(), v.call_dates.end());
                 batch.instrument_strikes.insert(

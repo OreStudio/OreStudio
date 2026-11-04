@@ -59,6 +59,7 @@ using trading::domain::knock_out_swap_instrument;
 using trading::domain::rate_instrument;
 using trading::domain::swap_instrument_data;
 using trading::domain::swap_leg;
+using trading::domain::swap_leg_amortization;
 using trading::domain::swap_leg_amount;
 using trading::domain::swap_leg_rate;
 using trading::domain::swaption_instrument;
@@ -296,9 +297,10 @@ std::vector<swap_leg_amount> rate_instrument_projection_read_leg_amounts(const r
         amounts.push_back(std::move(row));
     };
 
-    // The document states its notional either as a plain list or as an
-    // amortisation schedule, and a cashflow leg states its amounts as dated
-    // payments. Each arm lands in the same column.
+    // The document states its notional as a list, and a cashflow leg states its
+    // amounts as dated payments. Both arms land in the same column. An
+    // amortization schedule is a rule over the notional, not an amount, so it
+    // keeps rows of its own.
     if (const auto notionals = leg.child("Notionals")) {
         for (const auto& notional : notionals->children("Notional"))
             append(rate_instrument_projection_decimal_text(notional),
@@ -308,14 +310,34 @@ std::vector<swap_leg_amount> rate_instrument_projection_read_leg_amounts(const r
             for (const auto& amount : cashflow->children("Amount"))
                 append(rate_instrument_projection_decimal_text(amount),
                        rate_instrument_projection_text_of(amount, "date"));
-    } else if (const auto amortizations = leg.child("Amortizations")) {
-        for (const auto& amortization : amortizations->children("AmortizationData"))
-            append(amortization.has("Value") ?
-                       rate_instrument_projection_decimal_of(amortization, "Value") :
-                       decimal{},
-                   rate_instrument_projection_text_of(amortization, "StartDate"));
     }
     return amounts;
+}
+
+std::vector<swap_leg_amortization>
+rate_instrument_projection_read_leg_amortizations(const record_reader& leg, int leg_number) {
+    std::vector<swap_leg_amortization> steps;
+    const auto amortizations = leg.child("Amortizations");
+    if (!amortizations)
+        return steps;
+    for (const auto& step : amortizations->children("AmortizationData")) {
+        swap_leg_amortization row;
+        row.leg_number = leg_number;
+        row.sequence_number = static_cast<int>(steps.size()) + 1;
+        row.amortization_type = rate_instrument_projection_spelling_of(step, "Type");
+        if (step.has("Value"))
+            row.value = rate_instrument_projection_decimal_of(step, "Value");
+        row.start_date = rate_instrument_projection_to_optional_domain_date(
+            rate_instrument_projection_text_of(step, "StartDate"));
+        row.end_date = rate_instrument_projection_to_optional_domain_date(
+            rate_instrument_projection_text_of(step, "EndDate"));
+        if (step.has("Frequency"))
+            row.frequency = rate_instrument_projection_text_of(step, "Frequency");
+        row.underflow = rate_instrument_projection_optional_flag(step, "Underflow");
+        rate_instrument_projection_stamp_row(row);
+        steps.push_back(std::move(row));
+    }
+    return steps;
 }
 
 /// The schedules a floating leg states, each as its list, its item and the
@@ -392,6 +414,8 @@ void rate_instrument_projection_append_leg(swap_instrument_data& result,
         result.leg_amounts.push_back(std::move(amount));
     for (auto& rate : rate_instrument_projection_read_leg_rates(leg, leg_number))
         result.leg_rates.push_back(std::move(rate));
+    for (auto& step : rate_instrument_projection_read_leg_amortizations(leg, leg_number))
+        result.leg_amortizations.push_back(std::move(step));
     if (const auto schedule = leg.child("ScheduleData"))
         option_block::read_schedule(result, *schedule, "swap", leg_number, "schedule");
 }
@@ -918,6 +942,27 @@ void rate_instrument_projection_write_leg(record_writer& leg,
                 "NotionalFinalExchange",
                 rate_instrument_projection_flag_text(*row.notional_final_exchange),
                 "boolean");
+    }
+
+    std::optional<record_writer> amortizations;
+    for (const auto& step : v.leg_amortizations) {
+        if (step.leg_number != row.identity.leg_number)
+            continue;
+        if (!amortizations)
+            amortizations = leg.child("Amortizations");
+        auto writer = amortizations->append("AmortizationData");
+        rate_instrument_projection_set_spelling_or(
+            writer, "Type", step.amortization_type, "FixedAmount", "amortization type");
+        if (step.value)
+            writer.set_decimal("Value", *step.value);
+        if (step.start_date)
+            writer.set_text("StartDate", rate_instrument_projection_to_ore_date(step.start_date));
+        if (step.end_date)
+            writer.set_text("EndDate", rate_instrument_projection_to_ore_date(step.end_date));
+        if (step.frequency)
+            writer.set_text("Frequency", *step.frequency);
+        if (step.underflow)
+            writer.set_text("Underflow", rate_instrument_projection_flag_text(*step.underflow));
     }
 
     // The leg's own schedule is the one the document stated; a leg stored

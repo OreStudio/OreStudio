@@ -116,6 +116,7 @@
 #include "ores.trading.api/domain/rate_instrument_codec.hpp"
 #include "ores.trading.api/domain/risk_participation_agreement_instrument_codec.hpp"
 #include "ores.trading.api/domain/scripted_instrument_codec.hpp"
+#include "ores.trading.api/domain/swap_leg_amortization_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_amount_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_rate_codec.hpp"
@@ -439,6 +440,10 @@ struct instrument_batch {
      * @brief The swap_leg_amount rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::swap_leg_amount> swap_leg_amounts;
+    /**
+     * @brief The swap_leg_amortization rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::swap_leg_amortization> swap_leg_amortizations;
     /**
      * @brief The swap_leg_rate rows, keyed by trade id.
      */
@@ -968,6 +973,13 @@ inline void append(instrument_batch& batch, swap_leg_amount v) {
 }
 
 /**
+ * @brief Adds one swap_leg_amortization to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, swap_leg_amortization v) {
+    batch.swap_leg_amortizations.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one swap_leg_rate to the array that holds its type.
  */
 inline void append(instrument_batch& batch, swap_leg_rate v) {
@@ -1147,6 +1159,8 @@ template <typename T>
                                       &instrument_batch::risk_participation_agreement_instruments},
         ::ores::utility::codec::field{"swap_legs", &instrument_batch::swap_legs},
         ::ores::utility::codec::field{"swap_leg_amounts", &instrument_batch::swap_leg_amounts},
+        ::ores::utility::codec::field{"swap_leg_amortizations",
+                                      &instrument_batch::swap_leg_amortizations},
         ::ores::utility::codec::field{"swap_leg_rates", &instrument_batch::swap_leg_rates},
         ::ores::utility::codec::field{"swaption_instruments",
                                       &instrument_batch::swaption_instruments},

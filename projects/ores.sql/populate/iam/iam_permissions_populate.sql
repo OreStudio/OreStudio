@@ -1665,6 +1665,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structures:delete',                          'Delete structures');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amounts:read',                           'View swap leg amounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amounts:write',                          'Create and modify swap leg amounts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amortizations:read',                     'View swap leg amortizations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amortizations:write',                    'Create and modify swap leg amortizations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amortizations:delete',                   'Delete swap leg amortizations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amounts:delete',                         'Delete swap leg amounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_rates:read',                             'View swap leg rates');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_rates:write',                            'Create and modify swap leg rates');

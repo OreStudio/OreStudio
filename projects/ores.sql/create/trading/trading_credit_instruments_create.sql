@@ -234,6 +234,9 @@ begin
     delete from "ores_trading_swap_leg_rates_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_amortizations_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
     delete from "ores_trading_instrument_strikes_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;

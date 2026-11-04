@@ -152,8 +152,11 @@ objects through the same store.
 - [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] — the component group overview.
 
 #+begin_src cmake :name extra_dependencies
+find_package(msgpack-c CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
+        msgpack-c
         ores.service.lib
         ores.security.lib
         ores.storage.core.lib

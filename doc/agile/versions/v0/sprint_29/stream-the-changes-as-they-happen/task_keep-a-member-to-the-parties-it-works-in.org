@@ -8,7 +8,7 @@
 #+filetags: :stream-the-changes-as-they-happen:sprint_29:v0:
 #+owner: marco
 #+branch: feature/keep-a-member-to-the-parties-it-works-in
-#+pr:
+#+pr: 4460
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4460][#4460]] | [http] Complete the change stream: identity, party, conflation |
 
 * Review
 

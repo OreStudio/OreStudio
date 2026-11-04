@@ -50,6 +50,7 @@
 #include <boost/asio/post.hpp>
 #include <cstdint>
 #include <memory>
+#include <utility>
 
 namespace ores::reporting::service::app {
 
@@ -155,7 +156,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     event_source.start();
     cut_authorisations->apply();
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         db_ctx,
@@ -200,6 +202,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+    co_await std::move(service_run);
 
     event_source.stop();
     co_return;

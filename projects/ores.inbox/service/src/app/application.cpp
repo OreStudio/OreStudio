@@ -47,6 +47,7 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <utility>
 #include <vector>
 
 namespace ores::inbox::service::app {
@@ -164,7 +165,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     const auto answered_window = answered_window_seconds(svc_nats);
     const auto reminder_window = reminder_window_seconds(svc_nats);
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
@@ -178,6 +180,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+    co_await std::move(service_run);
 
     event_source.stop();
     co_return;

@@ -33,11 +33,13 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <list>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <span>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -59,10 +61,16 @@ struct stream_scope final {
 /**
  * @brief What one stream has been given and not yet written.
  *
- * The queue is bounded because a stream nobody reads must not grow without limit: a
- * client that has stopped reading, or a market that outpaces it, drops its oldest
- * frames instead of the server's memory. Dropping the oldest keeps the newest, which
- * is the half a screen can still use.
+ * One frame is held per collection, not per publication. A stream that fell behind
+ * has missed the intermediate states of a collection but not the fact that it moved,
+ * so a newer frame for a collection replaces the pending one rather than queueing
+ * behind it. That is conflation: the payload says a collection moved, the client
+ * refetches it, and the intermediate frames carried nothing the client could use.
+ *
+ * The batch is still bounded. When more collections are pending than the stream may
+ * hold, the oldest one goes, because it is the frame the reader is least able to
+ * use. A replaced frame moves to the back, so the ids a client reads keep ascending
+ * and its Last-Event-ID stays a statement it can rely on.
  *
  * A reader that is waiting for a frame registers a waker. A publisher that finds one
  * calls it, so a frame does not wait out a keep-alive interval before it is written.
@@ -76,16 +84,31 @@ public:
     change_subscription(const change_subscription&) = delete;
     change_subscription& operator=(const change_subscription&) = delete;
 
-    /// Queues one frame, dropping the oldest when the queue is full.
-    void push(std::string frame) {
+    /**
+     * @brief Holds one frame for its collection, replacing one that is still pending.
+     *
+     * @param collection What the frame is about. Two frames for the same collection
+     *        and the same tenancy are two views of one fact, and the newer is the
+     *        true one.
+     */
+    void push(std::string collection, std::string frame) {
         std::function<void()> waker;
         {
             const std::lock_guard lock(mu_);
             if (closed_)
                 return;
-            if (queue_.size() >= capacity_)
-                queue_.pop_front();
-            queue_.push_back(std::move(frame));
+            if (const auto replaced = pending_by_collection_.find(collection);
+                replaced != pending_by_collection_.end()) {
+                replaced->second->text = std::move(frame);
+                pending_.splice(pending_.end(), pending_, replaced->second);
+            } else {
+                if (pending_.size() >= capacity_ && !pending_.empty()) {
+                    pending_by_collection_.erase(pending_.front().collection);
+                    pending_.pop_front();
+                }
+                pending_.push_back(pending_frame{std::move(collection), std::move(frame)});
+                pending_by_collection_[pending_.back().collection] = std::prev(pending_.end());
+            }
             waker = waker_;
         }
         if (waker)
@@ -95,10 +118,11 @@ public:
     /// Takes the next frame, or nothing when none is waiting.
     std::optional<std::string> try_pop() {
         const std::lock_guard lock(mu_);
-        if (queue_.empty())
+        if (pending_.empty())
             return std::nullopt;
-        auto frame = std::move(queue_.front());
-        queue_.pop_front();
+        auto frame = std::move(pending_.front().text);
+        pending_by_collection_.erase(pending_.front().collection);
+        pending_.pop_front();
         return frame;
     }
 
@@ -119,7 +143,8 @@ public:
         {
             const std::lock_guard lock(mu_);
             closed_ = true;
-            queue_.clear();
+            pending_.clear();
+            pending_by_collection_.clear();
             waker = waker_;
             waker_ = nullptr;
         }
@@ -139,13 +164,19 @@ public:
 
     [[nodiscard]] std::size_t size() const {
         const std::lock_guard lock(mu_);
-        return queue_.size();
+        return pending_.size();
     }
 
 private:
+    struct pending_frame final {
+        std::string collection;
+        std::string text;
+    };
+
     stream_scope scope_;
     mutable std::mutex mu_;
-    std::deque<std::string> queue_;
+    std::list<pending_frame> pending_;
+    std::unordered_map<std::string, std::list<pending_frame>::iterator> pending_by_collection_;
     std::function<void()> waker_;
     std::size_t capacity_;
     bool closed_ = false;
@@ -156,11 +187,13 @@ private:
  *
  * One hub per process. A publisher calls publish from whatever thread it is on; a
  * stream reads its own subscription from the connection's executor. The two meet on
- * the subscription's queue and nowhere else, so a slow reader costs its own queue
- * and not the publisher's thread.
+ * the subscription's pending batch and nowhere else, so a slow reader costs its own
+ * buffer and not the publisher's thread.
  *
  * A frame is text the stream writes as it stands, because the framing belongs to the
- * route that knows it writes an event stream and not to the hub that fans out.
+ * route that knows it writes an event stream and not to the hub that fans out. The
+ * hub is told what each frame is about, and no more, because that is what decides
+ * which pending frame a newer one replaces.
  */
 class change_hub final {
 public:
@@ -215,10 +248,13 @@ public:
             if (inside) {
                 for (const auto& frame : retained_) {
                     if (frame.id > resumed->last_seen && eligible(frame))
-                        subscription->push("id: " + std::to_string(frame.id) + "\n" + frame.text);
+                        subscription->push(
+                            conflation_key(frame.tenant, frame.party, frame.collection),
+                            "id: " + std::to_string(frame.id) + "\n" + frame.text);
                 }
             } else {
-                subscription->push("event: resync\ndata: {}\n\n");
+                // No publish builds this key: every one it builds holds a separator.
+                subscription->push("resync", "event: resync\ndata: {}\n\n");
             }
         }
 
@@ -226,28 +262,38 @@ public:
         return subscription;
     }
 
-    /// Gives the frame to every open stream that hears what owns it.
-    void publish(const std::string& tenant, const std::string& party, std::string frame) {
+    /**
+     * @brief Gives the frame to every open stream that hears what owns it.
+     *
+     * @param collection What the frame is about, as the component and the
+     *        collection it names. A stream holds one pending frame per
+     *        collection, so a frame is the newest statement about its collection
+     *        and not one of a series.
+     */
+    void publish(const std::string& tenant,
+                 const std::string& party,
+                 const std::string& collection,
+                 std::string frame) {
         std::vector<std::shared_ptr<change_subscription>> open;
         {
             const std::lock_guard lock(mu_);
             std::erase_if(subscriptions_,
                           [](const auto& subscription) { return subscription->closed(); });
             const auto id = next_id_++;
-            retained_.push_back(retained_frame{id, tenant, party, frame});
+            retained_.push_back(retained_frame{id, tenant, party, collection, frame});
             while (retained_.size() > retention_)
                 retained_.pop_front();
             open = subscriptions_;
         }
         const auto id = next_id_ - 1;
         auto stamped = "id: " + std::to_string(id) + "\n" + frame;
+        const auto key = conflation_key(tenant, party, collection);
         for (auto& subscription : open) {
             const auto& scope = subscription->scope();
             const auto hears = (tenant == scope.tenant || tenant == system_tenant_) &&
-                               (party.empty() || scope.sees_all_parties ||
-                                party == scope.party);
+                               (party.empty() || scope.sees_all_parties || party == scope.party);
             if (hears)
-                subscription->push(stamped);
+                subscription->push(key, stamped);
         }
     }
 
@@ -266,8 +312,23 @@ private:
         std::uint64_t id = 0;
         std::string tenant;
         std::string party;
+        std::string collection;
         std::string text;
     };
+
+    /**
+     * @brief What makes two frames the same fact.
+     *
+     * A stream may hear two tenants and several parties, so the collection alone
+     * would let one tenant's frame replace another's. The parts cannot contain the
+     * separator: a tenant and a party are identifiers and a collection is a
+     * component and a name.
+     */
+    static std::string conflation_key(const std::string& tenant,
+                                      const std::string& party,
+                                      const std::string& collection) {
+        return tenant + '/' + party + '/' + collection;
+    }
 
     std::string system_tenant_;
     mutable std::mutex mu_;

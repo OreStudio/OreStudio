@@ -18,28 +18,101 @@
  *
  */
 #include "ores.http.core/stream/change_ticker.hpp"
+#include <boost/asio/post.hpp>
 #include <boost/asio/redirect_error.hpp>
-#include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <utility>
 
 namespace ores::http::stream {
 
+namespace {
+
+/**
+ * @brief How long the loop sleeps while no change is waiting.
+ *
+ * It bounds nothing but the sleep: a change expires the timer as it arms the window,
+ * so this is only how long an idle server is allowed to stay asleep.
+ */
+constexpr auto idle_wait = std::chrono::hours(1);
+
+}
+
+change_ticker::change_ticker(change_coalescer& coalescer,
+                             change_hub& hub,
+                             std::chrono::milliseconds window)
+    : pump_(coalescer, hub)
+    , coalescer_(coalescer)
+    , window_(window) {
+    coalescer_.set_wake([this] { arm(); });
+}
+
+change_ticker::~change_ticker() {
+    coalescer_.set_wake(nullptr);
+}
+
 boost::asio::awaitable<void> change_ticker::run(boost::asio::any_io_executor executor) {
-    while (!stopped_) {
-        boost::asio::steady_timer timer(executor);
-        timer.expires_after(interval_);
+    const auto open = std::make_shared<window>();
+    open->timer = std::make_shared<boost::asio::steady_timer>(executor);
+    {
+        const std::lock_guard lock(mu_);
+        open_ = open;
+        executor_ = std::make_shared<boost::asio::any_io_executor>(executor);
+    }
+
+    while (!open->done) {
+        /*
+         * A change recorded before the ticker ran found no one to arm its window, so
+         * the first pass checks whether anything is already waiting.
+         */
+        if (!open->armed && coalescer_.pending() > 0)
+            open->armed = true;
+
+        const auto closing = open->armed;
+        open->timer->expires_after(closing ? window_ : idle_wait);
+
         boost::system::error_code ec;
-        co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-        if (stopped_)
+        co_await open->timer->async_wait(
+            boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        if (open->done)
             break;
+
+        // An arm cut the sleep short: the next pass waits the window out.
+        if (!closing)
+            continue;
+
+        open->armed = false;
         pump_.pump();
     }
-    co_return;
+}
+
+void change_ticker::arm() {
+    post([](const std::shared_ptr<window>& open) {
+        if (open->done || open->armed)
+            return;
+        open->armed = true;
+        open->timer->expires_at(std::chrono::steady_clock::now());
+    });
 }
 
 void change_ticker::stop() {
     stopped_ = true;
+    post([](const std::shared_ptr<window>& open) {
+        open->done = true;
+        open->timer->expires_at(std::chrono::steady_clock::now());
+    });
+}
+
+void change_ticker::post(std::function<void(const std::shared_ptr<window>&)> change) {
+    std::shared_ptr<boost::asio::any_io_executor> executor;
+    std::shared_ptr<window> open;
+    {
+        const std::lock_guard lock(mu_);
+        executor = executor_;
+        open = open_;
+    }
+    if (!executor || !open)
+        return;
+    boost::asio::post(*executor, [open, change = std::move(change)] { change(open); });
 }
 
 }

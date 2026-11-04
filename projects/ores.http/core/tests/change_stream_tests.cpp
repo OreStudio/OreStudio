@@ -64,7 +64,7 @@ TEST_CASE("a_frame_reaches_every_open_stream", "[change_stream]") {
     auto second = hub.subscribe({.tenant = "acme"});
     REQUIRE(hub.open_streams() == 2);
 
-    hub.publish("acme", "", "data: one\n\n");
+    hub.publish("acme", "", "iam.book", "data: one\n\n");
 
     REQUIRE(first->size() == 1);
     REQUIRE(second->size() == 1);
@@ -81,7 +81,7 @@ TEST_CASE("a_stream_that_has_ended_is_forgotten_by_the_next_publish", "[change_s
     ended->close();
     auto open = hub.subscribe({.tenant = "acme"});
 
-    hub.publish("acme", "", "data: one\n\n");
+    hub.publish("acme", "", "iam.book", "data: one\n\n");
 
     REQUIRE(hub.open_streams() == 1);
     REQUIRE(ended->size() == 0);
@@ -96,7 +96,7 @@ TEST_CASE("a_stream_that_is_not_read_drops_its_oldest_frames", "[change_stream]"
     auto slow = hub.subscribe({.tenant = "acme"});
 
     for (auto index = 0; index < 5; ++index)
-        hub.publish("acme", "", "frame " + std::to_string(index));
+        hub.publish("acme", "", "iam.c" + std::to_string(index), "frame " + std::to_string(index));
 
     REQUIRE(slow->size() == 3);
     // The newest survive: a screen that fell behind wants where the world is now.
@@ -112,7 +112,7 @@ TEST_CASE("the_source_writes_a_queued_frame", "[change_stream]") {
 
     auto subscription = std::make_shared<change_subscription>(stream_scope{.tenant = "acme"}, 8);
     change_stream_source source(subscription, std::chrono::milliseconds(50));
-    subscription->push("data: hello\n\n");
+    subscription->push("iam.book", "data: hello\n\n");
 
     REQUIRE(read_once(source, 4096) == "data: hello\n\n");
 }
@@ -152,7 +152,7 @@ TEST_CASE("a_frame_ends_the_wait_before_the_keep_alive_interval", "[change_strea
     // otherwise have held for the whole interval.
     std::thread publisher([&] {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        subscription->push("data: woke\n\n");
+        subscription->push("iam.book", "data: woke\n\n");
     });
     io.run();
     publisher.join();
@@ -179,7 +179,7 @@ TEST_CASE("a_frame_reaches_only_the_streams_that_hear_its_tenant", "[change_stre
     auto acme = hub.subscribe({.tenant = "acme"});
     auto globex = hub.subscribe({.tenant = "globex"});
 
-    hub.publish("acme", "", "data: acme moved\n\n");
+    hub.publish("acme", "", "iam.book", "data: acme moved\n\n");
 
     REQUIRE(acme->size() == 1);
     REQUIRE(globex->size() == 0);
@@ -193,7 +193,7 @@ TEST_CASE("a_system_tenant_frame_reaches_every_stream", "[change_stream]") {
     auto acme = hub.subscribe({.tenant = "acme"});
     auto globex = hub.subscribe({.tenant = "globex"});
 
-    hub.publish(stream_system_tenant, "", "data: currencies moved\n\n");
+    hub.publish(stream_system_tenant, "", "refdata.currencies", "data: currencies moved\n\n");
 
     REQUIRE(acme->size() == 1);
     REQUIRE(globex->size() == 1);
@@ -205,7 +205,8 @@ TEST_CASE("a_stream_whose_source_ended_leaves_the_hub", "[change_stream]") {
 
     change_hub hub(stream_system_tenant);
     {
-        change_stream_source source(hub.subscribe({.tenant = "acme"}), std::chrono::milliseconds(10));
+        change_stream_source source(hub.subscribe({.tenant = "acme"}),
+                                    std::chrono::milliseconds(10));
         REQUIRE(hub.open_streams() == 1);
     }
 
@@ -213,7 +214,7 @@ TEST_CASE("a_stream_whose_source_ended_leaves_the_hub", "[change_stream]") {
     REQUIRE(hub.open_streams() == 0);
 
     // And nothing is queued for it any more: the next frame has one home.
-    hub.publish("acme", "", "data: one\n\n");
+    hub.publish("acme", "", "iam.book", "data: one\n\n");
     REQUIRE(hub.open_streams() == 0);
 }
 
@@ -224,8 +225,8 @@ TEST_CASE("every_frame_carries_an_id_and_the_ids_ascend", "[change_stream]") {
     change_hub hub(stream_system_tenant);
     auto stream = hub.subscribe({.tenant = "acme"});
 
-    hub.publish("acme", "", "data: one\n\n");
-    hub.publish("acme", "", "data: two\n\n");
+    hub.publish("acme", "", "iam.book", "data: one\n\n");
+    hub.publish("acme", "", "iam.trade", "data: two\n\n");
 
     REQUIRE(stream->try_pop() == std::optional<std::string>("id: 1\ndata: one\n\n"));
     REQUIRE(stream->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
@@ -236,9 +237,9 @@ TEST_CASE("a_resuming_client_is_given_the_frames_it_missed", "[change_stream]") 
     BOOST_LOG_SEV(lg, info) << "Testing that Last-Event-ID replays what was missed";
 
     change_hub hub(stream_system_tenant);
-    hub.publish("acme", "", "data: one\n\n");
-    hub.publish("acme", "", "data: two\n\n");
-    hub.publish("acme", "", "data: three\n\n");
+    hub.publish("acme", "", "iam.book", "data: one\n\n");
+    hub.publish("acme", "", "iam.trade", "data: two\n\n");
+    hub.publish("acme", "", "iam.account", "data: three\n\n");
 
     auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 1});
 
@@ -252,9 +253,9 @@ TEST_CASE("a_resuming_client_hears_only_its_own_tenant_and_the_system_one", "[ch
     BOOST_LOG_SEV(lg, info) << "Testing that a replay cannot cross tenants";
 
     change_hub hub(stream_system_tenant);
-    hub.publish("acme", "", "data: acme moved\n\n");
-    hub.publish("globex", "", "data: globex moved\n\n");
-    hub.publish(stream_system_tenant, "", "data: the catalogue moved\n\n");
+    hub.publish("acme", "", "iam.book", "data: acme moved\n\n");
+    hub.publish("globex", "", "iam.book", "data: globex moved\n\n");
+    hub.publish(stream_system_tenant, "", "iam.book", "data: the catalogue moved\n\n");
 
     auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 0});
 
@@ -275,17 +276,16 @@ TEST_CASE("a_resuming_client_outside_the_window_is_told_to_resync", "[change_str
     REQUIRE(resumed->try_pop() == std::optional<std::string>("event: resync\ndata: {}\n\n"));
 }
 
-TEST_CASE("a_member_hears_their_party_and_the_tenant_wide_changes",
-          "[change_stream]") {
+TEST_CASE("a_member_hears_their_party_and_the_tenant_wide_changes", "[change_stream]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a party's changes stay that party's";
 
     change_hub hub(stream_system_tenant);
     auto ops = hub.subscribe({.tenant = "acme", .party = "ops"});
 
-    hub.publish("acme", "ops", "data: ops moved\n\n");
-    hub.publish("acme", "sales", "data: sales moved\n\n");
-    hub.publish("acme", "", "data: the tenant moved\n\n");
+    hub.publish("acme", "ops", "iam.book", "data: ops moved\n\n");
+    hub.publish("acme", "sales", "iam.book", "data: sales moved\n\n");
+    hub.publish("acme", "", "iam.book", "data: the tenant moved\n\n");
 
     REQUIRE(ops->size() == 2);
     REQUIRE(ops->try_pop()->find("ops moved") != std::string::npos);
@@ -297,12 +297,11 @@ TEST_CASE("an_administrator_hears_every_party_of_the_tenant", "[change_stream]")
     BOOST_LOG_SEV(lg, info) << "Testing that an administrator is not narrowed by party";
 
     change_hub hub(stream_system_tenant);
-    auto admin = hub.subscribe(
-        {.tenant = "acme", .party = "ops", .sees_all_parties = true});
+    auto admin = hub.subscribe({.tenant = "acme", .party = "ops", .sees_all_parties = true});
 
-    hub.publish("acme", "ops", "data: ops moved\n\n");
-    hub.publish("acme", "sales", "data: sales moved\n\n");
-    hub.publish("globex", "sales", "data: another tenant moved\n\n");
+    hub.publish("acme", "ops", "iam.book", "data: ops moved\n\n");
+    hub.publish("acme", "sales", "iam.book", "data: sales moved\n\n");
+    hub.publish("globex", "sales", "iam.book", "data: another tenant moved\n\n");
 
     REQUIRE(admin->size() == 2);
 }
@@ -312,14 +311,76 @@ TEST_CASE("a_replay_respects_the_parties_the_caller_works_in", "[change_stream]"
     BOOST_LOG_SEV(lg, info) << "Testing that a resume cannot widen the party";
 
     change_hub hub(stream_system_tenant);
-    hub.publish("acme", "ops", "data: ops moved\n\n");
-    hub.publish("acme", "sales", "data: sales moved\n\n");
-    hub.publish("acme", "", "data: the tenant moved\n\n");
+    hub.publish("acme", "ops", "iam.book", "data: ops moved\n\n");
+    hub.publish("acme", "sales", "iam.book", "data: sales moved\n\n");
+    hub.publish("acme", "", "iam.book", "data: the tenant moved\n\n");
 
-    auto resumed = hub.subscribe(
-        {.tenant = "acme", .party = "sales"}, change_hub::resume_point{.last_seen = 0});
+    auto resumed = hub.subscribe({.tenant = "acme", .party = "sales"},
+                                 change_hub::resume_point{.last_seen = 0});
 
     REQUIRE(resumed->size() == 2);
     REQUIRE(resumed->try_pop()->find("sales moved") != std::string::npos);
     REQUIRE(resumed->try_pop()->find("tenant moved") != std::string::npos);
+}
+
+TEST_CASE("a_newer_frame_replaces_the_one_a_stream_has_not_written", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a pending frame for a collection is conflated";
+
+    change_hub hub(stream_system_tenant);
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
+
+    hub.publish("acme", "ops", "iam.book", "data: one\n\n");
+    hub.publish("acme", "ops", "iam.book", "data: two\n\n");
+
+    // The client refetches the collection, so the frame it never read carried
+    // nothing it could have used.
+    REQUIRE(stream->size() == 1);
+    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
+    REQUIRE(!stream->try_pop().has_value());
+}
+
+TEST_CASE("a_conflated_frame_moves_behind_the_others_so_its_ids_ascend", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that conflation does not reorder the ids";
+
+    change_hub hub(stream_system_tenant);
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
+
+    hub.publish("acme", "ops", "iam.book", "data: one\n\n");
+    hub.publish("acme", "ops", "iam.trade", "data: two\n\n");
+    hub.publish("acme", "ops", "iam.book", "data: three\n\n");
+
+    REQUIRE(stream->size() == 2);
+    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
+    REQUIRE(stream->try_pop() == std::optional<std::string>("id: 3\ndata: three\n\n"));
+}
+
+TEST_CASE("one_collection_heard_for_two_parties_is_two_frames", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that conflation never folds two parties together";
+
+    change_hub hub(stream_system_tenant);
+    auto admin = hub.subscribe({.tenant = "acme", .party = "ops", .sees_all_parties = true});
+
+    hub.publish("acme", "ops", "iam.book", "data: ops moved\n\n");
+    hub.publish("acme", "sales", "iam.book", "data: sales moved\n\n");
+
+    REQUIRE(admin->size() == 2);
+}
+
+TEST_CASE("a_replay_conflates_a_collection_into_its_newest_frame", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a replay gives the newest frame per collection";
+
+    change_hub hub(stream_system_tenant);
+    hub.publish("acme", "", "iam.book", "data: one\n\n");
+    hub.publish("acme", "", "iam.book", "data: two\n\n");
+    hub.publish("acme", "", "iam.trade", "data: three\n\n");
+
+    auto resumed = hub.subscribe({.tenant = "acme"}, change_hub::resume_point{.last_seen = 0});
+
+    REQUIRE(resumed->size() == 2);
+    REQUIRE(resumed->try_pop() == std::optional<std::string>("id: 2\ndata: two\n\n"));
+    REQUIRE(resumed->try_pop() == std::optional<std::string>("id: 3\ndata: three\n\n"));
 }

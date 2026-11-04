@@ -21,6 +21,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <optional>
 #include <string>
 
 using namespace ores::http::stream;
@@ -113,4 +114,28 @@ TEST_CASE("a_change_with_no_party_builds_its_message", "[change_pump]") {
     };
 
     REQUIRE(frame_text(frame).find("\"party\":\"\"") != std::string::npos);
+}
+
+TEST_CASE("two_windows_for_one_collection_leave_one_pending_frame", "[change_pump]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info)
+        << "Testing that a stream that fell behind holds one frame per collection";
+
+    change_coalescer coalescer;
+    change_hub hub(pump_system_tenant);
+    auto slow = hub.subscribe({.tenant = "acme", .party = "ops"});
+    change_pump pump(coalescer, hub);
+
+    // The stream is never read, so both windows are still pending, and the second
+    // window says the same thing as the first: the collection moved.
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    REQUIRE(pump.pump() == 1);
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    REQUIRE(pump.pump() == 1);
+
+    REQUIRE(slow->size() == 1);
+    REQUIRE(slow->try_pop() ==
+            std::optional<std::string>("id: 2\nevent: iam.book\ndata: {\"tenant\":\"acme\","
+                                       "\"party\":\"ops\",\"component\":\"iam\","
+                                       "\"entity\":\"book\"}\n\n"));
 }

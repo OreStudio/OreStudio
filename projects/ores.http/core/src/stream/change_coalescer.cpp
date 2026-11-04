@@ -18,14 +18,34 @@
  *
  */
 #include "ores.http.core/stream/change_coalescer.hpp"
+#include <utility>
 
 namespace ores::http::stream {
 
 void change_coalescer::record(const change_event& event) {
     if (event.tenant.empty() || event.entity.empty())
         return;
+
+    bool opened_window = false;
+    std::function<void()> wake;
+    {
+        const std::lock_guard lock(mu_);
+        opened_window = dirty_.empty();
+        dirty_.emplace(event.tenant, event.party, event.component, event.entity);
+        wake = wake_;
+    }
+
+    /*
+     * Called outside the lock: the window's clock runs on the server's executor, and
+     * a hook that took this lock would hold up the next change for a thread hop.
+     */
+    if (opened_window && wake)
+        wake();
+}
+
+void change_coalescer::set_wake(std::function<void()> wake) {
     const std::lock_guard lock(mu_);
-    dirty_.emplace(event.tenant, event.party, event.component, event.entity);
+    wake_ = std::move(wake);
 }
 
 std::vector<coalesced_frame> change_coalescer::drain() {

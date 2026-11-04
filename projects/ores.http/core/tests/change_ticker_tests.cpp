@@ -100,3 +100,54 @@ TEST_CASE("a_tick_with_nothing_recorded_writes_nothing", "[change_ticker]") {
 
     REQUIRE(stream->size() == 0);
 }
+
+TEST_CASE("a_change_inside_the_window_does_not_extend_it", "[change_ticker]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a window closes one interval after it opened";
+
+    change_coalescer coalescer;
+    change_hub hub(ticker_system_tenant);
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
+    change_ticker ticker(coalescer, hub, std::chrono::milliseconds(100));
+
+    boost::asio::io_context io;
+    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); }, boost::asio::detached);
+
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    io.run_for(std::chrono::milliseconds(80));
+
+    // A change that lands inside the window is gathered into it, not waited for.
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    io.run_for(std::chrono::milliseconds(60));
+    ticker.stop();
+    io.run();
+
+    // A window pushed back by the second change would still be open at 140 ms.
+    REQUIRE(stream->size() == 1);
+    REQUIRE(stream->try_pop()->find("event: iam.book") != std::string::npos);
+}
+
+TEST_CASE("a_closed_window_opens_again_on_the_next_change", "[change_ticker]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the clock returns to waiting after a window";
+
+    change_coalescer coalescer;
+    change_hub hub(ticker_system_tenant);
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
+    change_ticker ticker(coalescer, hub, std::chrono::milliseconds(10));
+
+    boost::asio::io_context io;
+    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); }, boost::asio::detached);
+
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    io.run_for(std::chrono::milliseconds(40));
+
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "trade"});
+    io.run_for(std::chrono::milliseconds(40));
+    ticker.stop();
+    io.run();
+
+    REQUIRE(stream->size() == 2);
+    REQUIRE(stream->try_pop()->find("event: iam.book") != std::string::npos);
+    REQUIRE(stream->try_pop()->find("event: iam.trade") != std::string::npos);
+}

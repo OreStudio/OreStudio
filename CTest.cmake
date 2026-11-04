@@ -342,6 +342,22 @@ if(configure_result EQUAL 0)
 endif()
 
 #
+# Step: submit the configure and build.
+#
+# The final submit below is the only other one, and a job that runs out of
+# time before it reaches CDash with nothing at all. The memcheck run is the one
+# that does: a suite that hangs under valgrind can hold the step until the job
+# limit. Sending these parts now keeps the build on CDash whatever the tests do.
+# Two quick retries: the tests wait on this, and the final submit retries in full.
+ctest_submit(PARTS Start Configure Build
+    RETRY_COUNT 2 RETRY_DELAY 30
+    RETURN_VALUE early_submit_result)
+if(early_submit_result)
+    message(WARNING "CDash submission of the build failed "
+        "(exit code: ${early_submit_result}).")
+endif()
+
+#
 # Step: test.
 #
 # If memcheck is enabled, run tests with valgrind, otherwise, run them normally.

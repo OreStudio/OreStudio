@@ -186,12 +186,14 @@ import {
     reportDetailSchema,
     reportHealthTallySchema,
     reportNameChoicesSchema,
+    reportScheduleOutcomeSchema,
     reportsPageSchema,
     type ConfigurationDetail,
     type ReportConfigurationBinding,
     type ReportDetail,
     type ReportHealthTally,
     type ReportNameChoice,
+    type ReportScheduleOutcome,
     type ReportsPage,
     cutKindsPageSchema,
     cutKindRecordSchema,
@@ -3816,6 +3818,40 @@ export const api = {
             headers: JSON_HEADERS,
         })) as { runId?: string };
         return reply.runId ?? '';
+    },
+
+    /**
+     * Schedules one report definition, and answers what the operation did.
+     *
+     * The expression is the schedule the job will fire on, which an on-demand
+     * report has none of: giving one is what activates it. A definition that
+     * already holds a schedule answers with nothing changed, and a definition of
+     * a party the session does not act for is refused in the operation's words.
+     */
+    async scheduleReport(id: string, scheduleExpression?: string): Promise<ReportScheduleOutcome> {
+        return reportScheduleOutcomeSchema.parse(
+            await request('/api/reporting/reports/schedule', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    ids: [id],
+                    ...(scheduleExpression === undefined
+                        ? {}
+                        : { schedule_expression: scheduleExpression }),
+                }),
+            }),
+        );
+    },
+
+    /** Removes a report definition's schedule, which leaves it on demand. */
+    async unscheduleReport(id: string): Promise<ReportScheduleOutcome> {
+        return reportScheduleOutcomeSchema.parse(
+            await request('/api/reporting/reports/unschedule', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ ids: [id] }),
+            }),
+        );
     },
 
     /** The runs of one report, newest first. */

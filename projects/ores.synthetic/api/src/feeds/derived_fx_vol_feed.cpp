@@ -17,7 +17,9 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <algorithm>
+#include <chrono>
 #include <ranges>
 #include <string>
 #include <utility>
@@ -25,6 +27,15 @@
 namespace ores::synthetic::feed {
 
 namespace {
+
+auto& derived_fx_feed_lg() {
+    static auto instance = ores::logging::make_logger("ores.synthetic.api.derived_fx_vol_feed");
+    return instance;
+}
+
+double seconds_since(std::chrono::steady_clock::time_point start) {
+    return std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+}
 
 namespace qm = analytics::quant::math;
 namespace mm = marketdata::messaging;
@@ -160,20 +171,37 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
         if (const auto quote = parse_derived_fx_external_id(id))
             pairs.emplace(key_of(quote->pair), quote->pair);
 
+    using namespace ores::logging;
+    const auto pass_started = std::chrono::steady_clock::now();
+    const auto fail = [&](const std::string& key, const std::string& why) {
+        BOOST_LOG_SEV(derived_fx_feed_lg(), warn) << "Derived history of " << key << ": " << why;
+        failures_.push_back(key + ": " + why);
+    };
+    BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+        << "Keeping the derived history of " << pairs.size() << " pair(s) up to " << today;
+
     std::size_t written = 0;
     for (const auto& [key, pair] : pairs) {
         auto kept = kept_.find(key);
         if (kept == kept_.end()) {
+            auto started = std::chrono::steady_clock::now();
             const auto series = store_->ensure_series(pair);
             if (!series) {
-                failures_.push_back(key + ": the series: " + series.error());
+                fail(key, "the series: " + series.error());
                 continue;
             }
+            BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+                << "Derived history of " << key << ": series " << *series << " ready in "
+                << seconds_since(started) << "s";
+            started = std::chrono::steady_clock::now();
             auto held = store_->stored_days(*series, pair, today);
             if (!held) {
-                failures_.push_back(key + ": the days held: " + held.error());
+                fail(key, "the days held: " + held.error());
                 continue;
             }
+            BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+                << "Derived history of " << key << ": holds " << held->size()
+                << " stored day(s), read in " << seconds_since(started) << "s";
             kept = kept_.emplace(key, std::pair{*series, std::move(*held)}).first;
         }
         auto& [series_id, held] = kept->second;
@@ -188,52 +216,68 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
                 return std::unexpected("the fixings of " + *item + ": " + series.error());
             return std::optional<dated_series>{std::move(*series)};
         };
+        auto started = std::chrono::steady_clock::now();
         const auto plus = read(legs.plus);
         const auto minus = plus ? read(legs.minus) : plus;
         if (!plus || !minus) {
-            failures_.push_back(key + ": " + (!plus ? plus.error() : minus.error()));
+            fail(key, !plus ? plus.error() : minus.error());
             continue;
         }
         const auto returns = pair_log_returns(*plus, *minus);
         if (!returns) {
-            failures_.push_back(key + ": " + returns.error());
+            fail(key, returns.error());
             continue;
         }
+        BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
+            << "Derived history of " << key << ": " << returns->dates.size()
+            << " daily return(s) from the fixings, read in " << seconds_since(started) << "s";
         // A history already held whole needs no derivation: only a new day of fixings does.
         const auto first = static_cast<std::size_t>(std::max(settings_.minimum_window, 1)) - 1;
         const bool whole = std::ranges::all_of(
             std::views::drop(returns->dates, static_cast<std::ptrdiff_t>(first)),
             [&](const std::chrono::year_month_day d) { return held.contains(d); });
-        if (whole)
-            continue;
-        const auto convention = readers_.convention(pair);
-        if (!convention) {
-            failures_.push_back(key + ": the convention: " + convention.error());
+        if (whole) {
+            BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
+                << "Derived history of " << key << ": every day is held; nothing to derive";
             continue;
         }
+        const auto convention = readers_.convention(pair);
+        if (!convention) {
+            fail(key, "the convention: " + convention.error());
+            continue;
+        }
+        started = std::chrono::steady_clock::now();
         const auto missing = derive_missing_days(
             pair, *returns, *convention, held, settings_, settings_.minimum_window);
         if (!missing) {
-            failures_.push_back(key + ": " + missing.error());
+            fail(key, missing.error());
             continue;
         }
         // A day that cannot be derived is named once and not tried again until a restart,
         // since its fixings will not change.
         if (!missing->underived.empty()) {
-            failures_.push_back(key + ": " + std::to_string(missing->underived.size()) +
-                                " day(s) could not be derived");
+            fail(key, std::to_string(missing->underived.size()) + " day(s) could not be derived");
             held.insert(missing->underived.begin(), missing->underived.end());
         }
         if (missing->days.empty())
             continue;
+        const auto derived_in = seconds_since(started);
+        started = std::chrono::steady_clock::now();
         if (const auto stored = store_->write(series_id, missing->days); !stored) {
-            failures_.push_back(key + ": the write: " + stored.error());
+            fail(key, "the write: " + stored.error());
             continue;
         }
+        BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+            << "Derived history of " << key << ": " << missing->days.size() << " day(s) derived in "
+            << derived_in << "s and written in " << seconds_since(started) << "s";
         for (const auto& d : missing->days)
             held.insert(d.day);
         written += missing->days.size();
     }
+    BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+        << "Kept the derived history of " << pairs.size() << " pair(s) in "
+        << seconds_since(pass_started) << "s: " << written << " day(s) written, "
+        << failures_.size() << " failure(s)";
     return written;
 }
 

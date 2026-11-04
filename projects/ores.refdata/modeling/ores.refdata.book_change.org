@@ -327,6 +327,29 @@ book_purpose_type; see [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classific
 false
 #+end_src
 
+** restricts_product_types
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       false
+:default_value: false
+:END:
+
+Whether this book states the product types it allows. False means the book
+allows every product type the catalogue states, which is what a book that has
+never been restricted does; true means the book's product types junction holds
+the allowed set, and an empty junction is then a book that allows none.
+
+The two states are different facts and must not be collapsed: a book with no
+junction rows is unrestricted when this is false and allows nothing when it is
+true. A blank set is a decision, not a gap, and the page that draws it says
+which of the two it is.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
 ** rates_centre_code
 :PROPERTIES:
 :type:          text

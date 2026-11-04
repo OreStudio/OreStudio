@@ -41,7 +41,13 @@ import { editOf } from './store.js';
 import { ConfigurationPage, bindingsKey, configurationKey } from './ConfigurationPage.js';
 import { MY_PARTIES_QUERY_KEY, ReportsPage as ReportsScreen, unreadNotes } from './ReportsPage.js';
 import { HealthSummary } from './shared.js';
-import { ReportPage } from './ReportPage.js';
+import {
+    ReportPage,
+    ScheduleNoticeView,
+    noticeOfSchedule,
+    noticeOfUnschedule,
+    type ScheduleNotice,
+} from './ReportPage.js';
 
 /**
  * The reporting screens, rendered from a seeded query cache.
@@ -67,6 +73,7 @@ const DAILY_ROW = {
     partyName: 'ACME Corporation',
     partyCode: 'ACMCOR',
     scheduleExpression: '0 0 9 * * ?',
+    scheduled: true,
     health: 'completed with errors' as const,
     stateName: 'completed',
     latestRun: {
@@ -88,6 +95,7 @@ const AUDIT_ROW = {
     partyName: 'ACME Hong Kong',
     partyCode: 'ACCOHK',
     scheduleExpression: '0 0 9 L * ?',
+    scheduled: false,
     health: 'never run' as const,
     stateName: '',
     latestRun: null,
@@ -135,6 +143,7 @@ const DETAIL: ReportDetail = {
         party_name: 'ACME Hong Kong',
         party_code: 'ACCOHK',
         schedule_expression: '0 0 9 L * ?',
+        scheduled: false,
         concurrency_policy: 'forbid',
         is_official: true,
         regulatory_book_type: null,
@@ -816,5 +825,179 @@ describe('the write an edit of a report makes', () => {
         const { regulatory_book_type: _unread, ...older } = row;
 
         expect('regulatory_book_type' in editOf(older)).toBe(false);
+    });
+});
+
+/**
+ * The detail page of the Hong Kong definition, as scheduled or on demand, and as
+ * a person with the codes the test names may change it.
+ */
+function schedulePage(codes: readonly string[], scheduled: boolean, expression?: string): string {
+    const page: ReportDetail = {
+        report: { ...AUDIT_ROW, scheduled },
+        definition: {
+            ...DETAIL.definition,
+            scheduled,
+            ...(expression === undefined ? {} : { schedule_expression: expression }),
+        },
+        unread: [],
+    };
+    return renderRecords(
+        `/reporting/reports/${AUDIT_ELSEWHERE}`,
+        [],
+        <Route path="/reporting/reports/:id" element={<ReportPage />} />,
+        (client) => {
+            client.setQueryData(['my-access'], accessOf([...codes]));
+            client.setQueryData(reportKey(AUDIT_ELSEWHERE), {
+                kind: 'record',
+                detail: page,
+            } satisfies ReportOpen);
+        },
+    );
+}
+
+/** The words on every button of a page, so a test names an action and not a sentence. */
+function buttonWords(html: string): readonly string[] {
+    return (html.match(/<button[^>]*>[\s\S]*?<\/button>/g) ?? []).map((button) => textOf(button));
+}
+
+/** One outcome, drawn on a page of its own. */
+function noticePage(notice: ScheduleNotice): string {
+    return renderRecords(
+        '/',
+        [],
+        <Route path="/" element={<ScheduleNoticeView notice={notice} />} />,
+        () => undefined,
+    );
+}
+
+describe('the schedule of one report', () => {
+    const WRITE = 'reporting::report_definitions:write';
+    const REMOVE = 'reporting::report_definitions:delete';
+    const READ = 'reporting::report_definitions:read';
+
+    it('states a report that holds no scheduler job as on demand, in the list and on its page', () => {
+        expect(rowText(list(), AUDIT_NAME)).toContain('On demand');
+
+        // The expression the definition keeps is what it would run on, and the
+        // page says that nothing will fire rather than drawing a schedule.
+        expect(textOf(schedulePage([WRITE], false))).toContain('On demand');
+    });
+
+    it('states a report that holds a scheduler job as scheduled, and not as on demand', () => {
+        const page = textOf(schedulePage([WRITE], true));
+
+        // The scheduler states no fire for this run, and the page says that
+        // rather than inventing one or calling the report on demand.
+        expect(page).toContain('The scheduler states no next run.');
+        expect(page).not.toContain('On demand');
+    });
+
+    it('reads a job with the never-firing expression as on demand, and offers Schedule', () => {
+        const page = textOf(schedulePage([WRITE], true, '0 0 31 2 *'));
+        const buttons = buttonWords(schedulePage([WRITE], true, '0 0 31 2 *'));
+
+        // The page and the buttons agree: a job that never fires is on demand, so
+        // a person can give it a real schedule without unscheduling it first.
+        expect(page).toContain('On demand');
+        expect(buttons).toContain('Schedule');
+        expect(buttons).not.toContain('Unschedule');
+    });
+
+    it('offers Schedule to a person who may change a definition, and no Unschedule', () => {
+        const buttons = buttonWords(schedulePage([WRITE], false));
+
+        expect(buttons).toContain('Schedule');
+        expect(buttons).not.toContain('Unschedule');
+    });
+
+    it('offers Unschedule to a person who may remove a definition, of a scheduled report', () => {
+        const buttons = buttonWords(schedulePage([REMOVE], true));
+
+        expect(buttons).toContain('Unschedule');
+        expect(buttons).not.toContain('Schedule');
+    });
+
+    it('offers no schedule action at all to a person who may only read', () => {
+        for (const scheduled of [false, true]) {
+            const buttons = buttonWords(schedulePage([READ], scheduled));
+
+            expect(buttons).not.toContain('Schedule');
+            expect(buttons).not.toContain('Unschedule');
+        }
+    });
+
+    it('offers no way to take a schedule away to a person who may change but not remove', () => {
+        // Unscheduling is the delete the operation checks, so the write alone
+        // does not reach it.
+        expect(buttonWords(schedulePage([WRITE], true))).not.toContain('Unschedule');
+    });
+
+    it('reads a schedule of one definition from the count the operation answered', () => {
+        expect(
+            noticeOfSchedule({ changed: 1, failedIds: [], message: '' }, AUDIT_ELSEWHERE),
+        ).toEqual({ kind: 'scheduled' });
+        // Nothing changed is the operation saying the report had a schedule, and
+        // it is never dressed up as a success.
+        expect(
+            noticeOfSchedule({ changed: 0, failedIds: [], message: '' }, AUDIT_ELSEWHERE),
+        ).toEqual({ kind: 'already-scheduled' });
+    });
+
+    it('reads a refusal as the operation’s own words, whatever the count says', () => {
+        const refused = noticeOfSchedule(
+            {
+                changed: 0,
+                failedIds: [AUDIT_ELSEWHERE],
+                message:
+                    'Act for the definition’s party to schedule it: its runs act in that party, with your consent.',
+            },
+            AUDIT_ELSEWHERE,
+        );
+
+        expect(refused).toEqual({
+            kind: 'refused',
+            message:
+                'Act for the definition’s party to schedule it: its runs act in that party, with your consent.',
+        });
+    });
+
+    it('reads an unschedule from the count, and a refusal before it', () => {
+        expect(
+            noticeOfUnschedule({ changed: 1, failedIds: [], message: '' }, AUDIT_ELSEWHERE),
+        ).toEqual({ kind: 'unscheduled' });
+        expect(
+            noticeOfUnschedule({ changed: 0, failedIds: [], message: '' }, AUDIT_ELSEWHERE),
+        ).toEqual({ kind: 'not-scheduled' });
+        expect(
+            noticeOfUnschedule(
+                { changed: 0, failedIds: [AUDIT_ELSEWHERE], message: 'The job was refused.' },
+                AUDIT_ELSEWHERE,
+            ),
+        ).toEqual({ kind: 'refused', message: 'The job was refused.' });
+    });
+
+    it('states each outcome in words', () => {
+        expect(textOf(noticePage({ kind: 'scheduled' }))).toContain(
+            'Scheduled. The report now runs when the schedule fires.',
+        );
+        expect(textOf(noticePage({ kind: 'already-scheduled' }))).toContain(
+            'Nothing changed. The report already had a schedule, so it was left as it was.',
+        );
+        expect(textOf(noticePage({ kind: 'unscheduled' }))).toContain(
+            'Unscheduled. The report runs only when a person asks, so it is on demand.',
+        );
+        expect(textOf(noticePage({ kind: 'not-scheduled' }))).toContain(
+            'Nothing changed. The report had no schedule to remove.',
+        );
+    });
+
+    it('states a refusal as an error, with the reason the server gave', () => {
+        const html = noticePage({ kind: 'refused', message: 'The cron is not readable.' });
+
+        expect(textOf(html)).toContain('The server refused this change: The cron is not readable.');
+        // A refusal is something to act on, so it is drawn as an alert and not as
+        // a status line.
+        expect(html).toContain('role="alert"');
     });
 });

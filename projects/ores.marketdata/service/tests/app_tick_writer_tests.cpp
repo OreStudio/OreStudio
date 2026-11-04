@@ -55,7 +55,8 @@ TEST_CASE("a_tick_row_is_one_csv_line_in_the_column_order_of_the_table", "[app][
 TEST_CASE("a_tick_time_keeps_microseconds_and_drops_finer_digits", "[app][tick_writer]") {
     using namespace std::chrono;
     auto row = sample_row();
-    row.ts += std::chrono::nanoseconds(789);
+    // libc++'s system clock counts microseconds, so there the finer digits cast to nothing.
+    row.ts += duration_cast<system_clock::duration>(nanoseconds(789));
     CHECK(tick_copy_line(row).find("2026-10-21 10:30:05.123456+00,") != std::string::npos);
 }
 

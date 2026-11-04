@@ -45,6 +45,7 @@
 #include <boost/asio/detached.hpp>
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 namespace ores::compute::service::app {
 
@@ -150,7 +151,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto handler_database = cfg.database;
     handler_database.pool_size = std::max(handler_database.pool_size, handler_pool_size);
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         make_context(handler_database),
@@ -184,6 +186,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+    co_await std::move(service_run);
 
     event_source.stop();
     co_return;

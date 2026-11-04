@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/artefact_type.hpp"
 #include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/publication_mode.hpp"
 #include "ores.dq.api/domain/publication_result.hpp"
 #include "ores.dq.core/export.hpp"
@@ -47,6 +48,19 @@ struct bundle_publishable_dataset {
     // since a prerequisite is never something the caller opts in or out of.
     bool optional = false;
 };
+
+/**
+ * @brief The order to publish datasets in: the requested codes and every dataset
+ * they depend on, each after the datasets it depends on.
+ *
+ * Where no dependency decides between two datasets, the one requested first is
+ * published first, so a bundle publishes in the order its members state. A
+ * dependency, requested or not, takes the place of the first dataset that needs
+ * it. Throws std::runtime_error when the dependencies form a cycle.
+ */
+ORES_DQ_CORE_EXPORT std::vector<std::string>
+publication_order(const std::vector<std::string>& requested,
+                  const std::vector<domain::dataset_dependency>& dependencies);
 
 /**
  * @brief Service for publishing datasets to production tables.
@@ -144,9 +158,9 @@ public:
     /**
      * @brief Resolves the publication order for datasets.
      *
-     * Uses boost.graph to build a dependency graph and performs
-     * topological sort to determine the correct order. Dependencies
-     * are placed before the datasets that depend on them.
+     * Reads the datasets and their dependencies and orders them with
+     * publication_order, so dependencies come first and the rest keep the
+     * order of @p dataset_ids.
      *
      * @param dataset_ids The IDs of the datasets to order.
      * @return Ordered list of datasets (dependencies first).

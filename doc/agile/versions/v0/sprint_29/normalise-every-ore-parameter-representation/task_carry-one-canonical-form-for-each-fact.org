@@ -257,6 +257,10 @@ via its "Verifies task" field.
 | #4244 | [reporting] Carry one canonical form for each ORE value |
 | #4248 | [sql] Store the form a value set names, in the guard |
 | #4252 | [sql] Name every row that holds a rendering |
+| #4431 | [refdata] Let the guard be the only converter |
+| #4444 | [ore] Generate the reader's rendering tables from the renderings file |
+| #4446 | [codegen] Remove the store transform no model states |
+| #4450 | [docs] Restate the boundary that converts a stored value |
 
 * Review
 
@@ -474,3 +478,82 @@ The three copies of the knowledge named in Discovery are still there. The refdat
 =conventions_code= header and the seeder normalisers are slice 3 and 4 work: once
 the guards convert, each has no reason to.
 
+
+** The renderings file states the tables the reader converts with
+
+Five tables in =conventions_fields.cpp= held 132 renderings over 55 forms, and
+=ore_renderings.json= held the same knowledge — written from them. Two copies in
+one direction: the file was a projection of the C++.
+
+The direction is now the other one. The file is the statement, and ORE's reader
+converts with tables generated from it by
+=projects/ores.ore/scripts/generate_renderings_tables.py= into
+=projects/ores.ore/core/src/domain/conventions_renderings.hpp=. The generated
+header is a copy that cannot drift: =--check= fails when the committed header
+differs from the file, and when =conventions_fields.cpp= states a =code_table= of
+its own.
+
+That second half is the point. A generated copy is one statement that survives
+being compiled; a table written by hand next to it is a second statement, and the
+check now refuses one. =reader_tables()= and the three regular expressions that
+read the reader's source are gone with it, and so is
+=generate_value_renderings.py=, which wrote the file from them.
+
+Behaviour is unchanged, and the measurement is the tables: the generated header
+states the same 132 pairs over the same 55 forms as the tables it replaced.
+
+#+begin_src text
+$ python3 projects/ores.ore/scripts/generate_renderings_tables.py --check
+55 canonical forms across 5 tables match projects/ores.sql/utility/ore_renderings.json.
+#+end_src
+
+When the tables were replaced, a script parsed the five out of the previous commit
+and compared them with the five the header states: 132 pairs each, and no pair
+only in one of them.
+
+The header compiles in the unity translation unit that holds
+=conventions_fields.cpp=, which is the only file the change touches in C++.
+
+The plan above said "delete the compiled tables". They are still compiled,
+because the reader must convert and a reader cannot read a JSON file at run time.
+What changed is that they are no longer a second authority: nothing reads them to
+learn what the mapping is, and the file wins wherever the two differ.
+
+** The two copies the story left behind
+
+Two pieces of the old design outlived the slices above: a codegen hook whose only
+user the story had deleted, and a knowledge cluster that still stated the design
+the hook belonged to.
+
+The hook, =store_transform=, let a column name a function the mapper calls on the
+way into the row, plus the header that declares it. #4431 removed its one user,
+=stored_business_day_convention=, so no model set the property, and
+=template_variables.org= still named the deleted header as its example. The three
+template branches, the include gate in =core.py=, its test and both doc mentions
+are gone. Generated output does not change, because a branch only emits when a
+column sets the property.
+
+The knowledge cluster was the record of the old design. Three pages put the
+conversion in the entity mapper, and the order page gave the codec as the reason
+it could not be anywhere else. The codec converts a conventions document on read,
+from the generated tables, and the guard converts every write the codec did not.
+The pages now state the two call chains with the lines that do each step, the two
+figures say the same, and the inbox capture the cluster was filed against records
+that both defects it names are fixed.
+
+#+begin_src text
+$ python3 build/scripts/local_checks.py --exclude-heavy   (docs branch)
+✅  local checks: 9/9 passed
+$ select count(*) from ores_reporting_canonical_value_violations_fn();
+0
+#+end_src
+
+Three checks failed on this story's branches, and all three failed in a clean
+worktree of =origin/main= too. Two are fixed in #4444, because the branch could
+not go green until they were: the junction-events test now states the
+=subject_prefix= the template emits since the events namespace landed, and
+=ores_schema.dq_staging.puml= is regenerated. The third,
+=component-drift=, names the =msgpack-c= lines a337e95529 added by hand to
+=projects/ores.storage/service/src/CMakeLists.txt=; it belongs to the storage
+model and stays open. All three are recorded in
+[[id:266E1110-C980-4693-B0DE-E2D023D8C2C0][The local check gate is red on main]].

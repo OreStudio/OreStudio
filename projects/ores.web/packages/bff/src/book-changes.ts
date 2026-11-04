@@ -56,6 +56,7 @@ const lineSchema = z.object({
     bookPurposeType: z.string().trim().max(100),
     ledgerFeedType: z.string().trim().max(100),
     isSweepable: z.boolean(),
+    restrictsProductTypes: z.boolean(),
     ratesCentreCode: textSchema,
     sandboxId: idSchema.nullable(),
 });

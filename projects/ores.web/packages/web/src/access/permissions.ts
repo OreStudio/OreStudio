@@ -57,6 +57,14 @@ export const PERMISSION = {
      * that may run a report need not be allowed to change how it is configured.
      */
     reportInstancesWrite: 'reporting::report_instances:write',
+    /**
+     * Whether a person may take a schedule away from a report.
+     *
+     * Withdrawing a schedule is not a change to a definition but the removal of
+     * something the definition holds, so it is the delete code the unschedule
+     * operation checks and not the write.
+     */
+    reportDefinitionsDelete: 'reporting::report_definitions:delete',
     pricingEnginesRead: 'analytics::pricing_model_configs:read',
     pricingEnginesWrite: 'analytics::pricing_model_configs:write',
     pricingEnginesDelete: 'analytics::pricing_model_configs:delete',

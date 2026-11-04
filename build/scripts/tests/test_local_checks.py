@@ -314,3 +314,112 @@ def test_a_build_script_test_change_runs_no_codegen_check():
     chosen = select(["build/scripts/tests/test_local_checks.py"])
     assert "build-script-tests" in chosen
     assert not chosen & {"component-drift", "drift-sweep", "model-drift"}
+
+
+# -- the fleet checks for a change that compiles only into tests ----------------
+
+TEST_CPP = "projects/ores.trading/api/tests/blotter_protocol_codec_roundtrip_tests.cpp"
+TEST_HPP = "projects/ores.analytics/core/tests/test_suite.hpp"
+LIBRARY_HPP = "projects/ores.utility/include/ores.utility/codec/wire_fields.hpp"
+REACH = {
+    TEST_CPP: {"ores.trading.api.tests"},
+    TEST_HPP: {"ores.analytics.core.tests"},
+    LIBRARY_HPP: {"ores.utility.lib", "ores.trading.api.tests"},
+}
+
+
+def test_a_change_that_compiles_only_into_tests_skips_the_fleet():
+    reason = local_checks.fleet_skip_reason([TEST_CPP, TEST_HPP], REACH)
+    assert reason == ("the change compiles only into "
+                      "ores.analytics.core.tests, ores.trading.api.tests")
+
+
+def test_a_change_that_reaches_a_library_keeps_the_fleet():
+    assert local_checks.fleet_skip_reason([TEST_CPP, LIBRARY_HPP], REACH) == ""
+
+
+def test_a_file_the_build_does_not_know_keeps_the_fleet():
+    added = "projects/ores.trading/api/tests/a_new_test.cpp"
+    assert local_checks.fleet_skip_reason([TEST_CPP, added], REACH) == ""
+
+
+def test_a_build_description_or_sql_change_keeps_the_fleet():
+    for other in ("projects/ores.trading/api/tests/CMakeLists.txt",
+                  "projects/ores.sql/create/trading/trade_create.sql"):
+        assert local_checks.fleet_skip_reason([TEST_CPP, other], REACH) == ""
+
+
+def test_an_unclaimed_path_keeps_the_fleet():
+    assert local_checks.fleet_skip_reason([TEST_CPP, "some/unclaimed.path"], REACH) == ""
+
+
+def test_a_documentation_path_beside_a_test_does_not_keep_the_fleet():
+    assert local_checks.fleet_skip_reason([TEST_CPP, "doc/notes.org"], REACH) != ""
+
+
+def test_the_target_comes_from_the_object_path():
+    target_of = local_checks.target_of
+    assert target_of("projects/ores.trading/api/tests/CMakeFiles/"
+                     "ores.trading.api.tests.dir/Unity/unity_4_cxx.cxx.o") == "ores.trading.api.tests"
+    assert target_of("publish/bin/ores.trading.api.tests") is None
+
+
+def _run_heavy(monkeypatch, changed, build_status="PASS", skips=None):
+    ran = []
+    if skips is None:
+        skips = {c: "the change compiles only into x.tests" for c in local_checks.FLEET_CHECKS}
+
+    def fake_run_one(check, base, preset):
+        ran.append(check.id)
+        status = build_status if check.id == "build" else "PASS"
+        return local_checks.Result(check=check, status=status)
+
+    monkeypatch.setattr(local_checks, "run_one", fake_run_one)
+    monkeypatch.setattr(local_checks, "fleet_skips", lambda changed, preset: skips)
+    selected = [c for c in local_checks.CATALOGUE
+                if c.id in ("build", "db", "ctest", "ticks-smoke", "step-consumers")]
+    results = local_checks.run_all(selected, "origin/main", "p", 1, changed=changed)
+    return ran, {r.check.id: r for r in results}
+
+
+def test_the_heavy_phase_skips_the_fleet_after_the_build(monkeypatch):
+    ran, results = _run_heavy(monkeypatch, [TEST_CPP])
+    assert ran == ["build", "ctest"]
+    for check_id in local_checks.FLEET_CHECKS:
+        assert results[check_id].status == "SKIP"
+        assert results[check_id].reason == "the change compiles only into x.tests"
+
+
+def test_a_run_of_every_check_or_a_failed_build_skips_nothing(monkeypatch):
+    ran, _ = _run_heavy(monkeypatch, None)
+    assert ran == ["build", "db", "ctest", "ticks-smoke", "step-consumers"]
+    ran, _ = _run_heavy(monkeypatch, [TEST_CPP], build_status="FAIL")
+    assert "db" in ran
+
+
+def test_the_report_names_why_a_check_was_skipped():
+    db = local_checks.CHECKS_BY_ID["db"]
+    build = local_checks.CHECKS_BY_ID["build"]
+    results = [local_checks.Result(check=build, status="PASS"),
+               local_checks.Result(check=db, reason="the change compiles only into x.tests")]
+    report = local_checks.render({"cpp"}, {}, [TEST_CPP], "origin/main", "abc",
+                                 results, "p")
+    assert "1 run, 1 passed, 0 failed, 1 skipped" in report
+    assert "- `db`: the change compiles only into x.tests." in report
+
+
+def test_a_database_from_another_schema_is_rebuilt(monkeypatch):
+    skips = {"ticks-smoke": "the change compiles only into x.tests",
+             "step-consumers": "the change compiles only into x.tests"}
+    ran, results = _run_heavy(monkeypatch, [TEST_CPP], skips=skips)
+    assert ran == ["build", "db", "ctest"]
+    assert results["ticks-smoke"].status == "SKIP"
+
+
+def test_the_database_keeps_its_check_unless_its_schema_matches(monkeypatch):
+    monkeypatch.setattr(local_checks, "read_reach",
+                        lambda build_dir, wanted: {TEST_CPP: {"ores.trading.api.tests"}})
+    monkeypatch.setattr(local_checks, "database_in_sync", lambda: False)
+    assert set(local_checks.fleet_skips([TEST_CPP], "p")) == {"ticks-smoke", "step-consumers"}
+    monkeypatch.setattr(local_checks, "database_in_sync", lambda: True)
+    assert set(local_checks.fleet_skips([TEST_CPP], "p")) == set(local_checks.FLEET_CHECKS)

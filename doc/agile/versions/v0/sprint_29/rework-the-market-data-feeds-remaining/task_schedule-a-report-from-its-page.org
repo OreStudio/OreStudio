@@ -1,0 +1,180 @@
+:PROPERTIES:
+:ID: 38DDC0B4-A56D-42B4-B260-6C98BA356E0B
+:END:
+#+title: Task: Schedule a report from its own page
+#+description: Only the shell and the provisioner can schedule a report; the app has no Schedule action and no way to activate an on-demand report.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/schedule-a-report-from-its-page
+#+pr: 4454
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person with the permission schedules or unschedules a report from its page, and activates an on-demand report by giving it a schedule.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-04                               |
+
+* Acceptance
+
+- The report page offers Schedule and Unschedule, gated on the permission, calling the existing operations.
+- An on-demand report can be activated: a real schedule is set and scheduled, and deactivated back to on demand.
+- The screen states the outcome and the tests are green.
+
+* Plan
+
+- Read the operation, not a new one: =schedule_report_definitions= and
+  =unschedule_report_definitions= already carry the ids, the count, the failed
+  ids and the words, and the shell already drives them. The task is the app
+  action, so the BFF relays those operations and the page states their answers.
+- Put the permission on the route as the operation states it. The handler checks
+  the write of a definition to schedule and its delete to unschedule, and the
+  page's two buttons follow the same pair, so a person who may change a
+  definition is not offered a way to take its schedule away.
+- Activate an on-demand report with one action rather than two forms. The
+  scheduler reads the expression from the definition, so the expression has to
+  be stored before the schedule is made; the BFF does both in one call, at the
+  version it read, so the page never asks a person to save and then schedule.
+- Let the list and the page agree on one word. A definition with no scheduler
+  job is on demand whatever expression it keeps, and the expression that never
+  fires is on demand as well, so both read =isOnDemand= rather than a rule each.
+- Do not hide a refusal. The operation answers a refusal as a result, so the
+  page reads the count and states nothing changed, or states the server's reason
+  as an error; no toast says success for a write that did not happen.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| BFF reporting tests | 50 passing | =npx vitest run packages/bff/src/reporting.test.ts= | ecc2d2fd |
+| Web reporting tests | 53 passing, 6 in the client | =npx vitest run packages/web/src/reporting= | ecc2d2fd |
+| Definitions the demo tenant holds | 172 | =select count(*) from (select distinct on (id) id from ores_reporting_report_definitions_tbl where tenant_id='482df22b-ee2c-4482-b741-ea937154a2f7' order by id, version desc) x= | e8397c82 |
+| Report jobs the scheduler holds live before and after the checks | 20 | =select count(*) from ores_scheduler_job_definitions_tbl where job_name like 'report_definition.%' and valid_to='9999-12-31 23:59:59+00'= | e8397c82 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4454][#4454]] | [reporting] Offer Schedule and Unschedule on a report's page |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A person who holds the permission schedules or unschedules a report from the
+report's own page, and activates an on-demand report by stating the schedule it
+runs on.
+
+** The routes
+
+| Route | Operation | Permission |
+|-------+-----------+------------|
+| =POST /api/reporting/reports/schedule= | =reporting.v1.ops.schedule_report_definitions= | =reporting::report_definitions:write= |
+| =POST /api/reporting/reports/unschedule= | =reporting.v1.ops.unschedule_report_definitions= | =reporting::report_definitions:delete= |
+
+Each takes ={ids: [...]}= and answers ={changed, failedIds, message}=, which is
+the operation's own count, its own failed ids and its own words. The person's
+session makes the call, so the service reads only the definitions that session
+may see and acts for the party that owns them; a definition of another party is
+refused in the operation's words. The permission the route gates on is the one
+the operation checks, read before the route writes, because a schedule writes
+the expression the job will fire on.
+
+The schedule route takes an optional =schedule_expression=, which names one
+definition. The scheduler builds a job from the expression the definition holds,
+so activating an on-demand report writes that expression first, at the version
+the route read, and then schedules it. A refusal of the operation is an answer
+and not an error: the page reads the count and the words, and a refusal it does
+not hide.
+
+** The page actions
+
+The report page draws =Schedule= on a definition with no scheduler job and
+=Unschedule= on one that has, each gated on the permission its own operation
+checks. Neither is offered when the page can tell that the definition's party is
+not the session's, and the page then says whose report it is and which party to
+act for.
+
+=Schedule= opens a dialog over the existing =CronField= and builder, so a person
+who does not know cron states the schedule in controls and one who does opens
+the expression. The expression and the schedule are one action. =Unschedule=
+withdraws the schedule and leaves the report on demand; the run grant stays,
+because consent to run is the report's and not the schedule's.
+
+Every outcome is in words above the tabs: "Scheduled", "Nothing changed. The
+report already had a schedule", "Unscheduled", "Nothing changed. The report had
+no schedule to remove", and, for a refusal, "The server refused this change:"
+followed by the operation's own reason. A count of zero reads as nothing changed
+and never as a success.
+
+** On demand
+
+A definition reads as on demand when it holds no scheduler job, which is the
+fact that says nothing will fire, and when the expression it holds is the one
+that never fires (=0 0 31 2 *=). The list's Schedule column and the page's "When
+it runs" detail read the same rule from =isOnDemand=, so the two cannot disagree
+about the word.
+
+** What was verified
+
+- The BFF: the ids the operation is called with, the expression the write
+  carries and the version it holds, a refusal surfaced as the answer, both
+  permission gates and the refusal of an expression that names two definitions.
+- The page: the actions offered by permission, the delete gate that keeps
+  =Unschedule= from a person who may only write, an on-demand report and a
+  scheduled one, and every outcome in words.
+- Live, in the demo tenant: an on-demand report was activated from its page and
+  unscheduled again, and the scheduler job, the definition's =scheduler_job_id=
+  and the IAM run grant were read from the services between the two. The party
+  guard was seen on a report of another party. The evidence is
+  [[file:evidence/report_schedule_live.txt][evidence/report_schedule_live.txt]].
+- The harness check =report-schedule.spec.ts= drives the same round trip and
+  leaves the report as it found it.
+
+What could not be verified: that a scheduled report fires. The checks leave the
+demo tenant as they found it, so the evidence that a schedule will fire is the
+scheduler's live job row with its expression and not a run the schedule
+produced.

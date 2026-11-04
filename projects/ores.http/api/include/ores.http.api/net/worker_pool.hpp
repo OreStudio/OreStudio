@@ -27,6 +27,7 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <atomic>
 #include <cstddef>
+#include <functional>
 #include <type_traits>
 #include <utility>
 
@@ -87,21 +88,42 @@ public:
      * The caller stays suspended on its own executor, so the connection is not
      * pinned to a worker while the handler blocks. The slot is released when the
      * awaitable finishes, cancellation included.
+     *
+     * @p invoke must be copyable, because it is held as a std::function.
      */
     template <typename Invoke>
     boost::asio::awaitable<typename std::invoke_result_t<Invoke>::value_type> run(Invoke invoke) {
-        struct inflight_guard final {
-            std::atomic<std::size_t>& counter;
-            ~inflight_guard() {
-                counter.fetch_sub(1, std::memory_order_relaxed);
-            }
-        };
+        using result_type = typename std::invoke_result_t<Invoke>::value_type;
+        return run_erased<result_type>(
+            std::function<boost::asio::awaitable<result_type>()>(std::move(invoke)));
+    }
 
+private:
+    /*
+     * A member type and not a local of run(), because run() is a coroutine and
+     * its frame holds the guard: a local type would give the frame a subobject
+     * with no linkage, which gcc refuses under -Wsubobject-linkage.
+     */
+    struct inflight_guard final {
+        std::atomic<std::size_t>& counter;
+        ~inflight_guard() {
+            counter.fetch_sub(1, std::memory_order_relaxed);
+        }
+    };
+
+    /*
+     * The coroutine behind run(). Its frame holds the callable for as long as the
+     * awaitable runs, because a lambda coroutine reads its captures through the
+     * closure. The callable is held as a std::function and not as the caller's
+     * type: a caller's lambda has no linkage, and a frame holding one is what gcc
+     * refuses under -Wsubobject-linkage.
+     */
+    template <typename Result>
+    boost::asio::awaitable<Result> run_erased(std::function<boost::asio::awaitable<Result>()> invoke) {
         inflight_.fetch_add(1, std::memory_order_relaxed);
         inflight_guard guard{inflight_};
 
-        using result_type = typename std::invoke_result_t<Invoke>::value_type;
-        if constexpr (std::is_void_v<result_type>) {
+        if constexpr (std::is_void_v<Result>) {
             co_await boost::asio::co_spawn(
                 pool_.get_executor(), invoke(), boost::asio::use_awaitable);
         } else {
@@ -111,7 +133,6 @@ public:
         }
     }
 
-private:
     boost::asio::thread_pool pool_;
     std::size_t max_inflight_;
     std::atomic<std::size_t> inflight_{0};

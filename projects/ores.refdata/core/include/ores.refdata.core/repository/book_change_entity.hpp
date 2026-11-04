@@ -75,6 +75,7 @@ struct book_change_entity {
     std::string book_purpose_type = "Trading";
     std::string ledger_feed_type = "None";
     bool is_sweepable = false;
+    bool restricts_product_types = false;
     std::string rates_centre_code = "WRLD";
     std::optional<boost::uuids::uuid> sandbox_id;
     std::string modified_by;
@@ -112,6 +113,7 @@ struct book_change_entity {
                query_builder::bind("book_purpose_type", &e::book_purpose_type) |
                query_builder::bind("ledger_feed_type", &e::ledger_feed_type) |
                query_builder::bind("is_sweepable", &e::is_sweepable) |
+               query_builder::bind("restricts_product_types", &e::restricts_product_types) |
                query_builder::bind("rates_centre_code", &e::rates_centre_code) |
                query_builder::bind("sandbox_id", &e::sandbox_id) |
                query_builder::bind("modified_by", &e::modified_by) |

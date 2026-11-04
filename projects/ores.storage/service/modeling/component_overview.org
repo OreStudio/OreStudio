@@ -151,16 +151,18 @@ objects through the same store.
 
 - [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] — the component group overview.
 
+The service instantiates the wire codecs its handlers carry, and
+=ores.utility= only exposes them: it instantiates none of the templates itself,
+so =--as-needed= drops =msgpack-c= from the utility's =DT_NEEDED= and the service
+fails at load with an undefined =rfl::msgpack= symbol. The carrier is linked
+where it is used.
+
 #+begin_src cmake :name extra_dependencies
+find_package(msgpack-c CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.service.lib
-        ores.security.lib
-        ores.storage.core.lib
-        ores.nats.lib
-        ores.database.lib
-        ores.utility.lib
-        ores.telemetry.core.lib)
+        msgpack-c)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

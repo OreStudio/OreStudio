@@ -28,6 +28,7 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <utility>
 
 namespace ores::telemetry::service::app {
 
@@ -67,7 +68,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     const auto monitor_url = cfg.nats_monitor_url;
     const auto monitor_interval = cfg.nats_monitor_interval_seconds;
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
@@ -88,6 +90,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+    co_await std::move(service_run);
     co_return;
 }
 

@@ -1,5 +1,5 @@
 {
-  "description": "The renderings ORE accepts for each value, and the form a configuration holds. One entry per table; each entry maps the canonical form to every rendering that means it, the canonical form included. Written by generate_value_renderings.py from ORE's reader.",
+  "description": "The renderings ORE accepts for each value, and the form a configuration holds. One entry per table; each entry maps the canonical form to every rendering that means it, the canonical form included. This file is the statement: the value sets read it, and ORE's reader converts with tables generated from it by generate_renderings_tables.py.",
   "tables": {
     "business_day_conventions": {
       "Following": [

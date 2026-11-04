@@ -73,6 +73,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <memory>
+#include <utility>
 
 namespace ores::marketdata::service::app {
 
@@ -266,7 +267,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     event_source.start();
     crm_bridge->refresh();
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
@@ -353,6 +355,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             supervisor->start();
             usage->start();
         });
+    co_await std::move(service_run);
 
     event_source.stop();
     co_return;

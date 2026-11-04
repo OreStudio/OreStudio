@@ -462,6 +462,7 @@ auto read_callable_swap(const record_reader& trade) -> swap_instrument_data {
             rate_instrument_projection_stamp_row(row);
             result.call_dates.push_back(std::move(row));
         }
+        option_block::read_option_block(result, *option);
     }
 
     leg_block::append_legs(result, *data);
@@ -746,13 +747,18 @@ void write_swaption(record_writer& trade, const swap_instrument_data& v) {
 
 void write_callable_swap(record_writer& trade, const swap_instrument_data& v) {
     auto data = trade.child("CallableSwapData");
-    if (!v.call_dates.empty()) {
+    if (!v.call_dates.empty() || !v.options.empty()) {
         auto option = data.child("OptionData");
-        option.set_text("LongShort", "Long");
-        auto list = option.child("ExerciseDates");
-        for (const auto& call_date : v.call_dates)
-            list.append_value("ExerciseDate",
-                              rate_instrument_projection_to_ore_date(call_date.call_date));
+        if (v.options.empty())
+            option.set_text("LongShort", "Long");
+        else
+            option_block::write_option_block(option, v);
+        if (!v.call_dates.empty()) {
+            auto list = option.child("ExerciseDates");
+            for (const auto& call_date : v.call_dates)
+                list.append_value("ExerciseDate",
+                                  rate_instrument_projection_to_ore_date(call_date.call_date));
+        }
     }
     leg_block::write_legs(data, v.header.start_date, v.header.maturity_date, v);
 }

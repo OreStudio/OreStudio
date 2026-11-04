@@ -159,6 +159,15 @@ struct commodity_instrument_data {
     std::vector<swap_leg_amortization> leg_amortizations;
     std::vector<instrument_schedule> schedules;
     std::vector<instrument_schedule_date> schedule_dates;
+    /**
+     * @brief The OptionData block of a commodity option, in the shared option
+     * rows every option family reads and writes.
+     */
+    std::vector<instrument_option> options;
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<instrument_option_payment_date> option_payment_dates;
+    std::vector<instrument_option_exercise_price> option_exercise_prices;
 };
 
 // A credit trade states its legs as rows of the shared leg tables, and an index
@@ -627,6 +636,11 @@ inline void stamp_ids(commodity_instrument_data& data,
     stamp_one(data.leg_amortizations);
     stamp_one(data.schedules);
     stamp_one(data.schedule_dates);
+    stamp_one(data.options);
+    stamp_one(data.option_premiums);
+    stamp_one(data.option_exercise_fees);
+    stamp_one(data.option_payment_dates);
+    stamp_one(data.option_exercise_prices);
 }
 
 inline void stamp_ids(credit_instrument_data& data,

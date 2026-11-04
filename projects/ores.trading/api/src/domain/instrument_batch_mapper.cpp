@@ -300,6 +300,11 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 append_rows(batch.swap_leg_amortizations, v.leg_amortizations);
                 append_rows(batch.instrument_schedules, v.schedules);
                 append_rows(batch.instrument_schedule_dates, v.schedule_dates);
+                append_rows(batch.instrument_options, v.options);
+                append_rows(batch.instrument_option_premiums, v.option_premiums);
+                append_rows(batch.instrument_option_exercise_fees, v.option_exercise_fees);
+                append_rows(batch.instrument_option_payment_dates, v.option_payment_dates);
+                append_rows(batch.instrument_option_exercise_prices, v.option_exercise_prices);
             } else if constexpr (std::is_same_v<T, credit_instrument_data>) {
                 append(batch, v.instrument);
                 batch.swap_legs.insert(batch.swap_legs.end(), v.legs.begin(), v.legs.end());
@@ -448,7 +453,12 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
                                          find_all(batch.swap_leg_rates, trade_id),
                                          find_all(batch.swap_leg_amortizations, trade_id),
                                          find_all(batch.instrument_schedules, trade_id),
-                                         find_all(batch.instrument_schedule_dates, trade_id)};
+                                         find_all(batch.instrument_schedule_dates, trade_id),
+                                         find_all(batch.instrument_options, trade_id),
+                                         find_all(batch.instrument_option_premiums, trade_id),
+                                         find_all(batch.instrument_option_exercise_fees, trade_id),
+                                         find_all(batch.instrument_option_payment_dates, trade_id),
+                                         find_all(batch.instrument_option_exercise_prices, trade_id)};
     if (const auto* v = find(batch.composite_instruments, trade_id))
         return composite_instrument_data{*v, find_all(batch.composite_legs, trade_id)};
     if (const auto* v = find(batch.scripted_instruments, trade_id))

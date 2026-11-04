@@ -303,7 +303,7 @@ void read_premiums(Data& result, const record_reader& option) {
     for (const auto& premium : block->children("Premium")) {
         instrument_option_premium row;
         row.sequence_number = ++sequence_number;
-        row.amount = decimal_of(premium, "Amount");
+        row.amount = premium.decimal("Amount").value_or(decimal{});
         row.currency = text_of(premium, "Currency");
         row.pay_date = to_domain_date(text_of(premium, "PayDate"));
         row.has_settlement = premium.has("SettlementData");
@@ -643,7 +643,7 @@ void write_option_block(record_writer& option, const Data& v) {
         auto block = option.child("Premiums");
         for (const auto& premium : v.option_premiums) {
             auto writer = block.append("Premium");
-            set_decimal_from_double(writer, "Amount", premium.amount.to_double());
+            writer.set_decimal("Amount", premium.amount);
             writer.set_text("Currency", premium.currency);
             writer.set_text("PayDate", to_ore_date(premium.pay_date));
             if (premium.has_settlement) {

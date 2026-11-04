@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
@@ -151,17 +152,6 @@ auto rate_instrument_projection_spelling_of(const record_reader& r, std::string_
     return {};
 }
 
-// A boolean member the schema types as text keeps the spelling the document
-// wrote, so the reading accepts every spelling the binder accepts for a flag.
-auto rate_instrument_projection_is_flag_on(std::string_view text) -> bool {
-    return text == "Y" || text == "YES" || text == "TRUE" || text == "True" || text == "true" ||
-           text == "1";
-}
-
-auto rate_instrument_projection_flag_text(bool value) -> std::string_view {
-    return value ? "true" : "false";
-}
-
 /// The exact decimal an xs:simpleContent numeric leaf carries.
 auto rate_instrument_projection_decimal_text(const record_reader& r) -> decimal {
     return r.own_decimal().value_or(decimal{});
@@ -171,17 +161,6 @@ auto rate_instrument_projection_decimal_text(const record_reader& r) -> decimal 
 auto rate_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
     -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
-}
-
-/// The first schedule rule's tenor, which is the leg's payment frequency.
-auto rate_instrument_projection_first_tenor(const std::optional<record_reader>& schedule)
-    -> std::string {
-    if (!schedule)
-        return {};
-    const auto rules = schedule->children("Rules");
-    if (rules.empty())
-        return {};
-    return rate_instrument_projection_text_of(rules.front(), "Tenor");
 }
 
 auto start_date_of(const record_reader& schedule) -> std::chrono::year_month_day {
@@ -229,203 +208,6 @@ auto exercise_date_list(const std::optional<record_reader>& group) -> std::vecto
 // Reading: the shared children
 // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// Reading: the legs and their economics
-// ---------------------------------------------------------------------------
-
-/// A flag the element states, or nothing when it states none.
-std::optional<bool> rate_instrument_projection_optional_flag(const record_reader& r,
-                                                             std::string_view name) {
-    if (!r.has(name))
-        return std::nullopt;
-    return rate_instrument_projection_is_flag_on(rate_instrument_projection_text_of(r, name));
-}
-
-swap_leg rate_instrument_projection_read_leg(const record_reader& leg, int leg_number) {
-    swap_leg row;
-    row.identity.leg_number = leg_number;
-    row.payer =
-        rate_instrument_projection_is_flag_on(rate_instrument_projection_text_of(leg, "Payer"));
-    row.leg_type_code = rate_instrument_projection_spelling_of(leg, "LegType");
-    row.currency = rate_instrument_projection_text_of(leg, "Currency");
-    row.day_count_fraction_code = rate_instrument_projection_spelling_of(leg, "DayCounter");
-    row.business_day_convention_code =
-        rate_instrument_projection_spelling_of(leg, "PaymentConvention");
-    row.payment_frequency_code = tenor_to_payment_frequency(
-        rate_instrument_projection_first_tenor(leg.child("ScheduleData")));
-    if (leg.has("PaymentLag"))
-        row.payment_lag = rate_instrument_projection_text_of(leg, "PaymentLag");
-    if (leg.has("PaymentCalendar"))
-        row.payment_calendar = rate_instrument_projection_text_of(leg, "PaymentCalendar");
-    if (const auto notionals = leg.child("Notionals")) {
-        if (const auto all = notionals->children("Exchanges"); !all.empty()) {
-            const auto& exchanges = all.front();
-            const auto spelled = [&](std::string_view name) -> std::optional<bool> {
-                const auto value = exchanges.spelling(name);
-                if (!value)
-                    return std::nullopt;
-                return rate_instrument_projection_is_flag_on(*value);
-            };
-            row.notional_initial_exchange = spelled("NotionalInitialExchange");
-            row.notional_final_exchange = spelled("NotionalFinalExchange");
-        }
-    }
-    if (const auto floating = leg.child("FloatingLegData")) {
-        row.floating_index_code = rate_instrument_projection_text_of(*floating, "Index");
-        if (const auto days = floating->integer("FixingDays"))
-            row.fixing_days = static_cast<int>(*days);
-        row.is_in_arrears = rate_instrument_projection_optional_flag(*floating, "IsInArrears");
-        row.include_spread = rate_instrument_projection_optional_flag(*floating, "IncludeSpread");
-        row.is_averaged = rate_instrument_projection_optional_flag(*floating, "IsAveraged");
-        row.has_sub_periods = rate_instrument_projection_optional_flag(*floating, "HasSubPeriods");
-    }
-    rate_instrument_projection_stamp(row);
-    return row;
-}
-
-std::vector<swap_leg_amount> rate_instrument_projection_read_leg_amounts(const record_reader& leg,
-                                                                         int leg_number) {
-    std::vector<swap_leg_amount> amounts;
-    const auto append = [&](const decimal& value, const std::string& start_date) {
-        swap_leg_amount row;
-        row.leg_number = leg_number;
-        row.sequence_number = static_cast<int>(amounts.size()) + 1;
-        row.amount = value;
-        if (!start_date.empty())
-            row.start_date = rate_instrument_projection_to_domain_date(start_date);
-        rate_instrument_projection_stamp_row(row);
-        amounts.push_back(std::move(row));
-    };
-
-    // The document states its notional as a list, and a cashflow leg states its
-    // amounts as dated payments. Both arms land in the same column. An
-    // amortization schedule is a rule over the notional, not an amount, so it
-    // keeps rows of its own.
-    if (const auto notionals = leg.child("Notionals")) {
-        for (const auto& notional : notionals->children("Notional"))
-            append(rate_instrument_projection_decimal_text(notional),
-                   rate_instrument_projection_text_of(notional, "startDate"));
-    } else if (const auto cashflow_data = leg.child("CashflowData")) {
-        if (const auto cashflow = cashflow_data->child("Cashflow"))
-            for (const auto& amount : cashflow->children("Amount"))
-                append(rate_instrument_projection_decimal_text(amount),
-                       rate_instrument_projection_text_of(amount, "date"));
-    }
-    return amounts;
-}
-
-std::vector<swap_leg_amortization>
-rate_instrument_projection_read_leg_amortizations(const record_reader& leg, int leg_number) {
-    std::vector<swap_leg_amortization> steps;
-    const auto amortizations = leg.child("Amortizations");
-    if (!amortizations)
-        return steps;
-    for (const auto& step : amortizations->children("AmortizationData")) {
-        swap_leg_amortization row;
-        row.leg_number = leg_number;
-        row.sequence_number = static_cast<int>(steps.size()) + 1;
-        row.amortization_type = rate_instrument_projection_spelling_of(step, "Type");
-        if (step.has("Value"))
-            row.value = rate_instrument_projection_decimal_of(step, "Value");
-        row.start_date = rate_instrument_projection_to_optional_domain_date(
-            rate_instrument_projection_text_of(step, "StartDate"));
-        row.end_date = rate_instrument_projection_to_optional_domain_date(
-            rate_instrument_projection_text_of(step, "EndDate"));
-        if (step.has("Frequency"))
-            row.frequency = rate_instrument_projection_text_of(step, "Frequency");
-        row.underflow = rate_instrument_projection_optional_flag(step, "Underflow");
-        rate_instrument_projection_stamp_row(row);
-        steps.push_back(std::move(row));
-    }
-    return steps;
-}
-
-/// The schedules a floating leg states, each as its list, its item and the
-/// role a rate row keeps it under.
-struct floating_rate_list {
-    std::string_view element;
-    std::string_view item;
-    std::string_view role;
-};
-
-constexpr floating_rate_list floating_rate_lists[] = {
-    {"Spreads", "Spread", "spread"},
-    {"Gearings", "Gearing", "gearing"},
-    {"Caps", "Cap", "cap"},
-    {"Floors", "Floor", "floor"},
-};
-
-/// Writes each schedule a floating leg's rows state, in the order the schema
-/// gives them.
-void write_floating_rates(record_writer& floating, const std::vector<swap_leg_rate>& rates) {
-    for (const auto& [element, item, role] : floating_rate_lists) {
-        const auto states = std::any_of(
-            rates.begin(), rates.end(), [&](const auto& rate) { return rate.rate_role == role; });
-        if (!states)
-            continue;
-        auto list = floating.child(element);
-        for (const auto& rate : rates) {
-            if (rate.rate_role != role)
-                continue;
-            auto writer = list.append(item);
-            writer.set_own_text(rate.value.to_string());
-            if (rate.start_date)
-                writer.set_text("startDate",
-                                rate_instrument_projection_to_ore_date(*rate.start_date));
-        }
-    }
-}
-
-std::vector<swap_leg_rate> rate_instrument_projection_read_leg_rates(const record_reader& leg,
-                                                                     int leg_number) {
-    std::vector<swap_leg_rate> rates;
-    const auto append = [&](std::string_view role, const record_reader& value) {
-        swap_leg_rate row;
-        row.leg_number = leg_number;
-        row.rate_role = std::string(role);
-        row.sequence_number = static_cast<int>(rates.size()) + 1;
-        row.value = rate_instrument_projection_decimal_text(value);
-        if (const auto start = rate_instrument_projection_text_of(value, "startDate");
-            !start.empty())
-            row.start_date = rate_instrument_projection_to_domain_date(start);
-        rate_instrument_projection_stamp_row(row);
-        rates.push_back(std::move(row));
-    };
-
-    if (const auto fixed = leg.child("FixedLegData")) {
-        if (const auto list = fixed->child("Rates"))
-            for (const auto& rate : list->children("Rate"))
-                append("fixed", rate);
-    }
-    if (const auto floating = leg.child("FloatingLegData")) {
-        for (const auto& [element, item, role] : floating_rate_lists)
-            if (const auto list = floating->child(element))
-                for (const auto& value : list->children(item))
-                    append(role, value);
-    }
-    return rates;
-}
-
-void rate_instrument_projection_append_leg(swap_instrument_data& result,
-                                           const record_reader& leg,
-                                           int leg_number) {
-    result.legs.push_back(rate_instrument_projection_read_leg(leg, leg_number));
-    for (auto& amount : rate_instrument_projection_read_leg_amounts(leg, leg_number))
-        result.leg_amounts.push_back(std::move(amount));
-    for (auto& rate : rate_instrument_projection_read_leg_rates(leg, leg_number))
-        result.leg_rates.push_back(std::move(rate));
-    for (auto& step : rate_instrument_projection_read_leg_amortizations(leg, leg_number))
-        result.leg_amortizations.push_back(std::move(step));
-    if (const auto schedule = leg.child("ScheduleData"))
-        option_block::read_schedule(result, *schedule, "swap", leg_number, "schedule");
-}
-
-void append_legs(swap_instrument_data& result, const record_reader& data) {
-    int leg_number = 1;
-    for (const auto& leg : data.children("LegData"))
-        rate_instrument_projection_append_leg(result, leg, leg_number++);
-}
-
 /// The first leg's schedule states the instrument's own dates.
 void read_header_dates(swap_instrument_data& result, const record_reader& data) {
     const auto legs = data.children("LegData");
@@ -455,7 +237,7 @@ auto read_swap(const record_reader& trade, std::string_view trade_type) -> swap_
         return result;
 
     read_header_dates(result, *data);
-    append_legs(result, *data);
+    leg_block::append_legs(result, *data);
     return result;
 }
 
@@ -481,7 +263,7 @@ auto read_knock_out_swap(const record_reader& trade) -> swap_instrument_data {
         rate_instrument_projection_text_of(*data, "BarrierStartDate"));
 
     read_header_dates(result, *data);
-    append_legs(result, *data);
+    leg_block::append_legs(result, *data);
     return result;
 }
 
@@ -518,7 +300,7 @@ auto read_inflation_swap(const record_reader& trade) -> swap_instrument_data {
     }
 
     read_header_dates(result, *data);
-    append_legs(result, *data);
+    leg_block::append_legs(result, *data);
     return result;
 }
 
@@ -596,7 +378,7 @@ auto read_capfloor(const record_reader& trade) -> swap_instrument_data {
     row.business_day_convention_code =
         rate_instrument_projection_spelling_of(*leg, "PaymentConvention");
     row.payment_frequency_code = tenor_to_payment_frequency(
-        rate_instrument_projection_first_tenor(leg->child("ScheduleData")));
+        leg_block::first_tenor(leg->child("ScheduleData")));
     if (const auto floating = leg->child("FloatingLegData"))
         row.floating_index_code = rate_instrument_projection_text_of(*floating, "Index");
     rate_instrument_projection_stamp(row);
@@ -685,7 +467,7 @@ auto read_swaption(const record_reader& trade) -> swap_instrument_data {
         option_block::read_option_block(result, *option);
     }
 
-    append_legs(result, *data);
+    leg_block::append_legs(result, *data);
 
     const auto legs = data->children("LegData");
     if (!legs.empty()) {
@@ -729,7 +511,7 @@ auto read_callable_swap(const record_reader& trade) -> swap_instrument_data {
         }
     }
 
-    append_legs(result, *data);
+    leg_block::append_legs(result, *data);
     read_header_dates(result, *data);
     return result;
 }
@@ -765,7 +547,7 @@ auto read_flexi_swap(const record_reader& trade) -> swap_instrument_data {
         }
     }
 
-    append_legs(result, *data);
+    leg_block::append_legs(result, *data);
     read_header_dates(result, *data);
     return result;
 }
@@ -814,7 +596,7 @@ auto read_balance_guaranteed_swap(const record_reader& trade) -> swap_instrument
             option_block::read_schedule(result, *schedule, "tranches", 1, "schedule");
     }
 
-    append_legs(result, *data);
+    leg_block::append_legs(result, *data);
     read_header_dates(result, *data);
     return result;
 }
@@ -847,177 +629,6 @@ void rate_instrument_projection_set_spelling_or(record_writer& w,
 }
 
 // ---------------------------------------------------------------------------
-// Writing: the shared children
-// ---------------------------------------------------------------------------
-
-void rate_instrument_projection_write_schedule_rules(
-    record_writer& schedule,
-    const std::optional<std::chrono::year_month_day>& start_date,
-    const std::optional<std::chrono::year_month_day>& end_date,
-    const std::string& tenor) {
-    auto rule = schedule.append("Rules");
-    rule.set_text("StartDate", rate_instrument_projection_to_ore_date(start_date));
-    if (end_date)
-        rule.set_text("EndDate", rate_instrument_projection_to_ore_date(*end_date));
-    rule.set_text("Tenor", tenor);
-    rule.set_spelling("Convention", "MF", "business day convention");
-}
-
-// ---------------------------------------------------------------------------
-// Writing: the legs and their economics
-// ---------------------------------------------------------------------------
-
-std::vector<swap_leg_amount>
-rate_instrument_projection_amounts_for_leg(const swap_instrument_data& v, int leg_number) {
-    std::vector<swap_leg_amount> out;
-    for (const auto& row : v.leg_amounts)
-        if (row.leg_number == leg_number)
-            out.push_back(row);
-    return out;
-}
-
-std::vector<swap_leg_rate> rate_instrument_projection_rates_for_leg(const swap_instrument_data& v,
-                                                                    int leg_number) {
-    std::vector<swap_leg_rate> out;
-    for (const auto& row : v.leg_rates)
-        if (row.leg_number == leg_number)
-            out.push_back(row);
-    return out;
-}
-
-void rate_instrument_projection_write_leg(record_writer& leg,
-                                          const rate_instrument& header,
-                                          const swap_leg& row,
-                                          const std::vector<swap_leg_amount>& amounts,
-                                          const std::vector<swap_leg_rate>& rates,
-                                          const swap_instrument_data& v) {
-    leg.set_spelling("LegType", row.leg_type_code, "leg type");
-    leg.set_text("Payer", rate_instrument_projection_flag_text(row.payer.value_or(false)));
-    leg.set_text("Currency", row.currency);
-    if (!row.day_count_fraction_code.empty())
-        rate_instrument_projection_set_spelling_or(
-            leg, "DayCounter", row.day_count_fraction_code, "A360", "day counter");
-    if (!row.business_day_convention_code.empty())
-        rate_instrument_projection_set_spelling_or(leg,
-                                                   "PaymentConvention",
-                                                   row.business_day_convention_code,
-                                                   "MF",
-                                                   "business day convention");
-    if (row.payment_lag)
-        leg.set_text("PaymentLag", *row.payment_lag);
-    if (row.payment_calendar)
-        leg.set_text("PaymentCalendar", *row.payment_calendar);
-
-    // A cashflow leg has dated payments and no notional or schedule.
-    if (row.leg_type_code == "Cashflow") {
-        auto cashflow = leg.child("CashflowData").child("Cashflow");
-        for (const auto& amount : amounts) {
-            auto writer = cashflow.append("Amount");
-            writer.set_own_text(amount.amount.to_string());
-            if (amount.start_date)
-                writer.set_text("date", rate_instrument_projection_to_ore_date(*amount.start_date));
-        }
-        return;
-    }
-
-    if (!amounts.empty()) {
-        auto notionals = leg.child("Notionals");
-        for (const auto& amount : amounts) {
-            auto writer = notionals.append("Notional");
-            writer.set_own_text(amount.amount.to_string());
-            if (amount.start_date)
-                writer.set_text("startDate",
-                                rate_instrument_projection_to_ore_date(*amount.start_date));
-        }
-    }
-    if (row.notional_initial_exchange || row.notional_final_exchange) {
-        auto exchanges = leg.child("Notionals").append("Exchanges");
-        if (row.notional_initial_exchange)
-            exchanges.set_spelling(
-                "NotionalInitialExchange",
-                rate_instrument_projection_flag_text(*row.notional_initial_exchange),
-                "boolean");
-        if (row.notional_final_exchange)
-            exchanges.set_spelling(
-                "NotionalFinalExchange",
-                rate_instrument_projection_flag_text(*row.notional_final_exchange),
-                "boolean");
-    }
-
-    std::optional<record_writer> amortizations;
-    for (const auto& step : v.leg_amortizations) {
-        if (step.leg_number != row.identity.leg_number)
-            continue;
-        if (!amortizations)
-            amortizations = leg.child("Amortizations");
-        auto writer = amortizations->append("AmortizationData");
-        rate_instrument_projection_set_spelling_or(
-            writer, "Type", step.amortization_type, "FixedAmount", "amortization type");
-        if (step.value)
-            writer.set_decimal("Value", *step.value);
-        if (step.start_date)
-            writer.set_text("StartDate", rate_instrument_projection_to_ore_date(step.start_date));
-        if (step.end_date)
-            writer.set_text("EndDate", rate_instrument_projection_to_ore_date(step.end_date));
-        if (step.frequency)
-            writer.set_text("Frequency", *step.frequency);
-        if (step.underflow)
-            writer.set_text("Underflow", rate_instrument_projection_flag_text(*step.underflow));
-    }
-
-    // The leg's own schedule is the one the document stated; a leg stored
-    // before its schedule rows existed falls back to the header's dates.
-    auto schedule = leg.child("ScheduleData");
-    if (!option_block::write_stored_schedule(
-            schedule, v, "swap", row.identity.leg_number, "schedule"))
-        rate_instrument_projection_write_schedule_rules(
-            schedule,
-            header.start_date,
-            header.maturity_date,
-            payment_frequency_to_tenor(row.payment_frequency_code));
-
-    const auto has_role = [&](std::string_view role) {
-        return std::any_of(rates.begin(), rates.end(), [&](const swap_leg_rate& rate) {
-            return rate.rate_role == role;
-        });
-    };
-    if (row.leg_type_code == "Fixed" && has_role("fixed")) {
-        auto list = leg.child("FixedLegData").child("Rates");
-        for (const auto& rate : rates)
-            if (rate.rate_role == "fixed")
-                list.append("Rate").set_own_text(rate.value.to_string());
-    } else if (row.leg_type_code == "Floating") {
-        auto floating = leg.child("FloatingLegData");
-        floating.set_text("Index", row.floating_index_code);
-        if (row.fixing_days)
-            floating.set_integer("FixingDays", *row.fixing_days);
-        const auto write_flag = [&floating](std::string_view name,
-                                            const std::optional<bool>& flag) {
-            if (flag)
-                floating.set_text(name, rate_instrument_projection_flag_text(*flag));
-        };
-        write_flag("IsInArrears", row.is_in_arrears);
-        write_flag("IncludeSpread", row.include_spread);
-        write_flag("IsAveraged", row.is_averaged);
-        write_flag("HasSubPeriods", row.has_sub_periods);
-        write_floating_rates(floating, rates);
-    }
-}
-
-void write_legs(record_writer& data, const swap_instrument_data& v) {
-    for (const auto& leg : v.legs) {
-        auto writer = data.append("LegData");
-        rate_instrument_projection_write_leg(
-            writer,
-            v.header,
-            leg,
-            rate_instrument_projection_amounts_for_leg(v, leg.identity.leg_number),
-            rate_instrument_projection_rates_for_leg(v, leg.identity.leg_number),
-            v);
-    }
-}
-
-// ---------------------------------------------------------------------------
 // Writing: one function per product
 // ---------------------------------------------------------------------------
 
@@ -1041,7 +652,7 @@ void write_swap(record_writer& trade, std::string_view trade_type, const swap_in
     // so the product type the row states decides which one carries the legs.
     auto data =
         trade.child(trade_type == "CrossCurrencySwap" ? "CrossCurrencySwapData" : "SwapData");
-    write_legs(data, v);
+    leg_block::write_legs(data, v.header.start_date, v.header.maturity_date, v);
 }
 
 void write_knock_out_swap(record_writer& trade, const swap_instrument_data& v) {
@@ -1052,7 +663,7 @@ void write_knock_out_swap(record_writer& trade, const swap_instrument_data& v) {
     barrier.child("Levels").append_decimal("Level", fact.barrier_level);
     data.set_text("BarrierStartDate",
                   rate_instrument_projection_to_ore_date(fact.barrier_start_date));
-    write_legs(data, v);
+    leg_block::write_legs(data, v.header.start_date, v.header.maturity_date, v);
 }
 
 void write_inflation_swap(record_writer& trade, const swap_instrument_data& v) {
@@ -1064,13 +675,7 @@ void write_inflation_swap(record_writer& trade, const swap_instrument_data& v) {
     bool cpi_written = false;
     for (const auto& leg : v.legs) {
         auto writer = data.append("LegData");
-        rate_instrument_projection_write_leg(
-            writer,
-            v.header,
-            leg,
-            rate_instrument_projection_amounts_for_leg(v, leg.identity.leg_number),
-            rate_instrument_projection_rates_for_leg(v, leg.identity.leg_number),
-            v);
+        leg_block::write_leg(writer, v.header.start_date, v.header.maturity_date, leg, v);
         if (cpi_written || leg.leg_type_code != "CPI")
             continue;
         cpi_written = true;
@@ -1148,7 +753,7 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
         // schedule children existed falls back to the header's dates.
         auto schedule = leg.child("ScheduleData");
         if (!option_block::write_stored_schedule(schedule, v, "swap", 1, "schedule"))
-            rate_instrument_projection_write_schedule_rules(
+            leg_block::write_schedule_rules(
                 schedule,
                 v.header.start_date,
                 v.header.maturity_date,
@@ -1163,7 +768,7 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
         if (row.leg_type_code == "Floating") {
             auto floating = leg.child("FloatingLegData");
             floating.set_text("Index", row.floating_index_code);
-            write_floating_rates(floating, v.leg_rates);
+            leg_block::write_floating_rates(floating, v.leg_rates);
         }
     }
 
@@ -1219,7 +824,7 @@ void write_swaption(record_writer& trade, const swap_instrument_data& v) {
             option.child("ExerciseSchedule"), v, "option", 1, "exercise_schedule");
     }
 
-    write_legs(data, v);
+    leg_block::write_legs(data, v.header.start_date, v.header.maturity_date, v);
 }
 
 void write_callable_swap(record_writer& trade, const swap_instrument_data& v) {
@@ -1232,7 +837,7 @@ void write_callable_swap(record_writer& trade, const swap_instrument_data& v) {
             list.append_value("ExerciseDate",
                               rate_instrument_projection_to_ore_date(call_date.call_date));
     }
-    write_legs(data, v);
+    leg_block::write_legs(data, v.header.start_date, v.header.maturity_date, v);
 }
 
 void write_flexi_swap(record_writer& trade, const swap_instrument_data& v) {
@@ -1267,7 +872,7 @@ void write_flexi_swap(record_writer& trade, const swap_instrument_data& v) {
             writer.set_text("startDate", rate_instrument_projection_to_ore_date(*row->start_date));
     }
 
-    write_legs(data, v);
+    leg_block::write_legs(data, v.header.start_date, v.header.maturity_date, v);
 }
 
 void write_balance_guaranteed_swap(record_writer& trade, const swap_instrument_data& v) {
@@ -1308,7 +913,7 @@ void write_balance_guaranteed_swap(record_writer& trade, const swap_instrument_d
 
     option_block::write_stored_schedule(
         tranches.child("ScheduleData"), v, "tranches", 1, "schedule");
-    write_legs(data, v);
+    leg_block::write_legs(data, v.header.start_date, v.header.maturity_date, v);
 }
 
 }

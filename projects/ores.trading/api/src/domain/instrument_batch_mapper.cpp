@@ -377,8 +377,6 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     v.option_exercise_prices.end());
             } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                 append(batch, v.instrument);
-                batch.composite_legs.insert(
-                    batch.composite_legs.end(), v.legs.begin(), v.legs.end());
             } else if constexpr (std::is_same_v<T, scripted_instrument_data>) {
                 append(batch, v.instrument);
                 const auto append_rows = [](auto& to, const auto& from) {
@@ -502,7 +500,7 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
                                          find_all(batch.instrument_barriers, trade_id),
                                          find_all(batch.instrument_barrier_levels, trade_id)};
     if (const auto* v = find(batch.composite_instruments, trade_id))
-        return composite_instrument_data{*v, find_all(batch.composite_legs, trade_id)};
+        return composite_instrument_data{*v};
     if (const auto* v = find(batch.scripted_instruments, trade_id))
         return scripted_instrument_data{*v,
                                         find_all(batch.scripted_parameters, trade_id),

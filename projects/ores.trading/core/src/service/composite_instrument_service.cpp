@@ -44,10 +44,7 @@
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
-#include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
@@ -485,38 +482,4 @@ composite_instrument_service::get_composite_instrument_history(const std::string
     return repo_.read_all(ctx_, trade_id);
 }
 
-std::vector<domain::composite_leg>
-composite_instrument_service::get_legs(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting legs for composite instrument: " << trade_id;
-    repository::composite_leg_repository leg_repo;
-    return leg_repo.read_latest(ctx_, std::vector<std::string>{trade_id});
-}
-
-void composite_instrument_service::save_composite_instrument(
-    const domain::composite_instrument& v, const std::vector<domain::composite_leg>& legs) {
-    auto t = v;
-    if (t.identity.trade_id.is_nil()) {
-        static boost::uuids::random_generator gen;
-        t.identity.trade_id = gen();
-    }
-    const auto id_str = boost::uuids::to_string(t.identity.trade_id);
-    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.identity.trade_id << " with "
-                               << legs.size() << " legs";
-    stamp(t.identity, ctx_);
-    stamp(t.audit, ctx_);
-    repository::composite_leg_repository leg_repo;
-    repository::composite_instrument_repository instrument_repo;
-    std::vector<std::string> stale_leg_ids;
-    for (const auto& existing : leg_repo.read_latest(ctx_, std::vector<std::string>{id_str}))
-        stale_leg_ids.push_back(boost::uuids::to_string(existing.identity.id));
-    if (!stale_leg_ids.empty())
-        leg_repo.remove(ctx_, stale_leg_ids);
-    instrument_repo.write(ctx_, t);
-    for (auto leg : legs) {
-        leg.identity.trade_id = t.identity.trade_id;
-        stamp(leg, ctx_);
-        leg_repo.write(ctx_, leg);
-    }
-    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.identity.trade_id;
-}
 }

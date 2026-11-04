@@ -103,7 +103,7 @@ auto read_composite_instrument(xml::record_reader trade, std::string_view trade_
     if (!is_composite_trade_type(trade_type))
         return std::nullopt;
 
-    composite_instrument_data r{make_instrument(trade_type), {}};
+    composite_instrument_data r{make_instrument(trade_type)};
 
     if (trade_type == "CompositeTrade") {
         if (const auto data = trade.child("CompositeTradeData")) {

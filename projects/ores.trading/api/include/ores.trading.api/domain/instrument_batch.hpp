@@ -73,7 +73,6 @@
 #include "ores.trading.api/domain/commodity_basket_constituent_codec.hpp"
 #include "ores.trading.api/domain/commodity_instrument_codec.hpp"
 #include "ores.trading.api/domain/composite_instrument_codec.hpp"
-#include "ores.trading.api/domain/composite_leg_codec.hpp"
 #include "ores.trading.api/domain/credit_basket_constituent_codec.hpp"
 #include "ores.trading.api/domain/credit_default_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/credit_instrument_codec.hpp"
@@ -333,10 +332,6 @@ struct instrument_batch {
      * @brief The commodity_basket_constituent rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::commodity_basket_constituent> commodity_basket_constituents;
-    /**
-     * @brief The composite_leg rows, keyed by trade id.
-     */
-    std::vector<ores::trading::domain::composite_leg> composite_legs;
     /**
      * @brief The credit_basket_constituent rows, keyed by trade id.
      */
@@ -821,13 +816,6 @@ inline void append(instrument_batch& batch, commodity_basket_constituent v) {
 }
 
 /**
- * @brief Adds one composite_leg to the array that holds its type.
- */
-inline void append(instrument_batch& batch, composite_leg v) {
-    batch.composite_legs.push_back(std::move(v));
-}
-
-/**
  * @brief Adds one credit_basket_constituent to the array that holds its type.
  */
 inline void append(instrument_batch& batch, credit_basket_constituent v) {
@@ -1185,7 +1173,6 @@ template <typename T>
                                       &instrument_batch::cap_floor_instruments},
         ::ores::utility::codec::field{"commodity_basket_constituents",
                                       &instrument_batch::commodity_basket_constituents},
-        ::ores::utility::codec::field{"composite_legs", &instrument_batch::composite_legs},
         ::ores::utility::codec::field{"credit_basket_constituents",
                                       &instrument_batch::credit_basket_constituents},
         ::ores::utility::codec::field{"credit_default_swap_instruments",

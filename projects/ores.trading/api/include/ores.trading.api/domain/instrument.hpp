@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/credit_basket_constituent.hpp"
 #include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
@@ -102,12 +101,6 @@ concept TradeKeyed = requires(T t) {
 template <typename T>
 concept NestedInstrument = Instrument<T>;
 
-template <typename T, typename Leg>
-struct with_legs {
-    T instrument;
-    std::vector<Leg> legs;
-};
-
 // The rates family states one header row, the product's own fact row, a leg
 // collection, and for a callable swap the schedule of dates its owner may
 // exercise the call on. The header holds the identity, the dates and the
@@ -145,7 +138,16 @@ struct swap_instrument_data {
     std::vector<instrument_barrier_level> barrier_levels;
 };
 
-using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
+/**
+ * @brief A composite trade, a total return swap or a contract for
+ * difference: the composite's own row.
+ *
+ * A composite trade's components are trades of their own, joined to it by a
+ * structure, so the carrier holds no list of them.
+ */
+struct composite_instrument_data {
+    composite_instrument instrument;
+};
 
 /**
  * @brief A scripted trade: the script's row and its named parameters.
@@ -597,15 +599,10 @@ void stamp_ids(std::variant<Ts...>& v,
     std::visit([&](auto& fact) { stamp_ids(fact, trade_id, activity_id); }, v);
 }
 
-template <typename T, typename Leg>
-void stamp_ids(with_legs<T, Leg>& data,
-               boost::uuids::uuid trade_id,
-               boost::uuids::uuid activity_id = {}) {
+inline void stamp_ids(composite_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
     stamp_ids(data.instrument, trade_id, activity_id);
-    for (auto& leg : data.legs) {
-        leg.identity.trade_id = trade_id;
-        leg.identity.trade_activity_id = activity_id;
-    }
 }
 
 inline void stamp_ids(swap_instrument_data& data,

@@ -23,7 +23,6 @@
  * To modify, update the template and regenerate.
  */
 import type { CompositeInstrument } from '../domain/composite_instrument.js';
-import type { CompositeLeg } from '../domain/composite_leg.js';
 import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
@@ -177,33 +176,6 @@ export interface GetCompositeInstrumentVersionResponse {
     version: CompositeInstrument | null;
 }
 
-/**
- * @brief Writes a composite instrument and replaces its whole leg set.
- *
- * One request rather than two, because the store refuses a leg whose
- * parent is not current: the instrument row and its legs have to reach
- * one handler in order. The leg set the request states replaces whatever
- * the instrument carried before.
- */
-export interface PutCompositeInstrumentWithLegsRequest {
-    instrument: CompositeInstrument;
-    legs: CompositeLeg[];
-}
-
-export interface PutCompositeInstrumentWithLegsResponse {
-    result: Result;
-    instrument: CompositeInstrument;
-}
-
-export interface GetCompositeInstrumentLegsRequest {
-    trade_id: string;
-}
-
-export interface GetCompositeInstrumentLegsResponse {
-    result: Result;
-    legs: CompositeLeg[];
-}
-
 export const subjects = {
     list_composite_instruments_request: 'trading.v1.composite_instruments.list',
     get_composite_instrument_request: 'trading.v1.composite_instruments.get',
@@ -214,8 +186,6 @@ export const subjects = {
     delete_many_composite_instruments_request: 'trading.v1.composite_instruments.delete_many',
     list_composite_instrument_versions_request: 'trading.v1.composite_instruments_versions.list',
     get_composite_instrument_version_request: 'trading.v1.composite_instruments_versions.get',
-    put_composite_instrument_with_legs_request: 'trading.v1.ops.put_composite_instrument_with_legs',
-    get_composite_instrument_legs_request: 'trading.v1.ops.get_composite_instrument_legs',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -232,8 +202,6 @@ export const requiresSession = {
     delete_many_composite_instruments_request: true,
     list_composite_instrument_versions_request: true,
     get_composite_instrument_version_request: true,
-    put_composite_instrument_with_legs_request: true,
-    get_composite_instrument_legs_request: true,
 } as const;
 
 /**

@@ -270,8 +270,6 @@
 \ir ./trading_equity_instruments_drop.sql
 
 -- Composite instruments (drop legs before header)
-\ir ./trading_composite_legs_notify_trigger_drop.sql
-\ir ./trading_composite_legs_drop.sql
 \ir ./trading_composite_instruments_notify_trigger_drop.sql
 \ir ./trading_composite_instruments_drop.sql
 

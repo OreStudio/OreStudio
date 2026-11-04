@@ -3125,9 +3125,6 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components",
     REQUIRE(composite != nullptr);
     CHECK(composite->instrument.identity.trade_type_code == "CompositeTrade");
     CHECK(composite->instrument.description == "ACME-BASKET");
-    // The components are trades of their own, joined by a structure, so the
-    // composite's own row keeps no list of them.
-    CHECK(composite->legs.empty());
 
     const auto back = rebuild(items[0]);
     CHECK(back.anchor.trade_type == "CompositeTrade");
@@ -3136,9 +3133,6 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components",
     REQUIRE(round != nullptr);
     CHECK(round->instrument.identity.trade_type_code == "CompositeTrade");
     CHECK(round->instrument.description == "ACME-BASKET");
-    // Rebuilt alone, without the structure that joins its components, the
-    // composite states none of them.
-    CHECK(round->legs.empty());
 
     const auto written = portfolio_projection::write(exported(items[0]));
     const auto reread_items = portfolio_projection::map(portfolio_projection::read(written));
@@ -3164,14 +3158,12 @@ TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_
     REQUIRE(trs != nullptr);
     CHECK(trs->instrument.identity.trade_type_code == "TotalReturnSwap");
     CHECK(trs->instrument.description == "EquityPosition");
-    CHECK(trs->legs.empty());
 
     const auto* cfd =
         std::get_if<ores::trading::domain::composite_instrument_data>(&items[4].instrument);
     REQUIRE(cfd != nullptr);
     CHECK(cfd->instrument.identity.trade_type_code == "ContractForDifference");
     CHECK(cfd->instrument.description == "Swap");
-    CHECK(cfd->legs.empty());
 
     const auto trs_again = rebuild(items[3]);
     REQUIRE(std::get_if<ores::trading::domain::composite_instrument_data>(&trs_again.instrument) !=

@@ -25,7 +25,6 @@
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
-#include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/credit_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
@@ -295,15 +294,6 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::scripted_parameter_value_repository value_repo;
         auto values = value_repo.read_by_instruments_batch(ctx, scripted_ids);
         take(values, batch.scripted_parameter_values);
-    }
-    if (!composite_ids.empty()) {
-        repository::composite_leg_repository comp_leg_repo;
-        const std::unordered_set<std::string> wanted(composite_ids.begin(), composite_ids.end());
-        for (auto& leg : comp_leg_repo.read_latest(ctx)) {
-            const auto key = boost::uuids::to_string(leg.identity.trade_id);
-            if (wanted.contains(key))
-                batch.composite_legs.push_back(std::move(leg));
-        }
     }
     if (!rate_ids.empty()) {
         repository::callable_swap_call_date_repository call_date_repo;

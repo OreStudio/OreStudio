@@ -66,7 +66,6 @@ import type { CallableSwapCallDate } from './domain/callable_swap_call_date.js';
 import type { CallableSwapInstrument } from './domain/callable_swap_instrument.js';
 import type { CapFloorInstrument } from './domain/cap_floor_instrument.js';
 import type { CommodityBasketConstituent } from './domain/commodity_basket_constituent.js';
-import type { CompositeLeg } from './domain/composite_leg.js';
 import type { CreditBasketConstituent } from './domain/credit_basket_constituent.js';
 import type { CreditDefaultSwapInstrument } from './domain/credit_default_swap_instrument.js';
 import type { CreditLinkedSwapInstrument } from './domain/credit_linked_swap_instrument.js';
@@ -157,7 +156,6 @@ export interface InstrumentBatch {
     callable_swap_instruments: CallableSwapInstrument[];
     cap_floor_instruments: CapFloorInstrument[];
     commodity_basket_constituents: CommodityBasketConstituent[];
-    composite_legs: CompositeLeg[];
     credit_basket_constituents: CreditBasketConstituent[];
     credit_default_swap_instruments: CreditDefaultSwapInstrument[];
     credit_linked_swap_instruments: CreditLinkedSwapInstrument[];

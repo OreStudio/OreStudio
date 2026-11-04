@@ -58,7 +58,6 @@
 #include "ores.trading.service/messaging/commodity_basket_constituent_event_registrar.hpp"
 #include "ores.trading.service/messaging/commodity_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/composite_instrument_event_registrar.hpp"
-#include "ores.trading.service/messaging/composite_leg_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_basket_constituent_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_default_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_instrument_event_registrar.hpp"
@@ -339,9 +338,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto swap_leg_sub = ores::trading::service::messaging::register_swap_leg_event_mapping(
         event_source, event_bus, nats);
-    auto composite_leg_sub =
-        ores::trading::service::messaging::register_composite_leg_event_mapping(
-            event_source, event_bus, nats);
 
     auto ascot_sub = ores::trading::service::messaging::register_ascot_event_mapping(
         event_source, event_bus, nats);

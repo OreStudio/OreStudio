@@ -32,7 +32,6 @@ set(files
     "cap_floor_instrument_eventing_integration_tests.cpp"
     "commodity_instrument_eventing_integration_tests.cpp"
     "composite_instrument_eventing_integration_tests.cpp"
-    "composite_leg_eventing_integration_tests.cpp"
     "credit_default_swap_instrument_eventing_integration_tests.cpp"
     "credit_instrument_eventing_integration_tests.cpp"
     "credit_linked_swap_instrument_eventing_integration_tests.cpp"

@@ -398,8 +398,6 @@
 -- Composite instruments (depends on reference data above)
 \ir ./trading_composite_instruments_create.sql
 \ir ./trading_composite_instruments_notify_trigger_create.sql
-\ir ./trading_composite_legs_create.sql
-\ir ./trading_composite_legs_notify_trigger_create.sql
 
 -- Scripted instruments (depends on reference data above)
 \ir ./trading_scripted_instruments_create.sql

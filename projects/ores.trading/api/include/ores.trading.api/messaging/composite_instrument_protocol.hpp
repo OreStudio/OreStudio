@@ -26,7 +26,6 @@
 #define ORES_TRADING_API_MESSAGING_COMPOSITE_INSTRUMENT_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/composite_instrument.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
@@ -352,64 +351,6 @@ struct get_composite_instrument_version_response {
 
     friend bool operator==(const get_composite_instrument_version_response&,
                            const get_composite_instrument_version_response&) = default;
-};
-
-/**
- * @brief Writes a composite instrument and replaces its whole leg set.
- *
- * One request rather than two, because the store refuses a leg whose
- * parent is not current: the instrument row and its legs have to reach
- * one handler in order. The leg set the request states replaces whatever
- * the instrument carried before.
- */
-struct put_composite_instrument_with_legs_request {
-    using response_type = struct put_composite_instrument_with_legs_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.ops.put_composite_instrument_with_legs";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    ores::trading::domain::composite_instrument instrument;
-    std::vector<ores::trading::domain::composite_leg> legs;
-
-    friend bool operator==(const put_composite_instrument_with_legs_request&,
-                           const put_composite_instrument_with_legs_request&) = default;
-};
-
-struct put_composite_instrument_with_legs_response {
-    ores::utility::domain::result result;
-    ores::trading::domain::composite_instrument instrument;
-
-    friend bool operator==(const put_composite_instrument_with_legs_response&,
-                           const put_composite_instrument_with_legs_response&) = default;
-};
-
-struct get_composite_instrument_legs_request {
-    using response_type = struct get_composite_instrument_legs_response;
-    static constexpr std::string_view nats_subject = "trading.v1.ops.get_composite_instrument_legs";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string trade_id;
-
-    friend bool operator==(const get_composite_instrument_legs_request&,
-                           const get_composite_instrument_legs_request&) = default;
-};
-
-struct get_composite_instrument_legs_response {
-    ores::utility::domain::result result;
-    std::vector<ores::trading::domain::composite_leg> legs;
-
-    friend bool operator==(const get_composite_instrument_legs_response&,
-                           const get_composite_instrument_legs_response&) = default;
 };
 
 /**
@@ -850,67 +791,6 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
     };
 }
 
-/**
- * @brief The members of put_composite_instrument_with_legs_request, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const put_composite_instrument_with_legs_request&) {
-    return std::tuple{
-        utility::codec::field{"instrument",
-                              &put_composite_instrument_with_legs_request::instrument},
-        utility::codec::field{"legs", &put_composite_instrument_with_legs_request::legs},
-    };
-}
-
-/**
- * @brief The members of put_composite_instrument_with_legs_response, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const put_composite_instrument_with_legs_response&) {
-    return std::tuple{
-        utility::codec::field{"result", &put_composite_instrument_with_legs_response::result},
-        utility::codec::field{"instrument",
-                              &put_composite_instrument_with_legs_response::instrument},
-    };
-}
-
-/**
- * @brief The members of get_composite_instrument_legs_request, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_instrument_legs_request&) {
-    return std::tuple{
-        utility::codec::field{"trade_id", &get_composite_instrument_legs_request::trade_id},
-    };
-}
-
-/**
- * @brief The members of get_composite_instrument_legs_response, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_instrument_legs_response&) {
-    return std::tuple{
-        utility::codec::field{"result", &get_composite_instrument_legs_response::result},
-        utility::codec::field{"legs", &get_composite_instrument_legs_response::legs},
-    };
-}
-
 
 }
 namespace ores::utility::codec {
@@ -1267,62 +1147,6 @@ struct ORES_TRADING_API_EXPORT
     static std::string
     write_msgpack(const ores::trading::messaging::get_composite_instrument_version_response& v);
     static ores::trading::messaging::get_composite_instrument_version_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT
-    wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::trading::messaging::put_composite_instrument_with_legs_request& v);
-    static ores::trading::messaging::put_composite_instrument_with_legs_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::trading::messaging::put_composite_instrument_with_legs_request& v);
-    static ores::trading::messaging::put_composite_instrument_with_legs_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT
-    wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::trading::messaging::put_composite_instrument_with_legs_response& v);
-    static ores::trading::messaging::put_composite_instrument_with_legs_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::trading::messaging::put_composite_instrument_with_legs_response& v);
-    static ores::trading::messaging::put_composite_instrument_with_legs_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT
-    wire_traits<ores::trading::messaging::get_composite_instrument_legs_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::trading::messaging::get_composite_instrument_legs_request& v);
-    static ores::trading::messaging::get_composite_instrument_legs_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::trading::messaging::get_composite_instrument_legs_request& v);
-    static ores::trading::messaging::get_composite_instrument_legs_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT
-    wire_traits<ores::trading::messaging::get_composite_instrument_legs_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::trading::messaging::get_composite_instrument_legs_response& v);
-    static ores::trading::messaging::get_composite_instrument_legs_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::trading::messaging::get_composite_instrument_legs_response& v);
-    static ores::trading::messaging::get_composite_instrument_legs_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

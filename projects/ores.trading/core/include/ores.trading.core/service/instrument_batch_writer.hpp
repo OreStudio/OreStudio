@@ -53,7 +53,6 @@
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
-#include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/credit_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/credit_instrument_repository.hpp"
@@ -291,7 +290,6 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.cap_floor_instruments, keys, stamp, claim);
     write_rows<repository::commodity_basket_constituent_repository>(
         ctx, batch.commodity_basket_constituents, keys, stamp, claim);
-    write_rows<repository::composite_leg_repository>(ctx, batch.composite_legs, keys, stamp, claim);
     write_rows<repository::credit_basket_constituent_repository>(
         ctx, batch.credit_basket_constituents, keys, stamp, claim);
     write_rows<repository::credit_default_swap_instrument_repository>(
@@ -510,8 +508,6 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("cap_floor_instruments");
     if (!batch.commodity_basket_constituents.empty())
         names.emplace_back("commodity_basket_constituents");
-    if (!batch.composite_legs.empty())
-        names.emplace_back("composite_legs");
     if (!batch.credit_basket_constituents.empty())
         names.emplace_back("credit_basket_constituents");
     if (!batch.credit_default_swap_instruments.empty())

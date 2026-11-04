@@ -42,13 +42,15 @@ namespace ores::trading::domain {
  * ContractForDifference.
  *
  * Represents the composite product types ORE states. trade_type_code
- * discriminates the exact product, and the constituent trades live in the
- * composite_legs child table keyed by this instrument's trade_id.
+ * discriminates the exact product.
  *
- * The parent row carries only the basket identity and its optional free-text
- * description: the basket's constituents are child rows, so there is no
- * per-leg block to hold here. The table is bi-temporal and audited, so the
- * model takes the ordinary audited shape and needs no shape flag.
+ * A composite trade's components are trades of their own, joined to the
+ * composite by a structure of the CompositeTrade template: the composite
+ * holds the composite role and each component the trade or sub_trade
+ * role it held in the document. This row keeps the composite's own terms:
+ * its currency, how its notional is formed, the basket's name and index
+ * quantity. The table is bi-temporal and audited, so the model takes the
+ * ordinary audited shape and needs no shape flag.
  */
 struct composite_instrument final {
     instrument_identity identity;

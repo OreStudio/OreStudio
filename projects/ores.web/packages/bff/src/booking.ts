@@ -84,7 +84,6 @@ function emptyBatch(): InstrumentBatch {
         commodity_basket_constituents: [],
         commodity_instruments: [],
         composite_instruments: [],
-        composite_legs: [],
         credit_basket_constituents: [],
         credit_default_swap_instruments: [],
         credit_instruments: [],

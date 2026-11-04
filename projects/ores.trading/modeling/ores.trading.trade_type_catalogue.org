@@ -390,7 +390,6 @@ shape whichever family states the rows.
 | callable_swap_instrument                    |
 | cap_floor_instrument                        |
 | commodity_basket_constituent                |
-| composite_leg                               |
 | credit_basket_constituent                   |
 | credit_default_swap_instrument              |
 | credit_linked_swap_instrument               |

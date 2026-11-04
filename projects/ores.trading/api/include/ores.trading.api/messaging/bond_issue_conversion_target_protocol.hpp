@@ -370,7 +370,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_conversion_target_key>) {
     return std::tuple{
         utility::codec::field{"issue_id", &bond_issue_conversion_target_key::issue_id},
         utility::codec::field{"sequence_number",
@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_conversion_target_write>) {
     return std::tuple{
         utility::codec::field{"issue_id", &bond_issue_conversion_target_write::issue_id},
         utility::codec::field{"sequence_number",
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_conversion_target_change>) {
     return std::tuple{
         utility::codec::field{"write", &bond_issue_conversion_target_change::write},
         utility::codec::field{"precondition", &bond_issue_conversion_target_change::precondition},
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_conversion_target_removal>) {
     return std::tuple{
         utility::codec::field{"key", &bond_issue_conversion_target_removal::key},
         utility::codec::field{"precondition", &bond_issue_conversion_target_removal::precondition},
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_conversion_target_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &bond_issue_conversion_target_lookup::key},
         utility::codec::field{"bond_issue_conversion_target",
@@ -451,7 +451,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_conversion_target_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &bond_issue_conversion_target_event::event_id},
         utility::codec::field{"key", &bond_issue_conversion_target_event::key},
@@ -471,7 +471,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<bond_issue_conversion_target_version_key>) {
     return std::tuple{
         utility::codec::field{
             "bond_issue_conversion_target",
@@ -488,7 +489,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<bond_issue_conversion_target_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &bond_issue_conversion_target_versions_filter::version},
         utility::codec::field{"from_version",
@@ -506,7 +508,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bond_issue_conversion_targets_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bond_issue_conversion_targets_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_bond_issue_conversion_targets_request::offset},
         utility::codec::field{"limit", &list_bond_issue_conversion_targets_request::limit},
@@ -523,7 +526,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bond_issue_conversion_targets_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bond_issue_conversion_targets_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_bond_issue_conversion_targets_response::result},
         utility::codec::field{"conversion_targets",
@@ -540,7 +544,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_conversion_target_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bond_issue_conversion_target_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_bond_issue_conversion_target_request::key},
     };
@@ -554,7 +559,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_conversion_target_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bond_issue_conversion_target_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_bond_issue_conversion_target_response::result},
         utility::codec::field{
@@ -571,7 +577,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_bond_issue_conversion_targets_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_bond_issue_conversion_targets_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_bond_issue_conversion_targets_request::keys},
     };
@@ -585,7 +592,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_bond_issue_conversion_targets_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_bond_issue_conversion_targets_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_bond_issue_conversion_targets_response::result},
         utility::codec::field{"entries", &get_many_bond_issue_conversion_targets_response::entries},
@@ -600,7 +608,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_bond_issue_conversion_target_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_bond_issue_conversion_target_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_bond_issue_conversion_target_request::change},
         utility::codec::field{"intent", &put_bond_issue_conversion_target_request::intent},
@@ -615,7 +624,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_bond_issue_conversion_target_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_bond_issue_conversion_target_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_bond_issue_conversion_target_response::result},
         utility::codec::field{
@@ -632,7 +642,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_bond_issue_conversion_targets_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_bond_issue_conversion_targets_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_bond_issue_conversion_targets_request::changes},
         utility::codec::field{"intent", &put_many_bond_issue_conversion_targets_request::intent},
@@ -647,7 +658,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_bond_issue_conversion_targets_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_bond_issue_conversion_targets_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_bond_issue_conversion_targets_response::result},
         utility::codec::field{"conversion_targets",
@@ -663,7 +675,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_bond_issue_conversion_target_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_bond_issue_conversion_target_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_bond_issue_conversion_target_request::removal},
         utility::codec::field{"intent", &delete_bond_issue_conversion_target_request::intent},
@@ -678,7 +691,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_bond_issue_conversion_target_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_bond_issue_conversion_target_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_bond_issue_conversion_target_response::result},
     };
@@ -692,7 +706,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_bond_issue_conversion_targets_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_bond_issue_conversion_targets_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_bond_issue_conversion_targets_request::removals},
@@ -709,7 +724,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_bond_issue_conversion_targets_response&) {
+wire_fields(std::type_identity<delete_many_bond_issue_conversion_targets_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_bond_issue_conversion_targets_response::result},
@@ -725,7 +740,7 @@ wire_fields(const delete_many_bond_issue_conversion_targets_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_bond_issue_conversion_target_versions_request&) {
+wire_fields(std::type_identity<list_bond_issue_conversion_target_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_bond_issue_conversion_target_versions_request::key},
         utility::codec::field{"offset",
@@ -746,7 +761,7 @@ wire_fields(const list_bond_issue_conversion_target_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_bond_issue_conversion_target_versions_response&) {
+wire_fields(std::type_identity<list_bond_issue_conversion_target_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_bond_issue_conversion_target_versions_response::result},
@@ -764,7 +779,8 @@ wire_fields(const list_bond_issue_conversion_target_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_conversion_target_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bond_issue_conversion_target_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_bond_issue_conversion_target_version_request::key},
     };
@@ -778,7 +794,8 @@ wire_fields(const list_bond_issue_conversion_target_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_conversion_target_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bond_issue_conversion_target_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_bond_issue_conversion_target_version_response::result},
         utility::codec::field{"version",

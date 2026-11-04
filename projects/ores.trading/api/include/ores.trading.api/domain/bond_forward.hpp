@@ -26,14 +26,13 @@
 #define ORES_TRADING_API_DOMAIN_BOND_FORWARD_HPP
 
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -194,33 +193,27 @@ struct bond_forward final {
 };
 
 /**
- * @brief The members of bond_forward the customer agreed to.
+ * @brief The canonical text of the members of bond_forward the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view bond_forward_economic_fields[] = {
-    "long_in_forward",
-    "forward_maturity_date",
-    "forward_settlement_date",
-    "settlement",
-    "amount",
-    "lock_rate",
-    "dv01",
-    "lock_rate_day_counter",
-    "settlement_dirty",
-    "premium_amount",
-    "premium_date",
-};
-
-/**
- * @brief Names the members of bond_forward that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<bond_forward>) {
-    return bond_forward_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const bond_forward& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "long_in_forward", v.long_in_forward);
+    ores::utility::digest::append_member(out, "forward_maturity_date", v.forward_maturity_date);
+    ores::utility::digest::append_member(out, "forward_settlement_date", v.forward_settlement_date);
+    ores::utility::digest::append_member(out, "settlement", v.settlement);
+    ores::utility::digest::append_member(out, "amount", v.amount);
+    ores::utility::digest::append_member(out, "lock_rate", v.lock_rate);
+    ores::utility::digest::append_member(out, "dv01", v.dv01);
+    ores::utility::digest::append_member(out, "lock_rate_day_counter", v.lock_rate_day_counter);
+    ores::utility::digest::append_member(out, "settlement_dirty", v.settlement_dirty);
+    ores::utility::digest::append_member(out, "premium_amount", v.premium_amount);
+    ores::utility::digest::append_member(out, "premium_date", v.premium_date);
+    out.push_back('}');
+    return out;
 }
 
 /**

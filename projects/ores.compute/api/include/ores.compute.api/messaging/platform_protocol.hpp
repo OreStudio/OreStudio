@@ -358,7 +358,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const platform_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<platform_key>) {
     return std::tuple{
         utility::codec::field{"code", &platform_key::code},
     };
@@ -372,7 +372,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const platform_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<platform_write>) {
     return std::tuple{
         utility::codec::field{"id", &platform_write::id},
         utility::codec::field{"code", &platform_write::code},
@@ -393,7 +393,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const platform_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<platform_change>) {
     return std::tuple{
         utility::codec::field{"write", &platform_change::write},
         utility::codec::field{"precondition", &platform_change::precondition},
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const platform_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<platform_removal>) {
     return std::tuple{
         utility::codec::field{"key", &platform_removal::key},
         utility::codec::field{"precondition", &platform_removal::precondition},
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const platform_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<platform_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &platform_lookup::key},
         utility::codec::field{"platform", &platform_lookup::platform},
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const platforms_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<platforms_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &platforms_filter::id_one_of},
     };
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const platform_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<platform_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &platform_event::event_id},
         utility::codec::field{"key", &platform_event::key},
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const platform_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<platform_version_key>) {
     return std::tuple{
         utility::codec::field{"platform", &platform_version_key::platform},
         utility::codec::field{"version", &platform_version_key::version},
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const platform_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<platform_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &platform_versions_filter::version},
         utility::codec::field{"from_version", &platform_versions_filter::from_version},
@@ -502,7 +502,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_platforms_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_platforms_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_platforms_request::offset},
         utility::codec::field{"limit", &list_platforms_request::limit},
@@ -520,7 +520,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_platforms_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_platforms_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_platforms_response::result},
         utility::codec::field{"platforms", &list_platforms_response::platforms},
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_platform_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_platform_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_platform_request::key},
     };
@@ -550,7 +550,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_platform_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_platform_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_platform_response::result},
         utility::codec::field{"platform", &get_platform_response::platform},
@@ -565,7 +565,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_platforms_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_platforms_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_platforms_request::keys},
     };
@@ -579,7 +579,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_platforms_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_platforms_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_platforms_response::result},
         utility::codec::field{"entries", &get_many_platforms_response::entries},
@@ -594,7 +594,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_platform_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_platform_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_platform_request::change},
         utility::codec::field{"intent", &put_platform_request::intent},
@@ -609,7 +609,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_platform_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_platform_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_platform_response::result},
         utility::codec::field{"platform", &put_platform_response::platform},
@@ -624,7 +624,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_platforms_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_platforms_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_platforms_request::changes},
         utility::codec::field{"intent", &put_many_platforms_request::intent},
@@ -639,7 +639,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_platforms_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_platforms_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_platforms_response::result},
         utility::codec::field{"platforms", &put_many_platforms_response::platforms},
@@ -654,7 +654,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_platform_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_platform_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_platform_request::removal},
         utility::codec::field{"intent", &delete_platform_request::intent},
@@ -669,7 +669,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_platform_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_platform_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_platform_response::result},
     };
@@ -683,7 +683,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_platforms_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_platforms_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_platforms_request::removals},
         utility::codec::field{"intent", &delete_many_platforms_request::intent},
@@ -698,7 +698,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_platforms_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_platforms_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_platforms_response::result},
     };
@@ -712,7 +712,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_platform_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_platform_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_platform_versions_request::key},
         utility::codec::field{"offset", &list_platform_versions_request::offset},
@@ -730,7 +730,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_platform_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_platform_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_platform_versions_response::result},
         utility::codec::field{"versions", &list_platform_versions_response::versions},
@@ -746,7 +746,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_platform_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_platform_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_platform_version_request::key},
     };
@@ -760,7 +760,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.platforms.deleted
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_platform_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_platform_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_platform_version_response::result},
         utility::codec::field{"version", &get_platform_version_response::version},

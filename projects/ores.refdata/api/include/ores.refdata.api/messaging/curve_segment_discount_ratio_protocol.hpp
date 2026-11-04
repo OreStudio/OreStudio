@@ -381,7 +381,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_discount_ratio_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_discount_ratio_key>) {
     return std::tuple{
         utility::codec::field{"id", &curve_segment_discount_ratio_key::id},
     };
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_discount_ratio_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_discount_ratio_write>) {
     return std::tuple{
         utility::codec::field{"id", &curve_segment_discount_ratio_write::id},
         utility::codec::field{"curve_segment_id",
@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_discount_ratio_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_discount_ratio_change>) {
     return std::tuple{
         utility::codec::field{"write", &curve_segment_discount_ratio_change::write},
         utility::codec::field{"precondition", &curve_segment_discount_ratio_change::precondition},
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_discount_ratio_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_discount_ratio_removal>) {
     return std::tuple{
         utility::codec::field{"key", &curve_segment_discount_ratio_removal::key},
         utility::codec::field{"precondition", &curve_segment_discount_ratio_removal::precondition},
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_discount_ratio_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_discount_ratio_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &curve_segment_discount_ratio_lookup::key},
         utility::codec::field{"curve_segment_discount_ratio",
@@ -468,7 +468,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_discount_ratios_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_discount_ratios_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &curve_segment_discount_ratios_filter::id_one_of},
     };
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_discount_ratio_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_discount_ratio_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &curve_segment_discount_ratio_event::event_id},
         utility::codec::field{"key", &curve_segment_discount_ratio_event::key},
@@ -502,7 +502,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_discount_ratio_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_discount_ratio_version_key>) {
     return std::tuple{
         utility::codec::field{
             "curve_segment_discount_ratio",
@@ -519,7 +520,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_discount_ratio_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_discount_ratio_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &curve_segment_discount_ratio_versions_filter::version},
         utility::codec::field{"from_version",
@@ -537,7 +539,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_segment_discount_ratios_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_segment_discount_ratios_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_curve_segment_discount_ratios_request::offset},
         utility::codec::field{"limit", &list_curve_segment_discount_ratios_request::limit},
@@ -555,7 +558,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_segment_discount_ratios_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_segment_discount_ratios_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_curve_segment_discount_ratios_response::result},
         utility::codec::field{
@@ -573,7 +577,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_discount_ratio_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_discount_ratio_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_segment_discount_ratio_request::key},
     };
@@ -587,7 +592,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_discount_ratio_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_discount_ratio_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_curve_segment_discount_ratio_response::result},
         utility::codec::field{
@@ -604,7 +610,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_segment_discount_ratios_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_curve_segment_discount_ratios_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_curve_segment_discount_ratios_request::keys},
     };
@@ -618,7 +625,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_segment_discount_ratios_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_curve_segment_discount_ratios_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_curve_segment_discount_ratios_response::result},
         utility::codec::field{"entries", &get_many_curve_segment_discount_ratios_response::entries},
@@ -633,7 +641,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_segment_discount_ratio_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_segment_discount_ratio_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_curve_segment_discount_ratio_request::change},
         utility::codec::field{"intent", &put_curve_segment_discount_ratio_request::intent},
@@ -648,7 +657,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_segment_discount_ratio_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_segment_discount_ratio_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_curve_segment_discount_ratio_response::result},
         utility::codec::field{
@@ -665,7 +675,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_segment_discount_ratios_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_curve_segment_discount_ratios_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_curve_segment_discount_ratios_request::changes},
         utility::codec::field{"intent", &put_many_curve_segment_discount_ratios_request::intent},
@@ -680,7 +691,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_segment_discount_ratios_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_curve_segment_discount_ratios_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_curve_segment_discount_ratios_response::result},
         utility::codec::field{
@@ -697,7 +709,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_segment_discount_ratio_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_segment_discount_ratio_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_curve_segment_discount_ratio_request::removal},
         utility::codec::field{"intent", &delete_curve_segment_discount_ratio_request::intent},
@@ -712,7 +725,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_segment_discount_ratio_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_segment_discount_ratio_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_curve_segment_discount_ratio_response::result},
     };
@@ -726,7 +740,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_curve_segment_discount_ratios_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_curve_segment_discount_ratios_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_curve_segment_discount_ratios_request::removals},
@@ -743,7 +758,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_curve_segment_discount_ratios_response&) {
+wire_fields(std::type_identity<delete_many_curve_segment_discount_ratios_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_curve_segment_discount_ratios_response::result},
@@ -759,7 +774,7 @@ wire_fields(const delete_many_curve_segment_discount_ratios_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_curve_segment_discount_ratio_versions_request&) {
+wire_fields(std::type_identity<list_curve_segment_discount_ratio_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_curve_segment_discount_ratio_versions_request::key},
         utility::codec::field{"offset",
@@ -780,7 +795,7 @@ wire_fields(const list_curve_segment_discount_ratio_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_curve_segment_discount_ratio_versions_response&) {
+wire_fields(std::type_identity<list_curve_segment_discount_ratio_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_curve_segment_discount_ratio_versions_response::result},
@@ -798,7 +813,8 @@ wire_fields(const list_curve_segment_discount_ratio_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_discount_ratio_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_discount_ratio_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_segment_discount_ratio_version_request::key},
     };
@@ -812,7 +828,8 @@ wire_fields(const list_curve_segment_discount_ratio_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_discount_ratio_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_discount_ratio_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_curve_segment_discount_ratio_version_response::result},
         utility::codec::field{"version",

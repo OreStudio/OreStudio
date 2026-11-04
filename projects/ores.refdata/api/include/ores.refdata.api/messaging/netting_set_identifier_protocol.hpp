@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_set_identifier_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_identifier_key>) {
     return std::tuple{
         utility::codec::field{"id_value", &netting_set_identifier_key::id_value},
     };
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_set_identifier_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_identifier_write>) {
     return std::tuple{
         utility::codec::field{"id", &netting_set_identifier_write::id},
         utility::codec::field{"netting_set_id", &netting_set_identifier_write::netting_set_id},
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_set_identifier_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_identifier_change>) {
     return std::tuple{
         utility::codec::field{"write", &netting_set_identifier_change::write},
         utility::codec::field{"precondition", &netting_set_identifier_change::precondition},
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_set_identifier_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_identifier_removal>) {
     return std::tuple{
         utility::codec::field{"key", &netting_set_identifier_removal::key},
         utility::codec::field{"precondition", &netting_set_identifier_removal::precondition},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_set_identifier_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_identifier_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &netting_set_identifier_lookup::key},
         utility::codec::field{"netting_set_identifier",
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_set_identifiers_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_identifiers_filter>) {
     return std::tuple{
         utility::codec::field{"netting_set_id", &netting_set_identifiers_filter::netting_set_id},
         utility::codec::field{"id_one_of", &netting_set_identifiers_filter::id_one_of},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_set_identifier_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_identifier_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &netting_set_identifier_event::event_id},
         utility::codec::field{"key", &netting_set_identifier_event::key},
@@ -519,7 +519,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_set_identifier_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_identifier_version_key>) {
     return std::tuple{
         utility::codec::field{"netting_set_identifier",
                               &netting_set_identifier_version_key::netting_set_identifier},
@@ -535,7 +535,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_set_identifier_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<netting_set_identifier_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &netting_set_identifier_versions_filter::version},
         utility::codec::field{"from_version",
@@ -552,7 +553,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_netting_set_identifiers_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_netting_set_identifiers_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_netting_set_identifiers_request::offset},
         utility::codec::field{"limit", &list_netting_set_identifiers_request::limit},
@@ -570,7 +571,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_netting_set_identifiers_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_netting_set_identifiers_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_netting_set_identifiers_response::result},
         utility::codec::field{"netting_set_identifiers",
@@ -587,7 +589,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_netting_set_identifier_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_netting_set_identifier_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_netting_set_identifier_request::key},
     };
@@ -601,7 +603,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_netting_set_identifier_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_netting_set_identifier_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_netting_set_identifier_response::result},
         utility::codec::field{"netting_set_identifier",
@@ -617,7 +619,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_netting_set_identifiers_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_netting_set_identifiers_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_netting_set_identifiers_request::keys},
     };
@@ -631,7 +634,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_netting_set_identifiers_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_netting_set_identifiers_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_netting_set_identifiers_response::result},
         utility::codec::field{"entries", &get_many_netting_set_identifiers_response::entries},
@@ -646,7 +650,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_netting_set_identifier_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_netting_set_identifier_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_netting_set_identifier_request::change},
         utility::codec::field{"intent", &put_netting_set_identifier_request::intent},
@@ -661,7 +665,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_netting_set_identifier_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_netting_set_identifier_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_netting_set_identifier_response::result},
         utility::codec::field{"netting_set_identifier",
@@ -677,7 +681,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_netting_set_identifiers_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_netting_set_identifiers_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_netting_set_identifiers_request::changes},
         utility::codec::field{"intent", &put_many_netting_set_identifiers_request::intent},
@@ -692,7 +697,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_netting_set_identifiers_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_netting_set_identifiers_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_netting_set_identifiers_response::result},
         utility::codec::field{"netting_set_identifiers",
@@ -708,7 +714,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_netting_set_identifier_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_netting_set_identifier_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_netting_set_identifier_request::removal},
         utility::codec::field{"intent", &delete_netting_set_identifier_request::intent},
@@ -723,7 +730,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_netting_set_identifier_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_netting_set_identifier_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_netting_set_identifier_response::result},
     };
@@ -737,7 +745,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_netting_set_identifiers_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_netting_set_identifiers_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_netting_set_identifiers_request::removals},
         utility::codec::field{"intent", &delete_many_netting_set_identifiers_request::intent},
@@ -752,7 +761,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_netting_set_identifiers_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_netting_set_identifiers_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_netting_set_identifiers_response::result},
     };
@@ -767,7 +777,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_set_ident
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_netting_set_id_netting_set_identifiers_request&) {
+wire_fields(std::type_identity<list_by_netting_set_id_netting_set_identifiers_request>) {
     return std::tuple{
         utility::codec::field{
             "netting_set_id",
@@ -794,7 +804,7 @@ wire_fields(const list_by_netting_set_id_netting_set_identifiers_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_netting_set_id_netting_set_identifiers_response&) {
+wire_fields(std::type_identity<list_by_netting_set_id_netting_set_identifiers_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_netting_set_id_netting_set_identifiers_response::result},
@@ -814,7 +824,8 @@ wire_fields(const list_by_netting_set_id_netting_set_identifiers_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_netting_set_identifier_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_netting_set_identifier_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_netting_set_identifier_versions_request::key},
         utility::codec::field{"offset", &list_netting_set_identifier_versions_request::offset},
@@ -832,7 +843,8 @@ wire_fields(const list_by_netting_set_id_netting_set_identifiers_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_netting_set_identifier_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_netting_set_identifier_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_netting_set_identifier_versions_response::result},
         utility::codec::field{"versions", &list_netting_set_identifier_versions_response::versions},
@@ -848,7 +860,8 @@ wire_fields(const list_by_netting_set_id_netting_set_identifiers_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_netting_set_identifier_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_netting_set_identifier_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_netting_set_identifier_version_request::key},
     };
@@ -862,7 +875,8 @@ wire_fields(const list_by_netting_set_id_netting_set_identifiers_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_netting_set_identifier_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_netting_set_identifier_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_netting_set_identifier_version_response::result},
         utility::codec::field{"version", &get_netting_set_identifier_version_response::version},

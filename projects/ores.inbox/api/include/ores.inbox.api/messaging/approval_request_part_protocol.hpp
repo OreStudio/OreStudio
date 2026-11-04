@@ -302,7 +302,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_part_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_part_key>) {
     return std::tuple{
         utility::codec::field{"request_id", &approval_request_part_key::request_id},
         utility::codec::field{"part_code", &approval_request_part_key::part_code},
@@ -317,7 +317,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_part_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_part_write>) {
     return std::tuple{
         utility::codec::field{"request_id", &approval_request_part_write::request_id},
         utility::codec::field{"part_code", &approval_request_part_write::part_code},
@@ -332,7 +332,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_part_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_part_change>) {
     return std::tuple{
         utility::codec::field{"write", &approval_request_part_change::write},
         utility::codec::field{"precondition", &approval_request_part_change::precondition},
@@ -347,7 +347,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_part_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_part_removal>) {
     return std::tuple{
         utility::codec::field{"key", &approval_request_part_removal::key},
         utility::codec::field{"precondition", &approval_request_part_removal::precondition},
@@ -362,7 +362,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_part_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_part_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &approval_request_part_lookup::key},
         utility::codec::field{"approval_request_part",
@@ -378,7 +378,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_parts_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_parts_filter>) {
     return std::tuple{
         utility::codec::field{"request_id", &approval_request_parts_filter::request_id},
         utility::codec::field{"request_id_one_of",
@@ -394,7 +394,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_approval_request_parts_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_request_parts_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_approval_request_parts_request::offset},
         utility::codec::field{"limit", &list_approval_request_parts_request::limit},
@@ -411,7 +411,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_approval_request_parts_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_request_parts_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_approval_request_parts_response::result},
         utility::codec::field{"approval_request_parts",
@@ -428,7 +428,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_request_part_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_request_part_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_approval_request_part_request::key},
     };
@@ -442,7 +442,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_request_part_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_request_part_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_approval_request_part_response::result},
         utility::codec::field{"approval_request_part",
@@ -458,7 +458,8 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_approval_request_parts_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_approval_request_parts_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_approval_request_parts_request::keys},
     };
@@ -472,7 +473,8 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_approval_request_parts_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_approval_request_parts_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_approval_request_parts_response::result},
         utility::codec::field{"entries", &get_many_approval_request_parts_response::entries},
@@ -487,7 +489,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_approval_request_part_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_request_part_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_approval_request_part_request::change},
         utility::codec::field{"intent", &put_approval_request_part_request::intent},
@@ -502,7 +504,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_approval_request_part_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_request_part_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_approval_request_part_response::result},
         utility::codec::field{"approval_request_part",
@@ -518,7 +520,8 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_approval_request_parts_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_approval_request_parts_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_approval_request_parts_request::changes},
         utility::codec::field{"intent", &put_many_approval_request_parts_request::intent},
@@ -533,7 +536,8 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_approval_request_parts_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_approval_request_parts_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_approval_request_parts_response::result},
         utility::codec::field{"approval_request_parts",
@@ -549,7 +553,7 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_approval_request_part_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_approval_request_part_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_approval_request_part_request::removal},
         utility::codec::field{"intent", &delete_approval_request_part_request::intent},
@@ -564,7 +568,8 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_approval_request_part_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_approval_request_part_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_approval_request_part_response::result},
     };
@@ -578,7 +583,8 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_approval_request_parts_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_approval_request_parts_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_approval_request_parts_request::removals},
         utility::codec::field{"intent", &delete_many_approval_request_parts_request::intent},
@@ -593,7 +599,8 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_approval_request_parts_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_approval_request_parts_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_approval_request_parts_response::result},
     };
@@ -607,7 +614,8 @@ struct list_by_request_id_approval_request_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_request_id_approval_request_parts_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_request_id_approval_request_parts_request>) {
     return std::tuple{
         utility::codec::field{"request_id",
                               &list_by_request_id_approval_request_parts_request::request_id},
@@ -628,7 +636,7 @@ struct list_by_request_id_approval_request_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_request_id_approval_request_parts_response&) {
+wire_fields(std::type_identity<list_by_request_id_approval_request_parts_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_request_id_approval_request_parts_response::result},

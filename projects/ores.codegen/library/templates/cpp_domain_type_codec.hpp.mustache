@@ -25,7 +25,7 @@ namespace ores::{{component}}::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const {{entity_singular}}&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{entity_singular}}>) {
     return std::tuple{
 {{#domain_groups}}        utility::codec::field{"{{member}}", &{{entity_singular}}::{{member}}},
 {{/domain_groups}}    };
@@ -40,7 +40,7 @@ namespace ores::{{component}}::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const {{entity_singular}}&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{entity_singular}}>) {
     return std::tuple{
 {{#has_identity_group}}        utility::codec::field{"identity", &{{entity_singular}}::identity},
 {{/has_identity_group}}
@@ -138,7 +138,7 @@ namespace ores::{{component}}::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const {{name_singular}}&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name_singular}}>) {
     return std::tuple{
     utility::codec::field{"version", &{{name_singular}}::version},
 {{#has_tenant_id}}    utility::codec::field{"tenant_id", &{{name_singular}}::tenant_id},

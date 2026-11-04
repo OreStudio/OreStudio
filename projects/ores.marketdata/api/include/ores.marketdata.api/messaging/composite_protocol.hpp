@@ -360,7 +360,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_key>) {
     return std::tuple{
         utility::codec::field{"name", &composite_key::name},
     };
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_write>) {
     return std::tuple{
         utility::codec::field{"id", &composite_write::id},
         utility::codec::field{"name", &composite_write::name},
@@ -393,7 +393,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_change>) {
     return std::tuple{
         utility::codec::field{"write", &composite_change::write},
         utility::codec::field{"precondition", &composite_change::precondition},
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_removal>) {
     return std::tuple{
         utility::codec::field{"key", &composite_removal::key},
         utility::codec::field{"precondition", &composite_removal::precondition},
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &composite_lookup::key},
         utility::codec::field{"composite", &composite_lookup::composite},
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composites_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composites_filter>) {
     return std::tuple{
         utility::codec::field{"provider_code", &composites_filter::provider_code},
         utility::codec::field{"id_one_of", &composites_filter::id_one_of},
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &composite_event::event_id},
         utility::codec::field{"key", &composite_event::key},
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_version_key>) {
     return std::tuple{
         utility::codec::field{"composite", &composite_version_key::composite},
         utility::codec::field{"version", &composite_version_key::version},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &composite_versions_filter::version},
         utility::codec::field{"from_version", &composite_versions_filter::from_version},
@@ -505,7 +505,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composites_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_composites_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_composites_request::offset},
         utility::codec::field{"limit", &list_composites_request::limit},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composites_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_composites_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_composites_response::result},
         utility::codec::field{"composites", &list_composites_response::composites},
@@ -539,7 +539,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_composite_request::key},
     };
@@ -553,7 +553,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_composite_response::result},
         utility::codec::field{"composite", &get_composite_response::composite},
@@ -568,7 +568,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_composites_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_composites_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_composites_request::keys},
     };
@@ -582,7 +582,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_composites_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_composites_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_composites_response::result},
         utility::codec::field{"entries", &get_many_composites_response::entries},
@@ -597,7 +597,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_composite_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_composite_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_composite_request::change},
         utility::codec::field{"intent", &put_composite_request::intent},
@@ -612,7 +612,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_composite_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_composite_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_composite_response::result},
         utility::codec::field{"composite", &put_composite_response::composite},
@@ -627,7 +627,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_composites_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_composites_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_composites_request::changes},
         utility::codec::field{"intent", &put_many_composites_request::intent},
@@ -642,7 +642,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_composites_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_composites_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_composites_response::result},
         utility::codec::field{"composites", &put_many_composites_response::composites},
@@ -657,7 +657,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_composite_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_composite_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_composite_request::removal},
         utility::codec::field{"intent", &delete_composite_request::intent},
@@ -672,7 +672,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_composite_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_composite_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_composite_response::result},
     };
@@ -686,7 +686,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_composites_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_composites_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_composites_request::removals},
         utility::codec::field{"intent", &delete_many_composites_request::intent},
@@ -701,7 +701,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_composites_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_composites_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_composites_response::result},
     };
@@ -715,7 +715,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_composite_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_composite_versions_request::key},
         utility::codec::field{"offset", &list_composite_versions_request::offset},
@@ -733,7 +733,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_composite_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_composite_versions_response::result},
         utility::codec::field{"versions", &list_composite_versions_response::versions},
@@ -749,7 +749,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_composite_version_request::key},
     };
@@ -763,7 +763,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.composites.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_composite_version_response::result},
         utility::codec::field{"version", &get_composite_version_response::version},

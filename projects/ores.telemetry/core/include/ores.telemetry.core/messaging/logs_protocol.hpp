@@ -269,7 +269,7 @@ struct publish_log_entries_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const telemetry_log_entry&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<telemetry_log_entry>) {
     return std::tuple{
         ::ores::utility::codec::field{"id", &telemetry_log_entry::id},
         ::ores::utility::codec::field{"timestamp", &telemetry_log_entry::timestamp},
@@ -293,7 +293,7 @@ struct publish_log_entries_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const telemetry_query&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<telemetry_query>) {
     return std::tuple{
         ::ores::utility::codec::field{"start_time", &telemetry_query::start_time},
         ::ores::utility::codec::field{"end_time", &telemetry_query::end_time},
@@ -319,7 +319,7 @@ struct publish_log_entries_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_telemetry_logs_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_telemetry_logs_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"query", &get_telemetry_logs_request::query},
     };
@@ -333,7 +333,7 @@ struct publish_log_entries_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_telemetry_logs_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_telemetry_logs_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_telemetry_logs_response::success},
         ::ores::utility::codec::field{"message", &get_telemetry_logs_response::message},
@@ -350,7 +350,7 @@ struct publish_log_entries_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_log_entry_item&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_log_entry_item>) {
     return std::tuple{
         ::ores::utility::codec::field{"level", &publish_log_entry_item::level},
         ::ores::utility::codec::field{"timestamp_ms", &publish_log_entry_item::timestamp_ms},
@@ -367,7 +367,7 @@ struct publish_log_entries_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_log_entries_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_log_entries_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"source_name", &publish_log_entries_request::source_name},
         ::ores::utility::codec::field{"tag", &publish_log_entries_request::tag},

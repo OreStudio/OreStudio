@@ -983,7 +983,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_accounts_from_dq_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_accounts_from_dq_request>) {
     return std::tuple{};
 }
 
@@ -995,7 +995,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const save_account_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<save_account_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"principal", &save_account_request::principal},
         ::ores::utility::codec::field{"password", &save_account_request::password},
@@ -1012,7 +1012,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const update_account_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<update_account_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"account_id", &update_account_request::account_id},
         ::ores::utility::codec::field{"email", &update_account_request::email},
@@ -1038,7 +1038,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const update_account_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<update_account_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &update_account_response::success},
         ::ores::utility::codec::field{"message", &update_account_response::message},
@@ -1053,7 +1053,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const save_account_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<save_account_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &save_account_response::success},
         ::ores::utility::codec::field{"message", &save_account_response::message},
@@ -1069,7 +1069,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_account_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_account_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"account_id", &delete_account_request::account_id},
     };
@@ -1083,7 +1083,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_account_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_account_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &delete_account_response::success},
         ::ores::utility::codec::field{"message", &delete_account_response::message},
@@ -1098,7 +1098,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const account_operation_result&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<account_operation_result>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &account_operation_result::success},
         ::ores::utility::codec::field{"message", &account_operation_result::message},
@@ -1113,7 +1113,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lock_account_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lock_account_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"account_ids", &lock_account_request::account_ids},
     };
@@ -1127,7 +1127,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lock_account_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lock_account_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"results", &lock_account_response::results},
     };
@@ -1141,7 +1141,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const unlock_account_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<unlock_account_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"account_ids", &unlock_account_request::account_ids},
     };
@@ -1155,7 +1155,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const unlock_account_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<unlock_account_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"results", &unlock_account_response::results},
     };
@@ -1169,7 +1169,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const reset_password_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reset_password_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"account_ids", &reset_password_request::account_ids},
         ::ores::utility::codec::field{"new_password", &reset_password_request::new_password},
@@ -1184,7 +1184,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const reset_password_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reset_password_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &reset_password_response::success},
         ::ores::utility::codec::field{"message", &reset_password_response::message},
@@ -1200,7 +1200,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const change_password_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<change_password_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"current_password",
                                       &change_password_request::current_password},
@@ -1216,7 +1216,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const change_password_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<change_password_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &change_password_response::success},
         ::ores::utility::codec::field{"message", &change_password_response::message},
@@ -1231,7 +1231,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const update_my_email_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<update_my_email_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"email", &update_my_email_request::email},
     };
@@ -1245,7 +1245,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const update_my_email_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<update_my_email_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &update_my_email_response::success},
         ::ores::utility::codec::field{"message", &update_my_email_response::message},
@@ -1260,7 +1260,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const set_my_default_party_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<set_my_default_party_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"party_id", &set_my_default_party_request::party_id},
     };
@@ -1274,7 +1274,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const set_my_default_party_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<set_my_default_party_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &set_my_default_party_response::success},
         ::ores::utility::codec::field{"message", &set_my_default_party_response::message},
@@ -1289,7 +1289,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const select_party_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<select_party_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"party_id", &select_party_request::party_id},
     };
@@ -1303,7 +1303,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const switch_party_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<switch_party_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"party_id", &switch_party_request::party_id},
     };
@@ -1317,7 +1317,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const select_party_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<select_party_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &select_party_response::success},
         ::ores::utility::codec::field{"message", &select_party_response::message},
@@ -1342,7 +1342,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const change_password_request_typed&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<change_password_request_typed>) {
     return std::tuple{
         ::ores::utility::codec::field{"current_password",
                                       &change_password_request_typed::current_password},
@@ -1358,7 +1358,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const update_self_account_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<update_self_account_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"full_name", &update_self_account_request::full_name},
         ::ores::utility::codec::field{"job_title", &update_self_account_request::job_title},
@@ -1383,7 +1383,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const update_self_account_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<update_self_account_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &update_self_account_response::result},
         ::ores::utility::codec::field{"account", &update_self_account_response::account},
@@ -1398,7 +1398,8 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const update_self_account_contact_information_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<update_self_account_contact_information_request>) {
     return std::tuple{
         ::ores::utility::codec::field{
             "street_line_1", &update_self_account_contact_information_request::street_line_1},
@@ -1435,7 +1436,8 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const update_self_account_contact_information_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<update_self_account_contact_information_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result",
                                       &update_self_account_contact_information_response::result},
@@ -1453,7 +1455,8 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_account_contact_information_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_my_account_contact_information_request>) {
     return std::tuple{};
 }
 
@@ -1465,7 +1468,8 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_account_contact_information_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_my_account_contact_information_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result",
                                       &get_my_account_contact_information_response::result},
@@ -1483,7 +1487,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_account_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_my_account_request>) {
     return std::tuple{};
 }
 
@@ -1495,7 +1499,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_account_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_my_account_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_my_account_response::result},
         ::ores::utility::codec::field{"account", &get_my_account_response::account},
@@ -1510,7 +1514,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_login_info_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_my_login_info_request>) {
     return std::tuple{};
 }
 
@@ -1522,7 +1526,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_login_info_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_my_login_info_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_my_login_info_response::result},
         ::ores::utility::codec::field{"login_info", &get_my_login_info_response::login_info},
@@ -1537,7 +1541,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_sessions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_my_sessions_request>) {
     return std::tuple{};
 }
 
@@ -1549,7 +1553,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_sessions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_my_sessions_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_my_sessions_response::result},
         ::ores::utility::codec::field{"sessions", &get_my_sessions_response::sessions},
@@ -1564,7 +1568,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const my_party&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<my_party>) {
     return std::tuple{
         ::ores::utility::codec::field{"party_id", &my_party::party_id},
         ::ores::utility::codec::field{"name", &my_party::name},
@@ -1582,7 +1586,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_parties_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_my_parties_request>) {
     return std::tuple{};
 }
 
@@ -1594,7 +1598,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_my_parties_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_my_parties_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_my_parties_response::result},
         ::ores::utility::codec::field{"default_party_id",
@@ -1611,7 +1615,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const set_reporting_line_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<set_reporting_line_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"account_id", &set_reporting_line_request::account_id},
         ::ores::utility::codec::field{"reports_to_account_id",
@@ -1633,7 +1637,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const set_reporting_line_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<set_reporting_line_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &set_reporting_line_response::result},
         ::ores::utility::codec::field{"account", &set_reporting_line_response::account},
@@ -1648,7 +1652,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const reporting_tree_party&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_tree_party>) {
     return std::tuple{
         ::ores::utility::codec::field{"party_id", &reporting_tree_party::party_id},
         ::ores::utility::codec::field{"name", &reporting_tree_party::name},
@@ -1665,7 +1669,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const reporting_tree_node&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_tree_node>) {
     return std::tuple{
         ::ores::utility::codec::field{"account_id", &reporting_tree_node::account_id},
         ::ores::utility::codec::field{"username", &reporting_tree_node::username},
@@ -1691,7 +1695,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_reporting_tree_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_reporting_tree_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"root_account_id",
                                       &get_reporting_tree_request::root_account_id},
@@ -1706,7 +1710,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_reporting_tree_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_reporting_tree_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_reporting_tree_response::result},
         ::ores::utility::codec::field{"nodes", &get_reporting_tree_response::nodes},
@@ -1723,7 +1727,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const attach_account_pictures_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<attach_account_pictures_request>) {
     return std::tuple{};
 }
 
@@ -1735,7 +1739,7 @@ struct attach_account_pictures_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const attach_account_pictures_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<attach_account_pictures_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &attach_account_pictures_response::result},
         ::ores::utility::codec::field{"image_ids", &attach_account_pictures_response::image_ids},

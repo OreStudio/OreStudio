@@ -33,10 +33,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <vector>
 
 namespace {
@@ -59,28 +57,29 @@ struct ambiguous_pair {
     std::string second;
 };
 
-inline constexpr std::string_view ambiguous_pair_economic_fields[] = {"first", "second"};
-
-constexpr std::span<const std::string_view> economic_fields_of(std::type_identity<ambiguous_pair>) {
-    return ambiguous_pair_economic_fields;
+std::string canonical_form(const ambiguous_pair& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "first", v.first);
+    ores::utility::digest::append_member(out, "second", v.second);
+    out.push_back('}');
+    return out;
 }
 
 /*
  * The names say the opposite of the declaration: a field called amount is not
- * economic here, and one called counterparty_id is. The digest must follow the
- * declaration.
+ * economic here, and one called counterparty_id is. The form follows the
+ * declaration, as codegen writes it.
  */
 struct declared_against_its_names {
     std::string amount;
     std::string counterparty_id;
 };
 
-inline constexpr std::string_view declared_against_its_names_economic_fields[] = {
-    "counterparty_id"};
-
-constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<declared_against_its_names>) {
-    return declared_against_its_names_economic_fields;
+std::string canonical_form(const declared_against_its_names& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "counterparty_id", v.counterparty_id);
+    out.push_back('}');
+    return out;
 }
 
 ores::utility::decimal::decimal decimal_of(std::string_view text) {
@@ -306,4 +305,31 @@ TEST_CASE("economic_digest_follows_the_declaration_and_not_the_names", "[domain]
 
     CHECK(economic_digest(other_amount) == economic_digest(baseline));
     CHECK(economic_digest(other_party) != economic_digest(baseline));
+}
+
+/*
+ * The digest is stored with each trade, so a change to how a struct is walked
+ * must not move it. These three values were measured with the reflect-cpp walk
+ * at f8adc1abcc, before the generated canonical forms replaced it.
+ */
+TEST_CASE("economic_digest_is_unchanged_by_the_generated_canonical_form", "[domain]") {
+    auto lg(make_logger(test_suite));
+
+    trade swap;
+    swap.trade_type = "Swap";
+    swap.counterparty_scope = ores::trading::domain::counterparty_scope::intra_entity;
+
+    bond_fixed_leg_data leg;
+    leg.rates = {bond_float_data{decimal_of("0.01"), std::string("2026-01-01")},
+                 bond_float_data{decimal_of("0.02"), std::string("2026-07-01")}};
+
+    const auto bond = economic_digest(make_bond_instrument("1000000.25"));
+    BOOST_LOG_SEV(lg, info) << "Bond: " << bond << " trade: " << economic_digest(swap)
+                            << " leg: " << economic_digest(leg);
+
+    CHECK(bond == "ed19158ac277a18b8f0b822d35bcb0d7fb13757d312fc9530e19f8d948b90d00");
+    CHECK(economic_digest(swap) ==
+          "0767c4a16d8692fa7b597c1fdcbc25aee5497acdd33736b4c03550c58460924e");
+    CHECK(economic_digest(leg) ==
+          "232cdfd54c70b6d8d5960c7c900aa083369521d93fa685281717c0299016310c");
 }

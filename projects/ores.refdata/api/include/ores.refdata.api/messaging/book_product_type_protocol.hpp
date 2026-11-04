@@ -346,7 +346,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_product_type_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_product_type_key>) {
     return std::tuple{
         utility::codec::field{"book_id", &book_product_type_key::book_id},
         utility::codec::field{"product_type_code", &book_product_type_key::product_type_code},
@@ -361,7 +361,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_product_type_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_product_type_write>) {
     return std::tuple{
         utility::codec::field{"book_id", &book_product_type_write::book_id},
         utility::codec::field{"product_type_code", &book_product_type_write::product_type_code},
@@ -376,7 +376,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_product_type_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_product_type_change>) {
     return std::tuple{
         utility::codec::field{"write", &book_product_type_change::write},
         utility::codec::field{"precondition", &book_product_type_change::precondition},
@@ -391,7 +391,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_product_type_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_product_type_removal>) {
     return std::tuple{
         utility::codec::field{"key", &book_product_type_removal::key},
         utility::codec::field{"precondition", &book_product_type_removal::precondition},
@@ -406,7 +406,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_product_type_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_product_type_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &book_product_type_lookup::key},
         utility::codec::field{"book_product_type", &book_product_type_lookup::book_product_type},
@@ -421,7 +421,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_product_types_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_product_types_filter>) {
     return std::tuple{
         utility::codec::field{"book_id", &book_product_types_filter::book_id},
         utility::codec::field{"product_type_code", &book_product_types_filter::product_type_code},
@@ -439,7 +439,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const book_product_type_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_product_type_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &book_product_type_event::event_id},
         utility::codec::field{"key", &book_product_type_event::key},
@@ -458,7 +458,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_book_product_types_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_book_product_types_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_book_product_types_request::offset},
         utility::codec::field{"limit", &list_book_product_types_request::limit},
@@ -475,7 +475,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_book_product_types_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_book_product_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_book_product_types_response::result},
         utility::codec::field{"book_product_types",
@@ -492,7 +492,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_book_product_type_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_product_type_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_book_product_type_request::key},
     };
@@ -506,7 +506,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_book_product_type_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_product_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_book_product_type_response::result},
         utility::codec::field{"book_product_type",
@@ -522,7 +522,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_book_product_types_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_book_product_types_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_book_product_types_request::keys},
     };
@@ -536,7 +536,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_book_product_types_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_book_product_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_book_product_types_response::result},
         utility::codec::field{"entries", &get_many_book_product_types_response::entries},
@@ -551,7 +551,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_book_product_type_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_book_product_type_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_book_product_type_request::change},
         utility::codec::field{"intent", &put_book_product_type_request::intent},
@@ -566,7 +566,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_book_product_type_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_book_product_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_book_product_type_response::result},
         utility::codec::field{"book_product_type",
@@ -582,7 +582,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_book_product_types_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_book_product_types_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_book_product_types_request::changes},
         utility::codec::field{"intent", &put_many_book_product_types_request::intent},
@@ -597,7 +597,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_book_product_types_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_book_product_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_book_product_types_response::result},
         utility::codec::field{"book_product_types",
@@ -613,7 +613,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_book_product_type_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_book_product_type_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_book_product_type_request::removal},
         utility::codec::field{"intent", &delete_book_product_type_request::intent},
@@ -628,7 +628,7 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_book_product_type_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_book_product_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_book_product_type_response::result},
     };
@@ -642,7 +642,8 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_book_product_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_book_product_types_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_book_product_types_request::removals},
         utility::codec::field{"intent", &delete_many_book_product_types_request::intent},
@@ -657,7 +658,8 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_book_product_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_book_product_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_book_product_types_response::result},
     };
@@ -671,7 +673,8 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_book_id_book_product_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_book_id_book_product_types_request>) {
     return std::tuple{
         utility::codec::field{"book_id", &list_by_book_id_book_product_types_request::book_id},
         utility::codec::field{"scope", &list_by_book_id_book_product_types_request::scope},
@@ -690,7 +693,8 @@ struct list_by_product_type_code_book_product_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_book_id_book_product_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_book_id_book_product_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_book_id_book_product_types_response::result},
         utility::codec::field{"book_product_types",
@@ -708,7 +712,7 @@ struct list_by_product_type_code_book_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_product_type_code_book_product_types_request&) {
+wire_fields(std::type_identity<list_by_product_type_code_book_product_types_request>) {
     return std::tuple{
         utility::codec::field{
             "product_type_code",
@@ -735,7 +739,7 @@ wire_fields(const list_by_product_type_code_book_product_types_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_product_type_code_book_product_types_response&) {
+wire_fields(std::type_identity<list_by_product_type_code_book_product_types_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_product_type_code_book_product_types_response::result},

@@ -230,7 +230,7 @@ struct list_objects_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_objects_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_objects_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"bucket", &put_objects_request::bucket},
         ::ores::utility::codec::field{"key", &put_objects_request::key},
@@ -247,7 +247,7 @@ struct list_objects_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_objects_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_objects_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &put_objects_response::success},
         ::ores::utility::codec::field{"message", &put_objects_response::message},
@@ -263,7 +263,7 @@ struct list_objects_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_objects_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_objects_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"bucket", &get_objects_request::bucket},
         ::ores::utility::codec::field{"key", &get_objects_request::key},
@@ -279,7 +279,7 @@ struct list_objects_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_objects_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_objects_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_objects_response::success},
         ::ores::utility::codec::field{"message", &get_objects_response::message},
@@ -297,7 +297,7 @@ struct list_objects_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_objects_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_objects_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"bucket", &delete_objects_request::bucket},
         ::ores::utility::codec::field{"key", &delete_objects_request::key},
@@ -312,7 +312,7 @@ struct list_objects_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_objects_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_objects_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &delete_objects_response::success},
         ::ores::utility::codec::field{"message", &delete_objects_response::message},
@@ -328,7 +328,7 @@ struct list_objects_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_objects_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_objects_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"bucket", &list_objects_request::bucket},
         ::ores::utility::codec::field{"prefix", &list_objects_request::prefix},
@@ -345,7 +345,7 @@ struct list_objects_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const object_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<object_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"key", &object_summary::key},
         ::ores::utility::codec::field{"size_bytes", &object_summary::size_bytes},
@@ -360,7 +360,7 @@ struct list_objects_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_objects_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_objects_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &list_objects_response::success},
         ::ores::utility::codec::field{"message", &list_objects_response::message},

@@ -280,7 +280,7 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const pricing_engines_export_problem&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_export_problem>) {
     return std::tuple{
         ::ores::utility::codec::field{"code", &pricing_engines_export_problem::code},
         ::ores::utility::codec::field{"message", &pricing_engines_export_problem::message},
@@ -295,7 +295,7 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const export_pricing_engines_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<export_pricing_engines_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"configuration_id",
                                       &export_pricing_engines_request::configuration_id},
@@ -310,7 +310,7 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const export_pricing_engines_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<export_pricing_engines_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &export_pricing_engines_response::success},
         ::ores::utility::codec::field{"message", &export_pricing_engines_response::message},
@@ -328,7 +328,7 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const pricing_engines_import_product&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_import_product>) {
     return std::tuple{
         ::ores::utility::codec::field{"type_code", &pricing_engines_import_product::type_code},
         ::ores::utility::codec::field{"model", &pricing_engines_import_product::model},
@@ -345,7 +345,7 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const pricing_engines_import_row&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_import_row>) {
     return std::tuple{
         ::ores::utility::codec::field{"key", &pricing_engines_import_row::key},
         ::ores::utility::codec::field{"entity", &pricing_engines_import_row::entity},
@@ -364,7 +364,7 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const pricing_engines_import_issue&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_import_issue>) {
     return std::tuple{
         ::ores::utility::codec::field{"kind", &pricing_engines_import_issue::kind},
         ::ores::utility::codec::field{"subject", &pricing_engines_import_issue::subject},
@@ -380,7 +380,8 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const preview_pricing_engines_import_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<preview_pricing_engines_import_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"content", &preview_pricing_engines_import_request::content},
         ::ores::utility::codec::field{
@@ -397,7 +398,8 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const preview_pricing_engines_import_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<preview_pricing_engines_import_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &preview_pricing_engines_import_response::success},
         ::ores::utility::codec::field{"message", &preview_pricing_engines_import_response::message},
@@ -430,7 +432,7 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const import_pricing_engines_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<import_pricing_engines_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"content", &import_pricing_engines_request::content},
         ::ores::utility::codec::field{"target_configuration_id",
@@ -454,7 +456,7 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const pricing_engines_import_error&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_import_error>) {
     return std::tuple{
         ::ores::utility::codec::field{"key", &pricing_engines_import_error::key},
         ::ores::utility::codec::field{"message", &pricing_engines_import_error::message},
@@ -469,7 +471,7 @@ struct import_pricing_engines_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const import_pricing_engines_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<import_pricing_engines_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &import_pricing_engines_response::success},
         ::ores::utility::codec::field{"message", &import_pricing_engines_response::message},

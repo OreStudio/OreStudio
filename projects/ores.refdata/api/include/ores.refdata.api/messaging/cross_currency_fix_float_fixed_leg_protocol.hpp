@@ -427,7 +427,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_fix_float_fixed_leg_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cross_currency_fix_float_fixed_leg_key>) {
     return std::tuple{
         utility::codec::field{"id", &cross_currency_fix_float_fixed_leg_key::id},
     };
@@ -441,7 +442,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_fix_float_fixed_leg_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cross_currency_fix_float_fixed_leg_write>) {
     return std::tuple{
         utility::codec::field{"id", &cross_currency_fix_float_fixed_leg_write::id},
         utility::codec::field{"convention_id",
@@ -465,7 +467,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_fix_float_fixed_leg_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cross_currency_fix_float_fixed_leg_change>) {
     return std::tuple{
         utility::codec::field{"write", &cross_currency_fix_float_fixed_leg_change::write},
         utility::codec::field{"precondition",
@@ -481,7 +484,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_fix_float_fixed_leg_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cross_currency_fix_float_fixed_leg_removal>) {
     return std::tuple{
         utility::codec::field{"key", &cross_currency_fix_float_fixed_leg_removal::key},
         utility::codec::field{"precondition",
@@ -497,7 +501,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_fix_float_fixed_leg_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cross_currency_fix_float_fixed_leg_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &cross_currency_fix_float_fixed_leg_lookup::key},
         utility::codec::field{
@@ -514,7 +519,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_fix_float_fixed_legs_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cross_currency_fix_float_fixed_legs_filter>) {
     return std::tuple{
         utility::codec::field{"convention_id",
                               &cross_currency_fix_float_fixed_legs_filter::convention_id},
@@ -532,7 +538,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_fix_float_fixed_leg_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cross_currency_fix_float_fixed_leg_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &cross_currency_fix_float_fixed_leg_event::event_id},
         utility::codec::field{"key", &cross_currency_fix_float_fixed_leg_event::key},
@@ -553,7 +560,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_fix_float_fixed_leg_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cross_currency_fix_float_fixed_leg_version_key>) {
     return std::tuple{
         utility::codec::field{
             "cross_currency_fix_float_fixed_leg",
@@ -571,7 +579,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const cross_currency_fix_float_fixed_leg_versions_filter&) {
+wire_fields(std::type_identity<cross_currency_fix_float_fixed_leg_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version",
                               &cross_currency_fix_float_fixed_leg_versions_filter::version},
@@ -590,7 +598,8 @@ wire_fields(const cross_currency_fix_float_fixed_leg_versions_filter&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_cross_currency_fix_float_fixed_legs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_cross_currency_fix_float_fixed_legs_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_cross_currency_fix_float_fixed_legs_request::offset},
         utility::codec::field{"limit", &list_cross_currency_fix_float_fixed_legs_request::limit},
@@ -608,7 +617,8 @@ wire_fields(const cross_currency_fix_float_fixed_leg_versions_filter&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_cross_currency_fix_float_fixed_legs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_cross_currency_fix_float_fixed_legs_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_cross_currency_fix_float_fixed_legs_response::result},
         utility::codec::field{"cross_currency_fix_float_fixed_legs",
@@ -626,7 +636,8 @@ wire_fields(const cross_currency_fix_float_fixed_leg_versions_filter&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cross_currency_fix_float_fixed_leg_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_cross_currency_fix_float_fixed_leg_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_cross_currency_fix_float_fixed_leg_request::key},
     };
@@ -640,7 +651,8 @@ wire_fields(const cross_currency_fix_float_fixed_leg_versions_filter&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cross_currency_fix_float_fixed_leg_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_cross_currency_fix_float_fixed_leg_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_cross_currency_fix_float_fixed_leg_response::result},
         utility::codec::field{
@@ -658,7 +670,7 @@ wire_fields(const cross_currency_fix_float_fixed_leg_versions_filter&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_cross_currency_fix_float_fixed_legs_request&) {
+wire_fields(std::type_identity<get_many_cross_currency_fix_float_fixed_legs_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_cross_currency_fix_float_fixed_legs_request::keys},
     };
@@ -673,7 +685,7 @@ wire_fields(const get_many_cross_currency_fix_float_fixed_legs_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_cross_currency_fix_float_fixed_legs_response&) {
+wire_fields(std::type_identity<get_many_cross_currency_fix_float_fixed_legs_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_cross_currency_fix_float_fixed_legs_response::result},
@@ -690,7 +702,8 @@ wire_fields(const get_many_cross_currency_fix_float_fixed_legs_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_cross_currency_fix_float_fixed_leg_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_cross_currency_fix_float_fixed_leg_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_cross_currency_fix_float_fixed_leg_request::change},
         utility::codec::field{"intent", &put_cross_currency_fix_float_fixed_leg_request::intent},
@@ -705,7 +718,8 @@ wire_fields(const get_many_cross_currency_fix_float_fixed_legs_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_cross_currency_fix_float_fixed_leg_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_cross_currency_fix_float_fixed_leg_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_cross_currency_fix_float_fixed_leg_response::result},
         utility::codec::field{
@@ -723,7 +737,7 @@ wire_fields(const get_many_cross_currency_fix_float_fixed_legs_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_cross_currency_fix_float_fixed_legs_request&) {
+wire_fields(std::type_identity<put_many_cross_currency_fix_float_fixed_legs_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_cross_currency_fix_float_fixed_legs_request::changes},
@@ -741,7 +755,7 @@ wire_fields(const put_many_cross_currency_fix_float_fixed_legs_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_cross_currency_fix_float_fixed_legs_response&) {
+wire_fields(std::type_identity<put_many_cross_currency_fix_float_fixed_legs_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_cross_currency_fix_float_fixed_legs_response::result},
@@ -759,7 +773,8 @@ wire_fields(const put_many_cross_currency_fix_float_fixed_legs_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_cross_currency_fix_float_fixed_leg_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_cross_currency_fix_float_fixed_leg_request>) {
     return std::tuple{
         utility::codec::field{"removal",
                               &delete_cross_currency_fix_float_fixed_leg_request::removal},
@@ -776,7 +791,7 @@ wire_fields(const put_many_cross_currency_fix_float_fixed_legs_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_cross_currency_fix_float_fixed_leg_response&) {
+wire_fields(std::type_identity<delete_cross_currency_fix_float_fixed_leg_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_cross_currency_fix_float_fixed_leg_response::result},
@@ -792,7 +807,7 @@ wire_fields(const delete_cross_currency_fix_float_fixed_leg_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_cross_currency_fix_float_fixed_legs_request&) {
+wire_fields(std::type_identity<delete_many_cross_currency_fix_float_fixed_legs_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_cross_currency_fix_float_fixed_legs_request::removals},
@@ -810,7 +825,7 @@ wire_fields(const delete_many_cross_currency_fix_float_fixed_legs_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_cross_currency_fix_float_fixed_legs_response&) {
+wire_fields(std::type_identity<delete_many_cross_currency_fix_float_fixed_legs_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_cross_currency_fix_float_fixed_legs_response::result},
@@ -826,7 +841,7 @@ wire_fields(const delete_many_cross_currency_fix_float_fixed_legs_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_convention_id_cross_currency_fix_float_fixed_legs_request&) {
+wire_fields(std::type_identity<list_by_convention_id_cross_currency_fix_float_fixed_legs_request>) {
     return std::tuple{
         utility::codec::field{
             "convention_id",
@@ -852,8 +867,8 @@ wire_fields(const list_by_convention_id_cross_currency_fix_float_fixed_legs_requ
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const list_by_convention_id_cross_currency_fix_float_fixed_legs_response&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<list_by_convention_id_cross_currency_fix_float_fixed_legs_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_by_convention_id_cross_currency_fix_float_fixed_legs_response::result},
@@ -874,7 +889,7 @@ wire_fields(const list_by_convention_id_cross_currency_fix_float_fixed_legs_resp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_cross_currency_fix_float_fixed_leg_versions_request&) {
+wire_fields(std::type_identity<list_cross_currency_fix_float_fixed_leg_versions_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &list_cross_currency_fix_float_fixed_leg_versions_request::key},
@@ -898,7 +913,7 @@ wire_fields(const list_cross_currency_fix_float_fixed_leg_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_cross_currency_fix_float_fixed_leg_versions_response&) {
+wire_fields(std::type_identity<list_cross_currency_fix_float_fixed_leg_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_cross_currency_fix_float_fixed_leg_versions_response::result},
@@ -918,7 +933,7 @@ wire_fields(const list_cross_currency_fix_float_fixed_leg_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_cross_currency_fix_float_fixed_leg_version_request&) {
+wire_fields(std::type_identity<get_cross_currency_fix_float_fixed_leg_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_cross_currency_fix_float_fixed_leg_version_request::key},
     };
@@ -933,7 +948,7 @@ wire_fields(const get_cross_currency_fix_float_fixed_leg_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_cross_currency_fix_float_fixed_leg_version_response&) {
+wire_fields(std::type_identity<get_cross_currency_fix_float_fixed_leg_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_cross_currency_fix_float_fixed_leg_version_response::result},

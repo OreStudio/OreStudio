@@ -65,7 +65,7 @@ struct bond_settlement_data {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_settlement_data&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_settlement_data>) {
     return std::tuple{
         utility::codec::field{"fx_index", &bond_settlement_data::fx_index},
         utility::codec::field{"fixing_date", &bond_settlement_data::fixing_date},

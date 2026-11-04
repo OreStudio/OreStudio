@@ -27,11 +27,10 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -71,14 +70,16 @@ struct composite_instrument final {
 };
 
 /**
- * @brief Names the members of composite_instrument that are economic.
+ * @brief The canonical text of the members of composite_instrument the customer agreed to.
  *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<composite_instrument>) {
-    return {};
+[[nodiscard]] inline std::string canonical_form(const composite_instrument&) {
+    std::string out = "{";
+    out.push_back('}');
+    return out;
 }
 
 /**

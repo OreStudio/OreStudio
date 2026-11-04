@@ -17,10 +17,10 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/convention_codec.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_codec.hpp"
 #include "ores.refdata.api/generators/deposit_convention_generator.hpp"
 #include "ores.refdata.api/generators/ibor_index_convention_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"

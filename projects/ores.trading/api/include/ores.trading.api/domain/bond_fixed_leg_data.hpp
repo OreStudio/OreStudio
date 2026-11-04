@@ -27,10 +27,9 @@
 
 #include "ores.trading.api/domain/bond_float_data.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
-#include <span>
-#include <string_view>
+#include "ores.utility/digest/canonical_form.hpp"
+#include <string>
 #include <tuple>
-#include <type_traits>
 #include <vector>
 
 namespace ores::trading::domain {
@@ -63,28 +62,24 @@ struct bond_fixed_leg_data {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_fixed_leg_data&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_fixed_leg_data>) {
     return std::tuple{
         utility::codec::field{"rates", &bond_fixed_leg_data::rates},
     };
 }
 
 /**
- * @brief The members of bond_fixed_leg_data the customer agreed to.
- */
-inline constexpr std::string_view bond_fixed_leg_data_economic_fields[] = {
-    "rates",
-};
-
-/**
- * @brief Names the members of bond_fixed_leg_data that are economic.
+ * @brief The canonical text of the members of bond_fixed_leg_data the customer agreed to.
  *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
+ * Renders, in member order, the fields the model declares economic. The
+ * economic digest hashes this text, so a field the customer did not agree to
+ * never moves it.
  */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<bond_fixed_leg_data>) {
-    return bond_fixed_leg_data_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const bond_fixed_leg_data& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "rates", v.rates);
+    out.push_back('}');
+    return out;
 }
 
 }

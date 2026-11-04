@@ -403,7 +403,7 @@ struct manifest {
     std::vector<std::string> args;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const manifest&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<manifest>) {
     return std::tuple{ores::utility::codec::field{"executable", &manifest::executable},
                       ores::utility::codec::field{"args", &manifest::args}};
 }
@@ -494,13 +494,13 @@ void upload_canonical_log(auto& lg,
 
     const auto structured_log = output_dir / "log_structured.json";
     const auto text_log = output_dir / "log.txt";
-    const auto events = fs::is_regular_file(structured_log) ?
-                            ores::ore::log::parse_engine_log_json(
-                                read_file_text(structured_log), "log_structured.json") :
-                        fs::is_regular_file(text_log) ?
-                            ores::ore::log::parse_engine_log_text(read_file_text(text_log),
-                                                                  "log.txt") :
-                            std::vector<ores::ore::log::engine_log_event>{};
+    const auto events =
+        fs::is_regular_file(structured_log) ?
+            ores::ore::log::parse_engine_log_json(read_file_text(structured_log),
+                                                  "log_structured.json") :
+        fs::is_regular_file(text_log) ?
+            ores::ore::log::parse_engine_log_text(read_file_text(text_log), "log.txt") :
+            std::vector<ores::ore::log::engine_log_event>{};
     if (events.empty())
         return;
 
@@ -631,7 +631,9 @@ void ensure_package(const fs::path& pkg_cache_dir,
 
     fs::create_directories(pkg_cache_dir.parent_path());
     const fs::path lock_path = pkg_cache_dir.parent_path() / (evt.app_version_id + ".lock");
-    { std::ofstream create_lock(lock_path, std::ios::app); }
+    {
+        std::ofstream create_lock(lock_path, std::ios::app);
+    }
     boost::interprocess::file_lock file_lock(lock_path.string().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> guard(file_lock);
 

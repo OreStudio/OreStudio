@@ -46,7 +46,7 @@ struct varz_response {
     int slow_consumers{0};
 };
 
-constexpr auto wire_fields(const varz_response&) {
+constexpr auto wire_fields(std::type_identity<varz_response>) {
     return std::tuple{utility::codec::field{"in_msgs", &varz_response::in_msgs},
                       utility::codec::field{"out_msgs", &varz_response::out_msgs},
                       utility::codec::field{"in_bytes", &varz_response::in_bytes},
@@ -63,7 +63,7 @@ struct jsz_stream_state {
     int consumer_count{0};
 };
 
-constexpr auto wire_fields(const jsz_stream_state&) {
+constexpr auto wire_fields(std::type_identity<jsz_stream_state>) {
     return std::tuple{utility::codec::field{"messages", &jsz_stream_state::messages},
                       utility::codec::field{"bytes", &jsz_stream_state::bytes},
                       utility::codec::field{"consumer_count", &jsz_stream_state::consumer_count}};
@@ -83,7 +83,7 @@ struct jsz_stream_detail {
     jsz_stream_state state;
 };
 
-constexpr auto wire_fields(const jsz_stream_detail&) {
+constexpr auto wire_fields(std::type_identity<jsz_stream_detail>) {
     return std::tuple{utility::codec::field{"name", &jsz_stream_detail::name},
                       utility::codec::field{"state", &jsz_stream_detail::state}};
 }
@@ -93,7 +93,7 @@ struct jsz_account_detail {
     std::vector<jsz_stream_detail> stream_detail;
 };
 
-constexpr auto wire_fields(const jsz_account_detail&) {
+constexpr auto wire_fields(std::type_identity<jsz_account_detail>) {
     return std::tuple{utility::codec::field{"stream_detail", &jsz_account_detail::stream_detail}};
 }
 static_assert(utility::codec::names_every_member<jsz_account_detail>());
@@ -106,7 +106,7 @@ struct jsz_response {
     std::optional<std::vector<jsz_account_detail>> account_details;
 };
 
-constexpr auto wire_fields(const jsz_response&) {
+constexpr auto wire_fields(std::type_identity<jsz_response>) {
     return std::tuple{utility::codec::field{"account_details", &jsz_response::account_details}};
 }
 static_assert(utility::codec::names_every_member<jsz_response>());

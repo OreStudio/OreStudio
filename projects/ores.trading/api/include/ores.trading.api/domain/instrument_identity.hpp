@@ -26,14 +26,12 @@
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_IDENTITY_HPP
 
 #include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
-#include <span>
 #include <string>
-#include <string_view>
 #include <tuple>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -96,7 +94,7 @@ identity rather than two and the two cannot disagree.
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_identity&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_identity>) {
     return std::tuple{
         utility::codec::field{"version", &instrument_identity::version},
         utility::codec::field{"tenant_id", &instrument_identity::tenant_id},
@@ -108,14 +106,16 @@ identity rather than two and the two cannot disagree.
 }
 
 /**
- * @brief Names the members of instrument_identity that are economic.
+ * @brief The canonical text of the members of instrument_identity the customer agreed to.
  *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
+ * Renders, in member order, the fields the model declares economic. The
+ * economic digest hashes this text, so a field the customer did not agree to
+ * never moves it.
  */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<instrument_identity>) {
-    return {};
+[[nodiscard]] inline std::string canonical_form(const instrument_identity&) {
+    std::string out = "{";
+    out.push_back('}');
+    return out;
 }
 
 }

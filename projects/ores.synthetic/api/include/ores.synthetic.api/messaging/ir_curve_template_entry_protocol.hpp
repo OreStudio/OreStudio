@@ -377,7 +377,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_template_entry_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_template_entry_key>) {
     return std::tuple{
         utility::codec::field{"id", &ir_curve_template_entry_key::id},
     };
@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_template_entry_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_template_entry_write>) {
     return std::tuple{
         utility::codec::field{"id", &ir_curve_template_entry_write::id},
         utility::codec::field{"ir_curve_config_id",
@@ -411,7 +411,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_template_entry_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_template_entry_change>) {
     return std::tuple{
         utility::codec::field{"write", &ir_curve_template_entry_change::write},
         utility::codec::field{"precondition", &ir_curve_template_entry_change::precondition},
@@ -426,7 +426,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_template_entry_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_template_entry_removal>) {
     return std::tuple{
         utility::codec::field{"key", &ir_curve_template_entry_removal::key},
         utility::codec::field{"precondition", &ir_curve_template_entry_removal::precondition},
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_template_entry_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_template_entry_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &ir_curve_template_entry_lookup::key},
         utility::codec::field{"ir_curve_template_entry",
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_template_entries_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_template_entries_filter>) {
     return std::tuple{
         utility::codec::field{"ir_curve_config_id",
                               &ir_curve_template_entries_filter::ir_curve_config_id},
@@ -475,7 +475,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_template_entry_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_template_entry_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &ir_curve_template_entry_event::event_id},
         utility::codec::field{"key", &ir_curve_template_entry_event::key},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_template_entry_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_template_entry_version_key>) {
     return std::tuple{
         utility::codec::field{"ir_curve_template_entry",
                               &ir_curve_template_entry_version_key::ir_curve_template_entry},
@@ -510,7 +510,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_template_entry_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<ir_curve_template_entry_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &ir_curve_template_entry_versions_filter::version},
         utility::codec::field{"from_version",
@@ -527,7 +528,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ir_curve_template_entries_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_ir_curve_template_entries_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_ir_curve_template_entries_request::offset},
         utility::codec::field{"limit", &list_ir_curve_template_entries_request::limit},
@@ -545,7 +547,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ir_curve_template_entries_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_ir_curve_template_entries_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_ir_curve_template_entries_response::result},
         utility::codec::field{"ir_curve_template_entries",
@@ -562,7 +565,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_ir_curve_template_entry_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_ir_curve_template_entry_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_ir_curve_template_entry_request::key},
     };
@@ -576,7 +579,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_ir_curve_template_entry_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_ir_curve_template_entry_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_ir_curve_template_entry_response::result},
         utility::codec::field{"ir_curve_template_entry",
@@ -592,7 +595,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_ir_curve_template_entries_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_ir_curve_template_entries_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_ir_curve_template_entries_request::keys},
     };
@@ -606,7 +610,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_ir_curve_template_entries_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_ir_curve_template_entries_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_ir_curve_template_entries_response::result},
         utility::codec::field{"entries", &get_many_ir_curve_template_entries_response::entries},
@@ -621,7 +626,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_ir_curve_template_entry_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_ir_curve_template_entry_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_ir_curve_template_entry_request::change},
         utility::codec::field{"intent", &put_ir_curve_template_entry_request::intent},
@@ -636,7 +641,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_ir_curve_template_entry_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_ir_curve_template_entry_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_ir_curve_template_entry_response::result},
         utility::codec::field{"ir_curve_template_entry",
@@ -652,7 +657,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_ir_curve_template_entries_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_ir_curve_template_entries_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_ir_curve_template_entries_request::changes},
         utility::codec::field{"intent", &put_many_ir_curve_template_entries_request::intent},
@@ -667,7 +673,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_ir_curve_template_entries_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_ir_curve_template_entries_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_ir_curve_template_entries_response::result},
         utility::codec::field{
@@ -684,7 +691,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_ir_curve_template_entry_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_ir_curve_template_entry_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_ir_curve_template_entry_request::removal},
         utility::codec::field{"intent", &delete_ir_curve_template_entry_request::intent},
@@ -699,7 +707,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_ir_curve_template_entry_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_ir_curve_template_entry_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_ir_curve_template_entry_response::result},
     };
@@ -713,7 +722,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_ir_curve_template_entries_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_ir_curve_template_entries_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_ir_curve_template_entries_request::removals},
         utility::codec::field{"intent", &delete_many_ir_curve_template_entries_request::intent},
@@ -728,7 +738,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_ir_curve_template_entries_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_ir_curve_template_entries_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_ir_curve_template_entries_response::result},
     };
@@ -742,7 +753,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ir_curve_template_entry_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_ir_curve_template_entry_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_ir_curve_template_entry_versions_request::key},
         utility::codec::field{"offset", &list_ir_curve_template_entry_versions_request::offset},
@@ -760,7 +772,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ir_curve_template_entry_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_ir_curve_template_entry_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_ir_curve_template_entry_versions_response::result},
         utility::codec::field{"versions",
@@ -777,7 +790,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_ir_curve_template_entry_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_ir_curve_template_entry_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_ir_curve_template_entry_version_request::key},
     };
@@ -791,7 +805,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.ir_curve_templa
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_ir_curve_template_entry_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_ir_curve_template_entry_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_ir_curve_template_entry_version_response::result},
         utility::codec::field{"version", &get_ir_curve_template_entry_version_response::version},

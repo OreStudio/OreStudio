@@ -77,7 +77,7 @@ struct set_faults_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const set_faults_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<set_faults_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"connection_lost", &set_faults_request::connection_lost},
         ::ores::utility::codec::field{"tick_delay_ms", &set_faults_request::tick_delay_ms},
@@ -95,7 +95,7 @@ struct set_faults_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const set_faults_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<set_faults_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &set_faults_response::success},
         ::ores::utility::codec::field{"message", &set_faults_response::message},

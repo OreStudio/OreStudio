@@ -78,7 +78,7 @@ struct tenor_basis_swap_pay_receive_coupon {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_coupon&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_coupon>) {
     return std::tuple{
         utility::codec::field{"spread_on_rec", &tenor_basis_swap_pay_receive_coupon::spread_on_rec},
         utility::codec::field{"include_spread",

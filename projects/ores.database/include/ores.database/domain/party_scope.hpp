@@ -20,9 +20,10 @@
 #ifndef ORES_DATABASE_DOMAIN_PARTY_SCOPE_HPP
 #define ORES_DATABASE_DOMAIN_PARTY_SCOPE_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
-#include <rfl.hpp>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -36,7 +37,7 @@ namespace ores::database::domain {
  * first, since the rows themselves know nothing of the session.
  *
  * Walks the value: a row with a party_id is stamped; a vector, an optional or
- * a struct of rows is walked into; anything else is left alone.
+ * a struct that states its shape is walked into; anything else is left alone.
  */
 template <typename T>
 void assign_party(T& v, const boost::uuids::uuid& party) {
@@ -56,8 +57,13 @@ void assign_party(T& v, const boost::uuids::uuid& party) {
                          }) {
         if (v)
             assign_party(*v, party);
-    } else if constexpr (std::is_class_v<T> && std::is_aggregate_v<T>) {
-        rfl::to_view(v).apply([&](const auto& field) { assign_party(*field.value(), party); });
+    } else if constexpr (std::is_class_v<T> && std::is_aggregate_v<T> &&
+                         !std::is_same_v<T, boost::uuids::uuid>) {
+        static_assert(ores::utility::codec::states_wire_form<T>,
+                      "assign_party walks a struct by its stated shape. Include the "
+                      "type's codec header, which states it.");
+        ores::utility::codec::for_each_field(
+            v, [&](std::string_view, auto& member) { assign_party(member, party); });
     }
 }
 

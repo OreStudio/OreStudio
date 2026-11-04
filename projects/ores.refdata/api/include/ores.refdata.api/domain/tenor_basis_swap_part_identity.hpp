@@ -88,7 +88,7 @@ struct tenor_basis_swap_part_identity {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_part_identity&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_part_identity>) {
     return std::tuple{
         utility::codec::field{"version", &tenor_basis_swap_part_identity::version},
         utility::codec::field{"tenant_id", &tenor_basis_swap_part_identity::tenant_id},

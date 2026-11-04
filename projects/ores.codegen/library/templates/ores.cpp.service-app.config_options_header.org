@@ -75,7 +75,7 @@ struct options final {
 <<paste:0B222F2C-B8B6-41AE-AF03-C61D76AF6833>>
 };
 
-[[nodiscard]] constexpr auto wire_fields(const options&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
     return std::tuple{
         ::ores::utility::codec::field{"logging", &options::logging},
         ::ores::utility::codec::field{"nats", &options::nats},

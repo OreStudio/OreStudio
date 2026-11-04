@@ -498,7 +498,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const start_feed_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<start_feed_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"config_id", &start_feed_request::config_id},
     };
@@ -512,7 +512,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const start_feed_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<start_feed_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &start_feed_response::success},
         ::ores::utility::codec::field{"message", &start_feed_response::message},
@@ -527,7 +527,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stop_feed_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_feed_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"config_id", &stop_feed_request::config_id},
         ::ores::utility::codec::field{"source_name", &stop_feed_request::source_name},
@@ -542,7 +542,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stop_feed_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_feed_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &stop_feed_response::success},
         ::ores::utility::codec::field{"message", &stop_feed_response::message},
@@ -557,7 +557,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const provider_dispersion&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_dispersion>) {
     return std::tuple{
         ::ores::utility::codec::field{"provider_code", &provider_dispersion::provider_code},
         ::ores::utility::codec::field{"item", &provider_dispersion::item},
@@ -573,7 +573,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_start&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_start>) {
     return std::tuple{
         ::ores::utility::codec::field{"model", &variance_start::model},
         ::ores::utility::codec::field{"calibration_id", &variance_start::calibration_id},
@@ -597,7 +597,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_start&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_start>) {
     return std::tuple{
         ::ores::utility::codec::field{"from_fixing", &feed_start::from_fixing},
         ::ores::utility::codec::field{"item", &feed_start::item},
@@ -630,7 +630,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const running_feed&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<running_feed>) {
     return std::tuple{
         ::ores::utility::codec::field{"source_name", &running_feed::source_name},
         ::ores::utility::codec::field{"start", &running_feed::start},
@@ -645,7 +645,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_feeds_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feeds_request>) {
     return std::tuple{};
 }
 
@@ -657,7 +657,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_feeds_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feeds_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &list_feeds_response::success},
         ::ores::utility::codec::field{"running_feeds", &list_feeds_response::running_feeds},
@@ -672,7 +672,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_policy_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_policy_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"from_policy_row",
                                       &calibration_policy_summary::from_policy_row},
@@ -706,7 +706,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const candidate_outcome&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<candidate_outcome>) {
     return std::tuple{
         ::ores::utility::codec::field{"item", &candidate_outcome::item},
         ::ores::utility::codec::field{"provider_code", &candidate_outcome::provider_code},
@@ -725,7 +725,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const variance_calibration_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"input_id", &variance_calibration_summary::input_id},
         ::ores::utility::codec::field{"calibration_id",
@@ -761,7 +761,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibrated_feed&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibrated_feed>) {
     return std::tuple{
         ::ores::utility::codec::field{"config_id", &calibrated_feed::config_id},
         ::ores::utility::codec::field{"source_name", &calibrated_feed::source_name},
@@ -789,7 +789,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibrate_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibrate_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"asset_class_code", &calibrate_request::asset_class_code},
         ::ores::utility::codec::field{"config_id", &calibrate_request::config_id},
@@ -805,7 +805,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibrate_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibrate_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &calibrate_response::success},
         ::ores::utility::codec::field{"message", &calibrate_response::message},
@@ -822,7 +822,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const review_variance_calibration_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<review_variance_calibration_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"calibration_id",
                                       &review_variance_calibration_request::calibration_id},
@@ -839,7 +839,7 @@ struct review_variance_calibration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const review_variance_calibration_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<review_variance_calibration_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &review_variance_calibration_response::success},
         ::ores::utility::codec::field{"message", &review_variance_calibration_response::message},

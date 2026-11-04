@@ -225,7 +225,7 @@ struct get_fixing_window_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fixing_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"item", &get_fixing_request::item},
         ::ores::utility::codec::field{"provider_code", &get_fixing_request::provider_code},
@@ -242,7 +242,7 @@ struct get_fixing_window_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fixing_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_fixing_response::result},
         ::ores::utility::codec::field{"provider_code", &get_fixing_response::provider_code},
@@ -263,7 +263,7 @@ struct get_fixing_window_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fixing_window_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_window_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"item", &get_fixing_window_request::item},
         ::ores::utility::codec::field{"provider_code", &get_fixing_window_request::provider_code},
@@ -281,7 +281,7 @@ struct get_fixing_window_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fixing_window_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_window_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_fixing_window_response::result},
         ::ores::utility::codec::field{"provider_code", &get_fixing_window_response::provider_code},

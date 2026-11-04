@@ -320,7 +320,7 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const pricing_engines_document&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_document>) {
     return std::tuple{
         ::ores::utility::codec::field{"config", &pricing_engines_document::config},
         ::ores::utility::codec::field{"products", &pricing_engines_document::products},
@@ -336,7 +336,7 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const todays_market_document&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_document>) {
     return std::tuple{
         ::ores::utility::codec::field{"config", &todays_market_document::config},
         ::ores::utility::codec::field{"collections", &todays_market_document::collections},
@@ -354,7 +354,7 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const pricing_engines_document_problem&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_document_problem>) {
     return std::tuple{
         ::ores::utility::codec::field{"code", &pricing_engines_document_problem::code},
         ::ores::utility::codec::field{"product_id", &pricing_engines_document_problem::product_id},
@@ -374,7 +374,8 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const save_pricing_engines_document_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<save_pricing_engines_document_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"document", &save_pricing_engines_document_request::document},
     };
@@ -388,7 +389,8 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const save_pricing_engines_document_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<save_pricing_engines_document_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &save_pricing_engines_document_response::success},
         ::ores::utility::codec::field{"message", &save_pricing_engines_document_response::message},
@@ -406,7 +408,7 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_pricing_engines_document_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_pricing_engines_document_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"configuration_id",
                                       &get_pricing_engines_document_request::configuration_id},
@@ -422,7 +424,8 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_pricing_engines_document_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_pricing_engines_document_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_pricing_engines_document_response::success},
         ::ores::utility::codec::field{"message", &get_pricing_engines_document_response::message},
@@ -438,7 +441,8 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_pricing_engines_document_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_pricing_engines_document_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"configuration_id",
                                       &delete_pricing_engines_document_request::configuration_id},
@@ -453,7 +457,8 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_pricing_engines_document_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_pricing_engines_document_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success",
                                       &delete_pricing_engines_document_response::success},
@@ -470,7 +475,7 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const save_todays_market_document_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<save_todays_market_document_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"document", &save_todays_market_document_request::document},
     };
@@ -484,7 +489,7 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const save_todays_market_document_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<save_todays_market_document_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &save_todays_market_document_response::success},
         ::ores::utility::codec::field{"message", &save_todays_market_document_response::message},
@@ -500,7 +505,7 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_todays_market_document_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_todays_market_document_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"configuration_id",
                                       &get_todays_market_document_request::configuration_id},
@@ -516,7 +521,7 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_todays_market_document_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_todays_market_document_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_todays_market_document_response::success},
         ::ores::utility::codec::field{"message", &get_todays_market_document_response::message},
@@ -532,7 +537,8 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_todays_market_document_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_todays_market_document_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"configuration_id",
                                       &delete_todays_market_document_request::configuration_id},
@@ -547,7 +553,8 @@ struct delete_todays_market_document_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_todays_market_document_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_todays_market_document_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &delete_todays_market_document_response::success},
         ::ores::utility::codec::field{"message", &delete_todays_market_document_response::message},

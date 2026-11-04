@@ -109,7 +109,7 @@ struct text_form<ores::utility::domain::scope> {
  */
 namespace ores::utility::domain {
 
-[[nodiscard]] constexpr auto wire_fields(const field_failure&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<field_failure>) {
     return std::tuple{ores::utility::codec::field{"field", &field_failure::field},
                       ores::utility::codec::field{"code", &field_failure::code},
                       ores::utility::codec::field{"message", &field_failure::message}};
@@ -118,7 +118,7 @@ namespace ores::utility::domain {
 static_assert(::ores::utility::codec::names_every_member<field_failure>(),
               "field_failure has a member its wire shape does not name");
 
-[[nodiscard]] constexpr auto wire_fields(const result&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<result>) {
     return std::tuple{ores::utility::codec::field{"outcome", &result::outcome},
                       ores::utility::codec::field{"code", &result::code},
                       ores::utility::codec::field{"message", &result::message},
@@ -128,7 +128,7 @@ static_assert(::ores::utility::codec::names_every_member<field_failure>(),
 static_assert(::ores::utility::codec::names_every_member<result>(),
               "result has a member its wire shape does not name");
 
-[[nodiscard]] constexpr auto wire_fields(const precondition&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<precondition>) {
     return std::tuple{ores::utility::codec::field{"kind", &precondition::kind},
                       ores::utility::codec::field{"version", &precondition::version}};
 }
@@ -136,7 +136,7 @@ static_assert(::ores::utility::codec::names_every_member<result>(),
 static_assert(::ores::utility::codec::names_every_member<precondition>(),
               "precondition has a member its wire shape does not name");
 
-[[nodiscard]] constexpr auto wire_fields(const change_intent&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<change_intent>) {
     return std::tuple{ores::utility::codec::field{"reason_code", &change_intent::reason_code},
                       ores::utility::codec::field{"commentary", &change_intent::commentary}};
 }
@@ -144,7 +144,7 @@ static_assert(::ores::utility::codec::names_every_member<precondition>(),
 static_assert(::ores::utility::codec::names_every_member<change_intent>(),
               "change_intent has a member its wire shape does not name");
 
-[[nodiscard]] constexpr auto wire_fields(const order&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<order>) {
     return std::tuple{ores::utility::codec::field{"field", &order::field},
                       ores::utility::codec::field{"descending", &order::descending}};
 }

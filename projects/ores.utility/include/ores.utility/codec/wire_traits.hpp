@@ -21,6 +21,7 @@
 #define ORES_UTILITY_CODEC_WIRE_TRAITS_HPP
 
 #include "ores.utility/codec/wire_traits_fwd.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
 #include <boost/throw_exception.hpp>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>

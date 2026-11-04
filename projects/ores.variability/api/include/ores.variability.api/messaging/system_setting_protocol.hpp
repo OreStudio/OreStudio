@@ -362,7 +362,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const system_setting_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<system_setting_key>) {
     return std::tuple{
         utility::codec::field{"name", &system_setting_key::name},
     };
@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const system_setting_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<system_setting_write>) {
     return std::tuple{
         utility::codec::field{"id", &system_setting_write::id},
         utility::codec::field{"name", &system_setting_write::name},
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const system_setting_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<system_setting_change>) {
     return std::tuple{
         utility::codec::field{"write", &system_setting_change::write},
         utility::codec::field{"precondition", &system_setting_change::precondition},
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const system_setting_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<system_setting_removal>) {
     return std::tuple{
         utility::codec::field{"key", &system_setting_removal::key},
         utility::codec::field{"precondition", &system_setting_removal::precondition},
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const system_setting_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<system_setting_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &system_setting_lookup::key},
         utility::codec::field{"system_setting", &system_setting_lookup::system_setting},
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const system_settings_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<system_settings_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &system_settings_filter::id_one_of},
     };
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const system_setting_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<system_setting_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &system_setting_event::event_id},
         utility::codec::field{"key", &system_setting_event::key},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const system_setting_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<system_setting_version_key>) {
     return std::tuple{
         utility::codec::field{"system_setting", &system_setting_version_key::system_setting},
         utility::codec::field{"version", &system_setting_version_key::version},
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const system_setting_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<system_setting_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &system_setting_versions_filter::version},
         utility::codec::field{"from_version", &system_setting_versions_filter::from_version},
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_system_settings_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_system_settings_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_system_settings_request::offset},
         utility::codec::field{"limit", &list_system_settings_request::limit},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_system_settings_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_system_settings_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_system_settings_response::result},
         utility::codec::field{"settings", &list_system_settings_response::settings},
@@ -538,7 +538,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_system_setting_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_system_setting_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_system_setting_request::key},
     };
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_system_setting_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_system_setting_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_system_setting_response::result},
         utility::codec::field{"system_setting", &get_system_setting_response::system_setting},
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_system_settings_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_system_settings_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_system_settings_request::keys},
     };
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_system_settings_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_system_settings_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_system_settings_response::result},
         utility::codec::field{"entries", &get_many_system_settings_response::entries},
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_system_setting_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_system_setting_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_system_setting_request::change},
         utility::codec::field{"intent", &put_system_setting_request::intent},
@@ -611,7 +611,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_system_setting_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_system_setting_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_system_setting_response::result},
         utility::codec::field{"system_setting", &put_system_setting_response::system_setting},
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_system_settings_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_system_settings_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_system_settings_request::changes},
         utility::codec::field{"intent", &put_many_system_settings_request::intent},
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_system_settings_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_system_settings_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_system_settings_response::result},
         utility::codec::field{"settings", &put_many_system_settings_response::settings},
@@ -656,7 +656,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_system_setting_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_system_setting_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_system_setting_request::removal},
         utility::codec::field{"intent", &delete_system_setting_request::intent},
@@ -671,7 +671,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_system_setting_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_system_setting_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_system_setting_response::result},
     };
@@ -685,7 +685,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_system_settings_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_system_settings_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_system_settings_request::removals},
         utility::codec::field{"intent", &delete_many_system_settings_request::intent},
@@ -700,7 +700,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_system_settings_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_system_settings_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_system_settings_response::result},
     };
@@ -714,7 +714,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_system_setting_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_system_setting_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_system_setting_versions_request::key},
         utility::codec::field{"offset", &list_system_setting_versions_request::offset},
@@ -732,7 +732,8 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_system_setting_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_system_setting_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_system_setting_versions_response::result},
         utility::codec::field{"versions", &list_system_setting_versions_response::versions},
@@ -748,7 +749,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_system_setting_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_system_setting_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_system_setting_version_request::key},
     };
@@ -762,7 +763,7 @@ inline constexpr std::string_view deleted = "variability.v1.events.system_settin
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_system_setting_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_system_setting_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_system_setting_version_response::result},
         utility::codec::field{"version", &get_system_setting_version_response::version},

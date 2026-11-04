@@ -119,7 +119,7 @@ template <typename T>
 struct msgpack_codec {
     static void write(msgpack_packer* pk, const T& v) {
         if constexpr (states_wire_form<T>) {
-            detail::write_object(pk, v, wire_fields(v));
+            detail::write_object(pk, v, wire_fields(std::type_identity<T>{}));
         } else {
             const auto text = text_form<T>::to_text(v);
             if (msgpack_pack_str(pk, text.size()) != 0 ||
@@ -131,7 +131,7 @@ struct msgpack_codec {
     static T read(const msgpack_object& v) {
         if constexpr (states_wire_form<T>) {
             T out;
-            detail::read_object(v, out, wire_fields(out));
+            detail::read_object(v, out, wire_fields(std::type_identity<T>{}));
             return out;
         } else {
             if (v.type != MSGPACK_OBJECT_STR)

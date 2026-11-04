@@ -45,7 +45,7 @@ namespace ores::iam::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_grant&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_grant>) {
     return std::tuple{
         utility::codec::field{"version", &run_grant::version},
         utility::codec::field{"tenant_id", &run_grant::tenant_id},

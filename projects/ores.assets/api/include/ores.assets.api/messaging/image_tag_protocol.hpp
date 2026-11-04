@@ -293,7 +293,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_tag_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_tag_key>) {
     return std::tuple{
         utility::codec::field{"image_id", &image_tag_key::image_id},
         utility::codec::field{"tag_id", &image_tag_key::tag_id},
@@ -308,7 +308,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_tag_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_tag_write>) {
     return std::tuple{
         utility::codec::field{"image_id", &image_tag_write::image_id},
         utility::codec::field{"tag_id", &image_tag_write::tag_id},
@@ -325,7 +325,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_tag_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_tag_change>) {
     return std::tuple{
         utility::codec::field{"write", &image_tag_change::write},
         utility::codec::field{"precondition", &image_tag_change::precondition},
@@ -340,7 +340,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_tag_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_tag_removal>) {
     return std::tuple{
         utility::codec::field{"key", &image_tag_removal::key},
         utility::codec::field{"precondition", &image_tag_removal::precondition},
@@ -355,7 +355,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_tag_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_tag_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &image_tag_lookup::key},
         utility::codec::field{"image_tag", &image_tag_lookup::image_tag},
@@ -370,7 +370,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_tags_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_tags_filter>) {
     return std::tuple{
         utility::codec::field{"image_id", &image_tags_filter::image_id},
         utility::codec::field{"image_id_one_of", &image_tags_filter::image_id_one_of},
@@ -385,7 +385,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_image_tags_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_image_tags_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_image_tags_request::offset},
         utility::codec::field{"limit", &list_image_tags_request::limit},
@@ -402,7 +402,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_image_tags_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_image_tags_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_image_tags_response::result},
         utility::codec::field{"image_tags", &list_image_tags_response::image_tags},
@@ -418,7 +418,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_image_tag_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_tag_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_image_tag_request::key},
     };
@@ -432,7 +432,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_image_tag_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_tag_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_image_tag_response::result},
         utility::codec::field{"image_tag", &get_image_tag_response::image_tag},
@@ -447,7 +447,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_image_tags_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_image_tags_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_image_tags_request::keys},
     };
@@ -461,7 +461,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_image_tags_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_image_tags_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_image_tags_response::result},
         utility::codec::field{"entries", &get_many_image_tags_response::entries},
@@ -476,7 +476,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_image_tag_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_image_tag_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_image_tag_request::change},
         utility::codec::field{"intent", &put_image_tag_request::intent},
@@ -491,7 +491,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_image_tag_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_image_tag_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_image_tag_response::result},
         utility::codec::field{"image_tag", &put_image_tag_response::image_tag},
@@ -506,7 +506,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_image_tags_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_image_tags_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_image_tags_request::changes},
         utility::codec::field{"intent", &put_many_image_tags_request::intent},
@@ -521,7 +521,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_image_tags_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_image_tags_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_image_tags_response::result},
         utility::codec::field{"image_tags", &put_many_image_tags_response::image_tags},
@@ -536,7 +536,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_image_tag_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_image_tag_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_image_tag_request::removal},
         utility::codec::field{"intent", &delete_image_tag_request::intent},
@@ -551,7 +551,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_image_tag_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_image_tag_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_image_tag_response::result},
     };
@@ -565,7 +565,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_image_tags_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_image_tags_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_image_tags_request::removals},
         utility::codec::field{"intent", &delete_many_image_tags_request::intent},
@@ -580,7 +580,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_image_tags_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_image_tags_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_image_tags_response::result},
     };
@@ -594,7 +594,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_image_id_image_tags_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_by_image_id_image_tags_request>) {
     return std::tuple{
         utility::codec::field{"image_id", &list_by_image_id_image_tags_request::image_id},
         utility::codec::field{"scope", &list_by_image_id_image_tags_request::scope},
@@ -613,7 +613,7 @@ struct list_by_image_id_image_tags_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_image_id_image_tags_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_by_image_id_image_tags_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_image_id_image_tags_response::result},
         utility::codec::field{"image_tags", &list_by_image_id_image_tags_response::image_tags},

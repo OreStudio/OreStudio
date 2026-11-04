@@ -117,7 +117,7 @@ struct create_initial_admin_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bootstrap_status_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bootstrap_status_request>) {
     return std::tuple{};
 }
 
@@ -129,7 +129,7 @@ struct create_initial_admin_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bootstrap_status_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bootstrap_status_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"is_in_bootstrap_mode",
                                       &bootstrap_status_response::is_in_bootstrap_mode},
@@ -147,7 +147,7 @@ struct create_initial_admin_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const create_initial_admin_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<create_initial_admin_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"principal", &create_initial_admin_request::principal},
         ::ores::utility::codec::field{"password", &create_initial_admin_request::password},
@@ -163,7 +163,7 @@ struct create_initial_admin_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const create_initial_admin_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<create_initial_admin_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &create_initial_admin_response::success},
         ::ores::utility::codec::field{"error_message",

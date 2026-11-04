@@ -366,7 +366,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_definition_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_definition_key>) {
     return std::tuple{
         utility::codec::field{"curve_id", &curve_definition_key::curve_id},
     };
@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_definition_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_definition_write>) {
     return std::tuple{
         utility::codec::field{"id", &curve_definition_write::id},
         utility::codec::field{"curve_configuration_id",
@@ -400,7 +400,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_definition_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_definition_change>) {
     return std::tuple{
         utility::codec::field{"write", &curve_definition_change::write},
         utility::codec::field{"precondition", &curve_definition_change::precondition},
@@ -415,7 +415,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_definition_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_definition_removal>) {
     return std::tuple{
         utility::codec::field{"key", &curve_definition_removal::key},
         utility::codec::field{"precondition", &curve_definition_removal::precondition},
@@ -430,7 +430,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_definition_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_definition_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &curve_definition_lookup::key},
         utility::codec::field{"curve_definition", &curve_definition_lookup::curve_definition},
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_definitions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_definitions_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &curve_definitions_filter::id_one_of},
     };
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_definition_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_definition_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &curve_definition_event::event_id},
         utility::codec::field{"key", &curve_definition_event::key},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_definition_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_definition_version_key>) {
     return std::tuple{
         utility::codec::field{"curve_definition", &curve_definition_version_key::curve_definition},
         utility::codec::field{"version", &curve_definition_version_key::version},
@@ -493,7 +493,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_definition_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_definition_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &curve_definition_versions_filter::version},
         utility::codec::field{"from_version", &curve_definition_versions_filter::from_version},
@@ -509,7 +509,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_definitions_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_curve_definitions_request::offset},
         utility::codec::field{"limit", &list_curve_definitions_request::limit},
@@ -527,7 +527,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_curve_definitions_response::result},
         utility::codec::field{"curves", &list_curve_definitions_response::curves},
@@ -543,7 +543,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_definition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_definition_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_definition_request::key},
     };
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_definition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_definition_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_curve_definition_response::result},
         utility::codec::field{"curve_definition", &get_curve_definition_response::curve_definition},
@@ -572,7 +572,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_curve_definitions_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_curve_definitions_request::keys},
     };
@@ -586,7 +586,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_curve_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_curve_definitions_response::result},
         utility::codec::field{"entries", &get_many_curve_definitions_response::entries},
@@ -601,7 +601,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_definition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_definition_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_curve_definition_request::change},
         utility::codec::field{"intent", &put_curve_definition_request::intent},
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_definition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_definition_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_curve_definition_response::result},
         utility::codec::field{"curve_definition", &put_curve_definition_response::curve_definition},
@@ -631,7 +631,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_curve_definitions_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_curve_definitions_request::changes},
         utility::codec::field{"intent", &put_many_curve_definitions_request::intent},
@@ -646,7 +646,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_curve_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_curve_definitions_response::result},
         utility::codec::field{"curves", &put_many_curve_definitions_response::curves},
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_definition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_curve_definition_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_curve_definition_request::removal},
         utility::codec::field{"intent", &delete_curve_definition_request::intent},
@@ -676,7 +676,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_definition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_curve_definition_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_curve_definition_response::result},
     };
@@ -690,7 +690,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_curve_definitions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_curve_definitions_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_curve_definitions_request::removals},
         utility::codec::field{"intent", &delete_many_curve_definitions_request::intent},
@@ -705,7 +706,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_curve_definitions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_curve_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_curve_definitions_response::result},
     };
@@ -719,7 +721,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_definition_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_definition_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_curve_definition_versions_request::key},
         utility::codec::field{"offset", &list_curve_definition_versions_request::offset},
@@ -737,7 +740,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_definition_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_definition_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_curve_definition_versions_response::result},
         utility::codec::field{"versions", &list_curve_definition_versions_response::versions},
@@ -753,7 +757,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_definition_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_definition_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_definition_version_request::key},
     };
@@ -767,7 +771,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_definitions
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_definition_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_definition_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_curve_definition_version_response::result},
         utility::codec::field{"version", &get_curve_definition_version_response::version},

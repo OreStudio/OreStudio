@@ -97,7 +97,7 @@ struct convert_fx_mixture_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const convert_fx_mixture_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<convert_fx_mixture_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"gmm_means", &convert_fx_mixture_request::gmm_means},
         ::ores::utility::codec::field{"gmm_stdevs", &convert_fx_mixture_request::gmm_stdevs},
@@ -120,7 +120,7 @@ struct convert_fx_mixture_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const convert_fx_mixture_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<convert_fx_mixture_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &convert_fx_mixture_response::success},
         ::ores::utility::codec::field{"message", &convert_fx_mixture_response::message},

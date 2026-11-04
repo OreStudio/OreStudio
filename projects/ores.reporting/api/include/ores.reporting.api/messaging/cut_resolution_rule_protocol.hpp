@@ -370,7 +370,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_resolution_rule_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_resolution_rule_key>) {
     return std::tuple{
         utility::codec::field{"code", &cut_resolution_rule_key::code},
     };
@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_resolution_rule_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_resolution_rule_write>) {
     return std::tuple{
         utility::codec::field{"code", &cut_resolution_rule_write::code},
         utility::codec::field{"name", &cut_resolution_rule_write::name},
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_resolution_rule_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_resolution_rule_change>) {
     return std::tuple{
         utility::codec::field{"write", &cut_resolution_rule_change::write},
         utility::codec::field{"precondition", &cut_resolution_rule_change::precondition},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_resolution_rule_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_resolution_rule_removal>) {
     return std::tuple{
         utility::codec::field{"key", &cut_resolution_rule_removal::key},
         utility::codec::field{"precondition", &cut_resolution_rule_removal::precondition},
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_resolution_rule_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_resolution_rule_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &cut_resolution_rule_lookup::key},
         utility::codec::field{"cut_resolution_rule",
@@ -447,7 +447,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_resolution_rules_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_resolution_rules_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &cut_resolution_rules_filter::code_one_of},
     };
@@ -461,7 +461,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_resolution_rule_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_resolution_rule_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &cut_resolution_rule_event::event_id},
         utility::codec::field{"key", &cut_resolution_rule_event::key},
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_resolution_rule_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_resolution_rule_version_key>) {
     return std::tuple{
         utility::codec::field{"cut_resolution_rule",
                               &cut_resolution_rule_version_key::cut_resolution_rule},
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cut_resolution_rule_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_resolution_rule_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &cut_resolution_rule_versions_filter::version},
         utility::codec::field{"from_version", &cut_resolution_rule_versions_filter::from_version},
@@ -512,7 +512,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_cut_resolution_rules_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cut_resolution_rules_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_cut_resolution_rules_request::offset},
         utility::codec::field{"limit", &list_cut_resolution_rules_request::limit},
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_cut_resolution_rules_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cut_resolution_rules_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_cut_resolution_rules_response::result},
         utility::codec::field{"rules", &list_cut_resolution_rules_response::rules},
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cut_resolution_rule_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_resolution_rule_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_cut_resolution_rule_request::key},
     };
@@ -560,7 +560,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cut_resolution_rule_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_resolution_rule_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_cut_resolution_rule_response::result},
         utility::codec::field{"cut_resolution_rule",
@@ -576,7 +576,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_cut_resolution_rules_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_cut_resolution_rules_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_cut_resolution_rules_request::keys},
     };
@@ -590,7 +591,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_cut_resolution_rules_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_cut_resolution_rules_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_cut_resolution_rules_response::result},
         utility::codec::field{"entries", &get_many_cut_resolution_rules_response::entries},
@@ -605,7 +607,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_cut_resolution_rule_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_cut_resolution_rule_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_cut_resolution_rule_request::change},
         utility::codec::field{"intent", &put_cut_resolution_rule_request::intent},
@@ -620,7 +622,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_cut_resolution_rule_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_cut_resolution_rule_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_cut_resolution_rule_response::result},
         utility::codec::field{"cut_resolution_rule",
@@ -636,7 +638,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_cut_resolution_rules_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_cut_resolution_rules_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_cut_resolution_rules_request::changes},
         utility::codec::field{"intent", &put_many_cut_resolution_rules_request::intent},
@@ -651,7 +654,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_cut_resolution_rules_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_cut_resolution_rules_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_cut_resolution_rules_response::result},
         utility::codec::field{"rules", &put_many_cut_resolution_rules_response::rules},
@@ -666,7 +670,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_cut_resolution_rule_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_cut_resolution_rule_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_cut_resolution_rule_request::removal},
         utility::codec::field{"intent", &delete_cut_resolution_rule_request::intent},
@@ -681,7 +685,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_cut_resolution_rule_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_cut_resolution_rule_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_cut_resolution_rule_response::result},
     };
@@ -695,7 +699,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_cut_resolution_rules_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_cut_resolution_rules_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_cut_resolution_rules_request::removals},
         utility::codec::field{"intent", &delete_many_cut_resolution_rules_request::intent},
@@ -710,7 +715,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_cut_resolution_rules_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_cut_resolution_rules_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_cut_resolution_rules_response::result},
     };
@@ -724,7 +730,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_cut_resolution_rule_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_cut_resolution_rule_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_cut_resolution_rule_versions_request::key},
         utility::codec::field{"offset", &list_cut_resolution_rule_versions_request::offset},
@@ -742,7 +749,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_cut_resolution_rule_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_cut_resolution_rule_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_cut_resolution_rule_versions_response::result},
         utility::codec::field{"versions", &list_cut_resolution_rule_versions_response::versions},
@@ -758,7 +766,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cut_resolution_rule_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_cut_resolution_rule_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_cut_resolution_rule_version_request::key},
     };
@@ -772,7 +781,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_resolution_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cut_resolution_rule_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_cut_resolution_rule_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_cut_resolution_rule_version_response::result},
         utility::codec::field{"version", &get_cut_resolution_rule_version_response::version},

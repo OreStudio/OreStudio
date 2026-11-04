@@ -118,7 +118,7 @@ struct convert_fx_simple_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const convert_fx_simple_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<convert_fx_simple_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"process_type", &convert_fx_simple_request::process_type},
         ::ores::utility::codec::field{"to_simple", &convert_fx_simple_request::to_simple},
@@ -145,7 +145,7 @@ struct convert_fx_simple_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const convert_fx_simple_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<convert_fx_simple_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &convert_fx_simple_response::success},
         ::ores::utility::codec::field{"message", &convert_fx_simple_response::message},

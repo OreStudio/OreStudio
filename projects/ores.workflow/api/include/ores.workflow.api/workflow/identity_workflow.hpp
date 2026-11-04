@@ -77,7 +77,7 @@ struct identity_step_request {
     }
 };
 
-[[nodiscard]] constexpr auto wire_fields(const identity_step_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<identity_step_request>) {
     return std::tuple{
         utility::codec::field{"name", &identity_step_request::name},
         utility::codec::field{"behaviour", &identity_step_request::behaviour},
@@ -95,7 +95,7 @@ struct identity_workflow_request {
     std::vector<identity_step_request> steps;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const identity_workflow_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<identity_workflow_request>) {
     return std::tuple{utility::codec::field{"steps", &identity_workflow_request::steps}};
 }
 static_assert(utility::codec::names_every_member<identity_workflow_request>());

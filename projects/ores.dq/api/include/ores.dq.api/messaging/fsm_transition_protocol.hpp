@@ -362,7 +362,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fsm_transition_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fsm_transition_key>) {
     return std::tuple{
         utility::codec::field{"name", &fsm_transition_key::name},
     };
@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fsm_transition_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fsm_transition_write>) {
     return std::tuple{
         utility::codec::field{"id", &fsm_transition_write::id},
         utility::codec::field{"machine_id", &fsm_transition_write::machine_id},
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fsm_transition_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fsm_transition_change>) {
     return std::tuple{
         utility::codec::field{"write", &fsm_transition_change::write},
         utility::codec::field{"precondition", &fsm_transition_change::precondition},
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fsm_transition_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fsm_transition_removal>) {
     return std::tuple{
         utility::codec::field{"key", &fsm_transition_removal::key},
         utility::codec::field{"precondition", &fsm_transition_removal::precondition},
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fsm_transition_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fsm_transition_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &fsm_transition_lookup::key},
         utility::codec::field{"fsm_transition", &fsm_transition_lookup::fsm_transition},
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fsm_transitions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fsm_transitions_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &fsm_transitions_filter::id_one_of},
     };
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fsm_transition_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fsm_transition_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &fsm_transition_event::event_id},
         utility::codec::field{"key", &fsm_transition_event::key},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fsm_transition_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fsm_transition_version_key>) {
     return std::tuple{
         utility::codec::field{"fsm_transition", &fsm_transition_version_key::fsm_transition},
         utility::codec::field{"version", &fsm_transition_version_key::version},
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fsm_transition_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fsm_transition_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &fsm_transition_versions_filter::version},
         utility::codec::field{"from_version", &fsm_transition_versions_filter::from_version},
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fsm_transitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fsm_transitions_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_fsm_transitions_request::offset},
         utility::codec::field{"limit", &list_fsm_transitions_request::limit},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fsm_transitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fsm_transitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_fsm_transitions_response::result},
         utility::codec::field{"transitions", &list_fsm_transitions_response::transitions},
@@ -538,7 +538,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fsm_transition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fsm_transition_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_fsm_transition_request::key},
     };
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fsm_transition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fsm_transition_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_fsm_transition_response::result},
         utility::codec::field{"fsm_transition", &get_fsm_transition_response::fsm_transition},
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_fsm_transitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_fsm_transitions_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_fsm_transitions_request::keys},
     };
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_fsm_transitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_fsm_transitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_fsm_transitions_response::result},
         utility::codec::field{"entries", &get_many_fsm_transitions_response::entries},
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_fsm_transition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_fsm_transition_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_fsm_transition_request::change},
         utility::codec::field{"intent", &put_fsm_transition_request::intent},
@@ -611,7 +611,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_fsm_transition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_fsm_transition_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_fsm_transition_response::result},
         utility::codec::field{"fsm_transition", &put_fsm_transition_response::fsm_transition},
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_fsm_transitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_fsm_transitions_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_fsm_transitions_request::changes},
         utility::codec::field{"intent", &put_many_fsm_transitions_request::intent},
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_fsm_transitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_fsm_transitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_fsm_transitions_response::result},
         utility::codec::field{"transitions", &put_many_fsm_transitions_response::transitions},
@@ -656,7 +656,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_fsm_transition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_fsm_transition_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_fsm_transition_request::removal},
         utility::codec::field{"intent", &delete_fsm_transition_request::intent},
@@ -671,7 +671,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_fsm_transition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_fsm_transition_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_fsm_transition_response::result},
     };
@@ -685,7 +685,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_fsm_transitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_fsm_transitions_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_fsm_transitions_request::removals},
         utility::codec::field{"intent", &delete_many_fsm_transitions_request::intent},
@@ -700,7 +700,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_fsm_transitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_fsm_transitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_fsm_transitions_response::result},
     };
@@ -714,7 +714,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fsm_transition_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fsm_transition_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_fsm_transition_versions_request::key},
         utility::codec::field{"offset", &list_fsm_transition_versions_request::offset},
@@ -732,7 +732,8 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fsm_transition_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_fsm_transition_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_fsm_transition_versions_response::result},
         utility::codec::field{"versions", &list_fsm_transition_versions_response::versions},
@@ -748,7 +749,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fsm_transition_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fsm_transition_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_fsm_transition_version_request::key},
     };
@@ -762,7 +763,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.fsm_transitions.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fsm_transition_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fsm_transition_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_fsm_transition_version_response::result},
         utility::codec::field{"version", &get_fsm_transition_version_response::version},

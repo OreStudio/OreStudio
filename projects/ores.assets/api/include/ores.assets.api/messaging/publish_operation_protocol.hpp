@@ -65,7 +65,7 @@ struct publish_images_from_dq_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_images_from_dq_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_images_from_dq_request>) {
     return std::tuple{};
 }
 

@@ -171,7 +171,7 @@ struct stop_selected_feeds_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const start_selected_feeds_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<start_selected_feeds_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"folder_id", &start_selected_feeds_request::folder_id},
         ::ores::utility::codec::field{"provider_code",
@@ -193,7 +193,7 @@ struct stop_selected_feeds_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const start_selected_feeds_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<start_selected_feeds_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &start_selected_feeds_response::success},
         ::ores::utility::codec::field{"message", &start_selected_feeds_response::message},
@@ -213,7 +213,7 @@ struct stop_selected_feeds_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stop_selected_feeds_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_selected_feeds_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"folder_id", &stop_selected_feeds_request::folder_id},
         ::ores::utility::codec::field{"provider_code", &stop_selected_feeds_request::provider_code},
@@ -234,7 +234,7 @@ struct stop_selected_feeds_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stop_selected_feeds_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_selected_feeds_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &stop_selected_feeds_response::success},
         ::ores::utility::codec::field{"message", &stop_selected_feeds_response::message},

@@ -138,7 +138,7 @@ struct accept_many_provider_terms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const provider_terms_choice&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_terms_choice>) {
     return std::tuple{
         ::ores::utility::codec::field{"provider_code", &provider_terms_choice::provider_code},
         ::ores::utility::codec::field{"provider_version", &provider_terms_choice::provider_version},
@@ -153,7 +153,7 @@ struct accept_many_provider_terms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const provider_terms_outcome&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_terms_outcome>) {
     return std::tuple{
         ::ores::utility::codec::field{"provider_code", &provider_terms_outcome::provider_code},
         ::ores::utility::codec::field{"success", &provider_terms_outcome::success},
@@ -171,7 +171,7 @@ struct accept_many_provider_terms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const accept_many_provider_terms_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<accept_many_provider_terms_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"providers", &accept_many_provider_terms_request::providers},
     };
@@ -185,7 +185,7 @@ struct accept_many_provider_terms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const accept_many_provider_terms_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<accept_many_provider_terms_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &accept_many_provider_terms_response::success},
         ::ores::utility::codec::field{"message", &accept_many_provider_terms_response::message},

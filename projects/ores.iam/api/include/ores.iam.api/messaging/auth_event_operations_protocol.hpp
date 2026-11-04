@@ -105,7 +105,7 @@ struct list_auth_events_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const auth_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<auth_event>) {
     return std::tuple{
         ::ores::utility::codec::field{"id", &auth_event::id},
         ::ores::utility::codec::field{"event_time", &auth_event::event_time},
@@ -126,7 +126,7 @@ struct list_auth_events_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_auth_events_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_auth_events_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"account_id", &list_auth_events_request::account_id},
         ::ores::utility::codec::field{"event_type", &list_auth_events_request::event_type},
@@ -145,7 +145,7 @@ struct list_auth_events_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_auth_events_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_auth_events_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"events", &list_auth_events_response::events},
         ::ores::utility::codec::field{"success", &list_auth_events_response::success},

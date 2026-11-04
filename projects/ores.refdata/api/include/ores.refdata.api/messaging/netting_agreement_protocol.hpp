@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_agreement_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_agreement_key>) {
     return std::tuple{
         utility::codec::field{"agreement_number", &netting_agreement_key::agreement_number},
     };
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_agreement_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_agreement_write>) {
     return std::tuple{
         utility::codec::field{"id", &netting_agreement_write::id},
         utility::codec::field{"agreement_number", &netting_agreement_write::agreement_number},
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_agreement_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_agreement_change>) {
     return std::tuple{
         utility::codec::field{"write", &netting_agreement_change::write},
         utility::codec::field{"precondition", &netting_agreement_change::precondition},
@@ -451,7 +451,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_agreement_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_agreement_removal>) {
     return std::tuple{
         utility::codec::field{"key", &netting_agreement_removal::key},
         utility::codec::field{"precondition", &netting_agreement_removal::precondition},
@@ -466,7 +466,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_agreement_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_agreement_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &netting_agreement_lookup::key},
         utility::codec::field{"netting_agreement", &netting_agreement_lookup::netting_agreement},
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_agreements_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_agreements_filter>) {
     return std::tuple{
         utility::codec::field{"counterparty_id", &netting_agreements_filter::counterparty_id},
         utility::codec::field{"id_one_of", &netting_agreements_filter::id_one_of},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_agreement_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_agreement_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &netting_agreement_event::event_id},
         utility::codec::field{"key", &netting_agreement_event::key},
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_agreement_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_agreement_version_key>) {
     return std::tuple{
         utility::codec::field{"netting_agreement",
                               &netting_agreement_version_key::netting_agreement},
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const netting_agreement_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_agreement_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &netting_agreement_versions_filter::version},
         utility::codec::field{"from_version", &netting_agreement_versions_filter::from_version},
@@ -549,7 +549,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_netting_agreements_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_netting_agreements_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_netting_agreements_request::offset},
         utility::codec::field{"limit", &list_netting_agreements_request::limit},
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_netting_agreements_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_netting_agreements_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_netting_agreements_response::result},
         utility::codec::field{"netting_agreements",
@@ -584,7 +584,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_netting_agreement_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_netting_agreement_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_netting_agreement_request::key},
     };
@@ -598,7 +598,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_netting_agreement_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_netting_agreement_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_netting_agreement_response::result},
         utility::codec::field{"netting_agreement",
@@ -614,7 +614,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_netting_agreements_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_netting_agreements_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_netting_agreements_request::keys},
     };
@@ -628,7 +628,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_netting_agreements_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_netting_agreements_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_netting_agreements_response::result},
         utility::codec::field{"entries", &get_many_netting_agreements_response::entries},
@@ -643,7 +643,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_netting_agreement_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_netting_agreement_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_netting_agreement_request::change},
         utility::codec::field{"intent", &put_netting_agreement_request::intent},
@@ -658,7 +658,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_netting_agreement_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_netting_agreement_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_netting_agreement_response::result},
         utility::codec::field{"netting_agreement",
@@ -674,7 +674,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_netting_agreements_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_netting_agreements_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_netting_agreements_request::changes},
         utility::codec::field{"intent", &put_many_netting_agreements_request::intent},
@@ -689,7 +689,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_netting_agreements_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_netting_agreements_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_netting_agreements_response::result},
         utility::codec::field{"netting_agreements",
@@ -705,7 +705,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_netting_agreement_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_netting_agreement_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_netting_agreement_request::removal},
         utility::codec::field{"intent", &delete_netting_agreement_request::intent},
@@ -720,7 +720,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_netting_agreement_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_netting_agreement_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_netting_agreement_response::result},
     };
@@ -734,7 +734,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_netting_agreements_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_netting_agreements_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_netting_agreements_request::removals},
         utility::codec::field{"intent", &delete_many_netting_agreements_request::intent},
@@ -749,7 +750,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_netting_agreements_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_netting_agreements_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_netting_agreements_response::result},
     };
@@ -764,7 +766,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreement
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_counterparty_id_netting_agreements_request&) {
+wire_fields(std::type_identity<list_by_counterparty_id_netting_agreements_request>) {
     return std::tuple{
         utility::codec::field{"counterparty_id",
                               &list_by_counterparty_id_netting_agreements_request::counterparty_id},
@@ -787,7 +789,7 @@ wire_fields(const list_by_counterparty_id_netting_agreements_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_counterparty_id_netting_agreements_response&) {
+wire_fields(std::type_identity<list_by_counterparty_id_netting_agreements_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_counterparty_id_netting_agreements_response::result},
@@ -806,7 +808,8 @@ wire_fields(const list_by_counterparty_id_netting_agreements_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_netting_agreement_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_netting_agreement_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_netting_agreement_versions_request::key},
         utility::codec::field{"offset", &list_netting_agreement_versions_request::offset},
@@ -824,7 +827,8 @@ wire_fields(const list_by_counterparty_id_netting_agreements_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_netting_agreement_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_netting_agreement_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_netting_agreement_versions_response::result},
         utility::codec::field{"versions", &list_netting_agreement_versions_response::versions},
@@ -840,7 +844,8 @@ wire_fields(const list_by_counterparty_id_netting_agreements_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_netting_agreement_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_netting_agreement_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_netting_agreement_version_request::key},
     };
@@ -854,7 +859,8 @@ wire_fields(const list_by_counterparty_id_netting_agreements_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_netting_agreement_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_netting_agreement_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_netting_agreement_version_response::result},
         utility::codec::field{"version", &get_netting_agreement_version_response::version},

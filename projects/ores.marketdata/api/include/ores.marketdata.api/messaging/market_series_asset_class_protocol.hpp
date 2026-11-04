@@ -311,7 +311,7 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const market_series_asset_class_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<market_series_asset_class_key>) {
     return std::tuple{
         utility::codec::field{"market_series_id", &market_series_asset_class_key::market_series_id},
         utility::codec::field{"asset_class_code", &market_series_asset_class_key::asset_class_code},
@@ -326,7 +326,7 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const market_series_asset_class_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<market_series_asset_class_write>) {
     return std::tuple{
         utility::codec::field{"market_series_id",
                               &market_series_asset_class_write::market_series_id},
@@ -343,7 +343,7 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const market_series_asset_class_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<market_series_asset_class_change>) {
     return std::tuple{
         utility::codec::field{"write", &market_series_asset_class_change::write},
         utility::codec::field{"precondition", &market_series_asset_class_change::precondition},
@@ -358,7 +358,7 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const market_series_asset_class_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<market_series_asset_class_removal>) {
     return std::tuple{
         utility::codec::field{"key", &market_series_asset_class_removal::key},
         utility::codec::field{"precondition", &market_series_asset_class_removal::precondition},
@@ -373,7 +373,7 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const market_series_asset_class_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<market_series_asset_class_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &market_series_asset_class_lookup::key},
         utility::codec::field{"market_series_asset_class",
@@ -389,7 +389,7 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const market_series_asset_classes_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<market_series_asset_classes_filter>) {
     return std::tuple{
         utility::codec::field{"market_series_id",
                               &market_series_asset_classes_filter::market_series_id},
@@ -406,7 +406,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_market_series_asset_classes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_market_series_asset_classes_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_market_series_asset_classes_request::offset},
         utility::codec::field{"limit", &list_market_series_asset_classes_request::limit},
@@ -423,7 +424,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_market_series_asset_classes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_market_series_asset_classes_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_market_series_asset_classes_response::result},
         utility::codec::field{
@@ -441,7 +443,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_market_series_asset_class_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_market_series_asset_class_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_market_series_asset_class_request::key},
     };
@@ -455,7 +458,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_market_series_asset_class_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_market_series_asset_class_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_market_series_asset_class_response::result},
         utility::codec::field{"market_series_asset_class",
@@ -471,7 +475,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_market_series_asset_classes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_market_series_asset_classes_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_market_series_asset_classes_request::keys},
     };
@@ -485,7 +490,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_market_series_asset_classes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_market_series_asset_classes_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_market_series_asset_classes_response::result},
         utility::codec::field{"entries", &get_many_market_series_asset_classes_response::entries},
@@ -500,7 +506,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_market_series_asset_class_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_market_series_asset_class_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_market_series_asset_class_request::change},
         utility::codec::field{"intent", &put_market_series_asset_class_request::intent},
@@ -515,7 +522,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_market_series_asset_class_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_market_series_asset_class_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_market_series_asset_class_response::result},
         utility::codec::field{"market_series_asset_class",
@@ -531,7 +539,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_market_series_asset_classes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_market_series_asset_classes_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_market_series_asset_classes_request::changes},
         utility::codec::field{"intent", &put_many_market_series_asset_classes_request::intent},
@@ -546,7 +555,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_market_series_asset_classes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_market_series_asset_classes_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_market_series_asset_classes_response::result},
         utility::codec::field{
@@ -563,7 +573,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_market_series_asset_class_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_market_series_asset_class_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_market_series_asset_class_request::removal},
         utility::codec::field{"intent", &delete_market_series_asset_class_request::intent},
@@ -578,7 +589,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_market_series_asset_class_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_market_series_asset_class_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_market_series_asset_class_response::result},
     };
@@ -592,7 +604,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_market_series_asset_classes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_market_series_asset_classes_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_market_series_asset_classes_request::removals},
@@ -608,7 +621,8 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_market_series_asset_classes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_market_series_asset_classes_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_market_series_asset_classes_response::result},
     };
@@ -623,7 +637,7 @@ struct list_by_market_series_id_market_series_asset_classes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_market_series_id_market_series_asset_classes_request&) {
+wire_fields(std::type_identity<list_by_market_series_id_market_series_asset_classes_request>) {
     return std::tuple{
         utility::codec::field{
             "market_series_id",
@@ -650,7 +664,7 @@ wire_fields(const list_by_market_series_id_market_series_asset_classes_request&)
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_market_series_id_market_series_asset_classes_response&) {
+wire_fields(std::type_identity<list_by_market_series_id_market_series_asset_classes_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_by_market_series_id_market_series_asset_classes_response::result},

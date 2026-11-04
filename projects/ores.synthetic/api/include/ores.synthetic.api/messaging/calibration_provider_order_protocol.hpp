@@ -381,7 +381,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_provider_order_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_key>) {
     return std::tuple{
         utility::codec::field{"id", &calibration_provider_order_key::id},
     };
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_provider_order_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_write>) {
     return std::tuple{
         utility::codec::field{"id", &calibration_provider_order_write::id},
         utility::codec::field{"policy_id", &calibration_provider_order_write::policy_id},
@@ -412,7 +412,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_provider_order_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_change>) {
     return std::tuple{
         utility::codec::field{"write", &calibration_provider_order_change::write},
         utility::codec::field{"precondition", &calibration_provider_order_change::precondition},
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_provider_order_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_removal>) {
     return std::tuple{
         utility::codec::field{"key", &calibration_provider_order_removal::key},
         utility::codec::field{"precondition", &calibration_provider_order_removal::precondition},
@@ -442,7 +442,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_provider_order_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &calibration_provider_order_lookup::key},
         utility::codec::field{"calibration_provider_order",
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_provider_orders_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_orders_filter>) {
     return std::tuple{
         utility::codec::field{"policy_id", &calibration_provider_orders_filter::policy_id},
         utility::codec::field{"provider_code", &calibration_provider_orders_filter::provider_code},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_provider_order_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &calibration_provider_order_event::event_id},
         utility::codec::field{"key", &calibration_provider_order_event::key},
@@ -497,7 +497,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_provider_order_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<calibration_provider_order_version_key>) {
     return std::tuple{
         utility::codec::field{"calibration_provider_order",
                               &calibration_provider_order_version_key::calibration_provider_order},
@@ -513,7 +514,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calibration_provider_order_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<calibration_provider_order_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &calibration_provider_order_versions_filter::version},
         utility::codec::field{"from_version",
@@ -531,7 +533,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calibration_provider_orders_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_calibration_provider_orders_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_calibration_provider_orders_request::offset},
         utility::codec::field{"limit", &list_calibration_provider_orders_request::limit},
@@ -549,7 +552,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calibration_provider_orders_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_calibration_provider_orders_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_calibration_provider_orders_response::result},
         utility::codec::field{"provider_orders",
@@ -566,7 +570,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calibration_provider_order_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_calibration_provider_order_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_calibration_provider_order_request::key},
     };
@@ -580,7 +585,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calibration_provider_order_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_calibration_provider_order_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_calibration_provider_order_response::result},
         utility::codec::field{"calibration_provider_order",
@@ -596,7 +602,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_calibration_provider_orders_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_calibration_provider_orders_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_calibration_provider_orders_request::keys},
     };
@@ -610,7 +617,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_calibration_provider_orders_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_calibration_provider_orders_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_calibration_provider_orders_response::result},
         utility::codec::field{"entries", &get_many_calibration_provider_orders_response::entries},
@@ -625,7 +633,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_calibration_provider_order_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_calibration_provider_order_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_calibration_provider_order_request::change},
         utility::codec::field{"intent", &put_calibration_provider_order_request::intent},
@@ -640,7 +649,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_calibration_provider_order_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_calibration_provider_order_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_calibration_provider_order_response::result},
         utility::codec::field{"calibration_provider_order",
@@ -656,7 +666,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_calibration_provider_orders_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_calibration_provider_orders_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_calibration_provider_orders_request::changes},
         utility::codec::field{"intent", &put_many_calibration_provider_orders_request::intent},
@@ -671,7 +682,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_calibration_provider_orders_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_calibration_provider_orders_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_calibration_provider_orders_response::result},
         utility::codec::field{"provider_orders",
@@ -687,7 +699,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_calibration_provider_order_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_calibration_provider_order_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_calibration_provider_order_request::removal},
         utility::codec::field{"intent", &delete_calibration_provider_order_request::intent},
@@ -702,7 +715,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_calibration_provider_order_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_calibration_provider_order_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_calibration_provider_order_response::result},
     };
@@ -716,7 +730,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_calibration_provider_orders_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_calibration_provider_orders_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_calibration_provider_orders_request::removals},
@@ -732,7 +747,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_calibration_provider_orders_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_calibration_provider_orders_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_calibration_provider_orders_response::result},
     };
@@ -746,7 +762,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calibration_provider_order_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_calibration_provider_order_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_calibration_provider_order_versions_request::key},
         utility::codec::field{"offset", &list_calibration_provider_order_versions_request::offset},
@@ -764,7 +781,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calibration_provider_order_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_calibration_provider_order_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_calibration_provider_order_versions_response::result},
         utility::codec::field{"versions",
@@ -781,7 +799,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calibration_provider_order_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_calibration_provider_order_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_calibration_provider_order_version_request::key},
     };
@@ -795,7 +814,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calibration_provider_order_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_calibration_provider_order_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_calibration_provider_order_version_response::result},
         utility::codec::field{"version", &get_calibration_provider_order_version_response::version},

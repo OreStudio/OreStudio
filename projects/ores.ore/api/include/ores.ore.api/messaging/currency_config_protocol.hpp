@@ -215,7 +215,7 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const export_currency_config_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<export_currency_config_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"iso_codes", &export_currency_config_request::iso_codes},
     };
@@ -229,7 +229,7 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const export_currency_config_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<export_currency_config_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &export_currency_config_response::success},
         ::ores::utility::codec::field{"message", &export_currency_config_response::message},
@@ -246,7 +246,7 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_import_row&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_import_row>) {
     return std::tuple{
         ::ores::utility::codec::field{"iso_code", &currency_import_row::iso_code},
         ::ores::utility::codec::field{"name", &currency_import_row::name},
@@ -263,7 +263,7 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_import_issue&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_import_issue>) {
     return std::tuple{
         ::ores::utility::codec::field{"kind", &currency_import_issue::kind},
         ::ores::utility::codec::field{"subject", &currency_import_issue::subject},
@@ -279,7 +279,8 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const preview_currency_config_import_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<preview_currency_config_import_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"content", &preview_currency_config_import_request::content},
     };
@@ -293,7 +294,8 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const preview_currency_config_import_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<preview_currency_config_import_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &preview_currency_config_import_response::success},
         ::ores::utility::codec::field{"message", &preview_currency_config_import_response::message},
@@ -317,7 +319,7 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_import_choice&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_import_choice>) {
     return std::tuple{
         ::ores::utility::codec::field{"iso_code", &currency_import_choice::iso_code},
         ::ores::utility::codec::field{"action", &currency_import_choice::action},
@@ -332,7 +334,7 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const import_currency_config_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<import_currency_config_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"content", &import_currency_config_request::content},
         ::ores::utility::codec::field{"choices", &import_currency_config_request::choices},
@@ -349,7 +351,7 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_import_error&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_import_error>) {
     return std::tuple{
         ::ores::utility::codec::field{"iso_code", &currency_import_error::iso_code},
         ::ores::utility::codec::field{"message", &currency_import_error::message},
@@ -364,7 +366,7 @@ struct import_currency_config_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const import_currency_config_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<import_currency_config_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &import_currency_config_response::success},
         ::ores::utility::codec::field{"message", &import_currency_config_response::message},

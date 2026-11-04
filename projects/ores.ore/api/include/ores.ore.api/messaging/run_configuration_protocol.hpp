@@ -219,7 +219,7 @@ struct export_run_configuration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_input_file&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_input_file>) {
     return std::tuple{
         ::ores::utility::codec::field{"name", &run_input_file::name},
         ::ores::utility::codec::field{"content", &run_input_file::content},
@@ -234,7 +234,7 @@ struct export_run_configuration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const saved_document&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<saved_document>) {
     return std::tuple{
         ::ores::utility::codec::field{"configuration_type_code",
                                       &saved_document::configuration_type_code},
@@ -250,7 +250,7 @@ struct export_run_configuration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const import_run_configuration_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<import_run_configuration_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"report_definition_id",
                                       &import_run_configuration_request::report_definition_id},
@@ -267,7 +267,7 @@ struct export_run_configuration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const import_run_configuration_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<import_run_configuration_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &import_run_configuration_response::success},
         ::ores::utility::codec::field{"message", &import_run_configuration_response::message},
@@ -286,7 +286,8 @@ struct export_run_configuration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_configuration_import_execute_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<run_configuration_import_execute_request>) {
     return std::tuple{
         ::ores::utility::codec::field{
             "report_definition_id",
@@ -308,7 +309,8 @@ struct export_run_configuration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_configuration_import_execute_result&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<run_configuration_import_execute_result>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &run_configuration_import_execute_result::success},
         ::ores::utility::codec::field{"message", &run_configuration_import_execute_result::message},
@@ -340,7 +342,8 @@ struct export_run_configuration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_configuration_import_rollback_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<run_configuration_import_rollback_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"correlation_id",
                                       &run_configuration_import_rollback_request::correlation_id},
@@ -364,7 +367,7 @@ struct export_run_configuration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const export_run_configuration_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<export_run_configuration_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"report_definition_id",
                                       &export_run_configuration_request::report_definition_id},
@@ -379,7 +382,7 @@ struct export_run_configuration_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const export_run_configuration_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<export_run_configuration_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &export_run_configuration_response::success},
         ::ores::utility::codec::field{"message", &export_run_configuration_response::message},

@@ -25,13 +25,12 @@
 #ifndef ORES_TRADING_API_DOMAIN_TRADE_PARTY_ROLE_HPP
 #define ORES_TRADING_API_DOMAIN_TRADE_PARTY_ROLE_HPP
 
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -121,23 +120,17 @@ struct trade_party_role final {
 };
 
 /**
- * @brief The members of trade_party_role the customer agreed to.
+ * @brief The canonical text of the members of trade_party_role the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view trade_party_role_economic_fields[] = {
-    "role",
-};
-
-/**
- * @brief Names the members of trade_party_role that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<trade_party_role>) {
-    return trade_party_role_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const trade_party_role& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "role", v.role);
+    out.push_back('}');
+    return out;
 }
 
 /**

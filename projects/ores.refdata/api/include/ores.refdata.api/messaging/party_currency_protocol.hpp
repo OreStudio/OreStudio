@@ -307,7 +307,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const party_currency_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_currency_key>) {
     return std::tuple{
         utility::codec::field{"party_id", &party_currency_key::party_id},
         utility::codec::field{"currency_iso_code", &party_currency_key::currency_iso_code},
@@ -322,7 +322,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const party_currency_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_currency_write>) {
     return std::tuple{
         utility::codec::field{"party_id", &party_currency_write::party_id},
         utility::codec::field{"currency_iso_code", &party_currency_write::currency_iso_code},
@@ -337,7 +337,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const party_currency_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_currency_change>) {
     return std::tuple{
         utility::codec::field{"write", &party_currency_change::write},
         utility::codec::field{"precondition", &party_currency_change::precondition},
@@ -352,7 +352,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const party_currency_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_currency_removal>) {
     return std::tuple{
         utility::codec::field{"key", &party_currency_removal::key},
         utility::codec::field{"precondition", &party_currency_removal::precondition},
@@ -367,7 +367,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const party_currency_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_currency_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &party_currency_lookup::key},
         utility::codec::field{"party_currency", &party_currency_lookup::party_currency},
@@ -382,7 +382,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const party_currencies_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_currencies_filter>) {
     return std::tuple{
         utility::codec::field{"party_id", &party_currencies_filter::party_id},
         utility::codec::field{"party_id_one_of", &party_currencies_filter::party_id_one_of},
@@ -397,7 +397,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const party_currency_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_currency_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &party_currency_event::event_id},
         utility::codec::field{"key", &party_currency_event::key},
@@ -416,7 +416,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_party_currencies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_party_currencies_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_party_currencies_request::offset},
         utility::codec::field{"limit", &list_party_currencies_request::limit},
@@ -433,7 +433,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_party_currencies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_party_currencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_party_currencies_response::result},
         utility::codec::field{"party_currencies",
@@ -450,7 +450,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_party_currency_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_party_currency_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_party_currency_request::key},
     };
@@ -464,7 +464,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_party_currency_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_party_currency_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_party_currency_response::result},
         utility::codec::field{"party_currency", &get_party_currency_response::party_currency},
@@ -479,7 +479,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_party_currencies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_party_currencies_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_party_currencies_request::keys},
     };
@@ -493,7 +493,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_party_currencies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_party_currencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_party_currencies_response::result},
         utility::codec::field{"entries", &get_many_party_currencies_response::entries},
@@ -508,7 +508,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_party_currency_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_party_currency_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_party_currency_request::change},
         utility::codec::field{"intent", &put_party_currency_request::intent},
@@ -523,7 +523,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_party_currency_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_party_currency_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_party_currency_response::result},
         utility::codec::field{"party_currency", &put_party_currency_response::party_currency},
@@ -538,7 +538,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_party_currencies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_party_currencies_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_party_currencies_request::changes},
         utility::codec::field{"intent", &put_many_party_currencies_request::intent},
@@ -553,7 +553,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_party_currencies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_party_currencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_party_currencies_response::result},
         utility::codec::field{"party_currencies",
@@ -569,7 +569,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_party_currency_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_party_currency_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_party_currency_request::removal},
         utility::codec::field{"intent", &delete_party_currency_request::intent},
@@ -584,7 +584,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_party_currency_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_party_currency_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_party_currency_response::result},
     };
@@ -598,7 +598,7 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_party_currencies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_party_currencies_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_party_currencies_request::removals},
         utility::codec::field{"intent", &delete_many_party_currencies_request::intent},
@@ -613,7 +613,8 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_party_currencies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_party_currencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_party_currencies_response::result},
     };
@@ -627,7 +628,8 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_party_id_party_currencies_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_party_id_party_currencies_request>) {
     return std::tuple{
         utility::codec::field{"party_id", &list_by_party_id_party_currencies_request::party_id},
         utility::codec::field{"scope", &list_by_party_id_party_currencies_request::scope},
@@ -646,7 +648,8 @@ struct list_by_party_id_party_currencies_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_party_id_party_currencies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_party_id_party_currencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_party_id_party_currencies_response::result},
         utility::codec::field{"party_currencies",

@@ -45,7 +45,7 @@ namespace ores::dq::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodology&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodology>) {
     return std::tuple{
         utility::codec::field{"version", &methodology::version},
         utility::codec::field{"tenant_id", &methodology::tenant_id},

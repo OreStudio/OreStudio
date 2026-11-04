@@ -102,7 +102,7 @@ struct get_session_statistics_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const session_statistics_row&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<session_statistics_row>) {
     return std::tuple{
         ::ores::utility::codec::field{"day", &session_statistics_row::day},
         ::ores::utility::codec::field{"account_id", &session_statistics_row::account_id},
@@ -129,7 +129,7 @@ struct get_session_statistics_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_session_statistics_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_statistics_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"account_id", &get_session_statistics_request::account_id},
         ::ores::utility::codec::field{"from_time", &get_session_statistics_request::from_time},
@@ -147,7 +147,7 @@ struct get_session_statistics_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_session_statistics_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_statistics_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"rows", &get_session_statistics_response::rows},
         ::ores::utility::codec::field{"success", &get_session_statistics_response::success},

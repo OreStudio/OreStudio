@@ -104,7 +104,7 @@ struct publish_datasets_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_datasets_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_datasets_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"dataset_ids", &publish_datasets_request::dataset_ids},
         ::ores::utility::codec::field{"mode", &publish_datasets_request::mode},
@@ -122,7 +122,7 @@ struct publish_datasets_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_datasets_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_datasets_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &publish_datasets_response::success},
         ::ores::utility::codec::field{"message", &publish_datasets_response::message},

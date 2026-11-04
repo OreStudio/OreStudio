@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const rate_card_component_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_key>) {
     return std::tuple{
         utility::codec::field{"driver", &rate_card_component_key::driver},
     };
@@ -392,7 +392,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const rate_card_component_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_write>) {
     return std::tuple{
         utility::codec::field{"id", &rate_card_component_write::id},
         utility::codec::field{"feed_id", &rate_card_component_write::feed_id},
@@ -413,7 +413,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const rate_card_component_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_change>) {
     return std::tuple{
         utility::codec::field{"write", &rate_card_component_change::write},
         utility::codec::field{"precondition", &rate_card_component_change::precondition},
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const rate_card_component_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_removal>) {
     return std::tuple{
         utility::codec::field{"key", &rate_card_component_removal::key},
         utility::codec::field{"precondition", &rate_card_component_removal::precondition},
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const rate_card_component_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &rate_card_component_lookup::key},
         utility::codec::field{"rate_card_component",
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const rate_card_components_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_components_filter>) {
     return std::tuple{
         utility::codec::field{"feed_id", &rate_card_components_filter::feed_id},
         utility::codec::field{"driver", &rate_card_components_filter::driver},
@@ -477,7 +477,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const rate_card_component_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &rate_card_component_event::event_id},
         utility::codec::field{"key", &rate_card_component_event::key},
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const rate_card_component_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_version_key>) {
     return std::tuple{
         utility::codec::field{"rate_card_component",
                               &rate_card_component_version_key::rate_card_component},
@@ -512,7 +512,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const rate_card_component_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &rate_card_component_versions_filter::version},
         utility::codec::field{"from_version", &rate_card_component_versions_filter::from_version},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_rate_card_components_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_rate_card_components_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_rate_card_components_request::offset},
         utility::codec::field{"limit", &list_rate_card_components_request::limit},
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_rate_card_components_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_rate_card_components_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_rate_card_components_response::result},
         utility::codec::field{"rate_card_components",
@@ -563,7 +563,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_rate_card_component_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_rate_card_component_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_rate_card_component_request::key},
     };
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_rate_card_component_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_rate_card_component_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_rate_card_component_response::result},
         utility::codec::field{"rate_card_component",
@@ -593,7 +593,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_rate_card_components_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_rate_card_components_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_rate_card_components_request::keys},
     };
@@ -607,7 +608,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_rate_card_components_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_rate_card_components_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_rate_card_components_response::result},
         utility::codec::field{"entries", &get_many_rate_card_components_response::entries},
@@ -622,7 +624,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_rate_card_component_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_rate_card_component_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_rate_card_component_request::change},
         utility::codec::field{"intent", &put_rate_card_component_request::intent},
@@ -637,7 +639,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_rate_card_component_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_rate_card_component_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_rate_card_component_response::result},
         utility::codec::field{"rate_card_component",
@@ -653,7 +655,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_rate_card_components_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_rate_card_components_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_rate_card_components_request::changes},
         utility::codec::field{"intent", &put_many_rate_card_components_request::intent},
@@ -668,7 +671,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_rate_card_components_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_rate_card_components_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_rate_card_components_response::result},
         utility::codec::field{"rate_card_components",
@@ -684,7 +688,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_rate_card_component_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_rate_card_component_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_rate_card_component_request::removal},
         utility::codec::field{"intent", &delete_rate_card_component_request::intent},
@@ -699,7 +703,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_rate_card_component_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_rate_card_component_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_rate_card_component_response::result},
     };
@@ -713,7 +717,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_rate_card_components_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_rate_card_components_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_rate_card_components_request::removals},
         utility::codec::field{"intent", &delete_many_rate_card_components_request::intent},
@@ -728,7 +733,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_rate_card_components_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_rate_card_components_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_rate_card_components_response::result},
     };
@@ -742,7 +748,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_rate_card_component_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_rate_card_component_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_rate_card_component_versions_request::key},
         utility::codec::field{"offset", &list_rate_card_component_versions_request::offset},
@@ -760,7 +767,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_rate_card_component_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_rate_card_component_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_rate_card_component_versions_response::result},
         utility::codec::field{"versions", &list_rate_card_component_versions_response::versions},
@@ -776,7 +784,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_rate_card_component_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_rate_card_component_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_rate_card_component_version_request::key},
     };
@@ -790,7 +799,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_rate_card_component_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_rate_card_component_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_rate_card_component_version_response::result},
         utility::codec::field{"version", &get_rate_card_component_version_response::version},

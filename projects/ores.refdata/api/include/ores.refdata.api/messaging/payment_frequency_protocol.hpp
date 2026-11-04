@@ -368,7 +368,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const payment_frequency_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payment_frequency_key>) {
     return std::tuple{
         utility::codec::field{"code", &payment_frequency_key::code},
     };
@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const payment_frequency_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payment_frequency_write>) {
     return std::tuple{
         utility::codec::field{"code", &payment_frequency_write::code},
         utility::codec::field{"name", &payment_frequency_write::name},
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const payment_frequency_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payment_frequency_change>) {
     return std::tuple{
         utility::codec::field{"write", &payment_frequency_change::write},
         utility::codec::field{"precondition", &payment_frequency_change::precondition},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const payment_frequency_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payment_frequency_removal>) {
     return std::tuple{
         utility::codec::field{"key", &payment_frequency_removal::key},
         utility::codec::field{"precondition", &payment_frequency_removal::precondition},
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const payment_frequency_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payment_frequency_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &payment_frequency_lookup::key},
         utility::codec::field{"payment_frequency", &payment_frequency_lookup::payment_frequency},
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const payment_frequencies_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payment_frequencies_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &payment_frequencies_filter::code_one_of},
     };
@@ -460,7 +460,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const payment_frequency_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payment_frequency_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &payment_frequency_event::event_id},
         utility::codec::field{"key", &payment_frequency_event::key},
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const payment_frequency_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payment_frequency_version_key>) {
     return std::tuple{
         utility::codec::field{"payment_frequency",
                               &payment_frequency_version_key::payment_frequency},
@@ -495,7 +495,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const payment_frequency_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payment_frequency_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &payment_frequency_versions_filter::version},
         utility::codec::field{"from_version", &payment_frequency_versions_filter::from_version},
@@ -511,7 +511,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_payment_frequencies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_payment_frequencies_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_payment_frequencies_request::offset},
         utility::codec::field{"limit", &list_payment_frequencies_request::limit},
@@ -529,7 +529,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_payment_frequencies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_payment_frequencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_payment_frequencies_response::result},
         utility::codec::field{"payment_frequencies",
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_payment_frequency_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_payment_frequency_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_payment_frequency_request::key},
     };
@@ -560,7 +560,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_payment_frequency_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_payment_frequency_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_payment_frequency_response::result},
         utility::codec::field{"payment_frequency",
@@ -576,7 +576,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_payment_frequencies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_payment_frequencies_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_payment_frequencies_request::keys},
     };
@@ -590,7 +590,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_payment_frequencies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_payment_frequencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_payment_frequencies_response::result},
         utility::codec::field{"entries", &get_many_payment_frequencies_response::entries},
@@ -605,7 +606,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_payment_frequency_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_payment_frequency_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_payment_frequency_request::change},
         utility::codec::field{"intent", &put_payment_frequency_request::intent},
@@ -620,7 +621,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_payment_frequency_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_payment_frequency_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_payment_frequency_response::result},
         utility::codec::field{"payment_frequency",
@@ -636,7 +637,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_payment_frequencies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_payment_frequencies_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_payment_frequencies_request::changes},
         utility::codec::field{"intent", &put_many_payment_frequencies_request::intent},
@@ -651,7 +652,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_payment_frequencies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_payment_frequencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_payment_frequencies_response::result},
         utility::codec::field{"payment_frequencies",
@@ -667,7 +669,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_payment_frequency_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_payment_frequency_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_payment_frequency_request::removal},
         utility::codec::field{"intent", &delete_payment_frequency_request::intent},
@@ -682,7 +684,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_payment_frequency_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_payment_frequency_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_payment_frequency_response::result},
     };
@@ -696,7 +698,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_payment_frequencies_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_payment_frequencies_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_payment_frequencies_request::removals},
         utility::codec::field{"intent", &delete_many_payment_frequencies_request::intent},
@@ -711,7 +714,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_payment_frequencies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_payment_frequencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_payment_frequencies_response::result},
     };
@@ -725,7 +729,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_payment_frequency_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_payment_frequency_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_payment_frequency_versions_request::key},
         utility::codec::field{"offset", &list_payment_frequency_versions_request::offset},
@@ -743,7 +748,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_payment_frequency_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_payment_frequency_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_payment_frequency_versions_response::result},
         utility::codec::field{"versions", &list_payment_frequency_versions_response::versions},
@@ -759,7 +765,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_payment_frequency_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_payment_frequency_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_payment_frequency_version_request::key},
     };
@@ -773,7 +780,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequenci
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_payment_frequency_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_payment_frequency_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_payment_frequency_version_response::result},
         utility::codec::field{"version", &get_payment_frequency_version_response::version},

@@ -97,7 +97,7 @@ struct reset_system_result {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const reset_tenant_command&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reset_tenant_command>) {
     return std::tuple{
         ::ores::utility::codec::field{"tenant_code", &reset_tenant_command::tenant_code},
     };
@@ -111,7 +111,7 @@ struct reset_system_result {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const reset_tenant_result&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reset_tenant_result>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &reset_tenant_result::success},
         ::ores::utility::codec::field{"message", &reset_tenant_result::message},
@@ -126,7 +126,7 @@ struct reset_system_result {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const reset_system_command&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reset_system_command>) {
     return std::tuple{};
 }
 
@@ -138,7 +138,7 @@ struct reset_system_result {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const reset_system_result&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reset_system_result>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &reset_system_result::success},
         ::ores::utility::codec::field{"message", &reset_system_result::message},

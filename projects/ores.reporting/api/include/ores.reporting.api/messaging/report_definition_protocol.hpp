@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_definition_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_key>) {
     return std::tuple{
         utility::codec::field{"name", &report_definition_key::name},
     };
@@ -400,7 +400,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_definition_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_write>) {
     return std::tuple{
         utility::codec::field{"id", &report_definition_write::id},
         utility::codec::field{"name", &report_definition_write::name},
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_definition_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_change>) {
     return std::tuple{
         utility::codec::field{"write", &report_definition_change::write},
         utility::codec::field{"precondition", &report_definition_change::precondition},
@@ -447,7 +447,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_definition_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_removal>) {
     return std::tuple{
         utility::codec::field{"key", &report_definition_removal::key},
         utility::codec::field{"precondition", &report_definition_removal::precondition},
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_definition_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &report_definition_lookup::key},
         utility::codec::field{"report_definition", &report_definition_lookup::report_definition},
@@ -477,7 +477,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_definitions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definitions_filter>) {
     return std::tuple{
         utility::codec::field{"party_id", &report_definitions_filter::party_id},
         utility::codec::field{"cut_kind_code", &report_definitions_filter::cut_kind_code},
@@ -497,7 +497,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_definition_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &report_definition_event::event_id},
         utility::codec::field{"key", &report_definition_event::key},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_definition_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_version_key>) {
     return std::tuple{
         utility::codec::field{"report_definition",
                               &report_definition_version_key::report_definition},
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_definition_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &report_definition_versions_filter::version},
         utility::codec::field{"from_version", &report_definition_versions_filter::from_version},
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_definitions_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_report_definitions_request::offset},
         utility::codec::field{"limit", &list_report_definitions_request::limit},
@@ -566,7 +566,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_report_definitions_response::result},
         utility::codec::field{"definitions", &list_report_definitions_response::definitions},
@@ -582,7 +582,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_definition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_definition_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_report_definition_request::key},
     };
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_definition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_definition_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_report_definition_response::result},
         utility::codec::field{"report_definition",
@@ -612,7 +612,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_report_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_report_definitions_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_report_definitions_request::keys},
     };
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_report_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_report_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_report_definitions_response::result},
         utility::codec::field{"entries", &get_many_report_definitions_response::entries},
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_report_definition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_report_definition_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_report_definition_request::change},
         utility::codec::field{"intent", &put_report_definition_request::intent},
@@ -656,7 +656,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_report_definition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_report_definition_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_report_definition_response::result},
         utility::codec::field{"report_definition",
@@ -672,7 +672,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_report_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_report_definitions_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_report_definitions_request::changes},
         utility::codec::field{"intent", &put_many_report_definitions_request::intent},
@@ -687,7 +687,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_report_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_report_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_report_definitions_response::result},
         utility::codec::field{"definitions", &put_many_report_definitions_response::definitions},
@@ -702,7 +702,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_report_definition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_report_definition_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_report_definition_request::removal},
         utility::codec::field{"intent", &delete_report_definition_request::intent},
@@ -717,7 +717,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_report_definition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_report_definition_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_report_definition_response::result},
     };
@@ -731,7 +731,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_report_definitions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_report_definitions_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_report_definitions_request::removals},
         utility::codec::field{"intent", &delete_many_report_definitions_request::intent},
@@ -746,7 +747,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_report_definitions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_report_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_report_definitions_response::result},
     };
@@ -760,7 +762,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_definition_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_report_definition_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_report_definition_versions_request::key},
         utility::codec::field{"offset", &list_report_definition_versions_request::offset},
@@ -778,7 +781,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_definition_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_report_definition_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_report_definition_versions_response::result},
         utility::codec::field{"versions", &list_report_definition_versions_response::versions},
@@ -794,7 +798,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_definition_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_report_definition_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_report_definition_version_request::key},
     };
@@ -808,7 +813,8 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_definiti
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_definition_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_report_definition_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_report_definition_version_response::result},
         utility::codec::field{"version", &get_report_definition_version_response::version},

@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_setting_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_group_setting_key>) {
     return std::tuple{
         utility::codec::field{"code", &engine_settings_group_setting_key::code},
     };
@@ -398,7 +398,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_setting_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_group_setting_write>) {
     return std::tuple{
         utility::codec::field{"code", &engine_settings_group_setting_write::code},
         utility::codec::field{"group_code", &engine_settings_group_setting_write::group_code},
@@ -418,7 +418,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_setting_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_group_setting_change>) {
     return std::tuple{
         utility::codec::field{"write", &engine_settings_group_setting_change::write},
         utility::codec::field{"precondition", &engine_settings_group_setting_change::precondition},
@@ -433,7 +433,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_setting_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<engine_settings_group_setting_removal>) {
     return std::tuple{
         utility::codec::field{"key", &engine_settings_group_setting_removal::key},
         utility::codec::field{"precondition", &engine_settings_group_setting_removal::precondition},
@@ -448,7 +449,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_setting_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_group_setting_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &engine_settings_group_setting_lookup::key},
         utility::codec::field{"engine_settings_group_setting",
@@ -464,7 +465,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_settings_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<engine_settings_group_settings_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &engine_settings_group_settings_filter::code_one_of},
     };
@@ -478,7 +480,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_setting_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_group_setting_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &engine_settings_group_setting_event::event_id},
         utility::codec::field{"key", &engine_settings_group_setting_event::key},
@@ -498,7 +500,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_setting_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<engine_settings_group_setting_version_key>) {
     return std::tuple{
         utility::codec::field{
             "engine_settings_group_setting",
@@ -515,7 +518,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_setting_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<engine_settings_group_setting_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &engine_settings_group_setting_versions_filter::version},
         utility::codec::field{"from_version",
@@ -533,7 +537,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_engine_settings_group_settings_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_engine_settings_group_settings_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_engine_settings_group_settings_request::offset},
         utility::codec::field{"limit", &list_engine_settings_group_settings_request::limit},
@@ -551,7 +556,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_engine_settings_group_settings_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_engine_settings_group_settings_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_engine_settings_group_settings_response::result},
         utility::codec::field{"settings", &list_engine_settings_group_settings_response::settings},
@@ -567,7 +573,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_group_setting_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_engine_settings_group_setting_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_engine_settings_group_setting_request::key},
     };
@@ -581,7 +588,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_group_setting_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_engine_settings_group_setting_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_engine_settings_group_setting_response::result},
         utility::codec::field{
@@ -598,7 +606,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_engine_settings_group_settings_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_engine_settings_group_settings_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_engine_settings_group_settings_request::keys},
     };
@@ -612,7 +621,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_engine_settings_group_settings_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_engine_settings_group_settings_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_engine_settings_group_settings_response::result},
         utility::codec::field{"entries",
@@ -628,7 +638,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_engine_settings_group_setting_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_engine_settings_group_setting_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_engine_settings_group_setting_request::change},
         utility::codec::field{"intent", &put_engine_settings_group_setting_request::intent},
@@ -643,7 +654,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_engine_settings_group_setting_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_engine_settings_group_setting_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_engine_settings_group_setting_response::result},
         utility::codec::field{
@@ -660,7 +672,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_engine_settings_group_settings_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_engine_settings_group_settings_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_engine_settings_group_settings_request::changes},
         utility::codec::field{"intent", &put_many_engine_settings_group_settings_request::intent},
@@ -675,7 +688,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_engine_settings_group_settings_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_engine_settings_group_settings_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_engine_settings_group_settings_response::result},
         utility::codec::field{"settings",
@@ -691,7 +705,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_engine_settings_group_setting_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_engine_settings_group_setting_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_engine_settings_group_setting_request::removal},
         utility::codec::field{"intent", &delete_engine_settings_group_setting_request::intent},
@@ -706,7 +721,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_engine_settings_group_setting_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_engine_settings_group_setting_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_engine_settings_group_setting_response::result},
     };
@@ -721,7 +737,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_engine_settings_group_settings_request&) {
+wire_fields(std::type_identity<delete_many_engine_settings_group_settings_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_engine_settings_group_settings_request::removals},
@@ -739,7 +755,7 @@ wire_fields(const delete_many_engine_settings_group_settings_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_engine_settings_group_settings_response&) {
+wire_fields(std::type_identity<delete_many_engine_settings_group_settings_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_engine_settings_group_settings_response::result},
@@ -755,7 +771,7 @@ wire_fields(const delete_many_engine_settings_group_settings_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_engine_settings_group_setting_versions_request&) {
+wire_fields(std::type_identity<list_engine_settings_group_setting_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_engine_settings_group_setting_versions_request::key},
         utility::codec::field{"offset",
@@ -776,7 +792,7 @@ wire_fields(const list_engine_settings_group_setting_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_engine_settings_group_setting_versions_response&) {
+wire_fields(std::type_identity<list_engine_settings_group_setting_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_engine_settings_group_setting_versions_response::result},
@@ -795,7 +811,8 @@ wire_fields(const list_engine_settings_group_setting_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_group_setting_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_engine_settings_group_setting_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_engine_settings_group_setting_version_request::key},
     };
@@ -810,7 +827,7 @@ wire_fields(const list_engine_settings_group_setting_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_engine_settings_group_setting_version_response&) {
+wire_fields(std::type_identity<get_engine_settings_group_setting_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_engine_settings_group_setting_version_response::result},

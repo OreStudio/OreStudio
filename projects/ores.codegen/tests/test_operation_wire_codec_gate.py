@@ -57,7 +57,7 @@ def test_an_operation_that_did_not_opt_in_gets_no_shape_and_no_extra_bytes():
 
 def test_an_operation_that_opted_in_names_its_messages_by_its_own_namespace():
     out = render(HEADER, True)
-    assert "wire_fields(const move_widget_request&)" in out
+    assert "wire_fields(std::type_identity<move_widget_request>)" in out
     assert ('::ores::utility::codec::field{"widget_id", '
             "&move_widget_request::widget_id}") in out
     assert "wire_traits<ores::x::service::move_widget_request>" in out

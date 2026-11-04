@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sensitivity_asset_class_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_key>) {
     return std::tuple{
         utility::codec::field{"asset_class_code", &sensitivity_asset_class_key::asset_class_code},
     };
@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sensitivity_asset_class_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_write>) {
     return std::tuple{
         utility::codec::field{"asset_class_code", &sensitivity_asset_class_write::asset_class_code},
         utility::codec::field{"template_prefix", &sensitivity_asset_class_write::template_prefix},
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sensitivity_asset_class_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_change>) {
     return std::tuple{
         utility::codec::field{"write", &sensitivity_asset_class_change::write},
         utility::codec::field{"precondition", &sensitivity_asset_class_change::precondition},
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sensitivity_asset_class_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_removal>) {
     return std::tuple{
         utility::codec::field{"key", &sensitivity_asset_class_removal::key},
         utility::codec::field{"precondition", &sensitivity_asset_class_removal::precondition},
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sensitivity_asset_class_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &sensitivity_asset_class_lookup::key},
         utility::codec::field{"sensitivity_asset_class",
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sensitivity_asset_classes_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_classes_filter>) {
     return std::tuple{
         utility::codec::field{"asset_class_code_one_of",
                               &sensitivity_asset_classes_filter::asset_class_code_one_of},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sensitivity_asset_class_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &sensitivity_asset_class_event::event_id},
         utility::codec::field{"key", &sensitivity_asset_class_event::key},
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sensitivity_asset_class_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_version_key>) {
     return std::tuple{
         utility::codec::field{"sensitivity_asset_class",
                               &sensitivity_asset_class_version_key::sensitivity_asset_class},
@@ -502,7 +502,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const sensitivity_asset_class_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<sensitivity_asset_class_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &sensitivity_asset_class_versions_filter::version},
         utility::codec::field{"from_version",
@@ -519,7 +520,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_sensitivity_asset_classes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_sensitivity_asset_classes_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_sensitivity_asset_classes_request::offset},
         utility::codec::field{"limit", &list_sensitivity_asset_classes_request::limit},
@@ -537,7 +539,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_sensitivity_asset_classes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_sensitivity_asset_classes_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_sensitivity_asset_classes_response::result},
         utility::codec::field{"asset_classes",
@@ -554,7 +557,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_sensitivity_asset_class_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sensitivity_asset_class_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_sensitivity_asset_class_request::key},
     };
@@ -568,7 +571,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_sensitivity_asset_class_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sensitivity_asset_class_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_sensitivity_asset_class_response::result},
         utility::codec::field{"sensitivity_asset_class",
@@ -584,7 +587,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_sensitivity_asset_classes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_sensitivity_asset_classes_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_sensitivity_asset_classes_request::keys},
     };
@@ -598,7 +602,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_sensitivity_asset_classes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_sensitivity_asset_classes_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_sensitivity_asset_classes_response::result},
         utility::codec::field{"entries", &get_many_sensitivity_asset_classes_response::entries},
@@ -613,7 +618,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_sensitivity_asset_class_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_sensitivity_asset_class_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_sensitivity_asset_class_request::change},
         utility::codec::field{"intent", &put_sensitivity_asset_class_request::intent},
@@ -628,7 +633,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_sensitivity_asset_class_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_sensitivity_asset_class_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_sensitivity_asset_class_response::result},
         utility::codec::field{"sensitivity_asset_class",
@@ -644,7 +649,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_sensitivity_asset_classes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_sensitivity_asset_classes_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_sensitivity_asset_classes_request::changes},
         utility::codec::field{"intent", &put_many_sensitivity_asset_classes_request::intent},
@@ -659,7 +665,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_sensitivity_asset_classes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_sensitivity_asset_classes_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_sensitivity_asset_classes_response::result},
         utility::codec::field{"asset_classes",
@@ -675,7 +682,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_sensitivity_asset_class_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_sensitivity_asset_class_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_sensitivity_asset_class_request::removal},
         utility::codec::field{"intent", &delete_sensitivity_asset_class_request::intent},
@@ -690,7 +698,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_sensitivity_asset_class_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_sensitivity_asset_class_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_sensitivity_asset_class_response::result},
     };
@@ -704,7 +713,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_sensitivity_asset_classes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_sensitivity_asset_classes_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_sensitivity_asset_classes_request::removals},
         utility::codec::field{"intent", &delete_many_sensitivity_asset_classes_request::intent},
@@ -719,7 +729,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_sensitivity_asset_classes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_sensitivity_asset_classes_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_sensitivity_asset_classes_response::result},
     };
@@ -733,7 +744,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_sensitivity_asset_class_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_sensitivity_asset_class_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_sensitivity_asset_class_versions_request::key},
         utility::codec::field{"offset", &list_sensitivity_asset_class_versions_request::offset},
@@ -751,7 +763,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_sensitivity_asset_class_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_sensitivity_asset_class_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_sensitivity_asset_class_versions_response::result},
         utility::codec::field{"versions",
@@ -768,7 +781,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_sensitivity_asset_class_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_sensitivity_asset_class_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_sensitivity_asset_class_version_request::key},
     };
@@ -782,7 +796,8 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_sensitivity_asset_class_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_sensitivity_asset_class_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_sensitivity_asset_class_version_response::result},
         utility::codec::field{"version", &get_sensitivity_asset_class_version_response::version},

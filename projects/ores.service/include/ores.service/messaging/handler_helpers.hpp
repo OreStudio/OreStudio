@@ -29,11 +29,11 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.security/authorization/grants.hpp"
 #include "ores.service/error_code.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <optional>
-#include <rfl.hpp>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -219,14 +219,18 @@ void stamp_document(T& v,
                          }) {
         if (v)
             stamp_document(*v, ctx, change_reason);
-    } else if constexpr (std::is_class_v<T> && std::is_aggregate_v<T>) {
+    } else if constexpr (std::is_class_v<T> && std::is_aggregate_v<T> &&
+                         !std::is_same_v<T, boost::uuids::uuid>) {
+        static_assert(ores::utility::codec::states_wire_form<T>,
+                      "stamp_document walks a struct by its stated shape. Include the "
+                      "type's codec header, which states it.");
         // A grouped row keeps the security fields in a member rather than on
         // the struct, so each member is stamped as well as walked into.
         // stamp() is guarded field by field and does nothing for a member that
         // carries none of them.
-        rfl::to_view(v).apply([&](const auto& field) {
-            stamp(*field.value(), ctx, change_reason);
-            stamp_document(*field.value(), ctx, change_reason);
+        ores::utility::codec::for_each_field(v, [&](std::string_view, auto& member) {
+            stamp(member, ctx, change_reason);
+            stamp_document(member, ctx, change_reason);
         });
     }
 }

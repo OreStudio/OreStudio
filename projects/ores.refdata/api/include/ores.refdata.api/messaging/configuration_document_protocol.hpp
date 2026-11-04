@@ -95,8 +95,14 @@
 #include "ores.refdata.api/domain/swaption_volatility_smile.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -317,6 +323,388 @@ struct delete_curve_configuration_document_response {
                            const delete_curve_configuration_document_response&) = default;
 };
 
+/**
+ * @brief The members of fx_convention, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_convention>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"pair", &fx_convention::pair},
+        ::ores::utility::codec::field{"convention", &fx_convention::convention},
+        ::ores::utility::codec::field{"spot_days", &fx_convention::spot_days},
+        ::ores::utility::codec::field{"advance_calendars", &fx_convention::advance_calendars},
+    };
 }
+
+/**
+ * @brief The members of curve_configuration_document, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_configuration_document>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"config", &curve_configuration_document::config},
+        ::ores::utility::codec::field{"sections", &curve_configuration_document::sections},
+        ::ores::utility::codec::field{"definitions", &curve_configuration_document::definitions},
+        ::ores::utility::codec::field{"yield_curves", &curve_configuration_document::yield_curves},
+        ::ores::utility::codec::field{"equity_curves",
+                                      &curve_configuration_document::equity_curves},
+        ::ores::utility::codec::field{"inflation_curves",
+                                      &curve_configuration_document::inflation_curves},
+        ::ores::utility::codec::field{"default_curves",
+                                      &curve_configuration_document::default_curves},
+        ::ores::utility::codec::field{"commodity_curves",
+                                      &curve_configuration_document::commodity_curves},
+        ::ores::utility::codec::field{
+            "commodity_curve_interpolations",
+            &curve_configuration_document::commodity_curve_interpolations},
+        ::ores::utility::codec::field{"commodity_curve_directs",
+                                      &curve_configuration_document::commodity_curve_directs},
+        ::ores::utility::codec::field{
+            "commodity_curve_cross_currencies",
+            &curve_configuration_document::commodity_curve_cross_currencies},
+        ::ores::utility::codec::field{"commodity_curve_bases",
+                                      &curve_configuration_document::commodity_curve_bases},
+        ::ores::utility::codec::field{"fx_volatilities",
+                                      &curve_configuration_document::fx_volatilities},
+        ::ores::utility::codec::field{"fx_volatility_smiles",
+                                      &curve_configuration_document::fx_volatility_smiles},
+        ::ores::utility::codec::field{"yield_volatilities",
+                                      &curve_configuration_document::yield_volatilities},
+        ::ores::utility::codec::field{"base_correlations",
+                                      &curve_configuration_document::base_correlations},
+        ::ores::utility::codec::field{"correlations", &curve_configuration_document::correlations},
+        ::ores::utility::codec::field{"report_configurations",
+                                      &curve_configuration_document::report_configurations},
+        ::ores::utility::codec::field{"cds_volatilities",
+                                      &curve_configuration_document::cds_volatilities},
+        ::ores::utility::codec::field{"cds_volatility_terms",
+                                      &curve_configuration_document::cds_volatility_terms},
+        ::ores::utility::codec::field{"volatility_configs",
+                                      &curve_configuration_document::volatility_configs},
+        ::ores::utility::codec::field{"volatility_kinds",
+                                      &curve_configuration_document::volatility_kinds},
+        ::ores::utility::codec::field{"volatility_constants",
+                                      &curve_configuration_document::volatility_constants},
+        ::ores::utility::codec::field{"volatility_curves",
+                                      &curve_configuration_document::volatility_curves},
+        ::ores::utility::codec::field{"volatility_strike_surfaces",
+                                      &curve_configuration_document::volatility_strike_surfaces},
+        ::ores::utility::codec::field{"volatility_delta_surfaces",
+                                      &curve_configuration_document::volatility_delta_surfaces},
+        ::ores::utility::codec::field{"volatility_moneyness_surfaces",
+                                      &curve_configuration_document::volatility_moneyness_surfaces},
+        ::ores::utility::codec::field{"volatility_proxy_surfaces",
+                                      &curve_configuration_document::volatility_proxy_surfaces},
+        ::ores::utility::codec::field{"volatility_smiles",
+                                      &curve_configuration_document::volatility_smiles},
+        ::ores::utility::codec::field{"volatility_smile_parameters",
+                                      &curve_configuration_document::volatility_smile_parameters},
+        ::ores::utility::codec::field{
+            "inflation_cap_floor_volatilities",
+            &curve_configuration_document::inflation_cap_floor_volatilities},
+        ::ores::utility::codec::field{"inflation_volatility_strikes",
+                                      &curve_configuration_document::inflation_volatility_strikes},
+        ::ores::utility::codec::field{"swaption_volatilities",
+                                      &curve_configuration_document::swaption_volatilities},
+        ::ores::utility::codec::field{"swaption_proxy_configs",
+                                      &curve_configuration_document::swaption_proxy_configs},
+        ::ores::utility::codec::field{"swaption_volatility_smiles",
+                                      &curve_configuration_document::swaption_volatility_smiles},
+        ::ores::utility::codec::field{"cap_floor_volatilities",
+                                      &curve_configuration_document::cap_floor_volatilities},
+        ::ores::utility::codec::field{"cap_floor_proxy_configs",
+                                      &curve_configuration_document::cap_floor_proxy_configs},
+        ::ores::utility::codec::field{"parametric_smiles",
+                                      &curve_configuration_document::parametric_smiles},
+        ::ores::utility::codec::field{"parametric_smile_parameters",
+                                      &curve_configuration_document::parametric_smile_parameters},
+        ::ores::utility::codec::field{"equity_volatilities",
+                                      &curve_configuration_document::equity_volatilities},
+        ::ores::utility::codec::field{"commodity_volatilities",
+                                      &curve_configuration_document::commodity_volatilities},
+        ::ores::utility::codec::field{"bond_future_volatilities",
+                                      &curve_configuration_document::bond_future_volatilities},
+        ::ores::utility::codec::field{"global_reports",
+                                      &curve_configuration_document::global_reports},
+        ::ores::utility::codec::field{"commodity_price_segments",
+                                      &curve_configuration_document::commodity_price_segments},
+        ::ores::utility::codec::field{"default_curve_configurations",
+                                      &curve_configuration_document::default_curve_configurations},
+        ::ores::utility::codec::field{"default_curve_market_terms",
+                                      &curve_configuration_document::default_curve_market_terms},
+        ::ores::utility::codec::field{"default_curve_cds_terms",
+                                      &curve_configuration_document::default_curve_cds_terms},
+        ::ores::utility::codec::field{"default_curve_benchmarks",
+                                      &curve_configuration_document::default_curve_benchmarks},
+        ::ores::utility::codec::field{
+            "default_curve_transition_matrices",
+            &curve_configuration_document::default_curve_transition_matrices},
+        ::ores::utility::codec::field{
+            "default_curve_yield_reinterpretations",
+            &curve_configuration_document::default_curve_yield_reinterpretations},
+        ::ores::utility::codec::field{"inflation_seasonalities",
+                                      &curve_configuration_document::inflation_seasonalities},
+        ::ores::utility::codec::field{"seasonality_factors",
+                                      &curve_configuration_document::seasonality_factors},
+        ::ores::utility::codec::field{"securities", &curve_configuration_document::securities},
+        ::ores::utility::codec::field{"intraday_power_curves",
+                                      &curve_configuration_document::intraday_power_curves},
+        ::ores::utility::codec::field{"bootstrap_configs",
+                                      &curve_configuration_document::bootstrap_configs},
+        ::ores::utility::codec::field{"segments", &curve_configuration_document::segments},
+        ::ores::utility::codec::field{"segment_curves",
+                                      &curve_configuration_document::segment_curves},
+        ::ores::utility::codec::field{"segment_conventions",
+                                      &curve_configuration_document::segment_conventions},
+        ::ores::utility::codec::field{"segment_pillar_rules",
+                                      &curve_configuration_document::segment_pillar_rules},
+        ::ores::utility::codec::field{"segment_projections",
+                                      &curve_configuration_document::segment_projections},
+        ::ores::utility::codec::field{"segment_tenor_basis_curves",
+                                      &curve_configuration_document::segment_tenor_basis_curves},
+        ::ores::utility::codec::field{"segment_cross_currency_terms",
+                                      &curve_configuration_document::segment_cross_currency_terms},
+        ::ores::utility::codec::field{"segment_references",
+                                      &curve_configuration_document::segment_references},
+        ::ores::utility::codec::field{"segment_weighted_averages",
+                                      &curve_configuration_document::segment_weighted_averages},
+        ::ores::utility::codec::field{"segment_discount_ratios",
+                                      &curve_configuration_document::segment_discount_ratios},
+        ::ores::utility::codec::field{"segment_extrapolations",
+                                      &curve_configuration_document::segment_extrapolations},
+        ::ores::utility::codec::field{"segment_ibor_fallbacks",
+                                      &curve_configuration_document::segment_ibor_fallbacks},
+        ::ores::utility::codec::field{"quotes", &curve_configuration_document::quotes},
+    };
+}
+
+/**
+ * @brief The members of save_curve_configuration_document_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<save_curve_configuration_document_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"document",
+                                      &save_curve_configuration_document_request::document},
+        ::ores::utility::codec::field{"reason_code",
+                                      &save_curve_configuration_document_request::reason_code},
+        ::ores::utility::codec::field{"commentary",
+                                      &save_curve_configuration_document_request::commentary},
+    };
+}
+
+/**
+ * @brief The members of save_curve_configuration_document_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<save_curve_configuration_document_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success",
+                                      &save_curve_configuration_document_response::success},
+        ::ores::utility::codec::field{"message",
+                                      &save_curve_configuration_document_response::message},
+        ::ores::utility::codec::field{"id", &save_curve_configuration_document_response::id},
+    };
+}
+
+/**
+ * @brief The members of get_curve_configuration_document_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_configuration_document_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"configuration_id",
+                                      &get_curve_configuration_document_request::configuration_id},
+        ::ores::utility::codec::field{"party_id",
+                                      &get_curve_configuration_document_request::party_id},
+    };
+}
+
+/**
+ * @brief The members of get_curve_configuration_document_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_configuration_document_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success",
+                                      &get_curve_configuration_document_response::success},
+        ::ores::utility::codec::field{"message",
+                                      &get_curve_configuration_document_response::message},
+        ::ores::utility::codec::field{"document",
+                                      &get_curve_configuration_document_response::document},
+    };
+}
+
+/**
+ * @brief The members of delete_curve_configuration_document_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_configuration_document_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{
+            "configuration_id", &delete_curve_configuration_document_request::configuration_id},
+    };
+}
+
+/**
+ * @brief The members of delete_curve_configuration_document_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_configuration_document_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success",
+                                      &delete_curve_configuration_document_response::success},
+        ::ores::utility::codec::field{"message",
+                                      &delete_curve_configuration_document_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::fx_convention> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::fx_convention& v);
+    static ores::refdata::messaging::fx_convention read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::fx_convention& v);
+    static ores::refdata::messaging::fx_convention read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::curve_configuration_document> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::curve_configuration_document& v);
+    static ores::refdata::messaging::curve_configuration_document read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_configuration_document& v);
+    static ores::refdata::messaging::curve_configuration_document
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::save_curve_configuration_document_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::save_curve_configuration_document_request& v);
+    static ores::refdata::messaging::save_curve_configuration_document_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::save_curve_configuration_document_request& v);
+    static ores::refdata::messaging::save_curve_configuration_document_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::save_curve_configuration_document_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::save_curve_configuration_document_response& v);
+    static ores::refdata::messaging::save_curve_configuration_document_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::save_curve_configuration_document_response& v);
+    static ores::refdata::messaging::save_curve_configuration_document_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_configuration_document_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_curve_configuration_document_request& v);
+    static ores::refdata::messaging::get_curve_configuration_document_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_curve_configuration_document_request& v);
+    static ores::refdata::messaging::get_curve_configuration_document_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_configuration_document_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_curve_configuration_document_response& v);
+    static ores::refdata::messaging::get_curve_configuration_document_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_curve_configuration_document_response& v);
+    static ores::refdata::messaging::get_curve_configuration_document_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_curve_configuration_document_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_curve_configuration_document_request& v);
+    static ores::refdata::messaging::delete_curve_configuration_document_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_curve_configuration_document_request& v);
+    static ores::refdata::messaging::delete_curve_configuration_document_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_curve_configuration_document_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_curve_configuration_document_response& v);
+    static ores::refdata::messaging::delete_curve_configuration_document_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_curve_configuration_document_response& v);
+    static ores::refdata::messaging::delete_curve_configuration_document_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -174,7 +174,7 @@ struct ensure_image_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const upload_image_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<upload_image_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"mime_type", &upload_image_request::mime_type},
         ::ores::utility::codec::field{"data", &upload_image_request::data},
@@ -189,7 +189,7 @@ struct ensure_image_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const upload_image_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<upload_image_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &upload_image_response::result},
         ::ores::utility::codec::field{"image_id", &upload_image_response::image_id},
@@ -204,7 +204,7 @@ struct ensure_image_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_image_upload_policy_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_upload_policy_request>) {
     return std::tuple{};
 }
 
@@ -216,7 +216,7 @@ struct ensure_image_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_image_upload_policy_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_upload_policy_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_image_upload_policy_response::result},
         ::ores::utility::codec::field{"formats", &get_image_upload_policy_response::formats},
@@ -235,7 +235,7 @@ struct ensure_image_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ensure_image_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ensure_image_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"code", &ensure_image_request::code},
     };
@@ -249,7 +249,7 @@ struct ensure_image_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ensure_image_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ensure_image_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &ensure_image_response::result},
         ::ores::utility::codec::field{"image_id", &ensure_image_response::image_id},

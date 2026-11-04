@@ -367,7 +367,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_scope_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_scope_key>) {
     return std::tuple{
         utility::codec::field{"item", &feed_scope_key::item},
     };
@@ -381,7 +381,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_scope_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_scope_write>) {
     return std::tuple{
         utility::codec::field{"id", &feed_scope_write::id},
         utility::codec::field{"feed_id", &feed_scope_write::feed_id},
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_scope_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_scope_change>) {
     return std::tuple{
         utility::codec::field{"write", &feed_scope_change::write},
         utility::codec::field{"precondition", &feed_scope_change::precondition},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_scope_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_scope_removal>) {
     return std::tuple{
         utility::codec::field{"key", &feed_scope_removal::key},
         utility::codec::field{"precondition", &feed_scope_removal::precondition},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_scope_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_scope_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &feed_scope_lookup::key},
         utility::codec::field{"feed_scope", &feed_scope_lookup::feed_scope},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_scopes_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_scopes_filter>) {
     return std::tuple{
         utility::codec::field{"feed_id", &feed_scopes_filter::feed_id},
         utility::codec::field{"asset_class", &feed_scopes_filter::asset_class},
@@ -468,7 +468,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_scope_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_scope_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &feed_scope_event::event_id},
         utility::codec::field{"key", &feed_scope_event::key},
@@ -487,7 +487,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_scope_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_scope_version_key>) {
     return std::tuple{
         utility::codec::field{"feed_scope", &feed_scope_version_key::feed_scope},
         utility::codec::field{"version", &feed_scope_version_key::version},
@@ -502,7 +502,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const feed_scope_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_scope_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &feed_scope_versions_filter::version},
         utility::codec::field{"from_version", &feed_scope_versions_filter::from_version},
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_feed_scopes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feed_scopes_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_feed_scopes_request::offset},
         utility::codec::field{"limit", &list_feed_scopes_request::limit},
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_feed_scopes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feed_scopes_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_feed_scopes_response::result},
         utility::codec::field{"scopes", &list_feed_scopes_response::scopes},
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_feed_scope_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_feed_scope_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_feed_scope_request::key},
     };
@@ -566,7 +566,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_feed_scope_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_feed_scope_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_feed_scope_response::result},
         utility::codec::field{"feed_scope", &get_feed_scope_response::feed_scope},
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_feed_scopes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_feed_scopes_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_feed_scopes_request::keys},
     };
@@ -595,7 +595,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_feed_scopes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_feed_scopes_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_feed_scopes_response::result},
         utility::codec::field{"entries", &get_many_feed_scopes_response::entries},
@@ -610,7 +610,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_feed_scope_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_feed_scope_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_feed_scope_request::change},
         utility::codec::field{"intent", &put_feed_scope_request::intent},
@@ -625,7 +625,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_feed_scope_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_feed_scope_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_feed_scope_response::result},
         utility::codec::field{"feed_scope", &put_feed_scope_response::feed_scope},
@@ -640,7 +640,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_feed_scopes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_feed_scopes_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_feed_scopes_request::changes},
         utility::codec::field{"intent", &put_many_feed_scopes_request::intent},
@@ -655,7 +655,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_feed_scopes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_feed_scopes_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_feed_scopes_response::result},
         utility::codec::field{"scopes", &put_many_feed_scopes_response::scopes},
@@ -670,7 +670,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_feed_scope_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_feed_scope_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_feed_scope_request::removal},
         utility::codec::field{"intent", &delete_feed_scope_request::intent},
@@ -685,7 +685,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_feed_scope_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_feed_scope_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_feed_scope_response::result},
     };
@@ -699,7 +699,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_feed_scopes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_feed_scopes_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_feed_scopes_request::removals},
         utility::codec::field{"intent", &delete_many_feed_scopes_request::intent},
@@ -714,7 +714,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_feed_scopes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_feed_scopes_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_feed_scopes_response::result},
     };
@@ -728,7 +728,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_feed_scope_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feed_scope_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_feed_scope_versions_request::key},
         utility::codec::field{"offset", &list_feed_scope_versions_request::offset},
@@ -746,7 +746,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_feed_scope_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feed_scope_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_feed_scope_versions_response::result},
         utility::codec::field{"versions", &list_feed_scope_versions_response::versions},
@@ -762,7 +762,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_feed_scope_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_feed_scope_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_feed_scope_version_request::key},
     };
@@ -776,7 +776,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.feed_scopes.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_feed_scope_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_feed_scope_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_feed_scope_version_response::result},
         utility::codec::field{"version", &get_feed_scope_version_response::version},

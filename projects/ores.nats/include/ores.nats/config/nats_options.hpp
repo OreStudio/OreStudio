@@ -84,7 +84,7 @@ struct nats_options final {
     ores::nats::wire_format format = ores::nats::default_wire_codec().format();
 };
 
-[[nodiscard]] constexpr auto wire_fields(const nats_options&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_options>) {
     return std::tuple{
         ::ores::utility::codec::field{"url", &nats_options::url},
         ::ores::utility::codec::field{"subject_prefix", &nats_options::subject_prefix},

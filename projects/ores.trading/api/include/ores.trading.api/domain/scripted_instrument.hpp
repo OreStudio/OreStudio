@@ -27,11 +27,10 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -109,27 +108,21 @@ struct scripted_instrument final {
 };
 
 /**
- * @brief The members of scripted_instrument the customer agreed to.
+ * @brief The canonical text of the members of scripted_instrument the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view scripted_instrument_economic_fields[] = {
-    "script_name",
-    "script_body",
-    "events_json",
-    "underlyings_json",
-    "parameters_json",
-};
-
-/**
- * @brief Names the members of scripted_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<scripted_instrument>) {
-    return scripted_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const scripted_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "script_name", v.script_name);
+    ores::utility::digest::append_member(out, "script_body", v.script_body);
+    ores::utility::digest::append_member(out, "events_json", v.events_json);
+    ores::utility::digest::append_member(out, "underlyings_json", v.underlyings_json);
+    ores::utility::digest::append_member(out, "parameters_json", v.parameters_json);
+    out.push_back('}');
+    return out;
 }
 
 /**

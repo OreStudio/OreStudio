@@ -56,7 +56,7 @@ struct sweep_action_payload {
     std::string subject;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const sweep_action_payload&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sweep_action_payload>) {
     return std::tuple{ores::utility::codec::field{"subject", &sweep_action_payload::subject}};
 }
 static_assert(ores::utility::codec::names_every_member<sweep_action_payload>());

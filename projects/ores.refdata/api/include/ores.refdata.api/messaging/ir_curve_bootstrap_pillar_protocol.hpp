@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_bootstrap_pillar_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_bootstrap_pillar_key>) {
     return std::tuple{
         utility::codec::field{"id", &ir_curve_bootstrap_pillar_key::id},
     };
@@ -392,7 +392,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_bootstrap_pillar_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_bootstrap_pillar_write>) {
     return std::tuple{
         utility::codec::field{"id", &ir_curve_bootstrap_pillar_write::id},
         utility::codec::field{"party_id", &ir_curve_bootstrap_pillar_write::party_id},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_bootstrap_pillar_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_bootstrap_pillar_change>) {
     return std::tuple{
         utility::codec::field{"write", &ir_curve_bootstrap_pillar_change::write},
         utility::codec::field{"precondition", &ir_curve_bootstrap_pillar_change::precondition},
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_bootstrap_pillar_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_bootstrap_pillar_removal>) {
     return std::tuple{
         utility::codec::field{"key", &ir_curve_bootstrap_pillar_removal::key},
         utility::codec::field{"precondition", &ir_curve_bootstrap_pillar_removal::precondition},
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_bootstrap_pillar_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_bootstrap_pillar_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &ir_curve_bootstrap_pillar_lookup::key},
         utility::codec::field{"ir_curve_bootstrap_pillar",
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_bootstrap_pillars_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_bootstrap_pillars_filter>) {
     return std::tuple{
         utility::codec::field{"bootstrap_config_id",
                               &ir_curve_bootstrap_pillars_filter::bootstrap_config_id},
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_bootstrap_pillar_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_curve_bootstrap_pillar_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &ir_curve_bootstrap_pillar_event::event_id},
         utility::codec::field{"key", &ir_curve_bootstrap_pillar_event::key},
@@ -499,7 +499,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_bootstrap_pillar_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<ir_curve_bootstrap_pillar_version_key>) {
     return std::tuple{
         utility::codec::field{"ir_curve_bootstrap_pillar",
                               &ir_curve_bootstrap_pillar_version_key::ir_curve_bootstrap_pillar},
@@ -515,7 +516,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ir_curve_bootstrap_pillar_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<ir_curve_bootstrap_pillar_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &ir_curve_bootstrap_pillar_versions_filter::version},
         utility::codec::field{"from_version",
@@ -532,7 +534,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ir_curve_bootstrap_pillars_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_ir_curve_bootstrap_pillars_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_ir_curve_bootstrap_pillars_request::offset},
         utility::codec::field{"limit", &list_ir_curve_bootstrap_pillars_request::limit},
@@ -550,7 +553,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ir_curve_bootstrap_pillars_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_ir_curve_bootstrap_pillars_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_ir_curve_bootstrap_pillars_response::result},
         utility::codec::field{"pillars", &list_ir_curve_bootstrap_pillars_response::pillars},
@@ -566,7 +570,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_ir_curve_bootstrap_pillar_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_ir_curve_bootstrap_pillar_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_ir_curve_bootstrap_pillar_request::key},
     };
@@ -580,7 +585,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_ir_curve_bootstrap_pillar_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_ir_curve_bootstrap_pillar_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_ir_curve_bootstrap_pillar_response::result},
         utility::codec::field{"ir_curve_bootstrap_pillar",
@@ -596,7 +602,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_ir_curve_bootstrap_pillars_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_ir_curve_bootstrap_pillars_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_ir_curve_bootstrap_pillars_request::keys},
     };
@@ -610,7 +617,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_ir_curve_bootstrap_pillars_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_ir_curve_bootstrap_pillars_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_ir_curve_bootstrap_pillars_response::result},
         utility::codec::field{"entries", &get_many_ir_curve_bootstrap_pillars_response::entries},
@@ -625,7 +633,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_ir_curve_bootstrap_pillar_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_ir_curve_bootstrap_pillar_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_ir_curve_bootstrap_pillar_request::change},
         utility::codec::field{"intent", &put_ir_curve_bootstrap_pillar_request::intent},
@@ -640,7 +649,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_ir_curve_bootstrap_pillar_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_ir_curve_bootstrap_pillar_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_ir_curve_bootstrap_pillar_response::result},
         utility::codec::field{"ir_curve_bootstrap_pillar",
@@ -656,7 +666,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_ir_curve_bootstrap_pillars_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_ir_curve_bootstrap_pillars_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_ir_curve_bootstrap_pillars_request::changes},
         utility::codec::field{"intent", &put_many_ir_curve_bootstrap_pillars_request::intent},
@@ -671,7 +682,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_ir_curve_bootstrap_pillars_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_ir_curve_bootstrap_pillars_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_ir_curve_bootstrap_pillars_response::result},
         utility::codec::field{"pillars", &put_many_ir_curve_bootstrap_pillars_response::pillars},
@@ -686,7 +698,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_ir_curve_bootstrap_pillar_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_ir_curve_bootstrap_pillar_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_ir_curve_bootstrap_pillar_request::removal},
         utility::codec::field{"intent", &delete_ir_curve_bootstrap_pillar_request::intent},
@@ -701,7 +714,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_ir_curve_bootstrap_pillar_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_ir_curve_bootstrap_pillar_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_ir_curve_bootstrap_pillar_response::result},
     };
@@ -715,7 +729,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_ir_curve_bootstrap_pillars_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_ir_curve_bootstrap_pillars_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_ir_curve_bootstrap_pillars_request::removals},
@@ -731,7 +746,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_ir_curve_bootstrap_pillars_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_ir_curve_bootstrap_pillars_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_ir_curve_bootstrap_pillars_response::result},
     };
@@ -745,7 +761,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ir_curve_bootstrap_pillar_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_ir_curve_bootstrap_pillar_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_ir_curve_bootstrap_pillar_versions_request::key},
         utility::codec::field{"offset", &list_ir_curve_bootstrap_pillar_versions_request::offset},
@@ -763,7 +780,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ir_curve_bootstrap_pillar_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_ir_curve_bootstrap_pillar_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_ir_curve_bootstrap_pillar_versions_response::result},
         utility::codec::field{"versions",
@@ -780,7 +798,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_ir_curve_bootstrap_pillar_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_ir_curve_bootstrap_pillar_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_ir_curve_bootstrap_pillar_version_request::key},
     };
@@ -794,7 +813,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.ir_curve_bootstra
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_ir_curve_bootstrap_pillar_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_ir_curve_bootstrap_pillar_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_ir_curve_bootstrap_pillar_version_response::result},
         utility::codec::field{"version", &get_ir_curve_bootstrap_pillar_version_response::version},

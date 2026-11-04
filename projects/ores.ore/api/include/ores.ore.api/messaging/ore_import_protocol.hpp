@@ -183,7 +183,7 @@ struct ore_import_rollback_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ore_import_item_error&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_item_error>) {
     return std::tuple{
         ::ores::utility::codec::field{"source_file", &ore_import_item_error::source_file},
         ::ores::utility::codec::field{"item_id", &ore_import_item_error::item_id},
@@ -199,7 +199,7 @@ struct ore_import_rollback_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ore_import_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id", &ore_import_request::request_id},
         ::ores::utility::codec::field{"import_choices_json",
@@ -216,7 +216,7 @@ struct ore_import_rollback_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ore_import_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &ore_import_response::success},
         ::ores::utility::codec::field{"message", &ore_import_response::message},
@@ -235,7 +235,7 @@ struct ore_import_rollback_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ore_import_execute_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_execute_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id", &ore_import_execute_request::request_id},
         ::ores::utility::codec::field{"import_choices_json",
@@ -254,7 +254,7 @@ struct ore_import_rollback_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ore_import_execute_result&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_execute_result>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &ore_import_execute_result::success},
         ::ores::utility::codec::field{"message", &ore_import_execute_result::message},
@@ -279,7 +279,7 @@ struct ore_import_rollback_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ore_import_rollback_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_rollback_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"correlation_id",
                                       &ore_import_rollback_request::correlation_id},

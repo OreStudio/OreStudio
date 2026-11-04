@@ -194,7 +194,7 @@ struct preview_ir_curve_shape_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const parameter_spec&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<parameter_spec>) {
     return std::tuple{
         ::ores::utility::codec::field{"parameter_name", &parameter_spec::parameter_name},
         ::ores::utility::codec::field{"parameter_value", &parameter_spec::parameter_value},
@@ -209,7 +209,7 @@ struct preview_ir_curve_shape_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const simulate_ir_curve_paths_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<simulate_ir_curve_paths_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"process_type",
                                       &simulate_ir_curve_paths_request::process_type},
@@ -228,7 +228,7 @@ struct preview_ir_curve_shape_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const simulate_ir_curve_paths_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<simulate_ir_curve_paths_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &simulate_ir_curve_paths_response::success},
         ::ores::utility::codec::field{"message", &simulate_ir_curve_paths_response::message},
@@ -244,7 +244,7 @@ struct preview_ir_curve_shape_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const preview_ir_curve_template_row&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_ir_curve_template_row>) {
     return std::tuple{
         ::ores::utility::codec::field{"sequence_index",
                                       &preview_ir_curve_template_row::sequence_index},
@@ -265,7 +265,7 @@ struct preview_ir_curve_shape_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const preview_ir_curve_shape_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_ir_curve_shape_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"process_type",
                                       &preview_ir_curve_shape_request::process_type},
@@ -285,7 +285,7 @@ struct preview_ir_curve_shape_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const preview_ir_curve_shape_point&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_ir_curve_shape_point>) {
     return std::tuple{
         ::ores::utility::codec::field{"sequence_index",
                                       &preview_ir_curve_shape_point::sequence_index},
@@ -305,7 +305,7 @@ struct preview_ir_curve_shape_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const preview_ir_curve_shape_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_ir_curve_shape_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &preview_ir_curve_shape_response::success},
         ::ores::utility::codec::field{"message", &preview_ir_curve_shape_response::message},

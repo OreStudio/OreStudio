@@ -67,7 +67,7 @@ struct report_definition_template final {
     int display_order = 0;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const report_definition_template&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_template>) {
     using t = report_definition_template;
     return std::tuple{utility::codec::field{"name", &t::name},
                       utility::codec::field{"description", &t::description},

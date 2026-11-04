@@ -2570,6 +2570,8 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     fg["has_economic_declaration"] = declared
     fg["economic_fields"] = economic
     fg["has_economic_fields"] = bool(economic)
+    fg["canonical_members"] = economic
+    fg["has_canonical_members"] = bool(economic)
 
     return {"field_group": fg}
 
@@ -6148,6 +6150,49 @@ def entity_economic_declaration(
         if c.get("is_identity_group_column") or c.get("sql_only")
     ]
     return economic_declaration(owner, members, carried)
+
+
+@lru_cache(maxsize=None)
+def _group_declares_economic_fields(projects_dir: str, dotted: str) -> bool:
+    """Whether the field group named @p dotted declares any economic field.
+
+    A group member takes part in its owner's canonical form exactly when its
+    own model declares one, so the owner's form is decided from the group's
+    model and not from the generated header.
+    """
+    parts = dotted.split(".")
+    found = sorted(Path(projects_dir).glob(
+        f"{parts[0]}.{parts[1]}/**/modeling/{dotted}_field_group.org"))
+    if not found:
+        raise ValueError(f"no field group model for '{dotted}' under {projects_dir}")
+    return bool(load_org_field_group_model(found[0])["field_group"]["has_economic_fields"])
+
+
+def entity_canonical_members(path: Path | str, entity: dict[str, Any]) -> list[str]:
+    """The members of the entity's canonical form, in member order.
+
+    These are the columns the model declares economic and each group whose own
+    model declares an economic field. Every other member stays out, so a field
+    the customer did not agree to never moves the digest.
+    """
+    def group(dotted: str) -> bool:
+        projects_dir = next(
+            (q for q in Path(path).resolve().parents if q.name == "projects"), None)
+        if projects_dir is None:
+            raise ValueError(f"{Path(path).name}: no projects folder above the model")
+        return _group_declares_economic_fields(str(projects_dir), dotted)
+
+    if entity.get("has_domain_groups"):
+        return [g["member"] for g in entity.get("domain_groups") or []
+                if group(g["field_group"])]
+    members: list[str] = []
+    if entity.get("domain_identity_group") and group(entity["domain_identity_group"]):
+        members.append("identity")
+    members.extend(_member_name(c) for c in entity_struct_member_columns(entity)
+                   if c.get("economic") is True)
+    if entity.get("domain_audit_group") and group(entity["domain_audit_group"]):
+        members.append("audit")
+    return members
 
 
 def _entity_domain_ts_member(

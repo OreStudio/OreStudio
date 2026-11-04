@@ -106,7 +106,7 @@ struct telemetry_options final {
     std::chrono::seconds flush_interval{5};
 };
 
-[[nodiscard]] constexpr auto wire_fields(const telemetry_options&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<telemetry_options>) {
     return std::tuple{
         ::ores::utility::codec::field{"service_name", &telemetry_options::service_name},
         ::ores::utility::codec::field{"service_version", &telemetry_options::service_version},

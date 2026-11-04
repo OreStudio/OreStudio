@@ -49,7 +49,7 @@ struct options final {
     ores::database::database_options database;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const options&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
     return std::tuple{
         ::ores::utility::codec::field{"logging", &options::logging},
         ::ores::utility::codec::field{"nats", &options::nats},

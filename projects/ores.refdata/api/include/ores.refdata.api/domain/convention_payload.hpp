@@ -72,7 +72,7 @@ struct convention_payload {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const convention_payload&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<convention_payload>) {
     return std::tuple{
         utility::codec::field{"name", &convention_payload::name},
         utility::codec::field{"oresmd_uri", &convention_payload::oresmd_uri},

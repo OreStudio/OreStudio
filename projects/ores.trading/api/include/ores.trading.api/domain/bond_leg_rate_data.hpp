@@ -76,7 +76,7 @@ struct bond_leg_rate_data {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_leg_rate_data&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_rate_data>) {
     return std::tuple{
         utility::codec::field{"fixed", &bond_leg_rate_data::fixed},
         utility::codec::field{"floating", &bond_leg_rate_data::floating},

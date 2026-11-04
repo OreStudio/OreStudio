@@ -45,7 +45,7 @@ namespace ores::inbox::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_delivery&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_delivery>) {
     return std::tuple{
         utility::codec::field{"version", &notification_delivery::version},
         utility::codec::field{"tenant_id", &notification_delivery::tenant_id},

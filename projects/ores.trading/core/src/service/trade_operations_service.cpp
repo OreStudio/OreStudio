@@ -48,7 +48,6 @@
 #include <chrono>
 #include <exception>
 #include <optional>
-#include <rfl.hpp>
 #include <string>
 #include <string_view>
 
@@ -131,9 +130,8 @@ std::vector<std::string> unsupported_bond_parts(const domain::instrument_batch& 
     std::vector<std::string> names;
     for (const auto& bond : batch.bond_instruments) {
         bool refused = false;
-        rfl::to_view(bond).apply([&](const auto& field) {
-            const std::string_view name = field.name();
-            if (name != "instrument" && name != "issue" && holds_data(*field.value())) {
+        ores::utility::codec::for_each_field(bond, [&](std::string_view name, const auto& member) {
+            if (name != "instrument" && name != "issue" && holds_data(member)) {
                 names.emplace_back("bond_instruments." + std::string(name));
                 refused = true;
             }

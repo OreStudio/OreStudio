@@ -61,7 +61,7 @@ def test_a_component_that_did_not_opt_in_gets_no_shape_and_no_extra_bytes():
 def test_a_component_that_opted_in_states_the_shape_beside_the_struct():
     """The field list names the message it describes, not the field twice."""
     out = render(True, [a_message()])
-    assert "wire_fields(const widget_key&)" in out
+    assert "wire_fields(std::type_identity<widget_key>)" in out
     assert 'utility::codec::field{"name", &widget_key::name}' in out
     assert "wire_traits<ores::x::messaging::widget_key>" in out
     assert "static constexpr bool is_generated = true;" in out

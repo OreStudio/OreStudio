@@ -407,7 +407,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_key>) {
     return std::tuple{
         utility::codec::field{"id", &workflow_plan_dependency_key::id},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_write>) {
     return std::tuple{
         utility::codec::field{"id", &workflow_plan_dependency_write::id},
         utility::codec::field{"workflow_id", &workflow_plan_dependency_write::workflow_id},
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_change>) {
     return std::tuple{
         utility::codec::field{"write", &workflow_plan_dependency_change::write},
         utility::codec::field{"precondition", &workflow_plan_dependency_change::precondition},
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_removal>) {
     return std::tuple{
         utility::codec::field{"key", &workflow_plan_dependency_removal::key},
         utility::codec::field{"precondition", &workflow_plan_dependency_removal::precondition},
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &workflow_plan_dependency_lookup::key},
         utility::codec::field{"workflow_plan_dependency",
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependencies_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependencies_filter>) {
     return std::tuple{
         utility::codec::field{"workflow_id", &workflow_plan_dependencies_filter::workflow_id},
         utility::codec::field{"id_one_of", &workflow_plan_dependencies_filter::id_one_of},
@@ -503,7 +503,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &workflow_plan_dependency_event::event_id},
         utility::codec::field{"key", &workflow_plan_dependency_event::key},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_version_key>) {
     return std::tuple{
         utility::codec::field{"workflow_plan_dependency",
                               &workflow_plan_dependency_version_key::workflow_plan_dependency},
@@ -538,7 +538,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<workflow_plan_dependency_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &workflow_plan_dependency_versions_filter::version},
         utility::codec::field{"from_version",
@@ -555,7 +556,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_plan_dependencies_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_workflow_plan_dependencies_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_workflow_plan_dependencies_request::offset},
         utility::codec::field{"limit", &list_workflow_plan_dependencies_request::limit},
@@ -573,7 +575,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_plan_dependencies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_workflow_plan_dependencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_workflow_plan_dependencies_response::result},
         utility::codec::field{"plan_dependencies",
@@ -590,7 +593,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_plan_dependency_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workflow_plan_dependency_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_workflow_plan_dependency_request::key},
     };
@@ -604,7 +607,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_plan_dependency_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_workflow_plan_dependency_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_workflow_plan_dependency_response::result},
         utility::codec::field{"workflow_plan_dependency",
@@ -620,7 +624,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_workflow_plan_dependencies_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_workflow_plan_dependencies_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_workflow_plan_dependencies_request::keys},
     };
@@ -634,7 +639,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_workflow_plan_dependencies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_workflow_plan_dependencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_workflow_plan_dependencies_response::result},
         utility::codec::field{"entries", &get_many_workflow_plan_dependencies_response::entries},
@@ -649,7 +655,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_workflow_plan_dependency_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_workflow_plan_dependency_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_workflow_plan_dependency_request::change},
         utility::codec::field{"intent", &put_workflow_plan_dependency_request::intent},
@@ -664,7 +670,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_workflow_plan_dependency_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_workflow_plan_dependency_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_workflow_plan_dependency_response::result},
         utility::codec::field{"workflow_plan_dependency",
@@ -680,7 +687,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_workflow_plan_dependencies_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_workflow_plan_dependencies_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_workflow_plan_dependencies_request::changes},
         utility::codec::field{"intent", &put_many_workflow_plan_dependencies_request::intent},
@@ -695,7 +703,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_workflow_plan_dependencies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_workflow_plan_dependencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_workflow_plan_dependencies_response::result},
         utility::codec::field{"plan_dependencies",
@@ -711,7 +720,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_workflow_plan_dependency_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_workflow_plan_dependency_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_workflow_plan_dependency_request::removal},
         utility::codec::field{"intent", &delete_workflow_plan_dependency_request::intent},
@@ -726,7 +736,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_workflow_plan_dependency_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_workflow_plan_dependency_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_workflow_plan_dependency_response::result},
     };
@@ -740,7 +751,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_workflow_plan_dependencies_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_workflow_plan_dependencies_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_workflow_plan_dependencies_request::removals},
@@ -756,7 +768,8 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_workflow_plan_dependencies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_workflow_plan_dependencies_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_workflow_plan_dependencies_response::result},
     };
@@ -771,7 +784,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_workflow_id_workflow_plan_dependencies_request&) {
+wire_fields(std::type_identity<list_by_workflow_id_workflow_plan_dependencies_request>) {
     return std::tuple{
         utility::codec::field{"workflow_id",
                               &list_by_workflow_id_workflow_plan_dependencies_request::workflow_id},
@@ -797,7 +810,7 @@ wire_fields(const list_by_workflow_id_workflow_plan_dependencies_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_workflow_id_workflow_plan_dependencies_response&) {
+wire_fields(std::type_identity<list_by_workflow_id_workflow_plan_dependencies_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_workflow_id_workflow_plan_dependencies_response::result},
@@ -817,7 +830,8 @@ wire_fields(const list_by_workflow_id_workflow_plan_dependencies_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_plan_dependency_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_workflow_plan_dependency_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_workflow_plan_dependency_versions_request::key},
         utility::codec::field{"offset", &list_workflow_plan_dependency_versions_request::offset},
@@ -835,7 +849,8 @@ wire_fields(const list_by_workflow_id_workflow_plan_dependencies_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_plan_dependency_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_workflow_plan_dependency_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_workflow_plan_dependency_versions_response::result},
         utility::codec::field{"versions",
@@ -852,7 +867,8 @@ wire_fields(const list_by_workflow_id_workflow_plan_dependencies_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_plan_dependency_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_workflow_plan_dependency_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_workflow_plan_dependency_version_request::key},
     };
@@ -866,7 +882,8 @@ wire_fields(const list_by_workflow_id_workflow_plan_dependencies_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_plan_dependency_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_workflow_plan_dependency_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_workflow_plan_dependency_version_response::result},
         utility::codec::field{"version", &get_workflow_plan_dependency_version_response::version},

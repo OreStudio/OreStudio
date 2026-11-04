@@ -63,7 +63,7 @@ std::string write_json(const T& v, const std::tuple<field<T, Members>...>& field
 
 template <typename T>
 std::string write_json(const T& v) {
-    return write_json(v, wire_fields(v));
+    return write_json(v, wire_fields(std::type_identity<T>{}));
 }
 
 template <typename T, typename... Members>
@@ -106,7 +106,7 @@ std::string write_msgpack(const T& v, const std::tuple<field<T, Members>...>& fi
 
 template <typename T>
 std::string write_msgpack(const T& v) {
-    return write_msgpack(v, wire_fields(v));
+    return write_msgpack(v, wire_fields(std::type_identity<T>{}));
 }
 
 template <typename T, typename... Members>

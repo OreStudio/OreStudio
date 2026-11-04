@@ -255,7 +255,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_argument_value&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_argument_value>) {
     return std::tuple{
         ::ores::utility::codec::field{"name", &notification_argument_value::name},
         ::ores::utility::codec::field{"value", &notification_argument_value::value},
@@ -270,7 +270,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const inbox_notification&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<inbox_notification>) {
     return std::tuple{
         ::ores::utility::codec::field{"id", &inbox_notification::id},
         ::ores::utility::codec::field{"kind_code", &inbox_notification::kind_code},
@@ -292,7 +292,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const raise_notification_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_notification_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"kind_code", &raise_notification_request::kind_code},
         ::ores::utility::codec::field{"link_route", &raise_notification_request::link_route},
@@ -312,7 +312,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const raise_notification_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_notification_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &raise_notification_response::result},
         ::ores::utility::codec::field{"notification_id",
@@ -330,7 +330,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_my_notifications_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_my_notifications_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"unread_only", &list_my_notifications_request::unread_only},
         ::ores::utility::codec::field{"offset", &list_my_notifications_request::offset},
@@ -346,7 +346,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_my_notifications_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_my_notifications_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &list_my_notifications_response::result},
         ::ores::utility::codec::field{"notifications",
@@ -363,7 +363,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const count_unread_notifications_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<count_unread_notifications_request>) {
     return std::tuple{};
 }
 
@@ -375,7 +375,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const count_unread_notifications_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<count_unread_notifications_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &count_unread_notifications_response::result},
         ::ores::utility::codec::field{"unread", &count_unread_notifications_response::unread},
@@ -390,7 +390,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const mark_notifications_read_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<mark_notifications_read_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"notification_ids",
                                       &mark_notifications_read_request::notification_ids},
@@ -405,7 +405,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const mark_notifications_read_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<mark_notifications_read_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &mark_notifications_read_response::result},
         ::ores::utility::codec::field{"marked", &mark_notifications_read_response::marked},
@@ -420,7 +420,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const clear_notifications_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_notifications_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"notification_ids",
                                       &clear_notifications_request::notification_ids},
@@ -435,7 +435,7 @@ struct clear_notifications_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const clear_notifications_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_notifications_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &clear_notifications_response::result},
         ::ores::utility::codec::field{"cleared", &clear_notifications_response::cleared},

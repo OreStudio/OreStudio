@@ -244,7 +244,7 @@ struct withdraw_curve_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const published_curve_point&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<published_curve_point>) {
     return std::tuple{
         ::ores::utility::codec::field{"pillar", &published_curve_point::pillar},
         ::ores::utility::codec::field{"value", &published_curve_point::value},
@@ -263,7 +263,7 @@ struct withdraw_curve_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const published_curve_set&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<published_curve_set>) {
     return std::tuple{
         ::ores::utility::codec::field{"publish_id", &published_curve_set::publish_id},
         ::ores::utility::codec::field{"request_id", &published_curve_set::request_id},
@@ -301,7 +301,7 @@ struct withdraw_curve_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_published_curves_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_published_curves_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"party_id", &list_published_curves_request::party_id},
         ::ores::utility::codec::field{"search", &list_published_curves_request::search},
@@ -324,7 +324,7 @@ struct withdraw_curve_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_published_curves_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_published_curves_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"sets", &list_published_curves_response::sets},
         ::ores::utility::codec::field{"total", &list_published_curves_response::total},
@@ -341,7 +341,7 @@ struct withdraw_curve_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_published_curve_sets_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_published_curve_sets_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"series_id", &get_published_curve_sets_request::series_id},
         ::ores::utility::codec::field{"limit", &get_published_curve_sets_request::limit},
@@ -358,7 +358,7 @@ struct withdraw_curve_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_published_curve_sets_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_published_curve_sets_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"sets", &get_published_curve_sets_response::sets},
         ::ores::utility::codec::field{"published_count",
@@ -376,7 +376,7 @@ struct withdraw_curve_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const withdraw_curve_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_curve_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"publish_id", &withdraw_curve_request::publish_id},
         ::ores::utility::codec::field{"reason_code", &withdraw_curve_request::reason_code},
@@ -394,7 +394,7 @@ struct withdraw_curve_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const withdraw_curve_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_curve_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"withdrawn_at", &withdraw_curve_response::withdrawn_at},
         ::ores::utility::codec::field{"withdrawn_by", &withdraw_curve_response::withdrawn_by},

@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_schedule_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_schedule_key>) {
     return std::tuple{
         utility::codec::field{"code", &tenor_schedule_key::code},
     };
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_schedule_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_schedule_write>) {
     return std::tuple{
         utility::codec::field{"code", &tenor_schedule_write::code},
         utility::codec::field{"name", &tenor_schedule_write::name},
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_schedule_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_schedule_change>) {
     return std::tuple{
         utility::codec::field{"write", &tenor_schedule_change::write},
         utility::codec::field{"precondition", &tenor_schedule_change::precondition},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_schedule_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_schedule_removal>) {
     return std::tuple{
         utility::codec::field{"key", &tenor_schedule_removal::key},
         utility::codec::field{"precondition", &tenor_schedule_removal::precondition},
@@ -493,7 +493,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_schedule_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_schedule_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &tenor_schedule_lookup::key},
         utility::codec::field{"tenor_schedule", &tenor_schedule_lookup::tenor_schedule},
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_schedules_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_schedules_filter>) {
     return std::tuple{
         utility::codec::field{"calendar_code", &tenor_schedules_filter::calendar_code},
         utility::codec::field{"diary_entry_type", &tenor_schedules_filter::diary_entry_type},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_schedule_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_schedule_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &tenor_schedule_event::event_id},
         utility::codec::field{"key", &tenor_schedule_event::key},
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_schedule_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_schedule_version_key>) {
     return std::tuple{
         utility::codec::field{"tenor_schedule", &tenor_schedule_version_key::tenor_schedule},
         utility::codec::field{"version", &tenor_schedule_version_key::version},
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_schedule_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_schedule_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &tenor_schedule_versions_filter::version},
         utility::codec::field{"from_version", &tenor_schedule_versions_filter::from_version},
@@ -578,7 +578,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tenor_schedules_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tenor_schedules_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_tenor_schedules_request::offset},
         utility::codec::field{"limit", &list_tenor_schedules_request::limit},
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tenor_schedules_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tenor_schedules_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_tenor_schedules_response::result},
         utility::codec::field{"schedules", &list_tenor_schedules_response::schedules},
@@ -612,7 +612,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_schedule_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tenor_schedule_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_tenor_schedule_request::key},
     };
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_schedule_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tenor_schedule_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_tenor_schedule_response::result},
         utility::codec::field{"tenor_schedule", &get_tenor_schedule_response::tenor_schedule},
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_tenor_schedules_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_tenor_schedules_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_tenor_schedules_request::keys},
     };
@@ -655,7 +655,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_tenor_schedules_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_tenor_schedules_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_tenor_schedules_response::result},
         utility::codec::field{"entries", &get_many_tenor_schedules_response::entries},
@@ -670,7 +670,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_tenor_schedule_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_tenor_schedule_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_tenor_schedule_request::change},
         utility::codec::field{"intent", &put_tenor_schedule_request::intent},
@@ -685,7 +685,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_tenor_schedule_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_tenor_schedule_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_tenor_schedule_response::result},
         utility::codec::field{"tenor_schedule", &put_tenor_schedule_response::tenor_schedule},
@@ -700,7 +700,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_tenor_schedules_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_tenor_schedules_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_tenor_schedules_request::changes},
         utility::codec::field{"intent", &put_many_tenor_schedules_request::intent},
@@ -715,7 +715,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_tenor_schedules_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_tenor_schedules_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_tenor_schedules_response::result},
         utility::codec::field{"schedules", &put_many_tenor_schedules_response::schedules},
@@ -730,7 +730,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_tenor_schedule_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_tenor_schedule_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_tenor_schedule_request::removal},
         utility::codec::field{"intent", &delete_tenor_schedule_request::intent},
@@ -745,7 +745,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_tenor_schedule_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_tenor_schedule_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_tenor_schedule_response::result},
     };
@@ -759,7 +759,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_tenor_schedules_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_tenor_schedules_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_tenor_schedules_request::removals},
         utility::codec::field{"intent", &delete_many_tenor_schedules_request::intent},
@@ -774,7 +774,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_tenor_schedules_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_tenor_schedules_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_tenor_schedules_response::result},
     };
@@ -788,7 +788,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_calendar_code_tenor_schedules_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_calendar_code_tenor_schedules_request>) {
     return std::tuple{
         utility::codec::field{"calendar_code",
                               &list_by_calendar_code_tenor_schedules_request::calendar_code},
@@ -808,7 +809,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_calendar_code_tenor_schedules_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_calendar_code_tenor_schedules_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_calendar_code_tenor_schedules_response::result},
         utility::codec::field{"schedules",
@@ -825,7 +827,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_diary_entry_type_tenor_schedules_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_diary_entry_type_tenor_schedules_request>) {
     return std::tuple{
         utility::codec::field{"diary_entry_type",
                               &list_by_diary_entry_type_tenor_schedules_request::diary_entry_type},
@@ -845,7 +848,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_diary_entry_type_tenor_schedules_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_diary_entry_type_tenor_schedules_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_diary_entry_type_tenor_schedules_response::result},
         utility::codec::field{"schedules",
@@ -862,7 +866,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tenor_schedule_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tenor_schedule_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_tenor_schedule_versions_request::key},
         utility::codec::field{"offset", &list_tenor_schedule_versions_request::offset},
@@ -880,7 +884,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tenor_schedule_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_tenor_schedule_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_tenor_schedule_versions_response::result},
         utility::codec::field{"versions", &list_tenor_schedule_versions_response::versions},
@@ -896,7 +901,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_schedule_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tenor_schedule_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_tenor_schedule_version_request::key},
     };
@@ -910,7 +915,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_schedule_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tenor_schedule_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_tenor_schedule_version_response::result},
         utility::codec::field{"version", &get_tenor_schedule_version_response::version},

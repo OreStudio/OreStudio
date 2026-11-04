@@ -35,6 +35,7 @@
 #include "ores.trading.core/repository/range_bound_repository.hpp"
 #include "ores.trading.core/repository/scripted_parameter_repository.hpp"
 #include "ores.trading.core/repository/scripted_parameter_value_repository.hpp"
+#include "ores.trading.core/repository/structure_member_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amortization_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_indexing_repository.hpp"
@@ -274,6 +275,18 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::instrument_barrier_level_repository barrier_level_repo;
         auto levels = barrier_level_repo.read_by_instruments_batch(ctx, all_ids);
         take(levels, batch.instrument_barrier_levels);
+    }
+
+    // A composite trade's components are joined to it by a structure, and the
+    // writer nests them back by its members. A bond can be a component too, so
+    // the members are read for every trade on the page.
+    {
+        std::vector<std::string> page_ids;
+        page_ids.reserve(items.size());
+        for (const auto& item : items)
+            page_ids.push_back(boost::uuids::to_string(item.anchor.id));
+        auto members = repository::structure_member_repository().read_latest(ctx, page_ids);
+        take(members, batch.structure_members);
     }
     if (!scripted_ids.empty()) {
         repository::scripted_parameter_repository parameter_repo;
@@ -591,11 +604,38 @@ trade_export_service::export_books(const std::vector<std::string>& book_ids,
 }
 
 std::vector<trade_export_item>
-trade_export_service::export_trades(const std::vector<std::string>& trade_ids,
+trade_export_service::export_trades(const std::vector<std::string>& page_ids,
                                     domain::instrument_batch& instruments) const {
     using database::repository::execute_parameterized_multi_column_query;
-    if (trade_ids.empty())
+    using database::repository::execute_parameterized_string_query;
+    if (page_ids.empty())
         return {};
+
+    /*
+     * A composite trade is written with its components inside it, so a page
+     * that holds a composite reads its components too, wherever they are paged.
+     * A component whose composite is on another page is written there, nested,
+     * and the writer leaves it out of this one.
+     */
+    auto trade_ids = page_ids;
+    for (auto& id : execute_parameterized_string_query(
+             ctx_,
+             "SELECT DISTINCT component.trade_id::text "
+             "FROM ores_trading_structure_members_tbl composite "
+             "JOIN ores_trading_structure_members_tbl component "
+             "ON component.tenant_id = composite.tenant_id "
+             "AND component.structure_id = composite.structure_id "
+             "AND component.valid_to = ores_utility_infinity_timestamp_fn() "
+             "WHERE composite.tenant_id = ores_iam_current_tenant_id_fn() "
+             "AND composite.role = 'composite' "
+             "AND composite.valid_to = ores_utility_infinity_timestamp_fn() "
+             "AND composite.trade_id = ANY($1::uuid[]) "
+             "AND component.role <> 'composite'",
+             {to_uuid_array(page_ids)},
+             lg(),
+             "Reading the components of the page's composite trades."))
+        if (std::ranges::find(trade_ids, id) == trade_ids.end())
+            trade_ids.push_back(std::move(id));
 
     std::unordered_map<std::string, std::string> ore_ids;
     for (const auto& row : execute_parameterized_multi_column_query(

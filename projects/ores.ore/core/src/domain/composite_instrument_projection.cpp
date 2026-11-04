@@ -30,7 +30,6 @@ namespace {
 
 using trading::domain::composite_instrument;
 using trading::domain::composite_instrument_data;
-using trading::domain::composite_leg;
 
 /// The actor and reason every imported row states.
 constexpr std::string_view composite_instrument_projection_actor = "ores";
@@ -57,25 +56,6 @@ auto make_instrument(std::string_view trade_type_code) -> composite_instrument {
     return r;
 }
 
-auto make_leg(std::string_view id,
-              const std::optional<std::string>& type,
-              int sequence) -> composite_leg {
-    composite_leg leg;
-    leg.identity.leg_sequence = sequence;
-    leg.constituent_trade_id = id.empty() ? type.value_or("") : std::string(id);
-    leg.audit.modified_by = std::string(composite_instrument_projection_actor);
-    leg.audit.performed_by = std::string(composite_instrument_projection_actor);
-    leg.audit.change_reason_code = std::string(composite_instrument_projection_change_reason);
-    leg.audit.change_commentary = std::string(composite_instrument_projection_change_commentary);
-    return leg;
-}
-
-auto composite_instrument_projection_read_leg(xml::record_reader component,
-                                              std::string_view type_name,
-                                              int sequence) -> composite_leg {
-    return make_leg(component.text("id").value_or(""), component.spelling(type_name), sequence);
-}
-
 /**
  * @brief The first row of the substitution group an underlying basket states.
  *
@@ -97,25 +77,6 @@ auto underlying_type(const xml::record_reader& underlying) -> std::optional<std:
             return sub_trade->spelling("SubTradeType");
     }
     return std::nullopt;
-}
-
-auto read_components(const xml::record_reader& data) -> std::vector<composite_leg> {
-    std::vector<composite_leg> legs;
-    const auto components = data.child("Components");
-    if (!components)
-        return legs;
-
-    int sequence = 1;
-    // The two kinds are separate lists. No ORE document mixes them under one
-    // Components element, so reading one list after the other keeps the order
-    // the document wrote.
-    for (const auto& component : components->children("Trade"))
-        legs.push_back(
-            composite_instrument_projection_read_leg(component, "TradeType", sequence++));
-    for (const auto& component : components->children("SubTrade"))
-        legs.push_back(
-            composite_instrument_projection_read_leg(component, "SubTradeType", sequence++));
-    return legs;
 }
 
 auto write_composite_trade(xml::record_writer& trade, const composite_instrument& r) {
@@ -141,7 +102,6 @@ auto read_composite_instrument(xml::record_reader trade, std::string_view trade_
         if (const auto data = trade.child("CompositeTradeData")) {
             if (const auto name = data->text("BasketName"))
                 r.instrument.description = *name;
-            r.legs = read_components(*data);
         }
     } else {
         const auto element =

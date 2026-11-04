@@ -3125,13 +3125,9 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components",
     REQUIRE(composite != nullptr);
     CHECK(composite->instrument.identity.trade_type_code == "CompositeTrade");
     CHECK(composite->instrument.description == "ACME-BASKET");
-    REQUIRE(composite->legs.size() == 2);
-    CHECK(composite->legs[0].identity.leg_sequence == 1);
-    CHECK(composite->legs[0].constituent_trade_id == "component-swap");
-    CHECK(composite->legs[0].audit.change_reason_code == "system.external_data_import");
-    CHECK(composite->legs[1].identity.leg_sequence == 2);
-    CHECK(composite->legs[1].constituent_trade_id == "component-fx");
-    CHECK(composite->legs[1].audit.change_reason_code == "system.external_data_import");
+    // The components are trades of their own, joined by a structure, so the
+    // composite's own row keeps no list of them.
+    CHECK(composite->legs.empty());
 
     const auto back = rebuild(items[0]);
     CHECK(back.anchor.trade_type == "CompositeTrade");
@@ -3140,9 +3136,8 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components",
     REQUIRE(round != nullptr);
     CHECK(round->instrument.identity.trade_type_code == "CompositeTrade");
     CHECK(round->instrument.description == "ACME-BASKET");
-    // The trading domain keeps a component's id and the basket name, not the
-    // component's product, so the write states neither the components nor
-    // anything they held. The loss is stated here rather than left implicit.
+    // Rebuilt alone, without the structure that joins its components, the
+    // composite states none of them.
     CHECK(round->legs.empty());
 
     const auto written = portfolio_projection::write(exported(items[0]));

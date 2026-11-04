@@ -223,7 +223,8 @@ void stamp_document(T& v,
                          !std::is_same_v<T, boost::uuids::uuid>) {
         static_assert(ores::utility::codec::states_wire_form<T>,
                       "stamp_document walks a struct by its stated shape. Include the "
-                      "type's codec header, which states it.");
+                      "type's codec header, which states it, or state wire_fields "
+                      "beside a struct codegen does not write.");
         // A grouped row keeps the security fields in a member rather than on
         // the struct, so each member is stamped as well as walked into.
         // stamp() is guarded field by field and does nothing for a member that

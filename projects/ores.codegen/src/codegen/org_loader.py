@@ -6152,20 +6152,41 @@ def entity_economic_declaration(
     return economic_declaration(owner, members, carried)
 
 
+def _field_group_model(model_path: Path, dotted: str) -> Path:
+    """The model of the field group named @p dotted, as seen from @p model_path.
+
+    A group's model sits beside the entity that uses it, or in its own
+    component's modeling folder. Exactly one model may answer to the name.
+    """
+    parts = dotted.split(".")
+    if len(parts) != 3:
+        raise ValueError(
+            f"{model_path.name}: field group '{dotted}' must be a 3-part dotted "
+            f"name, such as 'ores.trading.instrument_identity'")
+    name = f"{dotted}_field_group.org"
+    beside = model_path.resolve().parent / name
+    if beside.is_file():
+        return beside
+    projects_dir = next(
+        (q for q in model_path.resolve().parents if q.name == "projects"), None)
+    found = sorted(projects_dir.glob(f"{parts[0]}.{parts[1]}/**/modeling/{name}")) \
+        if projects_dir else []
+    if len(found) != 1:
+        raise ValueError(
+            f"{model_path.name}: field group '{dotted}' needs exactly one model, "
+            f"found {len(found)}: {[str(f) for f in found]}")
+    return found[0]
+
+
 @lru_cache(maxsize=None)
-def _group_declares_economic_fields(projects_dir: str, dotted: str) -> bool:
-    """Whether the field group named @p dotted declares any economic field.
+def _group_declares_economic_fields(group_model: Path) -> bool:
+    """Whether a field group's model declares any economic field.
 
     A group member takes part in its owner's canonical form exactly when its
     own model declares one, so the owner's form is decided from the group's
     model and not from the generated header.
     """
-    parts = dotted.split(".")
-    found = sorted(Path(projects_dir).glob(
-        f"{parts[0]}.{parts[1]}/**/modeling/{dotted}_field_group.org"))
-    if not found:
-        raise ValueError(f"no field group model for '{dotted}' under {projects_dir}")
-    return bool(load_org_field_group_model(found[0])["field_group"]["has_economic_fields"])
+    return bool(load_org_field_group_model(group_model)["field_group"]["has_economic_fields"])
 
 
 def entity_canonical_members(path: Path | str, entity: dict[str, Any]) -> list[str]:
@@ -6176,11 +6197,7 @@ def entity_canonical_members(path: Path | str, entity: dict[str, Any]) -> list[s
     the customer did not agree to never moves the digest.
     """
     def group(dotted: str) -> bool:
-        projects_dir = next(
-            (q for q in Path(path).resolve().parents if q.name == "projects"), None)
-        if projects_dir is None:
-            raise ValueError(f"{Path(path).name}: no projects folder above the model")
-        return _group_declares_economic_fields(str(projects_dir), dotted)
+        return _group_declares_economic_fields(_field_group_model(Path(path), dotted))
 
     if entity.get("has_domain_groups"):
         return [g["member"] for g in entity.get("domain_groups") or []

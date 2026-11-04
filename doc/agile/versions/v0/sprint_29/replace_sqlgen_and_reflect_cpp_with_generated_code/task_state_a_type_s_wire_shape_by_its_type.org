@@ -71,9 +71,17 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Definitions moved to the type | 15,608 in 1,254 files | =shape_by_type.py= codemod, then =check_component_drift.py --changed --write= | 88cb72757c |
 | Digests pinned against reflect-cpp | 3 of 3 equal | =ores.trading.api.tests economic_digest_is_unchanged_by_the_generated_canonical_form=; values from a probe on main | f8adc1abcc (main), 5a187e9675 (branch) |
-| Types with a generated canonical form | 64 | the economic declarations in the regenerated headers | 3e6c1e304c |
+| Types with a generated canonical form | 63 | =test_canonical_form_order.py=, which reads every form in the tree | 10d7382aa3 |
 
 * Notes
+
+The codemod rewrote each definition with one regular expression,
+=wire_fields\(\s*const\s+([^&()]+?)\s*&\s*\)= to
+=wire_fields(std::type_identity<\1>)=, over every tracked =.hpp=, =.cpp=,
+=.mustache= and =.org= file under =projects=. No definition named its
+parameter, so no body read the value. The regeneration then wrote the
+generated files in their formatted layout, and =clang-format= laid out the
+hand-written ones.
 
 A guard in =stamp_document= and =assign_party= refuses a struct with no stated
 shape, where the reflect-cpp walk would have walked it. It found four that the
@@ -102,7 +110,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Guard message does not help a hand-written shape | party_scope.hpp, handler_helpers.hpp | accept | names wire_fields beside the struct |
+| 2 | std::array, pair or tuple could reach the guard | party_scope.hpp | decline | array takes the container branch; pair and tuple are not aggregates |
+| 3 | Group lookup by glob could match two models; short name gives IndexError | org_loader.py | accept | exactly one model, beside the entity first; a clear ValueError |
+| 4 | lru_cache in a long-lived process | org_loader.py | decline | the generator runs once per call |
+| 5 | Member order is not tested | codegen tests | accept | test_canonical_form_order.py reads every form; a swapped member fails it |
+| 6 | Tick count differs by platform | canonical_form.hpp | accept | no economic member is a time; canonical_value refuses one at compile time |
+| 7 | An empty form renders {} | templates | decline | the same as main; callers name the type they hash |
+| 8 | Template sync check | templates | decline | tangle-templates does it |
+| 9 | Missing group model test | codegen tests | accept | two tests added |
+| 10 | Record the codemod regex | task | accept | in Notes |
+| 11 | Record a build-time number | task | decline | a stated limitation of this PR |
 
 * Result
 

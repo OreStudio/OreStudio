@@ -281,6 +281,32 @@ def test_a_group_whose_model_declares_none_stays_out_of_the_form(tmp_path):
     assert entity_canonical_members(path, entity) == ["amount"]
 
 
+def test_a_group_model_beside_the_entity_is_found(tmp_path):
+    (tmp_path / "ores.testcomp.tag_field_group.org").write_text(
+        GROUP.format(name="tag", economic="true"), encoding="utf-8")
+    entity = {"domain_identity_group": "ores.testcomp.tag", "has_identity_group": True,
+              "columns": []}
+
+    assert entity_canonical_members(tmp_path / "ores.testcomp.widget.org", entity) == [
+        "identity"]
+
+
+def test_a_group_with_no_model_is_refused(tmp_path):
+    entity = {"domain_identity_group": "ores.testcomp.missing", "has_identity_group": True,
+              "columns": []}
+
+    with pytest.raises(ValueError, match="exactly one model, found 0"):
+        entity_canonical_members(tmp_path / "ores.testcomp.widget.org", entity)
+
+
+def test_a_group_name_that_is_not_three_parts_is_refused(tmp_path):
+    entity = {"domain_identity_group": "trading.tag", "has_identity_group": True,
+              "columns": []}
+
+    with pytest.raises(ValueError, match="3-part dotted name"):
+        entity_canonical_members(tmp_path / "ores.testcomp.widget.org", entity)
+
+
 CATALOGUE_ENTITY = ENTITY.format(
     id_economic=":economic: false\n",
     amount_economic=":economic: true\n",

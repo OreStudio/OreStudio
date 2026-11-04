@@ -83,9 +83,12 @@ std::string canonical_value(const T& v) {
                                  static_cast<unsigned>(v.month()),
                                  static_cast<unsigned>(v.day())));
     } else if constexpr (std::is_same_v<V, std::chrono::system_clock::time_point>) {
-        // A time renders by its tick count, not by a calendar format, so the
-        // text depends on the value alone and not on a locale or a timezone.
-        return frame(std::to_string(static_cast<long long>(v.time_since_epoch().count())));
+        // The clock's tick is a nanosecond on one standard library and a tenth
+        // of a microsecond on another, so a tick count would digest the same
+        // instant differently by platform. No economic member is a time today.
+        static_assert(always_false<V>,
+                      "canonical_value cannot render a time point: render it in a fixed "
+                      "unit, such as microseconds since the epoch, before making it economic.");
     } else if constexpr (requires {
                              v.has_value();
                              *v;

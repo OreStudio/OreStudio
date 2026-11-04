@@ -61,7 +61,8 @@ void assign_party(T& v, const boost::uuids::uuid& party) {
                          !std::is_same_v<T, boost::uuids::uuid>) {
         static_assert(ores::utility::codec::states_wire_form<T>,
                       "assign_party walks a struct by its stated shape. Include the "
-                      "type's codec header, which states it.");
+                      "type's codec header, which states it, or state wire_fields "
+                      "beside a struct codegen does not write.");
         ores::utility::codec::for_each_field(
             v, [&](std::string_view, auto& member) { assign_party(member, party); });
     }

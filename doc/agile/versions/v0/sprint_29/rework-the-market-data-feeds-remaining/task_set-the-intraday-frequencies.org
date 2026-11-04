@@ -26,11 +26,11 @@ The intraday reports run by default at the agreed cadences; only the investigati
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Closed. The seeds, the pages and the live scheduler state the agreed cadences, and the scheduler fires them. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing: the remaining work is the report inputs, which another task owns. |
 | Last touched | 2026-11-04                               |
 
 * Acceptance
@@ -41,9 +41,29 @@ The intraday reports run by default at the agreed cadences; only the investigati
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The change has three layers, and each one is checked before the next is built on
+it. The cadence is one fact stated in three places, and a reader must be able to
+get from any of them to the same expression.
+
+1. *The catalogue and its seeds.* The four cadences move in
+   =report_catalogue.json=, which is the one statement the party sets are derived
+   from, and the two descriptions that claimed a report ran on demand lose that
+   claim. The generated files follow: =report_definitions.json= by
+   =generate_report_data.py=, and the five populate scripts by the two
+   =generate_sql.py= generators. Northwind reads the ACME catalogue, so it gains
+   the same statements without a second edit.
+2. *The pages.* Each page's Frequency section states the expression its seed
+   states, in words, and the spot ladder and trades since last in lose the
+   on-demand claim in the places it was made rather than in one place only. The
+   index gains a Frequency column, because the index is what a reader opens
+   first, and the families note reads the triple as hourly.
+3. *The live environment.* A development environment stays up while the seeds
+   move, so the change is applied in the order the layers stand in: stage and
+   publish the catalogue, then move the schedules. A job carries its own copy of
+   the expression, so the publish does not move a schedule: the definitions are
+   unscheduled and scheduled again as the tenant's administrator for each party,
+   which is the operation that writes the job and asks IAM for the run grant.
+   Then the scheduler is watched, and the fires are the evidence.
 
 * Measurements
 
@@ -57,9 +77,52 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Catalogue rows whose cadence moved | 4 of 60: the triple, the surface ladder, the spot ladder and trades since last in | =json by name over report_catalogue.json= | c692970339 |
+| Seeded definition rows the change moved | 15 across the five datasets: group 1, UK 4, US 3, HK 3, Northwind 4 | =python3 generate_report_data.py; python3 generate_sql.py= in both dataset directories | c692970339 |
+| Seed generators idempotent | a second run of all three writes nothing: the md5 of every changed file is unchanged | as above, then =md5sum -c= | c692970339 |
+| Definition rows the live publish moved | 12: group 1, UK 4, US 4, HK 3 | [[file:./evidence/apply_the_intraday_frequencies.sql][the apply script]] | ecb1a8db83 |
+| Definitions scheduled by the operation | 11: 1 group, 4 UK, 3 US, 3 HK; none refused, no job row written by hand | [[file:./evidence/schedule_the_intraday_frequencies.ores][the scheduling script]] | ecb1a8db83 |
+| Definitions whose job states the definition's expression | 11 of 11, all active, all =nats_publish= | [[file:./evidence/the_intraday_frequencies_live.txt][the live transcript]] | ecb1a8db83 |
+| Fires at the hour | 11 definitions, 15:00:00 to 15:00:04, no person acting | as above | ecb1a8db83 |
+| Fires in the half hour after | trades 3 parties at 15:00, 15:15 and 15:30; spot ladder 3 parties at 15:00 and 15:30 and not at 15:15; neither triple after 15:00 | as above | ecb1a8db83 |
+| The legacy triple's job | 1 ended, which stops the fifteen-minute firing of the same report | as above | ecb1a8db83 |
+| pgTAP reporting suites | 19 files, 188 tests, all passing | =./projects/ores.sql/test/run_tests.sh projects/ores.sql/test/reporting_*.sql= | ecb1a8db83 |
+| The pgTAP publish suites alone | 5 files, 54 tests, all passing | =./projects/ores.sql/test/run_tests.sh= over the five =reporting_publish_*= files | ecb1a8db83 |
+| Local checks over the change | 9 of 17 pass as run; the other 8 fail only because this worktree holds no codegen venv, and all 8 pass when run with the main worktree's venv | =./compass.sh check --exclude-heavy= | ecb1a8db83 |
+| SQL hygiene | 3342 files, 0 problems | =python3 projects/ores.sql/utility/check_sql_hygiene.py projects/ores.sql= | ecb1a8db83 |
+| Org lint, links and the site page | all pass, in the check above | =./compass.sh lint=, =org-links=, =site-page= | ecb1a8db83 |
 
 * Notes
+
+**The environment holds two naming families.** The catalogue renamed three
+reports after the 2026-11-03 publish, so the live database holds both the old
+name and the new one for the triple, the spot greeks and the spot ladder. The
+triple's older row held the fifteen-minute job, and that job is the one this task
+ended. The spot greeks and the close triple keep jobs at the cadences the agreed
+table states, so they do not contradict it, but the report runs twice for each
+firing until the work that retires the older catalogue lands. That duplication
+was there before this task and is not created by it.
+
+**The job is not a view over the definition.** A definition states when a report
+runs and the scheduler holds the expression the job was made with. A publish that
+moves a definition therefore leaves a schedule where it was, and the two
+operations in the shell are the only path that moves both. The scheduling
+operation also asks IAM for the run grant the runs act under, so writing job rows
+directly would leave runs that cannot act in their party; no job row was written
+by hand here.
+
+**The environment's own binaries are used from this worktree.** This worktree
+holds no compiled binaries and no vcpkg submodule, so it cannot build a shell.
+=compass shell= resolves the binary under this worktree's =build/output/<preset>/
+publish=, and that directory is a symlink to the publish directory the running
+services use. Nothing in the main worktree was modified; the symlink is inside
+=build/=, which the tree does not track.
+
+**What the runs came to.** The spot ladder and trades since last in completed
+every phase. The triple vol spot ladder met the engine and the engine refused the
+book it was handed, with 235 errors, which is the failure the ladder family's
+pages state: the dataset holds no volatility market data. A cadence is not a
+figure.
 
 * Test Scenarios
 
@@ -85,3 +148,48 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The product owner's table is stated in the catalogue, in the seeds, on the pages
+and in the live scheduler, and the scheduler fires the reports at it.
+
+- *The catalogue and the seeds.* Four rows moved and every other row stands: the
+  triple and the surface ladder run hourly at every hour, the spot ladder every
+  half hour through the London day and trades since last in every fifteen
+  minutes, and the spike, strike and option maps keep the never-firing
+  placeholder. The two descriptions that claimed a report runs on demand lose
+  that claim, because the seed now schedules it. The fifteen seeded rows across
+  the five datasets state the same thing for every party, and a second run of
+  the generators writes nothing.
+- *The pages.* The four affected pages state the expression their seed states,
+  with the reason for the hourly cadence where the product owner set it; the spot
+  ladder loses the paragraph that argued a definition must not fire by itself and
+  trades since last in loses the on-demand claim in four places. The index gains
+  a Frequency column for all fourteen reports, and the families note reads the
+  triple as hourly and the desk reports as scheduled or on demand rather than
+  all on demand. The business catalogue's Spot Ladder and Trades Since Last In
+  rows read "on-demand · scheduled".
+- *The live environment.* The catalogue was staged and published, which moved
+  twelve rows; eleven definitions were then unscheduled and scheduled again as
+  the tenant's administrator for each party, which wrote eleven jobs and eleven
+  run grants with nothing written by hand. Every job states its definition's
+  expression, and all eleven fired within four seconds of the hour with no person
+  acting. Trades since last in fired again at 15:15 and 15:30, the spot ladders
+  at 15:30, and neither triple, which is the table working.
+- *The legacy triple.* The environment still carried the older name of the same
+  report with a job at the old fifteen-minute expression, and that job fired the
+  report at 15:15. The job was ended, and no triple fired at 15:30. The
+  definition itself stays, and the notes state the seven other jobs the older
+  publish left on three other names, at cadences the table does not contradict.
+- *The gates.* The reporting pgTAP suites pass, 188 tests over 19 files, and the
+  five publish suites pass alone; SQL hygiene is clean over 3342 files; the
+  org lint, the link check and the site page pass. The eight checks that failed
+  did so because this worktree has no codegen venv, and each passes when run with
+  the main worktree's venv, which the evidence names.
+- *What is not verified.* No figure is produced: the triple still meets the
+  engine on inputs the environment does not hold, and that is the accepted
+  failure. The duplicated spot greeks and close triple runs are the older
+  catalogue's and are left for the work that retires it. Nothing was pushed,
+  merged or built in this worktree.
+
+The transcript, the two apply scripts and the scheduling script are beside this
+page in [[file:./evidence/the_intraday_frequencies_live.txt][the live evidence]].

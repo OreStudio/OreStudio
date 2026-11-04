@@ -1,0 +1,40 @@
+# The intraday cadences put on the scheduler by a person, one party at a time.
+#
+# The publish in apply_the_intraday_frequencies.sql moved each definition's
+# expression, and a scheduler job carries its own copy of the expression, so the
+# jobs do not follow the definitions. This script unschedules the affected
+# definitions and schedules them again, as the Acme tenant's administrator, which
+# is the operation that writes the job and asks IAM for the run grant the runs
+# act under.
+#
+# A session acts in one party, and the schedule operation refuses a definition
+# of another party, so the script switches party before each block:
+# ACMCOR, then ACCOUK, then ACCOUS, then ACCOHK. The account's default party is
+# left alone: switch-party re-scopes the session and writes nothing.
+#
+# Run from the repository root:
+#   ./compass.sh shell --no-login -l doc/agile/versions/v0/sprint_29/rework-the-market-data-feeds-remaining/evidence/schedule_the_intraday_frequencies.ores
+
+login tenant_admin@acme_corporation Secure-Password-123
+
+# --- ACMCOR: the surface vega ladder ---
+account_operations switch-party cae3d94d-8e5a-4ce3-bc74-8f94e9c36d74
+report_operations unschedule-report-definitions 64f14a65-f196-44b2-9fa1-b4f34356d949
+report_operations schedule-report-definitions 64f14a65-f196-44b2-9fa1-b4f34356d949
+
+# --- ACCOUK: the surface ladder, the triple, the spot ladder and trades ---
+account_operations switch-party 5b21df84-5f3a-4f82-9d71-ab07db32facf
+report_operations unschedule-report-definitions 1a810093-4274-4283-978a-9b9cecd7a4e2,11629885-3c8a-4193-aa51-216126da2bca,dde7d3fb-e2f6-4ac8-91e5-1ad5470cb669,64da60ab-d6f9-4868-9740-ec46bec4246a
+report_operations schedule-report-definitions 1a810093-4274-4283-978a-9b9cecd7a4e2,11629885-3c8a-4193-aa51-216126da2bca,dde7d3fb-e2f6-4ac8-91e5-1ad5470cb669,64da60ab-d6f9-4868-9740-ec46bec4246a
+
+# --- ACCOUS: the surface ladder, the spot ladder and trades ---
+account_operations switch-party 6ec95a8a-0991-48d6-82bd-a247f80200f7
+report_operations unschedule-report-definitions cab6a352-34fc-4a26-9785-9d188e9aacb6,95e1338e-4fbf-4010-b852-63166a2aebca,a1842062-31b5-4f84-ab38-51abe222c2cf
+report_operations schedule-report-definitions cab6a352-34fc-4a26-9785-9d188e9aacb6,95e1338e-4fbf-4010-b852-63166a2aebca,a1842062-31b5-4f84-ab38-51abe222c2cf
+
+# --- ACCOHK: the surface ladder, the spot ladder and trades ---
+account_operations switch-party 59c9eee6-47ee-4dd3-9b58-99820312a09f
+report_operations unschedule-report-definitions e7adecf5-0a8b-4e55-97e8-a426e0290dec,4c6918c8-53aa-47d2-b20f-070be3234f6a,44cb553a-a991-46db-82ee-88dad00e59c2
+report_operations schedule-report-definitions e7adecf5-0a8b-4e55-97e8-a426e0290dec,4c6918c8-53aa-47d2-b20f-070be3234f6a,44cb553a-a991-46db-82ee-88dad00e59c2
+
+exit

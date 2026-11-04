@@ -35,7 +35,7 @@
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
-#include "ores.trading.core/service/book_status_port.hpp"
+#include "ores.trading.core/service/book_rules_port.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -84,7 +84,7 @@ struct handler_fixture {
      * carries on when it cannot tell. A test asks nothing, so it says so
      * rather than pretending the book is open.
      */
-    ores::trading::service::unknown_book_status books;
+    ores::trading::service::unknown_book_rules books;
     std::string actor;
 
     handler_fixture()

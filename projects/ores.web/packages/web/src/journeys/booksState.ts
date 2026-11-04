@@ -437,6 +437,10 @@ export function writePlan(draft: BookDraft, partyId: string): WritePlan | undefi
         book_purpose_type: f.bookPurposeType,
         ledger_feed_type: f.ledgerFeedType,
         is_sweepable: f.isSweepable,
+        // The walk shapes a book's classifications, not the product types it
+        // allows: a new book allows every type, and an edited one keeps what it
+        // states.
+        restricts_product_types: draft.opened?.restricts_product_types ?? false,
         rates_centre_code: f.ratesCentreCode,
         sandbox_id: draft.opened?.sandbox_id ?? null,
     };

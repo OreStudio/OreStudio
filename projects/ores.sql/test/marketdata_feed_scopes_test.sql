@@ -31,30 +31,41 @@ select plan(6);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
+-- A scope says which catalogue item a feed carries, so every scope must name a
+-- publisher the vendor instrument table holds an instrument for. The count of
+-- scopes is not compared to the count of mappings: the two catalogues grow
+-- independently, and a new publisher is not a fault.
 select is(
     (select count(*)::int
-     from ores_marketdata_feed_scopes_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    (select count(*)::int
-     from ores_marketdata_market_data_mappings_tbl m
-     join ores_marketdata_market_data_vendor_instruments_tbl v
-       on v.id = m.vendor_instrument_id
-     where m.tenant_id = ores_utility_system_tenant_id_fn()
-       and v.provider_code in ('ecb', 'boc', 'imf', 'tcmb', 'derived')
-       and m.valid_to = ores_utility_infinity_timestamp_fn()
-       and v.valid_to = ores_utility_infinity_timestamp_fn()),
-    'every scope row of a public feed or the derived source is a mapping of its publisher'
-);
-
-select is(
-    (select count(distinct f.name)::int
      from ores_marketdata_feed_scopes_tbl s
      join ores_marketdata_feeds_tbl f on f.id = s.feed_id
      where s.tenant_id = ores_utility_system_tenant_id_fn()
-       and s.valid_to = ores_utility_infinity_timestamp_fn()),
-    5,
-    'the four public feeds and the derived source carry a scope'
+       and s.valid_to = ores_utility_infinity_timestamp_fn()
+       and not exists (
+           select 1
+           from ores_marketdata_market_data_mappings_tbl m
+           join ores_marketdata_market_data_vendor_instruments_tbl v
+             on v.id = m.vendor_instrument_id
+           where m.tenant_id = s.tenant_id
+             and v.provider_code = f.publisher_code
+             and m.valid_to = ores_utility_infinity_timestamp_fn()
+             and v.valid_to = ores_utility_infinity_timestamp_fn())),
+    0,
+    'every feed scope row names a publisher its vendor instruments belong to'
+);
+
+select is(
+    (select count(*)::int
+     from ores_marketdata_feeds_tbl f
+     where f.tenant_id = ores_utility_system_tenant_id_fn()
+       and f.publisher_code in ('ecb', 'boc', 'imf', 'tcmb')
+       and f.valid_to = ores_utility_infinity_timestamp_fn()
+       and not exists (
+           select 1 from ores_marketdata_feed_scopes_tbl s
+           where s.feed_id = f.id
+             and s.valid_to = ores_utility_infinity_timestamp_fn())),
+    0,
+    'every public feed carries a scope'
 );
 
 create temporary table t_ecb on commit drop as

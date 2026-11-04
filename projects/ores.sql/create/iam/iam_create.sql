@@ -73,6 +73,8 @@
 \ir ./iam_roles_notify_trigger_create.sql
 \ir ./iam_role_permission_create.sql
 \ir ./iam_role_permissions_notify_trigger_create.sql
+\ir ./iam_role_product_type_create.sql
+\ir ./iam_role_product_types_notify_trigger_create.sql
 \ir ./iam_account_role_create.sql
 \ir ./iam_account_roles_notify_trigger_create.sql
 \ir ./iam_rbac_functions_create.sql

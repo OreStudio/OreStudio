@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 6D6A3804-3E49-4B12-9F84-A8C5C2162949
+:END:
+#+title: Task: Parse the engine log when a run fails
+#+description: A failed compute records the engine's whole output as one error; the parsed trade failures exist in the log but never reach the run's errors.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/parse-the-engine-log-on-a-failed-run
+#+pr: 4449
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A failed run's errors are the parsed structured messages, one per failure, with the trade id and type, not the raw transcript.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The failure path runs the output through the canonical log reader and records the parsed errors.
+- The run's message carries the summary; the Errors tab lists each structured failure.
+- A failed run from the demo shows the parsed rows; the tests and gates are green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4449][#4449]] | [reporting] Record a failed run's log as rows, not a transcript |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A failed run's errors are now the parsed rows, not a transcript. Two defects
+were fixed in series: the compute wrapper uploaded its log only on success, so
+the reporting read a 404; and the failure path recorded the platform's raw
+message first, which the write-once recorder then protected, so the parsed rows
+could never land. The wrapper now writes its rows for every job that reached
+the engine (the structured log first, the text log otherwise), and the failure
+path records the log before it refuses; the run's message is one sentence that
+names the count and points at Errors.
+
+Verified live on the rebuilt services: the Headline Position run
+=cd8082af-7f06-4365-a87e-3afc94a7a34d= failed and its errors read 40 rows, 39
+trade failures plus the run's pointer line, each with its trade id and the
+engine's message; the run's message reads "The run's compute job failed with
+outcome 3: Engine exited with code 255. Its log records 39 errors; the rows are
+in Errors."
+
+=ores.reporting.core.tests= 267 cases / 1499 assertions pass; =compass lint=
+passes; =check_component_drift= reports no drift for reporting or compute-cpp.
+A successful run remains unproven: the demo's package lacks
+=Input/simulation.xml=, so the engine aborts before it prices, which is the
+report-inputs task.

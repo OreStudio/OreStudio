@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:reporting:report:structure_note:greeks:intraday:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-04
 
 This structure note gathers the report pages. It states the four families the
 pages fall in, what each family prices from, and the order in which to read
@@ -23,8 +23,9 @@ from and by who reads it, and the division is the one the business catalogue
 draws with its cycle axis. An intraday report prices from the live cut and its
 figures are indicative. A close twin prices from the authorised end of day cut
 and its figures stand. The desk maps read the book's shape rather than a
-valuation. The ladder family reads one bumped risk factor at a time, and it is
-the family the store can describe and cannot yet run.
+valuation. The ladder family reads one bumped risk factor at a time. Ten of it are
+seeded, and a run of one reaches the engine and stops there, because no table holds
+the sensitivity document and no table states a shift size.
 
 * The four families
 

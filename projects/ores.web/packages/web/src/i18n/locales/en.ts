@@ -7685,6 +7685,25 @@ export const en: SourceCatalogue = {
         },
         schedule: {
             onDemand: 'On demand',
+            schedule: 'Schedule',
+            unschedule: 'Unschedule',
+            working: 'Saving the schedule',
+            scheduled: 'Scheduled. The report now runs when the schedule fires.',
+            alreadyScheduled:
+                'Nothing changed. The report already had a schedule, so it was left as it was.',
+            alreadyScheduledExpression:
+                'Nothing changed. The report already had a schedule; the new expression was written.',
+            unscheduled:
+                'Unscheduled. The report runs only when a person asks, so it is on demand.',
+            notScheduled: 'Nothing changed. The report had no schedule to remove.',
+            refused: 'The server refused this change: {message}',
+            otherParty:
+                'This report belongs to {party}. Act for that party to schedule it or take its schedule away.',
+            chooseTitle: 'Schedule {name}',
+            chooseLead:
+                'The report runs when the schedule you state here fires. It stays on demand until you schedule it.',
+            when: 'When the report runs',
+            whenHint: 'The scheduler fires this expression. Unschedule it to stop it firing.',
         },
         cut: {
             LIVE: 'Live',
@@ -7802,6 +7821,9 @@ export const en: SourceCatalogue = {
             record: 'Definition',
             party: 'Party',
             partyHint: 'The party that owns this definition and runs it.',
+            schedule: 'When it runs',
+            scheduleHint:
+                'A report with no schedule is on demand: it runs only when a person starts it. The expression is what it would run on.',
             health: 'Health of the latest run',
             healthHint: 'Derived from the latest run, never from the definition.',
             latestRun: 'Latest run',
@@ -7897,6 +7919,7 @@ export const en: SourceCatalogue = {
         feedsRun: 'start and stop the synthetic feeds',
         reportDefinitionsRead: 'see the report definitions of your parties',
         reportDefinitionsWrite: 'change report definitions',
+        reportDefinitionsDelete: 'remove report definitions, and take their schedules away',
         pricingEnginesRead: 'see pricing engine configurations',
         pricingEnginesWrite: 'change pricing engine configurations',
         pricingEnginesDelete: 'remove pricing engine configurations',

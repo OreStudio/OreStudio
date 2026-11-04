@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-04
 #+report_code: bump_and_reprice_surface_vega_ladder
 #+startup: inlineimages
 
@@ -48,22 +48,24 @@ answers that question.
 
 * Frequency
 
-A ladder is end of day. It is read as the risk statement of record and compared
-across days, and a live ladder would price against a body that is not reproducible.
-The definition runs on the schedule at the close.
-
-An intraday variant is worth naming, because a desk that watches a volatility move
-wants the same bucket list during the day. No intraday variant is seeded. One would
-need three things: a definition whose cut selection is LIVE, a run settings row whose
-market data type is live, and the same sensitivity configuration.
+The surface volatility ladder runs on both cycles. The plain definition selects the
+=LIVE= cut and reads the market data of the instant it starts, so a desk watches the
+smile move between the closes. Its "(EOD)" twin selects the =EOD= cut and values the
+portfolio at the weekday before the run date, which is the full-surface statement of
+record. A live ladder is indicative and a close ladder stands, so the two are
+separate definitions with separate run settings and neither run replaces the record
+of the other.
 
 #+ATTR_HTML: :class hug-leading
-| Field     | Value      |
-|-----------+------------|
-| Cycle     | eod        |
-| Frequency | scheduled  |
-| Batch     | none       |
-| Owner     | market-risk |
+| Field     | Value            |
+|-----------+------------------|
+| Cycle     | eod and intraday |
+| Frequency | scheduled        |
+| Batch     | none             |
+| Owner     | market-risk      |
+
+The plain definition selects the =LIVE= cut and its run settings row states market
+data type =live=; the twin selects =EOD= and states =eod=.
 
 * Inputs
 
@@ -253,7 +255,7 @@ document the definition binds. The mechanism is on
 | Parameter             | Domain                                       | Seeded value | Meaning                                                     |
 |-----------------------+----------------------------------------------+--------------+-------------------------------------------------------------|
 | sensitivityConfigFile | a document of the sensitivity configuration type | none     | The =SensitivityAnalysis= document the analytic reads.      |
-| market_data_type      | live, eod or date                            | eod          | The market data the run reads. =eod= values at the weekday before the run date. |
+| market_data_type      | live, eod or date                            | live and eod | The market data each definition reads: the plain name the live cut, the twin the end of day one. |
 | base_currency         | ISO 4217 code                                | the entity's | The currency the figures are expressed in.                  |
 | ShiftType             | Relative, Absolute or EqualTo                | none         | How the shift is applied to the factor.                     |
 | ShiftSize             | a real, with an optional key                 | none         | The size of the shift, in the factor's own unit.            |

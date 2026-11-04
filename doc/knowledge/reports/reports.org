@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:report:index:reporting:
 #+created: 2026-09-28
-#+updated: 2026-11-03
+#+updated: 2026-11-04
 
 A [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]] page describes one report in
 depth: what decision it feeds, who reads it, how often it runs, what it reads and
@@ -47,7 +47,8 @@ describes it; a new report is a new page and a new row.
 The folder holds twenty-seven pages. Fourteen describe a report the platform
 runs: thirteen catalogued reports, of which three run on both cycles so each has
 a close twin beside it, and one smoke test. Thirteen describe the vega and greek
-ladder family, which the store can describe and cannot yet run.
+ladder family: ten are seeded and fail at the engine for the reasons their pages
+state, and three are documented and not seeded.
 
 #+ATTR_HTML: :class hug-leading
 | Report | Code | Cut | Audience | What it produces |
@@ -83,25 +84,39 @@ half of it by
 These thirteen pages describe one family: a report bound to a sensitivity
 configuration that bumps one risk factor and reprices the book. The number a
 reader sees is a value change, not a derivative, and the bump is a setting of the
-document rather than the identity of the report. The family is documented here
-and seeded nowhere; each page states why.
+document rather than the identity of the report.
+
+Ten of the family are seeded. The product owner overruled the design's decision to
+hold them back on 2026-11-04: a definition that produces no figure costs nothing to
+hold, and a catalogue that states the family says more about the platform than an
+empty page does. Each seeded report binds its party's sensitivity run settings,
+which name =sensitivity.xml= and =simulation.xml=, the =Risk Sensitivities=
+engines, the six configuration types and the cut its name states. The plain name
+selects =LIVE= and the "(EOD)" twin selects =EOD=, so a report on both cycles is two
+definitions. What still stops a figure is the same for all of them, and
+[[*What is not built][What is not built]] states it.
+
+Three pages describe a ladder the design's list does not seed. The three-pillar is
+the surface shift under its other name, so it is a reading of a report that exists
+and not a second definition. The Volga and the Vanna wait on a stored shape for a
+second-order and a paired figure.
 
 #+ATTR_HTML: :class hug-leading
-| Report | Code | Cycle | Audience | What it produces |
-|--------+------+-------+----------+------------------|
-| [[id:D19FBAFA-E9D7-40B7-8EA2-A59AB15609E6][Bump and Reprice ATM vega ladder]] | =bump_and_reprice_atm_vega_ladder= | eod | trading-desk | The value change at the at-the-money point of each expiry. |
-| [[id:8A3CF082-FDA8-4D54-9272-8388A9ED3A50][Bump and Reprice Risk-reversal vega ladder]] | =risk_reversal_vega_ladder_bump_and_reprice= | eod | trading-desk | The call minus put change at each expiry, derived from surface points. |
-| [[id:AEAE5CC8-9F55-4F2A-91EC-8C1BBCAAAE5F][Bump and Reprice Butterfly vega ladder]] | =bump_and_reprice_butterfly_vega_ladder= | eod | trading-desk | The wing curvature at each expiry, derived from the same run. |
-| [[id:A6316CB6-8ADA-4A79-9AC2-B55F3A18DF47][Bump and Reprice Three-pillar vega ladder]] | =three_pillar_vega_ladder_bump_and_reprice= | eod | trading-desk | The three components together, which is the surface shifted with its shape held. |
-| [[id:4F1792D8-A563-4860-B230-AE337C4F6BB0][Bump and Reprice Surface vega ladder]] | =bump_and_reprice_surface_vega_ladder= | eod | trading-desk | The value change at every strike of every expiry. |
-| [[id:51B46B4E-1D7E-4ED6-8A49-8CD30F4D485B][Bump and Reprice DV01 ladder]] | =bump_and_reprice_dv01_ladder= | eod | market-risk | The money value of one basis point at each curve bucket, in par rates. |
-| [[id:C004FD5F-33F0-49D1-893D-9F66FC62342E][Bump and Reprice Rho ladder]] | =bump_and_reprice_rho_ladder= | eod | market-risk | The rate value change at each tenor, discount and projection apart. |
-| [[id:7E02BB05-E808-48BC-A916-6C41B761F82D][Bump and Reprice Volga ladder]] | =bump_and_reprice_volga_ladder= | eod | trading-desk | Gamma on the vol factor, the curvature in volatility. |
-| [[id:225423E8-D86B-45E1-BA1B-CAC159647AA0][Bump and Reprice Vanna ladder]] | =bump_and_reprice_vanna_ladder= | eod | trading-desk | The paired rows, one factor a spot and the other a volatility. |
-| [[id:5F6C35FB-90B0-44B7-9991-38F5F3F67F0F][Bump and Reprice Delta ladder]] | =bump_and_reprice_delta_ladder= | eod | trading-desk | The first-order value change, one factor at a time. |
-| [[id:FD5EACF2-9CA1-498B-A298-6FC13549B711][Bump and Reprice Gamma ladder]] | =bump_and_reprice_gamma_ladder= | eod | trading-desk | The curvature in one factor. |
-| [[id:2696A263-DDBF-4467-9CE3-9F951A653734][Bump and Reprice Cross-gamma ladder]] | =cross_bump_and_reprice_gamma_ladder= | eod | market-risk | The curvature between two factors of one risk class. |
-| [[id:0C87306E-9668-428B-93FD-D65FD9946DA9][Bump and Reprice Theta ladder]] | =bump_and_reprice_theta_ladder= | eod | market-risk | The value change from moving the clock rather than a market. |
+| Report                                                                                  | Code                                         | Cycle            | Definition                                | Audience     | What it produces                                                                 |
+|-----------------------------------------------------------------------------------------+----------------------------------------------+------------------+-------------------------------------------+--------------+----------------------------------------------------------------------------------|
+| [[id:D19FBAFA-E9D7-40B7-8EA2-A59AB15609E6][Bump and Reprice ATM vega ladder]]           | =bump_and_reprice_atm_vega_ladder=           | eod and intraday | LIVE and (EOD)                            | trading-desk | The value change at the at-the-money point of each expiry.                       |
+| [[id:8A3CF082-FDA8-4D54-9272-8388A9ED3A50][Bump and Reprice Risk-reversal vega ladder]] | =risk_reversal_vega_ladder_bump_and_reprice= | eod and intraday | LIVE and (EOD)                            | trading-desk | The call minus put change at each expiry, derived from surface points.           |
+| [[id:AEAE5CC8-9F55-4F2A-91EC-8C1BBCAAAE5F][Bump and Reprice Butterfly vega ladder]]     | =bump_and_reprice_butterfly_vega_ladder=     | eod and intraday | LIVE and (EOD)                            | trading-desk | The wing curvature at each expiry, derived from the same run.                    |
+| [[id:A6316CB6-8ADA-4A79-9AC2-B55F3A18DF47][Bump and Reprice Three-pillar vega ladder]]  | =three_pillar_vega_ladder_bump_and_reprice=  | eod and intraday | the surface definition, by its other name | trading-desk | The three components together, which is the surface shifted with its shape held. |
+| [[id:4F1792D8-A563-4860-B230-AE337C4F6BB0][Bump and Reprice Surface vega ladder]]       | =bump_and_reprice_surface_vega_ladder=       | eod and intraday | LIVE and (EOD)                            | trading-desk | The value change at every strike of every expiry.                                |
+| [[id:51B46B4E-1D7E-4ED6-8A49-8CD30F4D485B][Bump and Reprice DV01 ladder]]               | =bump_and_reprice_dv01_ladder=               | eod              | EOD                                       | market-risk  | The money value of one basis point at each curve bucket, in par rates.           |
+| [[id:C004FD5F-33F0-49D1-893D-9F66FC62342E][Bump and Reprice Rho ladder]]                | =bump_and_reprice_rho_ladder=                | eod and intraday | LIVE and (EOD)                            | market-risk  | The rate value change at each tenor, discount and projection apart.              |
+| [[id:7E02BB05-E808-48BC-A916-6C41B761F82D][Bump and Reprice Volga ladder]]              | =bump_and_reprice_volga_ladder=              | eod              | not seeded                                | trading-desk | Gamma on the vol factor, the curvature in volatility.                            |
+| [[id:225423E8-D86B-45E1-BA1B-CAC159647AA0][Bump and Reprice Vanna ladder]]              | =bump_and_reprice_vanna_ladder=              | eod              | not seeded                                | trading-desk | The paired rows, one factor a spot and the other a volatility.                   |
+| [[id:5F6C35FB-90B0-44B7-9991-38F5F3F67F0F][Bump and Reprice Delta ladder]]              | =bump_and_reprice_delta_ladder=              | eod              | EOD                                       | trading-desk | The first-order value change, one factor at a time.                              |
+| [[id:FD5EACF2-9CA1-498B-A298-6FC13549B711][Bump and Reprice Gamma ladder]]              | =bump_and_reprice_gamma_ladder=              | eod              | EOD                                       | trading-desk | The curvature in one factor.                                                     |
+| [[id:2696A263-DDBF-4467-9CE3-9F951A653734][Bump and Reprice Cross-gamma ladder]]        | =cross_bump_and_reprice_gamma_ladder=        | eod              | EOD                                       | market-risk  | The curvature between two factors of one risk class.                             |
+| [[id:0C87306E-9668-428B-93FD-D65FD9946DA9][Bump and Reprice Theta ladder]]              | =bump_and_reprice_theta_ladder=              | eod              | EOD                                       | market-risk  | The value change from moving the clock rather than a market.                     |
 
 The family as a whole, what each ladder needs from the market data and what the
 store lacks, is on
@@ -113,15 +128,33 @@ the order to read the intraday pages and the ladders in starts there.
 The reports this folder does not yet describe, and the ones it describes that the
 platform does not yet run, are two different lists.
 
-- *The ladder family is not seeded.* The thirteen pages above describe reports
-  that no definition states. A ladder needs a =SensitivityAnalysis= document, and
-  no mapper reads or writes one: the document is a name in a lookup and a row in
-  the ORE file library, not a modelled entity. The store also states no shift
-  size, so nothing names a 0.1 bump, a basis point or a per cent as a choice.
-- *No volatility market data.* The ACME seed's 420 curve quotes are all
-  =IR_SWAP/RATE/...=. There is no =FX_OPTION/RATE_LNVOL= quote and no volatility
-  surface configuration, so every volatility ladder would price no factor. This
-  is why a run in this environment stops at the engine, and the run records that
+- *The ladder family is seeded and cannot price.* Ten of the thirteen pages above
+  describe reports a definition now states, on both cycles where the design says
+  so. They are definitions like any other: they select a cut, bind their
+  configuration and run the pipeline. They produce no figure, and the reasons are
+  the ones that stop a sensitivity figure anywhere in the platform, not defects in
+  a ladder:
+  - *No mapper reads or writes the document.* A =SensitivityAnalysis= document is
+    a name in a lookup and a row in the ORE file library, not a modelled entity, so
+    a configuration can name it and nothing can read it. The round trip is
+    backlogged as [[id:190620B4-2F86-44C0-B4B7-31EE2C07D3F9][Round trip the
+    sensitivity configuration]].
+  - *No shift size is stated.* The store names the document a ladder binds and
+    states no size, so nothing says what a 0.1 bump, a basis point or a per cent
+    is. The document holds the shift, and no table holds the document.
+  - *No volatility market data and no spot.* The ACME seed's 420 curve quotes are
+    all =IR_SWAP/RATE/...=. There is no =FX_OPTION/RATE_LNVOL= quote and no
+    volatility surface configuration, so every volatility ladder shifts nothing.
+    [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] is the
+    work that closes it.
+  - *The report inputs are not complete.* The run package carries the four Setup
+    documents and no analytic document of its own, so a document that no owner
+    exports never reaches the engine. That is the subject of
+    [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and
+    prove they run]], and a ladder waits on it with the rest.
+- *No volatility market data.* Outside the ladder family this stops the option
+  maps and the triple vol ladder, which need a surface to bucket the book by. The
+  seed holds curves alone, so a run over an option book records the engine's
   refusal against itself.
 - *The matrix reports are not described here.* Rho/Vol, Spot/Vol and Spot/Rho
   state two bumped inputs in one grid, which is a stress configuration rather than
@@ -154,6 +187,14 @@ not run the same reports. The rules that choose the reports for each
 Acme entity are in the Acme Corporation chapter of the user manual, under
 "The reports each entity runs". The reason for each choice is in the
 investigation [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]].
+
+The ladder family is the one exception, and it is deliberate. The product owner
+asked for it on 2026-11-04, so the family is decided before those rules: every
+party holds the ten seeded ladders, the holding company included, and Northwind
+holds them through the London rows its catalogue reads. A party that runs no
+option book therefore states a volatility ladder it cannot price, which is the
+point of the exercise: the reports exist, the list shows them, and the run that
+stops says why.
 
 * Adding a report
 

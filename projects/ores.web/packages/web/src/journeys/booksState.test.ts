@@ -75,6 +75,7 @@ const book: Book = {
     book_purpose_type: 'Hedging',
     ledger_feed_type: 'Daily',
     is_sweepable: false,
+    restricts_product_types: false,
     rates_centre_code: 'GBLO',
     sandbox_id: null,
 };

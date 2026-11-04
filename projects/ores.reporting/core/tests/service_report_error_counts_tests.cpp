@@ -134,7 +134,7 @@ TEST_CASE("the problems of a run read as one row split into errors and warnings"
                             .subject_id = "GBP-SONIA",
                             .detail = {}});
     }
-    REQUIRE(recorder.record_engine_errors(with_problems, problems).empty());
+    REQUIRE(recorder.record_engine_errors(with_problems, problems).failure.empty());
 
     ores::reporting::service::report_error_event_service service(ctx);
     ores::reporting::messaging::get_report_error_counts_request request;
@@ -164,7 +164,7 @@ TEST_CASE("a log line that is neither an error nor a warning is not a problem",
         {.severity = "notice", .scope = "Report", .message = "building the portfolio"},
         {.severity = "info", .scope = "Report", .message = "done"},
         {.severity = "error", .scope = "Trade", .message = "did not price"}};
-    REQUIRE(recorder.record_engine_errors(instance, lines).empty());
+    REQUIRE(recorder.record_engine_errors(instance, lines).failure.empty());
 
     ores::reporting::service::report_error_event_service service(ctx);
     ores::reporting::messaging::get_report_error_counts_request request;

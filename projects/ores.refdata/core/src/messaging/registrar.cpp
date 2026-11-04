@@ -169,6 +169,7 @@
 #include "ores.refdata.core/messaging/bond_yield_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/book_change_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/book_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/book_product_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/book_purpose_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/book_status_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/bundle_import_history_provider_registrar.hpp"
@@ -948,6 +949,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_default_curve_yield_reinterpretation_history_provider(hist_registry);
         register_swaption_volatility_smile_history_provider(hist_registry);
         register_inflation_seasonality_history_provider(hist_registry);
+        register_book_product_type_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "refdata", registrar_queue_group, ctx, verifier));

@@ -193,6 +193,33 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % role-permission assignments', v_copied_count;
 
+    -- Give every copied role the whole product type catalogue. The junction
+    -- is the grant, so a role with no rows permits nothing, and a tenant that
+    -- could not book what the system catalogue states would be provisioned
+    -- unable to trade. The catalogue is the one copy in the system tenant, and
+    -- it is read, not copied: a product type added to it is bookable by the
+    -- next tenant provisioned without this script changing.
+    insert into ores_iam_role_product_types_tbl (
+        tenant_id, role_id, product_type_code, version,
+        modified_by, performed_by,
+        change_reason_code, change_commentary)
+    select
+        v_tenant_id,
+        r.id,
+        c.code,
+        0,
+        v_actor, v_actor,
+        'system.new_record', 'The system catalogue copied during provisioning'
+    from ores_iam_roles_tbl r
+    cross join ores_trading_product_types_tbl c
+    where r.tenant_id = v_tenant_id
+      and r.valid_to = ores_utility_infinity_timestamp_fn()
+      and c.tenant_id = v_system_tenant_id
+      and c.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % role-product type grants', v_copied_count;
+
     -- =========================================================================
     -- Copy refdata lookup tables from system tenant
     -- =========================================================================

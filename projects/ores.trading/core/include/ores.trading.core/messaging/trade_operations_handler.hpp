@@ -61,7 +61,7 @@ inline auto& trade_operations_handler_lg() {
 class trade_operations_handler {
 public:
     trade_operations_handler(ores::nats::service::client& nats,
-                             const service::book_status_port& books,
+                             const service::book_rules_port& books,
                              ores::database::context ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::string http_base_url = {})
@@ -383,7 +383,7 @@ private:
     }
 
     ores::nats::service::client& nats_;
-    const service::book_status_port& books_;
+    const service::book_rules_port& books_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     std::string http_base_url_;

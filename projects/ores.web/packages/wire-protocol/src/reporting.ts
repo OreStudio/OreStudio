@@ -92,6 +92,12 @@ export const reportRowViewSchema = z.object({
     partyName: z.string(),
     partyCode: z.string().nullable(),
     scheduleExpression: z.string(),
+    /**
+     * Whether the definition holds a scheduler job, which is the only thing that
+     * makes a report fire. A definition with no job is on demand, whatever
+     * expression it keeps.
+     */
+    scheduled: z.boolean(),
     health: reportHealthWordSchema.nullable(),
     stateName: z.string(),
     latestRun: reportRunViewSchema.nullable(),
@@ -158,6 +164,8 @@ export const reportDefinitionViewSchema = z.object({
     party_name: z.string(),
     party_code: z.string().nullable(),
     schedule_expression: z.string(),
+    /** Whether the definition holds a scheduler job, as the row says it. */
+    scheduled: z.boolean(),
     concurrency_policy: z.string(),
     is_official: z.boolean(),
     regulatory_book_type: z.string().nullable(),
@@ -236,6 +244,25 @@ export const reportNameChoicesSchema = z.object({
 });
 
 export type ReportNameChoices = z.infer<typeof reportNameChoicesSchema>;
+
+/**
+ * What scheduling or unscheduling a definition did, as the operation answered.
+ *
+ * `changed` is the count the operation itself reports, so a screen says what
+ * happened and never assumes it: one means a job was created or removed, and
+ * zero means the definition was already in the state asked for. `failedIds`
+ * names the definitions the operation refused, and `message` is its own words
+ * for the first refusal, because a reason is the server's to state and not a
+ * screen's to invent. A refusal is not a failure of the call: the call ran, and
+ * the answer says it refused.
+ */
+export const reportScheduleOutcomeSchema = z.object({
+    changed: z.int().nonnegative(),
+    failedIds: z.array(z.string()),
+    message: z.string(),
+});
+
+export type ReportScheduleOutcome = z.infer<typeof reportScheduleOutcomeSchema>;
 
 /**
  * One configuration a report binds, by the kind it is and the name it carries.

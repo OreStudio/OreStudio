@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/role_product_types/role_product_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+role_product_types list --limit 1

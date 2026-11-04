@@ -378,6 +378,9 @@
 -- Product family codes: no dependants, so they drop with the lookup set.
 \ir ./refdata_product_family_codes_notify_trigger_drop.sql
 \ir ./refdata_product_family_codes_drop.sql
+-- A book states the product types it allows, so the junction goes before the book.
+\ir ./refdata_book_product_types_notify_trigger_drop.sql
+\ir ./refdata_book_product_types_drop.sql
 
 
 -- Product catalogue: instrument_codes before the asset_class_codes and

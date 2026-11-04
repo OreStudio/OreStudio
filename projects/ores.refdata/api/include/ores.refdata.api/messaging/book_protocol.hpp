@@ -62,6 +62,7 @@ struct book_write {
     std::string book_purpose_type;
     std::string ledger_feed_type;
     bool is_sweepable;
+    bool restricts_product_types;
     std::string rates_centre_code;
     std::optional<boost::uuids::uuid> sandbox_id;
 
@@ -422,6 +423,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.books.deleted";
         utility::codec::field{"book_purpose_type", &book_write::book_purpose_type},
         utility::codec::field{"ledger_feed_type", &book_write::ledger_feed_type},
         utility::codec::field{"is_sweepable", &book_write::is_sweepable},
+        utility::codec::field{"restricts_product_types", &book_write::restricts_product_types},
         utility::codec::field{"rates_centre_code", &book_write::rates_centre_code},
         utility::codec::field{"sandbox_id", &book_write::sandbox_id},
     };

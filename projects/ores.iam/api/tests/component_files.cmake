@@ -69,6 +69,8 @@ set(files
     "role_grant_request_role_protocol_codec_roundtrip_tests.cpp"
     "role_permission_codec_roundtrip_tests.cpp"
     "role_permission_protocol_codec_roundtrip_tests.cpp"
+    "role_product_type_codec_roundtrip_tests.cpp"
+    "role_product_type_protocol_codec_roundtrip_tests.cpp"
     "role_protocol_codec_roundtrip_tests.cpp"
     "role_request_operations_protocol_codec_roundtrip_tests.cpp"
     "run_grant_codec_roundtrip_tests.cpp"

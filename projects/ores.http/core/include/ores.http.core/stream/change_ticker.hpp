@@ -50,6 +50,11 @@ namespace ores::http::stream {
  * to the server's, so an arm is a post: the timer is only ever touched by the
  * executor that owns it.
  *
+ * That executor must run its handlers one at a time on one thread: a single-threaded
+ * =io_context=, or an executor bound to a strand. The window's flags are plain, and
+ * the arm is a plain write from the posted handler, so two threads in this executor
+ * would be a data race.
+ *
  * One ticker per coalescer, for as long as the coalescer lives: the ticker is the
  * clock the coalescer calls when a change opens a window.
  */

@@ -59,7 +59,8 @@ boost::asio::awaitable<void> change_ticker::run(boost::asio::any_io_executor exe
         executor_ = std::make_shared<boost::asio::any_io_executor>(executor);
     }
 
-    while (!open->done) {
+    // A stop that came before the loop did has no post to land on, so it is read here.
+    while (!stopped_ && !open->done) {
         /*
          * A change recorded before the ticker ran found no one to arm its window, so
          * the first pass checks whether anything is already waiting.
@@ -73,7 +74,7 @@ boost::asio::awaitable<void> change_ticker::run(boost::asio::any_io_executor exe
         boost::system::error_code ec;
         co_await open->timer->async_wait(
             boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-        if (open->done)
+        if (stopped_ || open->done)
             break;
 
         // An arm cut the sleep short: the next pass waits the window out.

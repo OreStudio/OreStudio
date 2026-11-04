@@ -151,3 +151,30 @@ TEST_CASE("a_closed_window_opens_again_on_the_next_change", "[change_ticker]") {
     REQUIRE(stream->try_pop()->find("event: iam.book") != std::string::npos);
     REQUIRE(stream->try_pop()->find("event: iam.trade") != std::string::npos);
 }
+
+TEST_CASE("a_ticker_stopped_before_it_ran_returns_at_once", "[change_ticker]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a stop before the loop is not lost";
+
+    change_coalescer coalescer;
+    change_hub hub(ticker_system_tenant);
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
+    change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
+
+    auto returned = false;
+    boost::asio::io_context io;
+    boost::asio::co_spawn(
+        io,
+        [&]() -> boost::asio::awaitable<void> {
+            co_await ticker.run(io.get_executor());
+            returned = true;
+        },
+        boost::asio::detached);
+
+    // The stop lands before the loop has an executor to post to.
+    ticker.stop();
+    io.run_for(std::chrono::milliseconds(50));
+
+    REQUIRE(returned);
+    REQUIRE(stream->size() == 0);
+}

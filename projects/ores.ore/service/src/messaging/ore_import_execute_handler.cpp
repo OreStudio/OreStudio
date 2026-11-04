@@ -2378,10 +2378,38 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // Step 7: save trades (failures collected; saga continues)
     // -------------------------------------------------------------------------
     std::unordered_map<std::string, std::optional<boost::uuids::uuid>> booked_counterparty;
+    // A parent is its embedded trades as much as its own terms, so they are
+    // booked first and a parent any of them failed is not booked at all.
+    std::ranges::stable_partition(plan.trades,
+                                  [](const auto& item) { return item.membership.has_value(); });
+    std::unordered_map<std::string, std::vector<std::string>> members_of;
+    for (const auto& item : plan.trades)
+        if (item.membership)
+            members_of[item.membership->parent_ore_id].push_back(
+                boost::uuids::to_string(item.anchor.id));
     for (auto& item : plan.trades) {
         const auto tid = boost::uuids::to_string(item.anchor.id);
         const auto src = item.source_file.string();
         const auto& ext_id = item.ore_id;
+
+        if (!item.membership) {
+            if (const auto members = members_of.find(ext_id); members != members_of.end()) {
+                const auto unbooked = std::ranges::count_if(
+                    members->second, [&](const auto& id) { return !booked_counterparty.contains(id); });
+                if (unbooked > 0) {
+                    const auto failure = std::format(
+                        "{} of the trades stated inside this one were not booked, so it is not "
+                        "booked either: see their errors.",
+                        unbooked);
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "ore.import.execute trade save failed | corr=" << req.correlation_id
+                        << " trade_id=" << tid << " source=" << src << " error=" << failure;
+                    result.item_errors.push_back(
+                        {.source_file = src, .item_id = ext_id, .message = failure});
+                    continue;
+                }
+            }
+        }
 
         // The ORE trade id becomes the trade's ORE identifier, the name the
         // export writes back. A trade without one is reported as an item

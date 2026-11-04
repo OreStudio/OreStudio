@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-04
 #+updated: 2026-11-04
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
-| Now          | A stream is narrowed to the caller's party, or widened for an administrator. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close it. |
+| Next         | Nothing. |
 | Last touched | 2026-11-04                               |
 
 * Acceptance

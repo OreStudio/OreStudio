@@ -26,11 +26,11 @@ A change that reaches only test binaries runs build and ctest but not the databa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -40,9 +40,11 @@ A change that reaches only test binaries runs build and ctest but not the databa
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decide the skip after =build= passes, from =ninja -t deps=, because only a log
+from after the build describes the tree under test. Map each changed compiled
+path to the targets whose objects read it. Skip the three fleet checks when
+every target is a =.tests= binary. Keep =db= when the database schema does not
+match the checkout, because main moves under a branch.
 
 * Measurements
 
@@ -56,7 +58,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Gate on one test source | 17 run, 17 passed, 3 skipped; ctest 657s | =compass check --paths projects/ores.trading/api/tests/blotter_protocol_codec_roundtrip_tests.cpp= | ee09fb695a |
+| Build-script suite | 181 passed | =python3 -m pytest -q build/scripts/tests= | 7dc07f4782 + --only fix |
+| Dependency log read | about 3.7s | =ninja -t deps= with the basename filter | ee09fb695a |
 
 * Notes
 
@@ -81,6 +85,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =--only db= could skip the check it names | build/scripts/local_checks.py | accept | =--only= now skips nothing, as =--all= |
+| 2 | =--plan= printed the skip note with no fleet paths | build/scripts/local_checks.py | accept | the note needs at least one fleet path |
 
 * Result
+
+The runner skips =db=, =ticks-smoke= and =step-consumers= when a change
+compiles only into test binaries. It reads the reach from the ninja
+dependency log after the build. A new file, a build description, a SQL script
+or an unclassified path keeps the checks. =db= also runs when the database
+schema fingerprint does not match the checkout. =--all= and =--only= skip
+nothing. The report names each skipped check and the test binaries behind the
+skip. Both acceptance items are met: the gate on a test source skipped the
+three checks and ctest passed, and the tests prove that a library reach keeps
+them.

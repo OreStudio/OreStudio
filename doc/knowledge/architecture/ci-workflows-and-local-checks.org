@@ -96,7 +96,7 @@ changed path. It skips the three checks only when all of these are true:
 
 A new file, a =CMakeLists.txt= or a SQL script keeps the fleet checks, because
 the log cannot vouch for it. The report names each skipped check and the test
-binaries that caused the skip. =--all= skips nothing.
+binaries that caused the skip. =--all= and =--only= skip nothing.
 
 =db= has one more condition. The runner skips it only when the database's
 schema fingerprint equals the checkout's, as =compass env status --json=

@@ -1806,6 +1806,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"   checks   : {len(selected)}")
     print(f"   preset   : {preset}")
 
+    # A check asked for by name, or by --all, runs whatever the change reaches.
+    scoped = not (args.all or args.only)
+
     if args.plan:
         print()
         for phase in sorted({c.phase for c in selected}):
@@ -1825,8 +1828,9 @@ def main(argv: list[str] | None = None) -> int:
             more = f" (+{len(files) - 4})" if len(files) > 4 else ""
             print(f"  {name:<10} {sample}{more}")
         fleet = [c.id for c in selected if c.id in FLEET_CHECKS]
-        if fleet and not args.all and all(
-                path.endswith(COMPILED_SUFFIXES) for path in fleet_paths(changed)):
+        paths = fleet_paths(changed)
+        if fleet and scoped and paths and all(
+                path.endswith(COMPILED_SUFFIXES) for path in paths):
             print()
             print(f"  {', '.join(fleet)} are skipped after the build if the change"
                   " compiles only into test binaries.")
@@ -1837,7 +1841,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"⚠️  missing tools: {', '.join(missing)} — their checks will fail")
 
     results = run_all(selected, ref, preset, args.jobs,
-                      changed=None if args.all else changed)
+                      changed=changed if scoped else None)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     report = OUTPUT_DIR / "report.md"

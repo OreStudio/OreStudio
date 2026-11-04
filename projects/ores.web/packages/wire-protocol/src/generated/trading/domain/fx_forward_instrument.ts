@@ -40,6 +40,12 @@ export interface FxForwardInstrument {
     sold_amount: string;
     value_date: string;
     settlement: string;
+    settlement_currency: string | null;
+    settlement_fx_index: string | null;
+    settlement_date: string | null;
+    settlement_payment_lag: string | null;
+    settlement_payment_calendar: string | null;
+    settlement_payment_convention: string | null;
     description: string;
     audit: AuditRecord;
 }

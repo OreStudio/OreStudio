@@ -87,6 +87,40 @@ struct fx_forward_instrument final {
     std::string settlement;
 
     /**
+     * @brief The currency a cash-settled forward pays in, as SettlementData/Currency states it. A
+     * forward with no SettlementData states none of the settlement terms.
+     */
+    std::optional<std::string> settlement_currency;
+
+    /**
+     * @brief The FX index a cash-settled forward fixes against, as SettlementData/FXIndex states
+     * it.
+     */
+    std::optional<std::string> settlement_fx_index;
+
+    /**
+     * @brief The settlement date, as SettlementData/Date states it.
+     */
+    std::optional<std::chrono::year_month_day> settlement_date;
+
+    /**
+     * @brief The lag from the value date to payment, as SettlementData/Rules/PaymentLag states it.
+     */
+    std::optional<std::string> settlement_payment_lag;
+
+    /**
+     * @brief The calendar the payment lag counts in, as SettlementData/Rules/PaymentCalendar states
+     * it.
+     */
+    std::optional<std::string> settlement_payment_calendar;
+
+    /**
+     * @brief The convention the payment date is adjusted by, as
+     * SettlementData/Rules/PaymentConvention states it.
+     */
+    std::optional<std::string> settlement_payment_convention;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -117,6 +151,12 @@ inline constexpr std::string_view fx_forward_instrument_economic_fields[] = {
     "sold_amount",
     "value_date",
     "settlement",
+    "settlement_currency",
+    "settlement_fx_index",
+    "settlement_date",
+    "settlement_payment_lag",
+    "settlement_payment_calendar",
+    "settlement_payment_convention",
 };
 
 /**

@@ -54,6 +54,8 @@ generate_synthetic_fx_forward_instrument(utility::generation::generation_context
     r.sold_currency = std::string("USD");
     r.sold_amount = ores::utility::decimal::decimal::from_string("1100000").value();
     r.value_date = std::chrono::year_month_day{std::chrono::year{2024} / 6 / 15};
+    r.settlement_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

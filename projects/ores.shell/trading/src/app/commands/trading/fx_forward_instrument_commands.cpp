@@ -140,7 +140,9 @@ void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu, nat
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount> "
-        "<sold_currency> <sold_amount> <value_date> <settlement> <description> <reason> "
+        "<sold_currency> <sold_amount> <value_date> <settlement> <settlement_currency> "
+        "<settlement_fx_index> <settlement_date> <settlement_payment_lag> "
+        "<settlement_payment_calendar> <settlement_payment_convention> <description> <reason> "
         "<commentary>");
 
     menu->Insert(
@@ -149,7 +151,9 @@ void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu, nat
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount> "
-        "<sold_currency> <sold_amount> <value_date> <settlement> <description> <reason> "
+        "<sold_currency> <sold_amount> <value_date> <settlement> <settlement_currency> "
+        "<settlement_fx_index> <settlement_date> <settlement_payment_lag> "
+        "<settlement_payment_calendar> <settlement_payment_convention> <description> <reason> "
         "<commentary> [--version <n>]");
 
     menu->Insert(
@@ -158,8 +162,10 @@ void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu, nat
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> "
-        "<bought_amount> <sold_currency> <sold_amount> <value_date> <settlement> <description> "
-        "<reason> <commentary>");
+        "<bought_amount> <sold_currency> <sold_amount> <value_date> <settlement> "
+        "<settlement_currency> <settlement_fx_index> <settlement_date> <settlement_payment_lag> "
+        "<settlement_payment_calendar> <settlement_payment_convention> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -360,8 +366,8 @@ void fx_forward_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -383,6 +389,23 @@ void fx_forward_instrument_commands::process_add(std::ostream& out,
             req.change.write.value_date, parsed->positionals[next++], "value_date");
         fx_forward_instrument_read_token(
             req.change.write.settlement, parsed->positionals[next++], "settlement");
+        fx_forward_instrument_read_token(req.change.write.settlement_currency,
+                                         parsed->positionals[next++],
+                                         "settlement_currency");
+        fx_forward_instrument_read_token(req.change.write.settlement_fx_index,
+                                         parsed->positionals[next++],
+                                         "settlement_fx_index");
+        fx_forward_instrument_read_token(
+            req.change.write.settlement_date, parsed->positionals[next++], "settlement_date");
+        fx_forward_instrument_read_token(req.change.write.settlement_payment_lag,
+                                         parsed->positionals[next++],
+                                         "settlement_payment_lag");
+        fx_forward_instrument_read_token(req.change.write.settlement_payment_calendar,
+                                         parsed->positionals[next++],
+                                         "settlement_payment_calendar");
+        fx_forward_instrument_read_token(req.change.write.settlement_payment_convention,
+                                         parsed->positionals[next++],
+                                         "settlement_payment_convention");
         fx_forward_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -429,8 +452,8 @@ void fx_forward_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -452,6 +475,23 @@ void fx_forward_instrument_commands::process_set(std::ostream& out,
             req.change.write.value_date, parsed->positionals[next++], "value_date");
         fx_forward_instrument_read_token(
             req.change.write.settlement, parsed->positionals[next++], "settlement");
+        fx_forward_instrument_read_token(req.change.write.settlement_currency,
+                                         parsed->positionals[next++],
+                                         "settlement_currency");
+        fx_forward_instrument_read_token(req.change.write.settlement_fx_index,
+                                         parsed->positionals[next++],
+                                         "settlement_fx_index");
+        fx_forward_instrument_read_token(
+            req.change.write.settlement_date, parsed->positionals[next++], "settlement_date");
+        fx_forward_instrument_read_token(req.change.write.settlement_payment_lag,
+                                         parsed->positionals[next++],
+                                         "settlement_payment_lag");
+        fx_forward_instrument_read_token(req.change.write.settlement_payment_calendar,
+                                         parsed->positionals[next++],
+                                         "settlement_payment_calendar");
+        fx_forward_instrument_read_token(req.change.write.settlement_payment_convention,
+                                         parsed->positionals[next++],
+                                         "settlement_payment_convention");
         fx_forward_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -510,8 +550,8 @@ void fx_forward_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 10 + 2) {
-            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 16 + 2) {
+            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -535,6 +575,23 @@ void fx_forward_instrument_commands::process_put_many(std::ostream& out,
                 change.write.value_date, parsed->positionals[next++], "value_date");
             fx_forward_instrument_read_token(
                 change.write.settlement, parsed->positionals[next++], "settlement");
+            fx_forward_instrument_read_token(change.write.settlement_currency,
+                                             parsed->positionals[next++],
+                                             "settlement_currency");
+            fx_forward_instrument_read_token(change.write.settlement_fx_index,
+                                             parsed->positionals[next++],
+                                             "settlement_fx_index");
+            fx_forward_instrument_read_token(
+                change.write.settlement_date, parsed->positionals[next++], "settlement_date");
+            fx_forward_instrument_read_token(change.write.settlement_payment_lag,
+                                             parsed->positionals[next++],
+                                             "settlement_payment_lag");
+            fx_forward_instrument_read_token(change.write.settlement_payment_calendar,
+                                             parsed->positionals[next++],
+                                             "settlement_payment_calendar");
+            fx_forward_instrument_read_token(change.write.settlement_payment_convention,
+                                             parsed->positionals[next++],
+                                             "settlement_payment_convention");
             fx_forward_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

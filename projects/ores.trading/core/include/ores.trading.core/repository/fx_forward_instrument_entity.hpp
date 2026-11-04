@@ -63,6 +63,12 @@ struct fx_forward_instrument_entity {
     ores::utility::decimal::decimal sold_amount;
     std::chrono::year_month_day value_date;
     std::optional<std::string> settlement;
+    std::optional<std::string> settlement_currency;
+    std::optional<std::string> settlement_fx_index;
+    std::optional<std::chrono::year_month_day> settlement_date;
+    std::optional<std::string> settlement_payment_lag;
+    std::optional<std::string> settlement_payment_calendar;
+    std::optional<std::string> settlement_payment_convention;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -89,6 +95,13 @@ struct fx_forward_instrument_entity {
                query_builder::bind("sold_amount", &e::sold_amount) |
                query_builder::bind("value_date", &e::value_date) |
                query_builder::bind("settlement", &e::settlement) |
+               query_builder::bind("settlement_currency", &e::settlement_currency) |
+               query_builder::bind("settlement_fx_index", &e::settlement_fx_index) |
+               query_builder::bind("settlement_date", &e::settlement_date) |
+               query_builder::bind("settlement_payment_lag", &e::settlement_payment_lag) |
+               query_builder::bind("settlement_payment_calendar", &e::settlement_payment_calendar) |
+               query_builder::bind("settlement_payment_convention",
+                                   &e::settlement_payment_convention) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

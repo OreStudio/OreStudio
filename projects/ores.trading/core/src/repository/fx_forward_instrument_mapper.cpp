@@ -60,6 +60,12 @@ fx_forward_instrument_mapper::map(const fx_forward_instrument_entity& v) {
     r.sold_amount = v.sold_amount;
     r.value_date = v.value_date;
     r.settlement = v.settlement.value_or("");
+    r.settlement_currency = v.settlement_currency;
+    r.settlement_fx_index = v.settlement_fx_index;
+    r.settlement_date = v.settlement_date;
+    r.settlement_payment_lag = v.settlement_payment_lag;
+    r.settlement_payment_calendar = v.settlement_payment_calendar;
+    r.settlement_payment_convention = v.settlement_payment_convention;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -88,6 +94,12 @@ fx_forward_instrument_mapper::map(const domain::fx_forward_instrument& v) {
     r.sold_amount = v.sold_amount;
     r.value_date = v.value_date;
     r.settlement = v.settlement.empty() ? std::nullopt : std::optional(v.settlement);
+    r.settlement_currency = v.settlement_currency;
+    r.settlement_fx_index = v.settlement_fx_index;
+    r.settlement_date = v.settlement_date;
+    r.settlement_payment_lag = v.settlement_payment_lag;
+    r.settlement_payment_calendar = v.settlement_payment_calendar;
+    r.settlement_payment_convention = v.settlement_payment_convention;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

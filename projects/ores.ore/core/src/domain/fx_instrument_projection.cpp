@@ -275,6 +275,17 @@ auto read_fx_forward(const record_reader& trade, std::string_view trade_type)
     r.sold_currency = fx_instrument_projection_spelling_of(*data, "SoldCurrency");
     r.sold_amount = fx_instrument_projection_decimal_of(*data, "SoldAmount");
     r.settlement = fx_instrument_projection_spelling_of(*data, "Settlement");
+    if (const auto settlement = data->child("SettlementData")) {
+        r.settlement_currency = settlement->spelling("Currency");
+        r.settlement_fx_index = settlement->text("FXIndex");
+        if (const auto date = settlement->text("Date"))
+            r.settlement_date = fx_instrument_projection_to_optional_domain_date(*date);
+        if (const auto rules = settlement->child("Rules")) {
+            r.settlement_payment_lag = rules->text("PaymentLag");
+            r.settlement_payment_calendar = rules->text("PaymentCalendar");
+            r.settlement_payment_convention = rules->spelling("PaymentConvention");
+        }
+    }
     return r;
 }
 
@@ -598,6 +609,28 @@ void write_fx_forward(record_writer& trade, const fx_forward_instrument& v) {
     data.set_spelling("SoldCurrency", v.sold_currency, "currency");
     data.set_decimal("SoldAmount", v.sold_amount);
     write_settlement(data, v.settlement);
+    if (!v.settlement_currency && !v.settlement_fx_index && !v.settlement_date &&
+        !v.settlement_payment_lag && !v.settlement_payment_calendar &&
+        !v.settlement_payment_convention)
+        return;
+    auto settlement = data.child("SettlementData");
+    if (v.settlement_currency)
+        settlement.set_spelling("Currency", *v.settlement_currency, "currency");
+    if (v.settlement_fx_index)
+        settlement.set_text("FXIndex", *v.settlement_fx_index);
+    if (v.settlement_date)
+        settlement.set_text("Date", fx_instrument_projection_to_ore_date(*v.settlement_date));
+    if (v.settlement_payment_lag || v.settlement_payment_calendar ||
+        v.settlement_payment_convention) {
+        auto rules = settlement.child("Rules");
+        if (v.settlement_payment_lag)
+            rules.set_text("PaymentLag", *v.settlement_payment_lag);
+        if (v.settlement_payment_calendar)
+            rules.set_text("PaymentCalendar", *v.settlement_payment_calendar);
+        if (v.settlement_payment_convention)
+            rules.set_spelling(
+                "PaymentConvention", *v.settlement_payment_convention, "business day convention");
+    }
 }
 
 void write_fx_swap(record_writer& trade, const fx_forward_instrument& v) {

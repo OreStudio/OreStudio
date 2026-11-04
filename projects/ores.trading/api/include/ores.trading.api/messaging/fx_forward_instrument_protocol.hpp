@@ -58,6 +58,12 @@ struct fx_forward_instrument_write {
     ores::utility::decimal::decimal sold_amount;
     std::chrono::year_month_day value_date;
     std::string settlement;
+    std::optional<std::string> settlement_currency;
+    std::optional<std::string> settlement_fx_index;
+    std::optional<std::chrono::year_month_day> settlement_date;
+    std::optional<std::string> settlement_payment_lag;
+    std::optional<std::string> settlement_payment_calendar;
+    std::optional<std::string> settlement_payment_convention;
     std::string description;
 
     friend bool operator==(const fx_forward_instrument_write&,
@@ -401,6 +407,17 @@ inline constexpr std::string_view deleted = "trading.v1.fx_forward_instruments_e
         utility::codec::field{"sold_amount", &fx_forward_instrument_write::sold_amount},
         utility::codec::field{"value_date", &fx_forward_instrument_write::value_date},
         utility::codec::field{"settlement", &fx_forward_instrument_write::settlement},
+        utility::codec::field{"settlement_currency",
+                              &fx_forward_instrument_write::settlement_currency},
+        utility::codec::field{"settlement_fx_index",
+                              &fx_forward_instrument_write::settlement_fx_index},
+        utility::codec::field{"settlement_date", &fx_forward_instrument_write::settlement_date},
+        utility::codec::field{"settlement_payment_lag",
+                              &fx_forward_instrument_write::settlement_payment_lag},
+        utility::codec::field{"settlement_payment_calendar",
+                              &fx_forward_instrument_write::settlement_payment_calendar},
+        utility::codec::field{"settlement_payment_convention",
+                              &fx_forward_instrument_write::settlement_payment_convention},
         utility::codec::field{"description", &fx_forward_instrument_write::description},
     };
 }

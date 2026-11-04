@@ -74,7 +74,7 @@ create table if not exists "ores_trading_swap_leg_rates_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("rate_role" <> ''),
-    check ("rate_role" in ('fixed', 'spread', 'gearing', 'cap', 'floor', 'price')),
+    check ("rate_role" in ('fixed', 'spread', 'gearing', 'cap', 'floor', 'price', 'historical_fixing')),
     check ("sequence_number" >= 1)
 );
 

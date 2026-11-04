@@ -84,6 +84,12 @@ struct swap_leg_write {
     std::optional<bool> equity_notional_reset;
     std::optional<std::string> equity_currency;
     std::optional<std::string> fx_index;
+    std::optional<std::string> fx_reset_foreign_currency;
+    std::optional<std::string> fx_reset_start_date;
+    std::optional<ores::utility::decimal::decimal> fx_reset_foreign_amount;
+    std::optional<std::string> fx_reset_fx_index;
+    std::optional<int> fx_reset_fixing_days;
+    std::optional<std::string> fx_reset_fixing_calendar;
     std::optional<bool> indexings_from_asset_leg;
     std::optional<std::string> floating_index_code_2;
     std::optional<int> cms_duration;
@@ -488,6 +494,14 @@ inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted
         utility::codec::field{"equity_notional_reset", &swap_leg_write::equity_notional_reset},
         utility::codec::field{"equity_currency", &swap_leg_write::equity_currency},
         utility::codec::field{"fx_index", &swap_leg_write::fx_index},
+        utility::codec::field{"fx_reset_foreign_currency",
+                              &swap_leg_write::fx_reset_foreign_currency},
+        utility::codec::field{"fx_reset_start_date", &swap_leg_write::fx_reset_start_date},
+        utility::codec::field{"fx_reset_foreign_amount", &swap_leg_write::fx_reset_foreign_amount},
+        utility::codec::field{"fx_reset_fx_index", &swap_leg_write::fx_reset_fx_index},
+        utility::codec::field{"fx_reset_fixing_days", &swap_leg_write::fx_reset_fixing_days},
+        utility::codec::field{"fx_reset_fixing_calendar",
+                              &swap_leg_write::fx_reset_fixing_calendar},
         utility::codec::field{"indexings_from_asset_leg",
                               &swap_leg_write::indexings_from_asset_leg},
         utility::codec::field{"floating_index_code_2", &swap_leg_write::floating_index_code_2},

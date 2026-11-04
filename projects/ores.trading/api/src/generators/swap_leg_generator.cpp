@@ -62,6 +62,9 @@ domain::swap_leg generate_synthetic_swap_leg(utility::generation::generation_con
     r.equity_dividend_factor = ores::utility::decimal::decimal::from_string(
                                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                                    .value();
+    r.fx_reset_foreign_amount = ores::utility::decimal::decimal::from_string(
+                                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                                    .value();
     r.cpi_base = ores::utility::decimal::decimal::from_string(
                      std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                      .value();

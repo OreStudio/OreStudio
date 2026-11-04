@@ -274,6 +274,37 @@ struct swap_leg final {
     std::optional<std::string> fx_index;
 
     /**
+     * @brief The currency of the notional the leg resets from, as Notionals/FXReset/ForeignCurrency
+     * states it. A leg with no FX reset states none of the FX reset terms.
+     */
+    std::optional<std::string> fx_reset_foreign_currency;
+
+    /**
+     * @brief The date the FX reset starts, as Notionals/FXReset/StartDate states it.
+     */
+    std::optional<std::string> fx_reset_start_date;
+
+    /**
+     * @brief The notional in the foreign currency, as Notionals/FXReset/ForeignAmount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> fx_reset_foreign_amount;
+
+    /**
+     * @brief The FX index the notional resets against, as Notionals/FXReset/FXIndex states it.
+     */
+    std::optional<std::string> fx_reset_fx_index;
+
+    /**
+     * @brief The fixing days of the FX reset, as Notionals/FXReset/FixingDays states it.
+     */
+    std::optional<int> fx_reset_fixing_days;
+
+    /**
+     * @brief The calendar of the FX reset's fixings, as Notionals/FXReset/FixingCalendar states it.
+     */
+    std::optional<std::string> fx_reset_fixing_calendar;
+
+    /**
      * @brief Whether the leg takes its indexings from the asset leg, as Indexings/FromAssetLeg
      * states it. The indexings themselves are swap_leg_indexing rows.
      */

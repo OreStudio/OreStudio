@@ -89,6 +89,12 @@ struct swap_leg_entity {
     std::optional<bool> equity_notional_reset;
     std::optional<std::string> equity_currency;
     std::optional<std::string> fx_index;
+    std::optional<std::string> fx_reset_foreign_currency;
+    std::optional<std::string> fx_reset_start_date;
+    std::optional<ores::utility::decimal::decimal> fx_reset_foreign_amount;
+    std::optional<std::string> fx_reset_fx_index;
+    std::optional<int> fx_reset_fixing_days;
+    std::optional<std::string> fx_reset_fixing_calendar;
     std::optional<bool> indexings_from_asset_leg;
     std::optional<std::string> floating_index_code_2;
     std::optional<int> cms_duration;
@@ -158,6 +164,12 @@ struct swap_leg_entity {
                query_builder::bind("equity_notional_reset", &e::equity_notional_reset) |
                query_builder::bind("equity_currency", &e::equity_currency) |
                query_builder::bind("fx_index", &e::fx_index) |
+               query_builder::bind("fx_reset_foreign_currency", &e::fx_reset_foreign_currency) |
+               query_builder::bind("fx_reset_start_date", &e::fx_reset_start_date) |
+               query_builder::bind("fx_reset_foreign_amount", &e::fx_reset_foreign_amount) |
+               query_builder::bind("fx_reset_fx_index", &e::fx_reset_fx_index) |
+               query_builder::bind("fx_reset_fixing_days", &e::fx_reset_fixing_days) |
+               query_builder::bind("fx_reset_fixing_calendar", &e::fx_reset_fixing_calendar) |
                query_builder::bind("indexings_from_asset_leg", &e::indexings_from_asset_leg) |
                query_builder::bind("floating_index_code_2", &e::floating_index_code_2) |
                query_builder::bind("cms_duration", &e::cms_duration) |

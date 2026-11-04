@@ -110,6 +110,20 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     fields.push_back(
         {.name = "Equity Currency", .value = v.equity_currency.value_or(std::string{})});
     fields.push_back({.name = "FX Index", .value = v.fx_index.value_or(std::string{})});
+    fields.push_back({.name = "FX Reset Foreign Currency",
+                      .value = v.fx_reset_foreign_currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "FX Reset Start Date", .value = v.fx_reset_start_date.value_or(std::string{})});
+    fields.push_back({.name = "FX Reset Foreign Amount",
+                      .value = v.fx_reset_foreign_amount ? v.fx_reset_foreign_amount->to_string() :
+                                                           std::string{}});
+    fields.push_back(
+        {.name = "FX Reset FX Index", .value = v.fx_reset_fx_index.value_or(std::string{})});
+    fields.push_back({.name = "FX Reset Fixing Days",
+                      .value = v.fx_reset_fixing_days ? std::to_string(*v.fx_reset_fixing_days) :
+                                                        std::string{}});
+    fields.push_back({.name = "FX Reset Fixing Calendar",
+                      .value = v.fx_reset_fixing_calendar.value_or(std::string{})});
     fields.push_back({.name = "Indexings From Asset Leg",
                       .value = v.indexings_from_asset_leg ?
                                    (*v.indexings_from_asset_leg ? "true" : "false") :

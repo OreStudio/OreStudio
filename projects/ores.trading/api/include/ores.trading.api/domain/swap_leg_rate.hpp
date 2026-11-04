@@ -48,8 +48,12 @@ namespace ores::trading::domain {
  * rate_role says which arm stated the row. The leg itself carries no rate and
  * no spread, because a single column cannot hold a schedule.
  *
- * rate_role is data, not a table: the closed set is fixed and spread, and
- * the schema states it.
+ * rate_role is data, not a table: the closed set is fixed, spread,
+ * gearing, cap, floor and price, and the schema states it. A commodity
+ * fixed leg states its prices on CommodityFixedLegData/Prices, which land here
+ * as price. A floating leg states
+ * its spreads, gearings, caps and floors each as a schedule of its own, and a
+ * value applies from its start date.
  *
  * The row is a child of the leg rather than an entity with a life of its own:
  * swap_leg names the trade and the ordinal, and this row adds its role and its
@@ -78,7 +82,8 @@ struct swap_leg_rate final {
 
     /**
      * @brief Which arm of the leg stated this row: fixed for a fixed leg's rate, spread for a
-     * floating leg's spread.
+     * floating leg's spread, historical_fixing for a floating leg's fixing already known on the
+     * trade, dated by its fixing date.
      */
     std::string rate_role;
 

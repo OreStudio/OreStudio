@@ -66,6 +66,12 @@ export interface SwapLeg {
     equity_notional_reset: boolean | null;
     equity_currency: string | null;
     fx_index: string | null;
+    fx_reset_foreign_currency: string | null;
+    fx_reset_start_date: string | null;
+    fx_reset_foreign_amount: string | null;
+    fx_reset_fx_index: string | null;
+    fx_reset_fixing_days: number | null;
+    fx_reset_fixing_calendar: string | null;
     indexings_from_asset_leg: boolean | null;
     floating_index_code_2: string | null;
     cms_duration: number | null;

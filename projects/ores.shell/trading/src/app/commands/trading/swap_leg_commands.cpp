@@ -147,7 +147,9 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<pricing_calendar> <equity_return_type> <equity_name> <equity_underlying_type> "
         "<equity_underlying_identifier_type> <equity_quantity> <equity_initial_price> "
         "<equity_initial_price_currency> <equity_dividend_factor> <equity_notional_reset> "
-        "<equity_currency> <fx_index> <indexings_from_asset_leg> <floating_index_code_2> "
+        "<equity_currency> <fx_index> <fx_reset_foreign_currency> <fx_reset_start_date> "
+        "<fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days> "
+        "<fx_reset_fixing_calendar> <indexings_from_asset_leg> <floating_index_code_2> "
         "<cms_duration> <naked_option> <lookback> <rate_cutoff> <local_cap_floor> "
         "<observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation> <cpi_interpolated> "
         "<subtract_inflation_notional> <zero_coupon_compounding> <zero_coupon_subtract_notional> "
@@ -167,6 +169,8 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<equity_name> <equity_underlying_type> <equity_underlying_identifier_type> "
         "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
         "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> "
+        "<fx_reset_foreign_currency> <fx_reset_start_date> <fx_reset_foreign_amount> "
+        "<fx_reset_fx_index> <fx_reset_fixing_days> <fx_reset_fixing_calendar> "
         "<indexings_from_asset_leg> <floating_index_code_2> <cms_duration> <naked_option> "
         "<lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> "
         "<cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
@@ -187,6 +191,8 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "<equity_name> <equity_underlying_type> <equity_underlying_identifier_type> "
         "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
         "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> "
+        "<fx_reset_foreign_currency> <fx_reset_start_date> <fx_reset_foreign_amount> "
+        "<fx_reset_fx_index> <fx_reset_fixing_days> <fx_reset_fixing_calendar> "
         "<indexings_from_asset_leg> <floating_index_code_2> <cms_duration> <naked_option> "
         "<lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> "
         "<cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
@@ -400,8 +406,8 @@ void swap_leg_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 49 + 2) {
-            fail(out) << "Expected " << (49 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 55 + 2) {
+            fail(out) << "Expected " << (55 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -484,6 +490,23 @@ void swap_leg_commands::process_add(std::ostream& out,
         swap_leg_read_token(
             req.change.write.equity_currency, parsed->positionals[next++], "equity_currency");
         swap_leg_read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
+        swap_leg_read_token(req.change.write.fx_reset_foreign_currency,
+                            parsed->positionals[next++],
+                            "fx_reset_foreign_currency");
+        swap_leg_read_token(req.change.write.fx_reset_start_date,
+                            parsed->positionals[next++],
+                            "fx_reset_start_date");
+        swap_leg_read_token(req.change.write.fx_reset_foreign_amount,
+                            parsed->positionals[next++],
+                            "fx_reset_foreign_amount");
+        swap_leg_read_token(
+            req.change.write.fx_reset_fx_index, parsed->positionals[next++], "fx_reset_fx_index");
+        swap_leg_read_token(req.change.write.fx_reset_fixing_days,
+                            parsed->positionals[next++],
+                            "fx_reset_fixing_days");
+        swap_leg_read_token(req.change.write.fx_reset_fixing_calendar,
+                            parsed->positionals[next++],
+                            "fx_reset_fixing_calendar");
         swap_leg_read_token(req.change.write.indexings_from_asset_leg,
                             parsed->positionals[next++],
                             "indexings_from_asset_leg");
@@ -561,8 +584,8 @@ void swap_leg_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 50 + 2) {
-            fail(out) << "Expected " << (50 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 56 + 2) {
+            fail(out) << "Expected " << (56 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -645,6 +668,23 @@ void swap_leg_commands::process_set(std::ostream& out,
         swap_leg_read_token(
             req.change.write.equity_currency, parsed->positionals[next++], "equity_currency");
         swap_leg_read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
+        swap_leg_read_token(req.change.write.fx_reset_foreign_currency,
+                            parsed->positionals[next++],
+                            "fx_reset_foreign_currency");
+        swap_leg_read_token(req.change.write.fx_reset_start_date,
+                            parsed->positionals[next++],
+                            "fx_reset_start_date");
+        swap_leg_read_token(req.change.write.fx_reset_foreign_amount,
+                            parsed->positionals[next++],
+                            "fx_reset_foreign_amount");
+        swap_leg_read_token(
+            req.change.write.fx_reset_fx_index, parsed->positionals[next++], "fx_reset_fx_index");
+        swap_leg_read_token(req.change.write.fx_reset_fixing_days,
+                            parsed->positionals[next++],
+                            "fx_reset_fixing_days");
+        swap_leg_read_token(req.change.write.fx_reset_fixing_calendar,
+                            parsed->positionals[next++],
+                            "fx_reset_fixing_calendar");
         swap_leg_read_token(req.change.write.indexings_from_asset_leg,
                             parsed->positionals[next++],
                             "indexings_from_asset_leg");
@@ -734,8 +774,8 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 50 + 2) {
-            fail(out) << "Expected " << (change_count * 50 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 56 + 2) {
+            fail(out) << "Expected " << (change_count * 56 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -820,6 +860,23 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             swap_leg_read_token(
                 change.write.equity_currency, parsed->positionals[next++], "equity_currency");
             swap_leg_read_token(change.write.fx_index, parsed->positionals[next++], "fx_index");
+            swap_leg_read_token(change.write.fx_reset_foreign_currency,
+                                parsed->positionals[next++],
+                                "fx_reset_foreign_currency");
+            swap_leg_read_token(change.write.fx_reset_start_date,
+                                parsed->positionals[next++],
+                                "fx_reset_start_date");
+            swap_leg_read_token(change.write.fx_reset_foreign_amount,
+                                parsed->positionals[next++],
+                                "fx_reset_foreign_amount");
+            swap_leg_read_token(
+                change.write.fx_reset_fx_index, parsed->positionals[next++], "fx_reset_fx_index");
+            swap_leg_read_token(change.write.fx_reset_fixing_days,
+                                parsed->positionals[next++],
+                                "fx_reset_fixing_days");
+            swap_leg_read_token(change.write.fx_reset_fixing_calendar,
+                                parsed->positionals[next++],
+                                "fx_reset_fixing_calendar");
             swap_leg_read_token(change.write.indexings_from_asset_leg,
                                 parsed->positionals[next++],
                                 "indexings_from_asset_leg");

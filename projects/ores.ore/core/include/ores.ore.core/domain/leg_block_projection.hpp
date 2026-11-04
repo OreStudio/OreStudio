@@ -181,6 +181,16 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
             row.notional_initial_exchange = spelled("NotionalInitialExchange");
             row.notional_final_exchange = spelled("NotionalFinalExchange");
         }
+        if (const auto all = notionals->children("FXReset"); !all.empty()) {
+            const auto& reset = all.front();
+            row.fx_reset_foreign_currency = reset.spelling("ForeignCurrency");
+            row.fx_reset_start_date = reset.text("StartDate");
+            row.fx_reset_foreign_amount = reset.decimal("ForeignAmount");
+            row.fx_reset_fx_index = reset.text("FXIndex");
+            if (const auto days = reset.integer("FixingDays"))
+                row.fx_reset_fixing_days = static_cast<int>(*days);
+            row.fx_reset_fixing_calendar = reset.text("FixingCalendar");
+        }
     }
     if (const auto floating = child_if(leg, "FloatingLegData")) {
         row.floating_index_code = text_of(*floating, "Index");
@@ -482,15 +492,34 @@ inline void write_floating_rates(record_writer& floating, const std::vector<swap
     write_rate_lists(floating, rates, floating_rate_lists);
 }
 
+/// A floating leg's fixings already known on the trade, each dated by its
+/// fixing date rather than by the start date the rate lists state.
+inline void write_historical_fixings(record_writer& floating,
+                                     const std::vector<swap_leg_rate>& rates) {
+    std::optional<record_writer> list;
+    for (const auto& rate : rates) {
+        if (rate.rate_role != "historical_fixing")
+            continue;
+        if (!list)
+            list.emplace(floating.child("HistoricalFixings"));
+        auto writer = list->append("Fixing");
+        writer.set_own_text(rate.value.to_string());
+        if (rate.start_date)
+            writer.set_text("fixingDate", to_ore_date(*rate.start_date));
+    }
+}
+
 inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int leg_number) {
     std::vector<swap_leg_rate> rates;
-    const auto append = [&](std::string_view role, const record_reader& value) {
+    const auto append = [&](std::string_view role,
+                            const record_reader& value,
+                            std::string_view date_attribute = "startDate") {
         swap_leg_rate row;
         row.leg_number = leg_number;
         row.rate_role = std::string(role);
         row.sequence_number = static_cast<int>(rates.size()) + 1;
         row.value = decimal_text(value);
-        if (const auto start = text_of(value, "startDate"); !start.empty())
+        if (const auto start = text_of(value, date_attribute); !start.empty())
             row.start_date = to_domain_date(start);
         stamp_row(row);
         rates.push_back(std::move(row));
@@ -506,6 +535,9 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
             if (const auto list = floating->child(element))
                 for (const auto& value : list->children(item))
                     append(role, value);
+        if (const auto fixings = floating->child("HistoricalFixings"))
+            for (const auto& fixing : fixings->children("Fixing"))
+                append("historical_fixing", fixing, "fixingDate");
     }
     for (const auto* element : {"CPILegData", "ZeroCouponFixedLegData"})
         if (const auto payload = child_if(leg, element))
@@ -664,6 +696,21 @@ void write_leg(record_writer& leg,
         if (row.notional_final_exchange)
             exchanges.set_spelling(
                 "NotionalFinalExchange", flag_text(*row.notional_final_exchange), "boolean");
+    }
+    if (row.fx_reset_foreign_currency || row.fx_reset_fx_index) {
+        auto reset = leg.child("Notionals").append("FXReset");
+        if (row.fx_reset_foreign_currency)
+            reset.set_spelling("ForeignCurrency", *row.fx_reset_foreign_currency, "currency");
+        if (row.fx_reset_start_date)
+            reset.set_text("StartDate", *row.fx_reset_start_date);
+        if (row.fx_reset_foreign_amount)
+            reset.set_decimal("ForeignAmount", *row.fx_reset_foreign_amount);
+        if (row.fx_reset_fx_index)
+            reset.set_text("FXIndex", *row.fx_reset_fx_index);
+        if (row.fx_reset_fixing_days)
+            reset.set_integer("FixingDays", *row.fx_reset_fixing_days);
+        if (row.fx_reset_fixing_calendar)
+            reset.set_text("FixingCalendar", *row.fx_reset_fixing_calendar);
     }
 
     std::optional<record_writer> amortizations;
@@ -869,6 +916,7 @@ void write_leg(record_writer& leg,
         if (row.rate_cutoff)
             floating.set_integer("RateCutoff", *row.rate_cutoff);
         write_floating_rates(floating, rates);
+        write_historical_fixings(floating, rates);
         write_flag("NakedOption", row.naked_option);
         write_flag("LocalCapFloor", row.local_cap_floor);
     }

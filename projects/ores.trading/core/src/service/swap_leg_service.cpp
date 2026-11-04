@@ -136,6 +136,12 @@ domain::swap_leg swap_leg_to_domain(const messaging::swap_leg_write& write) {
     v.equity_notional_reset = write.equity_notional_reset;
     v.equity_currency = write.equity_currency;
     v.fx_index = write.fx_index;
+    v.fx_reset_foreign_currency = write.fx_reset_foreign_currency;
+    v.fx_reset_start_date = write.fx_reset_start_date;
+    v.fx_reset_foreign_amount = write.fx_reset_foreign_amount;
+    v.fx_reset_fx_index = write.fx_reset_fx_index;
+    v.fx_reset_fixing_days = write.fx_reset_fixing_days;
+    v.fx_reset_fixing_calendar = write.fx_reset_fixing_calendar;
     v.indexings_from_asset_leg = write.indexings_from_asset_leg;
     v.floating_index_code_2 = write.floating_index_code_2;
     v.cms_duration = write.cms_duration;

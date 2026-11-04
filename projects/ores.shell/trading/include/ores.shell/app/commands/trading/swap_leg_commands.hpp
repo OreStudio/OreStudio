@@ -95,11 +95,12 @@ public:
      * <equity_return_type> <equity_name> <equity_underlying_type>
      * <equity_underlying_identifier_type> <equity_quantity> <equity_initial_price>
      * <equity_initial_price_currency> <equity_dividend_factor> <equity_notional_reset>
-     * <equity_currency> <fx_index> <indexings_from_asset_leg> <floating_index_code_2>
-     * <cms_duration> <naked_option> <lookback> <rate_cutoff> <local_cap_floor> <observation_lag>
-     * <cpi_base> <cpi_start_date> <cpi_interpolation> <cpi_interpolated>
-     * <subtract_inflation_notional> <zero_coupon_compounding> <zero_coupon_subtract_notional>
-     * <reason> <commentary>
+     * <equity_currency> <fx_index> <fx_reset_foreign_currency> <fx_reset_start_date>
+     * <fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days>
+     * <fx_reset_fixing_calendar> <indexings_from_asset_leg> <floating_index_code_2> <cms_duration>
+     * <naked_option> <lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base>
+     * <cpi_start_date> <cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional>
+     * <zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -114,11 +115,13 @@ public:
      * <daily_expiry_offset> <pricing_calendar> <equity_return_type> <equity_name>
      * <equity_underlying_type> <equity_underlying_identifier_type> <equity_quantity>
      * <equity_initial_price> <equity_initial_price_currency> <equity_dividend_factor>
-     * <equity_notional_reset> <equity_currency> <fx_index> <indexings_from_asset_leg>
-     * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
-     * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
-     * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>
-     * <zero_coupon_subtract_notional> <reason> <commentary> [--version <n>]
+     * <equity_notional_reset> <equity_currency> <fx_index> <fx_reset_foreign_currency>
+     * <fx_reset_start_date> <fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days>
+     * <fx_reset_fixing_calendar> <indexings_from_asset_leg> <floating_index_code_2> <cms_duration>
+     * <naked_option> <lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base>
+     * <cpi_start_date> <cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional>
+     * <zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -133,11 +136,12 @@ public:
      * <future_month_offset> <daily_expiry_offset> <pricing_calendar> <equity_return_type>
      * <equity_name> <equity_underlying_type> <equity_underlying_identifier_type> <equity_quantity>
      * <equity_initial_price> <equity_initial_price_currency> <equity_dividend_factor>
-     * <equity_notional_reset> <equity_currency> <fx_index> <indexings_from_asset_leg>
-     * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
-     * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
-     * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>
-     * <zero_coupon_subtract_notional> <reason> <commentary>
+     * <equity_notional_reset> <equity_currency> <fx_index> <fx_reset_foreign_currency>
+     * <fx_reset_start_date> <fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days>
+     * <fx_reset_fixing_calendar> <indexings_from_asset_leg> <floating_index_code_2> <cms_duration>
+     * <naked_option> <lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base>
+     * <cpi_start_date> <cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional>
+     * <zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

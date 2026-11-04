@@ -461,6 +461,60 @@ The currency the equity is quoted in, when it differs from the leg's, as =FXTerm
 
 The FX index that converts the equity currency into the leg's, as =FXTerms/FXIndex= states it.
 
+** fx_reset_foreign_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of the notional the leg resets from, as =Notionals/FXReset/ForeignCurrency= states it. A leg with no FX reset states none of the FX reset terms.
+
+** fx_reset_start_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The date the FX reset starts, as =Notionals/FXReset/StartDate= states it.
+
+** fx_reset_foreign_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The notional in the foreign currency, as =Notionals/FXReset/ForeignAmount= states it.
+
+** fx_reset_fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The FX index the notional resets against, as =Notionals/FXReset/FXIndex= states it.
+
+** fx_reset_fixing_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The fixing days of the FX reset, as =Notionals/FXReset/FixingDays= states it.
+
+** fx_reset_fixing_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar of the FX reset's fixings, as =Notionals/FXReset/FixingCalendar= states it.
+
 ** indexings_from_asset_leg
 :PROPERTIES:
 :type:     boolean

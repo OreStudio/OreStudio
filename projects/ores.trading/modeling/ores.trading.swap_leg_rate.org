@@ -78,7 +78,8 @@ The trade whose leg this rate belongs to.
 :END:
 
 Which arm of the leg stated this row: =fixed= for a fixed leg's rate,
-=spread= for a floating leg's spread.
+=spread= for a floating leg's spread, =historical_fixing= for a floating
+leg's fixing already known on the trade, dated by its fixing date.
 
 ** sequence_number
 :PROPERTIES:
@@ -194,7 +195,7 @@ is immutable.
 
 | expression |
 |---|
-| "rate_role" in ('fixed', 'spread', 'gearing', 'cap', 'floor', 'price') |
+| "rate_role" in ('fixed', 'spread', 'gearing', 'cap', 'floor', 'price', 'historical_fixing') |
 | "sequence_number" >= 1 |
 
 ** Indexes

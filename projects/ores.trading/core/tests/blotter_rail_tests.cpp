@@ -40,8 +40,8 @@
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include <boost/uuid/uuid.hpp>
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <optional>
 #include <set>
@@ -347,8 +347,8 @@ TEST_CASE("every_order_a_page_accepts_states_a_key", "[blotter][page]") {
      */
     for (const std::string field :
          {"row_kind", "instrument_type", "status", "authorisation_status", "trade_date"}) {
-        CHECK_FALSE(repository::trade_summary_repository::blotter_page_key(rows.front(), field)
-                        .empty());
+        CHECK_FALSE(
+            repository::trade_summary_repository::blotter_page_key(rows.front(), field).empty());
     }
     CHECK_THROWS_AS(
         repository::trade_summary_repository::blotter_page_key(rows.front(), "counterparty_id"),

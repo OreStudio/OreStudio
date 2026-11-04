@@ -107,6 +107,13 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "fx_reset_fx_index" text null,
     "fx_reset_fixing_days" integer null,
     "fx_reset_fixing_calendar" text null,
+    "fixing_calendar" text null,
+    "digital_call_position" text null,
+    "digital_is_call_atm_included" boolean null,
+    "digital_put_position" text null,
+    "digital_is_put_atm_included" boolean null,
+    "equity_margin_initial_margin_factor" numeric(38, 12) null,
+    "equity_margin_multiplier" numeric(38, 12) null,
     "indexings_from_asset_leg" boolean null,
     "floating_index_code_2" text null,
     "cms_duration" integer null,
@@ -212,11 +219,6 @@ begin
     -- Validate payment_frequency_code (optional field -- skip validation when null)
     if NEW.payment_frequency_code is not null then
         NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
-    end if;
-
-    -- Validate floating_index_code (optional field -- skip validation when null)
-    if NEW.floating_index_code is not null then
-        NEW.floating_index_code := ores_refdata_validate_floating_index_type_fn(NEW.tenant_id, NEW.floating_index_code);
     end if;
 
     -- Validate change_reason_code

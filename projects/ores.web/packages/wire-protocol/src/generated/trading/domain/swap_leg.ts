@@ -72,6 +72,13 @@ export interface SwapLeg {
     fx_reset_fx_index: string | null;
     fx_reset_fixing_days: number | null;
     fx_reset_fixing_calendar: string | null;
+    fixing_calendar: string | null;
+    digital_call_position: string | null;
+    digital_is_call_atm_included: boolean | null;
+    digital_put_position: string | null;
+    digital_is_put_atm_included: boolean | null;
+    equity_margin_initial_margin_factor: string | null;
+    equity_margin_multiplier: string | null;
     indexings_from_asset_leg: boolean | null;
     floating_index_code_2: string | null;
     cms_duration: number | null;

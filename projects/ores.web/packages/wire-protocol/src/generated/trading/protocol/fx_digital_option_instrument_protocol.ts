@@ -47,6 +47,9 @@ export interface FxDigitalOptionInstrumentWrite {
     barrier_type: string;
     lower_barrier: string | null;
     upper_barrier: string | null;
+    barrier_start_date: string | null;
+    barrier_calendar: string | null;
+    barrier_fixing_index: string | null;
     description: string;
 }
 

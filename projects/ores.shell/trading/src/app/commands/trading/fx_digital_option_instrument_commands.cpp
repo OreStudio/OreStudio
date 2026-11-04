@@ -144,8 +144,8 @@ void fx_digital_option_instrument_commands::register_commands(cli::Menu& root_me
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <foreign_currency> "
         "<domestic_currency> <payoff_currency> <payoff_amount> <option_type> <expiry_date> "
-        "<long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <description> "
-        "<reason> <commentary>");
+        "<long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <barrier_start_date> "
+        "<barrier_calendar> <barrier_fixing_index> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -154,8 +154,9 @@ void fx_digital_option_instrument_commands::register_commands(cli::Menu& root_me
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <foreign_currency> "
         "<domestic_currency> <payoff_currency> <payoff_amount> <option_type> <expiry_date> "
-        "<long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <description> "
-        "<reason> <commentary> [--version <n>]");
+        "<long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <barrier_start_date> "
+        "<barrier_calendar> <barrier_fixing_index> <description> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
@@ -164,8 +165,8 @@ void fx_digital_option_instrument_commands::register_commands(cli::Menu& root_me
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <foreign_currency> "
         "<domestic_currency> <payoff_currency> <payoff_amount> <option_type> <expiry_date> "
-        "<long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <description> "
-        "<reason> <commentary>");
+        "<long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <barrier_start_date> "
+        "<barrier_calendar> <barrier_fixing_index> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -368,8 +369,8 @@ void fx_digital_option_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -401,6 +402,13 @@ void fx_digital_option_instrument_commands::process_add(std::ostream& out,
             req.change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
         fx_digital_option_instrument_read_token(
             req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
+        fx_digital_option_instrument_read_token(
+            req.change.write.barrier_start_date, parsed->positionals[next++], "barrier_start_date");
+        fx_digital_option_instrument_read_token(
+            req.change.write.barrier_calendar, parsed->positionals[next++], "barrier_calendar");
+        fx_digital_option_instrument_read_token(req.change.write.barrier_fixing_index,
+                                                parsed->positionals[next++],
+                                                "barrier_fixing_index");
         fx_digital_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -447,8 +455,8 @@ void fx_digital_option_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -480,6 +488,13 @@ void fx_digital_option_instrument_commands::process_set(std::ostream& out,
             req.change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
         fx_digital_option_instrument_read_token(
             req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
+        fx_digital_option_instrument_read_token(
+            req.change.write.barrier_start_date, parsed->positionals[next++], "barrier_start_date");
+        fx_digital_option_instrument_read_token(
+            req.change.write.barrier_calendar, parsed->positionals[next++], "barrier_calendar");
+        fx_digital_option_instrument_read_token(req.change.write.barrier_fixing_index,
+                                                parsed->positionals[next++],
+                                                "barrier_fixing_index");
         fx_digital_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -538,8 +553,8 @@ void fx_digital_option_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 15 + 2) {
-            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 18 + 2) {
+            fail(out) << "Expected " << (change_count * 18 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -573,6 +588,13 @@ void fx_digital_option_instrument_commands::process_put_many(std::ostream& out,
                 change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
             fx_digital_option_instrument_read_token(
                 change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
+            fx_digital_option_instrument_read_token(
+                change.write.barrier_start_date, parsed->positionals[next++], "barrier_start_date");
+            fx_digital_option_instrument_read_token(
+                change.write.barrier_calendar, parsed->positionals[next++], "barrier_calendar");
+            fx_digital_option_instrument_read_token(change.write.barrier_fixing_index,
+                                                    parsed->positionals[next++],
+                                                    "barrier_fixing_index");
             fx_digital_option_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

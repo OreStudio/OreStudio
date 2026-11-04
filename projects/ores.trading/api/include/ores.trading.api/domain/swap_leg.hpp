@@ -115,8 +115,11 @@ struct swap_leg final {
     std::string payment_frequency_code;
 
     /**
-     * @brief Floating index code of a floating leg (soft FK to
-     * ores_refdata_floating_index_types_tbl).
+     * @brief The index the leg's payoff observes, of whatever kind its leg type names: an IBOR or
+     * overnight index for a floating leg (soft FK to ores_refdata_floating_index_types_tbl), a swap
+     * index for a CMS leg, an inflation index for a CPI or YY leg, a commodity for a commodity
+     * floating leg and the formula itself for a formula based leg. The trigger validates none of
+     * them, because no one reference table holds every kind.
      *
      * Empty for a fixed leg; validated only when stated.
      */
@@ -303,6 +306,45 @@ struct swap_leg final {
      * @brief The calendar of the FX reset's fixings, as Notionals/FXReset/FixingCalendar states it.
      */
     std::optional<std::string> fx_reset_fixing_calendar;
+
+    /**
+     * @brief The calendar a leg's fixings are taken in, as FixingCalendar states it on a formula
+     * based leg.
+     */
+    std::optional<std::string> fixing_calendar;
+
+    /**
+     * @brief The position in the digital call, as CallPosition states it on a digital CMS or CMS
+     * spread leg. Its strikes and payoffs are rate rows under call_strike and call_payoff.
+     */
+    std::optional<std::string> digital_call_position;
+
+    /**
+     * @brief Whether a call struck at the money pays, as IsCallATMIncluded states it.
+     */
+    std::optional<bool> digital_is_call_atm_included;
+
+    /**
+     * @brief The position in the digital put, as PutPosition states it. Its strikes and payoffs are
+     * rate rows under put_strike and put_payoff.
+     */
+    std::optional<std::string> digital_put_position;
+
+    /**
+     * @brief Whether a put struck at the money pays, as IsPutATMIncluded states it.
+     */
+    std::optional<bool> digital_is_put_atm_included;
+
+    /**
+     * @brief The initial margin factor of an equity margin leg, as InitialMarginFactor states it.
+     * The leg's equity terms are the equity columns and its rates are rate rows under fixed.
+     */
+    std::optional<ores::utility::decimal::decimal> equity_margin_initial_margin_factor;
+
+    /**
+     * @brief The multiplier of an equity margin leg, as Multiplier states it.
+     */
+    std::optional<ores::utility::decimal::decimal> equity_margin_multiplier;
 
     /**
      * @brief Whether the leg takes its indexings from the asset leg, as Indexings/FromAssetLeg

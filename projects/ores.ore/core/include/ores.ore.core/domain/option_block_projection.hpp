@@ -29,6 +29,7 @@
 #include "ores.trading.api/domain/instrument_option_premium.hpp"
 #include "ores.trading.api/domain/instrument_schedule.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
+#include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <algorithm>
 #include <chrono>
@@ -842,6 +843,61 @@ void write_option_data(record_writer option, const Data& v) {
     } else if (!schedules_of(v, "option", 1, "exercise_schedule").empty()) {
         write_stored_schedule(
             option.child("ExerciseSchedule"), v, "option", 1, "exercise_schedule");
+    }
+}
+
+/**
+ * @brief Reads the RangeBounds an accumulator or a TaRF states into the shared
+ * range bound rows, one row per RangeBound in the document's order.
+ */
+template <typename Data>
+void read_range_bounds(Data& result, const record_reader& product) {
+    const auto bounds = product.child("RangeBounds");
+    if (!bounds)
+        return;
+    int sequence_number = 0;
+    for (const auto& bound : bounds->children("RangeBound")) {
+        trading::domain::range_bound row;
+        row.sequence_number = ++sequence_number;
+        if (bound.has("startDate"))
+            row.start_date = to_optional_domain_date(text_of(bound, "startDate"));
+        row.range_from = bound.decimal("RangeFrom");
+        row.range_to = bound.decimal("RangeTo");
+        if (const auto leverage = bound.decimal("Leverage"))
+            row.leverage = leverage->to_double();
+        row.strike = bound.decimal("Strike");
+        row.strike_adjustment = bound.decimal("StrikeAdjustment");
+        stamp_row(row);
+        result.range_bounds.push_back(std::move(row));
+    }
+}
+
+/// Writes the range bound rows as the product's RangeBounds, in their order.
+inline void write_range_bounds(record_writer& product,
+                               const std::vector<trading::domain::range_bound>& rows) {
+    if (rows.empty())
+        return;
+    std::vector<const trading::domain::range_bound*> ordered;
+    for (const auto& row : rows)
+        ordered.push_back(&row);
+    std::sort(ordered.begin(), ordered.end(), [](const auto* a, const auto* b) {
+        return a->sequence_number < b->sequence_number;
+    });
+    auto bounds = product.child("RangeBounds");
+    for (const auto* row : ordered) {
+        auto bound = bounds.append("RangeBound");
+        if (row->start_date)
+            bound.set_text("startDate", to_ore_date(*row->start_date));
+        if (row->range_from)
+            bound.set_decimal("RangeFrom", *row->range_from);
+        if (row->range_to)
+            bound.set_decimal("RangeTo", *row->range_to);
+        if (row->leverage)
+            set_decimal_from_double(bound, "Leverage", *row->leverage);
+        if (row->strike)
+            bound.set_decimal("Strike", *row->strike);
+        if (row->strike_adjustment)
+            bound.set_decimal("StrikeAdjustment", *row->strike_adjustment);
     }
 }
 

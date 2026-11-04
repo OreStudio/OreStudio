@@ -79,12 +79,6 @@ void fx_instrument_projection_stamp_audit(Row& row) {
     row.audit.change_commentary = std::string(fx_instrument_projection_change_commentary);
 }
 
-void stamp_range_bound(range_bound& row) {
-    row.modified_by = std::string(fx_instrument_projection_actor);
-    row.performed_by = std::string(fx_instrument_projection_actor);
-    row.change_reason_code = std::string(fx_instrument_projection_change_reason);
-    row.change_commentary = std::string(fx_instrument_projection_change_commentary);
-}
 
 template <typename Row>
 auto fx_instrument_projection_make_row(std::string_view trade_type_code) -> Row {
@@ -237,26 +231,6 @@ auto underlying_code_of(const record_reader& data) -> std::string {
     return {};
 }
 
-void read_range_bounds(fx_instrument_data& result, const record_reader& data) {
-    const auto bounds = data.child("RangeBounds");
-    if (!bounds)
-        return;
-    int sequence_number = 0;
-    for (const auto& rb : bounds->children("RangeBound")) {
-        range_bound row;
-        row.sequence_number = ++sequence_number;
-        row.start_date = fx_instrument_projection_to_optional_domain_date(
-            fx_instrument_projection_text_of(rb, "startDate"));
-        row.range_from = fx_instrument_projection_optional_decimal_of(rb, "RangeFrom");
-        row.range_to = fx_instrument_projection_optional_decimal_of(rb, "RangeTo");
-        row.leverage = decimal_as_double(rb, "Leverage");
-        row.strike = fx_instrument_projection_optional_decimal_of(rb, "Strike");
-        row.strike_adjustment =
-            fx_instrument_projection_optional_decimal_of(rb, "StrikeAdjustment");
-        stamp_range_bound(row);
-        result.range_bounds.push_back(std::move(row));
-    }
-}
 
 // ---------------------------------------------------------------------------
 // Reading: one function per product
@@ -513,7 +487,7 @@ auto read_fx_accumulator(fx_instrument_data& result, const record_reader& trade)
                 }
             }
         }
-    read_range_bounds(result, *data);
+    option_block::read_range_bounds(result, *data);
     return r;
 }
 
@@ -529,17 +503,7 @@ auto read_fx_tarf(const record_reader& trade) -> fx_asian_forward_instrument {
     if (const auto option = data->child("OptionData"))
         r.long_short = fx_instrument_projection_text_of(*option, "LongShort");
     r.strike = fx_instrument_projection_optional_decimal_of(*data, "Strike");
-    if (const auto barriers = data->child("Barriers"))
-        for (const auto& bd : barriers->children("BarrierData")) {
-            const auto btype = fx_instrument_projection_spelling_of(bd, "Type");
-            if (btype == "CumulatedProfitCap" || btype == "FixingCap") {
-                const auto levels = levels_of(bd);
-                if (!levels.empty()) {
-                    r.target_amount = levels.front();
-                    break;
-                }
-            }
-        }
+    r.target_amount = data->decimal("TargetAmount");
     return r;
 }
 
@@ -827,30 +791,7 @@ void write_fx_accumulator(record_writer& trade,
                             fx_instrument_projection_to_ore_date(v.start_date),
                             "1D");
 
-    std::vector<const range_bound*> ordered;
-    ordered.reserve(rows.size());
-    for (const auto& row : rows)
-        ordered.push_back(&row);
-    std::sort(ordered.begin(), ordered.end(), [](const auto* a, const auto* b) {
-        return a->sequence_number < b->sequence_number;
-    });
-
-    auto bounds = data.child("RangeBounds");
-    for (const auto* row : ordered) {
-        auto writer = bounds.append("RangeBound");
-        if (row->start_date)
-            writer.set_text("startDate", fx_instrument_projection_to_ore_date(*row->start_date));
-        if (row->range_from)
-            writer.set_decimal("RangeFrom", *row->range_from);
-        if (row->range_to)
-            writer.set_decimal("RangeTo", *row->range_to);
-        if (row->leverage)
-            set_decimal_from_double(writer, "Leverage", *row->leverage);
-        if (row->strike)
-            writer.set_decimal("Strike", *row->strike);
-        if (row->strike_adjustment)
-            writer.set_decimal("StrikeAdjustment", *row->strike_adjustment);
-    }
+    option_block::write_range_bounds(data, rows);
 
     if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier") &&
         v.knock_out_barrier.has_value()) {
@@ -880,10 +821,16 @@ void write_fx_tarf(record_writer& trade,
     if (!option_block::write_product_schedule(data, carrier, "ScheduleData", "product_schedule"))
         write_schedule_rule(data.child("ScheduleData"), "", "1Y");
 
-    if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier") &&
-        v.target_amount.has_value())
+    option_block::write_range_bounds(data, carrier.range_bounds);
+    // A TaRF stored before its barriers were kept states its target as the
+    // cap barrier it was read from; one with kept barriers states it as is.
+    if (barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier")) {
+        if (v.target_amount)
+            data.set_decimal("TargetAmount", *v.target_amount);
+    } else if (v.target_amount) {
         push_barrier(
             data.child("Barriers").append("BarrierData"), "CumulatedProfitCap", *v.target_amount);
+    }
 }
 
 }
@@ -977,6 +924,8 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
         data.accumulators.push_back(read_fx_accumulator(data, trade));
     } else if (trade_type == "FxTaRF") {
         data.asian_forwards.push_back(read_fx_tarf(trade));
+        if (const auto product = trade.child("FxTaRFData"))
+            option_block::read_range_bounds(data, *product);
     } else if (trade_type == "FxGenericBarrierOption") {
         data.barrier_options.push_back(read_fx_generic_barrier_option(trade));
     } else if (trade_type == "FxDoubleBarrierOption") {
@@ -1000,6 +949,13 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
     option_block::read_product_schedules(data, trade, trade_type, fx_product_schedules);
     barrier_block::read_product_barriers(data, trade, trade_type, fx_barrier_holders);
     underlying_block::read_product_underlyings(data, trade, trade_type, fx_underlying_holders);
+    const auto element = std::string(trade_type) + "Data";
+    if (const auto product = trade.declares(element) ? trade.child(element) : std::nullopt) {
+        for (auto& row : data.barrier_options)
+            barrier_block::read_monitoring(row, *product, "FXIndex");
+        for (auto& row : data.digital_options)
+            barrier_block::read_monitoring(row, *product, "FXIndex");
+    }
     return trading::domain::trade_instrument{std::move(data)};
 }
 
@@ -1080,6 +1036,16 @@ auto write_fx_instrument(xml::record_writer& trade,
                 auto option = product->child("OptionData");
                 option_block::write_option_block(option, *v);
             }
+        }
+    }
+    if (const auto element = std::string(trade_type) + "Data"; matched && trade.declares(element)) {
+        if (auto product = trade.chosen_child(element)) {
+            trading::domain::visit_fx_products(
+                [&](const auto& row) {
+                    if constexpr (barrier_block::monitored<std::decay_t<decltype(row)>>)
+                        barrier_block::write_monitoring(*product, row, "FXIndex");
+                },
+                *v);
         }
     }
     return matched;

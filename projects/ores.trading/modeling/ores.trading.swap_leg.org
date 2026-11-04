@@ -202,8 +202,12 @@ std::string("Annual")
 :nullable: true
 :END:
 
-Floating index code of a floating leg (soft FK to
-ores_refdata_floating_index_types_tbl).
+The index the leg's payoff observes, of whatever kind its leg type names: an
+IBOR or overnight index for a floating leg (soft FK to
+ores_refdata_floating_index_types_tbl), a swap index for a CMS leg, an
+inflation index for a CPI or YY leg, a commodity for a commodity floating
+leg and the formula itself for a formula based leg. The trigger validates
+none of them, because no one reference table holds every kind.
 
 Empty for a fixed leg; validated only when stated.
 
@@ -515,6 +519,69 @@ The fixing days of the FX reset, as =Notionals/FXReset/FixingDays= states it.
 
 The calendar of the FX reset's fixings, as =Notionals/FXReset/FixingCalendar= states it.
 
+** fixing_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar a leg's fixings are taken in, as =FixingCalendar= states it on a formula based leg.
+
+** digital_call_position
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The position in the digital call, as =CallPosition= states it on a digital CMS or CMS spread leg. Its strikes and payoffs are rate rows under =call_strike= and =call_payoff=.
+
+** digital_is_call_atm_included
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a call struck at the money pays, as =IsCallATMIncluded= states it.
+
+** digital_put_position
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The position in the digital put, as =PutPosition= states it. Its strikes and payoffs are rate rows under =put_strike= and =put_payoff=.
+
+** digital_is_put_atm_included
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a put struck at the money pays, as =IsPutATMIncluded= states it.
+
+** equity_margin_initial_margin_factor
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The initial margin factor of an equity margin leg, as =InitialMarginFactor= states it. The leg's equity terms are the equity columns and its rates are rate rows under =fixed=.
+
+** equity_margin_multiplier
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The multiplier of an equity margin leg, as =Multiplier= states it.
+
 ** indexings_from_asset_leg
 :PROPERTIES:
 :type:     boolean
@@ -739,7 +806,6 @@ is immutable.
 | day_count_fraction_code | ores_refdata_validate_day_count_fraction_type_fn |
 | business_day_convention_code | ores_refdata_validate_business_day_convention_type_fn |
 | payment_frequency_code | ores_refdata_validate_payment_frequency_fn |
-| floating_index_code | ores_refdata_validate_floating_index_type_fn |
 
 * C++
 

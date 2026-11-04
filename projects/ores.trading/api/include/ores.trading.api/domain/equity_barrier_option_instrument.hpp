@@ -134,6 +134,21 @@ struct equity_barrier_option_instrument final {
     std::optional<ores::utility::decimal::decimal> rebate;
 
     /**
+     * @brief The date the barrier starts to be monitored, as StartDate states it.
+     */
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+
+    /**
+     * @brief The calendar the barrier is monitored in, as Calendar states it.
+     */
+    std::optional<std::string> barrier_calendar;
+
+    /**
+     * @brief The index the barrier is observed against, as EQIndex states it.
+     */
+    std::optional<std::string> barrier_fixing_index;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -172,6 +187,9 @@ inline constexpr std::string_view equity_barrier_option_instrument_economic_fiel
     "upper_barrier",
     "upper_barrier_type",
     "rebate",
+    "barrier_start_date",
+    "barrier_calendar",
+    "barrier_fixing_index",
 };
 
 /**

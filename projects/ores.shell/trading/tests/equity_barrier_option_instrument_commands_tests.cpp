@@ -166,7 +166,7 @@ TEST_CASE("equity_barrier_option_instrument_commands_process_add_requires_a_sess
 
     command_feedback::reset();
     equity_barrier_option_instrument_commands::process_add(
-        out, session, equity_barrier_option_instrument_tokens(17));
+        out, session, equity_barrier_option_instrument_tokens(20));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -203,7 +203,7 @@ TEST_CASE("equity_barrier_option_instrument_commands_process_set_requires_a_sess
 
     command_feedback::reset();
     equity_barrier_option_instrument_commands::process_set(
-        out, session, equity_barrier_option_instrument_tokens(17));
+        out, session, equity_barrier_option_instrument_tokens(20));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -240,7 +240,7 @@ TEST_CASE("equity_barrier_option_instrument_commands_process_put_many_requires_a
 
     command_feedback::reset();
     equity_barrier_option_instrument_commands::process_put_many(
-        out, session, equity_barrier_option_instrument_tokens(17));
+        out, session, equity_barrier_option_instrument_tokens(20));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

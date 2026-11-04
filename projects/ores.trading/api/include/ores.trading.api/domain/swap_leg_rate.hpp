@@ -83,7 +83,8 @@ struct swap_leg_rate final {
     /**
      * @brief Which arm of the leg stated this row: fixed for a fixed leg's rate, spread for a
      * floating leg's spread, historical_fixing for a floating leg's fixing already known on the
-     * trade, dated by its fixing date.
+     * trade, dated by its fixing date, and call_strike, call_payoff, put_strike and put_payoff for
+     * a digital CMS leg's strikes and payoffs.
      */
     std::string rate_role;
 

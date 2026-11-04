@@ -89,8 +89,8 @@ public:
     /**
      * @brief add <trade_id> <trade_type_code> <trade_activity_id> <foreign_currency>
      * <domestic_currency> <payoff_currency> <payoff_amount> <option_type> <expiry_date>
-     * <long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <description> <reason>
-     * <commentary>
+     * <long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <barrier_start_date>
+     * <barrier_calendar> <barrier_fixing_index> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -99,8 +99,8 @@ public:
     /**
      * @brief set <trade_id> <trade_type_code> <trade_activity_id> <foreign_currency>
      * <domestic_currency> <payoff_currency> <payoff_amount> <option_type> <expiry_date>
-     * <long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <description> <reason>
-     * <commentary> [--version <n>]
+     * <long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier> <barrier_start_date>
+     * <barrier_calendar> <barrier_fixing_index> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -110,7 +110,8 @@ public:
      * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id>
      * <foreign_currency> <domestic_currency> <payoff_currency> <payoff_amount> <option_type>
      * <expiry_date> <long_short> <strike> <barrier_type> <lower_barrier> <upper_barrier>
-     * <description> <reason> <commentary>
+     * <barrier_start_date> <barrier_calendar> <barrier_fixing_index> <description> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

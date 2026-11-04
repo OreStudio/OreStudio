@@ -124,6 +124,28 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
                                                         std::string{}});
     fields.push_back({.name = "FX Reset Fixing Calendar",
                       .value = v.fx_reset_fixing_calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Fixing Calendar", .value = v.fixing_calendar.value_or(std::string{})});
+    fields.push_back({.name = "Digital Call Position",
+                      .value = v.digital_call_position.value_or(std::string{})});
+    fields.push_back({.name = "Digital Is Call Atm Included",
+                      .value = v.digital_is_call_atm_included ?
+                                   (*v.digital_is_call_atm_included ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back(
+        {.name = "Digital Put Position", .value = v.digital_put_position.value_or(std::string{})});
+    fields.push_back({.name = "Digital Is Put Atm Included",
+                      .value = v.digital_is_put_atm_included ?
+                                   (*v.digital_is_put_atm_included ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Equity Margin Initial Margin Factor",
+                      .value = v.equity_margin_initial_margin_factor ?
+                                   v.equity_margin_initial_margin_factor->to_string() :
+                                   std::string{}});
+    fields.push_back({.name = "Equity Margin Multiplier",
+                      .value = v.equity_margin_multiplier ?
+                                   v.equity_margin_multiplier->to_string() :
+                                   std::string{}});
     fields.push_back({.name = "Indexings From Asset Leg",
                       .value = v.indexings_from_asset_leg ?
                                    (*v.indexings_from_asset_leg ? "true" : "false") :

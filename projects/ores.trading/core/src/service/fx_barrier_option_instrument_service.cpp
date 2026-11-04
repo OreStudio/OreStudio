@@ -117,6 +117,9 @@ fx_barrier_option_instrument_to_domain(const messaging::fx_barrier_option_instru
     v.lower_barrier = write.lower_barrier;
     v.upper_barrier = write.upper_barrier;
     v.underlying_code = write.underlying_code;
+    v.barrier_start_date = write.barrier_start_date;
+    v.barrier_calendar = write.barrier_calendar;
+    v.barrier_fixing_index = write.barrier_fixing_index;
     v.description = write.description;
     return v;
 }

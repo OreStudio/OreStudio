@@ -65,6 +65,9 @@ fx_barrier_option_instrument_mapper::map(const fx_barrier_option_instrument_enti
     r.lower_barrier = v.lower_barrier;
     r.upper_barrier = v.upper_barrier;
     r.underlying_code = v.underlying_code.value_or("");
+    r.barrier_start_date = v.barrier_start_date;
+    r.barrier_calendar = v.barrier_calendar;
+    r.barrier_fixing_index = v.barrier_fixing_index;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -98,6 +101,9 @@ fx_barrier_option_instrument_mapper::map(const domain::fx_barrier_option_instrum
     r.lower_barrier = v.lower_barrier;
     r.upper_barrier = v.upper_barrier;
     r.underlying_code = v.underlying_code.empty() ? std::nullopt : std::optional(v.underlying_code);
+    r.barrier_start_date = v.barrier_start_date;
+    r.barrier_calendar = v.barrier_calendar;
+    r.barrier_fixing_index = v.barrier_fixing_index;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

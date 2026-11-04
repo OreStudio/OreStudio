@@ -47,6 +47,9 @@ export interface FxBarrierOptionInstrumentWrite {
     lower_barrier: string | null;
     upper_barrier: string | null;
     underlying_code: string;
+    barrier_start_date: string | null;
+    barrier_calendar: string | null;
+    barrier_fixing_index: string | null;
     description: string;
 }
 

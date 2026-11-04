@@ -71,7 +71,7 @@ create table if not exists "ores_trading_equity_accumulator_instruments_tbl" (
     check ("fixing_amount" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check (("trade_type_code" = 'EquityTaRF' and "target_amount" is not null and "target_type" is not null) or ("trade_type_code" = 'EquityAccumulator' and "target_amount" is null and "target_type" is null)),
+    check ("trade_type_code" = 'EquityTaRF' or ("target_amount" is null and "target_type" is null)),
     check ("payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla')),
     check ("target_type" is null or "target_type" in ('TargetFull', 'TargetExact'))
 );

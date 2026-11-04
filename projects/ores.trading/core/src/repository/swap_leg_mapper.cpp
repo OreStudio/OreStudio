@@ -92,6 +92,13 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.fx_reset_fx_index = v.fx_reset_fx_index;
     r.fx_reset_fixing_days = v.fx_reset_fixing_days;
     r.fx_reset_fixing_calendar = v.fx_reset_fixing_calendar;
+    r.fixing_calendar = v.fixing_calendar;
+    r.digital_call_position = v.digital_call_position;
+    r.digital_is_call_atm_included = v.digital_is_call_atm_included;
+    r.digital_put_position = v.digital_put_position;
+    r.digital_is_put_atm_included = v.digital_is_put_atm_included;
+    r.equity_margin_initial_margin_factor = v.equity_margin_initial_margin_factor;
+    r.equity_margin_multiplier = v.equity_margin_multiplier;
     r.indexings_from_asset_leg = v.indexings_from_asset_leg;
     r.floating_index_code_2 = v.floating_index_code_2;
     r.cms_duration = v.cms_duration;
@@ -170,6 +177,13 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.fx_reset_fx_index = v.fx_reset_fx_index;
     r.fx_reset_fixing_days = v.fx_reset_fixing_days;
     r.fx_reset_fixing_calendar = v.fx_reset_fixing_calendar;
+    r.fixing_calendar = v.fixing_calendar;
+    r.digital_call_position = v.digital_call_position;
+    r.digital_is_call_atm_included = v.digital_is_call_atm_included;
+    r.digital_put_position = v.digital_put_position;
+    r.digital_is_put_atm_included = v.digital_is_put_atm_included;
+    r.equity_margin_initial_margin_factor = v.equity_margin_initial_margin_factor;
+    r.equity_margin_multiplier = v.equity_margin_multiplier;
     r.indexings_from_asset_leg = v.indexings_from_asset_leg;
     r.floating_index_code_2 = v.floating_index_code_2;
     r.cms_duration = v.cms_duration;

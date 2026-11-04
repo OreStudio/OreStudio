@@ -90,6 +90,54 @@ inline std::optional<record_reader> child_if(const record_reader& r, std::string
     return declares(r, name) ? r.child(name) : std::nullopt;
 }
 
+/*
+ * Some payloads, the digital CMS ones among them, are generated with every
+ * element repeatable although the document states each once. These read and
+ * write that one element whichever way the record declares it.
+ */
+inline std::optional<record_reader> single_child(const record_reader& r, std::string_view name) {
+    const auto* f = xml::find_field(r.type(), name, false);
+    if (f == nullptr)
+        return std::nullopt;
+    if (f->kind == xml::field_kind::repeated_nested) {
+        auto all = r.children(name);
+        if (all.empty())
+            return std::nullopt;
+        return all.front();
+    }
+    return r.child(name);
+}
+
+inline std::optional<std::string> single_value(const record_reader& r, std::string_view name) {
+    const auto* f = xml::find_field(r.type(), name, false);
+    if (f == nullptr)
+        return std::nullopt;
+    if (f->kind == xml::field_kind::repeated_leaf) {
+        auto all = r.values(name);
+        if (all.empty())
+            return std::nullopt;
+        return all.front();
+    }
+    if (!r.has(name))
+        return std::nullopt;
+    return r.text(name);
+}
+
+inline record_writer single_child_writer(record_writer& w, std::string_view name) {
+    const auto* f = xml::find_field(w.type(), name, false);
+    if (f != nullptr && f->kind == xml::field_kind::repeated_nested)
+        return w.append(name);
+    return w.child(name);
+}
+
+inline void set_single_value(record_writer& w, std::string_view name, std::string_view value) {
+    const auto* f = xml::find_field(w.type(), name, false);
+    if (f != nullptr && f->kind == xml::field_kind::repeated_leaf)
+        w.append_value(name, value);
+    else
+        w.set_text(name, value);
+}
+
 inline bool has_if(const record_reader& r, std::string_view name) {
     return declares(r, name) && r.has(name);
 }
@@ -156,6 +204,61 @@ inline constexpr cms_payload cms_payloads[] = {
     {"CMSSpread", "CMSSpreadLegData", "Index1", "Index2", false},
 };
 
+/**
+ * @brief A digital CMS payload: the CMS payload it wraps, by its place in
+ * cms_payloads, and the call and put digitals around it.
+ */
+struct digital_payload {
+    std::string_view leg_type;
+    std::string_view element;
+    std::size_t cms;
+};
+
+inline constexpr digital_payload digital_payloads[] = {
+    {"DigitalCMS", "DigitalCMSLegData", 0},
+    {"DigitalCMSSpread", "DigitalCMSSpreadLegData", 2},
+};
+
+inline void read_cms_terms(swap_leg& row, const record_reader& cms, const cms_payload& payload) {
+    row.floating_index_code = text_of(cms, payload.index);
+    if (!payload.index_2.empty())
+        row.floating_index_code_2 = text_of(cms, payload.index_2);
+    if (payload.has_duration)
+        if (const auto duration = cms.integer("Duration"))
+            row.cms_duration = static_cast<int>(*duration);
+    if (const auto days = cms.integer("FixingDays"))
+        row.fixing_days = static_cast<int>(*days);
+    row.is_in_arrears = optional_flag(cms, "IsInArrears");
+    row.naked_option = optional_flag(cms, "NakedOption");
+}
+
+inline void read_equity_terms(swap_leg& row, const record_reader& equity) {
+    if (equity.has("ReturnType"))
+        row.equity_return_type = text_of(equity, "ReturnType");
+    if (has_if(equity, "Name")) {
+        row.equity_name = text_of(equity, "Name");
+    } else if (const auto underlying = child_if(equity, "Underlying")) {
+        row.equity_underlying_type = text_of(*underlying, "Type");
+        row.equity_name = text_of(*underlying, "Name");
+        if (underlying->has("IdentifierType"))
+            row.equity_underlying_identifier_type = text_of(*underlying, "IdentifierType");
+    }
+    row.equity_quantity = equity.decimal("Quantity");
+    row.equity_initial_price = equity.decimal("InitialPrice");
+    if (equity.has("InitialPriceCurrency"))
+        row.equity_initial_price_currency = text_of(equity, "InitialPriceCurrency");
+    row.equity_dividend_factor = equity.decimal("DividendFactor");
+    row.equity_notional_reset = optional_flag(equity, "NotionalReset");
+    if (const auto days = equity.integer("FixingDays"))
+        row.fixing_days = static_cast<int>(*days);
+    if (const auto terms = equity.child("FXTerms")) {
+        if (terms->has("EquityCurrency"))
+            row.equity_currency = text_of(*terms, "EquityCurrency");
+        if (terms->has("FXIndex"))
+            row.fx_index = text_of(*terms, "FXIndex");
+    }
+}
+
 inline swap_leg read_leg(const record_reader& leg, int leg_number) {
     swap_leg row;
     row.identity.leg_number = leg_number;
@@ -207,20 +310,33 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         if (const auto cutoff = floating->integer("RateCutoff"))
             row.rate_cutoff = static_cast<int>(*cutoff);
     }
-    for (const auto& payload : cms_payloads) {
-        const auto cms = child_if(leg, payload.element);
-        if (!cms)
+    for (const auto& payload : cms_payloads)
+        if (const auto cms = child_if(leg, payload.element))
+            read_cms_terms(row, *cms, payload);
+    for (const auto& digital : digital_payloads) {
+        const auto payload = child_if(leg, digital.element);
+        if (!payload)
             continue;
-        row.floating_index_code = text_of(*cms, payload.index);
-        if (!payload.index_2.empty())
-            row.floating_index_code_2 = text_of(*cms, payload.index_2);
-        if (payload.has_duration)
-            if (const auto duration = cms->integer("Duration"))
-                row.cms_duration = static_cast<int>(*duration);
-        if (const auto days = cms->integer("FixingDays"))
+        const auto& cms = cms_payloads[digital.cms];
+        if (const auto inner = single_child(*payload, cms.element))
+            read_cms_terms(row, *inner, cms);
+        const auto flag = [&](std::string_view name) -> std::optional<bool> {
+            if (const auto value = single_value(*payload, name))
+                return is_flag_on(*value);
+            return std::nullopt;
+        };
+        row.digital_call_position = single_value(*payload, "CallPosition");
+        row.digital_is_call_atm_included = flag("IsCallATMIncluded");
+        row.digital_put_position = single_value(*payload, "PutPosition");
+        row.digital_is_put_atm_included = flag("IsPutATMIncluded");
+    }
+    if (const auto formula = child_if(leg, "FormulaBasedLegData")) {
+        row.floating_index_code = text_of(*formula, "Index");
+        row.is_in_arrears = optional_flag(*formula, "IsInArrears");
+        if (const auto days = formula->integer("FixingDays"))
             row.fixing_days = static_cast<int>(*days);
-        row.is_in_arrears = optional_flag(*cms, "IsInArrears");
-        row.naked_option = optional_flag(*cms, "NakedOption");
+        if (formula->has("FixingCalendar"))
+            row.fixing_calendar = text_of(*formula, "FixingCalendar");
     }
     if (const auto commodity = child_if(leg, "CommodityFloatingLegData")) {
         row.floating_index_code = text_of(*commodity, "Name");
@@ -235,31 +351,13 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         row.is_in_arrears = optional_flag(*commodity, "IsInArrears");
         row.is_averaged = optional_flag(*commodity, "IsAveraged");
     }
-    if (const auto equity = child_if(leg, "EquityLegData")) {
-        if (equity->has("ReturnType"))
-            row.equity_return_type = text_of(*equity, "ReturnType");
-        if (equity->has("Name")) {
-            row.equity_name = text_of(*equity, "Name");
-        } else if (const auto underlying = equity->child("Underlying")) {
-            row.equity_underlying_type = text_of(*underlying, "Type");
-            row.equity_name = text_of(*underlying, "Name");
-            if (underlying->has("IdentifierType"))
-                row.equity_underlying_identifier_type = text_of(*underlying, "IdentifierType");
-        }
-        row.equity_quantity = equity->decimal("Quantity");
-        row.equity_initial_price = equity->decimal("InitialPrice");
-        if (equity->has("InitialPriceCurrency"))
-            row.equity_initial_price_currency = text_of(*equity, "InitialPriceCurrency");
-        row.equity_dividend_factor = equity->decimal("DividendFactor");
-        row.equity_notional_reset = optional_flag(*equity, "NotionalReset");
-        if (const auto days = equity->integer("FixingDays"))
-            row.fixing_days = static_cast<int>(*days);
-        if (const auto terms = equity->child("FXTerms")) {
-            if (terms->has("EquityCurrency"))
-                row.equity_currency = text_of(*terms, "EquityCurrency");
-            if (terms->has("FXIndex"))
-                row.fx_index = text_of(*terms, "FXIndex");
-        }
+    if (const auto equity = child_if(leg, "EquityLegData"))
+        read_equity_terms(row, *equity);
+    if (const auto margin = child_if(leg, "EquityMarginLegData")) {
+        row.equity_margin_initial_margin_factor = margin->decimal("InitialMarginFactor");
+        row.equity_margin_multiplier = margin->decimal("Multiplier");
+        if (const auto equity = margin->child("EquityLegData"))
+            read_equity_terms(row, *equity);
     }
     if (const auto cpi = child_if(leg, "CPILegData")) {
         const auto first = [&](std::string_view name) -> std::optional<std::string> {
@@ -454,6 +552,15 @@ inline constexpr floating_rate_list floating_rate_lists[] = {
     {"Floors", "Floor", "floor"},
 };
 
+/// A digital CMS leg states its call and put strikes and payoffs as plain
+/// lists, with no start date on any of them.
+inline constexpr floating_rate_list digital_rate_lists[] = {
+    {"CallStrikes", "Strike", "call_strike"},
+    {"CallPayoffs", "Payoff", "call_payoff"},
+    {"PutStrikes", "Strike", "put_strike"},
+    {"PutPayoffs", "Payoff", "put_payoff"},
+};
+
 /// A commodity fixed leg states its prices.
 inline constexpr floating_rate_list commodity_fixed_rate_lists[] = {
     {"Prices", "Price", "price"},
@@ -509,8 +616,68 @@ inline void write_historical_fixings(record_writer& floating,
     }
 }
 
+inline void write_equity_terms(record_writer payload, const swap_leg& row) {
+    if (row.equity_quantity)
+        payload.set_decimal("Quantity", *row.equity_quantity);
+    if (row.equity_return_type)
+        payload.set_text("ReturnType", *row.equity_return_type);
+    if (row.equity_underlying_type) {
+        auto underlying = payload.child("Underlying");
+        underlying.set_text("Type", *row.equity_underlying_type);
+        underlying.set_text("Name", row.equity_name.value_or(""));
+        if (row.equity_underlying_identifier_type)
+            underlying.set_text("IdentifierType", *row.equity_underlying_identifier_type);
+    } else if (row.equity_name) {
+        payload.set_text("Name", *row.equity_name);
+    }
+    if (row.equity_initial_price)
+        payload.set_decimal("InitialPrice", *row.equity_initial_price);
+    if (row.equity_initial_price_currency)
+        payload.set_text("InitialPriceCurrency", *row.equity_initial_price_currency);
+    if (row.equity_dividend_factor)
+        payload.set_decimal("DividendFactor", *row.equity_dividend_factor);
+    if (row.equity_notional_reset)
+        payload.set_text("NotionalReset", flag_text(*row.equity_notional_reset));
+    if (row.fixing_days)
+        payload.set_integer("FixingDays", *row.fixing_days);
+    if (row.equity_currency || row.fx_index) {
+        auto terms = payload.child("FXTerms");
+        if (row.equity_currency)
+            terms.set_text("EquityCurrency", *row.equity_currency);
+        if (row.fx_index)
+            terms.set_text("FXIndex", *row.fx_index);
+    }
+}
+
+inline void write_cms_terms(record_writer cms,
+                            const swap_leg& row,
+                            const cms_payload& payload,
+                            const std::vector<swap_leg_rate>& rates) {
+    cms.set_text(payload.index, row.floating_index_code);
+    if (!payload.index_2.empty())
+        cms.set_text(payload.index_2, row.floating_index_code_2.value_or(""));
+    if (payload.has_duration && row.cms_duration)
+        cms.set_integer("Duration", *row.cms_duration);
+    if (row.is_in_arrears)
+        cms.set_text("IsInArrears", flag_text(*row.is_in_arrears));
+    if (row.fixing_days)
+        cms.set_integer("FixingDays", *row.fixing_days);
+    write_floating_rates(cms, rates);
+    if (row.naked_option)
+        cms.set_text("NakedOption", flag_text(*row.naked_option));
+}
+
 inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int leg_number) {
     std::vector<swap_leg_rate> rates;
+    const auto append_value = [&](std::string_view role, const decimal& value) {
+        swap_leg_rate row;
+        row.leg_number = leg_number;
+        row.rate_role = std::string(role);
+        row.sequence_number = static_cast<int>(rates.size()) + 1;
+        row.value = value;
+        stamp_row(row);
+        rates.push_back(std::move(row));
+    };
     const auto append = [&](std::string_view role,
                             const record_reader& value,
                             std::string_view date_attribute = "startDate") {
@@ -555,6 +722,24 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
                 if (const auto list = cms->child(element))
                     for (const auto& value : list->children(item))
                         append(role, value);
+    for (const auto& digital : digital_payloads) {
+        const auto payload = child_if(leg, digital.element);
+        if (!payload)
+            continue;
+        if (const auto cms = single_child(*payload, cms_payloads[digital.cms].element))
+            for (const auto& [element, item, role] : floating_rate_lists)
+                if (const auto list = cms->child(element))
+                    for (const auto& value : list->children(item))
+                        append(role, value);
+        for (const auto& [element, item, role] : digital_rate_lists)
+            if (const auto list = single_child(*payload, element))
+                for (const auto& value : list->decimals(item))
+                    append_value(role, value);
+    }
+    if (const auto margin = child_if(leg, "EquityMarginLegData"))
+        if (const auto list = margin->child("Rates"))
+            for (const auto& rate : list->children("Rate"))
+                append("fixed", rate);
     if (const auto fixed = child_if(leg, "CommodityFixedLegData")) {
         if (const auto list = fixed->child("Prices"))
             for (const auto& price : list->children("Price"))
@@ -784,37 +969,38 @@ void write_leg(record_writer& leg,
     }
 
     if (row.leg_type_code == "Equity") {
-        auto payload = leg.child("EquityLegData");
-        if (row.equity_quantity)
-            payload.set_decimal("Quantity", *row.equity_quantity);
-        if (row.equity_return_type)
-            payload.set_text("ReturnType", *row.equity_return_type);
-        if (row.equity_underlying_type) {
-            auto underlying = payload.child("Underlying");
-            underlying.set_text("Type", *row.equity_underlying_type);
-            underlying.set_text("Name", row.equity_name.value_or(""));
-            if (row.equity_underlying_identifier_type)
-                underlying.set_text("IdentifierType", *row.equity_underlying_identifier_type);
-        } else if (row.equity_name) {
-            payload.set_text("Name", *row.equity_name);
+        write_equity_terms(leg.child("EquityLegData"), row);
+        return;
+    }
+    if (row.leg_type_code == "EquityMargin") {
+        auto margin = leg.child("EquityMarginLegData");
+        if (has_role_in(rates, "fixed")) {
+            auto list = margin.child("Rates");
+            for (const auto& rate : rates) {
+                if (rate.rate_role != "fixed")
+                    continue;
+                auto writer = list.append("Rate");
+                writer.set_own_text(rate.value.to_string());
+                if (rate.start_date)
+                    writer.set_text("startDate", to_ore_date(*rate.start_date));
+            }
         }
-        if (row.equity_initial_price)
-            payload.set_decimal("InitialPrice", *row.equity_initial_price);
-        if (row.equity_initial_price_currency)
-            payload.set_text("InitialPriceCurrency", *row.equity_initial_price_currency);
-        if (row.equity_dividend_factor)
-            payload.set_decimal("DividendFactor", *row.equity_dividend_factor);
-        if (row.equity_notional_reset)
-            payload.set_text("NotionalReset", flag_text(*row.equity_notional_reset));
+        if (row.equity_margin_initial_margin_factor)
+            margin.set_decimal("InitialMarginFactor", *row.equity_margin_initial_margin_factor);
+        if (row.equity_margin_multiplier)
+            margin.set_decimal("Multiplier", *row.equity_margin_multiplier);
+        write_equity_terms(margin.child("EquityLegData"), row);
+        return;
+    }
+    if (row.leg_type_code == "FormulaBased") {
+        auto formula = leg.child("FormulaBasedLegData");
+        formula.set_text("Index", row.floating_index_code);
+        if (row.is_in_arrears)
+            formula.set_text("IsInArrears", flag_text(*row.is_in_arrears));
         if (row.fixing_days)
-            payload.set_integer("FixingDays", *row.fixing_days);
-        if (row.equity_currency || row.fx_index) {
-            auto terms = payload.child("FXTerms");
-            if (row.equity_currency)
-                terms.set_text("EquityCurrency", *row.equity_currency);
-            if (row.fx_index)
-                terms.set_text("FXIndex", *row.fx_index);
-        }
+            formula.set_integer("FixingDays", *row.fixing_days);
+        if (row.fixing_calendar)
+            formula.set_text("FixingCalendar", *row.fixing_calendar);
         return;
     }
 
@@ -871,19 +1057,33 @@ void write_leg(record_writer& leg,
     for (const auto& payload : cms_payloads) {
         if (row.leg_type_code != payload.leg_type)
             continue;
-        auto cms = leg.child(payload.element);
-        cms.set_text(payload.index, row.floating_index_code);
-        if (!payload.index_2.empty())
-            cms.set_text(payload.index_2, row.floating_index_code_2.value_or(""));
-        if (payload.has_duration && row.cms_duration)
-            cms.set_integer("Duration", *row.cms_duration);
-        if (row.is_in_arrears)
-            cms.set_text("IsInArrears", flag_text(*row.is_in_arrears));
-        if (row.fixing_days)
-            cms.set_integer("FixingDays", *row.fixing_days);
-        write_floating_rates(cms, rates);
-        if (row.naked_option)
-            cms.set_text("NakedOption", flag_text(*row.naked_option));
+        write_cms_terms(leg.child(payload.element), row, payload, rates);
+        return;
+    }
+    for (const auto& digital : digital_payloads) {
+        if (row.leg_type_code != digital.leg_type)
+            continue;
+        auto payload = leg.child(digital.element);
+        const auto& cms = cms_payloads[digital.cms];
+        write_cms_terms(single_child_writer(payload, cms.element), row, cms, rates);
+        if (row.digital_call_position)
+            set_single_value(payload, "CallPosition", *row.digital_call_position);
+        if (row.digital_is_call_atm_included)
+            set_single_value(
+                payload, "IsCallATMIncluded", flag_text(*row.digital_is_call_atm_included));
+        if (row.digital_put_position)
+            set_single_value(payload, "PutPosition", *row.digital_put_position);
+        if (row.digital_is_put_atm_included)
+            set_single_value(
+                payload, "IsPutATMIncluded", flag_text(*row.digital_is_put_atm_included));
+        for (const auto& [element, item, role] : digital_rate_lists) {
+            if (!has_role_in(rates, role))
+                continue;
+            auto list = single_child_writer(payload, element);
+            for (const auto& rate : rates)
+                if (rate.rate_role == role)
+                    list.append_decimal(item, rate.value);
+        }
         return;
     }
 

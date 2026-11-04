@@ -332,6 +332,10 @@ void append_leg(credit_instrument_data& result, const record_reader& leg, std::s
         result.leg_amounts.push_back(std::move(amount));
     for (auto& rate : read_leg_rates(leg, leg_number))
         result.leg_rates.push_back(std::move(rate));
+    // A leg keeps its own schedule, because the header's dates are the
+    // protection period and not the leg's.
+    if (const auto schedule = leg.child("ScheduleData"))
+        option_block::read_schedule(result, *schedule, "swap", leg_number, "schedule");
 }
 
 /// The legs of one of the four payment groups a credit linked swap states.
@@ -567,22 +571,13 @@ auto read_rpa(const record_reader& trade) -> credit_instrument_data {
         result.instrument.maturity_date = credit_instrument_projection_to_optional_domain_date(
             credit_instrument_projection_text_of(*d, "ProtectionEnd"));
 
-        // A leg keeps its own schedule when it states one, because the header's
-        // dates are the protection period and not the leg's.
-        const auto append_with_schedule = [&result](const record_reader& leg,
-                                                    std::string_view group) {
-            const int leg_number = static_cast<int>(result.legs.size()) + 1;
-            append_leg(result, leg, group);
-            if (const auto schedule = leg.child("ScheduleData"))
-                option_block::read_schedule(result, *schedule, "swap", leg_number, "schedule");
-        };
         if (const auto protection_fee = d->child("ProtectionFee"))
             for (const auto& leg : protection_fee->children("LegData"))
-                append_with_schedule(leg, "protection_fee");
+                append_leg(result, leg, "protection_fee");
 
         if (const auto underlying = d->child("Underlying")) {
             for (const auto& leg : underlying->children("LegData"))
-                append_with_schedule(leg, "underlying");
+                append_leg(result, leg, "underlying");
             if (underlying->has("NakedOption"))
                 fact.naked_option = credit_instrument_projection_is_flag_on(
                     credit_instrument_projection_text_of(*underlying, "NakedOption"));

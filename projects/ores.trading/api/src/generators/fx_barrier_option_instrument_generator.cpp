@@ -58,6 +58,8 @@ generate_synthetic_fx_barrier_option_instrument(utility::generation::generation_
     r.barrier_type = std::string("UpAndIn");
     r.lower_barrier = std::nullopt;
     r.upper_barrier = ores::utility::decimal::decimal::from_string("1.2").value();
+    r.barrier_start_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

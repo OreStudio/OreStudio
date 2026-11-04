@@ -65,6 +65,9 @@ struct equity_barrier_option_instrument_write {
     std::optional<ores::utility::decimal::decimal> upper_barrier;
     std::string upper_barrier_type;
     std::optional<ores::utility::decimal::decimal> rebate;
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+    std::optional<std::string> barrier_calendar;
+    std::optional<std::string> barrier_fixing_index;
     std::string description;
 
     friend bool operator==(const equity_barrier_option_instrument_write&,
@@ -438,6 +441,12 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"upper_barrier_type",
                               &equity_barrier_option_instrument_write::upper_barrier_type},
         utility::codec::field{"rebate", &equity_barrier_option_instrument_write::rebate},
+        utility::codec::field{"barrier_start_date",
+                              &equity_barrier_option_instrument_write::barrier_start_date},
+        utility::codec::field{"barrier_calendar",
+                              &equity_barrier_option_instrument_write::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &equity_barrier_option_instrument_write::barrier_fixing_index},
         utility::codec::field{"description", &equity_barrier_option_instrument_write::description},
     };
 }

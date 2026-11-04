@@ -226,6 +226,61 @@ bool write_kept_barriers(record_writer& product,
     return write_barriers(holder, v, role);
 }
 
+/**
+ * @brief A product row that keeps when and against what its barrier is
+ * monitored: the start date, the calendar and the fixing index.
+ */
+template <typename Row>
+concept monitored = requires(Row& row) {
+    row.barrier_start_date;
+    row.barrier_calendar;
+    row.barrier_fixing_index;
+};
+
+/// A text or enumerated scalar the product declares, as written.
+inline auto declared_scalar(const record_reader& product, std::string_view name)
+    -> std::optional<std::string> {
+    const auto* f = xml::find_field(product.type(), name, false);
+    if (f == nullptr || !product.has(name))
+        return std::nullopt;
+    if (f->kind == xml::field_kind::enumeration)
+        return product.spelling(name);
+    if (f->kind == xml::field_kind::text)
+        return product.text(name);
+    return std::nullopt;
+}
+
+inline void set_declared_scalar(record_writer& product,
+                                std::string_view name,
+                                const std::optional<std::string>& value) {
+    const auto* f = xml::find_field(product.type(), name, false);
+    if (f == nullptr || !value)
+        return;
+    if (f->kind == xml::field_kind::enumeration)
+        product.set_spelling(name, *value, name);
+    else if (f->kind == xml::field_kind::text)
+        product.set_text(name, *value);
+}
+
+/// Reads the monitoring terms the product declares into a monitored row.
+template <monitored Row>
+void read_monitoring(Row& row, const record_reader& product, std::string_view index_element) {
+    if (const auto start = declared_scalar(product, "StartDate"))
+        row.barrier_start_date = option_block::to_optional_domain_date(*start);
+    row.barrier_calendar = declared_scalar(product, "Calendar");
+    row.barrier_fixing_index = declared_scalar(product, index_element);
+}
+
+/// Writes a monitored row's terms where the product declares them.
+template <monitored Row>
+void write_monitoring(record_writer& product, const Row& row, std::string_view index_element) {
+    if (row.barrier_start_date)
+        set_declared_scalar(
+            product, "StartDate", option_block::to_ore_date(*row.barrier_start_date));
+    set_declared_scalar(product, "Calendar", row.barrier_calendar);
+    set_declared_scalar(product, index_element, row.barrier_fixing_index);
+}
+
 }
 
 #endif

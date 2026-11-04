@@ -120,6 +120,21 @@ struct fx_barrier_option_instrument final {
     std::string underlying_code;
 
     /**
+     * @brief The date the barrier starts to be monitored, as StartDate states it.
+     */
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+
+    /**
+     * @brief The calendar the barrier is monitored in, as Calendar states it.
+     */
+    std::optional<std::string> barrier_calendar;
+
+    /**
+     * @brief The index the barrier is observed against, as FXIndex states it.
+     */
+    std::optional<std::string> barrier_fixing_index;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -156,6 +171,9 @@ inline constexpr std::string_view fx_barrier_option_instrument_economic_fields[]
     "lower_barrier",
     "upper_barrier",
     "underlying_code",
+    "barrier_start_date",
+    "barrier_calendar",
+    "barrier_fixing_index",
 };
 
 /**

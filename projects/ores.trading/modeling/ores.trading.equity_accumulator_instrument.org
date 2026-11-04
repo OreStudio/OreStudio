@@ -343,7 +343,7 @@ is immutable.
 | "fixing_amount" > 0 |
 | "underlying_name" <> '' |
 | "currency" <> '' |
-| ("trade_type_code" = 'EquityTaRF' and "target_amount" is not null and "target_type" is not null) or ("trade_type_code" = 'EquityAccumulator' and "target_amount" is null and "target_type" is null) |
+| "trade_type_code" = 'EquityTaRF' or ("target_amount" is null and "target_type" is null) |
 | "payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla') |
 | "target_type" is null or "target_type" in ('TargetFull', 'TargetExact') |
 

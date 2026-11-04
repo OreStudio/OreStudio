@@ -90,6 +90,13 @@ struct swap_leg_write {
     std::optional<std::string> fx_reset_fx_index;
     std::optional<int> fx_reset_fixing_days;
     std::optional<std::string> fx_reset_fixing_calendar;
+    std::optional<std::string> fixing_calendar;
+    std::optional<std::string> digital_call_position;
+    std::optional<bool> digital_is_call_atm_included;
+    std::optional<std::string> digital_put_position;
+    std::optional<bool> digital_is_put_atm_included;
+    std::optional<ores::utility::decimal::decimal> equity_margin_initial_margin_factor;
+    std::optional<ores::utility::decimal::decimal> equity_margin_multiplier;
     std::optional<bool> indexings_from_asset_leg;
     std::optional<std::string> floating_index_code_2;
     std::optional<int> cms_duration;
@@ -502,6 +509,17 @@ inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted
         utility::codec::field{"fx_reset_fixing_days", &swap_leg_write::fx_reset_fixing_days},
         utility::codec::field{"fx_reset_fixing_calendar",
                               &swap_leg_write::fx_reset_fixing_calendar},
+        utility::codec::field{"fixing_calendar", &swap_leg_write::fixing_calendar},
+        utility::codec::field{"digital_call_position", &swap_leg_write::digital_call_position},
+        utility::codec::field{"digital_is_call_atm_included",
+                              &swap_leg_write::digital_is_call_atm_included},
+        utility::codec::field{"digital_put_position", &swap_leg_write::digital_put_position},
+        utility::codec::field{"digital_is_put_atm_included",
+                              &swap_leg_write::digital_is_put_atm_included},
+        utility::codec::field{"equity_margin_initial_margin_factor",
+                              &swap_leg_write::equity_margin_initial_margin_factor},
+        utility::codec::field{"equity_margin_multiplier",
+                              &swap_leg_write::equity_margin_multiplier},
         utility::codec::field{"indexings_from_asset_leg",
                               &swap_leg_write::indexings_from_asset_leg},
         utility::codec::field{"floating_index_code_2", &swap_leg_write::floating_index_code_2},

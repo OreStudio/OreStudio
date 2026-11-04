@@ -95,6 +95,13 @@ struct swap_leg_entity {
     std::optional<std::string> fx_reset_fx_index;
     std::optional<int> fx_reset_fixing_days;
     std::optional<std::string> fx_reset_fixing_calendar;
+    std::optional<std::string> fixing_calendar;
+    std::optional<std::string> digital_call_position;
+    std::optional<bool> digital_is_call_atm_included;
+    std::optional<std::string> digital_put_position;
+    std::optional<bool> digital_is_put_atm_included;
+    std::optional<ores::utility::decimal::decimal> equity_margin_initial_margin_factor;
+    std::optional<ores::utility::decimal::decimal> equity_margin_multiplier;
     std::optional<bool> indexings_from_asset_leg;
     std::optional<std::string> floating_index_code_2;
     std::optional<int> cms_duration;
@@ -170,6 +177,15 @@ struct swap_leg_entity {
                query_builder::bind("fx_reset_fx_index", &e::fx_reset_fx_index) |
                query_builder::bind("fx_reset_fixing_days", &e::fx_reset_fixing_days) |
                query_builder::bind("fx_reset_fixing_calendar", &e::fx_reset_fixing_calendar) |
+               query_builder::bind("fixing_calendar", &e::fixing_calendar) |
+               query_builder::bind("digital_call_position", &e::digital_call_position) |
+               query_builder::bind("digital_is_call_atm_included",
+                                   &e::digital_is_call_atm_included) |
+               query_builder::bind("digital_put_position", &e::digital_put_position) |
+               query_builder::bind("digital_is_put_atm_included", &e::digital_is_put_atm_included) |
+               query_builder::bind("equity_margin_initial_margin_factor",
+                                   &e::equity_margin_initial_margin_factor) |
+               query_builder::bind("equity_margin_multiplier", &e::equity_margin_multiplier) |
                query_builder::bind("indexings_from_asset_leg", &e::indexings_from_asset_leg) |
                query_builder::bind("floating_index_code_2", &e::floating_index_code_2) |
                query_builder::bind("cms_duration", &e::cms_duration) |

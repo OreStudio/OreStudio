@@ -455,6 +455,8 @@ auto read_equity_accumulator(const record_reader& trade) -> equity_instrument_da
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.fixing_amount = equity_instrument_projection_decimal_of(*data, "FixingAmount");
     r.strike = equity_instrument_projection_decimal_of(*data, "Strike");
+    if (const auto option = data->child("OptionData"))
+        r.payoff_type = equity_instrument_projection_text_of(*option, "PayoffType");
     if (const auto start = data->text("StartDate"))
         r.start_date = equity_instrument_projection_to_domain_date(*start);
     if (const auto barriers = data->child("Barriers")) {
@@ -469,27 +471,7 @@ auto read_equity_accumulator(const record_reader& trade) -> equity_instrument_da
             break;
         }
     }
-    /*
-     * The document requires at least one range bound, so they are rows of the
-     * shared table and not a column: each states the range it pays inside and
-     * the leverage it pays at.
-     */
-    std::vector<range_bound> bounds;
-    if (const auto rows = data->child("RangeBounds")) {
-        std::uint32_t ordinal = 1;
-        for (const auto& element : rows->children("RangeBound")) {
-            range_bound row;
-            row.sequence_number = static_cast<int>(ordinal++);
-            if (const auto from = element.decimal("RangeFrom"))
-                row.range_from = *from;
-            if (const auto to = element.decimal("RangeTo"))
-                row.range_to = *to;
-            if (const auto leverage = element.decimal("Leverage"))
-                row.leverage = leverage->to_double();
-            bounds.push_back(std::move(row));
-        }
-    }
-    return equity_instrument_data{equity_instrument_variant{r}, {}, {}, {}, std::move(bounds)};
+    return equity_instrument_data{equity_instrument_variant{r}, {}};
 }
 
 auto read_equity_tarf(const record_reader& trade) -> equity_accumulator_instrument {
@@ -502,6 +484,9 @@ auto read_equity_tarf(const record_reader& trade) -> equity_accumulator_instrume
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.fixing_amount = equity_instrument_projection_decimal_of(*data, "FixingAmount");
     r.strike = equity_instrument_projection_decimal_of(*data, "Strike");
+    if (const auto option = data->child("OptionData"))
+        r.payoff_type = equity_instrument_projection_text_of(*option, "PayoffType");
+    r.target_amount = data->decimal("TargetAmount");
     if (const auto barriers = data->child("Barriers")) {
         for (const auto& barrier : barriers->children("BarrierData")) {
             if (equity_instrument_projection_spelling_of(barrier, "Type") != "FixingCap")
@@ -938,22 +923,7 @@ void write_equity_accumulator(record_writer& trade,
      * none is written as none and the schema refuses it: the bounds are the
      * economics of the product, not a decoration.
      */
-    if (!rows.empty()) {
-        auto ordered = rows;
-        std::sort(ordered.begin(), ordered.end(), [](const auto& lhs, const auto& rhs) {
-            return lhs.sequence_number < rhs.sequence_number;
-        });
-        auto bounds = data.child("RangeBounds");
-        for (const auto& row : ordered) {
-            auto bound = bounds.append("RangeBound");
-            if (row.range_from.has_value())
-                bound.set_decimal("RangeFrom", *row.range_from);
-            if (row.range_to.has_value())
-                bound.set_decimal("RangeTo", *row.range_to);
-            if (row.leverage.has_value())
-                set_decimal_from_double(bound, "Leverage", *row.leverage);
-        }
-    }
+    option_block::write_range_bounds(data, rows);
     barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier");
 }
 
@@ -967,6 +937,9 @@ void write_equity_tarf(record_writer& trade,
         data.set_decimal("Strike", v.strike);
     write_underlying_or_equity(data, carrier, v.underlying_name);
     data.child("OptionData").set_text("LongShort", "Long");
+    if (v.target_amount)
+        data.set_decimal("TargetAmount", *v.target_amount);
+    option_block::write_range_bounds(data, carrier.range_bounds);
     if (!option_block::write_product_schedule(data, carrier, "ScheduleData", "product_schedule"))
         write_schedule_rule(data.child("ScheduleData"), "", "1Y");
 
@@ -1255,6 +1228,17 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
         barrier_block::read_product_barriers(*data, trade, trade_type, equity_barrier_holders);
         underlying_block::read_product_underlyings(
             *data, trade, trade_type, equity_underlying_holders);
+        const auto element = std::string(trade_type) + "Data";
+        if (const auto product = trade.declares(element) ? trade.child(element) : std::nullopt) {
+            if (trade_type == "EquityAccumulator" || trade_type == "EquityTaRF")
+                option_block::read_range_bounds(*data, *product);
+            std::visit(
+                [&](auto& row) {
+                    if constexpr (barrier_block::monitored<std::decay_t<decltype(row)>>)
+                        barrier_block::read_monitoring(row, *product, "EQIndex");
+                },
+                data->instrument);
+        }
     }
     return instrument;
 }
@@ -1349,6 +1333,16 @@ auto write_equity_instrument(xml::record_writer& trade,
                 auto option = product->child("OptionData");
                 option_block::write_option_block(option, *v);
             }
+        }
+    }
+    if (const auto element = std::string(trade_type) + "Data"; matched && trade.declares(element)) {
+        if (auto product = trade.chosen_child(element)) {
+            std::visit(
+                [&](const auto& row) {
+                    if constexpr (barrier_block::monitored<std::decay_t<decltype(row)>>)
+                        barrier_block::write_monitoring(*product, row, "EQIndex");
+                },
+                v->instrument);
         }
     }
     return matched;

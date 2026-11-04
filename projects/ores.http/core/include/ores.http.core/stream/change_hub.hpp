@@ -261,7 +261,6 @@ public:
         }
         return resume_point{std::string(id.substr(0, dash)), sequence};
     }
-
     /**
      * @param system_tenant The tenant whose changes every stream hears, because they
      *        are the catalogue every tenant shares.
@@ -292,7 +291,7 @@ public:
 
         if (resumed) {
             const auto eligible = [&](const retained_frame& frame) {
-                return hears(frame.tenant, frame.party);
+                return frame.id > resumed->last_seen && hears(frame.tenant, frame.party);
             };
             const auto oldest = retained_.empty() ? 0 : retained_.front().id;
             const auto newest = retained_.empty() ? 0 : retained_.back().id;
@@ -300,7 +299,7 @@ public:
                                 (oldest == 0 || resumed->last_seen + 1 >= oldest);
             if (inside) {
                 for (const auto& frame : retained_) {
-                    if (frame.id > resumed->last_seen && eligible(frame))
+                    if (eligible(frame))
                         subscription->push(
                             conflation_key(frame.tenant, frame.party, frame.collection),
                             "id: " + id_of(frame.id) + "\n" + frame.text);
@@ -328,17 +327,17 @@ public:
                  const std::string& collection,
                  std::string frame) {
         std::vector<std::shared_ptr<change_subscription>> open;
+        std::uint64_t id = 0;
         {
             const std::lock_guard lock(mu_);
             std::erase_if(subscriptions_,
                           [](const auto& subscription) { return subscription->closed(); });
-            const auto id = next_id_++;
+            id = next_id_++;
             retained_.push_back(retained_frame{id, tenant, party, collection, frame});
             while (retained_.size() > retention_)
                 retained_.pop_front();
             open = subscriptions_;
         }
-        const auto id = next_id_ - 1;
         auto stamped = "id: " + id_of(id) + "\n" + frame;
         const auto key = conflation_key(tenant, party, collection);
         for (auto& subscription : open) {

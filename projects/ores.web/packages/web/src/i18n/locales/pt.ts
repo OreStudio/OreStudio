@@ -7741,6 +7741,24 @@ const pt: SourceCatalogue = {
         },
         schedule: {
             onDemand: 'A pedido',
+            schedule: 'Agendar',
+            unschedule: 'Desagendar',
+            working: 'A guardar o agendamento',
+            scheduled: 'Agendado. O relatório passa a ser executado quando o agendamento dispara.',
+            alreadyScheduled:
+                'Nada mudou. O relatório já tinha um agendamento, por isso ficou como estava.',
+            unscheduled:
+                'Desagendado. O relatório só é executado a pedido, por isso está a pedido.',
+            notScheduled: 'Nada mudou. O relatório não tinha agendamento para remover.',
+            refused: 'O servidor recusou esta alteração: {message}',
+            otherParty:
+                'Este relatório pertence a {party}. Atue por essa parte para o agendar ou retirar o agendamento.',
+            chooseTitle: 'Agendar {name}',
+            chooseLead:
+                'O relatório é executado quando o agendamento que indicar aqui dispara. Fica a pedido até o agendar.',
+            when: 'Quando o relatório é executado',
+            whenHint:
+                'O agendador dispara esta expressão. Desagende o relatório para parar os disparos.',
         },
         cut: {
             LIVE: 'Live',
@@ -7858,6 +7876,9 @@ const pt: SourceCatalogue = {
             record: 'Definição',
             party: 'Parte',
             partyHint: 'A parte que possui esta definição e que a executa.',
+            schedule: 'Quando é executado',
+            scheduleHint:
+                'Um relatório sem agendamento está a pedido: só é executado quando uma pessoa o inicia. A expressão é aquilo sobre o que ele seria executado.',
             health: 'Estado da última execução',
             healthHint: 'Derivado da última execução, nunca da definição.',
             latestRun: 'Última execução',
@@ -7953,6 +7974,7 @@ const pt: SourceCatalogue = {
         feedsRun: 'iniciar e parar os feeds sintéticos',
         reportDefinitionsRead: 'ver as definições de relatório das suas partes',
         reportDefinitionsWrite: 'alterar definições de relatório',
+        reportDefinitionsDelete: 'remover definições de relatório, e retirar-lhes o agendamento',
         pricingEnginesRead: 'ver as configurações de motor de avaliação',
         pricingEnginesWrite: 'alterar as configurações de motor de avaliação',
         pricingEnginesDelete: 'remover as configurações de motor de avaliação',

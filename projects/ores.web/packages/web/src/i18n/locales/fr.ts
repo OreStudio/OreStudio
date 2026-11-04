@@ -7802,6 +7802,25 @@ const fr: SourceCatalogue = {
         },
         schedule: {
             onDemand: 'À la demande',
+            schedule: 'Planifier',
+            unschedule: 'Déplanifier',
+            working: 'Enregistrement de la planification',
+            scheduled:
+                'Planifié. Le rapport s’exécute maintenant quand la planification se déclenche.',
+            alreadyScheduled:
+                'Aucun changement. Le rapport avait déjà une planification, il est donc resté tel quel.',
+            unscheduled:
+                'Déplanifié. Le rapport ne s’exécute que sur demande, il est donc à la demande.',
+            notScheduled: 'Aucun changement. Le rapport n’avait aucune planification à retirer.',
+            refused: 'Le serveur a refusé ce changement : {message}',
+            otherParty:
+                'Ce rapport appartient à {party}. Agissez pour cette partie pour le planifier ou retirer sa planification.',
+            chooseTitle: 'Planifier {name}',
+            chooseLead:
+                'Le rapport s’exécute quand la planification que vous indiquez ici se déclenche. Il reste à la demande jusqu’à ce que vous le planifiiez.',
+            when: 'Quand le rapport s’exécute',
+            whenHint:
+                'Le planificateur déclenche cette expression. Déplanifiez le rapport pour arrêter les déclenchements.',
         },
         cut: {
             LIVE: 'Live',
@@ -7921,6 +7940,9 @@ const fr: SourceCatalogue = {
             record: 'Définition',
             party: 'Partie',
             partyHint: 'La partie qui possède cette définition et qui l’exécute.',
+            schedule: 'Quand il s’exécute',
+            scheduleHint:
+                'Un rapport sans planification est à la demande : il ne s’exécute que si une personne le lance. L’expression est ce sur quoi il s’exécuterait.',
             health: 'État de la dernière exécution',
             healthHint: 'Dérivé de la dernière exécution, jamais de la définition.',
             latestRun: 'Dernière exécution',
@@ -8016,6 +8038,8 @@ const fr: SourceCatalogue = {
         feedsRun: 'démarrer et arrêter les flux synthétiques',
         reportDefinitionsRead: 'voir les définitions de rapport de vos parties',
         reportDefinitionsWrite: 'changer les définitions de rapport',
+        reportDefinitionsDelete:
+            'retirer les définitions de rapport, et leur retirer leur planification',
         pricingEnginesRead: 'voir les configurations de moteur de valorisation',
         pricingEnginesWrite: 'changer les configurations de moteur de valorisation',
         pricingEnginesDelete: 'supprimer les configurations de moteur de valorisation',

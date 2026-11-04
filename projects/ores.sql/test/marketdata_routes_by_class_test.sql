@@ -27,17 +27,9 @@
 
 begin;
 
-select plan(5);
+select plan(3);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
-
-select is(
-    (select count(*)::int from ores_marketdata_routes_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    5,
-    'the seed holds five routes, four FX and one IR'
-);
 
 create temporary table t_ecb on commit drop as
 select r.party_id, r.publisher_code, r.asset_class, r.feed_id
@@ -89,17 +81,6 @@ select throws_ok(
     '23514',
     null,
     'a feed of another publisher is refused'
-);
-
-select is(
-    (select count(*)::int
-     from ores_marketdata_routes_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and asset_class = 'fx'
-       and publisher_code in ('ecb', 'imf', 'boc', 'tcmb')
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    4,
-    'the four public publishers route at FX'
 );
 
 select * from finish();

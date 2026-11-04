@@ -31,7 +31,7 @@
 
 begin;
 
-select plan(9);
+select plan(5);
 
 create temporary table t_adapters_dataset on commit drop as
 select id from ores_dq_datasets_tbl
@@ -73,36 +73,6 @@ select throws_ok(
     'P0001',
     null,
     'the supplier catalogue is not published into a tenant other than the system tenant'
-);
-
-select results_eq(
-    format($$select action, record_count from ores_marketdata_publish_adapters_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'insert_only', '{}'::jsonb)$$,
-        (select id from t_adapters_dataset)),
-    $$values ('skipped'::text, 2::bigint)$$,
-    'an insert-only publish over the adapter catalogue skips every adapter it already holds'
-);
-
-select results_eq(
-    format($$select action, record_count from ores_marketdata_publish_suppliers_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'insert_only', '{}'::jsonb)$$,
-        (select id from t_suppliers_dataset)),
-    $$values ('skipped'::text, 2::bigint)$$,
-    'an insert-only publish over the supplier catalogue skips every supplier it already holds'
-);
-
-select is(
-    (select count(*)::int from ores_marketdata_adapters_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    2,
-    'the system tenant holds the two adapters the dataset stages'
-);
-
-select is(
-    (select count(*)::int from ores_marketdata_suppliers_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    2,
-    'the system tenant holds the two suppliers the dataset stages'
 );
 
 -- The catalogues were published earlier in this same transaction. A

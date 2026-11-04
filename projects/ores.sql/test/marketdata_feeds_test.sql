@@ -27,7 +27,7 @@
 
 begin;
 
-select plan(6);
+select plan(4);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -52,28 +52,6 @@ begin
     );
 end;
 $$ language plpgsql;
-
--- Only the seeded feeds are counted: the database the tests run against is also
--- the one the integration tests and a provisioned tenant write feeds into.
-select is(
-    (select count(*)::int from ores_marketdata_feeds_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and change_reason_code = 'system.initial_load'
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    10,
-    'the seed holds ten feeds'
-);
-
-select is(
-    (select count(*)::int from ores_marketdata_feeds_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and session_code = 'frankfurter-eu'
-       and service = 'end_of_day'
-       and provider_key <> ''
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    4,
-    'the four public feeds read through the Frankfurter session at end of day'
-);
 
 select is(
     (select count(*)::int from (

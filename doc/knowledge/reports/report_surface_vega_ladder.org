@@ -5,7 +5,7 @@
 #+description: The value change at every strike of every expiry, one row for each surface point, when the whole volatility surface is bumped and the book repriced.
 #+type: report
 #+level: cross
-#+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:
+#+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:intraday:
 #+created: 2026-11-03
 #+updated: 2026-11-04
 #+report_code: bump_and_reprice_surface_vega_ladder
@@ -16,9 +16,10 @@ Bump and Reprice Surface vega ladder. It shows the money the book gains or loses
 every strike of every expiry when the volatility surface is shifted at each of those
 points and the book is repriced. A trading desk reads it to place a hedge at a named
 strike and expiry, and the market risk function reads it to check that the wings and
-the body of the surface are carried at the shape the book reports. It runs at the
-close on the schedule. It leaves the engine's output archive in storage, which holds
-the sensitivity file and the scenario file, and the run records where that archive
+the body of the surface are carried at the shape the book reports. It runs every
+hour, at every hour of every day, from the live cut, and once at the close on the
+authorised cut. It leaves the engine's output archive in storage, which holds the
+sensitivity file and the scenario file, and the run records where that archive
 landed.
 
 * Purpose
@@ -56,6 +57,12 @@ record. A live ladder is indicative and a close ladder stands, so the two are
 separate definitions with separate run settings and neither run replaces the record
 of the other.
 
+The plain definition is seeded with the expression =0 * * * *=, which fires it at the
+first minute of every hour, around the clock and on every day of the week. The
+product owner set that cadence on 2026-11-04, because the report costs a full-surface
+sensitivity run and a desk reads its shape between the closes rather than inside
+them. The twin keeps =0 18 * * 1-5=, which fires it at 18:00 on weekdays.
+
 #+ATTR_HTML: :class hug-leading
 | Field     | Value            |
 |-----------+------------------|
@@ -71,9 +78,10 @@ data type =live=; the twin selects =EOD= and states =eod=.
 
 - Trades selected by scope. A definition states the scope it selects, and the ladder
   reads the trade set that scope names.
-- Market data for the as-of date, from the end of day cut. The run settings row
-  states market data type =eod=, so the valuation date is the weekday before the run
-  date, and holiday calendars are not consulted.
+- Market data for the as-of date. The plain definition states market data type
+  =live=, so the run values the book at its start. The twin states =eod=, so its
+  valuation date is the weekday before the run date, and holiday calendars are not
+  consulted.
 - The sensitivity configuration the analytic binds, through
   =sensitivityConfigFile=. The document states a strike list on the volatility
   block, so the run shifts every strike of every expiry it names.
@@ -256,6 +264,7 @@ document the definition binds. The mechanism is on
 |-----------------------+----------------------------------------------+--------------+-------------------------------------------------------------|
 | sensitivityConfigFile | a document of the sensitivity configuration type | none     | The =SensitivityAnalysis= document the analytic reads.      |
 | market_data_type      | live, eod or date                            | live and eod | The market data each definition reads: the plain name the live cut, the twin the end of day one. |
+| schedule_expression   | a cron expression                            | 0 * * * * and 0 18 * * 1-5 | When each definition fires: the plain name every hour, the twin at 18:00 on weekdays. |
 | base_currency         | ISO 4217 code                                | the entity's | The currency the figures are expressed in.                  |
 | ShiftType             | Relative, Absolute or EqualTo                | none         | How the shift is applied to the factor.                     |
 | ShiftSize             | a real, with an optional key                 | none         | The size of the shift, in the factor's own unit.            |

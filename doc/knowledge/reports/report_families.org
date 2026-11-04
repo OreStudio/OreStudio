@@ -39,7 +39,7 @@ looks like now, and every figure on them is replaced by the close.
 - [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]], every ten minutes, the shallow overview a reader opens
   first.
 - [[id:826BE0EC-E26D-478A-84C9-73A42021037F][Bump and Reprice Spot Greeks]], every fifteen minutes, for directional risk.
-- [[id:F5288E4A-3F36-4FFB-992C-F1812E772232][Bump and Reprice Triple Vol Spot Ladder]], every fifteen minutes, for vol and skew risk, and
+- [[id:F5288E4A-3F36-4FFB-992C-F1812E772232][Bump and Reprice Triple Vol Spot Ladder]], every hour, for vol and skew risk, and
   only in the entity that holds the option books.
 
 ** The close twins
@@ -55,8 +55,10 @@ at the weekday before the run date.
 
 ** The desk maps and the activity reports
 
-These read the shape of the book rather than a single figure. They are on demand
-or event driven, and three of the five need a grid the store does not hold.
+These read the shape of the book rather than a single figure. Three of them run on
+a schedule: the spot ladder every half hour, intraday change every half hour and
+trades since last in every fifteen minutes. The three maps run on demand, and they
+are the ones that need a grid the store does not hold.
 
 - [[id:DE8B8E26-DD38-4686-AE79-831083B0351C][Bump and Reprice Spot Ladder]], the forward curve at every tenor.
 - [[id:2A5A5552-F1A4-46CD-AF3A-ADB2BD0ACA5D][Spike Map]], option notional against expiry and spot.

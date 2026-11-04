@@ -51,28 +51,34 @@ ladder family: ten are seeded and fail at the engine for the reasons their pages
 state, and three are documented and not seeded.
 
 #+ATTR_HTML: :class hug-leading
-| Report | Code | Cut | Audience | What it produces |
-|--------+------+-----+----------+------------------|
-| [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]] | =headline_position= | LIVE | trading-desk, market-risk | The headline Greeks for a book or portfolio. |
-| [[id:07F92413-794A-4855-B761-73CC3CAF03C6][Headline Position (EOD)]] | =headline_position_eod= | EOD | market-risk, trading-desk | The same Greeks at the close, on the authorised cut. |
-| [[id:0744CB78-6EBF-4340-8885-837D0EEE6A95][Intraday Risk Monitor]] | =intraday_risk_monitor= | LIVE | trading-desk, market-risk | PV, the delta ladder, the top movers and limit use, between the closes. |
-| [[id:826BE0EC-E26D-478A-84C9-73A42021037F][Bump and Reprice Spot Greeks]] | =spot_greeks= | LIVE | trading-desk, market-risk | PV and Delta across a grid of spot shift levels. |
-| [[id:B845A078-591B-4F4B-8FF6-5FA606B2DBA8][Bump and Reprice Spot Greeks (EOD)]] | =spot_greeks_eod= | EOD | market-risk, trading-desk | The spot shift grid at the close. |
-| [[id:F5288E4A-3F36-4FFB-992C-F1812E772232][Bump and Reprice Triple Vol Spot Ladder]] | =triple_vol_spot_ladder= | LIVE | trading-desk, market-risk | Vega, Rega and Sega against a moving spot. |
-| [[id:84864DB2-3499-4B59-BDE3-14800CC2EA7D][Bump and Reprice Triple Vol Spot Ladder (EOD)]] | =triple_vol_spot_ladder_eod= | EOD | market-risk, trading-desk | The same ladder at the close, as the statement of record. |
-| [[id:DE8B8E26-DD38-4686-AE79-831083B0351C][Bump and Reprice Spot Ladder]] | =spot_ladder= | LIVE | trading-desk | The forward curve of a currency pair, tenor by tenor. |
-| [[id:2A5A5552-F1A4-46CD-AF3A-ADB2BD0ACA5D][Spike Map]] | =spike_map= | LIVE | trading-desk, market-risk | Option notional against expiry date and spot level. |
-| [[id:454304DE-E361-4E35-9ABE-41800C751118][Strike Map]] | =strike_map= | LIVE | trading-desk | The same concentration view bucketed by strike. |
-| [[id:A952CB92-98B8-4F5A-B4AB-ECBBB9248521][Option Map]] | =option_map= | LIVE | trading-desk | Notional across delta, beside the strike view. |
-| [[id:289D0246-660B-46E9-A403-9D4BAF591E89][Intraday Change]] | =intraday_change= | LIVE | trading-desk | What the market data and the risk have moved since a stated time. |
-| [[id:3A74B881-4D97-485F-9E9B-0179FA90ACBA][Trades Since Last In]] | =trades_since_last_in= | LIVE | trading-desk, middle-office | Every trade booked since a stated date and time. |
-| [[id:DF1F4A61-319E-475D-B526-5DC6B62DCF3F][Sample bundle smoke test]] | =sample_bundle_smoke_test= | LIVE | engineer, release check | A completed run and the engine's output archive; no measures. |
+| Report                                                                                     | Code                         | Cut  | Frequency                              | Audience                    | What it produces                                                        |
+|--------------------------------------------------------------------------------------------+------------------------------+------+----------------------------------------+-----------------------------+-------------------------------------------------------------------------|
+| [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]]                             | =headline_position=          | LIVE | every 10 minutes, around the clock     | trading-desk, market-risk   | The headline Greeks for a book or portfolio.                            |
+| [[id:07F92413-794A-4855-B761-73CC3CAF03C6][Headline Position (EOD)]]                       | =headline_position_eod=      | EOD  | 18:00 on weekdays                      | market-risk, trading-desk   | The same Greeks at the close, on the authorised cut.                    |
+| [[id:0744CB78-6EBF-4340-8885-837D0EEE6A95][Intraday Risk Monitor]]                         | =intraday_risk_monitor=      | LIVE | every 30 minutes, 08:00-17:30 weekdays | trading-desk, market-risk   | PV, the delta ladder, the top movers and limit use, between the closes. |
+| [[id:826BE0EC-E26D-478A-84C9-73A42021037F][Bump and Reprice Spot Greeks]]                  | =spot_greeks=                | LIVE | every 15 minutes, 08:00-17:45 weekdays | trading-desk, market-risk   | PV and Delta across a grid of spot shift levels.                        |
+| [[id:B845A078-591B-4F4B-8FF6-5FA606B2DBA8][Bump and Reprice Spot Greeks (EOD)]]            | =spot_greeks_eod=            | EOD  | 18:00 on weekdays                      | market-risk, trading-desk   | The spot shift grid at the close.                                       |
+| [[id:F5288E4A-3F36-4FFB-992C-F1812E772232][Bump and Reprice Triple Vol Spot Ladder]]       | =triple_vol_spot_ladder=     | LIVE | hourly, around the clock               | trading-desk, market-risk   | Vega, Rega and Sega against a moving spot.                              |
+| [[id:84864DB2-3499-4B59-BDE3-14800CC2EA7D][Bump and Reprice Triple Vol Spot Ladder (EOD)]] | =triple_vol_spot_ladder_eod= | EOD  | 18:00 on weekdays                      | market-risk, trading-desk   | The same ladder at the close, as the statement of record.               |
+| [[id:DE8B8E26-DD38-4686-AE79-831083B0351C][Bump and Reprice Spot Ladder]]                  | =spot_ladder=                | LIVE | every 30 minutes, 08:00-17:30 weekdays | trading-desk                | The forward curve of a currency pair, tenor by tenor.                   |
+| [[id:2A5A5552-F1A4-46CD-AF3A-ADB2BD0ACA5D][Spike Map]]                                     | =spike_map=                  | LIVE | on demand                              | trading-desk, market-risk   | Option notional against expiry date and spot level.                     |
+| [[id:454304DE-E361-4E35-9ABE-41800C751118][Strike Map]]                                    | =strike_map=                 | LIVE | on demand                              | trading-desk                | The same concentration view bucketed by strike.                         |
+| [[id:A952CB92-98B8-4F5A-B4AB-ECBBB9248521][Option Map]]                                    | =option_map=                 | LIVE | on demand                              | trading-desk                | Notional across delta, beside the strike view.                          |
+| [[id:289D0246-660B-46E9-A403-9D4BAF591E89][Intraday Change]]                               | =intraday_change=            | LIVE | every 30 minutes, 08:00-17:30 weekdays | trading-desk                | What the market data and the risk have moved since a stated time.       |
+| [[id:3A74B881-4D97-485F-9E9B-0179FA90ACBA][Trades Since Last In]]                          | =trades_since_last_in=       | LIVE | every 15 minutes, 08:00-17:45 weekdays | trading-desk, middle-office | Every trade booked since a stated date and time.                        |
+| [[id:DF1F4A61-319E-475D-B526-5DC6B62DCF3F][Sample bundle smoke test]]                      | =sample_bundle_smoke_test=   | LIVE | on demand                              | engineer, release check     | A completed run and the engine's output archive; no measures.           |
 
 The =Cut= column is the kind of cut the seeded definition selects, and it is the
 column that says what the report prices from. A report on both cycles is two
 definitions and not one: the plain name selects =LIVE= and runs during the day,
 and the same name with "(EOD)" selects =EOD= and runs at the close. Headline
 Position, Bump and Reprice Spot Greeks and Bump and Reprice Triple Vol Spot Ladder are seeded that way.
+
+The =Frequency= column is the cadence the seeded definition of each report states,
+in the words its page uses. The times are the hours the cron expression names, and
+the expression is the one the seed states rather than a rounding of it. A report
+whose expression can never fire runs only when a person starts it, so the column
+reads =on demand=.
 
 The pipeline that runs every row above is ordered by
 [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report Processing]], and the compute

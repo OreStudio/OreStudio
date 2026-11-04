@@ -8,7 +8,7 @@
 #+filetags: :codegen:serialisation:replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/state-a-type-s-wire-shape-by-its-type
-#+pr:
+#+pr: 4459
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4459][#4459]] | [codegen] State a type's wire shape by its type and generate the canonical form |
 
 * Review
 

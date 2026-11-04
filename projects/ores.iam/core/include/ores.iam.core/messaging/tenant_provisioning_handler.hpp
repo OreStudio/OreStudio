@@ -664,12 +664,28 @@ public:
                 return;
             }
 
+            const auto started = std::chrono::steady_clock::now();
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "provision_step " << parsed->kind << " started: step_id=" << wf->step_id
+                << " instance=" << wf->instance_id;
             execute_step(*wf, *parsed, correlation_id);
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "provision_step " << parsed->kind << " returned after "
+                << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count()
+                << "s: step_id=" << wf->step_id;
             ack.accept();
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
-                << "provision_step failed: " << e.what();
+                << "provision_step failed: step_id=" << wf->step_id << ": " << e.what();
             wf->fail(e.what());
+            ack.accept();
+        } catch (...) {
+            // An exception of no standard type would otherwise leave the step with no answer and
+            // no line saying why, so the run would wait out its deadline in silence.
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << "provision_step failed with an exception of no standard type: step_id="
+                << wf->step_id;
+            wf->fail("The step failed with an exception of no standard type.");
             ack.accept();
         }
     }
@@ -1703,7 +1719,22 @@ private:
         provision_step_result result;
         result.kind = command.kind;
 
+        const auto seconds_since = [](std::chrono::steady_clock::time_point from) {
+            return std::chrono::duration<double>(std::chrono::steady_clock::now() - from).count();
+        };
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "generate_trades: " << assignments.size() << " entr(y/ies) to write";
+        std::size_t position = 0;
         for (const auto& entry : assignments) {
+            ++position;
+            const auto entry_started = std::chrono::steady_clock::now();
+            const auto phase = [&](std::string_view what) {
+                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                    << "generate_trades: " << entry.name << " (" << position << " of "
+                    << assignments.size() << "): " << what << " after "
+                    << seconds_since(entry_started) << "s";
+            };
+            phase("finding the party " + entry.party);
             const auto party = find_party(discover, entry.party);
             if (!party)
                 throw std::runtime_error("The tenant holds no party named '" + entry.party + "'.");
@@ -1717,15 +1748,19 @@ private:
              * curve configuration the party published is what the resolution
              * reads, so the config names a series the party actually holds.
              */
+            phase("finding the book " + entry.book);
             const auto book = find_party_book(party_client, party->id, entry.book);
             if (!book)
                 throw std::runtime_error("The party holds no book named '" + entry.book +
                                          "', so the population has nowhere to land.");
+            phase("finding the reference curve in " + book->functional_currency);
             const auto reference_curve_id =
                 find_reference_curve_id(party_client, party->id, book->functional_currency);
 
+            phase("recording the trade generation config");
             const auto config_id =
                 record_trade_generation_config(party_client, party->id, entry, reference_curve_id);
+            phase("recording the config's scope");
             record_trade_generation_scope(party_client, config_id, party->id, entry);
 
             auto generation_client = make_generation_client(
@@ -1748,6 +1783,7 @@ private:
                 },
                 ores::synthetic::domain::trade_population_trader{actor.account_id, actor.username});
             ores::synthetic::service::trade_population_service service(writer);
+            phase("writing the population of config " + boost::uuids::to_string(config_id));
             const auto run = service.run(config_id);
 
             result.configs.push_back(boost::uuids::to_string(config_id));
@@ -1759,9 +1795,12 @@ private:
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "generate_trades: " << entry.name << " for party " << entry.party << ": planned "
                 << run.planned << ", wrote " << run.written << ", already present "
-                << run.already_present;
+                << run.already_present << ", in " << seconds_since(entry_started) << "s";
         }
 
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "generate_trades: every entry is written (" << result.trades_written << " written, "
+            << result.trades_already_present << " already present); completing the step";
         wf.complete(rfl::json::write(result));
     }
 

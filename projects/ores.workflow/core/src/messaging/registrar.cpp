@@ -193,6 +193,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         nats.queue_subscribe(claim_step_request::nats_subject, qg, [ch](ores::nats::message msg) {
             ch->claim_step(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        renew_step_claim_request::nats_subject, qg, [ch](ores::nats::message msg) {
+            ch->renew_step_claim(std::move(msg));
+        }));
 
     auto wh = std::make_shared<workflow_handler>(nats, std::move(ctx), std::move(signer), engine);
 

@@ -60,15 +60,17 @@ HOST_ID_NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 FLEET_MEMORY_LIMITS = """MemoryMax=8G
 MemorySwapMax=1G"""
 
+
 # tenant_id::system().to_string() -- the max UUID sentinel (RFC 9562), always
 # this literal value regardless of environment; see process_supervisor.cpp's
 # own {tenant_id} substitution and its accompanying comment.
 SYSTEM_TENANT_UUID = "ffffffff-ffff-ffff-ffff-ffffffffffff"
 
-# Console only. systemd captures stdout and stderr into the user journal, so
-# one interface reaches every unit and no log file is written. --log-filename
-# and --log-directory are deliberately absent: with no filename the binary adds
-# no file sink, which is the opt-out logging_options.hpp documents.
+# Console, captured by systemd into the user journal, and, unless this checkout
+# turns it off, a file per process under publish/log. The journal alone is not a
+# complete record: measured on 2026-11-04 during an Acme provisioning run, it kept
+# 6.6% of iam's lines at debug level and 64% at info, with the unit's rate limit
+# turned off, while the file kept every line. So the file sink is added below.
 DEFAULT_ARGS_TEMPLATE = (
     "--log-enabled --log-level {log_level} --log-to-console {nats_tls_args}"
 )
@@ -87,6 +89,20 @@ DEFAULT_SERVICE_LOG_LEVEL = "info"
 def service_log_level(env: dict) -> str:
     """This checkout's compiled-service log level (trace..error)."""
     return env.get(SERVICE_LOG_LEVEL_VARIABLE) or DEFAULT_SERVICE_LOG_LEVEL
+
+
+# The file sink beside the journal, on unless this checkout sets the variable to
+# false. Each process writes publish/log/<service>.<replica>.log, which keeps every
+# line the binary wrote; the journal drops lines under load and says so only in the
+# system journal, which a user cannot read.
+SERVICE_LOG_TO_FILE_VARIABLE = "ORES_SERVICE_LOG_TO_FILE"
+_log_to_file = True
+
+
+def service_log_to_file(env: dict) -> bool:
+    """Whether this checkout's compiled services also write a log file (default yes)."""
+    value = (env.get(SERVICE_LOG_TO_FILE_VARIABLE) or "").strip().lower()
+    return value not in ("0", "false", "no")
 
 # Static, hand-authored drop-ins that are NOT per-environment or DB-driven --
 # unlike everything else this module generates, these are host-wide and
@@ -182,6 +198,9 @@ def _substitute_args(args_template, def_row, keys_dir, log_level="info",
     key = f"{keys_dir}/{def_row['service_name']}.key"
     tls_args = f"--nats-tls-ca ${{ORES_NATS_TLS_CA}} --nats-tls-cert {cert} --nats-tls-key {key}"
     tmpl = tmpl.replace("{nats_tls_args}", tls_args)
+    if _log_to_file:
+        tmpl += (f" --log-directory ../log --log-filename {def_row['service_name']}.log"
+                 f" --log-replica-index {replica_index}")
     return tmpl
 
 
@@ -510,6 +529,8 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
 
     nats_port = env.get("ORES_NATS_PORT", "4222")
     log_level = service_log_level(env)
+    global _log_to_file
+    _log_to_file = service_log_to_file(env)
     write(_unit_basename("nats-server", env_name) + ".service",
           render_nats_unit(checkout_root, env_name, target_name, nats_port))
 
@@ -533,7 +554,8 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
 
     print(f"Wrote {len(written)} unit files to {out_dir}")
     print(f"Compiled services log at '{log_level}' "
-          f"(ORES_SERVICE_LOG_LEVEL in .env)")
+          f"(ORES_SERVICE_LOG_LEVEL in .env)"
+          + (", and to publish/log files (ORES_SERVICE_LOG_TO_FILE)" if _log_to_file else ""))
     print()
     print("To install for this user:")
     print(f"  compass systemd deploy")

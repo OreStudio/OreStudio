@@ -74,6 +74,13 @@ public:
      */
     void claim_step(ores::nats::message msg);
 
+    /**
+     * @brief Answers a renew_step_claim_request, on workflow.v1.ops.renew_step_claim.
+     *
+     * Extends the lease of a claim its holder still holds while the step is in progress.
+     */
+    void renew_step_claim(ores::nats::message msg);
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

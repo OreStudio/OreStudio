@@ -99,6 +99,18 @@ public:
     bool release(context ctx, const boost::uuids::uuid& step_id);
 
     /**
+     * @brief Extends the lease of a claim its holder still holds, by a full lease.
+     *
+     * The owner is part of the condition, so a holder whose claim another delivery took
+     * over cannot extend it back. Returns false when the claim is gone or names another
+     * holder. The claim's time is left as it was, because the step's deadline counts from it.
+     */
+    bool renew(context ctx,
+               const boost::uuids::uuid& step_id,
+               const std::string& owner,
+               std::chrono::seconds lease);
+
+    /**
      * @brief The owner of the claim on a step, when one holds it.
      *
      * Reads only, for diagnostics: a step whose deliveries keep coming back

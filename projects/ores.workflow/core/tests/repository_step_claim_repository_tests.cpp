@@ -168,3 +168,50 @@ TEST_CASE("release_removes_a_claim_whatever_the_holder_named_itself", "[reposito
     // Nothing was there to remove the second time.
     CHECK(!claims.release(cleanup.system(), step));
 }
+
+TEST_CASE("a_renewal_keeps_a_claim_whose_lease_would_have_ended", "[repository][step_claim]") {
+    database_helper h;
+    claim_cleanup cleanup(h);
+    const auto step = cleanup.watch(random_uuid());
+    const auto work_tenant = random_uuid();
+
+    step_claim_repository claims;
+    // A lease of no seconds is already over, so without the renewal the next claim would take
+    // the step over; the renewal is what a holder still running its handler sends.
+    REQUIRE(claims.claim(cleanup.system(), step, work_tenant, "first/1", seconds(0)).has_value());
+    CHECK(claims.renew(cleanup.system(), step, "first/1", seconds(300)));
+
+    const auto takeover =
+        claims.claim(cleanup.system(), step, work_tenant, "second/2", seconds(300));
+    CHECK(!takeover.has_value());
+    CHECK(claims.holder(cleanup.system(), step) == std::optional<std::string>("first/1"));
+}
+
+TEST_CASE("a_holder_that_lost_its_claim_cannot_renew_it_back", "[repository][step_claim]") {
+    database_helper h;
+    claim_cleanup cleanup(h);
+    const auto step = cleanup.watch(random_uuid());
+    const auto work_tenant = random_uuid();
+
+    step_claim_repository claims;
+    REQUIRE(claims.claim(cleanup.system(), step, work_tenant, "first/1", seconds(0)).has_value());
+    REQUIRE(
+        claims.claim(cleanup.system(), step, work_tenant, "second/2", seconds(300)).has_value());
+
+    CHECK(!claims.renew(cleanup.system(), step, "first/1", seconds(300)));
+    CHECK(claims.holder(cleanup.system(), step) == std::optional<std::string>("second/2"));
+}
+
+TEST_CASE("a_released_claim_is_not_renewed", "[repository][step_claim]") {
+    database_helper h;
+    claim_cleanup cleanup(h);
+    const auto step = cleanup.watch(random_uuid());
+    const auto work_tenant = random_uuid();
+
+    step_claim_repository claims;
+    REQUIRE(claims.claim(cleanup.system(), step, work_tenant, "first/1", seconds(300)).has_value());
+    REQUIRE(claims.release(cleanup.system(), step));
+
+    CHECK(!claims.renew(cleanup.system(), step, "first/1", seconds(300)));
+    CHECK(!claims.holder(cleanup.system(), step).has_value());
+}

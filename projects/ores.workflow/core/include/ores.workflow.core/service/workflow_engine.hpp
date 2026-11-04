@@ -206,6 +206,9 @@ public:
      */
     static constexpr std::chrono::seconds expiry_pass_interval{30};
 
+    /// How long a step may run before the deadline watch says it is still running, and how often.
+    static constexpr std::chrono::seconds long_step_warning_interval{120};
+
     /**
      * @brief What a retry did, so its caller can answer without reading again.
      */
@@ -358,6 +361,8 @@ private:
         boost::uuids::uuid tenant_id;
         std::string name;
         std::chrono::seconds budget;
+        /// When the deadline watch last said the step was still running; none until it has.
+        std::chrono::system_clock::time_point last_warned{};
     };
 
     /** @brief Records a step as dispatched. */

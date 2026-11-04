@@ -71,6 +71,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:958AD1EA-6A2B-4067-A162-5515B9CC7402][Re-anchor a class to the public rates]] | BACKLOG | | | An operator re-anchors an asset class: its feeds restart from the latest calibrated levels, a deliberate and recorded jump, since otherwise a running feed's level follows its own path. |
 | [[id:6E5973FF-B931-467F-BE72-542BC819EF10][Calibrate in the provisioning system run]] | BACKLOG | | | The system run of provisioning starts the calibration workflow after it publishes the system data, and a profile may release the feeds once it completes. |
 | [[id:D3E4FB25-30DE-48B3-B6B4-E3A766E8EB50][Recalibrate the synthetic feeds on a schedule]] | BACKLOG | | | The scheduler starts the calibration workflow each business day, so new fixings move the levels and the fits without a person starting it. |
+| [[id:69FAED7E-EFF4-459F-A3DD-BE81357E7B54][Make provisioning explain itself, and fix the trade generation stall]] | DONE | 2026-11-03 | 2026-11-04 | Log every provisioning step and every call inside it, warn about a step that outlives its expected time, and use that to find and fix why generate_trades stopped part way on 2026-11-03 without completing, failing or logging. |
 
 * Decisions
 

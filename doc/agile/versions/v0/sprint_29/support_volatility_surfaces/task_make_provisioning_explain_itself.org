@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 69FAED7E-EFF4-459F-A3DD-BE81357E7B54
+:END:
+#+title: Task: Make provisioning explain itself, and fix the trade generation stall
+#+description: Log every provisioning step and every call inside it, warn about a step that outlives its expected time, and use that to find and fix why generate_trades stopped part way on 2026-11-03 without completing, failing or logging.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/make-provisioning-explain-itself
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-04
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reading the logs of any provisioning run can say which step is running, what it is waiting on, how long each part took, and why it ended. Each step logs its start, its end, its duration and its outcome; generate_trades logs each entry's phases and timings; the trade writer logs its progress; the step stream logs each delivery and claim; and the workflow engine warns about a step still in progress past its expected time. With that, the stall of 2026-11-03, where generate_trades stopped after ACME Corporation HK Ltd's bonds at 21:01:10 and the run never finished, is found and fixed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-04                             |
+
+* Acceptance
+
+- Every provisioning step logs its start, end, duration and outcome, including an exception of any type.
+- generate_trades logs each entry's party, book, curve, config and population phases with their timings, and the trade writer logs its progress.
+- The workflow engine warns every few minutes about each step still in progress past its expected time, naming the step and its run.
+- Acme provisions to completion on a fresh database, and the cause of the stall is stated in the task with the log lines that show it.
+
+* Plan
+
+1. Log each step's start, end, duration and outcome, each generate_trades phase, the trade writer's progress, each claim and each answer to the engine.
+2. Warn from the engine about a step still in progress, every two minutes, saying whether a worker holds it.
+3. Force a step longer than its lease (lease 20 s, a 60 s sleep in generate_trades) and record what happens.
+4. Renew the claim while the handler runs, and tell NATS the message is still being worked on.
+5. Write service logs to files, since the journal drops lines.
+6. Provision Acme with 10,000 trades on the real settings.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| iam lines the journal kept, against the file sink, at debug | 6.6% | =journalctl --user -u ores.iam.service@0= line count over =publish/log/ores.iam.service.0.log= line count | 8eefcbd321 plus the branch diff |
+| workflow lines the journal kept, against the file sink, at debug | 17.5% | as above, for =ores.workflow.service@0= | 8eefcbd321 plus the branch diff |
+| Renewals with a 20 s lease and a 60 s step | 12 renewals, 0 takeovers, step completed | =grep -c 'lease is renewed'= and =grep -c 'taken over'= on the service logs | 8eefcbd321 plus the branch diff |
+| generate_trades for 10,000 trades | 516.342 s | =grep 'provision_step generate_trades returned after' publish/log/ores.iam.service.0.log= | 8eefcbd321 plus the branch diff |
+| Acme trades written in the 10,000 run | 10000 | =select count(*)= on current Acme rows of =ores_trading_trades_tbl= | 8eefcbd321 plus the branch diff |
+| Takeovers, lost claims, deadline failures in the 10,000 run | 0, 0, 0 | =grep -c= for =taken over=, =lost its claim=, =outlived its deadline= since 01:42:46 | 8eefcbd321 plus the branch diff |
+
+* Notes
+
+** What the stall was
+
+The run of 2026-11-03 did not stall. The user journal dropped most service lines under load, so the log stopped while the work went on. The database showed every step complete and the tenant active. Setting =LogRateLimitIntervalSec=0= did not stop the loss, so the rate limit is not the cause; that change is reverted. The fix is a file sink per service replica at =publish/log/<service>.<replica>.log=, on by default; =ORES_SERVICE_LOG_TO_FILE=0= turns it off.
+
+** A step longer than its lease, before the fix
+
+The claim lease is 120 s and generate_trades runs for minutes. NATS redelivered the command every 30 s. The redeliveries queued behind the running handler, because the subscription delivers serially. When the handler finished, one redelivery took over the claim before the engine released it. The idempotency check replayed the recorded outcome, so no work ran twice. This was safe by accident, not by design.
+
+** A step longer than its lease, after the fix
+
+While a claimed handler runs, a renewer thread runs every quarter lease (30 s). It sends an in-progress ack to NATS and renews the claim through =workflow.v1.ops.renew_step_claim=. The renewal is conditional on the owner, so a holder that lost its claim cannot take it back; the renewer then logs an error and stops. The renewal does not move =claimed_at=, so the step deadline still caps the total run time.
+
+** Limits
+
+- The step deadline caps a step's whole run, renewed or not. generate_trades has 1200 s; at the measured 10,000 trades in 516 s, about 23,000 trades would exceed it.
+- A step queued behind a long step waits unclaimed. The engine exempts an unclaimed step while its service is alive, up to ten times its deadline. In the 10,000 run, write steps queued for up to 495 s against a 120 s deadline, and were not failed.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Provisioning now explains itself, and a long step keeps its claim.
+
+- Each provisioning step logs its start, its return with its duration, and any exception of any type, which now fails the step.
+- generate_trades logs each phase of each entry with its timing; the trade writer logs its plan, its progress every 25 trades, a failure naming the trade, and its end.
+- The step stream logs each claim and each handler's duration; each step logs its answer to the engine; the claim handler logs takeovers as warnings.
+- The engine warns every two minutes about a step still in progress, with its time against its deadline and whether a worker holds it.
+- The claim of a running step is renewed every 30 s, and NATS is told the message is in progress, so no redelivery takes the step over.
+- Services write their logs to =publish/log=, because the journal drops lines.
+
+Acme provisioned on a fresh database with 10,000 trades: all 9 steps completed, the tenant is active, and the logs show no takeover, lost claim or deadline failure.

@@ -969,7 +969,8 @@ void write_equity_cliquet_option(record_writer& trade,
 void write_equity_worst_of_basket_swap(record_writer& trade,
                                        const equity_swap_instrument& v,
                                        const std::vector<equity_basket_constituent>& rows,
-                                       const std::vector<equity_swap_period>& periods) {
+                                       const std::vector<equity_swap_period>& periods,
+                                       const equity_instrument_data& carrier) {
     auto data = trade.child("EquityWorstOfBasketSwapData");
     data.set_spelling("LongShort", "Long", "long short");
     data.set_spelling("Currency", v.currency, "currency");
@@ -1015,8 +1016,12 @@ void write_equity_worst_of_basket_swap(record_writer& trade,
     }
 
     // The schema requires a rule on each schedule and the row states none.
-    write_schedule_rule(data.child("FloatingPeriodSchedule"), "", "6M");
-    write_schedule_rule(data.child("FloatingPayDates"), "", "6M");
+    if (!option_block::write_product_schedule(
+            data, carrier, "FloatingPeriodSchedule", "floating_period_schedule"))
+        write_schedule_rule(data.child("FloatingPeriodSchedule"), "", "6M");
+    if (!option_block::write_product_schedule(
+            data, carrier, "FloatingPayDates", "floating_pay_schedule"))
+        write_schedule_rule(data.child("FloatingPayDates"), "", "6M");
 
     write_levels(data, "InitialPrices", "InitialPrice", prices);
 
@@ -1094,6 +1099,8 @@ constexpr option_block::product_schedule equity_product_schedules[] = {
     {"EquityAsianOption", "ObservationDates", "observation_schedule"},
     {"EquityTaRF", "ScheduleData", "product_schedule"},
     {"EquityCliquetOption", "ScheduleData", "product_schedule"},
+    {"EquityWorstOfBasketSwap", "FloatingPeriodSchedule", "floating_period_schedule"},
+    {"EquityWorstOfBasketSwap", "FloatingPayDates", "floating_pay_schedule"},
 };
 
 std::optional<std::string> equity_option_data_element(std::string_view trade_type) {
@@ -1223,7 +1230,7 @@ auto write_equity_instrument(xml::record_writer& trade,
                     matched = true;
                 } else if (trade_type == "EquityWorstOfBasketSwap") {
                     write_equity_worst_of_basket_swap(
-                        trade, row, v->basket_constituents, v->periods);
+                        trade, row, v->basket_constituents, v->periods, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_variance_swap_instrument>) {

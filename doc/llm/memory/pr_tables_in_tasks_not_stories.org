@@ -18,6 +18,7 @@ execution, including the PRs that implement them.
 A story may span multiple tasks and multiple PRs; the task is the
 right granule to associate with a concrete PR.
 
-*How to apply:* After =gh pr create=, open or create the relevant task
-doc (under the story's folder) and record the PR number there. Do not
-add a =* PRs= section to the story doc.
+*How to apply:* =compass pr create= records the PR on its task by itself; after
+a PR raised another way, run =compass pr record= and check that the =* PRs=
+table sits on the task (under the story's folder). Do not add a =* PRs= section
+to the story doc.

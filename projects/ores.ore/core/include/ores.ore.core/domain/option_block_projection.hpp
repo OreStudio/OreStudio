@@ -19,6 +19,7 @@
 #ifndef ORES_ORE_CORE_DOMAIN_OPTION_BLOCK_PROJECTION_HPP
 #define ORES_ORE_CORE_DOMAIN_OPTION_BLOCK_PROJECTION_HPP
 
+#include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
@@ -714,6 +715,32 @@ void write_option_block(record_writer& option, const Data& v) {
             text += price.price.to_string();
         }
         option.set_text("ExercisePrices", text);
+    }
+}
+
+
+/**
+ * @brief Writes a whole OptionData element: the block, then the exercise dates
+ * or the exercise schedule the option rows state.
+ *
+ * A composite with no option row still states the one member the schema
+ * requires, a long position.
+ */
+template <typename Data>
+void write_option_data(record_writer option, const Data& v) {
+    if (v.options.empty())
+        option.set_text("LongShort", "Long");
+    else
+        write_option_block(option, v);
+
+    const auto dates = exercise_dates_of(v);
+    if (!dates.empty()) {
+        auto list = option.child("ExerciseDates");
+        for (const auto& date : dates)
+            list.append_value("ExerciseDate", to_ore_date(date));
+    } else if (!schedules_of(v, "option", 1, "exercise_schedule").empty()) {
+        write_stored_schedule(
+            option.child("ExerciseSchedule"), v, "option", 1, "exercise_schedule");
     }
 }
 

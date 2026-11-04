@@ -60,3 +60,27 @@ grouped queries rely on; the second is honest about today's behaviour.
 - =projects/ores.refdata/core/include/ores.refdata.core/repository/business_day_convention_code.hpp=
 - =projects/ores.refdata/core/tests/curve_configuration_database_roundtrip_tests.cpp=
 - =projects/ores.sql/create/refdata/refdata_curve_configuration_columns_validate_create.sql=
+
+* Resolution (2026-11-03)
+
+Both defects are fixed. This capture was filed against a tree whose guards
+refused a value outside the set but stored a rendering as it stood, and both
+halves landed after it was written.
+
+- The store canonicalises. Every write path reaches a guard that asks
+  =ores_reporting_value_in_set_fn= whether the value is one the set states, then
+  =ores_reporting_canonical_value_fn= for the form it holds
+  (=refdata_curve_configuration_columns_validate_create.sql:71=). Measured on
+  the running environment: =select count(*) from
+  ores_reporting_canonical_value_violations_fn()= answers =0=, and the function
+  names every row holding a rendering instead of its form.
+- The round trip no longer states =as_stored=. It writes through the store and
+  states the promise on what the store returns: the document the rows hold
+  exports and reads back unchanged
+  (=curve_configuration_database_roundtrip_tests.cpp:259=).
+- =stored_business_day_convention= is deleted, with the header this page names.
+  The value set's =ore_renderings.json= is the only statement of the mapping, and
+  the reader's tables are generated from it.
+
+Worked in [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter
+representation]].

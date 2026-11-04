@@ -59,9 +59,9 @@ struct swap_leg_entity {
     boost::uuids::uuid trade_activity_id;
     std::optional<bool> payer;
     std::string leg_type_code;
-    std::string day_count_fraction_code;
-    std::string business_day_convention_code;
-    std::string payment_frequency_code;
+    std::optional<std::string> day_count_fraction_code;
+    std::optional<std::string> business_day_convention_code;
+    std::optional<std::string> payment_frequency_code;
     std::optional<std::string> floating_index_code;
     std::string currency;
     std::optional<std::string> leg_group;

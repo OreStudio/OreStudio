@@ -71,9 +71,9 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "trade_activity_id" uuid not null,
     "payer" boolean null,
     "leg_type_code" text not null,
-    "day_count_fraction_code" text not null,
-    "business_day_convention_code" text not null,
-    "payment_frequency_code" text not null,
+    "day_count_fraction_code" text null,
+    "business_day_convention_code" text null,
+    "payment_frequency_code" text null,
     "floating_index_code" text null,
     "currency" text not null,
     "leg_group" text null,
@@ -193,14 +193,20 @@ begin
     -- Validate leg_type_code
     NEW.leg_type_code := ores_refdata_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);
 
-    -- Validate day_count_fraction_code
-    NEW.day_count_fraction_code := ores_refdata_validate_day_count_fraction_type_fn(NEW.tenant_id, NEW.day_count_fraction_code);
+    -- Validate day_count_fraction_code (optional field -- skip validation when null)
+    if NEW.day_count_fraction_code is not null then
+        NEW.day_count_fraction_code := ores_refdata_validate_day_count_fraction_type_fn(NEW.tenant_id, NEW.day_count_fraction_code);
+    end if;
 
-    -- Validate business_day_convention_code
-    NEW.business_day_convention_code := ores_refdata_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention_code);
+    -- Validate business_day_convention_code (optional field -- skip validation when null)
+    if NEW.business_day_convention_code is not null then
+        NEW.business_day_convention_code := ores_refdata_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention_code);
+    end if;
 
-    -- Validate payment_frequency_code
-    NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
+    -- Validate payment_frequency_code (optional field -- skip validation when null)
+    if NEW.payment_frequency_code is not null then
+        NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
+    end if;
 
     -- Validate floating_index_code (optional field -- skip validation when null)
     if NEW.floating_index_code is not null then

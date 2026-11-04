@@ -56,9 +56,9 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.identity.trade_activity_id = v.trade_activity_id;
     r.payer = v.payer;
     r.leg_type_code = v.leg_type_code;
-    r.day_count_fraction_code = v.day_count_fraction_code;
-    r.business_day_convention_code = v.business_day_convention_code;
-    r.payment_frequency_code = v.payment_frequency_code;
+    r.day_count_fraction_code = v.day_count_fraction_code.value_or("");
+    r.business_day_convention_code = v.business_day_convention_code.value_or("");
+    r.payment_frequency_code = v.payment_frequency_code.value_or("");
     r.floating_index_code = v.floating_index_code.value_or("");
     r.currency = v.currency;
     r.leg_group = v.leg_group;
@@ -123,9 +123,13 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.trade_activity_id = v.identity.trade_activity_id;
     r.payer = v.payer;
     r.leg_type_code = v.leg_type_code;
-    r.day_count_fraction_code = v.day_count_fraction_code;
-    r.business_day_convention_code = v.business_day_convention_code;
-    r.payment_frequency_code = v.payment_frequency_code;
+    r.day_count_fraction_code =
+        v.day_count_fraction_code.empty() ? std::nullopt : std::optional(v.day_count_fraction_code);
+    r.business_day_convention_code = v.business_day_convention_code.empty() ?
+                                         std::nullopt :
+                                         std::optional(v.business_day_convention_code);
+    r.payment_frequency_code =
+        v.payment_frequency_code.empty() ? std::nullopt : std::optional(v.payment_frequency_code);
     r.floating_index_code =
         v.floating_index_code.empty() ? std::nullopt : std::optional(v.floating_index_code);
     r.currency = v.currency;

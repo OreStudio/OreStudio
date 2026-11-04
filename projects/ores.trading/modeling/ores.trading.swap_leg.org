@@ -155,10 +155,12 @@ std::string("Fixed")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
-Day count fraction code (soft FK to ores_refdata_day_count_fraction_types_tbl).
+Day count fraction code (soft FK to ores_refdata_day_count_fraction_types_tbl),
+when the leg states one. ORE's LegData makes DayCounter optional, and a
+Cashflow leg states none.
 
 #+begin_src cpp :name generator
 std::string("A365F")
@@ -168,11 +170,12 @@ std::string("A365F")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
 Business day convention code (soft FK to
-ores_refdata_business_day_convention_types_tbl).
+ores_refdata_business_day_convention_types_tbl), when the leg states one.
+ORE's LegData makes PaymentConvention optional.
 
 #+begin_src cpp :name generator
 std::string("ModifiedFollowing")
@@ -182,10 +185,11 @@ std::string("ModifiedFollowing")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
-Payment frequency code (soft FK to ores_refdata_payment_frequencies_tbl).
+Payment frequency code (soft FK to ores_refdata_payment_frequencies_tbl),
+when the leg has a schedule to take it from. A Cashflow leg has none.
 
 #+begin_src cpp :name generator
 std::string("Annual")

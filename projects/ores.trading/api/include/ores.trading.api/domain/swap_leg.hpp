@@ -96,18 +96,21 @@ struct swap_leg final {
     std::string leg_type_code;
 
     /**
-     * @brief Day count fraction code (soft FK to ores_refdata_day_count_fraction_types_tbl).
+     * @brief Day count fraction code (soft FK to ores_refdata_day_count_fraction_types_tbl), when
+     * the leg states one. ORE's LegData makes DayCounter optional, and a Cashflow leg states none.
      */
     std::string day_count_fraction_code;
 
     /**
      * @brief Business day convention code (soft FK to
-     * ores_refdata_business_day_convention_types_tbl).
+     * ores_refdata_business_day_convention_types_tbl), when the leg states one. ORE's LegData makes
+     * PaymentConvention optional.
      */
     std::string business_day_convention_code;
 
     /**
-     * @brief Payment frequency code (soft FK to ores_refdata_payment_frequencies_tbl).
+     * @brief Payment frequency code (soft FK to ores_refdata_payment_frequencies_tbl), when the leg
+     * has a schedule to take it from. A Cashflow leg has none.
      */
     std::string payment_frequency_code;
 

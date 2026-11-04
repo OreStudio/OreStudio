@@ -20,19 +20,77 @@
 #include "ores.dq.core/service/publish_service.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/topological_sort.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <format>
 #include <map>
 #include <set>
+#include <stdexcept>
+#include <utility>
 
 namespace ores::dq::service {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+
+std::vector<std::string>
+publication_order(const std::vector<std::string>& requested,
+                  const std::vector<domain::dataset_dependency>& dependencies) {
+    std::map<std::string, std::vector<std::string>> needs;
+    for (const auto& dep : dependencies)
+        needs[dep.dataset_code].push_back(dep.dependency_code);
+
+    /*
+     * A dataset's rank is the position of the first requested dataset that is it
+     * or needs it, directly or not, so a dependency is published just before the
+     * first dataset that reads it rather than wherever it happens to fall.
+     */
+    std::map<std::string, std::size_t> rank;
+    for (std::size_t i = 0; i < requested.size(); ++i) {
+        std::vector<std::string> pending{requested[i]};
+        while (!pending.empty()) {
+            const auto code = pending.back();
+            pending.pop_back();
+            if (!rank.emplace(code, i).second)
+                continue;
+            if (const auto it = needs.find(code); it != needs.end())
+                pending.insert(pending.end(), it->second.begin(), it->second.end());
+        }
+    }
+
+    std::map<std::string, std::size_t> unmet;
+    std::map<std::string, std::vector<std::string>> needed_by;
+    for (const auto& [code, r] : rank) {
+        unmet[code];
+        if (const auto it = needs.find(code); it != needs.end())
+            for (const auto& dependency : std::set(it->second.begin(), it->second.end())) {
+                ++unmet[code];
+                needed_by[dependency].push_back(code);
+            }
+    }
+
+    std::set<std::pair<std::size_t, std::string>> ready;
+    for (const auto& [code, count] : unmet)
+        if (count == 0)
+            ready.emplace(rank.at(code), code);
+
+    std::vector<std::string> order;
+    order.reserve(rank.size());
+    while (!ready.empty()) {
+        const auto code = ready.begin()->second;
+        ready.erase(ready.begin());
+        order.push_back(code);
+        if (const auto it = needed_by.find(code); it != needed_by.end())
+            for (const auto& dependent : it->second)
+                if (--unmet.at(dependent) == 0)
+                    ready.emplace(rank.at(dependent), dependent);
+    }
+
+    if (order.size() != rank.size())
+        throw std::runtime_error("Circular dependency detected in datasets");
+    return order;
+}
 
 publish_service::publish_service(context ctx)
     : ctx_(std::move(ctx))
@@ -118,96 +176,44 @@ publish_service::resolve_publication_order(const std::vector<boost::uuids::uuid>
     BOOST_LOG_SEV(lg(), debug) << "Resolving publication order for " << dataset_ids.size()
                                << " datasets";
 
-    // Fetch all datasets
     std::map<std::string, domain::dataset> datasets_by_code;
-    std::map<boost::uuids::uuid, std::string> id_to_code;
-    std::set<std::string> requested_codes;
-
+    std::vector<std::string> requested;
+    requested.reserve(dataset_ids.size());
     for (const auto& id : dataset_ids) {
         auto datasets = dataset_repo_.read_latest(ctx_, boost::uuids::to_string(id));
-        if (!datasets.empty()) {
-            const auto& dataset = datasets.front();
-            datasets_by_code[dataset.code] = dataset;
-            id_to_code[id] = dataset.code;
-            requested_codes.insert(dataset.code);
-        } else {
+        if (datasets.empty()) {
             BOOST_LOG_SEV(lg(), warn) << "Dataset not found: " << id;
+            continue;
         }
+        const auto& dataset = datasets.front();
+        if (datasets_by_code.emplace(dataset.code, dataset).second)
+            requested.push_back(dataset.code);
     }
 
-    // Fetch all dependencies
-    auto all_dependencies = dependency_repo_.read_latest();
+    const auto all_dependencies = dependency_repo_.read_latest();
     BOOST_LOG_SEV(lg(), debug) << "Found " << all_dependencies.size() << " total dependencies";
 
-    // Find all datasets that need to be included (requested + their dependencies)
-    std::set<std::string> all_codes = requested_codes;
-    bool changed = true;
-    while (changed) {
-        changed = false;
-        for (const auto& dep : all_dependencies) {
-            if (all_codes.count(dep.dataset_code) > 0 &&
-                all_codes.count(dep.dependency_code) == 0) {
-                // Need to add this dependency
-                all_codes.insert(dep.dependency_code);
-                changed = true;
-            }
-        }
-    }
-
-    // Fetch any additional datasets we need
-    if (all_codes.size() > datasets_by_code.size()) {
-        BOOST_LOG_SEV(lg(), debug) << "Fetching " << (all_codes.size() - datasets_by_code.size())
-                                   << " additional dependency datasets";
-
-        auto all_datasets = dataset_repo_.read_latest(ctx_);
-        for (const auto& ds : all_datasets) {
-            if (all_codes.count(ds.code) > 0 && datasets_by_code.count(ds.code) == 0) {
-                datasets_by_code[ds.code] = ds;
-            }
-        }
-    }
-
-    // Build the dependency graph using boost.graph, keyed by dataset code.
-    using graph_t = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, std::string>;
-
-    graph_t g;
-    std::map<std::string, graph_t::vertex_descriptor> code_to_vertex;
-
-    // Add vertices
-    for (const auto& code : all_codes) {
-        auto v = boost::add_vertex(code, g);
-        code_to_vertex[code] = v;
-    }
-
-    // Add edges (dependency -> dependent)
-    // If A depends on B, edge goes from B to A (B must come before A)
-    for (const auto& dep : all_dependencies) {
-        if (code_to_vertex.count(dep.dataset_code) > 0 &&
-            code_to_vertex.count(dep.dependency_code) > 0) {
-            boost::add_edge(
-                code_to_vertex[dep.dependency_code], code_to_vertex[dep.dataset_code], g);
-        }
-    }
-
-    // Topological sort
-    std::vector<graph_t::vertex_descriptor> sorted;
+    std::vector<std::string> codes;
     try {
-        boost::topological_sort(g, std::back_inserter(sorted));
-    } catch (const boost::not_a_dag&) {
-        BOOST_LOG_SEV(lg(), error) << "Circular dependency detected in datasets";
-        throw std::runtime_error("Circular dependency detected in datasets");
+        codes = publication_order(requested, all_dependencies);
+    } catch (const std::runtime_error& e) {
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        throw;
     }
 
-    // Convert sorted vertices back to datasets
-    // Note: topological_sort returns reverse order, so we reverse
-    std::vector<domain::dataset> result;
-    result.reserve(sorted.size());
+    if (codes.size() > datasets_by_code.size()) {
+        BOOST_LOG_SEV(lg(), debug) << "Fetching " << (codes.size() - datasets_by_code.size())
+                                   << " additional dependency datasets";
+        for (const auto& ds : dataset_repo_.read_latest(ctx_))
+            datasets_by_code.emplace(ds.code, ds);
+    }
 
-    for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
-        const auto& code = g[*it];
-        if (datasets_by_code.count(code) > 0) {
-            result.push_back(datasets_by_code[code]);
-        }
+    std::vector<domain::dataset> result;
+    result.reserve(codes.size());
+    for (const auto& code : codes) {
+        const auto it = datasets_by_code.find(code);
+        if (it != datasets_by_code.end())
+            result.push_back(it->second);
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Publication order resolved: " << result.size() << " datasets";

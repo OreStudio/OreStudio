@@ -83,6 +83,8 @@
 \ir ./trading_scripted_parameter_values_drop.sql
 \ir ./trading_scripted_parameters_notify_trigger_drop.sql
 \ir ./trading_scripted_parameters_drop.sql
+\ir ./trading_instrument_underlyings_notify_trigger_drop.sql
+\ir ./trading_instrument_underlyings_drop.sql
 \ir ./trading_instrument_barrier_levels_notify_trigger_drop.sql
 \ir ./trading_instrument_barrier_levels_drop.sql
 \ir ./trading_instrument_barriers_notify_trigger_drop.sql

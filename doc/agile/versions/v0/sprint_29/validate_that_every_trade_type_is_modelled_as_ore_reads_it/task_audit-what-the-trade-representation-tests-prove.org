@@ -164,6 +164,12 @@ Agreed with the product owner on 2026-11-04.
   one level is a single barrier, one row with two levels is a double
   barrier, and several rows are a multi barrier. The 15 holders of
   =BarrierData= share the one table.
+- Underlyings follow the barriers. Each =Underlying= block of ORE's
+  =underlying= type is an =instrument_underlying= row (type, name,
+  identifier type, currency, exchange, weight, price type and the
+  commodity future terms), keyed by trade, role and ordinal. A product's
+  fact row keeps the first name as its summary. A product stored before
+  the rows were kept writes that name.
 - Scripted trades model every parameter. ORE reads any scripted trade,
   generic or named, as named parameters of five kinds (Event, Number,
   Index, Currency, Daycounter), each a scalar, a list of values or, for an

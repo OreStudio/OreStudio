@@ -228,6 +228,8 @@ set(files
     "instrument_schedule_protocol_codec_roundtrip_tests.cpp"
     "instrument_strike_codec_roundtrip_tests.cpp"
     "instrument_strike_protocol_codec_roundtrip_tests.cpp"
+    "instrument_underlying_codec_roundtrip_tests.cpp"
+    "instrument_underlying_protocol_codec_roundtrip_tests.cpp"
     "knock_out_swap_instrument_codec_roundtrip_tests.cpp"
     "knock_out_swap_instrument_protocol_codec_roundtrip_tests.cpp"
     "lifecycle_event_codec_roundtrip_tests.cpp"

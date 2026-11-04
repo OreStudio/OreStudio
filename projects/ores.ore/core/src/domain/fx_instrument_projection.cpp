@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -664,7 +665,8 @@ void write_fx_generic_barrier_option(record_writer& trade,
     auto data = trade.child("FxGenericBarrierOptionData");
     if (!v.bought_currency.empty())
         data.set_spelling("PayCurrency", v.bought_currency, "currency");
-    if (!v.underlying_code.empty())
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying") &&
+        !v.underlying_code.empty())
         data.set_text("Name", v.underlying_code);
     fx_instrument_projection_write_option_entry(
         data.child("OptionData"), v.option_type, v.expiry_date);
@@ -720,13 +722,16 @@ void write_fx_touch_option(record_writer& trade,
         write_barrier_group(data, v.barrier_type, v.lower_barrier, v.upper_barrier);
 }
 
-void write_fx_variance_swap(record_writer& trade, const fx_variance_swap_instrument& v) {
+void write_fx_variance_swap(record_writer& trade,
+                            const fx_variance_swap_instrument& v,
+                            const fx_instrument_data& carrier) {
     auto data = trade.child("FxVarianceSwapData");
     data.set_text("StartDate", fx_instrument_projection_to_ore_date(v.start_date));
     data.set_text("EndDate", fx_instrument_projection_to_ore_date(v.end_date));
     if (!v.currency.empty())
         data.set_spelling("Currency", v.currency, "currency");
-    if (!v.underlying_code.empty())
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying") &&
+        !v.underlying_code.empty())
         data.set_text("Name", v.underlying_code);
     data.set_text("LongShort", v.long_short);
     set_decimal_from_double(data, "Strike", v.strike);
@@ -774,9 +779,11 @@ void write_fx_accumulator(record_writer& trade,
     if (v.strike != decimal{})
         data.set_decimal("Strike", v.strike);
 
-    auto underlying = data.child("Underlying");
-    underlying.set_text("Name", v.underlying_code);
-    underlying.set_text("Type", "FX");
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying")) {
+        auto underlying = data.child("Underlying");
+        underlying.set_text("Name", v.underlying_code);
+        underlying.set_text("Type", "FX");
+    }
     data.child("OptionData").set_text("LongShort", v.long_short);
     if (v.start_date.ok())
         data.set_text("StartDate", fx_instrument_projection_to_ore_date(v.start_date));
@@ -829,9 +836,11 @@ void write_fx_tarf(record_writer& trade,
     if (v.strike.has_value())
         data.set_decimal("Strike", *v.strike);
 
-    auto underlying = data.child("Underlying");
-    underlying.set_text("Name", v.fx_index);
-    underlying.set_text("Type", "FX");
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying")) {
+        auto underlying = data.child("Underlying");
+        underlying.set_text("Name", v.fx_index);
+        underlying.set_text("Type", "FX");
+    }
     data.child("OptionData").set_text("LongShort", v.long_short.empty() ? "Long" : v.long_short);
     // A TaRF stored before its schedule was kept is annual from no start date
     // the row has, so the rule states the tenor alone.
@@ -854,6 +863,14 @@ void write_fx_tarf(record_writer& trade,
  * not declare is an error.
  */
 /// Where an FX product states its barriers.
+/// Where an FX product states its underlyings.
+constexpr underlying_block::underlying_holder fx_underlying_holders[] = {
+    {"FxGenericBarrierOption", "", "Underlying", "underlying"},
+    {"FxVarianceSwap", "", "Underlying", "underlying"},
+    {"FxAccumulator", "", "Underlying", "underlying"},
+    {"FxTaRF", "", "Underlying", "underlying"},
+};
+
 constexpr barrier_block::barrier_holder fx_barrier_holders[] = {
     {"FxBarrierOption", "", "barrier"},
     {"FxDoubleBarrierOption", "", "barrier"},
@@ -949,6 +966,7 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
     }
     option_block::read_product_schedules(data, trade, trade_type, fx_product_schedules);
     barrier_block::read_product_barriers(data, trade, trade_type, fx_barrier_holders);
+    underlying_block::read_product_underlyings(data, trade, trade_type, fx_underlying_holders);
     return trading::domain::trade_instrument{std::move(data)};
 }
 
@@ -1017,7 +1035,7 @@ auto write_fx_instrument(xml::record_writer& trade,
                 write_fx_accumulator(trade, row, v->range_bounds, *v);
                 matched = true;
             } else if constexpr (std::is_same_v<Row, fx_variance_swap_instrument>) {
-                write_fx_variance_swap(trade, row);
+                write_fx_variance_swap(trade, row, *v);
                 matched = true;
             }
         },

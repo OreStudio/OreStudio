@@ -246,6 +246,9 @@ begin
     delete from "ores_trading_instrument_barrier_levels_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_underlyings_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
     delete from "ores_trading_instrument_schedules_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;

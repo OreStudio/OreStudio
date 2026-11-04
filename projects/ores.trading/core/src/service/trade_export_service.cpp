@@ -31,6 +31,7 @@
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/repository/instrument_barrier_level_repository.hpp"
 #include "ores.trading.core/repository/instrument_barrier_repository.hpp"
+#include "ores.trading.core/repository/instrument_underlying_repository.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
 #include "ores.trading.core/repository/scripted_parameter_repository.hpp"
 #include "ores.trading.core/repository/scripted_parameter_value_repository.hpp"
@@ -274,6 +275,10 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::instrument_barrier_level_repository barrier_level_repo;
         auto levels = barrier_level_repo.read_by_instruments_batch(ctx, all_ids);
         take(levels, batch.instrument_barrier_levels);
+
+        repository::instrument_underlying_repository underlying_repo;
+        auto underlyings = underlying_repo.read_by_instruments_batch(ctx, all_ids);
+        take(underlyings, batch.instrument_underlyings);
     }
 
     // A composite trade's components are joined to it by a structure, and the

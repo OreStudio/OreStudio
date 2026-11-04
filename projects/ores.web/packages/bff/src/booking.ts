@@ -121,6 +121,7 @@ function emptyBatch(): InstrumentBatch {
         instrument_schedule_dates: [],
         instrument_schedules: [],
         instrument_strikes: [],
+        instrument_underlyings: [],
         knock_out_swap_instruments: [],
         range_bounds: [],
         rate_instruments: [],

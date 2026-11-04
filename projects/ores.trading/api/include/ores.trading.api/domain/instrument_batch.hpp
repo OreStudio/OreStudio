@@ -112,6 +112,7 @@
 #include "ores.trading.api/domain/instrument_schedule_codec.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date_codec.hpp"
 #include "ores.trading.api/domain/instrument_strike_codec.hpp"
+#include "ores.trading.api/domain/instrument_underlying_codec.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/range_bound_codec.hpp"
 #include "ores.trading.api/domain/rate_instrument_codec.hpp"
@@ -428,6 +429,10 @@ struct instrument_batch {
      * @brief The instrument_strike rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::instrument_strike> instrument_strikes;
+    /**
+     * @brief The instrument_underlying rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::instrument_underlying> instrument_underlyings;
     /**
      * @brief The knock_out_swap_instrument rows, keyed by trade id.
      */
@@ -970,6 +975,13 @@ inline void append(instrument_batch& batch, instrument_strike v) {
 }
 
 /**
+ * @brief Adds one instrument_underlying to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_underlying v) {
+    batch.instrument_underlyings.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one knock_out_swap_instrument to the array that holds its type.
  */
 inline void append(instrument_batch& batch, knock_out_swap_instrument v) {
@@ -1215,6 +1227,8 @@ template <typename T>
         ::ores::utility::codec::field{"instrument_schedule_dates",
                                       &instrument_batch::instrument_schedule_dates},
         ::ores::utility::codec::field{"instrument_strikes", &instrument_batch::instrument_strikes},
+        ::ores::utility::codec::field{"instrument_underlyings",
+                                      &instrument_batch::instrument_underlyings},
         ::ores::utility::codec::field{"knock_out_swap_instruments",
                                       &instrument_batch::knock_out_swap_instruments},
         ::ores::utility::codec::field{"range_bounds", &instrument_batch::range_bounds},

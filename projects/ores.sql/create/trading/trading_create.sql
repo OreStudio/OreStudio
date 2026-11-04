@@ -161,6 +161,11 @@
 \ir ./trading_instrument_barrier_levels_create.sql
 \ir ./trading_instrument_barrier_levels_notify_trigger_create.sql
 
+-- An underlying is a child of the trade any product that states an
+-- Underlying block states it for.
+\ir ./trading_instrument_underlyings_create.sql
+\ir ./trading_instrument_underlyings_notify_trigger_create.sql
+
 -- A scripted trade's parameters and their list values are children of the
 -- trade.
 \ir ./trading_scripted_parameters_create.sql

@@ -149,7 +149,8 @@ as_equity(const instrument_batch& batch, const Leaf& leaf, boost::uuids::uuid tr
                                   find_all(batch.swap_leg_amortizations, trade_id),
         find_all(batch.swap_leg_indexings, trade_id),
         find_all(batch.instrument_barriers, trade_id),
-        find_all(batch.instrument_barrier_levels, trade_id)};
+        find_all(batch.instrument_barrier_levels, trade_id),
+        find_all(batch.instrument_underlyings, trade_id)};
 }
 
 /**
@@ -200,7 +201,9 @@ inline constexpr auto fx_batch_child_arrays = std::make_tuple(
     std::pair{&fx_instrument_data::schedules, &instrument_batch::instrument_schedules},
     std::pair{&fx_instrument_data::schedule_dates, &instrument_batch::instrument_schedule_dates},
     std::pair{&fx_instrument_data::barriers, &instrument_batch::instrument_barriers},
-    std::pair{&fx_instrument_data::barrier_levels, &instrument_batch::instrument_barrier_levels});
+    std::pair{&fx_instrument_data::barrier_levels, &instrument_batch::instrument_barrier_levels},
+    std::pair{&fx_instrument_data::instrument_underlyings,
+              &instrument_batch::instrument_underlyings});
 
 /**
  * A family carrier whose parts are typed arrays rather than alternatives. Each
@@ -312,6 +315,7 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 append_rows(batch.swap_leg_indexings, v.leg_indexings);
                 append_rows(batch.instrument_barriers, v.barriers);
                 append_rows(batch.instrument_barrier_levels, v.barrier_levels);
+                append_rows(batch.instrument_underlyings, v.instrument_underlyings);
             } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
                 append(batch, v.instrument);
                 batch.commodity_basket_constituents.insert(
@@ -335,6 +339,7 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 append_rows(batch.instrument_option_exercise_fees, v.option_exercise_fees);
                 append_rows(batch.instrument_option_payment_dates, v.option_payment_dates);
                 append_rows(batch.instrument_option_exercise_prices, v.option_exercise_prices);
+                append_rows(batch.instrument_underlyings, v.instrument_underlyings);
             } else if constexpr (std::is_same_v<T, credit_instrument_data>) {
                 append(batch, v.instrument);
                 batch.swap_legs.insert(batch.swap_legs.end(), v.legs.begin(), v.legs.end());
@@ -396,6 +401,7 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 append_rows(batch.scripted_parameter_values, v.parameter_values);
                 append_rows(batch.instrument_schedules, v.schedules);
                 append_rows(batch.instrument_schedule_dates, v.schedule_dates);
+                append_rows(batch.instrument_underlyings, v.instrument_underlyings);
             } else {
                 append(batch, v);
             }
@@ -508,7 +514,8 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
                                          find_all(batch.instrument_option_payment_dates, trade_id),
                                          find_all(batch.instrument_option_exercise_prices, trade_id),
                                          find_all(batch.instrument_barriers, trade_id),
-                                         find_all(batch.instrument_barrier_levels, trade_id)};
+                                         find_all(batch.instrument_barrier_levels, trade_id),
+                                         find_all(batch.instrument_underlyings, trade_id)};
     if (const auto* v = find(batch.composite_instruments, trade_id))
         return composite_instrument_data{*v,
                                          find_all(batch.swap_legs, trade_id),
@@ -523,7 +530,8 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
                                         find_all(batch.scripted_parameters, trade_id),
                                         find_all(batch.scripted_parameter_values, trade_id),
                                         find_all(batch.instrument_schedules, trade_id),
-                                        find_all(batch.instrument_schedule_dates, trade_id)};
+                                        find_all(batch.instrument_schedule_dates, trade_id),
+                                        find_all(batch.instrument_underlyings, trade_id)};
 
     return std::monostate{};
 }

@@ -20,6 +20,7 @@
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
@@ -536,12 +537,14 @@ void write_commodity_swap(record_writer& trade, const commodity_instrument_data&
     }
 }
 
-void write_commodity_variance_swap(record_writer& trade, const commodity_instrument& v) {
+void write_commodity_variance_swap(record_writer& trade, const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
     auto data = trade.child("CommodityVarianceSwapData");
     data.set_text("StartDate", commodity_instrument_projection_to_ore_date(v.start_date));
     data.set_text("EndDate", commodity_instrument_projection_to_ore_date(v.maturity_date));
     data.set_spelling("Currency", v.currency, "currency");
-    data.set_text("Name", v.commodity_code);
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying"))
+        data.set_text("Name", v.commodity_code);
     data.set_text("LongShort", "Long");
     set_decimal_from_double(data, "Strike", v.variance_strike.value_or(0.0));
     set_decimal_from_double(data, "Notional", v.quantity);
@@ -679,7 +682,7 @@ void write_commodity_product(xml::record_writer& trade,
         return;
     }
     if (trade_type == "CommodityVarianceSwap") {
-        write_commodity_variance_swap(trade, carrier.instrument);
+        write_commodity_variance_swap(trade, carrier);
         return;
     }
     if (trade_type == "CommodityAveragePriceOption") {
@@ -694,6 +697,11 @@ void write_commodity_product(xml::record_writer& trade,
 }
 
 }
+
+/// Where a commodity product states its underlyings.
+constexpr underlying_block::underlying_holder commodity_underlying_holders[] = {
+    {"CommodityVarianceSwap", "", "Underlying", "underlying"},
+};
 
 auto read_commodity_instrument(xml::record_reader trade, std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument> {
@@ -710,6 +718,8 @@ auto read_commodity_instrument(xml::record_reader trade, std::string_view trade_
                     option_block::read_option_block(*data, *option);
             }
         }
+        underlying_block::read_product_underlyings(
+            *data, trade, trade_type, commodity_underlying_holders);
     }
     return instrument;
 }

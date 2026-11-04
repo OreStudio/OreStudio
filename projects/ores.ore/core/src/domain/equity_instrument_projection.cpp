@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
@@ -711,21 +712,47 @@ void write_levels(record_writer& data,
 // Writing: one function per product
 // ---------------------------------------------------------------------------
 
-void write_equity_option(record_writer& trade, const equity_option_instrument& v) {
+/*
+ * A product that states its underlying as a Name or an Underlying block
+ * writes the block from the kept rows, and the name its row keeps when the
+ * trade was stored before the rows were kept.
+ */
+void write_name_or_underlying(record_writer& data,
+                              const equity_instrument_data& carrier,
+                              const std::string& name) {
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying"))
+        data.set_text("Name", name);
+}
+
+void write_underlying_or_equity(record_writer& data,
+                                const equity_instrument_data& carrier,
+                                const std::string& name) {
+    if (underlying_block::write_underlyings(data, "Underlying", carrier, "underlying"))
+        return;
+    auto underlying = data.child("Underlying");
+    underlying.set_text("Name", name);
+    underlying.set_text("Type", "Equity");
+}
+
+void write_equity_option(record_writer& trade,
+                         const equity_option_instrument& v,
+                         const equity_instrument_data& carrier) {
     auto data = trade.child("EquityOptionData");
     write_option_entry(data.child("OptionData"), v);
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_text("Currency", v.currency);
     data.set_decimal("Quantity", v.notional);
     if (!v.strike.is_zero())
         data.set_text("Strike", v.strike.to_string());
 }
 
-void write_equity_forward(record_writer& trade, const equity_forward_instrument& v) {
+void write_equity_forward(record_writer& trade,
+                          const equity_forward_instrument& v,
+                          const equity_instrument_data& carrier) {
     auto data = trade.child("EquityForwardData");
     data.set_spelling("LongShort", "Long", "long short");
     data.set_text("Maturity", equity_instrument_projection_to_ore_date(v.expiry_date));
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_text("Currency", v.currency);
     data.set_decimal("Strike", v.forward_price.value_or(decimal{}));
     set_decimal_from_double(data, "Quantity", v.quantity);
@@ -766,12 +793,14 @@ void write_equity_swap(record_writer& trade,
         funding_leg.child("Notionals").append("Notional").set_own_text(v.notional.to_string());
 }
 
-void write_equity_variance_swap(record_writer& trade, const equity_variance_swap_instrument& v) {
+void write_equity_variance_swap(record_writer& trade,
+                                const equity_variance_swap_instrument& v,
+                                const equity_instrument_data& carrier) {
     auto data = trade.child("EquityVarianceSwapData");
     data.set_text("StartDate", equity_instrument_projection_to_ore_date(v.start_date));
     data.set_text("EndDate", equity_instrument_projection_to_ore_date(v.maturity_date));
     data.set_spelling("Currency", v.currency, "currency");
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_text("LongShort", "Long");
     set_decimal_from_double(data, "Strike", v.variance_strike);
     data.set_decimal("Notional", v.notional);
@@ -789,7 +818,7 @@ void write_equity_barrier_option(record_writer& trade,
                                  const equity_instrument_data& carrier) {
     auto data = trade.child(element);
     write_option_entry(data.child("OptionData"), v);
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Quantity", v.notional);
     if (!v.strike.is_zero())
@@ -816,7 +845,8 @@ void write_equity_asian_option(record_writer& trade,
     data.set_decimal("Quantity", v.notional);
     if (!v.strike.is_zero())
         data.child("StrikeData").set_decimal("Value", v.strike);
-    if (!v.underlying_name.empty()) {
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying") &&
+        !v.underlying_name.empty()) {
         auto underlying = data.child("Underlying");
         underlying.set_text("Name", v.underlying_name);
         underlying.set_text("Type", "Equity");
@@ -824,10 +854,12 @@ void write_equity_asian_option(record_writer& trade,
     option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
 }
 
-void write_equity_digital_option(record_writer& trade, const equity_digital_option_instrument& v) {
+void write_equity_digital_option(record_writer& trade,
+                                 const equity_digital_option_instrument& v,
+                                 const equity_instrument_data& carrier) {
     auto data = trade.child("EquityDigitalOptionData");
     write_option_entry(data.child("OptionData"), v);
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_decimal("Strike", v.strike.value_or(decimal{}));
     data.set_decimal("PayoffAmount", v.notional);
     // The schema requires a quantity and the row keeps the payoff amount alone,
@@ -840,7 +872,7 @@ void write_equity_touch_option(record_writer& trade,
                                const equity_instrument_data& carrier) {
     auto data = trade.child("EquityTouchOptionData");
     write_option_entry(data.child("OptionData"), v);
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_spelling("PayoffCurrency", v.currency, "currency");
     data.set_decimal("PayoffAmount", v.notional);
     if (barrier_block::write_kept_barriers(data, "", carrier, "barrier"))
@@ -889,9 +921,7 @@ void write_equity_accumulator(record_writer& trade,
     data.set_decimal("FixingAmount", v.fixing_amount);
     if (!v.strike.is_zero())
         data.set_decimal("Strike", v.strike);
-    auto underlying = data.child("Underlying");
-    underlying.set_text("Name", v.underlying_name);
-    underlying.set_text("Type", "Equity");
+    write_underlying_or_equity(data, carrier, v.underlying_name);
     data.child("OptionData").set_text("LongShort", "Long");
     if (v.start_date.ok())
         data.set_text("StartDate", equity_instrument_projection_to_ore_date(v.start_date));
@@ -935,9 +965,7 @@ void write_equity_tarf(record_writer& trade,
     data.set_decimal("FixingAmount", v.fixing_amount);
     if (!v.strike.is_zero())
         data.set_decimal("Strike", v.strike);
-    auto underlying = data.child("Underlying");
-    underlying.set_text("Name", v.underlying_name);
-    underlying.set_text("Type", "Equity");
+    write_underlying_or_equity(data, carrier, v.underlying_name);
     data.child("OptionData").set_text("LongShort", "Long");
     if (!option_block::write_product_schedule(data, carrier, "ScheduleData", "product_schedule"))
         write_schedule_rule(data.child("ScheduleData"), "", "1Y");
@@ -955,7 +983,7 @@ void write_equity_cliquet_option(record_writer& trade,
                                  const equity_option_instrument& v,
                                  const equity_instrument_data& carrier) {
     auto data = trade.child("EquityCliquetOptionData");
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Notional", v.notional);
     data.set_spelling("LongShort", v.long_short.empty() ? "Long" : v.long_short, "long short");
@@ -1052,10 +1080,13 @@ void write_equity_worst_of_basket_swap(record_writer& trade,
     write_levels(data, "FixedTriggerLevels", "FixedTriggerLevel", triggers);
 }
 
-void write_equity_position(record_writer& trade, const equity_position_instrument& v) {
+void write_equity_position(record_writer& trade,
+                           const equity_position_instrument& v,
+                           const equity_instrument_data& carrier) {
     auto data = trade.child("EquityPositionData");
     set_decimal_from_double(data, "Quantity", v.quantity);
-    if (!v.underlying_name.empty()) {
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying") &&
+        !v.underlying_name.empty()) {
         auto underlying = data.append("Underlying");
         underlying.set_text("Type", "Equity");
         underlying.set_text("Name", v.underlying_name);
@@ -1103,6 +1134,23 @@ void write_equity_option_position(record_writer& trade,
  * Listed rather than probed, because asking a record type for a field it does
  * not declare is an error.
  */
+/// Where an equity product states its underlyings.
+constexpr underlying_block::underlying_holder equity_underlying_holders[] = {
+    {"EquityOption", "", "Underlying", "underlying"},
+    {"EquityForward", "", "Underlying", "underlying"},
+    {"EquityVarianceSwap", "", "Underlying", "underlying"},
+    {"EquityBarrierOption", "", "Underlying", "underlying"},
+    {"EquityDoubleBarrierOption", "", "Underlying", "underlying"},
+    {"EquityEuropeanBarrierOption", "", "Underlying", "underlying"},
+    {"EquityAsianOption", "", "Underlying", "underlying"},
+    {"EquityDigitalOption", "", "Underlying", "underlying"},
+    {"EquityTouchOption", "", "Underlying", "underlying"},
+    {"EquityCliquetOption", "", "Underlying", "underlying"},
+    {"EquityAccumulator", "", "Underlying", "underlying"},
+    {"EquityTaRF", "", "Underlying", "underlying"},
+    {"EquityPosition", "", "Underlying", "underlying"},
+};
+
 /// Where an equity product states its barriers.
 constexpr barrier_block::barrier_holder equity_barrier_holders[] = {
     {"EquityBarrierOption", "", "barrier"},
@@ -1205,6 +1253,8 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
         }
         option_block::read_product_schedules(*data, trade, trade_type, equity_product_schedules);
         barrier_block::read_product_barriers(*data, trade, trade_type, equity_barrier_holders);
+        underlying_block::read_product_underlyings(
+            *data, trade, trade_type, equity_underlying_holders);
     }
     return instrument;
 }
@@ -1229,12 +1279,12 @@ auto write_equity_instrument(xml::record_writer& trade,
                     write_equity_option_position(trade, row, v->underlyings);
                     matched = true;
                 } else {
-                    write_equity_position(trade, row);
+                    write_equity_position(trade, row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_option_instrument>) {
                 if (trade_type == "EquityOption") {
-                    write_equity_option(trade, row);
+                    write_equity_option(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "EquityCliquetOption") {
                     write_equity_cliquet_option(trade, row, *v);
@@ -1244,7 +1294,7 @@ auto write_equity_instrument(xml::record_writer& trade,
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_forward_instrument>) {
-                write_equity_forward(trade, row);
+                write_equity_forward(trade, row, *v);
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_swap_instrument>) {
                 if (trade_type == "EquitySwap") {
@@ -1256,7 +1306,7 @@ auto write_equity_instrument(xml::record_writer& trade,
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_variance_swap_instrument>) {
-                write_equity_variance_swap(trade, row);
+                write_equity_variance_swap(trade, row, *v);
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_barrier_option_instrument>) {
                 if (trade_type == "EquityBarrierOption") {
@@ -1275,7 +1325,7 @@ auto write_equity_instrument(xml::record_writer& trade,
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_digital_option_instrument>) {
                 if (trade_type == "EquityDigitalOption") {
-                    write_equity_digital_option(trade, row);
+                    write_equity_digital_option(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "EquityTouchOption") {
                     write_equity_touch_option(trade, row, *v);

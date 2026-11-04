@@ -92,6 +92,7 @@
 #include "ores.trading.core/repository/instrument_schedule_date_repository.hpp"
 #include "ores.trading.core/repository/instrument_schedule_repository.hpp"
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
+#include "ores.trading.core/repository/instrument_underlying_repository.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
@@ -334,6 +335,8 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.instrument_schedule_dates, keys, stamp, claim);
     write_rows<repository::instrument_strike_repository>(
         ctx, batch.instrument_strikes, keys, stamp, claim);
+    write_rows<repository::instrument_underlying_repository>(
+        ctx, batch.instrument_underlyings, keys, stamp, claim);
     write_rows<repository::knock_out_swap_instrument_repository>(
         ctx, batch.knock_out_swap_instruments, keys, stamp, claim);
     write_rows<repository::range_bound_repository>(ctx, batch.range_bounds, keys, stamp, claim);
@@ -552,6 +555,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("instrument_schedule_dates");
     if (!batch.instrument_strikes.empty())
         names.emplace_back("instrument_strikes");
+    if (!batch.instrument_underlyings.empty())
+        names.emplace_back("instrument_underlyings");
     if (!batch.knock_out_swap_instruments.empty())
         names.emplace_back("knock_out_swap_instruments");
     if (!batch.range_bounds.empty())

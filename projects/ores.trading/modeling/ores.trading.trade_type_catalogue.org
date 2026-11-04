@@ -412,6 +412,7 @@ shape whichever family states the rows.
 | instrument_schedule                         |
 | instrument_schedule_date                    |
 | instrument_strike                           |
+| instrument_underlying                       |
 | knock_out_swap_instrument                   |
 | range_bound                                 |
 | risk_participation_agreement_instrument     |

@@ -282,7 +282,7 @@ tenant reads them.
 
 ** Conventions
 :PROPERTIES:
-:iterator_var: v
+:iterator_var: input
 :END:
 
 ** Table display

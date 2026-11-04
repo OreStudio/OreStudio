@@ -32,7 +32,7 @@ namespace ores::analytics::quant::math {
 namespace {
 
 /// The cost of a shape outside the admissible region, large enough that the simplex leaves it.
-constexpr double outside = 1e10;
+constexpr double inadmissible_shape_cost = 1e10;
 
 }
 
@@ -187,12 +187,12 @@ std::expected<gjr_garch_fit, std::string> fit_gjr_garch(std::span<const double> 
     const auto cost_of = [&](const std::array<double, 3>& x) {
         const gjr_garch_shape shape{.alpha = x[0], .gamma = x[1], .beta = x[2]};
         if (!gjr_garch_model::admissible(shape, p_minus))
-            return outside;
+            return inadmissible_shape_cost;
         const auto model = gjr_garch_model::make(shape, variance, p_minus);
         if (!model)
-            return outside;
+            return inadmissible_shape_cost;
         const double c = mean_cost(*model, shocks, variance);
-        return std::isfinite(c) ? c : outside;
+        return std::isfinite(c) ? c : inadmissible_shape_cost;
     };
 
     std::optional<gjr_garch_fit> best;
@@ -204,7 +204,7 @@ std::expected<gjr_garch_fit, std::string> fit_gjr_garch(std::span<const double> 
             nelder_mead<3>(cost_of, {start.alpha, start.gamma, start.beta}, {0.02, 0.02, 0.02});
         if (result.converged)
             ++converged;
-        if (result.value >= outside)
+        if (result.value >= inadmissible_shape_cost)
             continue;
         const auto model = gjr_garch_model::make(
             {.alpha = result.x[0], .gamma = result.x[1], .beta = result.x[2]}, variance, p_minus);

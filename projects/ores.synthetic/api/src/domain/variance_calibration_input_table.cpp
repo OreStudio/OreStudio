@@ -36,9 +36,10 @@ std::string convert_to_table(const std::vector<variance_calibration_input>& v) {
     table << fort::header << "Base" << "Quote" << "Provider" << "Window End" << "Days" << "Used"
           << "Points" << "Version" << fort::endr;
 
-    for ([[maybe_unused]] const auto& v : v) {
-        table << v.base_currency_code << v.quote_currency_code << v.provider_code << v.window_end
-              << v.window_days << v.used_count << v.point_count << v.version << fort::endr;
+    for ([[maybe_unused]] const auto& input : v) {
+        table << input.base_currency_code << input.quote_currency_code << input.provider_code
+              << input.window_end << input.window_days << input.used_count << input.point_count
+              << input.version << fort::endr;
     }
     return table.to_string();
 }

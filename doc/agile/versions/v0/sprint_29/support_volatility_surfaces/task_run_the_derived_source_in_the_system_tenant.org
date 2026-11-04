@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-the-derived-source-in-the-system-tenant
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,26 +26,37 @@ The derived source runs in the system tenant, where the feeds run, and keeps its
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
 
 - FX_VOL_DERIVATION is a populated derivation kind, and a series of that kind writes.
 - The system tenant holds the FX option conventions the derived pairs name, or the derived source reads them from where they are published; the choice is recorded in the story's Decisions.
-- marketdata_feeds_test, marketdata_feed_scopes_test, marketdata_routes_by_class_test and marketdata_catalogue_publish_test pass, and a recreated environment logs the derived history kept for every pair.
+- marketdata_feeds_test, marketdata_feed_scopes_test, marketdata_routes_by_class_test and marketdata_catalogue_publish_test pass, and a recreated environment provisions to completion with the derived source's series written and its conventions found.
+- The log of the derived history kept for every pair needs the ECB fixings, so it moves to [[id:BBCE9F48-939B-43DB-B703-99B3196942D4][Load the public rates as a workflow step]].
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Reproduce on a fresh, provisioned environment and read the derived source's log.
+2. Seed the derivation kind the series names.
+3. Publish the conventions into the system tenant, for its system party.
+4. Fix what that publish exposes, then provision again until it completes.
+5. Update the marketdata pgTAP suites for the derived source.
 
 * Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| FX option conventions in the system tenant, and in Acme, after provisioning | 173, 865 | =select count(*)= on current rows of =ores_refdata_fx_option_conventions_tbl=, by tenant | 4a87a2941c plus the branch diff |
+| Series written under FX_VOL_DERIVATION after provisioning | 10 | =select count(*)= on current rows of =ores_marketdata_market_series_tbl= of that kind | 4a87a2941c plus the branch diff |
+| Publication order unit tests | 6 of 6 pass | =ores.dq.core.tests "[publication_order]"= | 4a87a2941c plus the branch diff |
+| dq core suite | 124 of 124 test cases pass | =ores.dq.core.tests= | 4a87a2941c plus the branch diff |
+| pgTAP suite on a fresh database | 809 tests in 83 files pass | =projects/ores.sql/test/run_tests.sh= | 4a87a2941c plus the branch diff |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -60,6 +71,21 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** What failed
+
+On a provisioned environment, for each of the ten pairs, the derived source logged "kept no history of PAIR: … Invalid derivation_kind: FX_VOL_DERIVATION". The system tenant held no FX option conventions (Acme held 865), and the four marketdata suites failed on counts the derived feed, scope rows, route, adapter and supplier raise by one.
+
+** What each fix exposed
+
+- Adding =ore.conventions= to =system_core= first returned =skipped_no_party=: the default party of a publish is the tenant's root party that is not the system party, and the system tenant holds no other.
+- With a party, the publish ran ninth, before =iso.currencies=, and the zero-inflation convention's currency check refused EUR. The bundle sort was a plain topological sort, so datasets with no edge between them ran in an arbitrary order. An edge was not used: dependencies resolve transitively, so every =party_essentials= publish would republish the currencies and write a version of each per party.
+- In member order, =synthetic.feeds.bloomberg= ran after the currencies and was refused CNH. The currency check lets any value through while no currency is stored, which is how the feeds published before. CNH is in =fpml.non_iso_currency=, which =base= publishes for a tenant and =system_core= did not.
+
+** Found outside this task
+
+- The committed =ores_schema.dq_staging.puml= was one line stale on main (=cut_kind_code=); regenerated here.
+- =test_junction_events.py::test_the_events_are_published_on_the_junctions_collection= fails on this branch, which does not touch =ores.codegen=.
 
 * Test Scenarios
 
@@ -82,6 +108,18 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local pgTAP: the system tenant always took its system party, over a root party a publish names by default | refdata_publish_from_dq_create.sql | Accept | The root party is still preferred; the system party is the fallback for the system tenant only. A case in the new suite covers it. |
+| 2 | Local check: the committed staging ER diagram is one line stale | ores_schema.dq_staging.puml | Accept | The drift came from main (=cut_kind_code=); regenerated. |
+| 3 | Local check: =test_junction_events.py= fails | ores.codegen tests | Decline | This branch does not touch =ores.codegen=. |
 
 * Result
+
+The derived source of FX volatility quotes now runs in the system tenant. Provisioning a recreated environment completes, the source writes its ten series under =FX_VOL_DERIVATION=, and it finds the FX option convention of each pair in the system tenant.
+
+- =FX_VOL_DERIVATION= is a seeded derivation kind.
+- =system_core= publishes =ore.conventions=, and =fpml.non_iso_currency= after =iso.currencies=.
+- A party-scoped publish into the system tenant that names no party writes for its system party when the tenant has no root party.
+- A bundle publishes its datasets after their dependencies and otherwise in its member order. Boost.Graph is no longer linked by dq core.
+- The four marketdata suites count the derived source, and a new suite covers the kind and the party rule.
+
+The source still keeps no history: no ECB fixing exists until the public rates are loaded, which [[id:BBCE9F48-939B-43DB-B703-99B3196942D4][Load the public rates as a workflow step]] now verifies.

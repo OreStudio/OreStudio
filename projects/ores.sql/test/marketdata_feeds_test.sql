@@ -60,8 +60,8 @@ select is(
      where tenant_id = ores_utility_system_tenant_id_fn()
        and change_reason_code = 'system.initial_load'
        and valid_to = ores_utility_infinity_timestamp_fn()),
-    10,
-    'the seed holds ten feeds'
+    11,
+    'the seed holds eleven feeds: four public, six of the synthetic session and the derived source'
 );
 
 select is(

@@ -41,10 +41,10 @@ select is(
      join ores_marketdata_market_data_vendor_instruments_tbl v
        on v.id = m.vendor_instrument_id
      where m.tenant_id = ores_utility_system_tenant_id_fn()
-       and v.provider_code in ('ecb', 'boc', 'imf', 'tcmb')
+       and v.provider_code in ('ecb', 'boc', 'imf', 'tcmb', 'derived')
        and m.valid_to = ores_utility_infinity_timestamp_fn()
        and v.valid_to = ores_utility_infinity_timestamp_fn()),
-    'every public feed scope row is a mapping of its publisher'
+    'every scope row of a public feed or the derived source is a mapping of its publisher'
 );
 
 select is(
@@ -53,8 +53,8 @@ select is(
      join ores_marketdata_feeds_tbl f on f.id = s.feed_id
      where s.tenant_id = ores_utility_system_tenant_id_fn()
        and s.valid_to = ores_utility_infinity_timestamp_fn()),
-    4,
-    'the four public feeds carry a scope'
+    5,
+    'the four public feeds and the derived source carry a scope'
 );
 
 create temporary table t_ecb on commit drop as

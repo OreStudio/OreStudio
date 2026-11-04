@@ -35,8 +35,8 @@ select is(
     (select count(*)::int from ores_marketdata_routes_tbl
      where tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
-    5,
-    'the seed holds five routes, four FX and one IR'
+    6,
+    'the seed holds six routes: four public FX, the derived FX and one IR'
 );
 
 create temporary table t_ecb on commit drop as

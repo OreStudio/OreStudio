@@ -78,14 +78,14 @@ select throws_ok(
 select results_eq(
     format($$select action, record_count from ores_marketdata_publish_adapters_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'insert_only', '{}'::jsonb)$$,
         (select id from t_adapters_dataset)),
-    $$values ('skipped'::text, 2::bigint)$$,
+    $$values ('skipped'::text, 3::bigint)$$,
     'an insert-only publish over the adapter catalogue skips every adapter it already holds'
 );
 
 select results_eq(
     format($$select action, record_count from ores_marketdata_publish_suppliers_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'insert_only', '{}'::jsonb)$$,
         (select id from t_suppliers_dataset)),
-    $$values ('skipped'::text, 2::bigint)$$,
+    $$values ('skipped'::text, 3::bigint)$$,
     'an insert-only publish over the supplier catalogue skips every supplier it already holds'
 );
 
@@ -93,16 +93,16 @@ select is(
     (select count(*)::int from ores_marketdata_adapters_tbl
      where tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
-    2,
-    'the system tenant holds the two adapters the dataset stages'
+    3,
+    'the system tenant holds the three adapters the dataset stages: frankfurter, synthetic and derived'
 );
 
 select is(
     (select count(*)::int from ores_marketdata_suppliers_tbl
      where tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
-    2,
-    'the system tenant holds the two suppliers the dataset stages'
+    3,
+    'the system tenant holds the three suppliers the dataset stages: frankfurter, synthetic and derived'
 );
 
 -- The catalogues were published earlier in this same transaction. A

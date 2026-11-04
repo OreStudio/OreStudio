@@ -65,10 +65,11 @@ MemorySwapMax=1G"""
 # own {tenant_id} substitution and its accompanying comment.
 SYSTEM_TENANT_UUID = "ffffffff-ffff-ffff-ffff-ffffffffffff"
 
-# Console only. systemd captures stdout and stderr into the user journal, so
-# one interface reaches every unit and no log file is written. --log-filename
-# and --log-directory are deliberately absent: with no filename the binary adds
-# no file sink, which is the opt-out logging_options.hpp documents.
+# Console, captured by systemd into the user journal, and, unless this checkout
+# turns it off, a file per process under publish/log. The journal alone is not a
+# complete record: measured on 2026-11-04 during an Acme provisioning run, it kept
+# 6.6% of iam's lines at debug level and 64% at info, with the unit's rate limit
+# turned off, while the file kept every line. So the file sink is added below.
 DEFAULT_ARGS_TEMPLATE = (
     "--log-enabled --log-level {log_level} --log-to-console {nats_tls_args}"
 )
@@ -87,6 +88,19 @@ DEFAULT_SERVICE_LOG_LEVEL = "info"
 def service_log_level(env: dict) -> str:
     """This checkout's compiled-service log level (trace..error)."""
     return env.get(SERVICE_LOG_LEVEL_VARIABLE) or DEFAULT_SERVICE_LOG_LEVEL
+
+
+# The file sink beside the journal, on unless this checkout sets the variable to
+# false. Each process writes publish/log/<service>.<replica>.log, which keeps every
+# line the binary wrote; the journal drops lines under load and says so only in the
+# system journal, which a user cannot read.
+SERVICE_LOG_TO_FILE_VARIABLE = "ORES_SERVICE_LOG_TO_FILE"
+
+
+def service_log_to_file(env: dict) -> bool:
+    """Whether this checkout's compiled services also write a log file (default yes)."""
+    value = (env.get(SERVICE_LOG_TO_FILE_VARIABLE) or "").strip().lower()
+    return value not in ("0", "false", "no")
 
 # Static, hand-authored drop-ins that are NOT per-environment or DB-driven --
 # unlike everything else this module generates, these are host-wide and
@@ -158,7 +172,8 @@ def _unit_basename(service_name, env_name):
 
 
 def _substitute_args(args_template, def_row, keys_dir, log_level="info",
-                      replica_index=0, host_id=None, work_dir=None):
+                      replica_index=0, host_id=None, work_dir=None,
+                      log_to_file=False):
     """Render an args_template into a systemd ExecStart argument string.
     $FOO placeholders are systemd/EnvironmentFile= variable references,
     resolved by systemd itself from EnvironmentFile= before exec -- not
@@ -182,11 +197,15 @@ def _substitute_args(args_template, def_row, keys_dir, log_level="info",
     key = f"{keys_dir}/{def_row['service_name']}.key"
     tls_args = f"--nats-tls-ca ${{ORES_NATS_TLS_CA}} --nats-tls-cert {cert} --nats-tls-key {key}"
     tmpl = tmpl.replace("{nats_tls_args}", tls_args)
+    # ExecStart runs from publish/bin, so ../log is publish/log.
+    if log_to_file:
+        tmpl += (f" --log-directory ../log --log-filename {def_row['service_name']}.log"
+                 f" --log-replica-index {replica_index}")
     return tmpl
 
 
 def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name,
-                          log_level="info"):
+                          log_level="info", log_to_file=False):
     """A plain (non-replicated) service, one concrete unit per
     environment. ExecStart still needs a shell wrapper: $ORES_PRESET
     (an EnvironmentFile= variable) must resolve inside the executable
@@ -208,7 +227,7 @@ def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name
     keys_dir = f"{checkout_root}/build/keys/nats"
 
     args = _substitute_args(def_row["args_template"], def_row, keys_dir,
-                            log_level=log_level)
+                            log_level=log_level, log_to_file=log_to_file)
 
     after = [_unit_basename("nats-server", env_name) + ".service"] + \
         [_unit_basename(d, env_name) + ".service" for d in deps_on]
@@ -314,7 +333,7 @@ WantedBy={target_name}
 
 
 def render_wrapper_units(def_row, deps_on, checkout_root, env_name, target_name,
-                         log_level="info"):
+                         log_level="info", log_to_file=False):
     """ores.compute.wrapper's N hot replicas: N concrete units (not one
     template instantiated N ways), each with a literal replica index,
     host_id and work_dir baked in at generation time -- this checkout's
@@ -340,7 +359,7 @@ def render_wrapper_units(def_row, deps_on, checkout_root, env_name, target_name,
         args = _substitute_args(def_row["args_template"], def_row, keys_dir,
                                  log_level=log_level,
                                  replica_index=replica, host_id=host_id,
-                                 work_dir=work_dir)
+                                 work_dir=work_dir, log_to_file=log_to_file)
         shell_cmd = (f'cd "{bin_dir}" && '
                      f'exec "./{def_row["binary_name"]}" {args}')
 
@@ -510,6 +529,7 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
 
     nats_port = env.get("ORES_NATS_PORT", "4222")
     log_level = service_log_level(env)
+    log_to_file = service_log_to_file(env)
     write(_unit_basename("nats-server", env_name) + ".service",
           render_nats_unit(checkout_root, env_name, target_name, nats_port))
 
@@ -522,18 +542,20 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
         elif d["desired_replicas"] > 1:
             for name, content in render_wrapper_units(
                     d, deps_on, checkout_root, env_name, target_name,
-                    log_level=log_level):
+                    log_level=log_level, log_to_file=log_to_file):
                 write(name, content)
         else:
             write(_unit_basename(d["service_name"], env_name) + ".service",
                   render_singleton_unit(d, deps_on, checkout_root, env_name,
-                                         target_name, log_level=log_level))
+                                         target_name, log_level=log_level,
+                                         log_to_file=log_to_file))
 
     write(target_name, render_target(defs, env_name))
 
     print(f"Wrote {len(written)} unit files to {out_dir}")
     print(f"Compiled services log at '{log_level}' "
-          f"(ORES_SERVICE_LOG_LEVEL in .env)")
+          f"(ORES_SERVICE_LOG_LEVEL in .env)"
+          + (", and to publish/log files (ORES_SERVICE_LOG_TO_FILE)" if log_to_file else ""))
     print()
     print("To install for this user:")
     print(f"  compass systemd deploy")

@@ -113,6 +113,49 @@ claim_step_response decide(ores::database::context ctx,
     return {.success = true, .claimed = true, .state = "in_progress", .attempts = *attempts};
 }
 
+/**
+ * @brief Decides one renewal: the lease runs a full term again only for the holder the claim
+ * still names, and only while the step is in progress.
+ */
+renew_step_claim_response renew(ores::database::context ctx,
+                                const state_names_t& state_names,
+                                repository::step_claim_repository& claim_repo,
+                                repository::workflow_step_repository& step_repo,
+                                const renew_step_claim_request& req) {
+    boost::uuids::uuid step_uuid;
+    try {
+        step_uuid = boost::lexical_cast<boost::uuids::uuid>(req.step_id);
+    } catch (const std::exception&) {
+        return {.success = false, .message = "Not a step id: " + req.step_id};
+    }
+    if (req.owner.empty())
+        return {.success = false, .message = "The request names no holder for the claim."};
+    const auto tenant = ores::utility::uuid::tenant_id::from_string(req.tenant_id);
+    if (!tenant)
+        return {.success = false, .message = "Not a tenant id: " + req.tenant_id};
+    const auto req_ctx = ctx.with_tenant(*tenant, ctx.actor());
+
+    const auto steps = step_repo.read_latest(req_ctx, boost::uuids::to_string(step_uuid));
+    if (steps.empty() || steps.front().tenant_id != req_ctx.tenant_id())
+        return {.success = true,
+                .renewed = false,
+                .state = "unknown",
+                .message = "No such workflow step."};
+    const auto state = state_names.find(steps.front().state_id);
+    const std::string state_name = state == state_names.end() ? "unknown" : state->second;
+    if (state_name != "in_progress")
+        return {.success = true,
+                .renewed = false,
+                .state = state_name,
+                .message = "The step has already left in_progress."};
+    if (!claim_repo.renew(ctx, step_uuid, req.owner, step_claim_lease))
+        return {.success = true,
+                .renewed = false,
+                .state = "in_progress",
+                .message = "The claim is no longer this holder's."};
+    return {.success = true, .renewed = true, .state = "in_progress"};
+}
+
 } // namespace
 
 workflow_claim_handler::workflow_claim_handler(ores::nats::service::client& nats,
@@ -156,12 +199,46 @@ void workflow_claim_handler::claim_step(ores::nats::message msg) {
         resp = claim_step_response{.success = false, .message = e.what()};
     }
 
-    if (resp.success && resp.claimed)
-        BOOST_LOG_SEV(lg(), debug)
-            << "Claimed step " << req->step_id << " on attempt " << resp.attempts;
+    // A claim on a later attempt is a takeover: the earlier holder's lease ended while the step
+    // was still in progress, so two deliveries may now be doing its work. That is worth seeing.
+    if (resp.success && resp.claimed && resp.attempts > 1)
+        BOOST_LOG_SEV(lg(), warn) << "Step " << req->step_id << " taken over by " << req->owner
+                                  << " on attempt " << resp.attempts
+                                  << ": the earlier holder's lease ended while it was in progress";
+    else if (resp.success && resp.claimed)
+        BOOST_LOG_SEV(lg(), info) << "Step " << req->step_id << " claimed by " << req->owner;
     else
-        BOOST_LOG_SEV(lg(), debug) << "Did not claim step " << req->step_id << ": " << resp.message;
+        BOOST_LOG_SEV(lg(), info) << "Step " << req->step_id << " not claimed by " << req->owner
+                                  << ": " << (resp.message.empty() ? resp.state : resp.message);
 
+    reply(nats_, msg, resp);
+    ack.accept();
+}
+
+void workflow_claim_handler::renew_step_claim(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+    const auto req = decode<renew_step_claim_request>(msg);
+    if (!req || req->step_id.empty() || req->tenant_id.empty()) {
+        reply(nats_,
+              msg,
+              renew_step_claim_response{.success = false,
+                                        .message = "step_id and tenant_id are both required."});
+        ack.accept();
+        return;
+    }
+    renew_step_claim_response resp;
+    try {
+        resp = renew(ctx_, step_state_names_, claim_repo_, step_repo_, *req);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+        resp = renew_step_claim_response{.success = false, .message = e.what()};
+    }
+    if (resp.success && resp.renewed)
+        BOOST_LOG_SEV(lg(), debug)
+            << "Step " << req->step_id << " lease renewed for " << req->owner;
+    else
+        BOOST_LOG_SEV(lg(), warn) << "Step " << req->step_id << " lease not renewed for "
+                                  << req->owner << ": " << resp.message;
     reply(nats_, msg, resp);
     ack.accept();
 }

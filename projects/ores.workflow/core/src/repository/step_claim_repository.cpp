@@ -67,6 +67,25 @@ std::optional<int> step_claim_repository::claim(context ctx,
     return std::stoi(*rows.front()[1]);
 }
 
+bool step_claim_repository::renew(context ctx,
+                                  const boost::uuids::uuid& step_id,
+                                  const std::string& owner,
+                                  std::chrono::seconds lease) {
+    static const std::string sql = R"(
+        UPDATE ores_workflow_step_claims_tbl
+            SET lease_expires_at = now() + make_interval(secs => $3::int)
+            WHERE step_id = $1::uuid AND owner = $2::text
+        RETURNING step_id
+    )";
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {boost::uuids::to_string(step_id), owner, std::to_string(lease.count())},
+        lg(),
+        "renewing a workflow step claim");
+    return !rows.empty();
+}
+
 bool step_claim_repository::release(context ctx, const boost::uuids::uuid& step_id) {
     // No owner predicate. The engine writes the step's state away from
     // in_progress, and that write is what decides the work is over; the claim

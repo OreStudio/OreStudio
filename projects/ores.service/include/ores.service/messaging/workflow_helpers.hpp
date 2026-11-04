@@ -20,6 +20,8 @@
 #ifndef ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
+#include "ores.logging/boost_severity.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -155,14 +157,31 @@ private:
                                                               .error_message = error_msg,
                                                               .log = log};
 
+        using namespace ores::logging;
+        static auto lg = make_logger("ores.service.messaging.workflow_step_context");
+        const char* said =
+            outcome == ores::workflow::messaging::step_outcome::completed ? "completed" :
+            outcome == ores::workflow::messaging::step_outcome::failed    ? "failed" :
+                                                                            "completed with warnings";
+        BOOST_LOG_SEV(lg, info) << "Step " << step_id << " of run " << instance_id
+                                << " answers the engine: " << said
+                                << (error_msg.empty() ? std::string() : ": " + error_msg);
+
         const auto data = ores::nats::default_wire_codec().encode(event);
         // The step id identifies the work, so the stream stores one completion
         // for it however many times the publish is attempted. The engine's own
         // duplicate guard remains the second line, because the stream's window
         // is finite.
-        nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject,
-                         data,
-                         ores::nats::headers::publish_identity_headers(step_id));
+        try {
+            nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject,
+                             data,
+                             ores::nats::headers::publish_identity_headers(step_id));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg, error) << "Step " << step_id << " could not publish its answer ("
+                                     << said << "): " << e.what();
+            throw;
+        }
+        BOOST_LOG_SEV(lg, info) << "Step " << step_id << " answer published (" << said << ")";
     }
 };
 
@@ -352,6 +371,47 @@ inline step_claim_outcome claim_step(ores::nats::service::client& nats,
         // Fails closed, unlike check_step_idempotency above: a delivery that
         // cannot find out whether it holds the step returns to the queue.
         return step_claim_outcome::unreachable;
+    }
+}
+
+/**
+ * @brief What a renewal of a claim found.
+ */
+enum class step_renewal_outcome {
+    /// The holder still holds the claim, and its lease runs a full term again.
+    renewed,
+    /// The claim is no longer the holder's, or the step is no longer in progress.
+    lost,
+    /// The engine could not be reached or could not decide; the claim is unchanged.
+    unreachable
+};
+
+/**
+ * @brief Extends the lease of a claim this process holds, while its handler still runs.
+ *
+ * @p state carries the step's state when the claim is lost, for the log line that says so.
+ */
+inline step_renewal_outcome renew_step_claim(ores::nats::service::client& nats,
+                                             const std::string& step_id,
+                                             const std::string& tenant_id,
+                                             const std::string& owner,
+                                             std::string& state) {
+    using namespace ores::workflow::messaging;
+    const renew_step_claim_request req{.step_id = step_id, .tenant_id = tenant_id, .owner = owner};
+    try {
+        const auto reply_msg = nats.request_sync(renew_step_claim_request::nats_subject,
+                                                 ores::nats::default_wire_codec().encode(req),
+                                                 {},
+                                                 std::chrono::seconds(5));
+        const auto resp =
+            ores::nats::default_wire_codec().decode<renew_step_claim_response>(reply_msg.data);
+        if (!resp || !resp->success)
+            return step_renewal_outcome::unreachable;
+        state = resp->state + (resp->message.empty() ? "" : ": " + resp->message);
+        return resp->renewed ? step_renewal_outcome::renewed : step_renewal_outcome::lost;
+    } catch (const std::exception& e) {
+        state = e.what();
+        return step_renewal_outcome::unreachable;
     }
 }
 

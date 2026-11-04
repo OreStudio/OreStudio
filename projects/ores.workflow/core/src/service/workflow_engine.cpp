@@ -1428,6 +1428,30 @@ std::size_t workflow_engine::expire_overdue_steps() {
              * engine must not wait for a handler that is not there.
              */
             const auto claimed_at = claim_repo_.claimed_at(ctx_, step.id);
+            /*
+             * A step that runs long is not yet a failure, but a reader of the log must be able to
+             * see it running: which step, of which run, for how long, and whether a worker holds
+             * it or it still waits in its service's queue.
+             */
+            const auto running_for =
+                std::chrono::duration_cast<std::chrono::seconds>(now - *step.command_published_at);
+            if (running_for >= long_step_warning_interval &&
+                now - it->second.last_warned >= long_step_warning_interval) {
+                it->second.last_warned = now;
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Step still in progress: workflow="
+                    << boost::uuids::to_string(waiting.instance_id) << " step=" << step.name
+                    << " subject=" << step.command_subject << " for " << running_for.count()
+                    << "s of a " << waiting.budget.count() << "s deadline, "
+                    << (claimed_at ?
+                            "claimed " +
+                                std::to_string(std::chrono::duration_cast<std::chrono::seconds>(
+                                                   now - *claimed_at)
+                                                   .count()) +
+                                "s ago" :
+                            std::string("not yet claimed: its command waits in the "
+                                        "service's queue"));
+            }
             if (!claimed_at) {
                 const auto seen = last_seen_of(step.command_subject);
                 const auto queued_for = std::chrono::duration_cast<std::chrono::seconds>(

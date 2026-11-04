@@ -22,6 +22,7 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/jwks.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.platform/process/signals.hpp"
 #include "ores.service/service/systemd_notify.hpp"
 #include <boost/asio/bind_cancellation_slot.hpp>
@@ -36,6 +37,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::service::service {
 
@@ -126,15 +128,17 @@ fetch_public_key_or_shutdown(boost::asio::io_context& io_ctx,
  *
  * @param register_fn Called once with no arguments; the caller binds whatever
  * the service needs (database context, verifier or signer) into it. Taken by
- * value so the state it owns outlives the caller's frame.
+ * value so the state it owns outlives the caller's frame, and as a
+ * std::function because a coroutine's frame holds it: a caller's lambda has no
+ * linkage, and a frame holding one is what gcc refuses under
+ * -Wsubobject-linkage.
  */
-template <typename RegisterFn>
-boost::asio::awaitable<void>
+inline boost::asio::awaitable<void>
 announce_ready_and_drain(boost::asio::io_context& io_ctx,
                          ores::nats::service::client& nats,
                          std::string_view name,
                          boost::asio::signal_set& signals,
-                         RegisterFn register_fn,
+                         std::function<std::vector<ores::nats::service::subscription>()> register_fn,
                          std::function<void(boost::asio::io_context&)> on_started,
                          std::function<void()> on_shutdown,
                          ores::logging::logger_t& lg) {

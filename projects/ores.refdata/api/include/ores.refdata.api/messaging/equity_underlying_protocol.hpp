@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct equity_underlying_key {
     std::string code;
+
+    friend bool operator==(const equity_underlying_key&, const equity_underlying_key&) = default;
 };
 
 struct equity_underlying_write {
@@ -53,25 +55,40 @@ struct equity_underlying_write {
     std::string resolves_to;
     std::string currency_code;
     int display_order;
+
+    friend bool operator==(const equity_underlying_write&,
+                           const equity_underlying_write&) = default;
 };
 
 struct equity_underlying_change {
     equity_underlying_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const equity_underlying_change&,
+                           const equity_underlying_change&) = default;
 };
 
 struct equity_underlying_removal {
     equity_underlying_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const equity_underlying_removal&,
+                           const equity_underlying_removal&) = default;
 };
 
 struct equity_underlying_lookup {
     equity_underlying_key key;
     std::optional<ores::refdata::domain::equity_underlying> equity_underlying;
+
+    friend bool operator==(const equity_underlying_lookup&,
+                           const equity_underlying_lookup&) = default;
 };
 
 struct equity_underlyings_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const equity_underlyings_filter&,
+                           const equity_underlyings_filter&) = default;
 };
 
 struct equity_underlying_event {
@@ -81,17 +98,26 @@ struct equity_underlying_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const equity_underlying_event&,
+                           const equity_underlying_event&) = default;
 };
 
 struct equity_underlying_version_key {
     equity_underlying_key equity_underlying;
     std::uint32_t version;
+
+    friend bool operator==(const equity_underlying_version_key&,
+                           const equity_underlying_version_key&) = default;
 };
 
 struct equity_underlying_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const equity_underlying_versions_filter&,
+                           const equity_underlying_versions_filter&) = default;
 };
 
 struct list_equity_underlyings_request {
@@ -109,12 +135,18 @@ struct list_equity_underlyings_request {
     ores::utility::domain::order order;
     std::optional<equity_underlyings_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_equity_underlyings_request&,
+                           const list_equity_underlyings_request&) = default;
 };
 
 struct list_equity_underlyings_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::equity_underlying> equity_underlyings;
     std::uint64_t total;
+
+    friend bool operator==(const list_equity_underlyings_response&,
+                           const list_equity_underlyings_response&) = default;
 };
 
 struct get_equity_underlying_request {
@@ -128,11 +160,17 @@ struct get_equity_underlying_request {
      */
     static constexpr bool requires_session = true;
     equity_underlying_key key;
+
+    friend bool operator==(const get_equity_underlying_request&,
+                           const get_equity_underlying_request&) = default;
 };
 
 struct get_equity_underlying_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::equity_underlying> equity_underlying;
+
+    friend bool operator==(const get_equity_underlying_response&,
+                           const get_equity_underlying_response&) = default;
 };
 
 struct get_many_equity_underlyings_request {
@@ -146,11 +184,17 @@ struct get_many_equity_underlyings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<equity_underlying_key> keys;
+
+    friend bool operator==(const get_many_equity_underlyings_request&,
+                           const get_many_equity_underlyings_request&) = default;
 };
 
 struct get_many_equity_underlyings_response {
     ores::utility::domain::result result;
     std::vector<equity_underlying_lookup> entries;
+
+    friend bool operator==(const get_many_equity_underlyings_response&,
+                           const get_many_equity_underlyings_response&) = default;
 };
 
 struct put_equity_underlying_request {
@@ -165,11 +209,17 @@ struct put_equity_underlying_request {
     static constexpr bool requires_session = true;
     equity_underlying_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_equity_underlying_request&,
+                           const put_equity_underlying_request&) = default;
 };
 
 struct put_equity_underlying_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::equity_underlying> equity_underlying;
+
+    friend bool operator==(const put_equity_underlying_response&,
+                           const put_equity_underlying_response&) = default;
 };
 
 struct put_many_equity_underlyings_request {
@@ -184,11 +234,17 @@ struct put_many_equity_underlyings_request {
     static constexpr bool requires_session = true;
     std::vector<equity_underlying_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_equity_underlyings_request&,
+                           const put_many_equity_underlyings_request&) = default;
 };
 
 struct put_many_equity_underlyings_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::equity_underlying> equity_underlyings;
+
+    friend bool operator==(const put_many_equity_underlyings_response&,
+                           const put_many_equity_underlyings_response&) = default;
 };
 
 struct delete_equity_underlying_request {
@@ -203,10 +259,16 @@ struct delete_equity_underlying_request {
     static constexpr bool requires_session = true;
     equity_underlying_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_equity_underlying_request&,
+                           const delete_equity_underlying_request&) = default;
 };
 
 struct delete_equity_underlying_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_equity_underlying_response&,
+                           const delete_equity_underlying_response&) = default;
 };
 
 struct delete_many_equity_underlyings_request {
@@ -221,10 +283,16 @@ struct delete_many_equity_underlyings_request {
     static constexpr bool requires_session = true;
     std::vector<equity_underlying_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_equity_underlyings_request&,
+                           const delete_many_equity_underlyings_request&) = default;
 };
 
 struct delete_many_equity_underlyings_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_equity_underlyings_response&,
+                           const delete_many_equity_underlyings_response&) = default;
 };
 
 struct list_equity_underlying_versions_request {
@@ -242,12 +310,18 @@ struct list_equity_underlying_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<equity_underlying_versions_filter> filter;
+
+    friend bool operator==(const list_equity_underlying_versions_request&,
+                           const list_equity_underlying_versions_request&) = default;
 };
 
 struct list_equity_underlying_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::equity_underlying> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_equity_underlying_versions_response&,
+                           const list_equity_underlying_versions_response&) = default;
 };
 
 struct get_equity_underlying_version_request {
@@ -261,11 +335,17 @@ struct get_equity_underlying_version_request {
      */
     static constexpr bool requires_session = true;
     equity_underlying_version_key key;
+
+    friend bool operator==(const get_equity_underlying_version_request&,
+                           const get_equity_underlying_version_request&) = default;
 };
 
 struct get_equity_underlying_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::equity_underlying> version;
+
+    friend bool operator==(const get_equity_underlying_version_response&,
+                           const get_equity_underlying_version_response&) = default;
 };
 
 /**
@@ -277,9 +357,9 @@ struct get_equity_underlying_version_response {
  * of them.
  */
 namespace equity_underlying_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.equity_underlyings_events.created";
-inline constexpr std::string_view updated = "refdata.v1.equity_underlyings_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.equity_underlyings.created";
+inline constexpr std::string_view updated = "refdata.v1.events.equity_underlyings.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlyings.deleted";
 }
 /**
  * @brief The members of equity_underlying_key, named as the wire names them and in the order

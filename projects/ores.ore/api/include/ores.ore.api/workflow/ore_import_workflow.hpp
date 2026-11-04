@@ -21,10 +21,9 @@
 #define ORES_ORE_API_WORKFLOW_ORE_IMPORT_WORKFLOW_HPP
 
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include <rfl/json.hpp>
 
 namespace ores::ore::workflow {
 
@@ -93,8 +92,8 @@ inline void register_ore_import_workflow(ores::workflow::service::workflow_regis
                 using ores::ore::messaging::ore_import_execute_result;
                 using ores::ore::messaging::ore_import_rollback_request;
 
-                auto cmd = rfl::json::read<ore_import_execute_request>(cmd_json);
-                auto res = rfl::json::read<ore_import_execute_result>(result_json);
+                auto cmd = utility::codec::json::try_read<ore_import_execute_request>(cmd_json);
+                auto res = utility::codec::json::try_read<ore_import_execute_result>(result_json);
 
                 ore_import_rollback_request rollback;
                 if (cmd) {
@@ -107,7 +106,7 @@ inline void register_ore_import_workflow(ores::workflow::service::workflow_regis
                     rollback.saved_book_names = res->saved_book_names;
                     rollback.saved_trade_ids = res->saved_trade_ids;
                 }
-                return rfl::json::write(rollback);
+                return utility::codec::json::write(rollback);
             };
 
             steps.push_back(std::move(s));

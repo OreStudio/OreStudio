@@ -26,11 +26,17 @@
 #define ORES_MARKETDATA_API_MESSAGING_SERIES_CLASSIFICATION_RULE_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
@@ -39,6 +45,9 @@ struct series_classification_rule_key {
     std::string instrument;
     std::string quote;
     std::string key_kind;
+
+    friend bool operator==(const series_classification_rule_key&,
+                           const series_classification_rule_key&) = default;
 };
 
 struct series_classification_rule_write {
@@ -49,21 +58,33 @@ struct series_classification_rule_write {
     std::optional<std::string> asset_class_code;
     std::string series_subclass_code;
     std::string description;
+
+    friend bool operator==(const series_classification_rule_write&,
+                           const series_classification_rule_write&) = default;
 };
 
 struct series_classification_rule_change {
     series_classification_rule_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const series_classification_rule_change&,
+                           const series_classification_rule_change&) = default;
 };
 
 struct series_classification_rule_removal {
     series_classification_rule_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const series_classification_rule_removal&,
+                           const series_classification_rule_removal&) = default;
 };
 
 struct series_classification_rule_lookup {
     series_classification_rule_key key;
     std::optional<ores::marketdata::domain::series_classification_rule> series_classification_rule;
+
+    friend bool operator==(const series_classification_rule_lookup&,
+                           const series_classification_rule_lookup&) = default;
 };
 
 struct series_classification_rule_event {
@@ -73,17 +94,26 @@ struct series_classification_rule_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const series_classification_rule_event&,
+                           const series_classification_rule_event&) = default;
 };
 
 struct series_classification_rule_version_key {
     series_classification_rule_key series_classification_rule;
     std::uint32_t version;
+
+    friend bool operator==(const series_classification_rule_version_key&,
+                           const series_classification_rule_version_key&) = default;
 };
 
 struct series_classification_rule_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const series_classification_rule_versions_filter&,
+                           const series_classification_rule_versions_filter&) = default;
 };
 
 struct list_series_classification_rules_request {
@@ -101,12 +131,18 @@ struct list_series_classification_rules_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_series_classification_rules_request&,
+                           const list_series_classification_rules_request&) = default;
 };
 
 struct list_series_classification_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::series_classification_rule> rules;
     std::uint64_t total;
+
+    friend bool operator==(const list_series_classification_rules_response&,
+                           const list_series_classification_rules_response&) = default;
 };
 
 struct get_series_classification_rule_request {
@@ -121,11 +157,17 @@ struct get_series_classification_rule_request {
      */
     static constexpr bool requires_session = true;
     series_classification_rule_key key;
+
+    friend bool operator==(const get_series_classification_rule_request&,
+                           const get_series_classification_rule_request&) = default;
 };
 
 struct get_series_classification_rule_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::series_classification_rule> series_classification_rule;
+
+    friend bool operator==(const get_series_classification_rule_response&,
+                           const get_series_classification_rule_response&) = default;
 };
 
 struct get_many_series_classification_rules_request {
@@ -140,11 +182,17 @@ struct get_many_series_classification_rules_request {
      */
     static constexpr bool requires_session = true;
     std::vector<series_classification_rule_key> keys;
+
+    friend bool operator==(const get_many_series_classification_rules_request&,
+                           const get_many_series_classification_rules_request&) = default;
 };
 
 struct get_many_series_classification_rules_response {
     ores::utility::domain::result result;
     std::vector<series_classification_rule_lookup> entries;
+
+    friend bool operator==(const get_many_series_classification_rules_response&,
+                           const get_many_series_classification_rules_response&) = default;
 };
 
 struct put_series_classification_rule_request {
@@ -160,11 +208,17 @@ struct put_series_classification_rule_request {
     static constexpr bool requires_session = true;
     series_classification_rule_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_series_classification_rule_request&,
+                           const put_series_classification_rule_request&) = default;
 };
 
 struct put_series_classification_rule_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::series_classification_rule> series_classification_rule;
+
+    friend bool operator==(const put_series_classification_rule_response&,
+                           const put_series_classification_rule_response&) = default;
 };
 
 struct put_many_series_classification_rules_request {
@@ -180,11 +234,17 @@ struct put_many_series_classification_rules_request {
     static constexpr bool requires_session = true;
     std::vector<series_classification_rule_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_series_classification_rules_request&,
+                           const put_many_series_classification_rules_request&) = default;
 };
 
 struct put_many_series_classification_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::series_classification_rule> rules;
+
+    friend bool operator==(const put_many_series_classification_rules_response&,
+                           const put_many_series_classification_rules_response&) = default;
 };
 
 struct delete_series_classification_rule_request {
@@ -200,10 +260,16 @@ struct delete_series_classification_rule_request {
     static constexpr bool requires_session = true;
     series_classification_rule_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_series_classification_rule_request&,
+                           const delete_series_classification_rule_request&) = default;
 };
 
 struct delete_series_classification_rule_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_series_classification_rule_response&,
+                           const delete_series_classification_rule_response&) = default;
 };
 
 struct delete_many_series_classification_rules_request {
@@ -219,10 +285,16 @@ struct delete_many_series_classification_rules_request {
     static constexpr bool requires_session = true;
     std::vector<series_classification_rule_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_series_classification_rules_request&,
+                           const delete_many_series_classification_rules_request&) = default;
 };
 
 struct delete_many_series_classification_rules_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_series_classification_rules_response&,
+                           const delete_many_series_classification_rules_response&) = default;
 };
 
 struct list_series_classification_rule_versions_request {
@@ -241,12 +313,18 @@ struct list_series_classification_rule_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<series_classification_rule_versions_filter> filter;
+
+    friend bool operator==(const list_series_classification_rule_versions_request&,
+                           const list_series_classification_rule_versions_request&) = default;
 };
 
 struct list_series_classification_rule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::series_classification_rule> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_series_classification_rule_versions_response&,
+                           const list_series_classification_rule_versions_response&) = default;
 };
 
 struct get_series_classification_rule_version_request {
@@ -261,11 +339,17 @@ struct get_series_classification_rule_version_request {
      */
     static constexpr bool requires_session = true;
     series_classification_rule_version_key key;
+
+    friend bool operator==(const get_series_classification_rule_version_request&,
+                           const get_series_classification_rule_version_request&) = default;
 };
 
 struct get_series_classification_rule_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::series_classification_rule> version;
+
+    friend bool operator==(const get_series_classification_rule_version_response&,
+                           const get_series_classification_rule_version_response&) = default;
 };
 
 /**
@@ -278,13 +362,795 @@ struct get_series_classification_rule_version_response {
  */
 namespace series_classification_rule_event_subjects {
 inline constexpr std::string_view created =
-    "marketdata.v1.series_classification_rules_events.created";
+    "marketdata.v1.events.series_classification_rules.created";
 inline constexpr std::string_view updated =
-    "marketdata.v1.series_classification_rules_events.updated";
+    "marketdata.v1.events.series_classification_rules.updated";
 inline constexpr std::string_view deleted =
-    "marketdata.v1.series_classification_rules_events.deleted";
+    "marketdata.v1.events.series_classification_rules.deleted";
+}
+/**
+ * @brief The members of series_classification_rule_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const series_classification_rule_key&) {
+    return std::tuple{
+        utility::codec::field{"instrument", &series_classification_rule_key::instrument},
+        utility::codec::field{"quote", &series_classification_rule_key::quote},
+        utility::codec::field{"key_kind", &series_classification_rule_key::key_kind},
+    };
 }
 
+/**
+ * @brief The members of series_classification_rule_write, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const series_classification_rule_write&) {
+    return std::tuple{
+        utility::codec::field{"instrument", &series_classification_rule_write::instrument},
+        utility::codec::field{"quote", &series_classification_rule_write::quote},
+        utility::codec::field{"key_kind", &series_classification_rule_write::key_kind},
+        utility::codec::field{"asset_class_source",
+                              &series_classification_rule_write::asset_class_source},
+        utility::codec::field{"asset_class_code",
+                              &series_classification_rule_write::asset_class_code},
+        utility::codec::field{"series_subclass_code",
+                              &series_classification_rule_write::series_subclass_code},
+        utility::codec::field{"description", &series_classification_rule_write::description},
+    };
 }
+
+/**
+ * @brief The members of series_classification_rule_change, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const series_classification_rule_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &series_classification_rule_change::write},
+        utility::codec::field{"precondition", &series_classification_rule_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of series_classification_rule_removal, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const series_classification_rule_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &series_classification_rule_removal::key},
+        utility::codec::field{"precondition", &series_classification_rule_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of series_classification_rule_lookup, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const series_classification_rule_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &series_classification_rule_lookup::key},
+        utility::codec::field{"series_classification_rule",
+                              &series_classification_rule_lookup::series_classification_rule},
+    };
+}
+
+/**
+ * @brief The members of series_classification_rule_event, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const series_classification_rule_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &series_classification_rule_event::event_id},
+        utility::codec::field{"key", &series_classification_rule_event::key},
+        utility::codec::field{"action", &series_classification_rule_event::action},
+        utility::codec::field{"version", &series_classification_rule_event::version},
+        utility::codec::field{"occurred_at", &series_classification_rule_event::occurred_at},
+        utility::codec::field{"correlation_id", &series_classification_rule_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of series_classification_rule_version_key, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const series_classification_rule_version_key&) {
+    return std::tuple{
+        utility::codec::field{"series_classification_rule",
+                              &series_classification_rule_version_key::series_classification_rule},
+        utility::codec::field{"version", &series_classification_rule_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of series_classification_rule_versions_filter, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const series_classification_rule_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &series_classification_rule_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &series_classification_rule_versions_filter::from_version},
+        utility::codec::field{"to_version",
+                              &series_classification_rule_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_series_classification_rules_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_series_classification_rules_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_series_classification_rules_request::offset},
+        utility::codec::field{"limit", &list_series_classification_rules_request::limit},
+        utility::codec::field{"order", &list_series_classification_rules_request::order},
+        utility::codec::field{"as_of", &list_series_classification_rules_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_series_classification_rules_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_series_classification_rules_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_series_classification_rules_response::result},
+        utility::codec::field{"rules", &list_series_classification_rules_response::rules},
+        utility::codec::field{"total", &list_series_classification_rules_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_series_classification_rule_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_series_classification_rule_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_series_classification_rule_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_series_classification_rule_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_series_classification_rule_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_series_classification_rule_response::result},
+        utility::codec::field{"series_classification_rule",
+                              &get_series_classification_rule_response::series_classification_rule},
+    };
+}
+
+/**
+ * @brief The members of get_many_series_classification_rules_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_series_classification_rules_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_series_classification_rules_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_series_classification_rules_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_series_classification_rules_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_series_classification_rules_response::result},
+        utility::codec::field{"entries", &get_many_series_classification_rules_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_series_classification_rule_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_series_classification_rule_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_series_classification_rule_request::change},
+        utility::codec::field{"intent", &put_series_classification_rule_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_series_classification_rule_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_series_classification_rule_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_series_classification_rule_response::result},
+        utility::codec::field{"series_classification_rule",
+                              &put_series_classification_rule_response::series_classification_rule},
+    };
+}
+
+/**
+ * @brief The members of put_many_series_classification_rules_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_series_classification_rules_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_series_classification_rules_request::changes},
+        utility::codec::field{"intent", &put_many_series_classification_rules_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_series_classification_rules_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_series_classification_rules_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_series_classification_rules_response::result},
+        utility::codec::field{"rules", &put_many_series_classification_rules_response::rules},
+    };
+}
+
+/**
+ * @brief The members of delete_series_classification_rule_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_series_classification_rule_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_series_classification_rule_request::removal},
+        utility::codec::field{"intent", &delete_series_classification_rule_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_series_classification_rule_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_series_classification_rule_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_series_classification_rule_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_series_classification_rules_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_series_classification_rules_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_series_classification_rules_request::removals},
+        utility::codec::field{"intent", &delete_many_series_classification_rules_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_series_classification_rules_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_series_classification_rules_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_series_classification_rules_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_series_classification_rule_versions_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_series_classification_rule_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_series_classification_rule_versions_request::key},
+        utility::codec::field{"offset", &list_series_classification_rule_versions_request::offset},
+        utility::codec::field{"limit", &list_series_classification_rule_versions_request::limit},
+        utility::codec::field{"order", &list_series_classification_rule_versions_request::order},
+        utility::codec::field{"filter", &list_series_classification_rule_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_series_classification_rule_versions_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_series_classification_rule_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_series_classification_rule_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_series_classification_rule_versions_response::versions},
+        utility::codec::field{"total", &list_series_classification_rule_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_series_classification_rule_version_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_series_classification_rule_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_series_classification_rule_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_series_classification_rule_version_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_series_classification_rule_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_series_classification_rule_version_response::result},
+        utility::codec::field{"version", &get_series_classification_rule_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::series_classification_rule_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::series_classification_rule_key& v);
+    static ores::marketdata::messaging::series_classification_rule_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::series_classification_rule_key& v);
+    static ores::marketdata::messaging::series_classification_rule_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::series_classification_rule_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::series_classification_rule_write& v);
+    static ores::marketdata::messaging::series_classification_rule_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::series_classification_rule_write& v);
+    static ores::marketdata::messaging::series_classification_rule_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::series_classification_rule_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::series_classification_rule_change& v);
+    static ores::marketdata::messaging::series_classification_rule_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::series_classification_rule_change& v);
+    static ores::marketdata::messaging::series_classification_rule_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::series_classification_rule_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::series_classification_rule_removal& v);
+    static ores::marketdata::messaging::series_classification_rule_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::series_classification_rule_removal& v);
+    static ores::marketdata::messaging::series_classification_rule_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::series_classification_rule_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::series_classification_rule_lookup& v);
+    static ores::marketdata::messaging::series_classification_rule_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::series_classification_rule_lookup& v);
+    static ores::marketdata::messaging::series_classification_rule_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::series_classification_rule_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::series_classification_rule_event& v);
+    static ores::marketdata::messaging::series_classification_rule_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::series_classification_rule_event& v);
+    static ores::marketdata::messaging::series_classification_rule_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::series_classification_rule_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::series_classification_rule_version_key& v);
+    static ores::marketdata::messaging::series_classification_rule_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::series_classification_rule_version_key& v);
+    static ores::marketdata::messaging::series_classification_rule_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::series_classification_rule_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::series_classification_rule_versions_filter& v);
+    static ores::marketdata::messaging::series_classification_rule_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::series_classification_rule_versions_filter& v);
+    static ores::marketdata::messaging::series_classification_rule_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_series_classification_rules_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_series_classification_rules_request& v);
+    static ores::marketdata::messaging::list_series_classification_rules_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_series_classification_rules_request& v);
+    static ores::marketdata::messaging::list_series_classification_rules_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_series_classification_rules_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_series_classification_rules_response& v);
+    static ores::marketdata::messaging::list_series_classification_rules_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_series_classification_rules_response& v);
+    static ores::marketdata::messaging::list_series_classification_rules_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_series_classification_rule_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_series_classification_rule_request& v);
+    static ores::marketdata::messaging::get_series_classification_rule_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_series_classification_rule_request& v);
+    static ores::marketdata::messaging::get_series_classification_rule_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_series_classification_rule_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_series_classification_rule_response& v);
+    static ores::marketdata::messaging::get_series_classification_rule_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_series_classification_rule_response& v);
+    static ores::marketdata::messaging::get_series_classification_rule_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_series_classification_rules_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_series_classification_rules_request& v);
+    static ores::marketdata::messaging::get_many_series_classification_rules_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::get_many_series_classification_rules_request& v);
+    static ores::marketdata::messaging::get_many_series_classification_rules_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_series_classification_rules_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_series_classification_rules_response& v);
+    static ores::marketdata::messaging::get_many_series_classification_rules_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::get_many_series_classification_rules_response& v);
+    static ores::marketdata::messaging::get_many_series_classification_rules_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_series_classification_rule_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_series_classification_rule_request& v);
+    static ores::marketdata::messaging::put_series_classification_rule_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_series_classification_rule_request& v);
+    static ores::marketdata::messaging::put_series_classification_rule_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_series_classification_rule_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_series_classification_rule_response& v);
+    static ores::marketdata::messaging::put_series_classification_rule_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_series_classification_rule_response& v);
+    static ores::marketdata::messaging::put_series_classification_rule_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_many_series_classification_rules_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_many_series_classification_rules_request& v);
+    static ores::marketdata::messaging::put_many_series_classification_rules_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::put_many_series_classification_rules_request& v);
+    static ores::marketdata::messaging::put_many_series_classification_rules_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_many_series_classification_rules_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_many_series_classification_rules_response& v);
+    static ores::marketdata::messaging::put_many_series_classification_rules_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::put_many_series_classification_rules_response& v);
+    static ores::marketdata::messaging::put_many_series_classification_rules_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_series_classification_rule_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_series_classification_rule_request& v);
+    static ores::marketdata::messaging::delete_series_classification_rule_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_series_classification_rule_request& v);
+    static ores::marketdata::messaging::delete_series_classification_rule_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_series_classification_rule_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_series_classification_rule_response& v);
+    static ores::marketdata::messaging::delete_series_classification_rule_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_series_classification_rule_response& v);
+    static ores::marketdata::messaging::delete_series_classification_rule_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_many_series_classification_rules_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::marketdata::messaging::delete_many_series_classification_rules_request& v);
+    static ores::marketdata::messaging::delete_many_series_classification_rules_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::delete_many_series_classification_rules_request& v);
+    static ores::marketdata::messaging::delete_many_series_classification_rules_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_many_series_classification_rules_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::marketdata::messaging::delete_many_series_classification_rules_response& v);
+    static ores::marketdata::messaging::delete_many_series_classification_rules_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::delete_many_series_classification_rules_response& v);
+    static ores::marketdata::messaging::delete_many_series_classification_rules_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_series_classification_rule_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::marketdata::messaging::list_series_classification_rule_versions_request& v);
+    static ores::marketdata::messaging::list_series_classification_rule_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::list_series_classification_rule_versions_request& v);
+    static ores::marketdata::messaging::list_series_classification_rule_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_series_classification_rule_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::marketdata::messaging::list_series_classification_rule_versions_response& v);
+    static ores::marketdata::messaging::list_series_classification_rule_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::list_series_classification_rule_versions_response& v);
+    static ores::marketdata::messaging::list_series_classification_rule_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_series_classification_rule_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::marketdata::messaging::get_series_classification_rule_version_request& v);
+    static ores::marketdata::messaging::get_series_classification_rule_version_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::get_series_classification_rule_version_request& v);
+    static ores::marketdata::messaging::get_series_classification_rule_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_series_classification_rule_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::marketdata::messaging::get_series_classification_rule_version_response& v);
+    static ores::marketdata::messaging::get_series_classification_rule_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::get_series_classification_rule_version_response& v);
+    static ores::marketdata::messaging::get_series_classification_rule_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

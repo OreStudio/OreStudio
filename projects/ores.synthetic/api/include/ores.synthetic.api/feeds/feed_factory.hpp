@@ -118,6 +118,8 @@ struct fx_spot_feed_build_input final {
     std::vector<ores::synthetic::domain::fx_spot_fixing_item> fixing_items;
     /// The policy the feed calibrates under: its class policy or the defaults, with its own window.
     feed::calibration_policy policy;
+    /// The variance calibration the config names, as stored; absent when it names none.
+    std::optional<ores::synthetic::domain::variance_calibration> variance_calibration;
 };
 
 /**

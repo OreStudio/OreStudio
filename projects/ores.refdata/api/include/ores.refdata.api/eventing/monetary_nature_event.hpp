@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::refdata::messaging::monetary_nature_event> {
-    static constexpr std::string_view subject_prefix = "refdata.v1.monetary_natures_events";
+    static constexpr std::string_view subject_prefix = "refdata.v1.events.monetary_natures";
 
     static ores::refdata::messaging::monetary_nature_event
     from_notification(const entity_event_notification& notification) {

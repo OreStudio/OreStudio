@@ -43,7 +43,7 @@ import {
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS, pricingEnginePath } from '../shell/paths.js';
 import { WorkflowMenu } from '../shell/WorkflowMenu.js';
-import { PARTY_COLUMN_ID, PARTY_FILTER_ID, usePartyScope } from '../refdata/partyScope.js';
+import { PARTY_COLUMN_ID, partyIdOf, usePartyScope } from '../refdata/partyScope.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Icon } from '../ui/Icon.js';
@@ -81,7 +81,7 @@ export function pageOf(
     },
 ): { readonly rows: readonly PricingSummary[]; readonly total: number } {
     const needle = page.search.trim().toLowerCase();
-    const party = page.filters?.[PARTY_FILTER_ID] ?? '';
+    const party = partyIdOf(page.filters ?? {}) ?? '';
     const owned = party === '' ? rows : rows.filter((row) => row.partyId === party);
     const found =
         needle === ''

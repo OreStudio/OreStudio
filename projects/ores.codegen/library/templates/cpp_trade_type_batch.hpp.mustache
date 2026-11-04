@@ -31,8 +31,10 @@ struct instrument_batch {
     /**
      * @brief The {{cpp_type}} rows, keyed by trade id.
      */
-    std::vector<{{cpp_type}}> {{name}};
+    std::vector<ores::trading::domain::{{cpp_type}}> {{name}};
 {{/batch}}
+
+    friend bool operator==(const instrument_batch&, const instrument_batch&) = default;
 };
 
 /**

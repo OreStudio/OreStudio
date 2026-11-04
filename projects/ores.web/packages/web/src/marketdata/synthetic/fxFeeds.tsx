@@ -20,7 +20,7 @@
  */
 
 import type { ReactNode } from 'react';
-import { api } from '../../api/client.js';
+import { api, type RecordRow } from '../../api/client.js';
 import { PATHS } from '../../shell/paths.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { OresmdUrl } from '../../oresmd/OresmdUrl.js';
@@ -31,6 +31,15 @@ import { feedPath, type FeedKind } from './feedKind.js';
 import { COMPONENTS, MixturePanel } from './MixturePanel.js';
 import { ArrivalsTab } from './ArrivalsPanel.js';
 import { TicksPanel } from './TicksPanel.js';
+import type { FeedPart } from './FeedHistory.js';
+import {
+    CALIBRATIONS,
+    CALIBRATION_ENTITY,
+    INPUTS,
+    INPUT_ENTITY,
+    usePairCalibrations,
+    usePairInputs,
+} from '../calibration/varianceRecords.js';
 
 const FEEDS = 'fx-feeds';
 
@@ -168,8 +177,14 @@ const FEED_WRITE_FIELDS = [
     'process_type',
     'enabled',
     'auto_start',
+    'arrival_mode',
+    'branching_ratio',
+    'decay',
+    'sensitivity',
     'folder_id',
     'calibration_window_days',
+    'variance_model',
+    'variance_calibration_id',
 ] as const;
 
 /** The feed as written back with a change, such as a new engine. */
@@ -248,6 +263,30 @@ function useFeedCheck(): (values: FieldValues) => readonly string[] {
     };
 }
 
+/**
+ * The variance calibration records of the feed's pair, read into the feed's history: each
+ * input a run captured and each calibration fitted, proposed, decided or superseded. They
+ * are the system's records and nobody reverts them, so no revert is offered.
+ */
+function useVarianceRecords(feed: RecordRow): readonly FeedPart[] {
+    const base = show(feed['base_currency_code']);
+    const quote = show(feed['quote_currency_code']);
+    const calibrations = usePairCalibrations(base, quote);
+    const inputs = usePairInputs(base, quote);
+    const part = (entity: string, resource: string, rows: readonly RecordRow[]): FeedPart => ({
+        entity,
+        resource,
+        specs: [],
+        keep: [],
+        rows,
+        mayWrite: false,
+    });
+    return [
+        part(INPUT_ENTITY, INPUTS, inputs.data ?? []),
+        part(CALIBRATION_ENTITY, CALIBRATIONS, (calibrations.data ?? []) as readonly RecordRow[]),
+    ];
+}
+
 /** The FX price feeds, as the shared feed screens draw them. */
 export const FX_FEED_KIND: FeedKind = {
     resource: FEEDS,
@@ -271,6 +310,7 @@ export const FX_FEED_KIND: FeedKind = {
             t('marketdata.feeds.targetUri'),
         ],
     ],
+    useRelated: useVarianceRecords,
     parts: [
         {
             resource: COMPONENTS,

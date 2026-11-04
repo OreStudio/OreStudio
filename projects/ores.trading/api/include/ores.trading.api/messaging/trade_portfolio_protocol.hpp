@@ -44,6 +44,8 @@ namespace ores::trading::messaging {
 struct trade_portfolio_key {
     boost::uuids::uuid trade_id;
     int sequence_number;
+
+    friend bool operator==(const trade_portfolio_key&, const trade_portfolio_key&) = default;
 };
 
 struct trade_portfolio_write {
@@ -51,26 +53,38 @@ struct trade_portfolio_write {
     int sequence_number;
     boost::uuids::uuid trade_activity_id;
     boost::uuids::uuid portfolio_id;
+
+    friend bool operator==(const trade_portfolio_write&, const trade_portfolio_write&) = default;
 };
 
 struct trade_portfolio_change {
     trade_portfolio_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const trade_portfolio_change&, const trade_portfolio_change&) = default;
 };
 
 struct trade_portfolio_removal {
     trade_portfolio_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const trade_portfolio_removal&,
+                           const trade_portfolio_removal&) = default;
 };
 
 struct trade_portfolio_lookup {
     trade_portfolio_key key;
     std::optional<ores::trading::domain::trade_portfolio> trade_portfolio;
+
+    friend bool operator==(const trade_portfolio_lookup&, const trade_portfolio_lookup&) = default;
 };
 
 struct trade_portfolios_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const trade_portfolios_filter&,
+                           const trade_portfolios_filter&) = default;
 };
 
 struct trade_portfolio_event {
@@ -80,17 +94,25 @@ struct trade_portfolio_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const trade_portfolio_event&, const trade_portfolio_event&) = default;
 };
 
 struct trade_portfolio_version_key {
     trade_portfolio_key trade_portfolio;
     std::uint32_t version;
+
+    friend bool operator==(const trade_portfolio_version_key&,
+                           const trade_portfolio_version_key&) = default;
 };
 
 struct trade_portfolio_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const trade_portfolio_versions_filter&,
+                           const trade_portfolio_versions_filter&) = default;
 };
 
 struct list_trade_portfolios_request {
@@ -108,12 +130,18 @@ struct list_trade_portfolios_request {
     ores::utility::domain::order order;
     std::optional<trade_portfolios_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_trade_portfolios_request&,
+                           const list_trade_portfolios_request&) = default;
 };
 
 struct list_trade_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_portfolio> trade_portfolios;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_portfolios_response&,
+                           const list_trade_portfolios_response&) = default;
 };
 
 struct get_trade_portfolio_request {
@@ -127,11 +155,17 @@ struct get_trade_portfolio_request {
      */
     static constexpr bool requires_session = true;
     trade_portfolio_key key;
+
+    friend bool operator==(const get_trade_portfolio_request&,
+                           const get_trade_portfolio_request&) = default;
 };
 
 struct get_trade_portfolio_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_portfolio> trade_portfolio;
+
+    friend bool operator==(const get_trade_portfolio_response&,
+                           const get_trade_portfolio_response&) = default;
 };
 
 struct get_many_trade_portfolios_request {
@@ -145,11 +179,17 @@ struct get_many_trade_portfolios_request {
      */
     static constexpr bool requires_session = true;
     std::vector<trade_portfolio_key> keys;
+
+    friend bool operator==(const get_many_trade_portfolios_request&,
+                           const get_many_trade_portfolios_request&) = default;
 };
 
 struct get_many_trade_portfolios_response {
     ores::utility::domain::result result;
     std::vector<trade_portfolio_lookup> entries;
+
+    friend bool operator==(const get_many_trade_portfolios_response&,
+                           const get_many_trade_portfolios_response&) = default;
 };
 
 struct put_trade_portfolio_request {
@@ -164,11 +204,17 @@ struct put_trade_portfolio_request {
     static constexpr bool requires_session = true;
     trade_portfolio_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_trade_portfolio_request&,
+                           const put_trade_portfolio_request&) = default;
 };
 
 struct put_trade_portfolio_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_portfolio> trade_portfolio;
+
+    friend bool operator==(const put_trade_portfolio_response&,
+                           const put_trade_portfolio_response&) = default;
 };
 
 struct put_many_trade_portfolios_request {
@@ -183,11 +229,17 @@ struct put_many_trade_portfolios_request {
     static constexpr bool requires_session = true;
     std::vector<trade_portfolio_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_trade_portfolios_request&,
+                           const put_many_trade_portfolios_request&) = default;
 };
 
 struct put_many_trade_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_portfolio> trade_portfolios;
+
+    friend bool operator==(const put_many_trade_portfolios_response&,
+                           const put_many_trade_portfolios_response&) = default;
 };
 
 struct delete_trade_portfolio_request {
@@ -202,10 +254,16 @@ struct delete_trade_portfolio_request {
     static constexpr bool requires_session = true;
     trade_portfolio_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_trade_portfolio_request&,
+                           const delete_trade_portfolio_request&) = default;
 };
 
 struct delete_trade_portfolio_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_trade_portfolio_response&,
+                           const delete_trade_portfolio_response&) = default;
 };
 
 struct delete_many_trade_portfolios_request {
@@ -220,10 +278,16 @@ struct delete_many_trade_portfolios_request {
     static constexpr bool requires_session = true;
     std::vector<trade_portfolio_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_trade_portfolios_request&,
+                           const delete_many_trade_portfolios_request&) = default;
 };
 
 struct delete_many_trade_portfolios_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_trade_portfolios_response&,
+                           const delete_many_trade_portfolios_response&) = default;
 };
 
 struct list_by_trade_id_trade_portfolios_request {
@@ -242,12 +306,18 @@ struct list_by_trade_id_trade_portfolios_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<trade_portfolios_filter> filter;
+
+    friend bool operator==(const list_by_trade_id_trade_portfolios_request&,
+                           const list_by_trade_id_trade_portfolios_request&) = default;
 };
 
 struct list_by_trade_id_trade_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_portfolio> trade_portfolios;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_trade_id_trade_portfolios_response&,
+                           const list_by_trade_id_trade_portfolios_response&) = default;
 };
 
 struct list_trade_portfolio_versions_request {
@@ -265,12 +335,18 @@ struct list_trade_portfolio_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<trade_portfolio_versions_filter> filter;
+
+    friend bool operator==(const list_trade_portfolio_versions_request&,
+                           const list_trade_portfolio_versions_request&) = default;
 };
 
 struct list_trade_portfolio_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_portfolio> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_portfolio_versions_response&,
+                           const list_trade_portfolio_versions_response&) = default;
 };
 
 struct get_trade_portfolio_version_request {
@@ -284,11 +360,17 @@ struct get_trade_portfolio_version_request {
      */
     static constexpr bool requires_session = true;
     trade_portfolio_version_key key;
+
+    friend bool operator==(const get_trade_portfolio_version_request&,
+                           const get_trade_portfolio_version_request&) = default;
 };
 
 struct get_trade_portfolio_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_portfolio> version;
+
+    friend bool operator==(const get_trade_portfolio_version_response&,
+                           const get_trade_portfolio_version_response&) = default;
 };
 
 /**
@@ -300,9 +382,9 @@ struct get_trade_portfolio_version_response {
  * of them.
  */
 namespace trade_portfolio_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trade_portfolios_events.created";
-inline constexpr std::string_view updated = "trading.v1.trade_portfolios_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trade_portfolios_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trade_portfolios.created";
+inline constexpr std::string_view updated = "trading.v1.events.trade_portfolios.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trade_portfolios.deleted";
 }
 /**
  * @brief The members of trade_portfolio_key, named as the wire names them and in the order

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/fx_vol_surface_blueprints/fx_vol_surface_blueprint.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+fx_vol_surface_blueprints list --limit 1

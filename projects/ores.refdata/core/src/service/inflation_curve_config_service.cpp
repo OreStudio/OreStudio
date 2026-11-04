@@ -116,9 +116,6 @@ inflation_curve_config_to_domain(const messaging::inflation_curve_config_write& 
     v.frequency = write.frequency;
     v.base_rate = write.base_rate;
     v.tolerance = write.tolerance;
-    v.has_seasonality = write.has_seasonality;
-    v.seasonality_base_date = write.seasonality_base_date;
-    v.seasonality_frequency = write.seasonality_frequency;
     v.use_last_fixing_date = write.use_last_fixing_date;
     v.interpolation_variable = write.interpolation_variable;
     v.interpolation_method = write.interpolation_method;

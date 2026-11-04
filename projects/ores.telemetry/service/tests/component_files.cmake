@@ -22,4 +22,5 @@
 set(files
     "config_parser_tests.cpp"
     "main.cpp"
+    "nats_monitoring_replies_tests.cpp"
 )

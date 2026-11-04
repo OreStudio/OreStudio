@@ -42,6 +42,18 @@ import {
     type IrCurveGenerationConfigWrite,
     type IrCurveGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_generation_config_protocol';
+import {
+    subjects as varianceCalibrationSubjects,
+    type VarianceCalibrationsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/variance_calibration_protocol';
+import {
+    subjects as varianceInputSubjects,
+    type VarianceCalibrationInputsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/variance_calibration_input_protocol';
+import {
+    subjects as variancePointSubjects,
+    type VarianceCalibrationInputPointsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/variance_calibration_input_point_protocol';
 import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as paymentFrequencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/payment_frequency_protocol';
@@ -63,7 +75,12 @@ import {
 import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
 import { subjects as fxSimpleSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_simple_protocol';
 import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
+import type { ListFolderFeedsRequest } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
 import { subjects as feedSelectionSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_selection_protocol';
+import type {
+    StartSelectedFeedsRequest,
+    StopSelectedFeedsRequest,
+} from '@ores/wire-protocol/generated/synthetic/protocol/feed_selection_protocol';
 import { subjects as irConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_ir_parameters_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
 import {
@@ -269,6 +286,8 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             folder_id: idSchema.nullable(),
             asset_class_code: code.default('fx'),
             calibration_window_days: z.int().min(2).max(180).nullable().default(null),
+            variance_model: code.default('constant'),
+            variance_calibration_id: idSchema.nullable().default(null),
         }) satisfies z.ZodType<FxSpotGenerationConfigWrite>,
     },
     {
@@ -388,6 +407,80 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             end_tenor_code: code,
             instrument_code: code,
         }) satisfies z.ZodType<IrCurveTemplateEntryWrite>,
+    },
+    {
+        key: 'variance-calibrations',
+        systemOwned: true,
+        entityType: 'ores.synthetic.variance_calibration',
+        keyField: 'id',
+        oneOf: 'id_one_of',
+        rows: 'variance_calibrations',
+        filter: {
+            base_currency_code: null,
+            quote_currency_code: null,
+            input_id: null,
+            method: null,
+            state: null,
+            id_one_of: null,
+            base_currency_code_one_of: null,
+            quote_currency_code_one_of: null,
+            input_id_one_of: null,
+            method_one_of: null,
+            state_one_of: null,
+        } satisfies VarianceCalibrationsFilter,
+        filters: ['base_currency_code', 'quote_currency_code', 'state'],
+        subjects: {
+            list: varianceCalibrationSubjects.list_variance_calibrations_request,
+            putMany: varianceCalibrationSubjects.put_many_variance_calibrations_request,
+            remove: varianceCalibrationSubjects.delete_variance_calibration_request,
+            removeMany: varianceCalibrationSubjects.delete_many_variance_calibrations_request,
+        },
+        readOnlyBecause:
+            'A calibration is written by a calibration run and decided by a review, never edited.',
+    },
+    {
+        key: 'variance-calibration-inputs',
+        systemOwned: true,
+        entityType: 'ores.synthetic.variance_calibration_input',
+        keyField: 'id',
+        oneOf: 'id_one_of',
+        rows: 'variance_calibration_inputs',
+        filter: {
+            base_currency_code: null,
+            quote_currency_code: null,
+            id_one_of: null,
+            base_currency_code_one_of: null,
+            quote_currency_code_one_of: null,
+        } satisfies VarianceCalibrationInputsFilter,
+        filters: ['base_currency_code', 'quote_currency_code'],
+        subjects: {
+            list: varianceInputSubjects.list_variance_calibration_inputs_request,
+            putMany: varianceInputSubjects.put_many_variance_calibration_inputs_request,
+            remove: varianceInputSubjects.delete_variance_calibration_input_request,
+            removeMany: varianceInputSubjects.delete_many_variance_calibration_inputs_request,
+        },
+        readOnlyBecause: 'An input is the fixings a calibration run captured, kept as read.',
+    },
+    {
+        key: 'variance-calibration-input-points',
+        systemOwned: true,
+        entityType: 'ores.synthetic.variance_calibration_input_point',
+        keyField: 'id',
+        oneOf: 'id_one_of',
+        rows: 'variance_calibration_input_points',
+        filter: {
+            input_id: null,
+            id_one_of: null,
+            input_id_one_of: null,
+        } satisfies VarianceCalibrationInputPointsFilter,
+        parentField: 'input_id',
+        subjects: {
+            list: variancePointSubjects.list_variance_calibration_input_points_request,
+            putMany: variancePointSubjects.put_many_variance_calibration_input_points_request,
+            remove: variancePointSubjects.delete_variance_calibration_input_point_request,
+            removeMany: variancePointSubjects.delete_many_variance_calibration_input_points_request,
+        },
+        readOnlyBecause: 'A point is one fixing a calibration run captured, kept as read.',
     },
     {
         key: 'process-types',
@@ -582,6 +675,21 @@ export const feedStartSchema = z.object({
             }),
         )
         .default([]),
+    variance: z
+        .object({
+            model: z.string(),
+            calibration_id: z.string().default(''),
+            calibration_version: z.int().default(0),
+            fitted: z.boolean(),
+            alpha: z.number(),
+            gamma: z.number(),
+            beta: z.number(),
+            persistence: z.number(),
+            initial_ratio: z.number(),
+            returns: z.int(),
+            note: z.string(),
+        })
+        .nullish(),
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;
@@ -898,7 +1006,7 @@ interface FeedFilter {
     readonly search: string;
 }
 
-function wireFilter(filter: FeedFilter): Record<string, unknown> {
+function wireFilter(filter: FeedFilter): Omit<ListFolderFeedsRequest, 'offset' | 'limit'> {
     return {
         folder_id: filter.folder,
         provider_code: filter.provider,
@@ -920,7 +1028,7 @@ const selectionSchema = feedFilterSchema
 
 function wireSelection(
     selection: FeedFilter & { readonly feedIds: string[]; readonly excludedIds: string[] },
-): Record<string, unknown> {
+): StartSelectedFeedsRequest & StopSelectedFeedsRequest {
     return {
         ...wireFilter(selection),
         feed_ids: selection.feedIds,
@@ -1019,7 +1127,7 @@ export function registerSyntheticRoutes(
                 ...wireFilter(query),
                 offset: query.offset,
                 limit: query.limit,
-            },
+            } satisfies ListFolderFeedsRequest,
             operationReplySchema.extend({
                 total: z.int().default(0),
                 feeds: z

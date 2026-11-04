@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:shell:index:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-08-10
+#+updated: 2026-11-01
 
 Recipes related to *Shell recipes*. Each entry below is a single how-do-I question with executable steps. The link lists are generated from the recipes themselves by =projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py=, so a new recipe appears here as soon as that runs; the paragraph under each heading, and any note beside a link, are hand-written and are kept.
 
@@ -417,6 +417,14 @@ tangled into the runnable script library
 
 - [[id:57D582E9-81E9-5B4C-B129-959A9F584EB6][How do I run the portfolios commands from the shell?]]
 
+* Product Type Asset Classes
+
+- [[id:3FA91152-CD6A-5A1F-A878-89133BEBB393][How do I run the product_type_asset_classes commands from the shell?]]
+
+* Product Types
+
+- [[id:84DC9D5F-4B29-5EC5-BB43-425A06F89010][How do I run the product_types commands from the shell?]]
+
 * Purpose Types
 
 - [[id:B943E13B-E74B-58F4-8D98-CDABD01BD165][How do I run the purpose_types commands from the shell?]]
@@ -740,10 +748,6 @@ tangled into the runnable script library
 
 - [[id:3907B9D9-5A0A-5533-910F-C42F701E6BA7][How do I run the trade_party_roles commands from the shell?]]
 
-* Trade Types
-
-- [[id:571DB331-F3D8-5715-86C9-18ED3958B95E][How do I run the trade_types commands from the shell?]]
-
 * Badge Mappings
 
 - [[id:6FA5889A-660A-5527-8D75-243F973DBBB2][How do I run the badge_mappings commands from the shell?]]
@@ -1000,10 +1004,6 @@ tangled into the runnable script library
 
 - [[id:D7E6C28D-4DD4-5CF8-9682-B19E2DFE97F9][How do I run the average_ois_conventions commands from the shell?]]
 
-* Cross Currency Basis Conventions
-
-- [[id:15F5D765-33EA-5B26-8005-D711223E6A18][How do I run the cross_currency_basis_conventions commands from the shell?]]
-
 * Tenor Basis Two Swap Conventions
 
 - [[id:2F45F265-10AF-505E-9FE5-5A24BFE2B4CB][How do I run the tenor_basis_two_swap_conventions commands from the shell?]]
@@ -1020,17 +1020,9 @@ tangled into the runnable script library
 
 - [[id:52E34F2C-24D6-5926-AB27-39D8C0CB03DC][How do I run the inflation_swap_conventions commands from the shell?]]
 
-* Cross Currency Fix Float Conventions
-
-- [[id:1364CBFE-B388-54EF-ACA4-1FB984009E0A][How do I run the cross_currency_fix_float_conventions commands from the shell?]]
-
 * Cms Spread Option Conventions
 
 - [[id:55FFB4C3-FE61-5C22-B71A-1C823D96BF65][How do I run the cms_spread_option_conventions commands from the shell?]]
-
-* Commodity Future Conventions
-
-- [[id:8C685BAC-85D1-548F-B146-098C60CA78BF][How do I run the commodity_future_conventions commands from the shell?]]
 
 * Bond Yield Conventions
 
@@ -1955,3 +1947,183 @@ tangled into the runnable script library
 * Cut Approval Details
 
 - [[id:713EDE01-50B1-5DEC-A446-81937CDBCE13][How do I run the cut_approval_details commands from the shell?]]
+
+* Product Family Codes
+
+- [[id:FC8DF32C-209D-51EF-AC33-1D819F608F53][How do I run the product_family_codes commands from the shell?]]
+
+* Cross Currency Fix Float Fixed Legs
+
+- [[id:73034E33-66E9-5FD7-BF8F-78C956BF47F0][How do I run the cross_currency_fix_float_fixed_legs commands from the shell?]]
+
+* Cross Currency Fix Float Float Legs
+
+- [[id:F0DEB72A-4042-504F-981F-63670C3F5534][How do I run the cross_currency_fix_float_float_legs commands from the shell?]]
+
+* Cross Currency Fix Float Swap Terms
+
+- [[id:1042FCD9-B5F5-5163-A0DF-8737F9935961][How do I run the cross_currency_fix_float_swap_terms commands from the shell?]]
+
+* Cross Currency Basis Flat Legs
+
+- [[id:8F4B58C8-BC9C-5777-96C1-6BA75FEEDAC1][How do I run the cross_currency_basis_flat_legs commands from the shell?]]
+
+* Cross Currency Basis Spread Legs
+
+- [[id:71934350-057D-5029-8E7B-906D5910E6D3][How do I run the cross_currency_basis_spread_legs commands from the shell?]]
+
+* Cross Currency Basis Swap Terms
+
+- [[id:474B4731-0A7B-5F13-85DE-92495F5A8BB8][How do I run the cross_currency_basis_swap_terms commands from the shell?]]
+
+* Commodity Future Averaging Terms
+
+- [[id:9BA1EDEF-6090-52FB-9715-76BFE51C791B][How do I run the commodity_future_averaging_terms commands from the shell?]]
+
+* Commodity Future Contract Terms
+
+- [[id:2FC439A0-5094-5D78-8048-642BBE40522C][How do I run the commodity_future_contract_terms commands from the shell?]]
+
+* Commodity Future Expiry Anchors
+
+- [[id:53445627-803F-5C71-8ADF-406AAD309BD7][How do I run the commodity_future_expiry_anchors commands from the shell?]]
+
+* Commodity Future Off Peak Indexes
+
+- [[id:BBCF1C8D-663D-501B-A7DF-2D2F9B123F4E][How do I run the commodity_future_off_peak_indexes commands from the shell?]]
+
+* Commodity Future Option Expiries
+
+- [[id:3A3EB896-C432-570A-8BF1-F3A9B1F9FF57][How do I run the commodity_future_option_expiries commands from the shell?]]
+
+* Curve Segment Conventions
+
+- [[id:17BC82CA-4F37-5398-B050-9D033798C667][How do I run the curve_segment_conventions commands from the shell?]]
+
+* Curve Segment Cross Currency Terms
+
+- [[id:DE652CCF-A7D5-501D-AB08-CB17B4125B69][How do I run the curve_segment_cross_currency_terms commands from the shell?]]
+
+* Curve Segment Discount Ratios
+
+- [[id:DCACF291-4C05-5E3F-9F39-41D71A8C546E][How do I run the curve_segment_discount_ratios commands from the shell?]]
+
+* Curve Segment Extrapolations
+
+- [[id:90B4ADF2-4A4A-535E-8F8A-28CF1C3A7DA5][How do I run the curve_segment_extrapolations commands from the shell?]]
+
+* Curve Segment Ibor Fallbacks
+
+- [[id:1292E702-BDB3-5EFD-8D88-112D2DD1DAB9][How do I run the curve_segment_ibor_fallbacks commands from the shell?]]
+
+* Curve Segment Pillar Rules
+
+- [[id:28B1F088-D688-5869-8FA0-81ABE2F93DA5][How do I run the curve_segment_pillar_rules commands from the shell?]]
+
+* Curve Segment Projections
+
+- [[id:9E0B6952-8845-585C-A16C-00B08F823E6B][How do I run the curve_segment_projections commands from the shell?]]
+
+* Curve Segment References
+
+- [[id:FBD1E03B-1F49-51CA-820F-2AAEE6F13C01][How do I run the curve_segment_references commands from the shell?]]
+
+* Curve Segment Tenor Basis Curves
+
+- [[id:255ACA0F-D571-5DA0-8F5B-843B876581AE][How do I run the curve_segment_tenor_basis_curves commands from the shell?]]
+
+* Curve Segment Weighted Averages
+
+- [[id:B7E91FFF-6BC3-5A38-9618-57AE50E6E214][How do I run the curve_segment_weighted_averages commands from the shell?]]
+
+* Commodity Curve Bases
+
+- [[id:8DB098AD-CDB0-5E15-A797-EDDCA22CD83D][How do I run the commodity_curve_bases commands from the shell?]]
+
+* Commodity Curve Cross Currencies
+
+- [[id:FD3B5A40-9FD3-55E2-A4D6-D27D60F5CC56][How do I run the commodity_curve_cross_currencies commands from the shell?]]
+
+* Commodity Curve Directs
+
+- [[id:3F39021F-FD4D-5069-AF06-376D4FCE8732][How do I run the commodity_curve_directs commands from the shell?]]
+
+* Commodity Curve Interpolations
+
+- [[id:A0F817F9-CEB5-5662-ACC1-A258F7B3A620][How do I run the commodity_curve_interpolations commands from the shell?]]
+
+* Default Curve Benchmarks
+
+- [[id:39053E85-2DE2-5BE6-9674-E7F854E62F87][How do I run the default_curve_benchmarks commands from the shell?]]
+
+* Default Curve Cds Terms
+
+- [[id:1378FB25-6A5F-510E-952C-37C110D1A8A1][How do I run the default_curve_cds_terms commands from the shell?]]
+
+* Default Curve Market Terms
+
+- [[id:856E7C12-D11F-52D3-876F-E49DF53BF3B0][How do I run the default_curve_market_terms commands from the shell?]]
+
+* Default Curve Transition Matrices
+
+- [[id:3DD09B83-11D1-5606-AA03-4A192EDC4903][How do I run the default_curve_transition_matrices commands from the shell?]]
+
+* Default Curve Yield Reinterpretations
+
+- [[id:E7EC122B-4E52-5FC5-BA1D-E8BCDB553B8A][How do I run the default_curve_yield_reinterpretations commands from the shell?]]
+
+* Inflation Seasonalities
+
+- [[id:3C018BAF-C008-5612-999B-6A1765B5FA4B][How do I run the inflation_seasonalities commands from the shell?]]
+
+* Swaption Volatility Smiles
+
+- [[id:B27DFD9C-A19B-5A0E-B6A8-1546E5279B93][How do I run the swaption_volatility_smiles commands from the shell?]]
+
+* Ore File Categories
+
+- [[id:62E13E52-7696-52D1-8FCB-C69339DB81ED][How do I run the ore_file_categories commands from the shell?]]
+
+* Ore File Versions
+
+- [[id:B9B96BE3-0AA0-51A9-B012-95B65073FDF5][How do I run the ore_file_versions commands from the shell?]]
+
+* Ore Files
+
+- [[id:C9C72368-DD1B-52B7-8366-0224FA785031][How do I run the ore_files commands from the shell?]]
+
+* Trade Generation Trade Types
+
+- [[id:4BA21A7C-964A-5B51-B3A8-E9B7B1F30FBD][How do I run the trade_generation_trade_types commands from the shell?]]
+
+* Fx Vol Surface Blueprints
+
+- [[id:573B8928-38CB-5CB0-AC1A-5893CDB5A7A3][How do I run the fx_vol_surface_blueprints commands from the shell?]]
+
+* Fx Vol Surface Pillar Sources
+
+- [[id:ED62DAED-6805-5C3D-8A80-B82C0CE39209][How do I run the fx_vol_surface_pillar_sources commands from the shell?]]
+
+* Fx Vol Surface Pillars
+
+- [[id:5CC2D8E2-53FB-5DA1-AAC1-957B08F79539][How do I run the fx_vol_surface_pillars commands from the shell?]]
+
+* Book Product Types
+
+- [[id:D899F282-F4EF-5C91-94B7-5546BB9147F5][How do I run the book_product_types commands from the shell?]]
+
+* Role Product Types
+
+- [[id:1E0E2129-DFC2-5C77-B903-DE571F672FCB][How do I run the role_product_types commands from the shell?]]
+
+* Variance Calibration Input Points
+
+- [[id:C255FA1E-15E8-5945-9CA0-8702B775BDB1][How do I run the variance_calibration_input_points commands from the shell?]]
+
+* Variance Calibration Inputs
+
+- [[id:ECAB1838-E58C-5F87-AE1E-F56A089862DA][How do I run the variance_calibration_inputs commands from the shell?]]
+
+* Variance Calibrations
+
+- [[id:00D9ABEB-CF5C-5B5D-A107-3D0651440DC5][How do I run the variance_calibrations commands from the shell?]]

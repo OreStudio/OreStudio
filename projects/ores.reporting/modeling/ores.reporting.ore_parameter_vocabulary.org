@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 0C6F2B41-8B7E-4E52-9C3D-5A1E7F4D2B90
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.ore_parameter_vocabulary
 #+description: Codegen entity model for the reporting =ore_parameter_vocabulary= table. The ORE leaves whose values a rule governs, keyed by the leaf's address in its schema, and the value set each one takes.

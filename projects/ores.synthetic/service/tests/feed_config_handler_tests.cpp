@@ -92,6 +92,7 @@ const std::string test_secret("feed-config-test-secret");
 const std::string test_start_subject("ores.test.feed_config.start");
 const std::string test_stop_subject("ores.test.feed_config.stop");
 const std::string test_list_subject("ores.test.feed_config.list");
+const std::string test_calibrate_subject("ores.test.feed_config.calibrate");
 
 // Mints an HS256 token the handler's verifier accepts, scoped to the test
 // tenant and party with the given roles.
@@ -367,6 +368,7 @@ struct config_fixture {
     std::optional<ores::nats::service::subscription> start_sub;
     std::optional<ores::nats::service::subscription> stop_sub;
     std::optional<ores::nats::service::subscription> list_sub;
+    std::optional<ores::nats::service::subscription> calibrate_sub;
 
     config_fixture()
         : nats(ores::testing::make_nats_options())
@@ -395,6 +397,12 @@ struct config_fixture {
                 ores::synthetic::service::feed_config_handler h(
                     nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
                 h.list(std::move(msg));
+            });
+        calibrate_sub = nats.queue_subscribe(
+            test_calibrate_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
+                ores::synthetic::service::feed_config_handler h(
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                h.calibrate(std::move(msg));
             });
     }
 };
@@ -452,11 +460,12 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
         return one.source_name == seeds.fx_enabled_source;
     });
     REQUIRE(fx_run != list.running_feeds.end());
-    // The FX config states a fixed price, so its run kept its level and names no fixing.
+    // The FX config states a fixed price, so its run kept its level, names no fixing, and
+    // states the level it kept.
     REQUIRE(fx_run->start.has_value());
     CHECK_FALSE(fx_run->start->from_fixing);
     CHECK(fx_run->start->item.empty());
-    CHECK(fx_run->start->value.empty());
+    CHECK(fx_run->start->value == "1.08");
     // A curve starts from no published value, so its run carries no start.
     const auto ir_run = std::ranges::find_if(list.running_feeds, [&](const auto& one) {
         return one.source_name == seeds.ir_enabled_source;
@@ -610,4 +619,110 @@ TEST_CASE("feed_config_list_requires_both_permissions", "[feed_config_handler][i
                               std::string(ores::nats::headers::bearer_prefix) + token}});
     REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+}
+
+TEST_CASE("feed_config_calibrate_writes_only_with_the_write_permissions",
+          "[feed_config_handler][integration]") {
+    config_fixture f;
+    const auto test_party = resolve_test_party(f.db);
+    const auto read_only = mint_token(
+        f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
+    const auto send = [&](bool apply) {
+        return f.nats.request_sync(test_calibrate_subject,
+                                   ores::nats::default_wire_codec().encode(calibrate_request{
+                                       .asset_class_code = "fx", .config_id = {}, .apply = apply}),
+                                   {{std::string(ores::nats::headers::authorization),
+                                     std::string(ores::nats::headers::bearer_prefix) + read_only}});
+    };
+
+    const auto applied = send(true);
+    REQUIRE(applied.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(applied.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+
+    const auto read = send(false);
+    CHECK_FALSE(read.headers.contains(std::string(ores::nats::headers::x_error)));
+
+    // The feeds run for every tenant, so a tenant holding both writes still may not apply.
+    const auto tenant_writer = mint_token(f.db.tenant_id().to_string(),
+                                          test_party,
+                                          {"synthetic::fx_spot_generation_configs:read",
+                                           "synthetic::fx_spot_generation_configs:write",
+                                           "synthetic::gmm_components:write"});
+    const auto by_tenant =
+        f.nats.request_sync(test_calibrate_subject,
+                            ores::nats::default_wire_codec().encode(calibrate_request{
+                                .asset_class_code = "fx", .config_id = {}, .apply = true}),
+                            {{std::string(ores::nats::headers::authorization),
+                              std::string(ores::nats::headers::bearer_prefix) + tenant_writer}});
+    REQUIRE(by_tenant.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(by_tenant.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+}
+
+TEST_CASE("a stored FX spot config is written back with every field it holds",
+          "[feed_config_handler][write_of]") {
+    ores::synthetic::domain::fx_spot_generation_config cfg;
+    cfg.id = boost::uuids::string_generator{}("11111111-1111-4111-8111-111111111111");
+    cfg.config_id = boost::uuids::string_generator{}("22222222-2222-4222-8222-222222222222");
+    cfg.base_currency_code = "GBP";
+    cfg.quote_currency_code = "JPY";
+    cfg.source_name = "synthetic.test.gbpjpy";
+    cfg.oresmd_uri = "oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=JPY";
+    cfg.price_source = "fixing";
+    cfg.calibration_window_days = 45;
+    cfg.gmm_initial_price = 191.5;
+    cfg.ticks_per_hour = 77;
+    cfg.process_type = "arithmetic";
+    cfg.enabled = false;
+    cfg.auto_start = true;
+    cfg.folder_id = boost::uuids::string_generator{}("33333333-3333-4333-8333-333333333333");
+    cfg.asset_class_code = "fx";
+    cfg.arrival_mode = "hawkes";
+    cfg.branching_ratio = 0.4;
+    cfg.decay = 7.0;
+    cfg.sensitivity = 2.5;
+    cfg.variance_model = "gjr_garch";
+    cfg.variance_calibration_id =
+        boost::uuids::string_generator{}("44444444-4444-4444-8444-444444444444");
+
+    const auto w = ores::synthetic::service::write_of(cfg);
+    CHECK(w.id == cfg.id);
+    CHECK(w.config_id == cfg.config_id);
+    CHECK(w.base_currency_code == cfg.base_currency_code);
+    CHECK(w.quote_currency_code == cfg.quote_currency_code);
+    CHECK(w.source_name == cfg.source_name);
+    CHECK(w.oresmd_uri == cfg.oresmd_uri);
+    CHECK(w.price_source == cfg.price_source);
+    CHECK(w.calibration_window_days == cfg.calibration_window_days);
+    CHECK(w.gmm_initial_price == cfg.gmm_initial_price);
+    CHECK(w.ticks_per_hour == cfg.ticks_per_hour);
+    CHECK(w.process_type == cfg.process_type);
+    CHECK(w.enabled == cfg.enabled);
+    CHECK(w.auto_start == cfg.auto_start);
+    CHECK(w.folder_id == cfg.folder_id);
+    CHECK(w.asset_class_code == cfg.asset_class_code);
+    CHECK(w.arrival_mode == cfg.arrival_mode);
+    CHECK(w.branching_ratio == cfg.branching_ratio);
+    CHECK(w.decay == cfg.decay);
+    CHECK(w.sensitivity == cfg.sensitivity);
+    CHECK(w.variance_model == cfg.variance_model);
+    CHECK(w.variance_calibration_id == cfg.variance_calibration_id);
+    // A field the write type gains and write_of forgets compiles silently; the count keeps the
+    // two in step.
+    CHECK(std::tuple_size_v<decltype(ores::synthetic::messaging::wire_fields(w))> == 21);
+}
+
+TEST_CASE("a run's start states its level whether a fixing set it or the run kept it",
+          "[feed_config_handler][to_wire]") {
+    using ores::utility::decimal::decimal;
+    ores::marketdata::domain::feed_start kept;
+    kept.value = decimal::from_double(0.66).value();
+    CHECK(ores::synthetic::service::to_wire(kept).value == "0.66");
+
+    ores::marketdata::domain::feed_start fixed_with_no_record;
+    CHECK(ores::synthetic::service::to_wire(fixed_with_no_record).value.empty());
+
+    ores::marketdata::domain::feed_start from_fixing;
+    from_fixing.from_fixing = true;
+    from_fixing.value = decimal::from_string("1.4335").value();
+    CHECK(ores::synthetic::service::to_wire(from_fixing).value == "1.4335");
 }

@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 3997C7F7-B6DB-4103-98D9-21D9082A3AB9
+:END:
+#+title: Database setup on Windows fails on psql's \o /dev/null
+#+description: setup_schema.sql line 77 sends the grant status lines to /dev/null with \o, added in 94993ae56e on 2026-11-01. Windows has no /dev/null, so psql stops with 'error: /dev/null: No such file or directory' and the Nightly Windows run of 2026-11-02 (41403275020) fails at database setup before it compiles. That run is also the first that could prove the query builder's flat slots ended C1202.
+#+type: capture
+#+level: cross
+#+filetags: :ci:windows:sql:bug:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.sql/setup_schema.sql= line 77 runs =\o /dev/null= to discard
+the status line that each grant prints. Windows has no =/dev/null=, so psql
+stops with =psql:setup_schema.sql:77: error: /dev/null: No such file or
+directory=, and =compass db= fails the database setup. The line came in with
+94993ae56e, "[sql] Create a database without warnings", on 2026-11-01.
+
+* Why
+
+The Windows nightly of 2026-11-02 (run 41403275020, job 125139825651) stops at
+database setup and compiles nothing. That run was the first one with the query
+builder's flat slots (6feebec946), which the CI task named as the proof that
+C1202 is gone. Until the setup runs on Windows, no nightly can show whether it
+is.
+
+The fix needs a discard that psql accepts on every platform. One choice is to
+keep the grants' output and accept the status lines. Another is to collect the
+grant statements and run them with =\gexec= under =\set QUIET on=.
+
+* References
+
+- =gh api --allow-escape-sequences repos/OreStudio/OreStudio/actions/jobs/125139825651/logs=
+- [[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][Re-inventory what the splits leave]], which found it.
+
+* Resolution
+
+Fixed on the branch =fix/discard-grant-status-without-a-null-device=.
+=setup_schema.sql= no longer sends the grants' output anywhere. It saves
+psql's =QUIET= setting, sets it on while the two =\gexec= grant blocks run,
+and restores it afterwards. =QUIET= suppresses the status line each grant
+prints on every platform, and errors still show. A probe against the dev
+database showed a =\gexec= grant printing nothing with =QUIET= on and =GRANT=
+after it was restored. Filed as discarded because the work is done, not
+because it was declined.
+
+* See also
+
+-

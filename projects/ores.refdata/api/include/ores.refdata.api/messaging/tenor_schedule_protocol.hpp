@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct tenor_schedule_key {
     std::string code;
+
+    friend bool operator==(const tenor_schedule_key&, const tenor_schedule_key&) = default;
 };
 
 struct tenor_schedule_write {
@@ -53,21 +55,29 @@ struct tenor_schedule_write {
     std::string schedule_source;
     std::optional<std::string> calendar_code;
     std::optional<std::string> diary_entry_type;
+
+    friend bool operator==(const tenor_schedule_write&, const tenor_schedule_write&) = default;
 };
 
 struct tenor_schedule_change {
     tenor_schedule_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tenor_schedule_change&, const tenor_schedule_change&) = default;
 };
 
 struct tenor_schedule_removal {
     tenor_schedule_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tenor_schedule_removal&, const tenor_schedule_removal&) = default;
 };
 
 struct tenor_schedule_lookup {
     tenor_schedule_key key;
     std::optional<ores::refdata::domain::tenor_schedule> tenor_schedule;
+
+    friend bool operator==(const tenor_schedule_lookup&, const tenor_schedule_lookup&) = default;
 };
 
 struct tenor_schedules_filter {
@@ -76,6 +86,8 @@ struct tenor_schedules_filter {
     std::optional<std::vector<std::string>> code_one_of;
     std::optional<std::vector<std::string>> calendar_code_one_of;
     std::optional<std::vector<std::string>> diary_entry_type_one_of;
+
+    friend bool operator==(const tenor_schedules_filter&, const tenor_schedules_filter&) = default;
 };
 
 struct tenor_schedule_event {
@@ -85,17 +97,25 @@ struct tenor_schedule_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tenor_schedule_event&, const tenor_schedule_event&) = default;
 };
 
 struct tenor_schedule_version_key {
     tenor_schedule_key tenor_schedule;
     std::uint32_t version;
+
+    friend bool operator==(const tenor_schedule_version_key&,
+                           const tenor_schedule_version_key&) = default;
 };
 
 struct tenor_schedule_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const tenor_schedule_versions_filter&,
+                           const tenor_schedule_versions_filter&) = default;
 };
 
 struct list_tenor_schedules_request {
@@ -113,12 +133,18 @@ struct list_tenor_schedules_request {
     ores::utility::domain::order order;
     std::optional<tenor_schedules_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_tenor_schedules_request&,
+                           const list_tenor_schedules_request&) = default;
 };
 
 struct list_tenor_schedules_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_schedule> schedules;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_schedules_response&,
+                           const list_tenor_schedules_response&) = default;
 };
 
 struct get_tenor_schedule_request {
@@ -132,11 +158,17 @@ struct get_tenor_schedule_request {
      */
     static constexpr bool requires_session = true;
     tenor_schedule_key key;
+
+    friend bool operator==(const get_tenor_schedule_request&,
+                           const get_tenor_schedule_request&) = default;
 };
 
 struct get_tenor_schedule_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_schedule> tenor_schedule;
+
+    friend bool operator==(const get_tenor_schedule_response&,
+                           const get_tenor_schedule_response&) = default;
 };
 
 struct get_many_tenor_schedules_request {
@@ -150,11 +182,17 @@ struct get_many_tenor_schedules_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tenor_schedule_key> keys;
+
+    friend bool operator==(const get_many_tenor_schedules_request&,
+                           const get_many_tenor_schedules_request&) = default;
 };
 
 struct get_many_tenor_schedules_response {
     ores::utility::domain::result result;
     std::vector<tenor_schedule_lookup> entries;
+
+    friend bool operator==(const get_many_tenor_schedules_response&,
+                           const get_many_tenor_schedules_response&) = default;
 };
 
 struct put_tenor_schedule_request {
@@ -169,11 +207,17 @@ struct put_tenor_schedule_request {
     static constexpr bool requires_session = true;
     tenor_schedule_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tenor_schedule_request&,
+                           const put_tenor_schedule_request&) = default;
 };
 
 struct put_tenor_schedule_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_schedule> tenor_schedule;
+
+    friend bool operator==(const put_tenor_schedule_response&,
+                           const put_tenor_schedule_response&) = default;
 };
 
 struct put_many_tenor_schedules_request {
@@ -188,11 +232,17 @@ struct put_many_tenor_schedules_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_schedule_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tenor_schedules_request&,
+                           const put_many_tenor_schedules_request&) = default;
 };
 
 struct put_many_tenor_schedules_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_schedule> schedules;
+
+    friend bool operator==(const put_many_tenor_schedules_response&,
+                           const put_many_tenor_schedules_response&) = default;
 };
 
 struct delete_tenor_schedule_request {
@@ -207,10 +257,16 @@ struct delete_tenor_schedule_request {
     static constexpr bool requires_session = true;
     tenor_schedule_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tenor_schedule_request&,
+                           const delete_tenor_schedule_request&) = default;
 };
 
 struct delete_tenor_schedule_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tenor_schedule_response&,
+                           const delete_tenor_schedule_response&) = default;
 };
 
 struct delete_many_tenor_schedules_request {
@@ -225,10 +281,16 @@ struct delete_many_tenor_schedules_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_schedule_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tenor_schedules_request&,
+                           const delete_many_tenor_schedules_request&) = default;
 };
 
 struct delete_many_tenor_schedules_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tenor_schedules_response&,
+                           const delete_many_tenor_schedules_response&) = default;
 };
 
 struct list_by_calendar_code_tenor_schedules_request {
@@ -248,12 +310,18 @@ struct list_by_calendar_code_tenor_schedules_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_schedules_filter> filter;
+
+    friend bool operator==(const list_by_calendar_code_tenor_schedules_request&,
+                           const list_by_calendar_code_tenor_schedules_request&) = default;
 };
 
 struct list_by_calendar_code_tenor_schedules_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_schedule> schedules;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_calendar_code_tenor_schedules_response&,
+                           const list_by_calendar_code_tenor_schedules_response&) = default;
 };
 
 struct list_by_diary_entry_type_tenor_schedules_request {
@@ -273,12 +341,18 @@ struct list_by_diary_entry_type_tenor_schedules_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_schedules_filter> filter;
+
+    friend bool operator==(const list_by_diary_entry_type_tenor_schedules_request&,
+                           const list_by_diary_entry_type_tenor_schedules_request&) = default;
 };
 
 struct list_by_diary_entry_type_tenor_schedules_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_schedule> schedules;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_diary_entry_type_tenor_schedules_response&,
+                           const list_by_diary_entry_type_tenor_schedules_response&) = default;
 };
 
 struct list_tenor_schedule_versions_request {
@@ -296,12 +370,18 @@ struct list_tenor_schedule_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_schedule_versions_filter> filter;
+
+    friend bool operator==(const list_tenor_schedule_versions_request&,
+                           const list_tenor_schedule_versions_request&) = default;
 };
 
 struct list_tenor_schedule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_schedule> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_schedule_versions_response&,
+                           const list_tenor_schedule_versions_response&) = default;
 };
 
 struct get_tenor_schedule_version_request {
@@ -315,11 +395,17 @@ struct get_tenor_schedule_version_request {
      */
     static constexpr bool requires_session = true;
     tenor_schedule_version_key key;
+
+    friend bool operator==(const get_tenor_schedule_version_request&,
+                           const get_tenor_schedule_version_request&) = default;
 };
 
 struct get_tenor_schedule_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_schedule> version;
+
+    friend bool operator==(const get_tenor_schedule_version_response&,
+                           const get_tenor_schedule_version_response&) = default;
 };
 
 /**
@@ -331,9 +417,9 @@ struct get_tenor_schedule_version_response {
  * of them.
  */
 namespace tenor_schedule_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.tenor_schedules_events.created";
-inline constexpr std::string_view updated = "refdata.v1.tenor_schedules_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.tenor_schedules_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.tenor_schedules.created";
+inline constexpr std::string_view updated = "refdata.v1.events.tenor_schedules.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.tenor_schedules.deleted";
 }
 /**
  * @brief The members of tenor_schedule_key, named as the wire names them and in the order

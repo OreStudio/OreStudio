@@ -21,14 +21,34 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { SYSTEM_TENANT_ID } from '@ores/wire-protocol';
-import { subjects as feedSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
-import { subjects as policySubjects } from '@ores/wire-protocol/generated/synthetic/protocol/calibration_policy_protocol';
-import { subjects as orderSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/calibration_provider_order_protocol';
-import { subjects as itemSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/fx_spot_fixing_item_protocol';
-import { HttpFailure, notPermitted } from './errors.js';
+import {
+    subjects as feedSubjects,
+    type CalibrateRequest,
+    type ReviewVarianceCalibrationRequest,
+} from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
+import {
+    subjects as policySubjects,
+    type CalibrationPolicyWrite,
+    type ListCalibrationPoliciesResponse,
+} from '@ores/wire-protocol/generated/synthetic/protocol/calibration_policy_protocol';
+import {
+    subjects as orderSubjects,
+    type ListCalibrationProviderOrdersResponse,
+} from '@ores/wire-protocol/generated/synthetic/protocol/calibration_provider_order_protocol';
+import {
+    subjects as itemSubjects,
+    type ListFxSpotFixingItemsResponse,
+} from '@ores/wire-protocol/generated/synthetic/protocol/fx_spot_fixing_item_protocol';
+import { HttpFailure, notFound, notPermitted } from './errors.js';
 import { input, intentSchema, paramId, readAll, refusal, write } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 import { feedStartSchema, operationReplySchema, upstreamFailure } from './synthetic.js';
+
+/** A calibration read: every feed of the class, or the one feed it names. */
+const readQuerySchema = z.object({ configId: z.uuid().optional() });
+
+/** A calibration run: every feed of the class, or the one feed it names. */
+const runBodySchema = z.object({ configId: z.uuid().optional() }).strict().default({});
 
 /** An asset class as its refdata code names it. */
 const assetClassSchema = z
@@ -40,6 +60,13 @@ const assetClassSchema = z
 const calibrationPolicySchema = z.object({
     from_policy_row: z.boolean().default(false),
     window_days: z.int().default(0),
+    variance_window_days: z.int().default(0),
+    variance_approval_mode: z.string().default('manual'),
+    variance_min_returns: z.int().default(0),
+    variance_require_starts_agree: z.boolean().default(false),
+    variance_min_persistence: z.number().default(0),
+    variance_max_persistence: z.number().default(0),
+    variance_min_reaction: z.number().default(0),
     allow_inverse: z.boolean().default(false),
     fallback_code: z.string().default(''),
     provider_order: z.array(z.string()).default([]),
@@ -55,6 +82,31 @@ const candidateOutcomeSchema = z.object({
     reason: z.string().default(''),
 });
 
+/** What a calibration run made of a feed's daily variance. */
+const varianceCalibrationSummarySchema = z.object({
+    input_id: z.string().default(''),
+    calibration_id: z.string().default(''),
+    method: z.string().default(''),
+    state: z.string().default(''),
+    state_reason: z.string().default(''),
+    item: z.string().default(''),
+    provider_code: z.string().default(''),
+    inverted: z.boolean().default(false),
+    window_days: z.int().default(0),
+    window_end: z.string().default(''),
+    point_count: z.int().default(0),
+    used_count: z.int().default(0),
+    alpha: z.number().nullish(),
+    gamma: z.number().nullish(),
+    beta: z.number().nullish(),
+    persistence: z.number().nullish(),
+    starting_variance_ratio: z.number().nullish(),
+    starts: z.int().default(0),
+    starts_agreed: z.boolean().default(false),
+});
+
+export type VarianceCalibrationSummary = z.infer<typeof varianceCalibrationSummarySchema>;
+
 /** How one feed of the class resolved under the policy. */
 const calibratedFeedSchema = z.object({
     config_id: z.string(),
@@ -66,6 +118,11 @@ const calibratedFeedSchema = z.object({
     refused: z.boolean().default(false),
     start: feedStartSchema,
     candidates: z.array(candidateOutcomeSchema).default([]),
+    running: z.boolean().default(false),
+    outcome: z.string().default(''),
+    outcome_message: z.string().default(''),
+    variance: varianceCalibrationSummarySchema.nullish(),
+    current_variance: varianceCalibrationSummarySchema.nullish(),
 });
 
 export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;
@@ -85,10 +142,26 @@ export function calibrationCoverage(feeds: readonly CalibratedFeed[]) {
 }
 
 /** A class's policy row, as stored, when it has one. */
+/**
+ * The policy's fields the policy screen does not edit: the variance window and the approval
+ * rules. A save writes them back as they are stored, or as the column defaults for a class with
+ * no row, so editing the window or the order never resets them.
+ */
+const keptPolicyFields = {
+    variance_window_days: z.int().default(1826),
+    variance_approval_mode: z.enum(['manual', 'auto']).default('manual'),
+    variance_min_returns: z.int().default(250),
+    variance_require_starts_agree: z.boolean().default(true),
+    variance_min_persistence: z.number().default(0.8),
+    variance_max_persistence: z.number().default(0.995),
+    variance_min_reaction: z.number().default(0.01),
+};
+
 const policyRowSchema = z.looseObject({
     id: z.string(),
     version: z.int(),
     asset_class_code: z.string(),
+    ...keptPolicyFields,
 });
 
 const orderRowSchema = z.looseObject({
@@ -111,8 +184,24 @@ const policyBodySchema = z.object({
 
 const removeBodySchema = z.object({ intent: intentSchema });
 
+/** The HTTP answer to each refusal the review service states. */
+const REVIEW_REFUSALS: Readonly<
+    Record<string, { status: number; code: 'not-found' | 'conflict' | 'invalid-request' }>
+> = {
+    not_found: { status: 404, code: 'not-found' },
+    decided: { status: 409, code: 'conflict' },
+    invalid: { status: 400, code: 'invalid-request' },
+};
+
+const reviewBodySchema = z
+    .object({
+        decision: z.enum(['approve', 'reject']),
+        reason: z.string().trim().min(1).max(2000),
+    })
+    .strict();
+
 async function policyRowOf(session: LiveSession, assetClass: string) {
-    const rows = await readAll(
+    const rows = await readAll<ListCalibrationPoliciesResponse>(
         session,
         policySubjects.list_calibration_policies_request,
         'policies',
@@ -126,7 +215,7 @@ async function policyRowOf(session: LiveSession, assetClass: string) {
 }
 
 async function orderRowsOf(session: LiveSession, policyId: string) {
-    const rows = await readAll(
+    const rows = await readAll<ListCalibrationProviderOrdersResponse>(
         session,
         orderSubjects.list_calibration_provider_orders_request,
         'provider_orders',
@@ -166,7 +255,7 @@ function assetClassOf(request: FastifyRequest): string {
 
 /** The items a feed names, when it names its own instead of deriving them. */
 async function itemRowsOf(session: LiveSession, configId: string) {
-    const rows = await readAll(
+    const rows = await readAll<ListFxSpotFixingItemsResponse>(
         session,
         itemSubjects.list_fx_spot_fixing_items_request,
         'fx_spot_fixing_items',
@@ -228,9 +317,14 @@ export function registerCalibrationRoutes(
     server.get('/api/synthetic/calibration/:assetClass', async (request) => {
         const session = requireSession(request);
         const assetClass = assetClassOf(request);
+        const { configId } = input(readQuerySchema, request.query ?? {});
         const reply = await session.client.callAuthenticated(
             feedSubjects.calibrate_request,
-            { asset_class_code: assetClass },
+            {
+                asset_class_code: assetClass,
+                config_id: configId ?? '',
+                apply: false,
+            } satisfies CalibrateRequest,
             operationReplySchema.extend({
                 policy: calibrationPolicySchema,
                 feeds: z.array(calibratedFeedSchema).default([]),
@@ -248,6 +342,77 @@ export function registerCalibrationRoutes(
             policyWritable: session.tenantId === SYSTEM_TENANT_ID,
             feeds: reply.feeds,
             coverage: calibrationCoverage(reply.feeds),
+        };
+    });
+
+    /**
+     * Calibrates and stores: each feed's resolved level and deviations are written as a new
+     * version of its config, under the reason system.calibration, when they moved. A screen
+     * names one feed a call so it can report each feed as it is done. A running feed takes
+     * the stored values at its next start.
+     */
+    server.post('/api/synthetic/calibration/:assetClass/run', async (request) => {
+        const session = requireSession(request);
+        const assetClass = assetClassOf(request);
+        const body = input(runBodySchema, request.body ?? {});
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.calibrate_request,
+            {
+                asset_class_code: assetClass,
+                config_id: body.configId ?? '',
+                apply: true,
+            } satisfies CalibrateRequest,
+            operationReplySchema.extend({
+                feeds: z.array(calibratedFeedSchema).default([]),
+            }),
+        );
+        if (!reply.success) {
+            throw upstreamFailure(reply.message);
+        }
+        if (body.configId !== undefined && reply.feeds.length === 0) {
+            throw notFound(`No feed ${body.configId} calibrates in ${assetClass}.`);
+        }
+        return { assetClass, feeds: reply.feeds };
+    });
+
+    /**
+     * Approves or rejects one proposed variance calibration, with the reviewer's reason.
+     * Approving supersedes the pair's earlier approval and points the pair's GJR-GARCH feeds
+     * at the new calibration; the service refuses a calibration that is not proposed.
+     */
+    server.post('/api/synthetic/calibration/variance/:id/review', async (request) => {
+        const session = requireSession(request);
+        requireSystem(session);
+        const id = input(z.uuid(), (request.params as { id: string }).id);
+        const body = input(reviewBodySchema, request.body);
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.review_variance_calibration_request,
+            {
+                calibration_id: id,
+                decision: body.decision,
+                reason: body.reason,
+            } satisfies ReviewVarianceCalibrationRequest,
+            operationReplySchema.extend({
+                refusal: z.string().default(''),
+                state: z.string().default(''),
+                superseded_id: z.string().default(''),
+                repointed_feeds: z.array(z.string()).default([]),
+            }),
+        );
+        // The service says why it refused: a calibration that does not exist, one already decided,
+        // or a malformed review. Any other failure is the service's own, not the reviewer's.
+        if (!reply.success) {
+            const status = REVIEW_REFUSALS[reply.refusal];
+            if (status === undefined) {
+                throw upstreamFailure(reply.message);
+            }
+            throw new HttpFailure(status.status, { code: status.code, message: reply.message });
+        }
+        return {
+            state: reply.state,
+            supersededId: reply.superseded_id,
+            repointedFeeds: reply.repointed_feeds,
+            message: reply.message,
         };
     });
 
@@ -271,6 +436,7 @@ export function registerCalibrationRoutes(
 
         const existing = await policyRowOf(session, assetClass);
         const policyId = existing?.id ?? randomUUID();
+        const kept = existing ?? z.object(keptPolicyFields).parse({});
         ensure(
             await write(session, policySubjects.put_many_calibration_policies_request, {
                 intent: body.intent,
@@ -280,9 +446,16 @@ export function registerCalibrationRoutes(
                             id: policyId,
                             asset_class_code: assetClass,
                             window_days: body.window_days,
+                            variance_window_days: kept.variance_window_days,
+                            variance_approval_mode: kept.variance_approval_mode,
+                            variance_min_returns: kept.variance_min_returns,
+                            variance_require_starts_agree: kept.variance_require_starts_agree,
+                            variance_min_persistence: kept.variance_min_persistence,
+                            variance_max_persistence: kept.variance_max_persistence,
+                            variance_min_reaction: kept.variance_min_reaction,
                             allow_inverse: body.allow_inverse,
                             fallback_code: body.fallback_code,
-                        },
+                        } satisfies CalibrationPolicyWrite,
                         precondition:
                             body.version === null
                                 ? { kind: 'must_not_exist', version: null }

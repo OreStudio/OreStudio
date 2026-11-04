@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 45C1929E-9B92-489F-8E44-FA1819E5372D
+:END:
+#+title: Task: Decide a cut's authorisation and apply it
+#+description: The take raises the request; the inbox decides and the reporting side must stamp the authorisation.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/decide-the-cut
+#+pr: 4349
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A decider approves or refuses the request in the inbox, and the cut becomes authorised or refused, with its acts recorded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-01                               |
+
+* Acceptance
+
+- The inbox decide works for the cut approval kind with its part, four eyes and comments.
+- The reporting side applies the decision by reconciliation: the cut's authorisation stamped, the detail's applied facts set, the state derived.
+- The cut record shows the decision and the history; the screen and tests are green.
+
+* Plan
+
+** The decision is the inbox's, and the cut adds nothing to it
+
+The two cut kinds already name their deciding function: =reporting.eod_cut_authorisation=
+names =inbox::approvals:decide_finance= and =reporting.ipv_cut_authorisation= names
+=inbox::approvals:decide_market_risk=. The inbox's decide operation already resolves a
+kind's permission, refuses a decision by the person who asked, requires a comment on a
+refusal, and moves the request to =approved= or =refused=. Nothing in the decide path
+changed, and the demo already holds the decider: the =Finance= role carries
+=inbox::approvals:decide_finance=, and =rachel.byrd=, =beth.clark=, =graham.pierce= and
+=hoi.yan.lee= hold it in the Acme tenant beside =henry.jones=, who takes the close. No
+new seed was needed; the task's own supply test pins the kind's declarations.
+
+** The apply is a reconciliation, as a role grant is
+
+=ores_reporting_unapplied_cut_authorisations_fn= answers every decided cut-authorisation
+request the cut has not been stamped with, across every tenant that is not terminated. It
+keys on the cut kinds' own =approval_kind_code= and not on a list, so a third cut kind
+needs no code change. =cut_authorisation_applier= writes each cut in its own tenant and as
+the person who decided, stamps the decision's own instant rather than the run's clock, and
+marks the detail row applied in the same unit of work. A row leaves the answer once applied,
+so the second run writes nothing and the cut keeps its version.
+
+The service runs it at start and on every change to an approval request; a sweep every 60
+seconds reads the store for what no event announced.
+
+** What the screens read
+
+The BFF joins the subject a cut's request is about in one read of the detail rows, then
+reads each cut the rows name, so the request page draws the label, the kind, the instant,
+the scope and the counts. The cut's Authorisation tab states who stamped the decision and
+when, from the detail row's applied facts, and the history shows the version the apply
+wrote.
+
+** What is not done
+
+Nothing was built or run: the branch's C++ and web suites have not executed, so the apply's
+cases, the inbox's cases and the BFF and web cases are written and unproven. The live walk
+of the decide needs a cut whose body the take froze in the demo tenant, and the demo tenant
+holds no published curve set, so no live EOD take can raise a request there yet.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The reporting core suite's cases | 248 cases, 248 passed | =compass test run -- -R ores.reporting.core.tests= | 6d50987ca6 |
+| The reporting service suite | 1 target, passed | =compass test run -- -R ores.reporting.service.tests= | 6d50987ca6 |
+| The inbox core suite | 1 target, passed | =compass test run -- -R ores.inbox.core.tests= | 6d50987ca6 |
+| The BFF suite | 88 files, 1217 tests passed | =npm run test --workspace @ores/bff= | 6d50987ca6 |
+| The web suite | 193 files, 2415 tests passed | =npm run test --workspace @ores/web= | 6d50987ca6 |
+| Codegen drift over the components under test | No drift | =check_component_drift.py --all= | 6d50987ca6 |
+| The composition and hygiene gates | All passed (see below) | =check_*.py=, =check_sql_hygiene.py= | 6d50987ca6 |
+| Compass lint | Passed, one advisory | =compass lint= | 6d50987ca6 |
+| The live decide and the apply's rows | =evidence/cut_decide_live.txt= | the shell, curl and psql in that file | 6d50987ca6 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4349][#4349]] | [reporting] Apply a decided cut authorisation |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Built
+
+- =ores_reporting_unapplied_cut_authorisations_fn=, with its drop script and the registry's
+  execute prefix; applied to the live database additively as one function, and granted to the
+  reporting service role.
+- =cut_authorisation_applier= in =ores.reporting.core=: an approval stamps =approved_by= and
+  =approved_at= and marks the detail applied; a refusal stamps =refused_at= and
+  =refusal_comment=; the stamp is the decision's own instant and the row is skipped when it
+  already holds it.
+- The reporting service runs the reconciliation at start, on the approval request's change
+  event, and every sixty seconds.
+- =reporting.v1.ops.list_cut_authorisation_subjects=: the body a cut authorisation is about,
+  answered for a page of requests in one call, from the model and through codegen to the
+  protocol, the shell command and the TypeScript twin.
+- The BFF's cut-subject join, the request page's subject block, and the cut record's applied
+  facts.
+- Tests: the apply's five cases, the inbox's four cases on the two cut kinds, the BFF's five
+  cases on the join, and the web's two on the applied facts.
+
+** The apply is a reconciliation across tenants, and that bit a test**
+
+The first run of the apply's refusal case failed with =0 == 1= while the store held the
+stamped cut: the reporting service running beside the suite had swept the tenant the test
+provisions and applied the row first. The cases now assert the facts (the cut stamped, the
+detail applied, one instant for both) and not which reconciler reached them first, because
+the count belongs to the store and not to the case.
+
+** Verified live**
+
+=evidence/cut_decide_live.txt= carries the whole walk: henry.jones raises a cut's
+authorisation; four eyes refuses him with =code=four_eyes=; rachel.byrd, a Finance second
+person, approves it; a second request is refused and admits no second answer; a third is
+withdrawn by the asker; the request page answers =cutSubjectState=missing= because no body
+was frozen; and the story shows the decision beside the ask. The apply's stamps are shown in
+the same store, taken from the rows its own cases wrote, with the cut's version history
+naming the request.
+
+** What the live walk cannot reach, and why**
+
+No live take can freeze a whole body in the demo tenant. The store holds no published curve
+set, every market observation it holds is an FX spot, and the one IR bootstrap config points
+at a series with no observations, so neither =publish_curve= nor =republish_curve= can produce
+a set. A take of an incomplete body raises no request, which is the take task's own finding.
+The step that needs it — a request the take raised, whose decision the apply then stamps — is
+covered by the suite against the same database instead.
+
+** Remaining**
+
+1. A live end-to-end walk needs a published curve set in the demo tenant: a real IR bootstrap
+   config over series that hold observations, and a Market Risk decider to approve its
+   publication. That is market data's work, not this task's.
+2. The shell cannot state an empty argument, so a refusal with no comment can only be shown by
+   the suite. The command grammar's sentinel is =__none__= for a list and there is none for a
+   string.

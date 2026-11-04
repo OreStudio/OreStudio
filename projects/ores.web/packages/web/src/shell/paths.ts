@@ -178,11 +178,6 @@ export function gridAppVersionPath(appVersionId: string): string {
     return `/operations/grid/app-versions/${encodeURIComponent(appVersionId)}`;
 }
 
-/** The address of the page of the report run that dispatched a batch. */
-export function gridReportRunPath(reportInstanceId: string): string {
-    return `/operations/grid/report-runs/${encodeURIComponent(reportInstanceId)}`;
-}
-
 /** The address of the page of one compute node. */
 export function gridNodePath(hostId: string): string {
     return `/operations/grid/nodes/${encodeURIComponent(hostId)}`;
@@ -216,6 +211,11 @@ export function counterpartyPath(id: string): string {
 /** The reporting area's page for one run. */
 export function reportRunPath(reportInstanceId: string): string {
     return `/reporting/runs/${encodeURIComponent(reportInstanceId)}`;
+}
+
+/** The page of one file a run read or wrote, by its id in the run's list of files. */
+export function reportRunFilePath(reportInstanceId: string, fileId: string): string {
+    return `${reportRunPath(reportInstanceId)}/files/${encodeURIComponent(fileId)}`;
 }
 
 export function reportPath(id: string): string {

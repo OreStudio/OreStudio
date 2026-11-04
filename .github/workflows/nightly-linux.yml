@@ -203,7 +203,7 @@ jobs:
           ./build/scripts/setup_postgres_extensions.sh --pg-version 18
 
       - name: Setup postgres
-        uses: ikalnytskyi/action-setup-postgres@v8
+        uses: ikalnytskyi/action-setup-postgres@v9
         with:
           username: postgres
           password: ${{ steps.pg_password.outputs.admin_password }}
@@ -260,7 +260,7 @@ jobs:
           ./projects/ores.compass/compass.sh db recreate -y -D ores_ci
 
       - name: Get latest CMake
-        uses: lukka/get-cmake@v4.4.4
+        uses: lukka/get-cmake@v4.4.5
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v6

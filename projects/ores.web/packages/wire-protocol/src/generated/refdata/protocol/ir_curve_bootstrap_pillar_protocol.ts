@@ -214,7 +214,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.ir_curve_bootstrap_pillars_events.created',
-    updated: 'refdata.v1.ir_curve_bootstrap_pillars_events.updated',
-    deleted: 'refdata.v1.ir_curve_bootstrap_pillars_events.deleted',
+    created: 'refdata.v1.events.ir_curve_bootstrap_pillars.created',
+    updated: 'refdata.v1.events.ir_curve_bootstrap_pillars.updated',
+    deleted: 'refdata.v1.events.ir_curve_bootstrap_pillars.deleted',
 } as const;

@@ -348,7 +348,7 @@ def column_rows():
     families = (
         curves.rows(),
         (dict(row, schema="conventions.xsd",
-              table=f"ores_refdata_{row['entity']}s_tbl") for row in term_rows),
+              table=terms.table_of(row['entity'])) for row in term_rows),
     )
     found = {}
     for rows in families:

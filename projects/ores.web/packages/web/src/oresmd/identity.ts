@@ -85,6 +85,11 @@ export function seriesRoute(uri: string): string {
     return `/market-data/series?uri=${encodeURIComponent(uri)}`;
 }
 
+/** The page of a fixing series, which lists the fixings stored for the item. */
+export function fixingRoute(uri: string): string {
+    return `/market-data/fixings?uri=${encodeURIComponent(uri)}`;
+}
+
 /** The Evolution page for a series the party holds, by its id. */
 export function evolutionIdRoute(seriesId: string): string {
     return `/market-data/evolution?series=${encodeURIComponent(seriesId)}`;
@@ -147,9 +152,10 @@ export function seriesVerdict(list: CurveSeriesList, form: IdentityForm): Series
  * Where the text of a URL points: the page of the series it names, or nowhere.
  *
  * A series with an axis opens on the Evolution page, which draws it. A series with
- * no axis is a single value at each instant and opens on the series page. A URL
- * that names no series, a fixing, a series the party does not have and a URL the
- * codec refuses are all nowhere, and the caller draws plain text: a link that ends
+ * no axis is a single value at each instant and opens on the series page. A fixing
+ * opens on the fixing series page, which lists the fixings stored for it. A URL
+ * that names no series, a series the party does not have and a URL the codec
+ * refuses are all nowhere, and the caller draws plain text: a link that ends
  * in an apology is worse than no link.
  *
  * This is the one rule the detail view of a record and a list of records share, so
@@ -162,6 +168,7 @@ export function seriesTargetOf(
     parts: OresmdParseResult,
     list: CurveSeriesList,
 ): string | undefined {
+    if (parts.kind === 'fixing') return fixingRoute(uri);
     const named = seriesOfUrl(schema, parts);
     if (!named.ok) return undefined;
     switch (seriesVerdict(list, named.form).kind) {

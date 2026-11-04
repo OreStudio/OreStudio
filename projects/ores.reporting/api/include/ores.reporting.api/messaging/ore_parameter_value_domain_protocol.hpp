@@ -26,17 +26,26 @@
 #define ORES_REPORTING_API_MESSAGING_ORE_PARAMETER_VALUE_DOMAIN_PROTOCOL_HPP
 
 #include "ores.reporting.api/domain/ore_parameter_value_domain.hpp"
+#include "ores.reporting.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::messaging {
 
 struct ore_parameter_value_domain_key {
     std::string code;
+
+    friend bool operator==(const ore_parameter_value_domain_key&,
+                           const ore_parameter_value_domain_key&) = default;
 };
 
 struct ore_parameter_value_domain_write {
@@ -44,25 +53,40 @@ struct ore_parameter_value_domain_write {
     std::string name;
     std::string storage_kind;
     std::string referenced_entity;
+
+    friend bool operator==(const ore_parameter_value_domain_write&,
+                           const ore_parameter_value_domain_write&) = default;
 };
 
 struct ore_parameter_value_domain_change {
     ore_parameter_value_domain_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const ore_parameter_value_domain_change&,
+                           const ore_parameter_value_domain_change&) = default;
 };
 
 struct ore_parameter_value_domain_removal {
     ore_parameter_value_domain_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const ore_parameter_value_domain_removal&,
+                           const ore_parameter_value_domain_removal&) = default;
 };
 
 struct ore_parameter_value_domain_lookup {
     ore_parameter_value_domain_key key;
     std::optional<ores::reporting::domain::ore_parameter_value_domain> ore_parameter_value_domain;
+
+    friend bool operator==(const ore_parameter_value_domain_lookup&,
+                           const ore_parameter_value_domain_lookup&) = default;
 };
 
 struct ore_parameter_value_domains_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const ore_parameter_value_domains_filter&,
+                           const ore_parameter_value_domains_filter&) = default;
 };
 
 struct ore_parameter_value_domain_event {
@@ -72,17 +96,26 @@ struct ore_parameter_value_domain_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const ore_parameter_value_domain_event&,
+                           const ore_parameter_value_domain_event&) = default;
 };
 
 struct ore_parameter_value_domain_version_key {
     ore_parameter_value_domain_key ore_parameter_value_domain;
     std::uint32_t version;
+
+    friend bool operator==(const ore_parameter_value_domain_version_key&,
+                           const ore_parameter_value_domain_version_key&) = default;
 };
 
 struct ore_parameter_value_domain_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const ore_parameter_value_domain_versions_filter&,
+                           const ore_parameter_value_domain_versions_filter&) = default;
 };
 
 struct list_ore_parameter_value_domains_request {
@@ -101,12 +134,18 @@ struct list_ore_parameter_value_domains_request {
     ores::utility::domain::order order;
     std::optional<ore_parameter_value_domains_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_ore_parameter_value_domains_request&,
+                           const list_ore_parameter_value_domains_request&) = default;
 };
 
 struct list_ore_parameter_value_domains_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_domain> domains;
     std::uint64_t total;
+
+    friend bool operator==(const list_ore_parameter_value_domains_response&,
+                           const list_ore_parameter_value_domains_response&) = default;
 };
 
 struct get_ore_parameter_value_domain_request {
@@ -120,11 +159,17 @@ struct get_ore_parameter_value_domain_request {
      */
     static constexpr bool requires_session = true;
     ore_parameter_value_domain_key key;
+
+    friend bool operator==(const get_ore_parameter_value_domain_request&,
+                           const get_ore_parameter_value_domain_request&) = default;
 };
 
 struct get_ore_parameter_value_domain_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_parameter_value_domain> ore_parameter_value_domain;
+
+    friend bool operator==(const get_ore_parameter_value_domain_response&,
+                           const get_ore_parameter_value_domain_response&) = default;
 };
 
 struct get_many_ore_parameter_value_domains_request {
@@ -139,11 +184,17 @@ struct get_many_ore_parameter_value_domains_request {
      */
     static constexpr bool requires_session = true;
     std::vector<ore_parameter_value_domain_key> keys;
+
+    friend bool operator==(const get_many_ore_parameter_value_domains_request&,
+                           const get_many_ore_parameter_value_domains_request&) = default;
 };
 
 struct get_many_ore_parameter_value_domains_response {
     ores::utility::domain::result result;
     std::vector<ore_parameter_value_domain_lookup> entries;
+
+    friend bool operator==(const get_many_ore_parameter_value_domains_response&,
+                           const get_many_ore_parameter_value_domains_response&) = default;
 };
 
 struct put_ore_parameter_value_domain_request {
@@ -158,11 +209,17 @@ struct put_ore_parameter_value_domain_request {
     static constexpr bool requires_session = true;
     ore_parameter_value_domain_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_ore_parameter_value_domain_request&,
+                           const put_ore_parameter_value_domain_request&) = default;
 };
 
 struct put_ore_parameter_value_domain_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_parameter_value_domain> ore_parameter_value_domain;
+
+    friend bool operator==(const put_ore_parameter_value_domain_response&,
+                           const put_ore_parameter_value_domain_response&) = default;
 };
 
 struct put_many_ore_parameter_value_domains_request {
@@ -178,11 +235,17 @@ struct put_many_ore_parameter_value_domains_request {
     static constexpr bool requires_session = true;
     std::vector<ore_parameter_value_domain_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_ore_parameter_value_domains_request&,
+                           const put_many_ore_parameter_value_domains_request&) = default;
 };
 
 struct put_many_ore_parameter_value_domains_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_domain> domains;
+
+    friend bool operator==(const put_many_ore_parameter_value_domains_response&,
+                           const put_many_ore_parameter_value_domains_response&) = default;
 };
 
 struct delete_ore_parameter_value_domain_request {
@@ -198,10 +261,16 @@ struct delete_ore_parameter_value_domain_request {
     static constexpr bool requires_session = true;
     ore_parameter_value_domain_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_ore_parameter_value_domain_request&,
+                           const delete_ore_parameter_value_domain_request&) = default;
 };
 
 struct delete_ore_parameter_value_domain_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_ore_parameter_value_domain_response&,
+                           const delete_ore_parameter_value_domain_response&) = default;
 };
 
 struct delete_many_ore_parameter_value_domains_request {
@@ -217,10 +286,16 @@ struct delete_many_ore_parameter_value_domains_request {
     static constexpr bool requires_session = true;
     std::vector<ore_parameter_value_domain_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_ore_parameter_value_domains_request&,
+                           const delete_many_ore_parameter_value_domains_request&) = default;
 };
 
 struct delete_many_ore_parameter_value_domains_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_ore_parameter_value_domains_response&,
+                           const delete_many_ore_parameter_value_domains_response&) = default;
 };
 
 struct list_ore_parameter_value_domain_versions_request {
@@ -239,12 +314,18 @@ struct list_ore_parameter_value_domain_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<ore_parameter_value_domain_versions_filter> filter;
+
+    friend bool operator==(const list_ore_parameter_value_domain_versions_request&,
+                           const list_ore_parameter_value_domain_versions_request&) = default;
 };
 
 struct list_ore_parameter_value_domain_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_domain> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_ore_parameter_value_domain_versions_response&,
+                           const list_ore_parameter_value_domain_versions_response&) = default;
 };
 
 struct get_ore_parameter_value_domain_version_request {
@@ -259,11 +340,17 @@ struct get_ore_parameter_value_domain_version_request {
      */
     static constexpr bool requires_session = true;
     ore_parameter_value_domain_version_key key;
+
+    friend bool operator==(const get_ore_parameter_value_domain_version_request&,
+                           const get_ore_parameter_value_domain_version_request&) = default;
 };
 
 struct get_ore_parameter_value_domain_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_parameter_value_domain> version;
+
+    friend bool operator==(const get_ore_parameter_value_domain_version_response&,
+                           const get_ore_parameter_value_domain_version_response&) = default;
 };
 
 /**
@@ -276,13 +363,817 @@ struct get_ore_parameter_value_domain_version_response {
  */
 namespace ore_parameter_value_domain_event_subjects {
 inline constexpr std::string_view created =
-    "reporting.v1.ore_parameter_value_domains_events.created";
+    "reporting.v1.events.ore_parameter_value_domains.created";
 inline constexpr std::string_view updated =
-    "reporting.v1.ore_parameter_value_domains_events.updated";
+    "reporting.v1.events.ore_parameter_value_domains.updated";
 inline constexpr std::string_view deleted =
-    "reporting.v1.ore_parameter_value_domains_events.deleted";
+    "reporting.v1.events.ore_parameter_value_domains.deleted";
+}
+/**
+ * @brief The members of ore_parameter_value_domain_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_value_domain_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &ore_parameter_value_domain_key::code},
+    };
 }
 
+/**
+ * @brief The members of ore_parameter_value_domain_write, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_value_domain_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &ore_parameter_value_domain_write::code},
+        utility::codec::field{"name", &ore_parameter_value_domain_write::name},
+        utility::codec::field{"storage_kind", &ore_parameter_value_domain_write::storage_kind},
+        utility::codec::field{"referenced_entity",
+                              &ore_parameter_value_domain_write::referenced_entity},
+    };
 }
+
+/**
+ * @brief The members of ore_parameter_value_domain_change, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_value_domain_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &ore_parameter_value_domain_change::write},
+        utility::codec::field{"precondition", &ore_parameter_value_domain_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_value_domain_removal, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_value_domain_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &ore_parameter_value_domain_removal::key},
+        utility::codec::field{"precondition", &ore_parameter_value_domain_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_value_domain_lookup, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_value_domain_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &ore_parameter_value_domain_lookup::key},
+        utility::codec::field{"ore_parameter_value_domain",
+                              &ore_parameter_value_domain_lookup::ore_parameter_value_domain},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_value_domains_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_value_domains_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &ore_parameter_value_domains_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_value_domain_event, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_value_domain_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &ore_parameter_value_domain_event::event_id},
+        utility::codec::field{"key", &ore_parameter_value_domain_event::key},
+        utility::codec::field{"action", &ore_parameter_value_domain_event::action},
+        utility::codec::field{"version", &ore_parameter_value_domain_event::version},
+        utility::codec::field{"occurred_at", &ore_parameter_value_domain_event::occurred_at},
+        utility::codec::field{"correlation_id", &ore_parameter_value_domain_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_value_domain_version_key, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_value_domain_version_key&) {
+    return std::tuple{
+        utility::codec::field{"ore_parameter_value_domain",
+                              &ore_parameter_value_domain_version_key::ore_parameter_value_domain},
+        utility::codec::field{"version", &ore_parameter_value_domain_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_value_domain_versions_filter, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_value_domain_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &ore_parameter_value_domain_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &ore_parameter_value_domain_versions_filter::from_version},
+        utility::codec::field{"to_version",
+                              &ore_parameter_value_domain_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_ore_parameter_value_domains_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ore_parameter_value_domains_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_ore_parameter_value_domains_request::offset},
+        utility::codec::field{"limit", &list_ore_parameter_value_domains_request::limit},
+        utility::codec::field{"order", &list_ore_parameter_value_domains_request::order},
+        utility::codec::field{"filter", &list_ore_parameter_value_domains_request::filter},
+        utility::codec::field{"as_of", &list_ore_parameter_value_domains_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_ore_parameter_value_domains_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ore_parameter_value_domains_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_ore_parameter_value_domains_response::result},
+        utility::codec::field{"domains", &list_ore_parameter_value_domains_response::domains},
+        utility::codec::field{"total", &list_ore_parameter_value_domains_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_ore_parameter_value_domain_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ore_parameter_value_domain_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_ore_parameter_value_domain_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_ore_parameter_value_domain_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ore_parameter_value_domain_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_ore_parameter_value_domain_response::result},
+        utility::codec::field{"ore_parameter_value_domain",
+                              &get_ore_parameter_value_domain_response::ore_parameter_value_domain},
+    };
+}
+
+/**
+ * @brief The members of get_many_ore_parameter_value_domains_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_ore_parameter_value_domains_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_ore_parameter_value_domains_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_ore_parameter_value_domains_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_ore_parameter_value_domains_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_ore_parameter_value_domains_response::result},
+        utility::codec::field{"entries", &get_many_ore_parameter_value_domains_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_ore_parameter_value_domain_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_ore_parameter_value_domain_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_ore_parameter_value_domain_request::change},
+        utility::codec::field{"intent", &put_ore_parameter_value_domain_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_ore_parameter_value_domain_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_ore_parameter_value_domain_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_ore_parameter_value_domain_response::result},
+        utility::codec::field{"ore_parameter_value_domain",
+                              &put_ore_parameter_value_domain_response::ore_parameter_value_domain},
+    };
+}
+
+/**
+ * @brief The members of put_many_ore_parameter_value_domains_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_ore_parameter_value_domains_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_ore_parameter_value_domains_request::changes},
+        utility::codec::field{"intent", &put_many_ore_parameter_value_domains_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_ore_parameter_value_domains_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_ore_parameter_value_domains_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_ore_parameter_value_domains_response::result},
+        utility::codec::field{"domains", &put_many_ore_parameter_value_domains_response::domains},
+    };
+}
+
+/**
+ * @brief The members of delete_ore_parameter_value_domain_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_ore_parameter_value_domain_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_ore_parameter_value_domain_request::removal},
+        utility::codec::field{"intent", &delete_ore_parameter_value_domain_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_ore_parameter_value_domain_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_ore_parameter_value_domain_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_ore_parameter_value_domain_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_ore_parameter_value_domains_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_ore_parameter_value_domains_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_ore_parameter_value_domains_request::removals},
+        utility::codec::field{"intent", &delete_many_ore_parameter_value_domains_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_ore_parameter_value_domains_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_ore_parameter_value_domains_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_ore_parameter_value_domains_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_ore_parameter_value_domain_versions_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ore_parameter_value_domain_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_ore_parameter_value_domain_versions_request::key},
+        utility::codec::field{"offset", &list_ore_parameter_value_domain_versions_request::offset},
+        utility::codec::field{"limit", &list_ore_parameter_value_domain_versions_request::limit},
+        utility::codec::field{"order", &list_ore_parameter_value_domain_versions_request::order},
+        utility::codec::field{"filter", &list_ore_parameter_value_domain_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_ore_parameter_value_domain_versions_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ore_parameter_value_domain_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_ore_parameter_value_domain_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_ore_parameter_value_domain_versions_response::versions},
+        utility::codec::field{"total", &list_ore_parameter_value_domain_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_ore_parameter_value_domain_version_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ore_parameter_value_domain_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_ore_parameter_value_domain_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_ore_parameter_value_domain_version_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ore_parameter_value_domain_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_ore_parameter_value_domain_version_response::result},
+        utility::codec::field{"version", &get_ore_parameter_value_domain_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_value_domain_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_value_domain_key& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_value_domain_key& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_value_domain_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_value_domain_write& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_value_domain_write& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_value_domain_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_value_domain_change& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_value_domain_change& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_value_domain_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_value_domain_removal& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_value_domain_removal& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_value_domain_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_value_domain_lookup& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_value_domain_lookup& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_value_domains_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_value_domains_filter& v);
+    static ores::reporting::messaging::ore_parameter_value_domains_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_value_domains_filter& v);
+    static ores::reporting::messaging::ore_parameter_value_domains_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_value_domain_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_value_domain_event& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_value_domain_event& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_value_domain_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_value_domain_version_key& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_value_domain_version_key& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_value_domain_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_value_domain_versions_filter& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_value_domain_versions_filter& v);
+    static ores::reporting::messaging::ore_parameter_value_domain_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_ore_parameter_value_domains_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_ore_parameter_value_domains_request& v);
+    static ores::reporting::messaging::list_ore_parameter_value_domains_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_ore_parameter_value_domains_request& v);
+    static ores::reporting::messaging::list_ore_parameter_value_domains_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_ore_parameter_value_domains_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_ore_parameter_value_domains_response& v);
+    static ores::reporting::messaging::list_ore_parameter_value_domains_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_ore_parameter_value_domains_response& v);
+    static ores::reporting::messaging::list_ore_parameter_value_domains_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_parameter_value_domain_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_ore_parameter_value_domain_request& v);
+    static ores::reporting::messaging::get_ore_parameter_value_domain_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_ore_parameter_value_domain_request& v);
+    static ores::reporting::messaging::get_ore_parameter_value_domain_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_parameter_value_domain_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_ore_parameter_value_domain_response& v);
+    static ores::reporting::messaging::get_ore_parameter_value_domain_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_ore_parameter_value_domain_response& v);
+    static ores::reporting::messaging::get_ore_parameter_value_domain_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_ore_parameter_value_domains_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_ore_parameter_value_domains_request& v);
+    static ores::reporting::messaging::get_many_ore_parameter_value_domains_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::get_many_ore_parameter_value_domains_request& v);
+    static ores::reporting::messaging::get_many_ore_parameter_value_domains_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_ore_parameter_value_domains_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_ore_parameter_value_domains_response& v);
+    static ores::reporting::messaging::get_many_ore_parameter_value_domains_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::get_many_ore_parameter_value_domains_response& v);
+    static ores::reporting::messaging::get_many_ore_parameter_value_domains_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_ore_parameter_value_domain_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_ore_parameter_value_domain_request& v);
+    static ores::reporting::messaging::put_ore_parameter_value_domain_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_ore_parameter_value_domain_request& v);
+    static ores::reporting::messaging::put_ore_parameter_value_domain_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_ore_parameter_value_domain_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_ore_parameter_value_domain_response& v);
+    static ores::reporting::messaging::put_ore_parameter_value_domain_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_ore_parameter_value_domain_response& v);
+    static ores::reporting::messaging::put_ore_parameter_value_domain_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_ore_parameter_value_domains_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_ore_parameter_value_domains_request& v);
+    static ores::reporting::messaging::put_many_ore_parameter_value_domains_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::put_many_ore_parameter_value_domains_request& v);
+    static ores::reporting::messaging::put_many_ore_parameter_value_domains_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_ore_parameter_value_domains_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_ore_parameter_value_domains_response& v);
+    static ores::reporting::messaging::put_many_ore_parameter_value_domains_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::put_many_ore_parameter_value_domains_response& v);
+    static ores::reporting::messaging::put_many_ore_parameter_value_domains_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_ore_parameter_value_domain_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_ore_parameter_value_domain_request& v);
+    static ores::reporting::messaging::delete_ore_parameter_value_domain_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_ore_parameter_value_domain_request& v);
+    static ores::reporting::messaging::delete_ore_parameter_value_domain_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_ore_parameter_value_domain_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_ore_parameter_value_domain_response& v);
+    static ores::reporting::messaging::delete_ore_parameter_value_domain_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_ore_parameter_value_domain_response& v);
+    static ores::reporting::messaging::delete_ore_parameter_value_domain_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_ore_parameter_value_domains_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::reporting::messaging::delete_many_ore_parameter_value_domains_request& v);
+    static ores::reporting::messaging::delete_many_ore_parameter_value_domains_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::delete_many_ore_parameter_value_domains_request& v);
+    static ores::reporting::messaging::delete_many_ore_parameter_value_domains_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_ore_parameter_value_domains_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::reporting::messaging::delete_many_ore_parameter_value_domains_response& v);
+    static ores::reporting::messaging::delete_many_ore_parameter_value_domains_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::delete_many_ore_parameter_value_domains_response& v);
+    static ores::reporting::messaging::delete_many_ore_parameter_value_domains_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_ore_parameter_value_domain_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::reporting::messaging::list_ore_parameter_value_domain_versions_request& v);
+    static ores::reporting::messaging::list_ore_parameter_value_domain_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::list_ore_parameter_value_domain_versions_request& v);
+    static ores::reporting::messaging::list_ore_parameter_value_domain_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_ore_parameter_value_domain_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::reporting::messaging::list_ore_parameter_value_domain_versions_response& v);
+    static ores::reporting::messaging::list_ore_parameter_value_domain_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::list_ore_parameter_value_domain_versions_response& v);
+    static ores::reporting::messaging::list_ore_parameter_value_domain_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_parameter_value_domain_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_ore_parameter_value_domain_version_request& v);
+    static ores::reporting::messaging::get_ore_parameter_value_domain_version_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::get_ore_parameter_value_domain_version_request& v);
+    static ores::reporting::messaging::get_ore_parameter_value_domain_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_parameter_value_domain_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::reporting::messaging::get_ore_parameter_value_domain_version_response& v);
+    static ores::reporting::messaging::get_ore_parameter_value_domain_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::get_ore_parameter_value_domain_version_response& v);
+    static ores::reporting::messaging::get_ore_parameter_value_domain_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

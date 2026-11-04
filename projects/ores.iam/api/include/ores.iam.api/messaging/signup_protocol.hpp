@@ -25,7 +25,14 @@
 #ifndef ORES_IAM_API_MESSAGING_SIGNUP_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_SIGNUP_PROTOCOL_HPP
 
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::iam::messaging {
 
@@ -51,6 +58,8 @@ struct signup_request {
      * system tenant by omission, which is the defect the survey found.
      */
     std::string hostname;
+
+    friend bool operator==(const signup_request&, const signup_request&) = default;
 };
 
 struct signup_response {
@@ -88,8 +97,69 @@ struct signup_response {
      * answer with are collected on the Entry journeys page.
      */
     std::string error_code;
+
+    friend bool operator==(const signup_response&, const signup_response&) = default;
 };
 
+/**
+ * @brief The members of signup_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const signup_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"principal", &signup_request::principal},
+        ::ores::utility::codec::field{"password", &signup_request::password},
+        ::ores::utility::codec::field{"email", &signup_request::email},
+        ::ores::utility::codec::field{"hostname", &signup_request::hostname},
+    };
 }
+
+/**
+ * @brief The members of signup_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const signup_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &signup_response::success},
+        ::ores::utility::codec::field{"message", &signup_response::message},
+        ::ores::utility::codec::field{"account_id", &signup_response::account_id},
+        ::ores::utility::codec::field{"account_status", &signup_response::account_status},
+        ::ores::utility::codec::field{"party_id", &signup_response::party_id},
+        ::ores::utility::codec::field{"role_id", &signup_response::role_id},
+        ::ores::utility::codec::field{"error_code", &signup_response::error_code},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::signup_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::signup_request& v);
+    static ores::iam::messaging::signup_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::signup_request& v);
+    static ores::iam::messaging::signup_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::signup_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::signup_response& v);
+    static ores::iam::messaging::signup_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::signup_response& v);
+    static ores::iam::messaging::signup_response read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

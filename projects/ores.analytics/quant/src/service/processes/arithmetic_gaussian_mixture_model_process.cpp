@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/arithmetic_gaussian_mixture_model_process.hpp"
 #include <cmath>
+#include <cstddef>
 #include <stdexcept>
 #include <utility>
 
@@ -47,6 +48,13 @@ arithmetic_gaussian_mixture_model_process::arithmetic_gaussian_mixture_model_pro
         throw std::invalid_argument(
             "arithmetic_gaussian_mixture_model_process: initial_price must be positive");
     base_ = {.means = means_, .stdevs = stdevs_, .weights = weights_};
+    double total_weight = 0.0;
+    for (std::size_t k = 0; k < weights_.size(); ++k) {
+        mixture_mean_ += weights_[k] * means_[k];
+        total_weight += weights_[k];
+    }
+    if (total_weight > 0.0)
+        mixture_mean_ /= total_weight;
 }
 
 double arithmetic_gaussian_mixture_model_process::next() {
@@ -75,18 +83,37 @@ void arithmetic_gaussian_mixture_model_process::step_one_tick() {
     // std::normal_distribution requires stddev > 0 (a libstdc++ assertion aborts
     // the process on σ <= 0 in debug builds). A zero-variance component is
     // degenerate: the draw is exactly the mean, so handle it directly.
-    const double sd = stdevs_[k];
-    const double increment =
-        sd > 0.0 ? std::normal_distribution<double>(means_[k], sd)(rng_) : means_[k];
+    const double sd = multiplier_ * stdevs_[k];
+    const double mean = mean_of(k);
+    const double increment = sd > 0.0 ? std::normal_distribution<double>(mean, sd)(rng_) : mean;
     price_ += increment;
 }
 
 void arithmetic_gaussian_mixture_model_process::step_partial_tick(double part) {
     const int k = component_dist_(rng_);
-    const double sd = stdevs_[k] * std::sqrt(part);
-    const double mean = means_[k] * part;
+    const double sd = multiplier_ * stdevs_[k] * std::sqrt(part);
+    const double mean = mean_of(k) * part;
     const double increment = sd > 0.0 ? std::normal_distribution<double>(mean, sd)(rng_) : mean;
     price_ += increment;
+}
+
+double arithmetic_gaussian_mixture_model_process::mean_of(int k) const {
+    // At a multiplier of one the configured mean is drawn as it is, so a path that
+    // never scales is the path it always was, to the last bit.
+    if (multiplier_ == 1.0)
+        return means_[k];
+    return mixture_mean_ + multiplier_ * (means_[k] - mixture_mean_);
+}
+
+void arithmetic_gaussian_mixture_model_process::set_volatility_multiplier(double multiplier) {
+    if (!(multiplier > 0.0) || !std::isfinite(multiplier))
+        throw std::invalid_argument("arithmetic_gaussian_mixture_model_process: the volatility "
+                                    "multiplier must be positive and finite");
+    multiplier_ = multiplier;
+}
+
+bool arithmetic_gaussian_mixture_model_process::supports_volatility_multiplier() const {
+    return true;
 }
 
 bool arithmetic_gaussian_mixture_model_process::supports_variable_step() const {

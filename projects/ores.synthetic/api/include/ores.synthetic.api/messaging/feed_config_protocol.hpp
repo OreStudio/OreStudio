@@ -25,11 +25,17 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_FEED_CONFIG_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_FEED_CONFIG_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -56,6 +62,8 @@ struct start_feed_request {
      */
     static constexpr bool requires_session = true;
     std::string config_id;
+
+    friend bool operator==(const start_feed_request&, const start_feed_request&) = default;
 };
 
 /**
@@ -64,6 +72,8 @@ struct start_feed_request {
 struct start_feed_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const start_feed_response&, const start_feed_response&) = default;
 };
 
 /**
@@ -89,6 +99,8 @@ struct stop_feed_request {
     std::string config_id;
     /** @brief Used only if config_id is empty; empty too stops every feed. */
     std::string source_name;
+
+    friend bool operator==(const stop_feed_request&, const stop_feed_request&) = default;
 };
 
 /**
@@ -97,6 +109,8 @@ struct stop_feed_request {
 struct stop_feed_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const stop_feed_response&, const stop_feed_response&) = default;
 };
 
 /**
@@ -109,6 +123,40 @@ struct provider_dispersion {
     std::string item;
     /** @brief The distance from the level the feed took, in basis points of that level. */
     double basis_points = 0.0;
+
+    friend bool operator==(const provider_dispersion&, const provider_dispersion&) = default;
+};
+
+/**
+ * @brief How a feed's daily variance started: the model, and whether history fitted it.
+ */
+struct variance_start {
+    /** @brief "constant" or "gjr_garch". */
+    std::string model;
+    /** @brief The approved variance calibration the run took its shape from. */
+    std::string calibration_id;
+    /** @brief The version of that calibration the run read. */
+    int calibration_version = 0;
+    /** @brief True when the calibration was fitted from fixings; false when it is an authored
+     * shape. */
+    bool fitted = false;
+    /** @brief The reaction to a day's move. */
+    double alpha = 0.0;
+    /** @brief The extra reaction to a fall of the pair. */
+    double gamma = 0.0;
+    /** @brief The carry-over of a day's variance. */
+    double beta = 0.0;
+    /** @brief alpha + beta + gamma times the mixture's p_minus, below one. */
+    double persistence = 0.0;
+    /** @brief The first day's variance over the long-run level: above one when history ended
+     * turbulent. */
+    double initial_ratio = 1.0;
+    /** @brief How many daily returns the fit read; zero when nothing was fitted. */
+    int returns = 0;
+    /** @brief Why the authored shape was kept, when it was. */
+    std::string note;
+
+    friend bool operator==(const variance_start&, const variance_start&) = default;
 };
 
 /**
@@ -156,6 +204,10 @@ struct feed_start {
     std::optional<int> jumps;
     /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
     std::vector<provider_dispersion> dispersion;
+    /** @brief How the daily variance started, for a feed whose variance is modelled. */
+    std::optional<variance_start> variance;
+
+    friend bool operator==(const feed_start&, const feed_start&) = default;
 };
 
 /**
@@ -169,6 +221,8 @@ struct running_feed {
     std::string source_name;
     /** @brief Where the run's starting value came from; absent when the kind has no such start. */
     std::optional<feed_start> start;
+
+    friend bool operator==(const running_feed&, const running_feed&) = default;
 };
 
 /**
@@ -184,6 +238,8 @@ struct list_feeds_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const list_feeds_request&, const list_feeds_request&) = default;
 };
 
 /**
@@ -194,6 +250,8 @@ struct list_feeds_response {
     bool success = false;
     /** @brief The feeds that run, in source name order. */
     std::vector<running_feed> running_feeds;
+
+    friend bool operator==(const list_feeds_response&, const list_feeds_response&) = default;
 };
 
 /**
@@ -204,12 +262,30 @@ struct calibration_policy_summary {
     bool from_policy_row = false;
     /** @brief How many calendar days of fixings measure the spread. */
     int window_days = 0;
+    /** @brief How many calendar days of fixings a variance calibration's input covers. */
+    int variance_window_days = 0;
+    /** @brief manual, a person approves every variance fit; auto, the policy approves each fit that
+     * passes its rules. */
+    std::string variance_approval_mode;
+    /** @brief The fewest returns the policy approves a fit from. */
+    int variance_min_returns = 0;
+    /** @brief Whether the policy approves only a fit whose starts agree. */
+    bool variance_require_starts_agree = false;
+    /** @brief The lowest persistence the policy approves. */
+    double variance_min_persistence = 0.0;
+    /** @brief The highest persistence the policy approves. */
+    double variance_max_persistence = 0.0;
+    /** @brief The lowest average reaction, alpha plus half of gamma, the policy approves. */
+    double variance_min_reaction = 0.0;
     /** @brief True when an item that quotes the pair the other way round is read as one over it. */
     bool allow_inverse = false;
     /** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
     std::string fallback_code;
     /** @brief The accepted providers, first preferred. Empty means every provider, by code. */
     std::vector<std::string> provider_order;
+
+    friend bool operator==(const calibration_policy_summary&,
+                           const calibration_policy_summary&) = default;
 };
 
 /**
@@ -228,6 +304,56 @@ struct candidate_outcome {
     std::string state;
     /** @brief Why the candidate was chosen, skipped or not reached. */
     std::string reason;
+
+    friend bool operator==(const candidate_outcome&, const candidate_outcome&) = default;
+};
+
+/**
+ * @brief What a calibration run made of a feed's daily variance: the input it captured and the
+ * calibration it fitted from it, stored when the run is applied.
+ */
+struct variance_calibration_summary {
+    /** @brief The stored input; empty when the run was not applied. */
+    std::string input_id;
+    /** @brief The stored calibration; empty when the run was not applied. */
+    std::string calibration_id;
+    /** @brief "gjr_garch_qmle" for a fit, "authored" for an authored shape. */
+    std::string method;
+    /** @brief "proposed" when the fit was made, "rejected" when it could not be. */
+    std::string state;
+    /** @brief Why the fit was rejected; empty for a proposed one. */
+    std::string state_reason;
+    /** @brief The fixing item the input was read from. */
+    std::string item;
+    /** @brief The provider of that item. */
+    std::string provider_code;
+    /** @brief True when the item quotes the pair the other way round. */
+    bool inverted = false;
+    /** @brief The window the input covers, in calendar days, from the policy. */
+    int window_days = 0;
+    /** @brief The last date of the window, as YYYY-MM-DD. */
+    std::string window_end;
+    /** @brief The fixing dates the window held. */
+    int point_count = 0;
+    /** @brief The points whose return the fit used. */
+    int used_count = 0;
+    /** @brief The fitted reaction to a day's move; absent when rejected. */
+    std::optional<double> alpha;
+    /** @brief The fitted extra reaction to a fall; absent when rejected. */
+    std::optional<double> gamma;
+    /** @brief The fitted weight of yesterday's variance; absent when rejected. */
+    std::optional<double> beta;
+    /** @brief alpha + gamma p_minus + beta; absent when rejected. */
+    std::optional<double> persistence;
+    /** @brief The first day's variance over the long-run level; absent when rejected. */
+    std::optional<double> starting_variance_ratio;
+    /** @brief How many starts the fit ran from. */
+    int starts = 0;
+    /** @brief True when every start reached the same optimum. */
+    bool starts_agreed = false;
+
+    friend bool operator==(const variance_calibration_summary&,
+                           const variance_calibration_summary&) = default;
 };
 
 /**
@@ -253,12 +379,31 @@ struct calibrated_feed {
     feed_start start;
     /** @brief Every candidate the feed read, in rank order, with its outcome. */
     std::vector<candidate_outcome> candidates;
+    /** @brief True when the feed runs now, so a stored calibration applies at its next start. */
+    bool running = false;
+    /**
+     * @brief What an applied calibration did to the feed: updated, unchanged, kept, refused or
+     * failed. Empty when the calibration was not applied.
+     */
+    std::string outcome;
+    /** @brief The words of the outcome: the change written, or why nothing was written. */
+    std::string outcome_message;
+    /** @brief The variance calibration of a GJR-GARCH feed that starts from a fixing; absent
+     * otherwise. */
+    std::optional<variance_calibration_summary> variance;
+    /** @brief The calibration the feed's config names and runs, as stored; absent when it names
+     * none. */
+    std::optional<variance_calibration_summary> current_variance;
+
+    friend bool operator==(const calibrated_feed&, const calibrated_feed&) = default;
 };
 
 /**
- * @brief Resolve every feed of one asset class under its policy, without starting any.
+ * @brief Resolve the feeds of one asset class under its policy, without starting any.
  *
- * Every feed of the class is resolved; no subset is selected.
+ * Every feed of the class is resolved, or the one feed the request names. An applied
+ * calibration writes the resolved level and deviations as a new version of each feed config
+ * they change, under the reason system.calibration.
  */
 struct calibrate_request {
     using response_type = struct calibrate_response;
@@ -272,6 +417,12 @@ struct calibrate_request {
     static constexpr bool requires_session = true;
     /** @brief The asset class to calibrate, as its refdata code. */
     std::string asset_class_code;
+    /** @brief The one feed config to calibrate; empty calibrates every feed of the class. */
+    std::string config_id;
+    /** @brief True to write the calibration; false only reports what it would be. */
+    bool apply = false;
+
+    friend bool operator==(const calibrate_request&, const calibrate_request&) = default;
 };
 
 /**
@@ -284,8 +435,618 @@ struct calibrate_response {
     calibration_policy_summary policy;
     /** @brief Every feed of the class, in source name order. */
     std::vector<calibrated_feed> feeds;
+
+    friend bool operator==(const calibrate_response&, const calibrate_response&) = default;
 };
 
+/**
+ * @brief Approve or reject one proposed variance calibration, with the reviewer's reason.
+ *
+ * Approving supersedes the pair's earlier approval and points every feed of the pair that named
+ * it at the new one, each a new version of its config; rejecting leaves the feeds alone. Only a
+ * proposed calibration can be reviewed, and each decision is a new version of the calibration.
+ */
+struct review_variance_calibration_request {
+    using response_type = struct review_variance_calibration_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.review_variance_calibration";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The proposed calibration to decide. */
+    std::string calibration_id;
+    /** @brief "approve" or "reject". */
+    std::string decision;
+    /** @brief Why: kept as the calibration's state reason. Required. */
+    std::string reason;
+
+    friend bool operator==(const review_variance_calibration_request&,
+                           const review_variance_calibration_request&) = default;
+};
+
+/**
+ * @brief What the review did: the calibration's new state, the approval it superseded, and the
+ * feeds it pointed at the new calibration.
+ */
+struct review_variance_calibration_response {
+    /** @brief True when the decision was written. */
+    bool success = false;
+    /** @brief Why the decision was refused, or what it did. */
+    std::string message;
+    /** @brief Why the review was refused: "invalid", "not_found" or "decided"; empty when it was
+     * not. */
+    std::string refusal;
+    /** @brief The calibration's state after the review. */
+    std::string state;
+    /** @brief The approval the new one superseded; empty when there was none. */
+    std::string superseded_id;
+    /** @brief The source names of the feeds now pointed at the approved calibration. */
+    std::vector<std::string> repointed_feeds;
+
+    friend bool operator==(const review_variance_calibration_response&,
+                           const review_variance_calibration_response&) = default;
+};
+
+/**
+ * @brief The members of start_feed_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const start_feed_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"config_id", &start_feed_request::config_id},
+    };
 }
+
+/**
+ * @brief The members of start_feed_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const start_feed_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &start_feed_response::success},
+        ::ores::utility::codec::field{"message", &start_feed_response::message},
+    };
+}
+
+/**
+ * @brief The members of stop_feed_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stop_feed_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"config_id", &stop_feed_request::config_id},
+        ::ores::utility::codec::field{"source_name", &stop_feed_request::source_name},
+    };
+}
+
+/**
+ * @brief The members of stop_feed_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stop_feed_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &stop_feed_response::success},
+        ::ores::utility::codec::field{"message", &stop_feed_response::message},
+    };
+}
+
+/**
+ * @brief The members of provider_dispersion, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const provider_dispersion&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"provider_code", &provider_dispersion::provider_code},
+        ::ores::utility::codec::field{"item", &provider_dispersion::item},
+        ::ores::utility::codec::field{"basis_points", &provider_dispersion::basis_points},
+    };
+}
+
+/**
+ * @brief The members of variance_start, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const variance_start&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"model", &variance_start::model},
+        ::ores::utility::codec::field{"calibration_id", &variance_start::calibration_id},
+        ::ores::utility::codec::field{"calibration_version", &variance_start::calibration_version},
+        ::ores::utility::codec::field{"fitted", &variance_start::fitted},
+        ::ores::utility::codec::field{"alpha", &variance_start::alpha},
+        ::ores::utility::codec::field{"gamma", &variance_start::gamma},
+        ::ores::utility::codec::field{"beta", &variance_start::beta},
+        ::ores::utility::codec::field{"persistence", &variance_start::persistence},
+        ::ores::utility::codec::field{"initial_ratio", &variance_start::initial_ratio},
+        ::ores::utility::codec::field{"returns", &variance_start::returns},
+        ::ores::utility::codec::field{"note", &variance_start::note},
+    };
+}
+
+/**
+ * @brief The members of feed_start, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const feed_start&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"from_fixing", &feed_start::from_fixing},
+        ::ores::utility::codec::field{"item", &feed_start::item},
+        ::ores::utility::codec::field{"provider_code", &feed_start::provider_code},
+        ::ores::utility::codec::field{"vendor_id", &feed_start::vendor_id},
+        ::ores::utility::codec::field{"value", &feed_start::value},
+        ::ores::utility::codec::field{"inverted", &feed_start::inverted},
+        ::ores::utility::codec::field{"fixing_date", &feed_start::fixing_date},
+        ::ores::utility::codec::field{"received_at", &feed_start::received_at},
+        ::ores::utility::codec::field{"window_days", &feed_start::window_days},
+        ::ores::utility::codec::field{"used", &feed_start::used},
+        ::ores::utility::codec::field{"hourly_spread", &feed_start::hourly_spread},
+        ::ores::utility::codec::field{"note", &feed_start::note},
+        ::ores::utility::codec::field{"age_days", &feed_start::age_days},
+        ::ores::utility::codec::field{"daily_spread", &feed_start::daily_spread},
+        ::ores::utility::codec::field{"annual_drift", &feed_start::annual_drift},
+        ::ores::utility::codec::field{"min_return", &feed_start::min_return},
+        ::ores::utility::codec::field{"max_return", &feed_start::max_return},
+        ::ores::utility::codec::field{"jumps", &feed_start::jumps},
+        ::ores::utility::codec::field{"dispersion", &feed_start::dispersion},
+        ::ores::utility::codec::field{"variance", &feed_start::variance},
+    };
+}
+
+/**
+ * @brief The members of running_feed, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const running_feed&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"source_name", &running_feed::source_name},
+        ::ores::utility::codec::field{"start", &running_feed::start},
+    };
+}
+
+/**
+ * @brief The members of list_feeds_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_feeds_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of list_feeds_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_feeds_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &list_feeds_response::success},
+        ::ores::utility::codec::field{"running_feeds", &list_feeds_response::running_feeds},
+    };
+}
+
+/**
+ * @brief The members of calibration_policy_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_policy_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"from_policy_row",
+                                      &calibration_policy_summary::from_policy_row},
+        ::ores::utility::codec::field{"window_days", &calibration_policy_summary::window_days},
+        ::ores::utility::codec::field{"variance_window_days",
+                                      &calibration_policy_summary::variance_window_days},
+        ::ores::utility::codec::field{"variance_approval_mode",
+                                      &calibration_policy_summary::variance_approval_mode},
+        ::ores::utility::codec::field{"variance_min_returns",
+                                      &calibration_policy_summary::variance_min_returns},
+        ::ores::utility::codec::field{"variance_require_starts_agree",
+                                      &calibration_policy_summary::variance_require_starts_agree},
+        ::ores::utility::codec::field{"variance_min_persistence",
+                                      &calibration_policy_summary::variance_min_persistence},
+        ::ores::utility::codec::field{"variance_max_persistence",
+                                      &calibration_policy_summary::variance_max_persistence},
+        ::ores::utility::codec::field{"variance_min_reaction",
+                                      &calibration_policy_summary::variance_min_reaction},
+        ::ores::utility::codec::field{"allow_inverse", &calibration_policy_summary::allow_inverse},
+        ::ores::utility::codec::field{"fallback_code", &calibration_policy_summary::fallback_code},
+        ::ores::utility::codec::field{"provider_order",
+                                      &calibration_policy_summary::provider_order},
+    };
+}
+
+/**
+ * @brief The members of candidate_outcome, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const candidate_outcome&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"item", &candidate_outcome::item},
+        ::ores::utility::codec::field{"provider_code", &candidate_outcome::provider_code},
+        ::ores::utility::codec::field{"inverted", &candidate_outcome::inverted},
+        ::ores::utility::codec::field{"rank", &candidate_outcome::rank},
+        ::ores::utility::codec::field{"state", &candidate_outcome::state},
+        ::ores::utility::codec::field{"reason", &candidate_outcome::reason},
+    };
+}
+
+/**
+ * @brief The members of variance_calibration_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const variance_calibration_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"input_id", &variance_calibration_summary::input_id},
+        ::ores::utility::codec::field{"calibration_id",
+                                      &variance_calibration_summary::calibration_id},
+        ::ores::utility::codec::field{"method", &variance_calibration_summary::method},
+        ::ores::utility::codec::field{"state", &variance_calibration_summary::state},
+        ::ores::utility::codec::field{"state_reason", &variance_calibration_summary::state_reason},
+        ::ores::utility::codec::field{"item", &variance_calibration_summary::item},
+        ::ores::utility::codec::field{"provider_code",
+                                      &variance_calibration_summary::provider_code},
+        ::ores::utility::codec::field{"inverted", &variance_calibration_summary::inverted},
+        ::ores::utility::codec::field{"window_days", &variance_calibration_summary::window_days},
+        ::ores::utility::codec::field{"window_end", &variance_calibration_summary::window_end},
+        ::ores::utility::codec::field{"point_count", &variance_calibration_summary::point_count},
+        ::ores::utility::codec::field{"used_count", &variance_calibration_summary::used_count},
+        ::ores::utility::codec::field{"alpha", &variance_calibration_summary::alpha},
+        ::ores::utility::codec::field{"gamma", &variance_calibration_summary::gamma},
+        ::ores::utility::codec::field{"beta", &variance_calibration_summary::beta},
+        ::ores::utility::codec::field{"persistence", &variance_calibration_summary::persistence},
+        ::ores::utility::codec::field{"starting_variance_ratio",
+                                      &variance_calibration_summary::starting_variance_ratio},
+        ::ores::utility::codec::field{"starts", &variance_calibration_summary::starts},
+        ::ores::utility::codec::field{"starts_agreed",
+                                      &variance_calibration_summary::starts_agreed},
+    };
+}
+
+/**
+ * @brief The members of calibrated_feed, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibrated_feed&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"config_id", &calibrated_feed::config_id},
+        ::ores::utility::codec::field{"source_name", &calibrated_feed::source_name},
+        ::ores::utility::codec::field{"base_currency_code", &calibrated_feed::base_currency_code},
+        ::ores::utility::codec::field{"quote_currency_code", &calibrated_feed::quote_currency_code},
+        ::ores::utility::codec::field{"explicit_items", &calibrated_feed::explicit_items},
+        ::ores::utility::codec::field{"window_days_override",
+                                      &calibrated_feed::window_days_override},
+        ::ores::utility::codec::field{"refused", &calibrated_feed::refused},
+        ::ores::utility::codec::field{"start", &calibrated_feed::start},
+        ::ores::utility::codec::field{"candidates", &calibrated_feed::candidates},
+        ::ores::utility::codec::field{"running", &calibrated_feed::running},
+        ::ores::utility::codec::field{"outcome", &calibrated_feed::outcome},
+        ::ores::utility::codec::field{"outcome_message", &calibrated_feed::outcome_message},
+        ::ores::utility::codec::field{"variance", &calibrated_feed::variance},
+        ::ores::utility::codec::field{"current_variance", &calibrated_feed::current_variance},
+    };
+}
+
+/**
+ * @brief The members of calibrate_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibrate_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"asset_class_code", &calibrate_request::asset_class_code},
+        ::ores::utility::codec::field{"config_id", &calibrate_request::config_id},
+        ::ores::utility::codec::field{"apply", &calibrate_request::apply},
+    };
+}
+
+/**
+ * @brief The members of calibrate_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibrate_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &calibrate_response::success},
+        ::ores::utility::codec::field{"message", &calibrate_response::message},
+        ::ores::utility::codec::field{"policy", &calibrate_response::policy},
+        ::ores::utility::codec::field{"feeds", &calibrate_response::feeds},
+    };
+}
+
+/**
+ * @brief The members of review_variance_calibration_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const review_variance_calibration_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"calibration_id",
+                                      &review_variance_calibration_request::calibration_id},
+        ::ores::utility::codec::field{"decision", &review_variance_calibration_request::decision},
+        ::ores::utility::codec::field{"reason", &review_variance_calibration_request::reason},
+    };
+}
+
+/**
+ * @brief The members of review_variance_calibration_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const review_variance_calibration_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &review_variance_calibration_response::success},
+        ::ores::utility::codec::field{"message", &review_variance_calibration_response::message},
+        ::ores::utility::codec::field{"refusal", &review_variance_calibration_response::refusal},
+        ::ores::utility::codec::field{"state", &review_variance_calibration_response::state},
+        ::ores::utility::codec::field{"superseded_id",
+                                      &review_variance_calibration_response::superseded_id},
+        ::ores::utility::codec::field{"repointed_feeds",
+                                      &review_variance_calibration_response::repointed_feeds},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::start_feed_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::start_feed_request& v);
+    static ores::synthetic::messaging::start_feed_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::start_feed_request& v);
+    static ores::synthetic::messaging::start_feed_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::start_feed_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::start_feed_response& v);
+    static ores::synthetic::messaging::start_feed_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::start_feed_response& v);
+    static ores::synthetic::messaging::start_feed_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::stop_feed_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::stop_feed_request& v);
+    static ores::synthetic::messaging::stop_feed_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::stop_feed_request& v);
+    static ores::synthetic::messaging::stop_feed_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::stop_feed_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::stop_feed_response& v);
+    static ores::synthetic::messaging::stop_feed_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::stop_feed_response& v);
+    static ores::synthetic::messaging::stop_feed_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::provider_dispersion> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::provider_dispersion& v);
+    static ores::synthetic::messaging::provider_dispersion read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::provider_dispersion& v);
+    static ores::synthetic::messaging::provider_dispersion
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::variance_start> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::variance_start& v);
+    static ores::synthetic::messaging::variance_start read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::variance_start& v);
+    static ores::synthetic::messaging::variance_start read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::feed_start> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::feed_start& v);
+    static ores::synthetic::messaging::feed_start read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::feed_start& v);
+    static ores::synthetic::messaging::feed_start read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::running_feed> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::running_feed& v);
+    static ores::synthetic::messaging::running_feed read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::running_feed& v);
+    static ores::synthetic::messaging::running_feed read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::list_feeds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_feeds_request& v);
+    static ores::synthetic::messaging::list_feeds_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::list_feeds_request& v);
+    static ores::synthetic::messaging::list_feeds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::list_feeds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_feeds_response& v);
+    static ores::synthetic::messaging::list_feeds_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::list_feeds_response& v);
+    static ores::synthetic::messaging::list_feeds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_policy_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibration_policy_summary& v);
+    static ores::synthetic::messaging::calibration_policy_summary read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_policy_summary& v);
+    static ores::synthetic::messaging::calibration_policy_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::candidate_outcome> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::candidate_outcome& v);
+    static ores::synthetic::messaging::candidate_outcome read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::candidate_outcome& v);
+    static ores::synthetic::messaging::candidate_outcome
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::variance_calibration_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::variance_calibration_summary& v);
+    static ores::synthetic::messaging::variance_calibration_summary
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::variance_calibration_summary& v);
+    static ores::synthetic::messaging::variance_calibration_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::calibrated_feed> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibrated_feed& v);
+    static ores::synthetic::messaging::calibrated_feed read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::calibrated_feed& v);
+    static ores::synthetic::messaging::calibrated_feed
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::calibrate_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibrate_request& v);
+    static ores::synthetic::messaging::calibrate_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::calibrate_request& v);
+    static ores::synthetic::messaging::calibrate_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::calibrate_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibrate_response& v);
+    static ores::synthetic::messaging::calibrate_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::calibrate_response& v);
+    static ores::synthetic::messaging::calibrate_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::review_variance_calibration_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::review_variance_calibration_request& v);
+    static ores::synthetic::messaging::review_variance_calibration_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::review_variance_calibration_request& v);
+    static ores::synthetic::messaging::review_variance_calibration_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::review_variance_calibration_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::review_variance_calibration_response& v);
+    static ores::synthetic::messaging::review_variance_calibration_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::review_variance_calibration_response& v);
+    static ores::synthetic::messaging::review_variance_calibration_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

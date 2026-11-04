@@ -69,9 +69,6 @@ struct swaption_volatility_config_entity {
     std::optional<std::string> swap_tenors;
     std::optional<std::string> short_swap_index_base;
     std::optional<std::string> swap_index_base;
-    std::optional<std::string> smile_option_tenors;
-    std::optional<std::string> smile_swap_tenors;
-    std::optional<std::string> smile_spreads;
     std::optional<std::string> quote_tag;
     std::string modified_by;
     std::string performed_by;
@@ -105,9 +102,6 @@ struct swaption_volatility_config_entity {
                query_builder::bind("swap_tenors", &e::swap_tenors) |
                query_builder::bind("short_swap_index_base", &e::short_swap_index_base) |
                query_builder::bind("swap_index_base", &e::swap_index_base) |
-               query_builder::bind("smile_option_tenors", &e::smile_option_tenors) |
-               query_builder::bind("smile_swap_tenors", &e::smile_swap_tenors) |
-               query_builder::bind("smile_spreads", &e::smile_spreads) |
                query_builder::bind("quote_tag", &e::quote_tag) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

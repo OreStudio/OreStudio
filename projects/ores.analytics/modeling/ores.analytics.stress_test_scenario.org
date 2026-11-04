@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B1B5DE48-263C-41EF-8C35-B26E48DF6668
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.stress_test_scenario
 #+description: Codegen entity model for the analytics =stress_test_scenario= table. One named scenario of a stress library, and the date it is applied at.

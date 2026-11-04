@@ -42,17 +42,40 @@ export function needsAttention(feed: CalibratedFeed): boolean {
     return outcomeOf(feed) !== 'fixing' || overrides(feed);
 }
 
-export const FILTERS = ['all', 'attention', 'overridden'] as const;
+export const FILTERS = ['all', 'fixing', 'kept', 'attention', 'overridden'] as const;
 export type CalibrationFilter = (typeof FILTERS)[number];
 
 export function filterOf(value: string | null): CalibrationFilter {
     return FILTERS.find((f) => f === value) ?? 'all';
 }
 
+/**
+ * The vendor a synthetic feed simulates, from a source name of the form
+ * synthetic.<vendor>.<name>; none for a name without a vendor, such as
+ * synthetic.<pair>, which shows only under every vendor.
+ */
+export function vendorOf(sourceName: string): string {
+    const parts = sourceName.split('.');
+    return parts.length >= 3 ? (parts[1] ?? '') : '';
+}
+
+/** The vendors the feeds simulate, each once, in order. */
+export function vendorsOf(feeds: readonly CalibratedFeed[]): readonly string[] {
+    return [...new Set(feeds.map((feed) => vendorOf(feed.source_name)))]
+        .filter((vendor) => vendor !== '')
+        .sort();
+}
+
 export function visibleFeeds(
     feeds: readonly CalibratedFeed[],
     filter: CalibrationFilter,
 ): readonly CalibratedFeed[] {
+    if (filter === 'fixing') {
+        return feeds.filter((feed) => feed.start.from_fixing);
+    }
+    if (filter === 'kept') {
+        return feeds.filter((feed) => !feed.start.from_fixing && !feed.refused);
+    }
     if (filter === 'attention') {
         return feeds.filter(needsAttention);
     }
@@ -77,4 +100,141 @@ export function moveProvider(
     out.splice(from, 1);
     out.splice(to, 0, code);
     return out;
+}
+
+/** Where one feed stands in a calibration run. */
+export type RunState = 'waiting' | 'running' | 'done' | 'failed';
+
+/** One feed of a calibration run: the feed, where it stands, and what the server answered. */
+export interface RunStep {
+    readonly configId: string;
+    readonly pair: string;
+    readonly sourceName: string;
+    readonly state: RunState;
+    /** The server's answer, once the feed is done. */
+    readonly result?: CalibratedFeed;
+    /** Why the call failed, when it did. */
+    readonly error?: string;
+}
+
+/** A run over @p feeds, every feed waiting, in the order the list shows them. */
+export function runOf(feeds: readonly CalibratedFeed[]): readonly RunStep[] {
+    return feeds.map((feed) => ({
+        configId: feed.config_id,
+        pair: `${feed.base_currency_code}/${feed.quote_currency_code}`,
+        sourceName: feed.source_name,
+        state: 'waiting',
+    }));
+}
+
+/** The run with the one step @p configId replaced by @p patch. */
+export function advance(
+    steps: readonly RunStep[],
+    configId: string,
+    patch: Partial<Omit<RunStep, 'configId'>>,
+): readonly RunStep[] {
+    return steps.map((step) => (step.configId === configId ? { ...step, ...patch } : step));
+}
+
+/** How a step reads: ok when written or already right, warn when kept, bad when refused or failed. */
+export type StepTone = 'pending' | 'ok' | 'same' | 'warn' | 'bad';
+
+export function toneOf(step: RunStep): StepTone {
+    if (step.state === 'failed') {
+        return 'bad';
+    }
+    if (step.state !== 'done' || step.result === undefined) {
+        return 'pending';
+    }
+    switch (step.result.outcome) {
+        case 'updated':
+            return 'ok';
+        case 'unchanged':
+            return 'same';
+        case 'kept':
+            return 'warn';
+        default:
+            return 'bad';
+    }
+}
+
+/** The steps whose feed runs now and took a new calibration, so it applies only on a restart. */
+export function needsRestart(steps: readonly RunStep[]): readonly RunStep[] {
+    return steps.filter((step) => step.result?.outcome === 'updated' && step.result.running);
+}
+
+/** The counts a run reports: how far it is, and what each finished feed came to. */
+export function runCounts(steps: readonly RunStep[]) {
+    const tones = steps.map(toneOf);
+    return {
+        total: steps.length,
+        finished: steps.filter((s) => s.state === 'done' || s.state === 'failed').length,
+        updated: tones.filter((t) => t === 'ok').length,
+        unchanged: tones.filter((t) => t === 'same').length,
+        kept: tones.filter((t) => t === 'warn').length,
+        failed: tones.filter((t) => t === 'bad').length,
+    };
+}
+
+/** The reason code a calibration writes its versions under. */
+export const CALIBRATION_REASON = 'system.calibration';
+
+/** The fixing series page of an oresmd item. */
+export function seriesPathOf(fixingSeriesPath: string, item: string): string {
+    return `${fixingSeriesPath}?uri=${encodeURIComponent(item)}`;
+}
+
+/** One calibration that changed a feed: when, who, and what it wrote. */
+export interface CalibrationEntry {
+    readonly at: string;
+    readonly actor: string;
+    readonly commentary: string;
+}
+
+/**
+ * The calibrations in a feed's story, newest first. A calibration writes the config and its
+ * components under one commentary, so the versions it wrote together are one entry.
+ */
+export function calibrationEntries(
+    events: readonly {
+        readonly at: string;
+        readonly actor: string;
+        readonly reasonCode?: string;
+        readonly commentary?: string;
+    }[],
+): readonly CalibrationEntry[] {
+    const seen = new Set<string>();
+    const out: CalibrationEntry[] = [];
+    const ordered = [...events]
+        .filter((e) => e.reasonCode === CALIBRATION_REASON)
+        .sort((a, b) => b.at.localeCompare(a.at));
+    for (const e of ordered) {
+        const key = `${e.at.slice(0, 19)}\u0000${e.commentary ?? ''}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ at: e.at, actor: e.actor, commentary: e.commentary ?? '' });
+    }
+    return out;
+}
+
+/**
+ * The daily log returns of the last @p windowDays days of fixings, oldest first. A feed that
+ * reads its pair as 1/x moves the other way, so its returns change sign.
+ */
+export function windowReturns(
+    rows: readonly { readonly date: string; readonly value: string }[],
+    windowDays: number,
+    inverted: boolean,
+): number[] {
+    const values = [...rows]
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(-(windowDays + 1))
+        .map((row) => Number(row.value))
+        .filter((value) => Number.isFinite(value) && value > 0);
+    const returns: number[] = [];
+    for (let i = 1; i < values.length; i++) {
+        const r = Math.log((values[i] ?? 1) / (values[i - 1] ?? 1));
+        returns.push(inverted ? -r : r);
+    }
+    return returns;
 }

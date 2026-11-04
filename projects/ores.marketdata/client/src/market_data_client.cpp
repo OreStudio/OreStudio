@@ -19,13 +19,13 @@
  */
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_data_vendor_instrument_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -199,6 +199,17 @@ market_data_client::get_fixing_window(const messaging::get_fixing_window_request
     return std::move(*resp);
 }
 
+std::expected<messaging::get_observation_window_response, std::string>
+market_data_client::get_observation_window(
+    const messaging::get_observation_window_request& request) {
+    auto resp = send(nats_, request);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
+    return std::move(*resp);
+}
+
 std::expected<std::vector<domain::market_observation>, std::string>
 market_data_client::list_observations(const std::string& series_id) {
     auto id = parse_series_id(series_id);
@@ -268,6 +279,62 @@ std::expected<std::vector<domain::feed>, std::string> market_data_client::list_f
     if (resp->result.outcome != ores::utility::domain::outcome::ok)
         return std::unexpected(describe(resp->result));
     return std::move(resp->feeds);
+}
+
+std::expected<std::vector<domain::market_series>, std::string>
+market_data_client::list_series_of_provider(const std::string& provider_code) {
+    messaging::list_market_series_request req;
+    req.limit = all_rows;
+    req.filter = messaging::market_series_filter{.provider_code = provider_code};
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
+    return std::move(resp->market_series);
+}
+
+std::expected<domain::market_series, std::string>
+market_data_client::put_series(const messaging::market_series_write& write,
+                               const ores::utility::domain::change_intent& intent) {
+    messaging::put_market_series_request req;
+    req.change.write = write;
+    req.intent = intent;
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok || !resp->market_series)
+        return std::unexpected(describe(resp->result));
+    return std::move(*resp->market_series);
+}
+
+std::expected<std::size_t, std::string>
+market_data_client::put_observations(const std::vector<messaging::market_observation_write>& writes,
+                                     const ores::utility::domain::change_intent& intent) {
+    messaging::put_many_market_observations_request req;
+    req.changes.reserve(writes.size());
+    for (const auto& w : writes)
+        req.changes.push_back({.write = w, .precondition = {}});
+    req.intent = intent;
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
+    return resp->market_observations.size();
+}
+
+std::expected<std::vector<domain::market_data_vendor_instrument>, std::string>
+market_data_client::list_vendor_instruments(const std::string& provider_code) {
+    messaging::list_market_data_vendor_instruments_request req;
+    req.limit = all_rows;
+    req.filter = messaging::market_data_vendor_instruments_filter{.provider_code = provider_code};
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
+    return std::move(resp->vendor_instruments);
 }
 
 }

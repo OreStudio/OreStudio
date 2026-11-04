@@ -89,6 +89,7 @@ declare
     er record;
     v_exists boolean;
     v_new_version integer;
+    v_calibration_id uuid;
 begin
     perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
@@ -354,7 +355,16 @@ begin
                 a.enabled,
                 a.auto_start,
                 a.price_source,
-                a.provider_code
+                a.provider_code,
+                a.arrival_mode,
+                a.branching_ratio,
+                a.decay,
+                a.sensitivity,
+                a.variance_model,
+                a.garch_alpha,
+                a.garch_gamma,
+                a.garch_beta,
+                a.garch_window_days
             from ores_dq_fx_spot_generation_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
             order by a.base_currency_code, a.quote_currency_code
@@ -374,12 +384,49 @@ begin
                 continue;
             end if;
 
+            -- A GJR-GARCH feed runs the pair's approved variance calibration. The first feed of a
+            -- pair installs the artefact's authored shape as that calibration, approved, so a
+            -- fresh installation runs a reviewed shape; a later approval re-points the feeds.
+            v_calibration_id := null;
+            if r.variance_model = 'gjr_garch' then
+                select c.id into v_calibration_id
+                from ores_synthetic_variance_calibrations_tbl c
+                where c.tenant_id = p_target_tenant_id
+                  and c.party_id = v_party_id
+                  and c.base_currency_code = r.base_currency_code
+                  and c.quote_currency_code = r.quote_currency_code
+                  and c.state = 'approved'
+                  and c.valid_to = ores_utility_infinity_timestamp_fn();
+                if v_calibration_id is null then
+                    v_calibration_id := gen_random_uuid();
+                    insert into ores_synthetic_variance_calibrations_tbl (
+                        tenant_id, id, version, party_id, base_currency_code, quote_currency_code,
+                        input_id, method, method_version, alpha, gamma, beta, persistence,
+                        long_run_variance, starting_variance_ratio, log_likelihood,
+                        returns_used, starts, starts_agreed, state, state_reason,
+                        modified_by, performed_by, change_reason_code, change_commentary
+                    ) values (
+                        p_target_tenant_id, v_calibration_id, 0, v_party_id,
+                        r.base_currency_code, r.quote_currency_code,
+                        null, 'authored', 1, r.garch_alpha, r.garch_gamma, r.garch_beta,
+                        r.garch_alpha + 0.5 * r.garch_gamma + r.garch_beta,
+                        null, 1.0, null, 0, 0, false, 'approved',
+                        'The authored shape installed with the system feeds; its persistence '
+                            'takes p_minus as one half, the value of a symmetric mixture',
+                        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                        'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+                    );
+                end if;
+            end if;
+
             insert into ores_synthetic_fx_spot_generation_configs_tbl (
                 tenant_id, id, version, party_id, config_id, folder_id,
                 base_currency_code, quote_currency_code,
                 source_name, oresmd_uri, price_source, gmm_initial_price, ticks_per_hour, process_type,
                 enabled, auto_start,
                 asset_class_code,
+                arrival_mode, branching_ratio, decay, sensitivity,
+                variance_model, variance_calibration_id,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
@@ -409,6 +456,8 @@ begin
                 coalesce(r.enabled, true),
                 coalesce(r.auto_start, false),
                 'fx',
+                r.arrival_mode, r.branching_ratio, r.decay, r.sensitivity,
+                r.variance_model, v_calibration_id,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             from (select 1) as _dummy

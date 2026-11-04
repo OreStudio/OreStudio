@@ -33,6 +33,9 @@ set(files
     "log/database_sink_backend.cpp"
     "log/lifecycle_manager.cpp"
     "log/telemetry_sink_backend.cpp"
+    "messaging/logs_protocol_codec.cpp"
+    "messaging/nats_samples_protocol_codec.cpp"
+    "messaging/service_samples_protocol_codec.cpp"
 )
 
 # The headers are listed for the install and IDE targets.

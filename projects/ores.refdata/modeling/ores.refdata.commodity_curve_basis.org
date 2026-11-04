@@ -1,0 +1,262 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 95CA6C55-A716-4B7B-925C-5A94806BC824
+:END:
+#+title: ores.refdata.commodity_curve_basis
+#+description: Codegen entity model for the refdata =commodity_curve_basis= table. One part of a commodity curve: the basis configuration of a commodity curve built as a basis to another.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The basis configuration of a commodity curve built as a basis to another.
+#+entity_singular: commodity_curve_basis
+#+entity_plural: commodity_curve_bases
+#+entity_title: Commodity Curve Basis
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+A commodity curve built as a basis to a base price curve, as ORE's
+=BasisConfiguration=: the base price curve and its conventions, the basis
+conventions, the day counter, the interpolation, whether the basis is added, the
+month offset, whether the base is averaged and whether a price is a historical
+fixing. Only the basis construction reads them, and its presence is what
+selects that construction, so the flag the entry row held is gone.
+
+A commodity curve holds at most one row of this part, so the generated table
+adds the unique index on the live rows of =(tenant_id, curve_definition_id)=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:unique:   true
+:END:
+
+The curve entry this part belongs to, as the commodity curve row is keyed.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** basis_base_price_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The commodity curve a basis curve is built over.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** basis_base_price_conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention of the base curve's prices, by its id.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** basis_conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention of the basis quotes, by its id.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** basis_day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The day counter of the basis, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** basis_interpolation_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the basis interpolates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** basis_add_basis
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the basis is added to the base price, as the ORE boolean the document
+wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** basis_month_offset
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The number of months the base curve is offset by.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** basis_average_base
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the base price is averaged, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** basis_price_as_historical_fixing
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether a base price is taken as a historical fixing, as the ORE boolean the
+document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* Insert trigger
+** Validations
+
+| column                       | validation_function                    |
+|------------------------------+----------------------------------------|
+| basis_base_price_conventions | ores_refdata_validate_convention_id_fn |
+| basis_conventions            | ores_refdata_validate_convention_id_fn |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_curve_bases_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: basis
+:entity_plural_short:   bases
+:entity_singular_words: commodity curve basis
+:entity_plural_words:   commodity curve bases
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:2052FD37-EB0C-4A10-A2CF-8CE8BFC14678][ores.refdata.commodity_curve_config]] — the commodity curve this part belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:40C8D641-A53C-4FB7-94E5-29812C70E66B][Split the ORE curve entries by construction]] — the task that split it.

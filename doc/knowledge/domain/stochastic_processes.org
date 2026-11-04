@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:structure_note:
 #+created: 2026-07-16
-#+updated: 2026-07-16
+#+updated: 2026-11-03
 
 This is the hub note for stochastic processes as a modelling tool. Each
 linked note is a single focused concept; start here and follow the links.
@@ -153,6 +153,16 @@ generation loop that drives =next()= on whichever process was
 configured does not need to know which one it got. This is the first,
 not the only, place these processes are expected to be used in ORE
 Studio.
+
+The synthetic volatility surfaces use the mean-reverting family for
+something other than a rate. The forward variances of an SSVI surface
+are Cox-Ingersoll-Ross processes, because a variance must stay
+positive, and its skew and curvature are Ornstein-Uhlenbeck processes
+mapped into their bounds, as the option vol surface section of
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+describes. The FX spot price processes carry a daily GJR-GARCH variance,
+a discrete-time model outside this cluster, described in
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]].
 
 * See also
 

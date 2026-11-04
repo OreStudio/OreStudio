@@ -44,6 +44,8 @@ namespace ores::refdata::messaging {
 struct supervisory_body_key {
     std::string code;
     std::string coding_scheme_code;
+
+    friend bool operator==(const supervisory_body_key&, const supervisory_body_key&) = default;
 };
 
 struct supervisory_body_write {
@@ -51,21 +53,32 @@ struct supervisory_body_write {
     std::string coding_scheme_code;
     std::string source;
     std::string description;
+
+    friend bool operator==(const supervisory_body_write&, const supervisory_body_write&) = default;
 };
 
 struct supervisory_body_change {
     supervisory_body_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const supervisory_body_change&,
+                           const supervisory_body_change&) = default;
 };
 
 struct supervisory_body_removal {
     supervisory_body_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const supervisory_body_removal&,
+                           const supervisory_body_removal&) = default;
 };
 
 struct supervisory_body_lookup {
     supervisory_body_key key;
     std::optional<ores::refdata::domain::supervisory_body> supervisory_body;
+
+    friend bool operator==(const supervisory_body_lookup&,
+                           const supervisory_body_lookup&) = default;
 };
 
 struct supervisory_body_event {
@@ -75,17 +88,25 @@ struct supervisory_body_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const supervisory_body_event&, const supervisory_body_event&) = default;
 };
 
 struct supervisory_body_version_key {
     supervisory_body_key supervisory_body;
     std::uint32_t version;
+
+    friend bool operator==(const supervisory_body_version_key&,
+                           const supervisory_body_version_key&) = default;
 };
 
 struct supervisory_body_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const supervisory_body_versions_filter&,
+                           const supervisory_body_versions_filter&) = default;
 };
 
 struct list_supervisory_bodies_request {
@@ -102,12 +123,18 @@ struct list_supervisory_bodies_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_supervisory_bodies_request&,
+                           const list_supervisory_bodies_request&) = default;
 };
 
 struct list_supervisory_bodies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::supervisory_body> bodies;
     std::uint64_t total;
+
+    friend bool operator==(const list_supervisory_bodies_response&,
+                           const list_supervisory_bodies_response&) = default;
 };
 
 struct get_supervisory_body_request {
@@ -121,11 +148,17 @@ struct get_supervisory_body_request {
      */
     static constexpr bool requires_session = true;
     supervisory_body_key key;
+
+    friend bool operator==(const get_supervisory_body_request&,
+                           const get_supervisory_body_request&) = default;
 };
 
 struct get_supervisory_body_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::supervisory_body> supervisory_body;
+
+    friend bool operator==(const get_supervisory_body_response&,
+                           const get_supervisory_body_response&) = default;
 };
 
 struct get_many_supervisory_bodies_request {
@@ -139,11 +172,17 @@ struct get_many_supervisory_bodies_request {
      */
     static constexpr bool requires_session = true;
     std::vector<supervisory_body_key> keys;
+
+    friend bool operator==(const get_many_supervisory_bodies_request&,
+                           const get_many_supervisory_bodies_request&) = default;
 };
 
 struct get_many_supervisory_bodies_response {
     ores::utility::domain::result result;
     std::vector<supervisory_body_lookup> entries;
+
+    friend bool operator==(const get_many_supervisory_bodies_response&,
+                           const get_many_supervisory_bodies_response&) = default;
 };
 
 struct put_supervisory_body_request {
@@ -158,11 +197,17 @@ struct put_supervisory_body_request {
     static constexpr bool requires_session = true;
     supervisory_body_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_supervisory_body_request&,
+                           const put_supervisory_body_request&) = default;
 };
 
 struct put_supervisory_body_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::supervisory_body> supervisory_body;
+
+    friend bool operator==(const put_supervisory_body_response&,
+                           const put_supervisory_body_response&) = default;
 };
 
 struct put_many_supervisory_bodies_request {
@@ -177,11 +222,17 @@ struct put_many_supervisory_bodies_request {
     static constexpr bool requires_session = true;
     std::vector<supervisory_body_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_supervisory_bodies_request&,
+                           const put_many_supervisory_bodies_request&) = default;
 };
 
 struct put_many_supervisory_bodies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::supervisory_body> bodies;
+
+    friend bool operator==(const put_many_supervisory_bodies_response&,
+                           const put_many_supervisory_bodies_response&) = default;
 };
 
 struct delete_supervisory_body_request {
@@ -196,10 +247,16 @@ struct delete_supervisory_body_request {
     static constexpr bool requires_session = true;
     supervisory_body_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_supervisory_body_request&,
+                           const delete_supervisory_body_request&) = default;
 };
 
 struct delete_supervisory_body_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_supervisory_body_response&,
+                           const delete_supervisory_body_response&) = default;
 };
 
 struct delete_many_supervisory_bodies_request {
@@ -214,10 +271,16 @@ struct delete_many_supervisory_bodies_request {
     static constexpr bool requires_session = true;
     std::vector<supervisory_body_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_supervisory_bodies_request&,
+                           const delete_many_supervisory_bodies_request&) = default;
 };
 
 struct delete_many_supervisory_bodies_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_supervisory_bodies_response&,
+                           const delete_many_supervisory_bodies_response&) = default;
 };
 
 struct list_supervisory_body_versions_request {
@@ -235,12 +298,18 @@ struct list_supervisory_body_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<supervisory_body_versions_filter> filter;
+
+    friend bool operator==(const list_supervisory_body_versions_request&,
+                           const list_supervisory_body_versions_request&) = default;
 };
 
 struct list_supervisory_body_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::supervisory_body> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_supervisory_body_versions_response&,
+                           const list_supervisory_body_versions_response&) = default;
 };
 
 struct get_supervisory_body_version_request {
@@ -254,11 +323,17 @@ struct get_supervisory_body_version_request {
      */
     static constexpr bool requires_session = true;
     supervisory_body_version_key key;
+
+    friend bool operator==(const get_supervisory_body_version_request&,
+                           const get_supervisory_body_version_request&) = default;
 };
 
 struct get_supervisory_body_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::supervisory_body> version;
+
+    friend bool operator==(const get_supervisory_body_version_response&,
+                           const get_supervisory_body_version_response&) = default;
 };
 
 /**
@@ -270,9 +345,9 @@ struct get_supervisory_body_version_response {
  * of them.
  */
 namespace supervisory_body_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.supervisory_bodies_events.created";
-inline constexpr std::string_view updated = "refdata.v1.supervisory_bodies_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.supervisory_bodies.created";
+inline constexpr std::string_view updated = "refdata.v1.events.supervisory_bodies.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodies.deleted";
 }
 /**
  * @brief The members of supervisory_body_key, named as the wire names them and in the order

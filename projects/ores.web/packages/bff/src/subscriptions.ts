@@ -23,7 +23,10 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as providerSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/provider_protocol';
-import { subjects as feedSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/feed_protocol';
+import {
+    subjects as feedSubjects,
+    type ListFeedsResponse,
+} from '@ores/wire-protocol/generated/marketdata/protocol/feed_protocol';
 import { subjects as subscriptionSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/subscription_protocol';
 import { subjects as routeSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/route_protocol';
 import { invalidRequest } from './errors.js';
@@ -180,7 +183,7 @@ export function registerSubscriptionRoutes(
                 filter: null,
                 as_of: null,
             }),
-            readAll(session, feedSubjects.list_feeds_request, 'feeds', {
+            readAll<ListFeedsResponse>(session, feedSubjects.list_feeds_request, 'feeds', {
                 filter: null,
                 as_of: null,
             }),

@@ -6,10 +6,11 @@
 #+type: archetype
 #+output: projects/{component_dir}/src/messaging/{entity}_protocol_codec.cpp
 #+facet: ores.cpp.wire-codec
+#+requires_facet: ores.cpp.protocol
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-10-30
-#+updated: 2026-10-30
+#+updated: 2026-11-02
 
 Defines the four functions of each =wire_traits= specialisation the protocol
 header declares, one message at a time.
@@ -22,6 +23,11 @@ header carries the field lists rather than this unit, and why this unit includes
 the entity's own domain codec: that is the header those field lists are
 declared in. The envelope's own shapes come from the utility package, which
 states them beside the structs the same way.
+
+The unit renders only where =ores.cpp.protocol= renders for the same model,
+stated as =#+requires_facet:=. Its functions define what the protocol header
+declares, so a model that turns its protocol off, as an internal table does,
+has no header for this unit to include.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -38,7 +44,9 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity}}
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
 
+{{^family}}
 #include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
+{{/family}}
 {{#message_codec_includes}}
 #include "{{{.}}}"
 {{/message_codec_includes}}

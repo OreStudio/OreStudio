@@ -73,6 +73,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:assign', 'Assign roles to accounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:revoke', 'Revoke roles from accounts');
 
+    -- Role product types: the product types a role may book
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_product_types:read', 'View the product types a role permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_product_types:write', 'Grant a role the product types it may book');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_product_types:delete', 'Withdraw a role''s product types');
+
     -- Run grant permissions. Any person may create a grant for a role they
     -- hold in full, and its grantor may revoke it; this permission lets an
     -- administrator revoke any grant of the tenant. The generated reads check
@@ -328,6 +333,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::asset_class_codes:read',   'View asset class codes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::asset_class_codes:write',  'Create and modify asset class codes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::asset_class_codes:delete', 'Delete asset class codes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::product_family_codes:read',   'View product family codes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::product_family_codes:write',  'Create and modify product family codes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::product_family_codes:delete', 'Delete product family codes');
 
     -- Series subclass code permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::series_subclass_codes:read',   'View series subclass codes');
@@ -343,6 +351,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_purpose_types:read',                  'View book purpose types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_purpose_types:write',                 'Create and modify book purpose types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_purpose_types:delete',                'Delete book purpose types');
+
+    -- Book product types: the product types a book allows, when it states them
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:read',                  'View the product types a book allows');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:write',                 'State the product types a book allows');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:delete',                'Restore a book to allowing every product type');
 
     -- Business day convention types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:read',       'View business day convention types');
@@ -539,6 +552,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_curve_configs:read',                  'View inflation curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_curve_configs:write',                 'Create and modify inflation curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_curve_configs:delete',                'Delete inflation curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_seasonalities:read',   'View inflation seasonalities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_seasonalities:write',  'Create and modify inflation seasonalities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_seasonalities:delete', 'Delete inflation seasonalities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_seasonality_factors:read',     'View inflation seasonality factors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_seasonality_factors:write',    'Create and modify inflation seasonality factors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_seasonality_factors:delete',   'Delete inflation seasonality factors');
@@ -548,12 +564,39 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_configurations:read',      'View default curve configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_configurations:write',     'Create and modify default curve configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_configurations:delete',    'Delete default curve configurations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_market_terms:read',        'View default curve market terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_market_terms:write',       'Create and modify default curve market terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_market_terms:delete',      'Delete default curve market terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_cds_terms:read',           'View default curve cds terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_cds_terms:write',          'Create and modify default curve cds terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_cds_terms:delete',         'Delete default curve cds terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_benchmarks:read',          'View default curve benchmarks');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_benchmarks:write',         'Create and modify default curve benchmarks');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_benchmarks:delete',        'Delete default curve benchmarks');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_transition_matrices:read', 'View default curve transition matrices');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_transition_matrices:write', 'Create and modify default curve transition matrices');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_transition_matrices:delete', 'Delete default curve transition matrices');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_yield_reinterpretations:read', 'View default curve yield reinterpretations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_yield_reinterpretations:write', 'Create and modify default curve yield reinterpretations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::default_curve_yield_reinterpretations:delete', 'Delete default curve yield reinterpretations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodities:read',                             'View commodities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodities:write',                            'Create and modify commodities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodities:delete',                           'Delete commodities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_configs:read',                  'View commodity curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_configs:write',                 'Create and modify commodity curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_configs:delete',                'Delete commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_interpolations:read',    'View commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_interpolations:write',   'Create and modify commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_interpolations:delete',  'Delete commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_directs:read',           'View commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_directs:write',          'Create and modify commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_directs:delete',         'Delete commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_cross_currencies:read',  'View commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_cross_currencies:write', 'Create and modify commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_cross_currencies:delete', 'Delete commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_bases:read',             'View commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_bases:write',            'Create and modify commodity curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_curve_bases:delete',           'Delete commodity curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_price_segments:read',          'View commodity price segments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_price_segments:write',         'Create and modify commodity price segments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_price_segments:delete',        'Delete commodity price segments');
@@ -632,6 +675,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swaption_proxy_configs:read',   'View swaption proxy configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swaption_proxy_configs:write',  'Create and modify swaption proxy configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swaption_proxy_configs:delete', 'Delete swaption proxy configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swaption_volatility_smiles:read',   'View swaption volatility smiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swaption_volatility_smiles:write',  'Create and modify swaption volatility smiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swaption_volatility_smiles:delete', 'Delete swaption volatility smiles');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cap_floor_volatility_configs:read',       'View cap floor volatilities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cap_floor_volatility_configs:write',      'Create and modify cap floor volatilities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cap_floor_volatility_configs:delete',     'Delete cap floor volatilities');
@@ -686,6 +732,36 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_curves:read',              'View curve segment curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_curves:write',             'Create and modify curve segment curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_curves:delete',            'Delete curve segment curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_conventions:read',         'View curve segment conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_conventions:write',        'Create and modify curve segment conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_conventions:delete',       'Delete curve segment conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_pillar_rules:read',        'View curve segment pillar rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_pillar_rules:write',       'Create and modify curve segment pillar rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_pillar_rules:delete',      'Delete curve segment pillar rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_projections:read',         'View curve segment projections');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_projections:write',        'Create and modify curve segment projections');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_projections:delete',       'Delete curve segment projections');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_tenor_basis_curves:read',  'View curve segment tenor basis curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_tenor_basis_curves:write', 'Create and modify curve segment tenor basis curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_tenor_basis_curves:delete', 'Delete curve segment tenor basis curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_cross_currency_terms:read', 'View curve segment cross currency terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_cross_currency_terms:write', 'Create and modify curve segment cross currency terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_cross_currency_terms:delete', 'Delete curve segment cross currency terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_references:read',          'View curve segment references');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_references:write',         'Create and modify curve segment references');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_references:delete',        'Delete curve segment references');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_weighted_averages:read',   'View curve segment weighted averages');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_weighted_averages:write',  'Create and modify curve segment weighted averages');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_weighted_averages:delete', 'Delete curve segment weighted averages');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_discount_ratios:read',     'View curve segment discount ratios');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_discount_ratios:write',    'Create and modify curve segment discount ratios');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_discount_ratios:delete',   'Delete curve segment discount ratios');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_extrapolations:read',      'View curve segment extrapolations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_extrapolations:write',     'Create and modify curve segment extrapolations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_extrapolations:delete',    'Delete curve segment extrapolations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_ibor_fallbacks:read',      'View curve segment ibor fallbacks');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_ibor_fallbacks:write',     'Create and modify curve segment ibor fallbacks');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_ibor_fallbacks:delete',    'Delete curve segment ibor fallbacks');
 
     -- Derivation kinds permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::derivation_kinds:read',                    'View derivation kinds');
@@ -729,6 +805,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:read',          'View ir curve bootstrap pillars');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:write',         'Create and modify ir curve bootstrap pillars');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:delete',        'Delete ir curve bootstrap pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:read', 'View FX volatility surface blueprints');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:write', 'Create and modify FX volatility surface blueprints');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:delete', 'Delete FX volatility surface blueprints');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:read', 'View FX volatility surface pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:write', 'Create and modify FX volatility surface pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:delete', 'Delete FX volatility surface pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:read', 'View FX volatility surface pillar sources');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:write', 'Create and modify FX volatility surface pillar sources');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:delete', 'Delete FX volatility surface pillar sources');
 
     -- Ledger feed types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ledger_feed_types:read',                   'View ledger feed types');
@@ -812,9 +897,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::average_ois_conventions:delete',           'Delete averaging OIS conventions');
 
     -- Cross-currency basis conventions permissions
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_conventions:read',    'View cross-currency basis conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_conventions:write',   'Create and modify cross-currency basis conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_conventions:delete',  'Delete cross-currency basis conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_flat_legs:read', 'View cross-currency basis flat legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_flat_legs:write', 'Create and modify cross-currency basis flat legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_flat_legs:delete', 'Delete cross-currency basis flat legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_spread_legs:read', 'View cross-currency basis spread legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_spread_legs:write', 'Create and modify cross-currency basis spread legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_spread_legs:delete', 'Delete cross-currency basis spread legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_swap_terms:read', 'View cross-currency basis swap terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_swap_terms:write', 'Create and modify cross-currency basis swap terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_swap_terms:delete', 'Delete cross-currency basis swap terms');
 
     -- Two-tenor basis swap conventions permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_basis_two_swap_conventions:read',     'View two-tenor basis swap conventions');
@@ -845,9 +936,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_swap_conventions:delete',         'Delete inflation swap conventions');
 
     -- Cross-currency fix-float conventions permissions
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_conventions:read', 'View cross-currency fix-float conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_conventions:write', 'Create and modify cross-currency fix-float conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_conventions:delete', 'Delete cross-currency fix-float conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_fixed_legs:read', 'View cross-currency fix-float fixed legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_fixed_legs:write', 'Create and modify cross-currency fix-float fixed legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_fixed_legs:delete', 'Delete cross-currency fix-float fixed legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_float_legs:read', 'View cross-currency fix-float float legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_float_legs:write', 'Create and modify cross-currency fix-float float legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_float_legs:delete', 'Delete cross-currency fix-float float legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_swap_terms:read', 'View cross-currency fix-float swap terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_swap_terms:write', 'Create and modify cross-currency fix-float swap terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_swap_terms:delete', 'Delete cross-currency fix-float swap terms');
 
     -- CMS spread option conventions permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cms_spread_option_conventions:read',        'View CMS spread option conventions');
@@ -855,9 +952,21 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cms_spread_option_conventions:delete',      'Delete CMS spread option conventions');
 
     -- Commodity future conventions permissions
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_conventions:read',         'View commodity future conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_conventions:write',        'Create and modify commodity future conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_conventions:delete',       'Delete commodity future conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_averaging_terms:read', 'View commodity future averaging terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_averaging_terms:write', 'Create and modify commodity future averaging terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_averaging_terms:delete', 'Delete commodity future averaging terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_contract_terms:read', 'View commodity future contract terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_contract_terms:write', 'Create and modify commodity future contract terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_contract_terms:delete', 'Delete commodity future contract terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_expiry_anchors:read', 'View commodity future expiry anchors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_expiry_anchors:write', 'Create and modify commodity future expiry anchors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_expiry_anchors:delete', 'Delete commodity future expiry anchors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_off_peak_indexes:read', 'View commodity future off-peak indexes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_off_peak_indexes:write', 'Create and modify commodity future off-peak indexes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_off_peak_indexes:delete', 'Delete commodity future off-peak indexes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_option_expiries:read', 'View commodity future option expiries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_option_expiries:write', 'Create and modify commodity future option expiries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_option_expiries:delete', 'Delete commodity future option expiries');
 
     -- Commodity forward conventions permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_forward_conventions:read',        'View commodity forward conventions');
@@ -1112,6 +1221,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_metrics:read', 'View the metrics a run produced');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_metrics:write', 'Write report metrics');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_metrics:delete', 'Delete report metrics');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_text_values:read', 'View the text values a run stated');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_text_values:write', 'Write report text values');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_text_values:delete', 'Delete report text values');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:read', 'View the cashflows a run produced');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:write', 'Write report cashflows');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:delete', 'Delete report cashflows');
@@ -1134,6 +1246,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::file_types:read', 'View file types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::file_types:write', 'Create and modify file types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::file_types:delete', 'Delete file types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_file_categories:read', 'View ORE file categories');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_file_categories:write', 'Create and modify ORE file categories');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_file_categories:delete', 'Delete ORE file categories');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_files:read', 'View ORE files');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_files:write', 'Create and modify ORE files');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_files:delete', 'Delete ORE files');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_file_versions:read', 'View the contents of ORE files');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_file_versions:write', 'Create and modify the contents of ORE files');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_file_versions:delete', 'Delete the contents of ORE files');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_instance_kinds:read', 'View report instance kinds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_instance_kinds:write', 'Create and modify report instance kinds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_instance_kinds:delete', 'Delete report instance kinds');
@@ -1601,9 +1722,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_portfolios:read',                      'View trade portfolios');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_portfolios:write',                     'Create and modify trade portfolios');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_portfolios:delete',                    'Delete trade portfolios');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_types:read',                           'View trade types');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_types:write',                          'Create and modify trade types');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_types:delete',                         'Delete trade types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::product_types:read',                          'View product types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::product_types:write',                         'Create and modify product types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::product_types:delete',                        'Delete product types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::product_type_asset_classes:read',   'View product type markets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::product_type_asset_classes:write',  'Create and modify product type markets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::product_type_asset_classes:delete', 'Delete product type markets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::draft_reasons:read',   'View draft reasons');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::draft_reasons:write',  'Create and modify draft reasons');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::draft_reasons:delete', 'Delete draft reasons');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trades:read',                                'View trades');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trades:write',                               'Create and modify trades');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trades:write_service_origin', 'Write a trade that states a service origin, such as the synthetic population or the ORE import');
@@ -1671,6 +1798,16 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_fixing_items:read',   'View the FX fixings a feed may start from');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_fixing_items:write',  'Create and modify the FX fixings a feed may start from');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_fixing_items:delete', 'Delete the FX fixings a feed may start from');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_inputs:read',   'View variance calibration inputs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_inputs:write',  'Create and modify variance calibration inputs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_inputs:delete', 'Delete variance calibration inputs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:read',   'View variance calibration input points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:write',  'Create and modify variance calibration input points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:delete', 'Delete variance calibration input points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:read',   'View variance calibrations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:write',  'Create and modify variance calibrations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:delete', 'Delete variance calibrations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:review', 'Approve or reject proposed variance calibrations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_generation_configs:read',   'View IR curve generation configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_generation_configs:write',  'Create and modify IR curve generation configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_generation_configs:delete', 'Delete IR curve generation configs');
@@ -1698,9 +1835,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_observations:read',           'View market data observations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_observations:write',          'Create and modify market data observations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_observations:delete',         'Delete market data observations');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_state_payloads:read',        'View the market state a run priced against');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_state_payloads:write',       'Store the market state a run priced against');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_state_payloads:delete',      'Delete stored market state');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_scenario_values:read',      'View the scenarios a run generated');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_scenario_values:write',     'Store the scenarios a run generated');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_scenario_values:delete',    'Delete stored scenarios');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_calibration_values:read',   'View the calibration of the market a run built');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_calibration_values:write',  'Store the calibration of the market a run built');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_calibration_values:delete', 'Delete stored calibrations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_input_values:read',         'View the market data a run read');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_input_values:write',        'Store the market data a run read');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_input_values:delete',       'Delete stored run market data');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_fixings:read',                'View market data fixings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_fixings:write',               'Create and modify market data fixings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_fixings:delete',              'Delete market data fixings');

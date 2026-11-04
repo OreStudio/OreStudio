@@ -106,26 +106,7 @@ commodity_curve_config_to_domain(const messaging::commodity_curve_config_write& 
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
     v.currency = write.currency;
-    v.base_price_curve = write.base_price_curve;
-    v.base_yield_curve = write.base_yield_curve;
-    v.yield_curve = write.yield_curve;
-    v.spot_quote = write.spot_quote;
-    v.has_quotes = write.has_quotes;
-    v.day_counter = write.day_counter;
-    v.interpolation_method = write.interpolation_method;
-    v.conventions = write.conventions;
     v.extrapolation = write.extrapolation;
-    v.has_basis_configuration = write.has_basis_configuration;
-    v.basis_base_price_curve = write.basis_base_price_curve;
-    v.basis_base_price_conventions = write.basis_base_price_conventions;
-    v.basis_conventions = write.basis_conventions;
-    v.basis_day_counter = write.basis_day_counter;
-    v.basis_interpolation_method = write.basis_interpolation_method;
-    v.basis_add_basis = write.basis_add_basis;
-    v.basis_month_offset = write.basis_month_offset;
-    v.basis_average_base = write.basis_average_base;
-    v.basis_price_as_historical_fixing = write.basis_price_as_historical_fixing;
-    v.has_price_segments = write.has_price_segments;
     return v;
 }
 

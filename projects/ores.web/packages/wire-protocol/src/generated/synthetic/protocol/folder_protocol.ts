@@ -206,7 +206,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.folders_events.created',
-    updated: 'synthetic.v1.folders_events.updated',
-    deleted: 'synthetic.v1.folders_events.deleted',
+    created: 'synthetic.v1.events.folders.created',
+    updated: 'synthetic.v1.events.folders.updated',
+    deleted: 'synthetic.v1.events.folders.deleted',
 } as const;

@@ -233,10 +233,18 @@ function list(codes: string[], parties = TWO_PARTIES): string {
         (client: QueryClient) => {
             client.setQueryData(['my-access'], accessOf(codes));
             client.setQueryData(MY_PARTIES_QUERY_KEY, parties);
-            client.setQueryData(pageKey({ key: 'engine-settings' }, FIRST_PAGE), {
-                rows: ROWS,
-                total: ROWS.length,
-            });
+            client.setQueryData(
+                pageKey(
+                    { key: 'engine-settings' },
+                    parties.parties.length > 1
+                        ? { ...FIRST_PAGE, filters: { party: parties.defaultPartyId } }
+                        : FIRST_PAGE,
+                ),
+                {
+                    rows: ROWS,
+                    total: ROWS.length,
+                },
+            );
         },
     );
 }

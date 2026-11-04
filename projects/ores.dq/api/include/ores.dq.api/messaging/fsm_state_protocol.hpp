@@ -43,6 +43,8 @@ namespace ores::dq::messaging {
 
 struct fsm_state_key {
     std::string name;
+
+    friend bool operator==(const fsm_state_key&, const fsm_state_key&) = default;
 };
 
 struct fsm_state_write {
@@ -51,25 +53,35 @@ struct fsm_state_write {
     std::string name;
     bool is_initial;
     bool is_terminal;
+
+    friend bool operator==(const fsm_state_write&, const fsm_state_write&) = default;
 };
 
 struct fsm_state_change {
     fsm_state_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const fsm_state_change&, const fsm_state_change&) = default;
 };
 
 struct fsm_state_removal {
     fsm_state_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const fsm_state_removal&, const fsm_state_removal&) = default;
 };
 
 struct fsm_state_lookup {
     fsm_state_key key;
     std::optional<ores::dq::domain::fsm_state> fsm_state;
+
+    friend bool operator==(const fsm_state_lookup&, const fsm_state_lookup&) = default;
 };
 
 struct fsm_states_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const fsm_states_filter&, const fsm_states_filter&) = default;
 };
 
 struct fsm_state_event {
@@ -79,17 +91,24 @@ struct fsm_state_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const fsm_state_event&, const fsm_state_event&) = default;
 };
 
 struct fsm_state_version_key {
     fsm_state_key fsm_state;
     std::uint32_t version;
+
+    friend bool operator==(const fsm_state_version_key&, const fsm_state_version_key&) = default;
 };
 
 struct fsm_state_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const fsm_state_versions_filter&,
+                           const fsm_state_versions_filter&) = default;
 };
 
 struct list_fsm_states_request {
@@ -107,12 +126,18 @@ struct list_fsm_states_request {
     ores::utility::domain::order order;
     std::optional<fsm_states_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_fsm_states_request&,
+                           const list_fsm_states_request&) = default;
 };
 
 struct list_fsm_states_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::fsm_state> states;
     std::uint64_t total;
+
+    friend bool operator==(const list_fsm_states_response&,
+                           const list_fsm_states_response&) = default;
 };
 
 struct get_fsm_state_request {
@@ -126,11 +151,15 @@ struct get_fsm_state_request {
      */
     static constexpr bool requires_session = true;
     fsm_state_key key;
+
+    friend bool operator==(const get_fsm_state_request&, const get_fsm_state_request&) = default;
 };
 
 struct get_fsm_state_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::fsm_state> fsm_state;
+
+    friend bool operator==(const get_fsm_state_response&, const get_fsm_state_response&) = default;
 };
 
 struct get_many_fsm_states_request {
@@ -144,11 +173,17 @@ struct get_many_fsm_states_request {
      */
     static constexpr bool requires_session = true;
     std::vector<fsm_state_key> keys;
+
+    friend bool operator==(const get_many_fsm_states_request&,
+                           const get_many_fsm_states_request&) = default;
 };
 
 struct get_many_fsm_states_response {
     ores::utility::domain::result result;
     std::vector<fsm_state_lookup> entries;
+
+    friend bool operator==(const get_many_fsm_states_response&,
+                           const get_many_fsm_states_response&) = default;
 };
 
 struct put_fsm_state_request {
@@ -163,11 +198,15 @@ struct put_fsm_state_request {
     static constexpr bool requires_session = true;
     fsm_state_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_fsm_state_request&, const put_fsm_state_request&) = default;
 };
 
 struct put_fsm_state_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::fsm_state> fsm_state;
+
+    friend bool operator==(const put_fsm_state_response&, const put_fsm_state_response&) = default;
 };
 
 struct put_many_fsm_states_request {
@@ -182,11 +221,17 @@ struct put_many_fsm_states_request {
     static constexpr bool requires_session = true;
     std::vector<fsm_state_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_fsm_states_request&,
+                           const put_many_fsm_states_request&) = default;
 };
 
 struct put_many_fsm_states_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::fsm_state> states;
+
+    friend bool operator==(const put_many_fsm_states_response&,
+                           const put_many_fsm_states_response&) = default;
 };
 
 struct delete_fsm_state_request {
@@ -201,10 +246,16 @@ struct delete_fsm_state_request {
     static constexpr bool requires_session = true;
     fsm_state_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_fsm_state_request&,
+                           const delete_fsm_state_request&) = default;
 };
 
 struct delete_fsm_state_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_fsm_state_response&,
+                           const delete_fsm_state_response&) = default;
 };
 
 struct delete_many_fsm_states_request {
@@ -219,10 +270,16 @@ struct delete_many_fsm_states_request {
     static constexpr bool requires_session = true;
     std::vector<fsm_state_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_fsm_states_request&,
+                           const delete_many_fsm_states_request&) = default;
 };
 
 struct delete_many_fsm_states_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_fsm_states_response&,
+                           const delete_many_fsm_states_response&) = default;
 };
 
 struct list_fsm_state_versions_request {
@@ -240,12 +297,18 @@ struct list_fsm_state_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<fsm_state_versions_filter> filter;
+
+    friend bool operator==(const list_fsm_state_versions_request&,
+                           const list_fsm_state_versions_request&) = default;
 };
 
 struct list_fsm_state_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::fsm_state> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_fsm_state_versions_response&,
+                           const list_fsm_state_versions_response&) = default;
 };
 
 struct get_fsm_state_version_request {
@@ -259,11 +322,17 @@ struct get_fsm_state_version_request {
      */
     static constexpr bool requires_session = true;
     fsm_state_version_key key;
+
+    friend bool operator==(const get_fsm_state_version_request&,
+                           const get_fsm_state_version_request&) = default;
 };
 
 struct get_fsm_state_version_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::fsm_state> version;
+
+    friend bool operator==(const get_fsm_state_version_response&,
+                           const get_fsm_state_version_response&) = default;
 };
 
 /**
@@ -275,9 +344,9 @@ struct get_fsm_state_version_response {
  * of them.
  */
 namespace fsm_state_event_subjects {
-inline constexpr std::string_view created = "dq.v1.fsm_states_events.created";
-inline constexpr std::string_view updated = "dq.v1.fsm_states_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.fsm_states_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.fsm_states.created";
+inline constexpr std::string_view updated = "dq.v1.events.fsm_states.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.fsm_states.deleted";
 }
 /**
  * @brief The members of fsm_state_key, named as the wire names them and in the order

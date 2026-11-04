@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 0393A6B0-A31E-4375-9BE4-8B7CFC4B0208
+:END:
+#+title: Task: Every report run fails on an orphan commodity future part
+#+description: Since the conventions split, building a run's input refuses with 'Commodity future part commodity_future_averaging_terms names no commodity future convention' on a freshly provisioned Acme tenant, so no report runs.
+#+type: task
+#+level: s1
+#+filetags: :split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+owner: marco
+#+branch: feature/every-report-run-fails-on-an-orphan-commodity-future-part
+#+pr: 4393
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+On main at 2c52d7fdfd, after a database recreate and the Acme provisioning, a run
+of Group Consolidated Exposure fails at version 3, while the run's input is
+built, with: Commodity future part "commodity_future_averaging_terms" names no
+commodity future convention. The refusal is =join_commodity_future= in
+=projects/ores.ore/core/src/domain/conventions_family_commodity_future.cpp=, added
+by f3714dad5e as part of PR #4369, which split the commodity future convention
+into a central row and parts. The package the run builds therefore carries an
+averaging-terms part whose central convention row is not in the same package.
+Instance a2fbe367-6bd0-4cd2-93fc-7c4101875faa on 2026-11-02 shows it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- A run of Group Consolidated Exposure on a freshly provisioned Acme tenant
+  completes.
+- A run's conventions read keeps the rows of its party whether a family's type
+  states party_id at its top level or in its identity group.
+- A test covers a flat row, a grouped row and a row that names no party.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Group Consolidated Exposure on a fresh Acme tenant, before the fix | failed at version 3: Commodity future part "commodity_future_averaging_terms" names no commodity future convention | instance 519cd16f-17f1-4291-a853-02cfd2084b8f, report_operations trigger-report-instance, then the instance versions | 228f43aa65 |
+| The same run after the fix | completed at version 5, "Report execution completed." | instance 0709f9f7-e739-4aef-8188-6714ab63e16d | 3caae0be8d |
+| Wire shape of the two families | the central convention states party_id under identity; commodity_future_averaging_terms states it at the top level | =conventions list --limit 1= and =commodity_future_averaging_terms list --limit 1= in the shell | 228f43aa65 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4393][#4393]] | [ore] Read a grouped convention row's party from its identity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4393 review: a null top-level party_id stops the identity fallback | family_row_party.cpp | Accepted | An empty own party now defers to the identity group; a test covers a null party beside an identity. |
+| 2 | PR #4393 review: doubled blank lines where the helpers were removed; check the includes | run_configuration_operations.cpp | Accepted | Collapsed; <algorithm> and <string_view> are still used (std::ranges::find and the string_view parameters). |
+| 3 | PR #4393 review: count the rows kept and dropped per family | run_configuration_operations.cpp | Declined | The grouped families take the same path the test covers, so the fix reaches them by construction; the Result records the earlier drop as inferred. |
+| 4 | PR #4393 review: the grouped-row test comment narrates the old bug | family_row_party_tests.cpp | Accepted | It now states where a grouped row keeps its party. |
+
+* Result
+
+The run reads its conventions family by family through each family's list
+subject, and keeps the rows of its party. It read =party_id= only at the top of
+a row. The central convention groups its identity, so its =party_id= sits under
+=identity= and the read dropped every central row, while the commodity future
+parts state =party_id= at the top level and were kept. The commodity future
+join then refused each part as naming no convention, and every report run
+failed while its input was built. The data was sound: every part had its
+central row, for the same party.
+
+The read now takes the party from a row's =identity= group when the row has
+one (=party_of_family_row=, in its own unit of =ores.ore.service= so a test can
+reach it). The run of Group Consolidated Exposure that failed now completes.
+
+The same filter also dropped the tenor basis and cross currency parts, whose
+types group their identity like the central row. Their central rows were
+dropped with them, so nothing was orphaned and nothing refused: runs before the
+fix carried none of those conventions, silently. That is inferred from the code and the
+types' shapes; this task did not measure a run's conventions before and after.
+
+* Promoted from capture
+
+Captured 2026-11-02 in the product backlog; promoted preserving the UUID.
+
+** What
+
+On main at 2c52d7fdfd, after a database recreate and the Acme provisioning, a run
+of Group Consolidated Exposure fails at version 3, while the run's input is
+built, with: Commodity future part "commodity_future_averaging_terms" names no
+commodity future convention. The refusal is =join_commodity_future= in
+=projects/ores.ore/core/src/domain/conventions_family_commodity_future.cpp=, added
+by f3714dad5e as part of PR #4369, which split the commodity future convention
+into a central row and parts. The package the run builds therefore carries an
+averaging-terms part whose central convention row is not in the same package.
+Instance a2fbe367-6bd0-4cd2-93fc-7c4101875faa on 2026-11-02 shows it.
+
+** Why
+
+No report run completes, so nothing downstream of input preparation can be
+exercised end to end. Either the package query omits the central commodity
+future rows the parts name, or the seed provisions parts for a convention it does
+not provision. Before the refusal existed, the part was silently dropped from the
+export, which is the loss the refusal was added to catch.
+
+** References
+
+- =projects/ores.ore/core/src/domain/conventions_family_commodity_future.cpp=, =join_commodity_future=.
+- PR #4369, Split the conventions that are still flat.
+
+** See also
+
+- [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]], whose end-to-end runs it blocked.

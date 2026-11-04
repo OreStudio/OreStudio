@@ -176,6 +176,38 @@ double notional_from(const domain::trade_generation_scope& scope, double unit) {
 }
 
 /*
+ * The trade types a config books: the types its class cycles, narrowed to those
+ * the config states and kept in the class's own order. A config that states none
+ * books every type of its class. A stated type the class does not book is
+ * refused, because the population would otherwise leave it out without a word.
+ */
+template <typename Type, std::size_t Count, typename CodeOf>
+std::vector<const Type*> booked_types(const Type (&types)[Count],
+                                      const domain::trade_generation_scope& scope,
+                                      CodeOf code_of) {
+    const auto stated = [&](std::string_view code) {
+        return std::ranges::find(scope.trade_type_codes, code) != scope.trade_type_codes.end();
+    };
+    for (const auto& code : scope.trade_type_codes) {
+        if (std::ranges::none_of(types, [&](const Type& type) { return code_of(type) == code; }))
+            throw trade_population_error("The config states trade type '" + code +
+                                         "', which its asset class does not book.");
+    }
+    std::vector<const Type*> booked;
+    for (const auto& type : types) {
+        if (scope.trade_type_codes.empty() || stated(code_of(type)))
+            booked.push_back(&type);
+    }
+    return booked;
+}
+
+template <std::size_t Count>
+std::vector<const std::string_view*> booked_types(const std::string_view (&types)[Count],
+                                                  const domain::trade_generation_scope& scope) {
+    return booked_types(types, scope, [](std::string_view type) { return type; });
+}
+
+/*
  * The name a slot's identity is minted from. The trade id, the draws and the
  * security all read it, so there is one statement of what a slot is.
  */
@@ -585,6 +617,7 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const auto types = booked_types(bond_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
 
@@ -595,8 +628,8 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         domain::bond_terms terms;
         terms.tenor_years = std::clamp(drawn, min_years, max_years);
         terms.issuer_id = issuer_id_for(scope, terms.tenor_years);
-        terms.security_id = security_id_for(
-            scope, terms.tenor_years, bond_types[slot % bond_type_count], terms.issuer_id);
+        terms.security_id =
+            security_id_for(scope, terms.tenor_years, *types[slot % types.size()], terms.issuer_id);
         terms.issue_id = issue_id_for_security(terms.security_id);
         terms.reference_curve_id = scope.reference_curve_id;
 
@@ -611,7 +644,7 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         terms.maturity_date = add_years(terms.issue_date, static_cast<int>(terms.tenor_years));
 
         auto entry = common_slot(scope, slot);
-        entry.trade_type_code = std::string(bond_types[slot % bond_type_count]);
+        entry.trade_type_code = std::string(*types[slot % types.size()]);
         entry.notional = notional_from(scope, draw(name, 1));
         /*
          * The bond family states its row and its product's own facts: the code
@@ -894,6 +927,8 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const auto types =
+        booked_types(commodity_types, scope, [](const commodity_type& type) { return type.code; });
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
 
@@ -903,7 +938,7 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
          * would leave the rare ones out of a small population and the
          * coverage claim could not be tested.
          */
-        const auto& type = commodity_types[slot % commodity_type_count];
+        const auto& type = *types[slot % types.size()];
         const auto& commodity = scope.commodities[slot % scope.commodities.size()];
 
         const auto span = max_years - min_years + 1;
@@ -1039,6 +1074,12 @@ boost::uuids::uuid counterparty_scope_id_for(const boost::uuids::uuid& config_id
     return named(std::format("config_counterparty:{}:{}",
                              boost::uuids::to_string(config_id),
                              boost::uuids::to_string(counterparty_id)));
+}
+
+boost::uuids::uuid trade_type_scope_id_for(const boost::uuids::uuid& config_id,
+                                           const std::string& trade_type_code) {
+    return named(std::format(
+        "config_trade_type:{}:{}", boost::uuids::to_string(config_id), trade_type_code));
 }
 
 boost::uuids::uuid issue_id_for_security(const std::string& security_id) {
@@ -1327,6 +1368,7 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const auto types = booked_types(rate_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
 
@@ -1334,7 +1376,7 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * The type cycles rather than being drawn, so a population long enough
          * to reach a type always states it and the coverage claim is testable.
          */
-        const auto& type = rate_types[slot % rate_type_count];
+        const auto& type = *types[slot % types.size()];
         const auto* foreign =
             (type == "CrossCurrencySwap") ? foreign_index_for(scope, slot) : nullptr;
         const auto& index = foreign != nullptr ? *foreign : index_for(scope, slot);
@@ -1637,9 +1679,10 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const auto types = booked_types(fx_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
-        const auto& type = fx_types[slot % fx_type_count];
+        const auto& type = *types[slot % types.size()];
         const auto& pair = pair_for(scope, slot);
 
         const auto span = max_years - min_years + 1;
@@ -1858,6 +1901,7 @@ credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const auto types = booked_types(credit_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
 
@@ -1874,7 +1918,7 @@ credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
             add_years(terms.start_date, static_cast<int>(std::clamp(drawn, min_years, max_years)));
 
         auto entry = common_slot(scope, slot);
-        entry.trade_type_code = std::string(credit_types[slot % credit_type_count]);
+        entry.trade_type_code = std::string(*types[slot % types.size()]);
         entry.notional = notional_from(scope, draw(name, 1));
         /*
          * The credit family states its row here, where it draws it, and the
@@ -2019,9 +2063,10 @@ scripted_trade_planner::plan(const domain::trade_generation_scope& scope) const 
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const auto types = booked_types(scripted_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
-        const auto& type = scripted_types[slot % scripted_type_count];
+        const auto& type = *types[slot % types.size()];
 
         const auto span = max_years - min_years + 1;
         const auto drawn =
@@ -2149,6 +2194,7 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const auto types = booked_types(inflation_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
 
@@ -2173,7 +2219,7 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
         terms.base_cpi = base_cpi_from(name);
 
         auto entry = common_slot(scope, slot);
-        entry.trade_type_code = std::string(inflation_types[slot % std::size(inflation_types)]);
+        entry.trade_type_code = std::string(*types[slot % types.size()]);
         entry.notional = terms.notional;
         entry.instruments = construct_inflation_batch(terms);
 
@@ -2488,9 +2534,10 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const auto types = booked_types(equity_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
-        const auto& type = equity_types[slot % equity_type_count];
+        const auto& type = *types[slot % types.size()];
         const auto& underlying = equity_for(scope, slot);
 
         const auto span = max_years - min_years + 1;

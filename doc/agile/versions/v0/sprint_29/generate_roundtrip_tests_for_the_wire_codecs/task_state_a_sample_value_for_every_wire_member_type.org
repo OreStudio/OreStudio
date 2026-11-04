@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 50C06629-9008-4E1E-B511-38E59C66B30B
+:END:
+#+title: Task: State a sample value for every wire member type
+#+description: A C++ sampler gives every wire member type a non-default value, recurses through the wire_fields of nested types, and refuses a type it cannot sample at compile time.
+#+type: task
+#+level: s1
+#+filetags: :codegen:codec:tests:generate_roundtrip_tests_for_the_wire_codecs:sprint_29:v0:
+#+owner: marco
+#+branch: feature/state-a-sample-value-for-every-wire-member-type
+#+pr: 4394
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores::utility::codec::sample<T>= makes a value, with every member away from its default, for every type an opted-in model's codec writes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- The sampler covers every member type in the protocol survey, which counts the members of the generated protocol headers.
+- Each sample differs from the type's default and from the member's modelled default.
+- Nested types that state =wire_fields= resolve by recursion, across components.
+- No sample is NaN or a computed value, because a defaulted equality compares a =double= exactly and NaN never equals itself.
+- A type outside the rules fails to compile.
+- Catch2 tests in =ores.utility.tests= cover every member kind, the second sample, two distinct vector elements, and an exact JSON and MessagePack roundtrip.
+
+* Plan
+
+The story first put a sample table in codegen Python. On a second look the
+codec headers state each type's =wire_fields= in public view, so a C++ sampler
+can walk the same list the codec walks. The plan:
+
+1. Add =ores.utility/codec/sample.hpp=. Dispatch in the codec's own order: a
+   struct with =wire_fields=, an enumeration, the scalars, the text-form
+   types, then the wrappers.
+2. Give each type two samples, so a member whose default equals the first can
+   take the second.
+3. Test it in =ores.utility.tests= against a probe struct with one member of
+   each kind the survey found, and roundtrip the probe through both formats.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Members in the generated protocol headers | 36,524 | =evidence/survey_protocol_member_types.py= | f9ee9f6f5d |
+| Member type rows in the survey, all covered by the sampler | 40 | =evidence/survey_protocol_member_types.py= | f9ee9f6f5d |
+| Sampler tests | 5 cases, 42 assertions, all pass | =ores.utility.tests "[codec][sample]"= | f9ee9f6f5d plus this branch |
+| Whole utility suite | 194 cases, 905 assertions, all pass | =ores.utility.tests= | f9ee9f6f5d plus this branch |
+
+* Notes
+
+- The vector test caught a real defect in the first version. The struct
+  sampler ignored =which=, so both samples of a struct were equal, and a vector
+  of structs held two equal elements. A vector codec that wrote the first
+  element twice would have passed. The second sample now differs from the
+  first in every member.
+- The survey lists =std::optional<std::optional<T>>= on 18 members. The probe
+  holds one, and it roundtrips in both formats.
+- The time point sample has microseconds, and it roundtrips exactly in both
+  formats. No precision is lost.
+- The survey grew from 35,801 members at 17019adff8 to 36,524 at f9ee9f6f5d,
+  because main added models.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4394][#4394]] | [utility] State a sample value for every wire member type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Leaf specialisations win over wire_fields; the codec tries wire_fields first | sample.hpp | Fixed | The two agree because no leaf states wire_fields. The tests now static_assert this for every leaf. |
+| 2 | Signed integers never negative | sample.hpp | Fixed | A signed type's second sample is the minimum plus one. |
+| 3 | is_integral admits the character types | sample.hpp | Fixed | They now fail the static_assert. |
+| 4 | magic_enum sees only -128 to 128 | sample.hpp | Fixed | Stated in the header comment. |
+| 5 | The comment overstates the second sample | sample.hpp | Fixed | The comment now says what each sample guarantees. |
+| 6 | sample_unlike needs equality | sample.hpp | Fixed | Constrained on std::equality_comparable. |
+| 7 | Throwing in make | sample.hpp | No change | A rejected literal is a defect in the sampler, so a throw is right. |
+| 8 | Only sample 0 roundtrips | codec_sample_tests.cpp | Fixed | Both samples roundtrip, and a new case checks the second differs from the first. |
+| 9 | ip::address and error_code not in the probe | codec_sample_tests.cpp | Fixed | Added, with a signed 16-bit member. |
+
+* Result
+
+=ores::utility::codec::sample<T>= in =ores.utility/codec/sample.hpp= makes a
+non-default value for every member type the protocol survey found. It recurses
+through =wire_fields=, so nested types in other components need nothing more.
+A type outside its rules fails to compile. Four Catch2 cases in
+=codec_sample_tests.cpp= prove the values differ from their defaults, the
+second sample is taken when needed, vector elements differ, and a probe with
+one member of each kind roundtrips exactly through JSON and MessagePack. The
+generated test archetype can now call =sample<T>(0)= for each type.

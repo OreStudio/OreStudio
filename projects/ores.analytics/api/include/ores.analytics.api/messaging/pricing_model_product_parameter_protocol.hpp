@@ -26,17 +26,26 @@
 #define ORES_ANALYTICS_API_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_PROTOCOL_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.analytics.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::analytics::messaging {
 
 struct pricing_model_product_parameter_key {
     std::string parameter_name;
+
+    friend bool operator==(const pricing_model_product_parameter_key&,
+                           const pricing_model_product_parameter_key&) = default;
 };
 
 struct pricing_model_product_parameter_write {
@@ -47,26 +56,41 @@ struct pricing_model_product_parameter_write {
     std::string parameter_name;
     std::string parameter_value;
     int position;
+
+    friend bool operator==(const pricing_model_product_parameter_write&,
+                           const pricing_model_product_parameter_write&) = default;
 };
 
 struct pricing_model_product_parameter_change {
     pricing_model_product_parameter_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const pricing_model_product_parameter_change&,
+                           const pricing_model_product_parameter_change&) = default;
 };
 
 struct pricing_model_product_parameter_removal {
     pricing_model_product_parameter_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const pricing_model_product_parameter_removal&,
+                           const pricing_model_product_parameter_removal&) = default;
 };
 
 struct pricing_model_product_parameter_lookup {
     pricing_model_product_parameter_key key;
     std::optional<ores::analytics::domain::pricing_model_product_parameter>
         pricing_model_product_parameter;
+
+    friend bool operator==(const pricing_model_product_parameter_lookup&,
+                           const pricing_model_product_parameter_lookup&) = default;
 };
 
 struct pricing_model_product_parameters_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const pricing_model_product_parameters_filter&,
+                           const pricing_model_product_parameters_filter&) = default;
 };
 
 struct pricing_model_product_parameter_event {
@@ -76,17 +100,26 @@ struct pricing_model_product_parameter_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const pricing_model_product_parameter_event&,
+                           const pricing_model_product_parameter_event&) = default;
 };
 
 struct pricing_model_product_parameter_version_key {
     pricing_model_product_parameter_key pricing_model_product_parameter;
     std::uint32_t version;
+
+    friend bool operator==(const pricing_model_product_parameter_version_key&,
+                           const pricing_model_product_parameter_version_key&) = default;
 };
 
 struct pricing_model_product_parameter_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const pricing_model_product_parameter_versions_filter&,
+                           const pricing_model_product_parameter_versions_filter&) = default;
 };
 
 struct list_pricing_model_product_parameters_request {
@@ -105,12 +138,18 @@ struct list_pricing_model_product_parameters_request {
     ores::utility::domain::order order;
     std::optional<pricing_model_product_parameters_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_pricing_model_product_parameters_request&,
+                           const list_pricing_model_product_parameters_request&) = default;
 };
 
 struct list_pricing_model_product_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
     std::uint64_t total;
+
+    friend bool operator==(const list_pricing_model_product_parameters_response&,
+                           const list_pricing_model_product_parameters_response&) = default;
 };
 
 struct get_pricing_model_product_parameter_request {
@@ -125,12 +164,18 @@ struct get_pricing_model_product_parameter_request {
      */
     static constexpr bool requires_session = true;
     pricing_model_product_parameter_key key;
+
+    friend bool operator==(const get_pricing_model_product_parameter_request&,
+                           const get_pricing_model_product_parameter_request&) = default;
 };
 
 struct get_pricing_model_product_parameter_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::pricing_model_product_parameter>
         pricing_model_product_parameter;
+
+    friend bool operator==(const get_pricing_model_product_parameter_response&,
+                           const get_pricing_model_product_parameter_response&) = default;
 };
 
 struct get_many_pricing_model_product_parameters_request {
@@ -145,11 +190,17 @@ struct get_many_pricing_model_product_parameters_request {
      */
     static constexpr bool requires_session = true;
     std::vector<pricing_model_product_parameter_key> keys;
+
+    friend bool operator==(const get_many_pricing_model_product_parameters_request&,
+                           const get_many_pricing_model_product_parameters_request&) = default;
 };
 
 struct get_many_pricing_model_product_parameters_response {
     ores::utility::domain::result result;
     std::vector<pricing_model_product_parameter_lookup> entries;
+
+    friend bool operator==(const get_many_pricing_model_product_parameters_response&,
+                           const get_many_pricing_model_product_parameters_response&) = default;
 };
 
 struct put_pricing_model_product_parameter_request {
@@ -165,12 +216,18 @@ struct put_pricing_model_product_parameter_request {
     static constexpr bool requires_session = true;
     pricing_model_product_parameter_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_pricing_model_product_parameter_request&,
+                           const put_pricing_model_product_parameter_request&) = default;
 };
 
 struct put_pricing_model_product_parameter_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::pricing_model_product_parameter>
         pricing_model_product_parameter;
+
+    friend bool operator==(const put_pricing_model_product_parameter_response&,
+                           const put_pricing_model_product_parameter_response&) = default;
 };
 
 struct put_many_pricing_model_product_parameters_request {
@@ -186,11 +243,17 @@ struct put_many_pricing_model_product_parameters_request {
     static constexpr bool requires_session = true;
     std::vector<pricing_model_product_parameter_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_pricing_model_product_parameters_request&,
+                           const put_many_pricing_model_product_parameters_request&) = default;
 };
 
 struct put_many_pricing_model_product_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
+
+    friend bool operator==(const put_many_pricing_model_product_parameters_response&,
+                           const put_many_pricing_model_product_parameters_response&) = default;
 };
 
 struct delete_pricing_model_product_parameter_request {
@@ -206,10 +269,16 @@ struct delete_pricing_model_product_parameter_request {
     static constexpr bool requires_session = true;
     pricing_model_product_parameter_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_pricing_model_product_parameter_request&,
+                           const delete_pricing_model_product_parameter_request&) = default;
 };
 
 struct delete_pricing_model_product_parameter_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_pricing_model_product_parameter_response&,
+                           const delete_pricing_model_product_parameter_response&) = default;
 };
 
 struct delete_many_pricing_model_product_parameters_request {
@@ -225,10 +294,16 @@ struct delete_many_pricing_model_product_parameters_request {
     static constexpr bool requires_session = true;
     std::vector<pricing_model_product_parameter_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_pricing_model_product_parameters_request&,
+                           const delete_many_pricing_model_product_parameters_request&) = default;
 };
 
 struct delete_many_pricing_model_product_parameters_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_pricing_model_product_parameters_response&,
+                           const delete_many_pricing_model_product_parameters_response&) = default;
 };
 
 struct list_pricing_model_product_parameter_versions_request {
@@ -247,12 +322,18 @@ struct list_pricing_model_product_parameter_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<pricing_model_product_parameter_versions_filter> filter;
+
+    friend bool operator==(const list_pricing_model_product_parameter_versions_request&,
+                           const list_pricing_model_product_parameter_versions_request&) = default;
 };
 
 struct list_pricing_model_product_parameter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_product_parameter> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_pricing_model_product_parameter_versions_response&,
+                           const list_pricing_model_product_parameter_versions_response&) = default;
 };
 
 struct get_pricing_model_product_parameter_version_request {
@@ -267,11 +348,17 @@ struct get_pricing_model_product_parameter_version_request {
      */
     static constexpr bool requires_session = true;
     pricing_model_product_parameter_version_key key;
+
+    friend bool operator==(const get_pricing_model_product_parameter_version_request&,
+                           const get_pricing_model_product_parameter_version_request&) = default;
 };
 
 struct get_pricing_model_product_parameter_version_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::pricing_model_product_parameter> version;
+
+    friend bool operator==(const get_pricing_model_product_parameter_version_response&,
+                           const get_pricing_model_product_parameter_version_response&) = default;
 };
 
 /**
@@ -284,13 +371,858 @@ struct get_pricing_model_product_parameter_version_response {
  */
 namespace pricing_model_product_parameter_event_subjects {
 inline constexpr std::string_view created =
-    "analytics.v1.pricing_model_product_parameters_events.created";
+    "analytics.v1.events.pricing_model_product_parameters.created";
 inline constexpr std::string_view updated =
-    "analytics.v1.pricing_model_product_parameters_events.updated";
+    "analytics.v1.events.pricing_model_product_parameters.updated";
 inline constexpr std::string_view deleted =
-    "analytics.v1.pricing_model_product_parameters_events.deleted";
+    "analytics.v1.events.pricing_model_product_parameters.deleted";
+}
+/**
+ * @brief The members of pricing_model_product_parameter_key, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_model_product_parameter_key&) {
+    return std::tuple{
+        utility::codec::field{"parameter_name",
+                              &pricing_model_product_parameter_key::parameter_name},
+    };
 }
 
+/**
+ * @brief The members of pricing_model_product_parameter_write, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_model_product_parameter_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &pricing_model_product_parameter_write::id},
+        utility::codec::field{"pricing_model_config_id",
+                              &pricing_model_product_parameter_write::pricing_model_config_id},
+        utility::codec::field{"pricing_model_product_id",
+                              &pricing_model_product_parameter_write::pricing_model_product_id},
+        utility::codec::field{"parameter_scope",
+                              &pricing_model_product_parameter_write::parameter_scope},
+        utility::codec::field{"parameter_name",
+                              &pricing_model_product_parameter_write::parameter_name},
+        utility::codec::field{"parameter_value",
+                              &pricing_model_product_parameter_write::parameter_value},
+        utility::codec::field{"position", &pricing_model_product_parameter_write::position},
+    };
 }
+
+/**
+ * @brief The members of pricing_model_product_parameter_change, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_model_product_parameter_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &pricing_model_product_parameter_change::write},
+        utility::codec::field{"precondition",
+                              &pricing_model_product_parameter_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of pricing_model_product_parameter_removal, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_model_product_parameter_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &pricing_model_product_parameter_removal::key},
+        utility::codec::field{"precondition",
+                              &pricing_model_product_parameter_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of pricing_model_product_parameter_lookup, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_model_product_parameter_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &pricing_model_product_parameter_lookup::key},
+        utility::codec::field{
+            "pricing_model_product_parameter",
+            &pricing_model_product_parameter_lookup::pricing_model_product_parameter},
+    };
+}
+
+/**
+ * @brief The members of pricing_model_product_parameters_filter, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_model_product_parameters_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &pricing_model_product_parameters_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of pricing_model_product_parameter_event, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_model_product_parameter_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &pricing_model_product_parameter_event::event_id},
+        utility::codec::field{"key", &pricing_model_product_parameter_event::key},
+        utility::codec::field{"action", &pricing_model_product_parameter_event::action},
+        utility::codec::field{"version", &pricing_model_product_parameter_event::version},
+        utility::codec::field{"occurred_at", &pricing_model_product_parameter_event::occurred_at},
+        utility::codec::field{"correlation_id",
+                              &pricing_model_product_parameter_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of pricing_model_product_parameter_version_key, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_model_product_parameter_version_key&) {
+    return std::tuple{
+        utility::codec::field{
+            "pricing_model_product_parameter",
+            &pricing_model_product_parameter_version_key::pricing_model_product_parameter},
+        utility::codec::field{"version", &pricing_model_product_parameter_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of pricing_model_product_parameter_versions_filter, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_model_product_parameter_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &pricing_model_product_parameter_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &pricing_model_product_parameter_versions_filter::from_version},
+        utility::codec::field{"to_version",
+                              &pricing_model_product_parameter_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_pricing_model_product_parameters_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_pricing_model_product_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_pricing_model_product_parameters_request::offset},
+        utility::codec::field{"limit", &list_pricing_model_product_parameters_request::limit},
+        utility::codec::field{"order", &list_pricing_model_product_parameters_request::order},
+        utility::codec::field{"filter", &list_pricing_model_product_parameters_request::filter},
+        utility::codec::field{"as_of", &list_pricing_model_product_parameters_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_pricing_model_product_parameters_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_pricing_model_product_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_pricing_model_product_parameters_response::result},
+        utility::codec::field{"parameters",
+                              &list_pricing_model_product_parameters_response::parameters},
+        utility::codec::field{"total", &list_pricing_model_product_parameters_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_pricing_model_product_parameter_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_pricing_model_product_parameter_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_pricing_model_product_parameter_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_pricing_model_product_parameter_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_pricing_model_product_parameter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_pricing_model_product_parameter_response::result},
+        utility::codec::field{
+            "pricing_model_product_parameter",
+            &get_pricing_model_product_parameter_response::pricing_model_product_parameter},
+    };
+}
+
+/**
+ * @brief The members of get_many_pricing_model_product_parameters_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_pricing_model_product_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_pricing_model_product_parameters_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_pricing_model_product_parameters_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_many_pricing_model_product_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &get_many_pricing_model_product_parameters_response::result},
+        utility::codec::field{"entries",
+                              &get_many_pricing_model_product_parameters_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_pricing_model_product_parameter_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_pricing_model_product_parameter_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_pricing_model_product_parameter_request::change},
+        utility::codec::field{"intent", &put_pricing_model_product_parameter_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_pricing_model_product_parameter_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_pricing_model_product_parameter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_pricing_model_product_parameter_response::result},
+        utility::codec::field{
+            "pricing_model_product_parameter",
+            &put_pricing_model_product_parameter_response::pricing_model_product_parameter},
+    };
+}
+
+/**
+ * @brief The members of put_many_pricing_model_product_parameters_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_pricing_model_product_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"changes",
+                              &put_many_pricing_model_product_parameters_request::changes},
+        utility::codec::field{"intent", &put_many_pricing_model_product_parameters_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_pricing_model_product_parameters_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const put_many_pricing_model_product_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &put_many_pricing_model_product_parameters_response::result},
+        utility::codec::field{"parameters",
+                              &put_many_pricing_model_product_parameters_response::parameters},
+    };
+}
+
+/**
+ * @brief The members of delete_pricing_model_product_parameter_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_pricing_model_product_parameter_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_pricing_model_product_parameter_request::removal},
+        utility::codec::field{"intent", &delete_pricing_model_product_parameter_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_pricing_model_product_parameter_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_pricing_model_product_parameter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_pricing_model_product_parameter_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_pricing_model_product_parameters_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_pricing_model_product_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_pricing_model_product_parameters_request::removals},
+        utility::codec::field{"intent",
+                              &delete_many_pricing_model_product_parameters_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_pricing_model_product_parameters_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_pricing_model_product_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &delete_many_pricing_model_product_parameters_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_pricing_model_product_parameter_versions_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_pricing_model_product_parameter_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_pricing_model_product_parameter_versions_request::key},
+        utility::codec::field{"offset",
+                              &list_pricing_model_product_parameter_versions_request::offset},
+        utility::codec::field{"limit",
+                              &list_pricing_model_product_parameter_versions_request::limit},
+        utility::codec::field{"order",
+                              &list_pricing_model_product_parameter_versions_request::order},
+        utility::codec::field{"filter",
+                              &list_pricing_model_product_parameter_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_pricing_model_product_parameter_versions_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_pricing_model_product_parameter_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_pricing_model_product_parameter_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_pricing_model_product_parameter_versions_response::versions},
+        utility::codec::field{"total",
+                              &list_pricing_model_product_parameter_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_pricing_model_product_parameter_version_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_pricing_model_product_parameter_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_pricing_model_product_parameter_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_pricing_model_product_parameter_version_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_pricing_model_product_parameter_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &get_pricing_model_product_parameter_version_response::result},
+        utility::codec::field{"version",
+                              &get_pricing_model_product_parameter_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_model_product_parameter_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::pricing_model_product_parameter_key& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_model_product_parameter_key& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_model_product_parameter_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::pricing_model_product_parameter_write& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_model_product_parameter_write& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_model_product_parameter_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::pricing_model_product_parameter_change& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_model_product_parameter_change& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_model_product_parameter_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::pricing_model_product_parameter_removal& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_model_product_parameter_removal& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_model_product_parameter_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::pricing_model_product_parameter_lookup& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_model_product_parameter_lookup& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_model_product_parameters_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::pricing_model_product_parameters_filter& v);
+    static ores::analytics::messaging::pricing_model_product_parameters_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_model_product_parameters_filter& v);
+    static ores::analytics::messaging::pricing_model_product_parameters_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_model_product_parameter_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::pricing_model_product_parameter_event& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_model_product_parameter_event& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_model_product_parameter_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::pricing_model_product_parameter_version_key& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::pricing_model_product_parameter_version_key& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::pricing_model_product_parameter_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::pricing_model_product_parameter_versions_filter& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_versions_filter
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::pricing_model_product_parameter_versions_filter& v);
+    static ores::analytics::messaging::pricing_model_product_parameter_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_pricing_model_product_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_pricing_model_product_parameters_request& v);
+    static ores::analytics::messaging::list_pricing_model_product_parameters_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::list_pricing_model_product_parameters_request& v);
+    static ores::analytics::messaging::list_pricing_model_product_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_pricing_model_product_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_pricing_model_product_parameters_response& v);
+    static ores::analytics::messaging::list_pricing_model_product_parameters_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::list_pricing_model_product_parameters_response& v);
+    static ores::analytics::messaging::list_pricing_model_product_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_pricing_model_product_parameter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_pricing_model_product_parameter_request& v);
+    static ores::analytics::messaging::get_pricing_model_product_parameter_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_pricing_model_product_parameter_request& v);
+    static ores::analytics::messaging::get_pricing_model_product_parameter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_pricing_model_product_parameter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_pricing_model_product_parameter_response& v);
+    static ores::analytics::messaging::get_pricing_model_product_parameter_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::get_pricing_model_product_parameter_response& v);
+    static ores::analytics::messaging::get_pricing_model_product_parameter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_pricing_model_product_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::get_many_pricing_model_product_parameters_request& v);
+    static ores::analytics::messaging::get_many_pricing_model_product_parameters_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::get_many_pricing_model_product_parameters_request& v);
+    static ores::analytics::messaging::get_many_pricing_model_product_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_pricing_model_product_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::get_many_pricing_model_product_parameters_response& v);
+    static ores::analytics::messaging::get_many_pricing_model_product_parameters_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::get_many_pricing_model_product_parameters_response& v);
+    static ores::analytics::messaging::get_many_pricing_model_product_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_pricing_model_product_parameter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_pricing_model_product_parameter_request& v);
+    static ores::analytics::messaging::put_pricing_model_product_parameter_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_pricing_model_product_parameter_request& v);
+    static ores::analytics::messaging::put_pricing_model_product_parameter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_pricing_model_product_parameter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_pricing_model_product_parameter_response& v);
+    static ores::analytics::messaging::put_pricing_model_product_parameter_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::put_pricing_model_product_parameter_response& v);
+    static ores::analytics::messaging::put_pricing_model_product_parameter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_pricing_model_product_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::put_many_pricing_model_product_parameters_request& v);
+    static ores::analytics::messaging::put_many_pricing_model_product_parameters_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::put_many_pricing_model_product_parameters_request& v);
+    static ores::analytics::messaging::put_many_pricing_model_product_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_pricing_model_product_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::put_many_pricing_model_product_parameters_response& v);
+    static ores::analytics::messaging::put_many_pricing_model_product_parameters_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::put_many_pricing_model_product_parameters_response& v);
+    static ores::analytics::messaging::put_many_pricing_model_product_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_pricing_model_product_parameter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_pricing_model_product_parameter_request& v);
+    static ores::analytics::messaging::delete_pricing_model_product_parameter_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::delete_pricing_model_product_parameter_request& v);
+    static ores::analytics::messaging::delete_pricing_model_product_parameter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_pricing_model_product_parameter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::delete_pricing_model_product_parameter_response& v);
+    static ores::analytics::messaging::delete_pricing_model_product_parameter_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::delete_pricing_model_product_parameter_response& v);
+    static ores::analytics::messaging::delete_pricing_model_product_parameter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_pricing_model_product_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::delete_many_pricing_model_product_parameters_request& v);
+    static ores::analytics::messaging::delete_many_pricing_model_product_parameters_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::delete_many_pricing_model_product_parameters_request& v);
+    static ores::analytics::messaging::delete_many_pricing_model_product_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_pricing_model_product_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::delete_many_pricing_model_product_parameters_response& v);
+    static ores::analytics::messaging::delete_many_pricing_model_product_parameters_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::delete_many_pricing_model_product_parameters_response& v);
+    static ores::analytics::messaging::delete_many_pricing_model_product_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_pricing_model_product_parameter_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::list_pricing_model_product_parameter_versions_request& v);
+    static ores::analytics::messaging::list_pricing_model_product_parameter_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::list_pricing_model_product_parameter_versions_request& v);
+    static ores::analytics::messaging::list_pricing_model_product_parameter_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<
+    ores::analytics::messaging::list_pricing_model_product_parameter_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::list_pricing_model_product_parameter_versions_response&
+            v);
+    static ores::analytics::messaging::list_pricing_model_product_parameter_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::list_pricing_model_product_parameter_versions_response&
+            v);
+    static ores::analytics::messaging::list_pricing_model_product_parameter_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_pricing_model_product_parameter_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::get_pricing_model_product_parameter_version_request& v);
+    static ores::analytics::messaging::get_pricing_model_product_parameter_version_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::get_pricing_model_product_parameter_version_request& v);
+    static ores::analytics::messaging::get_pricing_model_product_parameter_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_pricing_model_product_parameter_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::get_pricing_model_product_parameter_version_response& v);
+    static ores::analytics::messaging::get_pricing_model_product_parameter_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::get_pricing_model_product_parameter_version_response& v);
+    static ores::analytics::messaging::get_pricing_model_product_parameter_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

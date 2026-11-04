@@ -25,18 +25,26 @@
 #ifndef ORES_VARIABILITY_API_MESSAGING_SYSTEM_SETTING_PROTOCOL_HPP
 #define ORES_VARIABILITY_API_MESSAGING_SYSTEM_SETTING_PROTOCOL_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.variability.api/export.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::variability::messaging {
 
 struct system_setting_key {
     std::string name;
+
+    friend bool operator==(const system_setting_key&, const system_setting_key&) = default;
 };
 
 struct system_setting_write {
@@ -46,25 +54,35 @@ struct system_setting_write {
     std::string value;
     std::string data_type;
     std::string description;
+
+    friend bool operator==(const system_setting_write&, const system_setting_write&) = default;
 };
 
 struct system_setting_change {
     system_setting_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const system_setting_change&, const system_setting_change&) = default;
 };
 
 struct system_setting_removal {
     system_setting_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const system_setting_removal&, const system_setting_removal&) = default;
 };
 
 struct system_setting_lookup {
     system_setting_key key;
     std::optional<ores::variability::domain::system_setting> system_setting;
+
+    friend bool operator==(const system_setting_lookup&, const system_setting_lookup&) = default;
 };
 
 struct system_settings_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const system_settings_filter&, const system_settings_filter&) = default;
 };
 
 struct system_setting_event {
@@ -74,17 +92,25 @@ struct system_setting_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const system_setting_event&, const system_setting_event&) = default;
 };
 
 struct system_setting_version_key {
     system_setting_key system_setting;
     std::uint32_t version;
+
+    friend bool operator==(const system_setting_version_key&,
+                           const system_setting_version_key&) = default;
 };
 
 struct system_setting_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const system_setting_versions_filter&,
+                           const system_setting_versions_filter&) = default;
 };
 
 struct list_system_settings_request {
@@ -102,12 +128,18 @@ struct list_system_settings_request {
     ores::utility::domain::order order;
     std::optional<system_settings_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_system_settings_request&,
+                           const list_system_settings_request&) = default;
 };
 
 struct list_system_settings_response {
     ores::utility::domain::result result;
     std::vector<ores::variability::domain::system_setting> settings;
     std::uint64_t total;
+
+    friend bool operator==(const list_system_settings_response&,
+                           const list_system_settings_response&) = default;
 };
 
 struct get_system_setting_request {
@@ -121,11 +153,17 @@ struct get_system_setting_request {
      */
     static constexpr bool requires_session = true;
     system_setting_key key;
+
+    friend bool operator==(const get_system_setting_request&,
+                           const get_system_setting_request&) = default;
 };
 
 struct get_system_setting_response {
     ores::utility::domain::result result;
     std::optional<ores::variability::domain::system_setting> system_setting;
+
+    friend bool operator==(const get_system_setting_response&,
+                           const get_system_setting_response&) = default;
 };
 
 struct get_many_system_settings_request {
@@ -139,11 +177,17 @@ struct get_many_system_settings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<system_setting_key> keys;
+
+    friend bool operator==(const get_many_system_settings_request&,
+                           const get_many_system_settings_request&) = default;
 };
 
 struct get_many_system_settings_response {
     ores::utility::domain::result result;
     std::vector<system_setting_lookup> entries;
+
+    friend bool operator==(const get_many_system_settings_response&,
+                           const get_many_system_settings_response&) = default;
 };
 
 struct put_system_setting_request {
@@ -158,11 +202,17 @@ struct put_system_setting_request {
     static constexpr bool requires_session = true;
     system_setting_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_system_setting_request&,
+                           const put_system_setting_request&) = default;
 };
 
 struct put_system_setting_response {
     ores::utility::domain::result result;
     std::optional<ores::variability::domain::system_setting> system_setting;
+
+    friend bool operator==(const put_system_setting_response&,
+                           const put_system_setting_response&) = default;
 };
 
 struct put_many_system_settings_request {
@@ -177,11 +227,17 @@ struct put_many_system_settings_request {
     static constexpr bool requires_session = true;
     std::vector<system_setting_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_system_settings_request&,
+                           const put_many_system_settings_request&) = default;
 };
 
 struct put_many_system_settings_response {
     ores::utility::domain::result result;
     std::vector<ores::variability::domain::system_setting> settings;
+
+    friend bool operator==(const put_many_system_settings_response&,
+                           const put_many_system_settings_response&) = default;
 };
 
 struct delete_system_setting_request {
@@ -196,10 +252,16 @@ struct delete_system_setting_request {
     static constexpr bool requires_session = true;
     system_setting_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_system_setting_request&,
+                           const delete_system_setting_request&) = default;
 };
 
 struct delete_system_setting_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_system_setting_response&,
+                           const delete_system_setting_response&) = default;
 };
 
 struct delete_many_system_settings_request {
@@ -214,10 +276,16 @@ struct delete_many_system_settings_request {
     static constexpr bool requires_session = true;
     std::vector<system_setting_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_system_settings_request&,
+                           const delete_many_system_settings_request&) = default;
 };
 
 struct delete_many_system_settings_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_system_settings_response&,
+                           const delete_many_system_settings_response&) = default;
 };
 
 struct list_system_setting_versions_request {
@@ -235,12 +303,18 @@ struct list_system_setting_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<system_setting_versions_filter> filter;
+
+    friend bool operator==(const list_system_setting_versions_request&,
+                           const list_system_setting_versions_request&) = default;
 };
 
 struct list_system_setting_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::variability::domain::system_setting> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_system_setting_versions_response&,
+                           const list_system_setting_versions_response&) = default;
 };
 
 struct get_system_setting_version_request {
@@ -254,11 +328,17 @@ struct get_system_setting_version_request {
      */
     static constexpr bool requires_session = true;
     system_setting_version_key key;
+
+    friend bool operator==(const get_system_setting_version_request&,
+                           const get_system_setting_version_request&) = default;
 };
 
 struct get_system_setting_version_response {
     ores::utility::domain::result result;
     std::optional<ores::variability::domain::system_setting> version;
+
+    friend bool operator==(const get_system_setting_version_response&,
+                           const get_system_setting_version_response&) = default;
 };
 
 /**
@@ -270,11 +350,784 @@ struct get_system_setting_version_response {
  * of them.
  */
 namespace system_setting_event_subjects {
-inline constexpr std::string_view created = "variability.v1.system_settings_events.created";
-inline constexpr std::string_view updated = "variability.v1.system_settings_events.updated";
-inline constexpr std::string_view deleted = "variability.v1.system_settings_events.deleted";
+inline constexpr std::string_view created = "variability.v1.events.system_settings.created";
+inline constexpr std::string_view updated = "variability.v1.events.system_settings.updated";
+inline constexpr std::string_view deleted = "variability.v1.events.system_settings.deleted";
+}
+/**
+ * @brief The members of system_setting_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const system_setting_key&) {
+    return std::tuple{
+        utility::codec::field{"name", &system_setting_key::name},
+    };
 }
 
+/**
+ * @brief The members of system_setting_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const system_setting_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &system_setting_write::id},
+        utility::codec::field{"name", &system_setting_write::name},
+        utility::codec::field{"party_id", &system_setting_write::party_id},
+        utility::codec::field{"value", &system_setting_write::value},
+        utility::codec::field{"data_type", &system_setting_write::data_type},
+        utility::codec::field{"description", &system_setting_write::description},
+    };
 }
+
+/**
+ * @brief The members of system_setting_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const system_setting_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &system_setting_change::write},
+        utility::codec::field{"precondition", &system_setting_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of system_setting_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const system_setting_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &system_setting_removal::key},
+        utility::codec::field{"precondition", &system_setting_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of system_setting_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const system_setting_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &system_setting_lookup::key},
+        utility::codec::field{"system_setting", &system_setting_lookup::system_setting},
+    };
+}
+
+/**
+ * @brief The members of system_settings_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const system_settings_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &system_settings_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of system_setting_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const system_setting_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &system_setting_event::event_id},
+        utility::codec::field{"key", &system_setting_event::key},
+        utility::codec::field{"action", &system_setting_event::action},
+        utility::codec::field{"version", &system_setting_event::version},
+        utility::codec::field{"occurred_at", &system_setting_event::occurred_at},
+        utility::codec::field{"correlation_id", &system_setting_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of system_setting_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const system_setting_version_key&) {
+    return std::tuple{
+        utility::codec::field{"system_setting", &system_setting_version_key::system_setting},
+        utility::codec::field{"version", &system_setting_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of system_setting_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const system_setting_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &system_setting_versions_filter::version},
+        utility::codec::field{"from_version", &system_setting_versions_filter::from_version},
+        utility::codec::field{"to_version", &system_setting_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_system_settings_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_system_settings_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_system_settings_request::offset},
+        utility::codec::field{"limit", &list_system_settings_request::limit},
+        utility::codec::field{"order", &list_system_settings_request::order},
+        utility::codec::field{"filter", &list_system_settings_request::filter},
+        utility::codec::field{"as_of", &list_system_settings_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_system_settings_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_system_settings_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_system_settings_response::result},
+        utility::codec::field{"settings", &list_system_settings_response::settings},
+        utility::codec::field{"total", &list_system_settings_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_system_setting_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_system_setting_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_system_setting_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_system_setting_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_system_setting_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_system_setting_response::result},
+        utility::codec::field{"system_setting", &get_system_setting_response::system_setting},
+    };
+}
+
+/**
+ * @brief The members of get_many_system_settings_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_system_settings_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_system_settings_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_system_settings_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_system_settings_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_system_settings_response::result},
+        utility::codec::field{"entries", &get_many_system_settings_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_system_setting_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_system_setting_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_system_setting_request::change},
+        utility::codec::field{"intent", &put_system_setting_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_system_setting_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_system_setting_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_system_setting_response::result},
+        utility::codec::field{"system_setting", &put_system_setting_response::system_setting},
+    };
+}
+
+/**
+ * @brief The members of put_many_system_settings_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_system_settings_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_system_settings_request::changes},
+        utility::codec::field{"intent", &put_many_system_settings_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_system_settings_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_system_settings_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_system_settings_response::result},
+        utility::codec::field{"settings", &put_many_system_settings_response::settings},
+    };
+}
+
+/**
+ * @brief The members of delete_system_setting_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_system_setting_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_system_setting_request::removal},
+        utility::codec::field{"intent", &delete_system_setting_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_system_setting_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_system_setting_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_system_setting_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_system_settings_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_system_settings_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_system_settings_request::removals},
+        utility::codec::field{"intent", &delete_many_system_settings_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_system_settings_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_system_settings_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_system_settings_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_system_setting_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_system_setting_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_system_setting_versions_request::key},
+        utility::codec::field{"offset", &list_system_setting_versions_request::offset},
+        utility::codec::field{"limit", &list_system_setting_versions_request::limit},
+        utility::codec::field{"order", &list_system_setting_versions_request::order},
+        utility::codec::field{"filter", &list_system_setting_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_system_setting_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_system_setting_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_system_setting_versions_response::result},
+        utility::codec::field{"versions", &list_system_setting_versions_response::versions},
+        utility::codec::field{"total", &list_system_setting_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_system_setting_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_system_setting_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_system_setting_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_system_setting_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_system_setting_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_system_setting_version_response::result},
+        utility::codec::field{"version", &get_system_setting_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_VARIABILITY_API_EXPORT wire_traits<ores::variability::messaging::system_setting_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::variability::messaging::system_setting_key& v);
+    static ores::variability::messaging::system_setting_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::variability::messaging::system_setting_key& v);
+    static ores::variability::messaging::system_setting_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT wire_traits<ores::variability::messaging::system_setting_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::variability::messaging::system_setting_write& v);
+    static ores::variability::messaging::system_setting_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::variability::messaging::system_setting_write& v);
+    static ores::variability::messaging::system_setting_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::system_setting_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::variability::messaging::system_setting_change& v);
+    static ores::variability::messaging::system_setting_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::variability::messaging::system_setting_change& v);
+    static ores::variability::messaging::system_setting_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::system_setting_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::variability::messaging::system_setting_removal& v);
+    static ores::variability::messaging::system_setting_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::variability::messaging::system_setting_removal& v);
+    static ores::variability::messaging::system_setting_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::system_setting_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::variability::messaging::system_setting_lookup& v);
+    static ores::variability::messaging::system_setting_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::variability::messaging::system_setting_lookup& v);
+    static ores::variability::messaging::system_setting_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::system_settings_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::variability::messaging::system_settings_filter& v);
+    static ores::variability::messaging::system_settings_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::variability::messaging::system_settings_filter& v);
+    static ores::variability::messaging::system_settings_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT wire_traits<ores::variability::messaging::system_setting_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::variability::messaging::system_setting_event& v);
+    static ores::variability::messaging::system_setting_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::variability::messaging::system_setting_event& v);
+    static ores::variability::messaging::system_setting_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::system_setting_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::system_setting_version_key& v);
+    static ores::variability::messaging::system_setting_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::system_setting_version_key& v);
+    static ores::variability::messaging::system_setting_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::system_setting_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::system_setting_versions_filter& v);
+    static ores::variability::messaging::system_setting_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::system_setting_versions_filter& v);
+    static ores::variability::messaging::system_setting_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::list_system_settings_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::list_system_settings_request& v);
+    static ores::variability::messaging::list_system_settings_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::list_system_settings_request& v);
+    static ores::variability::messaging::list_system_settings_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::list_system_settings_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::list_system_settings_response& v);
+    static ores::variability::messaging::list_system_settings_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::list_system_settings_response& v);
+    static ores::variability::messaging::list_system_settings_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::get_system_setting_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::get_system_setting_request& v);
+    static ores::variability::messaging::get_system_setting_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::get_system_setting_request& v);
+    static ores::variability::messaging::get_system_setting_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::get_system_setting_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::get_system_setting_response& v);
+    static ores::variability::messaging::get_system_setting_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::get_system_setting_response& v);
+    static ores::variability::messaging::get_system_setting_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::get_many_system_settings_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::get_many_system_settings_request& v);
+    static ores::variability::messaging::get_many_system_settings_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::get_many_system_settings_request& v);
+    static ores::variability::messaging::get_many_system_settings_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::get_many_system_settings_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::get_many_system_settings_response& v);
+    static ores::variability::messaging::get_many_system_settings_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::get_many_system_settings_response& v);
+    static ores::variability::messaging::get_many_system_settings_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::put_system_setting_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::put_system_setting_request& v);
+    static ores::variability::messaging::put_system_setting_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::put_system_setting_request& v);
+    static ores::variability::messaging::put_system_setting_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::put_system_setting_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::put_system_setting_response& v);
+    static ores::variability::messaging::put_system_setting_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::put_system_setting_response& v);
+    static ores::variability::messaging::put_system_setting_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::put_many_system_settings_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::put_many_system_settings_request& v);
+    static ores::variability::messaging::put_many_system_settings_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::put_many_system_settings_request& v);
+    static ores::variability::messaging::put_many_system_settings_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::put_many_system_settings_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::put_many_system_settings_response& v);
+    static ores::variability::messaging::put_many_system_settings_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::put_many_system_settings_response& v);
+    static ores::variability::messaging::put_many_system_settings_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::delete_system_setting_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::delete_system_setting_request& v);
+    static ores::variability::messaging::delete_system_setting_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::delete_system_setting_request& v);
+    static ores::variability::messaging::delete_system_setting_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::delete_system_setting_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::delete_system_setting_response& v);
+    static ores::variability::messaging::delete_system_setting_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::delete_system_setting_response& v);
+    static ores::variability::messaging::delete_system_setting_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::delete_many_system_settings_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::delete_many_system_settings_request& v);
+    static ores::variability::messaging::delete_many_system_settings_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::delete_many_system_settings_request& v);
+    static ores::variability::messaging::delete_many_system_settings_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::delete_many_system_settings_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::delete_many_system_settings_response& v);
+    static ores::variability::messaging::delete_many_system_settings_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::delete_many_system_settings_response& v);
+    static ores::variability::messaging::delete_many_system_settings_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::list_system_setting_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::list_system_setting_versions_request& v);
+    static ores::variability::messaging::list_system_setting_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::list_system_setting_versions_request& v);
+    static ores::variability::messaging::list_system_setting_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::list_system_setting_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::list_system_setting_versions_response& v);
+    static ores::variability::messaging::list_system_setting_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::list_system_setting_versions_response& v);
+    static ores::variability::messaging::list_system_setting_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::get_system_setting_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::get_system_setting_version_request& v);
+    static ores::variability::messaging::get_system_setting_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::get_system_setting_version_request& v);
+    static ores::variability::messaging::get_system_setting_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::get_system_setting_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::get_system_setting_version_response& v);
+    static ores::variability::messaging::get_system_setting_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::get_system_setting_version_response& v);
+    static ores::variability::messaging::get_system_setting_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

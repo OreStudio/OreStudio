@@ -43,31 +43,45 @@ namespace ores::trading::messaging {
 
 struct lifecycle_event_key {
     std::string code;
+
+    friend bool operator==(const lifecycle_event_key&, const lifecycle_event_key&) = default;
 };
 
 struct lifecycle_event_write {
     std::string code;
     std::string description;
     std::optional<boost::uuids::uuid> fsm_state_id;
+
+    friend bool operator==(const lifecycle_event_write&, const lifecycle_event_write&) = default;
 };
 
 struct lifecycle_event_change {
     lifecycle_event_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const lifecycle_event_change&, const lifecycle_event_change&) = default;
 };
 
 struct lifecycle_event_removal {
     lifecycle_event_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const lifecycle_event_removal&,
+                           const lifecycle_event_removal&) = default;
 };
 
 struct lifecycle_event_lookup {
     lifecycle_event_key key;
     std::optional<ores::trading::domain::lifecycle_event> lifecycle_event;
+
+    friend bool operator==(const lifecycle_event_lookup&, const lifecycle_event_lookup&) = default;
 };
 
 struct lifecycle_events_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const lifecycle_events_filter&,
+                           const lifecycle_events_filter&) = default;
 };
 
 struct lifecycle_event_event {
@@ -77,17 +91,25 @@ struct lifecycle_event_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const lifecycle_event_event&, const lifecycle_event_event&) = default;
 };
 
 struct lifecycle_event_version_key {
     lifecycle_event_key lifecycle_event;
     std::uint32_t version;
+
+    friend bool operator==(const lifecycle_event_version_key&,
+                           const lifecycle_event_version_key&) = default;
 };
 
 struct lifecycle_event_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const lifecycle_event_versions_filter&,
+                           const lifecycle_event_versions_filter&) = default;
 };
 
 struct list_lifecycle_events_request {
@@ -105,12 +127,18 @@ struct list_lifecycle_events_request {
     ores::utility::domain::order order;
     std::optional<lifecycle_events_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_lifecycle_events_request&,
+                           const list_lifecycle_events_request&) = default;
 };
 
 struct list_lifecycle_events_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::lifecycle_event> events;
     std::uint64_t total;
+
+    friend bool operator==(const list_lifecycle_events_response&,
+                           const list_lifecycle_events_response&) = default;
 };
 
 struct get_lifecycle_event_request {
@@ -124,11 +152,17 @@ struct get_lifecycle_event_request {
      */
     static constexpr bool requires_session = true;
     lifecycle_event_key key;
+
+    friend bool operator==(const get_lifecycle_event_request&,
+                           const get_lifecycle_event_request&) = default;
 };
 
 struct get_lifecycle_event_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::lifecycle_event> lifecycle_event;
+
+    friend bool operator==(const get_lifecycle_event_response&,
+                           const get_lifecycle_event_response&) = default;
 };
 
 struct get_many_lifecycle_events_request {
@@ -142,11 +176,17 @@ struct get_many_lifecycle_events_request {
      */
     static constexpr bool requires_session = true;
     std::vector<lifecycle_event_key> keys;
+
+    friend bool operator==(const get_many_lifecycle_events_request&,
+                           const get_many_lifecycle_events_request&) = default;
 };
 
 struct get_many_lifecycle_events_response {
     ores::utility::domain::result result;
     std::vector<lifecycle_event_lookup> entries;
+
+    friend bool operator==(const get_many_lifecycle_events_response&,
+                           const get_many_lifecycle_events_response&) = default;
 };
 
 struct put_lifecycle_event_request {
@@ -161,11 +201,17 @@ struct put_lifecycle_event_request {
     static constexpr bool requires_session = true;
     lifecycle_event_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_lifecycle_event_request&,
+                           const put_lifecycle_event_request&) = default;
 };
 
 struct put_lifecycle_event_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::lifecycle_event> lifecycle_event;
+
+    friend bool operator==(const put_lifecycle_event_response&,
+                           const put_lifecycle_event_response&) = default;
 };
 
 struct put_many_lifecycle_events_request {
@@ -180,11 +226,17 @@ struct put_many_lifecycle_events_request {
     static constexpr bool requires_session = true;
     std::vector<lifecycle_event_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_lifecycle_events_request&,
+                           const put_many_lifecycle_events_request&) = default;
 };
 
 struct put_many_lifecycle_events_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::lifecycle_event> events;
+
+    friend bool operator==(const put_many_lifecycle_events_response&,
+                           const put_many_lifecycle_events_response&) = default;
 };
 
 struct delete_lifecycle_event_request {
@@ -199,10 +251,16 @@ struct delete_lifecycle_event_request {
     static constexpr bool requires_session = true;
     lifecycle_event_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_lifecycle_event_request&,
+                           const delete_lifecycle_event_request&) = default;
 };
 
 struct delete_lifecycle_event_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_lifecycle_event_response&,
+                           const delete_lifecycle_event_response&) = default;
 };
 
 struct delete_many_lifecycle_events_request {
@@ -217,10 +275,16 @@ struct delete_many_lifecycle_events_request {
     static constexpr bool requires_session = true;
     std::vector<lifecycle_event_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_lifecycle_events_request&,
+                           const delete_many_lifecycle_events_request&) = default;
 };
 
 struct delete_many_lifecycle_events_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_lifecycle_events_response&,
+                           const delete_many_lifecycle_events_response&) = default;
 };
 
 struct list_lifecycle_event_versions_request {
@@ -238,12 +302,18 @@ struct list_lifecycle_event_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<lifecycle_event_versions_filter> filter;
+
+    friend bool operator==(const list_lifecycle_event_versions_request&,
+                           const list_lifecycle_event_versions_request&) = default;
 };
 
 struct list_lifecycle_event_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::lifecycle_event> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_lifecycle_event_versions_response&,
+                           const list_lifecycle_event_versions_response&) = default;
 };
 
 struct get_lifecycle_event_version_request {
@@ -257,11 +327,17 @@ struct get_lifecycle_event_version_request {
      */
     static constexpr bool requires_session = true;
     lifecycle_event_version_key key;
+
+    friend bool operator==(const get_lifecycle_event_version_request&,
+                           const get_lifecycle_event_version_request&) = default;
 };
 
 struct get_lifecycle_event_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::lifecycle_event> version;
+
+    friend bool operator==(const get_lifecycle_event_version_response&,
+                           const get_lifecycle_event_version_response&) = default;
 };
 
 /**
@@ -273,9 +349,9 @@ struct get_lifecycle_event_version_response {
  * of them.
  */
 namespace lifecycle_event_event_subjects {
-inline constexpr std::string_view created = "trading.v1.lifecycle_events_events.created";
-inline constexpr std::string_view updated = "trading.v1.lifecycle_events_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.lifecycle_events_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.lifecycle_events.created";
+inline constexpr std::string_view updated = "trading.v1.events.lifecycle_events.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.lifecycle_events.deleted";
 }
 /**
  * @brief The members of lifecycle_event_key, named as the wire names them and in the order

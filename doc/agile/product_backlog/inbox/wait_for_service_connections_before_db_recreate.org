@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: A54F5532-A208-466E-AFF2-9F7FA6C80590
+:END:
+#+title: Wait for the services' connections to close before the database recreate drops it
+#+description: The gate's db check runs services stop and then db recreate, and the drop can fail with 'database is being accessed by other users' because a stopped service's session is still open, which leaves the old schema in place and fails every database suite after it.
+#+type: capture
+#+level: cross
+#+filetags: :compass:database:check:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass db recreate= waits until no other session uses the database before
+it drops it, or ends those sessions itself, rather than failing at once. Its
+"Checking for active connections" step already looks; it should wait a
+bounded time for the count to reach zero, and name the sessions that remain.
+
+* Why
+
+The gate's =db= check runs =compass services stop= and then the recreate.
+On 2026-11-02 the drop failed with "database is being accessed by other
+users" and "There is 1 other session using the database". The old schema
+stayed in place, and 18 of 98 test suites failed against it. A rerun of the
+same four checks, with no code change, passed all of them, so the failure was
+the race and not the change.
+
+* References
+
+- =build/output/local_checks/logs/db.log= of that run, and the =db= step of
+  =build/scripts/local_checks.py=.
+- =projects/ores.compass/src/compass_db.py=, =cmd_recreate=.
+
+* See also
+
+-

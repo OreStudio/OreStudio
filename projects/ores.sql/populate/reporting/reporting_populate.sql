@@ -33,6 +33,9 @@
 \ir ./reporting_configuration_types_populate.sql
 \ir ./reporting_report_type_configuration_types_populate.sql
 \ir ./reporting_analytic_types_populate.sql
+\ir ./reporting_ore_file_categories_populate.sql
+\ir ./reporting_ore_files_populate.sql
+\ir ./reporting_ore_file_versions_populate.sql
 \ir ./reporting_file_types_populate.sql
 \ir ./reporting_ore_parameters_artefact_populate.sql
 \ir ./reporting_ore_parameter_value_sets_populate.sql

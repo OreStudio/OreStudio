@@ -40,7 +40,12 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ReportDetail, ReportNameChoice } from '@ores/wire-protocol/browser';
+import type {
+    ReportDetail,
+    ReportNameChoice,
+    ReportRunRowView,
+    ReportScheduleOutcome,
+} from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useHolds } from '../access/holds.js';
@@ -51,19 +56,30 @@ import { RecordStoreProvider } from '../refdata/store.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { Crumbs } from '../refdata/shared.js';
+import { localSource, RecordTable } from '../refdata/RecordList.js';
+import { ReadFailure } from '../operations/GridJobs.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useTabs } from '../ui/Tabs.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS, reportPath, reportRunPath } from '../shell/paths.js';
 import { AccessMark } from '../ui/AccessMark.js';
-import { Button } from '../ui/Primitives.js';
+import { Button, Dialog } from '../ui/Primitives.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Detail, Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
-import { CronValue } from '../ui/CronField.js';
+import { CronField, CronValue } from '../ui/CronField.js';
+import { cronValid } from '../ui/cron.js';
+import { useActingPartyId } from '../session/SessionProvider.js';
 import { REPORTS_EVENTS, REPORTS_RESOURCE, reportingStore } from './store.js';
 import { ReportConfigurations } from './ConfigurationPage.js';
-import { Absent, HealthTag, formatDuration, runDuration } from './shared.js';
+import {
+    Absent,
+    HealthTag,
+    ON_DEMAND_SCHEDULE,
+    formatDuration,
+    isOnDemand,
+    runDuration,
+} from './shared.js';
 
 /** Where one definition's record is cached. */
 export function reportKey(id: string): readonly unknown[] {
@@ -73,6 +89,95 @@ export function reportKey(id: string): readonly unknown[] {
 /** The eight characters a person reads to tell one identifier from another. */
 function shortId(id: string): string {
     return id.slice(0, 8);
+}
+
+/**
+ * What scheduling or unscheduling a report did, as the page states it.
+ *
+ * The operation answers a count, the ids it refused and its own words, and the
+ * page turns that into one of these. Nothing is assumed: a count of zero is the
+ * operation saying it changed nothing, which is not a success to dress up as
+ * one.
+ */
+export type ScheduleNotice =
+    | { readonly kind: 'scheduled' }
+    | { readonly kind: 'already-scheduled'; readonly expressionChanged?: boolean }
+    | { readonly kind: 'unscheduled' }
+    | { readonly kind: 'not-scheduled' }
+    | { readonly kind: 'refused'; readonly message: string };
+
+/**
+ * What the schedule operation's answer means for the definition asked about.
+ *
+ * An id the operation refused is the refusal, whatever the count says. A refusal
+ * carries the operation's words, because the reason a schedule was refused is the
+ * server's to state: it is the party the definition belongs to, a cron the
+ * scheduler cannot read, or a grant it would not make.
+ */
+export function noticeOfSchedule(
+    outcome: ReportScheduleOutcome,
+    id: string,
+    expressionGiven = false,
+): ScheduleNotice {
+    if (outcome.failedIds.includes(id)) {
+        return {
+            kind: 'refused',
+            message:
+                outcome.message === ''
+                    ? 'The server refused to schedule this report and stated no reason.'
+                    : outcome.message,
+        };
+    }
+    return outcome.changed > 0
+        ? { kind: 'scheduled' }
+        : { kind: 'already-scheduled', ...(expressionGiven ? { expressionChanged: true } : {}) };
+}
+
+/** What the unschedule operation's answer means for the definition asked about. */
+export function noticeOfUnschedule(outcome: ReportScheduleOutcome, id: string): ScheduleNotice {
+    if (outcome.failedIds.includes(id)) {
+        return {
+            kind: 'refused',
+            message:
+                outcome.message === ''
+                    ? 'The server refused to unschedule this report and stated no reason.'
+                    : outcome.message,
+        };
+    }
+    return outcome.changed > 0 ? { kind: 'unscheduled' } : { kind: 'not-scheduled' };
+}
+
+/**
+ * The outcome of a schedule change in words.
+ *
+ * A refusal is an error and says why, because it is the one outcome a person has
+ * to act on. Everything else is the state the report reached, and a change that
+ * changed nothing says so rather than reading as a success.
+ */
+export function ScheduleNoticeView({ notice }: { readonly notice: ScheduleNotice }): ReactNode {
+    const { t } = useTranslation();
+    switch (notice.kind) {
+        case 'scheduled':
+            return <Notice tone="success">{t('reporting.schedule.scheduled')}</Notice>;
+        case 'already-scheduled':
+            return (
+                <Notice tone="info">
+                    {notice.expressionChanged
+                        ? t('reporting.schedule.alreadyScheduledExpression')
+                        : t('reporting.schedule.alreadyScheduled')}
+                </Notice>
+            );
+        case 'unscheduled':
+            return <Notice tone="success">{t('reporting.schedule.unscheduled')}</Notice>;
+        case 'not-scheduled':
+            return <Notice tone="info">{t('reporting.schedule.notScheduled')}</Notice>;
+        case 'refused':
+            return (
+                <Notice tone="error">
+                    {t('reporting.schedule.refused', { message: notice.message })}
+                </Notice>
+            );
+    }
 }
 
 /** Whether an address segment names a record by id rather than by name. */
@@ -147,6 +252,14 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         means: { key: 'reporting.means.postProcessing', values: ['execute', 'ignore'] },
     },
     {
+        field: 'skipped_families',
+        history: 'Skipped Families',
+        labelKey: 'reporting.fields.skipped_families',
+        kind: { kind: 'text', max: 2000 },
+        blank: true,
+        means: { key: 'reporting.means.skippedFamilies' },
+    },
+    {
         field: 'is_official',
         history: 'Is Official',
         labelKey: 'reporting.fields.is_official',
@@ -183,9 +296,22 @@ function ReportBody(): ReactNode {
     const holds = useHolds();
     const mayEdit = holds(PERMISSION.reportDefinitionsWrite);
     const mayRun = holds(PERMISSION.reportInstancesWrite);
+    /*
+     * Scheduling a report is changing a definition, so it is the write; taking a
+     * schedule away is removing something the definition holds, so it is the
+     * delete the unschedule operation itself checks.
+     */
+    const maySchedule = holds(PERMISSION.reportDefinitionsWrite);
+    const mayUnschedule = holds(PERMISSION.reportDefinitionsDelete);
+    const actingParty = useActingPartyId();
     const queries = useQueryClient();
     const navigate = useNavigate();
     const [editing, setEditing] = useState(false);
+    /** What the last schedule change did, as the page states it under the title. */
+    const [notice, setNotice] = useState<ScheduleNotice | null>(null);
+    /** The schedule the dialog is filling, while a person chooses one. */
+    const [choosingSchedule, setChoosingSchedule] = useState(false);
+    const [chosenExpression, setChosenExpression] = useState('');
     /**
      * A run started from this page.
      *
@@ -200,6 +326,37 @@ function ReportBody(): ReactNode {
             if (runId !== '') {
                 void navigate(reportRunPath(runId));
             }
+        },
+    });
+    /**
+     * The schedule change asked for, and the outcome it answered.
+     *
+     * The answer is a result and not an exception even when the operation
+     * refuses, because the definition, its count and its words are the service's
+     * to state; the notice under the title is where a person reads them. A call
+     * that fails outright is a refusal too, and carries the transport's words.
+     */
+    const schedule = useMutation({
+        mutationFn: async (asked: {
+            readonly id: string;
+            readonly expression: string | undefined;
+            readonly unschedule: boolean;
+        }) =>
+            asked.unschedule
+                ? await api.unscheduleReport(asked.id)
+                : await api.scheduleReport(asked.id, asked.expression),
+        onSuccess: (outcome, asked) => {
+            setNotice(
+                asked.unschedule
+                    ? noticeOfUnschedule(outcome, asked.id)
+                    : noticeOfSchedule(outcome, asked.id, asked.expression !== undefined),
+            );
+            setChoosingSchedule(false);
+            void queries.invalidateQueries({ queryKey: reportKey(asked.id) });
+        },
+        onError: (error: Error) => {
+            setNotice({ kind: 'refused', message: error.message });
+            setChoosingSchedule(false);
         },
     });
     const area = useAreaRoot('reporting');
@@ -310,6 +467,30 @@ function ReportBody(): ReactNode {
     const editFields = fieldsWith(
         choices.data ?? { reportTypes: [], concurrencyPolicies: [], regulatoryBookTypes: [] },
     );
+    /*
+     * Whether the session acts for the party that owns the definition.
+     *
+     * A schedule is made for the definition's party: its runs act there, under a
+     * grant the person consents to in that party. So the actions are offered only
+     * where the page can tell the two parties apart and they are the same. Outside
+     * a signed-in session there is no party to compare, and the page does not
+     * invent a difference: the server refuses a schedule of another party in its
+     * own words.
+     */
+    const actsForTheParty = actingParty === undefined || actingParty === definition.party_id;
+    /*
+     * The dialog opens on the schedule the definition holds, unless it holds the
+     * one that never fires: then there is nothing to offer, and the person states
+     * the schedule the report will run on.
+     */
+    const askSchedule = (): void => {
+        setChosenExpression(
+            definition.schedule_expression === ON_DEMAND_SCHEDULE
+                ? ''
+                : definition.schedule_expression,
+        );
+        setChoosingSchedule(true);
+    };
     return (
         <div className="space-y-4">
             <RecordHeader
@@ -330,10 +511,47 @@ function ReportBody(): ReactNode {
                                 {t('reporting.run.start')}
                             </Button>
                         )}
+                        {!isOnDemand(definition.scheduled, definition.schedule_expression)
+                            ? mayUnschedule && (
+                                  <Button
+                                      icon="remove"
+                                      pending={schedule.isPending}
+                                      pendingLabel={t('reporting.schedule.working')}
+                                      disabled={!actsForTheParty}
+                                      onClick={() =>
+                                          schedule.mutate({
+                                              id: definition.id,
+                                              expression: undefined,
+                                              unschedule: true,
+                                          })
+                                      }
+                                  >
+                                      {t('reporting.schedule.unschedule')}
+                                  </Button>
+                              )
+                            : maySchedule && (
+                                  <Button
+                                      icon="calendar"
+                                      pending={schedule.isPending}
+                                      pendingLabel={t('reporting.schedule.working')}
+                                      disabled={!actsForTheParty}
+                                      onClick={askSchedule}
+                                  >
+                                      {t('reporting.schedule.schedule')}
+                                  </Button>
+                              )}
                         <RefreshButton onClick={reload} load={load} news={news} />
                     </>
                 }
             />
+            {!actsForTheParty && (maySchedule || mayUnschedule) && (
+                <Notice tone="info">
+                    {t('reporting.schedule.otherParty', {
+                        party: definition.party_name,
+                    })}
+                </Notice>
+            )}
+            {notice !== null && <ScheduleNoticeView notice={notice} />}
             {bar}
             {tab === 'configurations' && <ReportConfigurations definitionId={definition.id} />}
             {tab === 'runs' && <ReportRuns definitionId={definition.id} />}
@@ -353,6 +571,14 @@ function ReportBody(): ReactNode {
                                 t('reporting.detail.partyHint'),
                             ],
                             [
+                                t('reporting.detail.schedule'),
+                                <ScheduleDetail
+                                    definition={definition}
+                                    nextFireAt={report.nextFireAt}
+                                />,
+                                t('reporting.detail.scheduleHint'),
+                            ],
+                            [
                                 t('reporting.detail.health'),
                                 <HealthTag
                                     health={report.health}
@@ -364,6 +590,54 @@ function ReportBody(): ReactNode {
                         ]}
                     />
                 </div>
+            )}
+            {choosingSchedule && (
+                <Dialog
+                    title={t('reporting.schedule.chooseTitle', { name: definition.name })}
+                    name="report schedule"
+                    onClose={() => setChoosingSchedule(false)}
+                    footer={
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                icon="cancel"
+                                onClick={() => setChoosingSchedule(false)}
+                            >
+                                {t('refdata.records.cancel')}
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="primary"
+                                icon="calendar"
+                                pending={schedule.isPending}
+                                pendingLabel={t('reporting.schedule.working')}
+                                disabled={!cronValid(chosenExpression.trim())}
+                                onClick={() =>
+                                    schedule.mutate({
+                                        id: definition.id,
+                                        expression: chosenExpression.trim(),
+                                        unschedule: false,
+                                    })
+                                }
+                            >
+                                {t('reporting.schedule.schedule')}
+                            </Button>
+                        </div>
+                    }
+                >
+                    <div className="space-y-3">
+                        <p className="text-sm text-ink-muted">
+                            {t('reporting.schedule.chooseLead')}
+                        </p>
+                        <CronField
+                            label={t('reporting.schedule.when')}
+                            value={chosenExpression}
+                            onChange={setChosenExpression}
+                            hint={t('reporting.schedule.whenHint')}
+                        />
+                    </div>
+                </Dialog>
             )}
             {editing && (
                 <RecordDialog
@@ -383,11 +657,12 @@ function ReportBody(): ReactNode {
 const REPORT_TABS = ['details', 'configurations', 'runs'] as const;
 
 /**
- * The runs of one report, newest first, each with what the run reached and the
- * two things a person does next: read the run, or read the results it produced.
+ * The runs of one report, newest first. A row opens the run, whose page holds
+ * its details, results, problems and files.
  */
 function ReportRuns({ definitionId }: { readonly definitionId: string }): ReactNode {
     const { t } = useTranslation();
+    const field = 'reporting.runs';
     const runs = useQuery({
         queryKey: ['report-runs', definitionId],
         queryFn: () => api.reportRuns(definitionId),
@@ -397,68 +672,57 @@ function ReportRuns({ definitionId }: { readonly definitionId: string }): ReactN
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
     if (runs.isError) {
-        return <Notice tone="error">{runs.error.message}</Notice>;
+        return <ReadFailure error={runs.error} onRetry={() => void runs.refetch()} />;
     }
-    const rows = (runs.data ?? []) as readonly Record<string, unknown>[];
-    const text = (value: unknown): string => (typeof value === 'string' ? value : '');
-    if (rows.length === 0) {
-        return <p className="text-sm text-ink-muted">{t('reporting.runs.empty')}</p>;
-    }
+    const time = (at: string | null): ReactNode => (at === null ? '—' : <RelativeTime at={at} />);
     return (
-        <section className="card space-y-3 p-4">
-            <h2 className="text-sm font-medium">{t('reporting.runs.title')}</h2>
-            <table className="w-full text-left text-sm">
-                <thead>
-                    <tr className="text-xs uppercase tracking-wide text-ink-faint">
-                        <th className="px-2 py-1">{t('reporting.runs.name')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.state')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.started')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.completed')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.pricedAt')}</th>
-                        <th className="px-2 py-1">{t('reporting.runs.actions')}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row) => {
-                        const id = text(row['id']);
-                        const started = text(row['started_at']);
-                        const completed = text(row['completed_at']);
-                        const priced = text(row['priced_at']);
-                        return (
-                            <tr key={id} className="border-t border-line-subtle">
-                                <td className="px-2 py-1">{text(row['name']) || id.slice(0, 8)}</td>
-                                <td className="px-2 py-1">{text(row['state_name']) || '—'}</td>
-                                <td className="px-2 py-1">
-                                    {started === '' ? '—' : <RelativeTime at={started} />}
-                                </td>
-                                <td className="px-2 py-1">
-                                    {completed === '' ? '—' : <RelativeTime at={completed} />}
-                                </td>
-                                <td className="px-2 py-1 font-mono text-xs">
-                                    {priced === '' ? '—' : priced.slice(0, 10)}
-                                </td>
-                                <td className="px-2 py-1">
-                                    <span className="flex gap-3">
-                                        <Link
-                                            to={`${reportRunPath(id)}?tab=run`}
-                                            className="text-accent hover:text-accent-bright"
-                                        >
-                                            {t('reporting.runs.details')}
-                                        </Link>
-                                        <Link
-                                            to={`${reportRunPath(id)}?tab=results`}
-                                            className="text-accent hover:text-accent-bright"
-                                        >
-                                            {t('reporting.runs.results')}
-                                        </Link>
-                                    </span>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </section>
+        <RecordTable<ReportRunRowView>
+            source={localSource<ReportRunRowView>({
+                key: `report-runs-${definitionId}`,
+                rows: runs.data,
+                revision: String(runs.dataUpdatedAt),
+                searchOf: (row) => `${row.name} ${row.state_name}`,
+            })}
+            plural={t(`${field}.plural`)}
+            keyOf={(row) => row.id}
+            pathOf={(row) => reportRunPath(row.id)}
+            columns={[
+                {
+                    id: 'name',
+                    header: t(`${field}.name`),
+                    cell: (row) => row.name || row.id.slice(0, 8),
+                },
+                {
+                    id: 'state',
+                    header: t(`${field}.state`),
+                    cell: (row) => (
+                        <HealthTag health={row.health} stateName={row.state_name} hasRun />
+                    ),
+                },
+                {
+                    id: 'started',
+                    header: t(`${field}.started`),
+                    cell: (row) => time(row.started_at),
+                },
+                {
+                    id: 'completed',
+                    header: t(`${field}.completed`),
+                    cell: (row) => time(row.completed_at),
+                },
+                {
+                    id: 'duration',
+                    header: t(`${field}.duration`),
+                    cell: (row) =>
+                        row.duration_ms === null ? '—' : formatDuration(row.duration_ms, t),
+                },
+                {
+                    id: 'pricedAt',
+                    header: t(`${field}.pricedAt`),
+                    mono: true,
+                    cell: (row) => row.priced_at?.slice(0, 10) ?? '—',
+                },
+            ]}
+        />
     );
 }
 
@@ -494,6 +758,32 @@ function PartyDetail({ detail }: { readonly detail: ReportDetail }): ReactNode {
         >
             {detail.definition.party_name}
         </Link>
+    );
+}
+
+/**
+ * When a definition runs, as the page states it beside the expression it holds.
+ *
+ * The field table already states the expression, so this says the part the
+ * expression cannot: a report with no scheduler job is on demand and fires on
+ * nothing, whatever it holds. A report that is scheduled states the fire the
+ * scheduler gives it, and says so plainly when the scheduler states none.
+ */
+function ScheduleDetail({
+    definition,
+    nextFireAt,
+}: {
+    readonly definition: ReportDetail['definition'];
+    readonly nextFireAt: string | null;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (isOnDemand(definition.scheduled, definition.schedule_expression)) {
+        return <span>{t('reporting.schedule.onDemand')}</span>;
+    }
+    return nextFireAt === null ? (
+        <span className="text-ink-faint">{t('reporting.detail.noNextFire')}</span>
+    ) : (
+        <RelativeTime at={nextFireAt} />
     );
 }
 

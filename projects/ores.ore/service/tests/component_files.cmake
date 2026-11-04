@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "family_row_party_tests.cpp"
     "main.cpp"
     "pricing_engines_import_run_tests.cpp"
 )

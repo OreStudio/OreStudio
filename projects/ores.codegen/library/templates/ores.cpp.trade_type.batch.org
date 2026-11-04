@@ -18,6 +18,10 @@ heterogeneous result set crosses the wire without an element tag and without an
 encoded payload: an element states its trade id, and the array it sits in states
 its type.
 
+A member's type is stated in full, namespace and all: a child whose array takes
+its own name, such as =bond_trs=, otherwise makes the declaration read as the
+member being declared, which GCC refuses with -Wchanges-meaning.
+
 The header also carries the readers the batch needs. =trade_id_of= picks the
 key shape a member has, because a generated entity nests its key in an identity
 group, a document container holds the entity that does, and a flat child states
@@ -60,8 +64,10 @@ struct instrument_batch {
     /**
      * @brief The {{cpp_type}} rows, keyed by trade id.
      */
-    std::vector<{{cpp_type}}> {{name}};
+    std::vector<ores::trading::domain::{{cpp_type}}> {{name}};
 {{/batch}}
+
+    friend bool operator==(const instrument_batch&, const instrument_batch&) = default;
 };
 
 /**

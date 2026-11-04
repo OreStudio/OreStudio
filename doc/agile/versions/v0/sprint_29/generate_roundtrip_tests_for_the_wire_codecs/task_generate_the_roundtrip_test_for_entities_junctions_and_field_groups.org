@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 61A1685A-01D4-4E8A-8CA9-509B51446700
+:END:
+#+title: Task: Generate the roundtrip test for entities, junctions and field groups
+#+description: Add the ores.cpp.wire-codec.roundtrip_tests archetype and emit it for every opted-in domain entity, junction and field group.
+#+type: task
+#+level: s1
+#+filetags: :codegen:codec:tests:generate_roundtrip_tests_for_the_wire_codecs:sprint_29:v0:
+#+owner: marco
+#+branch: feature/generate-the-roundtrip-test-for-entities-junctions-and-field-groups
+#+pr: 4397
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each opted-in domain entity, junction and field group gets a generated test that requires read(write(v)) == v in JSON and MessagePack, for a filled value and the default.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- The archetype renders into the api part's tests directory.
+- The pilot component builds and its generated tests pass.
+- Every opted-in component builds and its generated tests pass, because the facet opt-in admits no pilot (see Notes).
+- A member left out of =wire_fields= fails the build.
+- The drift check covers the new files.
+
+* Plan
+
+1. Add the archetype to the wire-codec facet, with one section per model type.
+   An entity and a junction call their =wire_traits=. A field group calls the
+   struct codec, because it has no traits of its own.
+2. Each type gets four cases: the sample and the default, in JSON and in
+   MessagePack.
+3. Pilot on =ores.dq=, the smallest component with all three model types.
+4. Prove a case can fail, then generate every component and fix what the
+   build finds.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Generated test files | 562 types in 14 components | =git status= after =compass codegen regenerate --all --address ores.cpp.wire-codec= | f64dc6e9d3 plus this branch |
+| Generated cases | 2,248, all pass | each =ores.<c>.api.tests "[roundtrip]"= | f64dc6e9d3 plus this branch |
+| Full api suites of the 14 components | all pass | each =ores.<c>.api.tests= | f64dc6e9d3 plus this branch |
+| dq pilot | 104 cases (26 types), all pass | =ores.dq.api.tests "[roundtrip]"= | f64dc6e9d3 plus this branch |
+| codegen pytest | 1,840 pass, 10 of them new | =pytest projects/ores.codegen/tests= | f64dc6e9d3 plus this branch |
+
+* Notes
+
+- *A roundtrip alone cannot see a dropped member.* The sampler fills only the
+  members =wire_fields= names. With =owner= deleted from the catalog codec's
+  list, the sample left =owner= at its default, the codec read the default
+  back, and all 104 dq cases passed. Each generated test now asserts
+  =names_every_member<T>(wire_left_out)= at compile time. Codegen counts the
+  members the model marks =:no_wire:=. With the same deletion the build fails:
+  "catalog has a member its wire shape does not name". For
+  =iam.account_credential=, which has three =:no_wire:= columns, the count is 3.
+- *A roundtrip cannot see a renamed member either.* The codec writes and reads
+  under the same name, so a consistent rename roundtrips. Only a comparison
+  with fixed bytes catches it. The proof task records this.
+- *No pilot is possible.* =is_enabled= takes the most specific override, and a
+  model's =ores.cpp.wire-codec.enabled: true= decides for every archetype under
+  the facet. An archetype default cannot hold the test to one component, and a
+  per-model opt-out on about 540 models is throwaway state. So this task
+  generated every opted-in component, and the rollout task has nothing left
+  for entities, junctions and field groups.
+- *What the full build found.* Three gaps, each fixed here:
+  - =scheduler::domain::cron_expression= states its own =text_form= outside
+    =ores.utility=. A =text_form= may now state =sample_texts=, and the
+    sampler reads them through =from_text=. The cron samples are
+    ="30 6 1 * *"= and ="*/5 * * * 1-5"=.
+  - The #4394 review fix refused =unsigned char=, which is =std::uint8_t=, and
+    =assets::domain::image= holds a =std::vector<std::uint8_t>=. Only the plain
+    character types are refused now.
+  - A field group can hold entities, whose =wire_fields= are in their codec
+    headers. The field-group test now includes them, computed by the same
+    helper the entity test uses.
+- No generated case found a codec defect. The proof task must still show that a
+  runtime case can fail.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4397][#4397]] | [codegen] Generate the roundtrip test for entities, junctions and field groups |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | wire_left_out counts entities and field groups differently | core.py | Fixed | A comment states why: a group's fields are all struct members; an entity column may be sql_only or in the identity group. |
+| 2 | Junctions hard-code 0 | core.py | Fixed | A comment states why: the junction codec names every column, with no no_wire filter, so 0 is correct by construction. |
+| 3 | Three near-duplicate template sections | roundtrip_tests.org | No change | Each section reads its own model's variable names, as the codec templates do. |
+| 4 | Coverage rests on sample 0 | sample.hpp | No change | The sampler engages optionals, fills vectors with two different elements and recurses into nested types; codec_sample_tests.cpp checks each. |
+| 5 | Link the ninja capture from the story | story.org | No change | The capture is about the build tool, not this story. |
+| 6 | Build time of 562 new files | tests | No change | The test targets build as unity units, so the files compile in a few large units. |
+
+* Result
+
+The =ores.cpp.wire-codec.roundtrip_tests= archetype writes a test for every
+opted-in domain entity, junction and field group: 562 types in 14 components,
+2,248 cases, all passing. Each test roundtrips the sample and the default in
+JSON and MessagePack, and asserts at compile time that =wire_fields= names
+every member the model does not mark =:no_wire:=.

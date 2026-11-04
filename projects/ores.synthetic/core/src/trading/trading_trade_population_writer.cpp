@@ -32,9 +32,11 @@
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
+#include "ores.refdata.api/messaging/yield_curve_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
+#include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
@@ -61,12 +63,12 @@
 #include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <array>
 #include <chrono>
 #include <format>
 #include <optional>
+#include <set>
 #include <string>
 #include <type_traits>
 #include <variant>
@@ -198,6 +200,14 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     for (const auto& row : read(cp_scope_req).trade_generation_counterparties)
         scope.counterparty_ids.push_back(row.counterparty_id);
 
+    synthetic::list_trade_generation_trade_types_request type_scope_req;
+    type_scope_req.limit = page;
+    synthetic::trade_generation_trade_types_filter type_scope_filter;
+    type_scope_filter.config_id = config_id;
+    type_scope_req.filter = type_scope_filter;
+    for (const auto& row : read(type_scope_req).trade_generation_trade_types)
+        scope.trade_type_codes.push_back(row.trade_type_code);
+
     /*
      * The books are checked against the tenant's own, so a scope naming a book
      * that does not exist fails here rather than at the booking trigger, which
@@ -258,9 +268,27 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
      */
     ores::refdata::messaging::list_currency_pairs_request pair_req;
     pair_req.limit = page;
-    for (const auto& pair : read(pair_req).pairs)
-        scope.currency_pairs.push_back(domain::currency_pair_reference{
-            .base = pair.base_currency, .quote = pair.quote_currency});
+    const auto pairs = read(pair_req).pairs;
+
+    /*
+     * A desk books the pairs it can price, and a pair prices on a discount
+     * curve in each of its currencies. So the pairs are kept to those whose two
+     * currencies the party holds a yield curve for. A party that holds no yield
+     * curve keeps every pair, and pricing is then the engine's to refuse.
+     */
+    ores::refdata::messaging::list_yield_curve_configs_request curve_config_req;
+    curve_config_req.limit = page;
+    std::set<std::string> priced;
+    for (const auto& curve : read(curve_config_req).yield_curve_configs)
+        if (curve.party_id == scope.party_id)
+            priced.insert(curve.currency);
+    const auto prices = [&](const std::string& currency) {
+        return priced.empty() || priced.contains(currency);
+    };
+    for (const auto& pair : pairs)
+        if (prices(pair.base_currency) && prices(pair.quote_currency))
+            scope.currency_pairs.push_back(domain::currency_pair_reference{
+                .base = pair.base_currency, .quote = pair.quote_currency});
 
     /*
      * An equity trade names an underlying from the tenant's equity catalogue,

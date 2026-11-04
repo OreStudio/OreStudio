@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2E13AC47-E3F0-4485-AA4D-BC6E9CD1980B
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.trade_generation_book
 #+description: Codegen entity model for the synthetic trade_generation_book table; one book in a trade generation config's book scope.

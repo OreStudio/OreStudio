@@ -28,12 +28,10 @@
 #include "ores.refdata.api/domain/curve_segment.hpp"
 #include "ores.refdata.api/domain/curve_segment_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/curve_segment_entity.hpp"
-#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -52,34 +50,6 @@ domain::curve_segment curve_segment_mapper::map(const curve_segment_entity& v) {
     r.curve_definition_id = v.curve_definition_id;
     r.segment_type = v.segment_type;
     r.position = v.position;
-    r.conventions = v.conventions;
-    r.pillar_choice = v.pillar_choice;
-    r.priority = v.priority;
-    r.min_distance = v.min_distance;
-    r.projection_curve = v.projection_curve;
-    r.discount_curve = v.discount_curve;
-    r.spot_rate = v.spot_rate;
-    r.projection_curve_domestic = v.projection_curve_domestic;
-    r.projection_curve_foreign = v.projection_curve_foreign;
-    r.projection_curve_pay = v.projection_curve_pay;
-    r.projection_curve_receive = v.projection_curve_receive;
-    r.projection_curve_long = v.projection_curve_long;
-    r.projection_curve_short = v.projection_curve_short;
-    r.reference_curve = v.reference_curve;
-    r.reference_curve_2 = v.reference_curve_2;
-    r.weight_1 = v.weight_1;
-    r.weight_2 = v.weight_2;
-    r.ibor_index = v.ibor_index;
-    r.rfr_curve = v.rfr_curve;
-    r.rfr_index = v.rfr_index;
-    r.spread = v.spread;
-    r.base_curve = v.base_curve;
-    r.base_curve_currency = v.base_curve_currency;
-    r.numerator_curve = v.numerator_curve;
-    r.numerator_curve_currency = v.numerator_curve_currency;
-    r.denominator_curve = v.denominator_curve;
-    r.denominator_curve_currency = v.denominator_curve_currency;
-    r.extrapolate_flat = v.extrapolate_flat;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -101,34 +71,6 @@ curve_segment_entity curve_segment_mapper::map(const domain::curve_segment& v) {
     r.curve_definition_id = v.curve_definition_id;
     r.segment_type = v.segment_type;
     r.position = v.position;
-    r.conventions = v.conventions;
-    r.pillar_choice = v.pillar_choice;
-    r.priority = v.priority;
-    r.min_distance = v.min_distance;
-    r.projection_curve = v.projection_curve;
-    r.discount_curve = v.discount_curve;
-    r.spot_rate = v.spot_rate;
-    r.projection_curve_domestic = v.projection_curve_domestic;
-    r.projection_curve_foreign = v.projection_curve_foreign;
-    r.projection_curve_pay = v.projection_curve_pay;
-    r.projection_curve_receive = v.projection_curve_receive;
-    r.projection_curve_long = v.projection_curve_long;
-    r.projection_curve_short = v.projection_curve_short;
-    r.reference_curve = v.reference_curve;
-    r.reference_curve_2 = v.reference_curve_2;
-    r.weight_1 = v.weight_1;
-    r.weight_2 = v.weight_2;
-    r.ibor_index = v.ibor_index;
-    r.rfr_curve = v.rfr_curve;
-    r.rfr_index = v.rfr_index;
-    r.spread = v.spread;
-    r.base_curve = v.base_curve;
-    r.base_curve_currency = v.base_curve_currency;
-    r.numerator_curve = v.numerator_curve;
-    r.numerator_curve_currency = v.numerator_curve_currency;
-    r.denominator_curve = v.denominator_curve;
-    r.denominator_curve_currency = v.denominator_curve_currency;
-    r.extrapolate_flat = v.extrapolate_flat;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

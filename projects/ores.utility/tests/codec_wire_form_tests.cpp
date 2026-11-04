@@ -135,6 +135,19 @@ inline constexpr auto wire_fields(const forgetful&) {
 namespace {
 
 /**
+ * @brief A type in an anonymous namespace whose member names another, as a
+ * translation unit's private reply types do.
+ */
+struct local_part {
+    std::string name;
+};
+
+struct local_reply {
+    std::optional<std::vector<local_part>> parts;
+    int count = 0;
+};
+
+/**
  * @brief The bytes reflect-cpp writes for @p v.
  */
 template <typename T>
@@ -262,4 +275,8 @@ TEST_CASE("a path is written as reflect-cpp writes it and reads back", "[codec][
     CHECK(json == rfl::json::write(v));
     CHECK(ores::utility::codec::msgpack::write(v) == their_msgpack(v));
     CHECK(ores::utility::codec::json::read<located>(json).dir == v.dir);
+}
+
+TEST_CASE("a type in an anonymous namespace is counted like any other", "[codec][object]") {
+    STATIC_REQUIRE(ores::utility::codec::member_count<local_reply> == 2);
 }

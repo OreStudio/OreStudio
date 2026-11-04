@@ -41,6 +41,13 @@ create table if not exists "ores_synthetic_calibration_policies_tbl" (
     "version" integer not null,
     "asset_class_code" text not null,
     "window_days" integer not null,
+    "variance_window_days" integer not null default 1826,
+    "variance_approval_mode" text not null default 'manual',
+    "variance_min_returns" integer not null default 250,
+    "variance_require_starts_agree" boolean not null default true,
+    "variance_min_persistence" double precision not null default 0.80,
+    "variance_max_persistence" double precision not null default 0.995,
+    "variance_min_reaction" double precision not null default 0.01,
     "allow_inverse" boolean not null,
     "fallback_code" text not null,
     "modified_by" text not null,
@@ -57,7 +64,14 @@ create table if not exists "ores_synthetic_calibration_policies_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("window_days" between 2 and 180)
+    check ("window_days" between 2 and 180),
+    check ("variance_window_days" between 30 and 3660),
+    check ("variance_approval_mode" in ('manual', 'auto')),
+    check ("variance_min_returns" between 250 and 100000),
+    check ("variance_min_persistence" >= 0),
+    check ("variance_max_persistence" < 1),
+    check ("variance_min_persistence" <= "variance_max_persistence"),
+    check ("variance_min_reaction" >= 0)
 );
 
 -- Unique asset_class_code for active records

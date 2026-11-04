@@ -2,6 +2,7 @@
 :ores.cpp.shell-command.enabled: true
 :ores.cpp.http-route.enabled: true
 :ID: 6C8974B6-3D65-4F75-959A-AFCD1C7826CF
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.session_messages
 #+description: Codegen operation model for the session protocol, rendered to C++ and TypeScript from one source.

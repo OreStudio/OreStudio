@@ -20,32 +20,43 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "domain/image_codec.cpp"
     "domain/image_json_io.cpp"
     "domain/image_table.cpp"
     "domain/image_table_io.cpp"
+    "domain/image_tag_codec.cpp"
     "domain/image_tag_json_io.cpp"
     "domain/image_tag_table.cpp"
     "domain/image_tag_table_io.cpp"
+    "domain/tag_codec.cpp"
     "domain/tag_json_io.cpp"
     "domain/tag_table.cpp"
     "domain/tag_table_io.cpp"
     "generators/image_generator.cpp"
     "generators/image_tag_generator.cpp"
     "generators/tag_generator.cpp"
+    "messaging/image_operations_protocol_codec.cpp"
+    "messaging/image_protocol_codec.cpp"
+    "messaging/image_tag_protocol_codec.cpp"
+    "messaging/publish_operation_protocol_codec.cpp"
+    "messaging/tag_protocol_codec.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image_tag.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image_tag_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image_tag_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image_tag_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/image_tag_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/ores.assets.api.domain.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/tag.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/tag_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/tag_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/tag_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.api/domain/tag_table_io.hpp"

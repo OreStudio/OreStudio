@@ -237,6 +237,11 @@ def classify(changed: list[str]) -> tuple[set[str], dict[str, list[str]]]:
 
 SKILL_SCRIPTS = ("build/scripts/generate_skill*.py", "build/scripts/link_structure_notes.py")
 
+# The test preset names no job count, so ctest would run one suite at a time.
+# The suites that must not overlap already say so, with RESOURCE_LOCK or
+# RUN_SERIAL.
+CTEST_JOBS = 4
+
 CATALOGUE: tuple[Check, ...] = (
     # -- prepare: the writers run before anything reads what they write ------
     Check(
@@ -667,10 +672,16 @@ CATALOGUE: tuple[Check, ...] = (
         paths=(
             "projects/ores.sql/populate/reporting/reporting_file_types_populate.sql",
             "projects/ores.sql/utility/generate_file_types_populate.py",
+            "projects/ores.sql/populate/reporting/reporting_ore_file_categories_populate.sql",
+            "projects/ores.sql/populate/reporting/reporting_ore_files_populate.sql",
+            "projects/ores.sql/populate/reporting/reporting_ore_file_versions_populate.sql",
+            "external/ore/xsd/*",
+            "projects/ores.sql/utility/ore_files.py",
+            "projects/ores.sql/utility/ore_file_descriptions.py",
             "projects/ores.sql/utility/file_type_descriptions.py",
             "projects/ores.sql/utility/file_type_guide.json",
         ),
-        fix="Run projects/ores.sql/utility/generate_file_types_populate.py and commit the seed.",
+        fix="Run projects/ores.sql/utility/generate_file_types_populate.py and commit the seeds.",
     ),
     Check(
         id="ore-parameters-seed",
@@ -1003,6 +1014,15 @@ CATALOGUE: tuple[Check, ...] = (
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_history_registrar_composition.py"),
         classes=("services", "cpp", "modeling", "codegen"),
     ),
+    # A handler registrar nothing calls leaves its subjects with no responder, so
+    # every request on them times out. The generated file compiles and the
+    # service serves every other subject, so no build or test notices.
+    Check(
+        id="handler-registrars",
+        title="Every generated handler registrar has a responder",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_handler_registrar_composition.py"),
+        classes=("services", "cpp", "modeling", "codegen"),
+    ),
     # A durable subject with no stream times out at the publisher, and two
     # streams over one subject stop the second service starting. The server
     # refuses both, so no running broker can show them; the check reads the
@@ -1136,8 +1156,11 @@ CATALOGUE: tuple[Check, ...] = (
         paths=(
             "external/ore/*",
             "projects/ores.ore/scripts/generate_output_catalogue.py",
+            "projects/ores.ore/scripts/output_family_docs.py",
+            "projects/ores.ore/data/samples/*",
             "projects/ores.ore/core/include/ores.ore.core/results/output_catalogue.hpp",
             "projects/ores.ore/core/src/results/output_catalogue_data.*",
+            "doc/knowledge/external/ore_output_formats.org",
         ),
         fix="Run projects/ores.ore/scripts/generate_output_catalogue.py and commit"
             " the data it writes, or state in the generator why the sample is not"
@@ -1160,6 +1183,12 @@ CATALOGUE: tuple[Check, ...] = (
         title="The codegen suite passes",
         argv=(CODEGEN_TESTS_PY, "-m", "pytest", "projects/ores.codegen/tests", "-q"),
         classes=("modeling", "codegen", "tooling"),
+    ),
+    Check(
+        id="build-script-tests",
+        title="The build-script suite passes",
+        argv=(CODEGEN_TESTS_PY, "-m", "pytest", "build/scripts/tests", "-q"),
+        classes=("tooling",),
     ),
     Check(
         id="compass-tests",
@@ -1204,7 +1233,7 @@ CATALOGUE: tuple[Check, ...] = (
             "-c",
             "./compass.sh services stop ores.marketdata.service || true;"
             " ./compass.sh services stop ores.synthetic.service || true;"
-            " ./compass.sh test run --preset {preset}",
+            " ./compass.sh test run --preset {preset} -- -j " + str(CTEST_JOBS),
         ),
         classes=("cpp", "services", "sql"),
         phase=HEAVY,
@@ -1287,6 +1316,120 @@ CHECKS_BY_ID = {check.id: check for check in CATALOGUE}
 
 
 # --------------------------------------------------------------------------
+# Reach: which build targets a changed file compiles into
+# --------------------------------------------------------------------------
+
+# These checks stand up the database and the fleet. A change that compiles into
+# test binaries alone leaves every library and service as it was, so they would
+# prove again what main already proved.
+FLEET_CHECKS = ("db", "ticks-smoke", "step-consumers")
+FLEET_CLASSES = ("cpp", "services", "sql")
+COMPILED_SUFFIXES = (".cpp", ".hpp", ".h", ".ipp", ".c", ".cc", ".cxx")
+TEST_TARGET_SUFFIX = ".tests"
+
+
+def fleet_paths(changed: list[str]) -> list[str]:
+    """The changed paths that select a fleet check."""
+    return [
+        path for path in changed
+        if any(fnmatch.fnmatch(path, pattern)
+               for name, patterns in PATH_RULES if name in FLEET_CLASSES
+               for pattern in patterns)
+    ]
+
+
+def fleet_skip_reason(changed: list[str], reach: dict[str, set[str]]) -> str:
+    """Why the fleet checks can be skipped, or an empty string when they cannot.
+
+    @p reach maps a repository path to the targets whose objects compile it.
+    A path the map does not know is one the build cannot vouch for: a new
+    file, a CMakeLists.txt, a SQL script. Each of those keeps the fleet checks.
+    """
+    paths = fleet_paths(changed)
+    if not paths or "unknown" in classify(changed)[0]:
+        return ""
+    targets: set[str] = set()
+    for path in paths:
+        reached = reach.get(path)
+        if not reached or not all(t.endswith(TEST_TARGET_SUFFIX) for t in reached):
+            return ""
+        targets |= reached
+    return "the change compiles only into " + ", ".join(sorted(targets))
+
+
+def target_of(output: str) -> str | None:
+    """The CMake target an object or a PCH belongs to, from its path."""
+    marker = "/CMakeFiles/"
+    start = output.find(marker)
+    if start < 0:
+        return None
+    name = output[start + len(marker):].split("/", 1)[0]
+    return name[:-len(".dir")] if name.endswith(".dir") else None
+
+
+def read_reach(build_dir: Path, wanted: list[str]) -> dict[str, set[str]]:
+    """The targets that compile each wanted path, from ninja's dependency log.
+
+    The log is read after the build, because a log from before it misses a file
+    the change added and keeps one it removed.
+    """
+    proc = subprocess.run(
+        ["ninja", "-C", str(build_dir), "-t", "deps"],
+        capture_output=True, text=True, check=False)
+    if proc.returncode != 0:
+        return {}
+    wanted_abs = {os.path.normpath(REPO_ROOT / path): path for path in wanted}
+    names = {os.path.basename(path) for path in wanted}
+    reach: dict[str, set[str]] = {}
+    target = None
+    for line in proc.stdout.splitlines():
+        if not line.startswith(" "):
+            target = target_of(line.split(":", 1)[0]) if line else None
+            continue
+        entry = line.strip()
+        # Most of the log's lines name some other file; the name test is cheap.
+        if target is None or os.path.basename(entry) not in names:
+            continue
+        path = wanted_abs.get(os.path.normpath(os.path.join(build_dir, entry)))
+        if path:
+            reach.setdefault(path, set()).add(target)
+    return reach
+
+
+def database_in_sync() -> bool:
+    """Whether the database was built from this checkout's schema.
+
+    A test-only change leaves the schema alone, but the branch's base may not:
+    main moves, and a database from before the move fails the suites that read
+    the new tables. An answer compass cannot give counts as out of sync.
+    """
+    proc = subprocess.run(
+        ["./compass.sh", "env", "status", "--json"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False)
+    try:
+        database = json.loads(proc.stdout)["database"]
+    except (ValueError, KeyError, TypeError):
+        return False
+    return bool(database.get("reachable")) and (
+        database.get("schemaFingerprint") == database.get("expectedFingerprint"))
+
+
+def fleet_skips(changed: list[str], preset: str) -> dict[str, str]:
+    """The fleet checks this change can skip, each with its reason."""
+    paths = fleet_paths(changed)
+    if not paths or not all(path.endswith(COMPILED_SUFFIXES) for path in paths):
+        return {}
+    build_dir = REPO_ROOT / "build" / "output" / preset
+    reason = fleet_skip_reason(changed, read_reach(build_dir, paths))
+    if not reason:
+        return {}
+    skips = {check_id: reason for check_id in FLEET_CHECKS}
+    if not database_in_sync():
+        del skips["db"]
+    return skips
+
+
+# --------------------------------------------------------------------------
 # Running
 # --------------------------------------------------------------------------
 
@@ -1298,6 +1441,7 @@ class Result:
     seconds: float = 0.0
     log: Path | None = None
     tail: str = ""
+    reason: str = ""
 
     @property
     def failed(self) -> bool:
@@ -1343,12 +1487,23 @@ def diff_ref(base: str) -> str:
     return git("merge-base", base, "HEAD").strip() or base
 
 
+def claimed(untracked: list[str]) -> list[str]:
+    """The untracked paths a rule claims.
+
+    An untracked file is not part of the branch until it is added. One that a
+    rule claims, such as a new source file, is likely to be added, so it is
+    checked. One that no rule claims is scratch output, and it must not make
+    the whole change unknown.
+    """
+    return [path for path in untracked if "unknown" not in classify([path])[0]]
+
+
 def changed_paths(ref: str) -> list[str]:
-    """Every path this branch touches, committed or not, tracked or not."""
+    """Every path this branch touches, committed or not, and the untracked paths a rule claims."""
     tracked = git("diff", "--name-only", ref).splitlines()
     untracked = git("ls-files", "--others", "--exclude-standard").splitlines()
     seen: list[str] = []
-    for path in [*tracked, *untracked]:
+    for path in [*tracked, *claimed(untracked)]:
         path = path.strip()
         if path and path not in seen:
             seen.append(path)
@@ -1407,8 +1562,11 @@ def run_one(check: Check, base: str, preset: str) -> Result:
     return Result(check=check, status=status, seconds=seconds, log=log, tail=tail)
 
 
-def run_all(selected: list[Check], base: str, preset: str, jobs: int) -> list[Result]:
+def run_all(selected: list[Check], base: str, preset: str, jobs: int,
+            changed: list[str] | None = None) -> list[Result]:
+    """Run each phase in order. @p changed is None when every check must run."""
     results: list[Result] = []
+    skips: dict[str, str] = {}
     by_phase: dict[int, list[Check]] = {}
     for check in selected:
         by_phase.setdefault(check.phase, []).append(check)
@@ -1427,14 +1585,20 @@ def run_all(selected: list[Check], base: str, preset: str, jobs: int) -> list[Re
         else:
             phase_results = []
             for check in group:
+                if check.id in skips:
+                    phase_results.append(Result(check=check, reason=skips[check.id]))
+                    continue
                 print(f"   running {check.id}…", flush=True)
-                phase_results.append(run_one(check, base, preset))
+                result = run_one(check, base, preset)
+                phase_results.append(result)
+                # The scope is decided once the build has run, so the dependency
+                # log it reads describes the tree under test.
+                if check.id == "build" and result.status == "PASS" and changed is not None:
+                    skips = fleet_skips(changed, preset)
         for result in phase_results:
-            print(
-                f"   {'✅' if not result.failed else '❌'} {result.check.id} "
-                f"({result.seconds:.1f}s)",
-                flush=True,
-            )
+            mark = "⏭" if result.status == "SKIP" else "❌" if result.failed else "✅"
+            detail = result.reason if result.status == "SKIP" else f"{result.seconds:.1f}s"
+            print(f"   {mark} {result.check.id} ({detail})", flush=True)
         results.extend(phase_results)
     return results
 
@@ -1450,14 +1614,16 @@ def render(classes: set[str], reasons: dict[str, list[str]], changed: list[str],
     ref = ref or base
     passed = [r for r in results if r.status == "PASS"]
     failed = [r for r in results if r.failed]
+    skipped = [r for r in results if r.status == "SKIP"]
     total = sum(r.seconds for r in results)
 
     lines: list[str] = []
     lines.append("# Local checks")
     lines.append("")
     verdict = "PASS" if not failed else f"FAIL — {len(failed)} check(s)"
-    lines.append(f"**{verdict}.**  {len(results)} run, {len(passed)} passed, "
-                 f"{len(failed)} failed.  Wall clock in checks: {total:.0f}s.")
+    lines.append(f"**{verdict}.**  {len(results) - len(skipped)} run, {len(passed)} passed, "
+                 f"{len(failed)} failed, {len(skipped)} skipped.  "
+                 f"Wall clock in checks: {total:.0f}s.")
     lines.append("")
     lines.append(f"- Base: `{base}`, merge base `{base_sha}`")
     lines.append(f"- Preset: `{preset}`")
@@ -1498,6 +1664,12 @@ def render(classes: set[str], reasons: dict[str, list[str]], changed: list[str],
             f"| `{result.check.id}` | {mark} | {result.seconds:.1f}s | {result.check.title} |"
         )
     lines.append("")
+    if skipped:
+        lines.append("## Skipped")
+        lines.append("")
+        for result in skipped:
+            lines.append(f"- `{result.check.id}`: {result.reason}.")
+        lines.append("")
 
     lines.append("## Why these checks")
     lines.append("")
@@ -1515,11 +1687,14 @@ def render(classes: set[str], reasons: dict[str, list[str]], changed: list[str],
 
 def console_summary(results: list[Result], report: Path | None) -> None:
     failed = [r for r in results if r.failed]
+    ran = [r for r in results if r.status != "SKIP"]
+    skipped = len(results) - len(ran)
+    note = f", {skipped} skipped" if skipped else ""
     print()
     if not failed:
-        print(f"✅  local checks: {len(results)}/{len(results)} passed")
+        print(f"✅  local checks: {len(ran)}/{len(ran)} passed{note}")
     else:
-        print(f"❌  local checks: {len(failed)} of {len(results)} failed")
+        print(f"❌  local checks: {len(failed)} of {len(ran)} failed{note}")
         for result in failed:
             print(f"   • {result.check.id}: {result.check.title}")
             if result.check.fix:
@@ -1631,6 +1806,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"   checks   : {len(selected)}")
     print(f"   preset   : {preset}")
 
+    # A check asked for by name, or by --all, runs whatever the change reaches.
+    scoped = not (args.all or args.only)
+
     if args.plan:
         print()
         for phase in sorted({c.phase for c in selected}):
@@ -1649,13 +1827,21 @@ def main(argv: list[str] | None = None) -> int:
             sample = ", ".join(files[:4])
             more = f" (+{len(files) - 4})" if len(files) > 4 else ""
             print(f"  {name:<10} {sample}{more}")
+        fleet = [c.id for c in selected if c.id in FLEET_CHECKS]
+        paths = fleet_paths(changed)
+        if fleet and scoped and paths and all(
+                path.endswith(COMPILED_SUFFIXES) for path in paths):
+            print()
+            print(f"  {', '.join(fleet)} are skipped after the build if the change"
+                  " compiles only into test binaries.")
         return 0
 
     missing = missing_tools(selected)
     if missing:
         print(f"⚠️  missing tools: {', '.join(missing)} — their checks will fail")
 
-    results = run_all(selected, ref, preset, args.jobs)
+    results = run_all(selected, ref, preset, args.jobs,
+                      changed=changed if scoped else None)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     report = OUTPUT_DIR / "report.md"

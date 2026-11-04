@@ -35,6 +35,7 @@ import { actorPathFor } from '../../access/PeoplePage.js';
 import { useActorPictures } from '../../access/PersonRef.js';
 import { RevertDialog, show, type FieldSpec } from '../../refdata/records.js';
 import { Timeline } from '../../timeline/Timeline.js';
+import { CALIBRATION_REASON } from '../calibration/calibration.js';
 import { Button, Notice } from '../../ui/Primitives.js';
 
 /**
@@ -140,6 +141,9 @@ export function FeedHistory({
     const actorPicture = useActorPictures();
     const story = useFeedStory(feed, feedEntity, parts, subject);
     const [reverting, setReverting] = useState<TimelineEvent | null>(null);
+    const [calibrationOnly, setCalibrationOnly] = useState(false);
+    const calibrations =
+        story.stream?.events.filter((event) => event.reasonCode === CALIBRATION_REASON).length ?? 0;
     const partOf = (event: TimelineEvent): FeedPart | undefined =>
         parts.find((part) => part.entity === event.entityType);
     const rowOf = (event: TimelineEvent): RecordRow | undefined =>
@@ -165,13 +169,34 @@ export function FeedHistory({
 
     return (
         <div className="space-y-3">
-            <p className="text-sm text-ink-muted">{t('marketdata.history.lead')}</p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-ink-muted">{t('marketdata.history.lead')}</p>
+                {calibrations > 0 && (
+                    <button
+                        type="button"
+                        aria-pressed={calibrationOnly}
+                        onClick={() => setCalibrationOnly((on) => !on)}
+                        className={
+                            calibrationOnly
+                                ? 'rounded-chip border border-accent bg-accent-dim px-2 py-0.5 text-xs text-accent'
+                                : 'rounded-chip border border-line px-2 py-0.5 text-xs text-ink-muted hover:text-ink'
+                        }
+                    >
+                        {t('marketdata.history.calibrationOnly', { count: String(calibrations) })}
+                    </button>
+                )}
+            </div>
             {story.error !== null && <Notice tone="error">{story.error.message}</Notice>}
             {story.stream === undefined ? (
                 <p className="text-sm text-ink-muted">{t('common.loading')}</p>
             ) : (
                 <Timeline
                     timeline={story.stream}
+                    only={
+                        calibrationOnly
+                            ? (event) => event.reasonCode === CALIBRATION_REASON
+                            : undefined
+                    }
                     actorPath={actorPathFor(holds('iam::accounts:read'))}
                     actorPicture={actorPicture}
                     renderActions={(event) => {

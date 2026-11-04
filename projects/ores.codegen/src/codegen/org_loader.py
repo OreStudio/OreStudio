@@ -2666,6 +2666,10 @@ _TS_UTILITY_DOMAIN_TYPES = {
     # and the interface imports from the generated module that model writes.
     "ores::ore::messaging::ore_document": (
         "OreDocument", "generated/ore/protocol/ore_document_protocol"),
+    # The blotter filters its rows the way the trade list does, so its reads
+    # take the trade summary protocol's filter rather than a copy of it.
+    "ores::trading::messaging::trade_summaries_filter": (
+        "TradeSummariesFilter", "generated/trading/protocol/trade_summary_protocol"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.
@@ -3034,12 +3038,15 @@ SPEC_VERSIONS_VERBS = ("list", "get")
 
 
 def entity_event_prefix(component: str, plural: str) -> str:
-    """``iam.v1.tenants_events`` -- the collection one entity's events share.
+    """``iam.v1.events.tenants`` -- the collection one entity's events share.
 
-    The prefix names the events collection, and the action is the last
-    segment, so one payload is addressed by three subjects.
+    The events namespace is a segment of its own, because a NATS wildcard is a
+    whole token: an events collection spelled ``tenants_events`` cannot be
+    addressed by ``*_events``, and a subscriber that wants every event of every
+    component would have to hear every request as well. With the namespace in
+    place, ``*.v1.events.>`` hears the events and nothing else.
     """
-    return f"{component}.v1.{plural}_events"
+    return f"{component}.v1.events.{plural}"
 
 
 def entity_events(component: str, plural: str) -> list[dict[str, Any]]:
@@ -3063,17 +3070,18 @@ def request_subject(component: str, plural: str, verb: str) -> str:
 
 
 def event_subject(component: str, plural: str, action: str) -> str:
-    """``iam.v1.tenants_events.created`` -- an announcement, not an operation.
+    """``iam.v1.events.tenants.created`` -- an announcement, not an operation.
 
-    The resource segment names the events collection rather than the resource,
-    in the ``{resource}_{collection}`` form a sub-resource uses, so the subject
-    still has four segments and still sits inside its component's namespace.
+    The namespace takes the resource's place, so an event has five segments and
+    the collection is a token a subscriber can name. That is the whole reason
+    the namespace exists: the collection cannot be wildcarded when it is a
+    suffix of another token.
     """
     if action not in SPEC_EVENT_ACTIONS:
         raise ValueError(
             f"{action!r} is not an event action; "
             f"expected one of {SPEC_EVENT_ACTIONS}")
-    return f"{component}.v1.{plural}_events.{action}"
+    return f"{entity_event_prefix(component, plural)}.{action}"
 
 
 def versions_subject(component: str, plural: str, verb: str) -> str:
@@ -6653,6 +6661,57 @@ def load_org_asset_class_catalogue_model(path: Path | str) -> dict[str, Any]:
 _TRADE_TYPE_PRODUCT_TYPES = frozenset({
     "swap", "fx", "bond", "credit", "equity", "commodity", "composite", "scripted"})
 
+# The contract shapes a product type may name, as the product family lookup
+# declares them. Blank is allowed: the corpus states some shapes are unsettled.
+_PRODUCT_FAMILIES = frozenset({
+    "option", "swap", "forward", "position", "swaption", "future", "repo",
+    "security"})
+
+_PRODUCT_CONSTRUCTIONS = frozenset({"native", "scripted", "container"})
+
+
+def _trade_type_descriptions(path: Path, doc, codes: list[str]) -> dict[str, dict[str, str]]:
+    """The prose a product type is read with: its description and its source.
+
+    Every catalogue code states one row in the ``* Descriptions`` table, keyed by
+    the code. A code with no row, or a row missing any of the three columns, is a
+    product type a reader cannot be told about, so it fails codegen rather than
+    seeding an empty string.
+    """
+    section = _section(doc.root, "Descriptions")
+    if not section or not section.tables:
+        raise ValueError(f"{path.name}: no * Descriptions table.")
+    raw = _parse_org_table_rows(section)
+    found: dict[str, dict[str, str]] = {}
+    for r in raw:
+        code = (r.get("code") or "").strip()
+        if not code:
+            continue
+        entry = {
+            column: " ".join((r.get(column) or "").split()).replace("'", "''")
+            for column in ("description", "source", "source_ref")
+        }
+        blank = [name for name, value in entry.items() if not value]
+        if blank:
+            raise ValueError(
+                f"{path.name}: product type {code} states no {', '.join(blank)} "
+                "in its * Descriptions row.")
+        if code in found:
+            raise ValueError(
+                f"{path.name}: product type {code} is described twice.")
+        found[code] = entry
+    missing = [code for code in codes if code not in found]
+    if missing:
+        raise ValueError(
+            f"{path.name}: no description for product type(s): "
+            f"{', '.join(missing)}.")
+    extra = sorted(set(found) - set(codes))
+    if extra:
+        raise ValueError(
+            f"{path.name}: a description names product type(s) the * Trade "
+            f"types table does not state: {', '.join(extra)}.")
+    return found
+
 
 def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     """Load the trade-type catalogue into the shape its readers want.
@@ -6693,12 +6752,30 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
         code = (r.get("code") or "").strip()
         if not code:
             continue
-        product_type = (r.get("product_type") or "").strip()
-        if product_type not in _TRADE_TYPE_PRODUCT_TYPES:
+        family = (r.get("family") or "").strip()
+        if family and family not in _PRODUCT_FAMILIES:
             raise ValueError(
-                f"{path.name}: trade type {code} has product type "
-                f"{product_type!r}, which is not one of "
-                f"{', '.join(sorted(_TRADE_TYPE_PRODUCT_TYPES))}.")
+                f"{path.name}: product type {code} has family {family!r}, "
+                f"which is not one of {', '.join(sorted(_PRODUCT_FAMILIES))}.")
+        construction = (r.get("construction") or "").strip()
+        if construction not in _PRODUCT_CONSTRUCTIONS:
+            raise ValueError(
+                f"{path.name}: product type {code} has construction "
+                f"{construction!r}, which is not one of "
+                f"{', '.join(sorted(_PRODUCT_CONSTRUCTIONS))}.")
+        markets = []
+        for entry in (r.get("markets") or "").split(","):
+            entry = entry.strip()
+            if not entry:
+                continue
+            is_home = entry.endswith("!")
+            code_of_market = entry[:-1] if is_home else entry
+            markets.append({"code": code_of_market, "is_home": is_home})
+        homes = [m for m in markets if m["is_home"]]
+        if markets and len(homes) != 1:
+            raise ValueError(
+                f"{path.name}: product type {code} declares {len(homes)} home "
+                "markets; a type with markets declares exactly one.")
         flags = {}
         for flag in ("has_options", "has_extension"):
             value = (r.get(flag) or "").strip()
@@ -6714,9 +6791,16 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
                 "which no entity model declares.")
         rows.append({
             "code": code,
+            "name_sql": " ".join(
+                (r.get("name") or "").split()).replace("'", "''"),
             "description_sql": " ".join(
                 (r.get("description") or "").split()).replace("'", "''"),
-            "product_type": product_type,
+            "family": family,
+            "family_literal": f"'{family}'" if family else "null",
+            "construction": construction,
+            "instrument_literal": f"'{instrument}'" if instrument else "null",
+            "display_order": len(rows) + 1,
+            "markets": markets,
             **flags,
             "instrument": instrument,
         })
@@ -6725,6 +6809,12 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     if repeated:
         raise ValueError(
             f"{path.name}: duplicate trade type code(s): {', '.join(repeated)}")
+    descriptions = _trade_type_descriptions(path, doc, codes)
+    for row in rows:
+        entry = descriptions[row["code"]]
+        row["description_sql"] = entry["description"]
+        row["source_sql"] = entry["source"]
+        row["source_ref_sql"] = entry["source_ref"]
     for index, row in enumerate(rows):
         row["comma"] = "" if index == len(rows) - 1 else ","
 
@@ -6758,6 +6848,18 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
         entities_by_table)
     catalogue["routes"] = [
         {"code": row["code"], "instrument": row["instrument"]} for row in routes]
+    market_rows = [
+        {
+            "product_type_code": row["code"],
+            "asset_class_code": market["code"],
+            "is_home": "true" if market["is_home"] else "false",
+        }
+        for row in rows
+        for market in row["markets"]
+    ]
+    for index, entry in enumerate(market_rows):
+        entry["comma"] = "" if index == len(market_rows) - 1 else ","
+    catalogue["market_rows"] = market_rows
     return {"trade_type_catalogue": catalogue}
 
 

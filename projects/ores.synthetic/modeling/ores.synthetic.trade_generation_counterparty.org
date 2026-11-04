@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 33A902F8-FA25-477E-BF7B-B2E1792AB1F8
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.trade_generation_counterparty
 #+description: Codegen entity model for the synthetic trade_generation_counterparty table; one counterparty in a trade generation config's counterparty scope.

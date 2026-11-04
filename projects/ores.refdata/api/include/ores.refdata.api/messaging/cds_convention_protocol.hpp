@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct cds_convention_key {
     std::string id;
+
+    friend bool operator==(const cds_convention_key&, const cds_convention_key&) = default;
 };
 
 struct cds_convention_write {
@@ -58,25 +60,35 @@ struct cds_convention_write {
     std::optional<int> upfront_settlement_days;
     std::optional<std::string> last_period_day_count_fraction;
     std::optional<std::string> oresmd_uri;
+
+    friend bool operator==(const cds_convention_write&, const cds_convention_write&) = default;
 };
 
 struct cds_convention_change {
     cds_convention_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const cds_convention_change&, const cds_convention_change&) = default;
 };
 
 struct cds_convention_removal {
     cds_convention_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const cds_convention_removal&, const cds_convention_removal&) = default;
 };
 
 struct cds_convention_lookup {
     cds_convention_key key;
     std::optional<ores::refdata::domain::cds_convention> cds_convention;
+
+    friend bool operator==(const cds_convention_lookup&, const cds_convention_lookup&) = default;
 };
 
 struct cds_conventions_filter {
     std::optional<std::vector<std::string>> id_one_of;
+
+    friend bool operator==(const cds_conventions_filter&, const cds_conventions_filter&) = default;
 };
 
 struct cds_convention_event {
@@ -86,17 +98,25 @@ struct cds_convention_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const cds_convention_event&, const cds_convention_event&) = default;
 };
 
 struct cds_convention_version_key {
     cds_convention_key cds_convention;
     std::uint32_t version;
+
+    friend bool operator==(const cds_convention_version_key&,
+                           const cds_convention_version_key&) = default;
 };
 
 struct cds_convention_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const cds_convention_versions_filter&,
+                           const cds_convention_versions_filter&) = default;
 };
 
 struct list_cds_conventions_request {
@@ -114,12 +134,18 @@ struct list_cds_conventions_request {
     ores::utility::domain::order order;
     std::optional<cds_conventions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_cds_conventions_request&,
+                           const list_cds_conventions_request&) = default;
 };
 
 struct list_cds_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cds_convention> cds_conventions;
     std::uint64_t total;
+
+    friend bool operator==(const list_cds_conventions_response&,
+                           const list_cds_conventions_response&) = default;
 };
 
 struct get_cds_convention_request {
@@ -133,11 +159,17 @@ struct get_cds_convention_request {
      */
     static constexpr bool requires_session = true;
     cds_convention_key key;
+
+    friend bool operator==(const get_cds_convention_request&,
+                           const get_cds_convention_request&) = default;
 };
 
 struct get_cds_convention_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::cds_convention> cds_convention;
+
+    friend bool operator==(const get_cds_convention_response&,
+                           const get_cds_convention_response&) = default;
 };
 
 struct get_many_cds_conventions_request {
@@ -151,11 +183,17 @@ struct get_many_cds_conventions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<cds_convention_key> keys;
+
+    friend bool operator==(const get_many_cds_conventions_request&,
+                           const get_many_cds_conventions_request&) = default;
 };
 
 struct get_many_cds_conventions_response {
     ores::utility::domain::result result;
     std::vector<cds_convention_lookup> entries;
+
+    friend bool operator==(const get_many_cds_conventions_response&,
+                           const get_many_cds_conventions_response&) = default;
 };
 
 struct put_cds_convention_request {
@@ -170,11 +208,17 @@ struct put_cds_convention_request {
     static constexpr bool requires_session = true;
     cds_convention_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_cds_convention_request&,
+                           const put_cds_convention_request&) = default;
 };
 
 struct put_cds_convention_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::cds_convention> cds_convention;
+
+    friend bool operator==(const put_cds_convention_response&,
+                           const put_cds_convention_response&) = default;
 };
 
 struct put_many_cds_conventions_request {
@@ -189,11 +233,17 @@ struct put_many_cds_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<cds_convention_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_cds_conventions_request&,
+                           const put_many_cds_conventions_request&) = default;
 };
 
 struct put_many_cds_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cds_convention> cds_conventions;
+
+    friend bool operator==(const put_many_cds_conventions_response&,
+                           const put_many_cds_conventions_response&) = default;
 };
 
 struct delete_cds_convention_request {
@@ -208,10 +258,16 @@ struct delete_cds_convention_request {
     static constexpr bool requires_session = true;
     cds_convention_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_cds_convention_request&,
+                           const delete_cds_convention_request&) = default;
 };
 
 struct delete_cds_convention_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_cds_convention_response&,
+                           const delete_cds_convention_response&) = default;
 };
 
 struct delete_many_cds_conventions_request {
@@ -226,10 +282,16 @@ struct delete_many_cds_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<cds_convention_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_cds_conventions_request&,
+                           const delete_many_cds_conventions_request&) = default;
 };
 
 struct delete_many_cds_conventions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_cds_conventions_response&,
+                           const delete_many_cds_conventions_response&) = default;
 };
 
 struct list_cds_convention_versions_request {
@@ -247,12 +309,18 @@ struct list_cds_convention_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cds_convention_versions_filter> filter;
+
+    friend bool operator==(const list_cds_convention_versions_request&,
+                           const list_cds_convention_versions_request&) = default;
 };
 
 struct list_cds_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cds_convention> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_cds_convention_versions_response&,
+                           const list_cds_convention_versions_response&) = default;
 };
 
 struct get_cds_convention_version_request {
@@ -266,11 +334,17 @@ struct get_cds_convention_version_request {
      */
     static constexpr bool requires_session = true;
     cds_convention_version_key key;
+
+    friend bool operator==(const get_cds_convention_version_request&,
+                           const get_cds_convention_version_request&) = default;
 };
 
 struct get_cds_convention_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::cds_convention> version;
+
+    friend bool operator==(const get_cds_convention_version_response&,
+                           const get_cds_convention_version_response&) = default;
 };
 
 /**
@@ -282,9 +356,9 @@ struct get_cds_convention_version_response {
  * of them.
  */
 namespace cds_convention_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.cds_conventions_events.created";
-inline constexpr std::string_view updated = "refdata.v1.cds_conventions_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.cds_conventions_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.cds_conventions.created";
+inline constexpr std::string_view updated = "refdata.v1.events.cds_conventions.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.cds_conventions.deleted";
 }
 /**
  * @brief The members of cds_convention_key, named as the wire names them and in the order

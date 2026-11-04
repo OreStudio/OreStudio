@@ -43,6 +43,9 @@ namespace ores::trading::messaging {
 
 struct equity_swap_instrument_key {
     boost::uuids::uuid trade_id;
+
+    friend bool operator==(const equity_swap_instrument_key&,
+                           const equity_swap_instrument_key&) = default;
 };
 
 struct equity_swap_instrument_write {
@@ -58,25 +61,40 @@ struct equity_swap_instrument_write {
     std::string long_short;
     std::string payment_frequency_code;
     std::string description;
+
+    friend bool operator==(const equity_swap_instrument_write&,
+                           const equity_swap_instrument_write&) = default;
 };
 
 struct equity_swap_instrument_change {
     equity_swap_instrument_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const equity_swap_instrument_change&,
+                           const equity_swap_instrument_change&) = default;
 };
 
 struct equity_swap_instrument_removal {
     equity_swap_instrument_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const equity_swap_instrument_removal&,
+                           const equity_swap_instrument_removal&) = default;
 };
 
 struct equity_swap_instrument_lookup {
     equity_swap_instrument_key key;
     std::optional<ores::trading::domain::equity_swap_instrument> equity_swap_instrument;
+
+    friend bool operator==(const equity_swap_instrument_lookup&,
+                           const equity_swap_instrument_lookup&) = default;
 };
 
 struct equity_swap_instruments_filter {
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const equity_swap_instruments_filter&,
+                           const equity_swap_instruments_filter&) = default;
 };
 
 struct equity_swap_instrument_event {
@@ -86,17 +104,26 @@ struct equity_swap_instrument_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const equity_swap_instrument_event&,
+                           const equity_swap_instrument_event&) = default;
 };
 
 struct equity_swap_instrument_version_key {
     equity_swap_instrument_key equity_swap_instrument;
     std::uint32_t version;
+
+    friend bool operator==(const equity_swap_instrument_version_key&,
+                           const equity_swap_instrument_version_key&) = default;
 };
 
 struct equity_swap_instrument_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const equity_swap_instrument_versions_filter&,
+                           const equity_swap_instrument_versions_filter&) = default;
 };
 
 struct list_equity_swap_instruments_request {
@@ -114,12 +141,18 @@ struct list_equity_swap_instruments_request {
     ores::utility::domain::order order;
     std::optional<equity_swap_instruments_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_equity_swap_instruments_request&,
+                           const list_equity_swap_instruments_request&) = default;
 };
 
 struct list_equity_swap_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_swap_instrument> equity_swap_instruments;
     std::uint64_t total;
+
+    friend bool operator==(const list_equity_swap_instruments_response&,
+                           const list_equity_swap_instruments_response&) = default;
 };
 
 struct get_equity_swap_instrument_request {
@@ -133,11 +166,17 @@ struct get_equity_swap_instrument_request {
      */
     static constexpr bool requires_session = true;
     equity_swap_instrument_key key;
+
+    friend bool operator==(const get_equity_swap_instrument_request&,
+                           const get_equity_swap_instrument_request&) = default;
 };
 
 struct get_equity_swap_instrument_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::equity_swap_instrument> equity_swap_instrument;
+
+    friend bool operator==(const get_equity_swap_instrument_response&,
+                           const get_equity_swap_instrument_response&) = default;
 };
 
 struct get_many_equity_swap_instruments_request {
@@ -151,11 +190,17 @@ struct get_many_equity_swap_instruments_request {
      */
     static constexpr bool requires_session = true;
     std::vector<equity_swap_instrument_key> keys;
+
+    friend bool operator==(const get_many_equity_swap_instruments_request&,
+                           const get_many_equity_swap_instruments_request&) = default;
 };
 
 struct get_many_equity_swap_instruments_response {
     ores::utility::domain::result result;
     std::vector<equity_swap_instrument_lookup> entries;
+
+    friend bool operator==(const get_many_equity_swap_instruments_response&,
+                           const get_many_equity_swap_instruments_response&) = default;
 };
 
 struct put_equity_swap_instrument_request {
@@ -170,11 +215,17 @@ struct put_equity_swap_instrument_request {
     static constexpr bool requires_session = true;
     equity_swap_instrument_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_equity_swap_instrument_request&,
+                           const put_equity_swap_instrument_request&) = default;
 };
 
 struct put_equity_swap_instrument_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::equity_swap_instrument> equity_swap_instrument;
+
+    friend bool operator==(const put_equity_swap_instrument_response&,
+                           const put_equity_swap_instrument_response&) = default;
 };
 
 struct put_many_equity_swap_instruments_request {
@@ -189,11 +240,17 @@ struct put_many_equity_swap_instruments_request {
     static constexpr bool requires_session = true;
     std::vector<equity_swap_instrument_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_equity_swap_instruments_request&,
+                           const put_many_equity_swap_instruments_request&) = default;
 };
 
 struct put_many_equity_swap_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_swap_instrument> equity_swap_instruments;
+
+    friend bool operator==(const put_many_equity_swap_instruments_response&,
+                           const put_many_equity_swap_instruments_response&) = default;
 };
 
 struct delete_equity_swap_instrument_request {
@@ -208,10 +265,16 @@ struct delete_equity_swap_instrument_request {
     static constexpr bool requires_session = true;
     equity_swap_instrument_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_equity_swap_instrument_request&,
+                           const delete_equity_swap_instrument_request&) = default;
 };
 
 struct delete_equity_swap_instrument_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_equity_swap_instrument_response&,
+                           const delete_equity_swap_instrument_response&) = default;
 };
 
 struct delete_many_equity_swap_instruments_request {
@@ -227,10 +290,16 @@ struct delete_many_equity_swap_instruments_request {
     static constexpr bool requires_session = true;
     std::vector<equity_swap_instrument_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_equity_swap_instruments_request&,
+                           const delete_many_equity_swap_instruments_request&) = default;
 };
 
 struct delete_many_equity_swap_instruments_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_equity_swap_instruments_response&,
+                           const delete_many_equity_swap_instruments_response&) = default;
 };
 
 struct list_equity_swap_instrument_versions_request {
@@ -249,12 +318,18 @@ struct list_equity_swap_instrument_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<equity_swap_instrument_versions_filter> filter;
+
+    friend bool operator==(const list_equity_swap_instrument_versions_request&,
+                           const list_equity_swap_instrument_versions_request&) = default;
 };
 
 struct list_equity_swap_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_swap_instrument> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_equity_swap_instrument_versions_response&,
+                           const list_equity_swap_instrument_versions_response&) = default;
 };
 
 struct get_equity_swap_instrument_version_request {
@@ -269,11 +344,17 @@ struct get_equity_swap_instrument_version_request {
      */
     static constexpr bool requires_session = true;
     equity_swap_instrument_version_key key;
+
+    friend bool operator==(const get_equity_swap_instrument_version_request&,
+                           const get_equity_swap_instrument_version_request&) = default;
 };
 
 struct get_equity_swap_instrument_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::equity_swap_instrument> version;
+
+    friend bool operator==(const get_equity_swap_instrument_version_response&,
+                           const get_equity_swap_instrument_version_response&) = default;
 };
 
 /**
@@ -285,9 +366,9 @@ struct get_equity_swap_instrument_version_response {
  * of them.
  */
 namespace equity_swap_instrument_event_subjects {
-inline constexpr std::string_view created = "trading.v1.equity_swap_instruments_events.created";
-inline constexpr std::string_view updated = "trading.v1.equity_swap_instruments_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.equity_swap_instruments_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.equity_swap_instruments.created";
+inline constexpr std::string_view updated = "trading.v1.events.equity_swap_instruments.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_instruments.deleted";
 }
 /**
  * @brief The members of equity_swap_instrument_key, named as the wire names them and in the order

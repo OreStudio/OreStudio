@@ -47,14 +47,16 @@ generate_synthetic_report_metric(utility::generation::generation_context& ctx) {
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
     r.report_instance_id = ctx.generate_uuid();
-    r.family = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.subject_type = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.subject_id = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.result_id = ctx.generate_uuid();
     r.as_of = ctx.past_timepoint();
     r.measure = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.source = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.line = 0;
     r.report_definition_id = ctx.generate_uuid();
+    r.family = std::string(faker::word::noun());
+    r.subject_type = std::string(faker::word::noun());
+    r.subject_id = std::string(faker::word::noun());
     r.currency = std::string(faker::word::noun());
-    r.source = std::string(faker::word::noun());
     return r;
 }
 

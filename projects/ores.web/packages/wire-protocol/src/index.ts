@@ -708,6 +708,26 @@ export {
 } from './timeline.js';
 export type { Timeline, TimelineEvent, TimelineField, TimelineGap } from './timeline.js';
 
-export { gridReportRunViewSchema } from './grid-report-runs.js';
-export type { GridReportRunView } from './grid-report-runs.js';
+export {
+    reportRunDetailViewSchema,
+    reportRunErrorViewSchema,
+    oreFileParameterViewSchema,
+    oreFileViewSchema,
+    reportRunFileInfoViewSchema,
+    reportRunFileNodeViewSchema,
+    reportRunFileViewSchema,
+    reportRunFilesViewSchema,
+    reportRunRowViewSchema,
+} from './report-runs.js';
+export type {
+    ReportRunDetailView,
+    ReportRunErrorView,
+    OreFileParameterView,
+    OreFileView,
+    ReportRunFileInfoView,
+    ReportRunFileNodeView,
+    ReportRunFileView,
+    ReportRunFilesView,
+    ReportRunRowView,
+} from './report-runs.js';
 export { reportHealthWordSchema } from './reporting.js';

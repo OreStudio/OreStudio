@@ -55,6 +55,16 @@ begin
             'grant select, insert, update, delete on %I to %I',
             v_tbl, p_user);
     end loop;
+    -- A component's views are read models over its tables, so the service
+    -- that owns the tables reads them too. pg_tables does not list them.
+    for v_tbl in
+        select viewname
+        from pg_views
+        where schemaname = 'public'
+          and viewname like p_prefix || '%'
+    loop
+        execute format('grant select on %I to %I', v_tbl, p_user);
+    end loop;
 end $$;
 
 -- Helper: grant SELECT on every table whose name starts with p_prefix.
@@ -236,6 +246,7 @@ select _ores_grant_select_fn('ores_inbox_delivery_outcome_types_', :'reporting_s
 select _ores_grant_select_fn('ores_iam_accounts_', :'reporting_service_user');
 select _ores_grant_select_fn('ores_iam_account_parties_', :'reporting_service_user');
 select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
+select _ores_grant_execute_fn('ores_reporting_unapplied_', :'reporting_service_user');
 
 -- ---------------------------------------------------------------------------
 -- telemetry_service: Telemetry domain service

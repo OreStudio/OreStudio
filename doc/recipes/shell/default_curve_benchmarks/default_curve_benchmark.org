@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 39053E85-2DE2-5BE6-9674-E7F854E62F87
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the default_curve_benchmarks commands from the shell?
+#+description: Every command the default_curve_benchmarks submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:default_curve_benchmarks:
+
+This file documents the default_curve_benchmarks resource at the shell, one section per command. Every command is a subcommand of =default_curve_benchmarks=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9BE07BE3-CE4B-5564-A355-6A18665728C0
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks.list=.
+
+#+name: default_curve_benchmarks-list
+#+begin_src ores-shell :tangle default_curve_benchmarks-list.ores :exports none
+default_curve_benchmarks list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 4BC69137-034A-5C10-BDB2-1DDD50D948E0
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks get <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks.get=.
+
+#+name: default_curve_benchmarks-get
+#+begin_src ores-shell :tangle default_curve_benchmarks-get.ores :exports none
+default_curve_benchmarks get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4AA885D6-C6FA-56D1-8BB4-356D3F7AA38C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks.get_many=.
+
+#+name: default_curve_benchmarks-get-many
+#+begin_src ores-shell :tangle default_curve_benchmarks-get-many.ores :exports none
+default_curve_benchmarks get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 19CEEF9E-E80C-5148-BAD6-E8D2EC712FB1
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks add <default_curve_configuration_id> <benchmark_curve> <source_curve> <pillars> <spot_lag> <calendar> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks.put=.
+
+#+name: default_curve_benchmarks-add
+#+begin_src ores-shell :tangle default_curve_benchmarks-add.ores :exports none
+default_curve_benchmarks add 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 22273C44-9E91-5AF5-B07C-F8BBF22E8E26
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks set <id> <default_curve_configuration_id> <benchmark_curve> <source_curve> <pillars> <spot_lag> <calendar> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks.put=.
+
+#+name: default_curve_benchmarks-set
+#+begin_src ores-shell :tangle default_curve_benchmarks-set.ores :exports none
+default_curve_benchmarks set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: F542B892-F0F1-50B2-8266-E0F76E0AEFE3
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks put-many --count <n> <id> <default_curve_configuration_id> <benchmark_curve> <source_curve> <pillars> <spot_lag> <calendar> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks.put_many=.
+
+#+name: default_curve_benchmarks-put-many
+#+begin_src ores-shell :tangle default_curve_benchmarks-put-many.ores :exports none
+default_curve_benchmarks put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 2681A21B-26EC-5403-AD56-132402D6D753
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks.delete=.
+
+#+name: default_curve_benchmarks-delete
+#+begin_src ores-shell :tangle default_curve_benchmarks-delete.ores :exports none
+default_curve_benchmarks delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DCC40A0A-8390-5419-A0A6-793C4C32EE59
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks.delete_many=.
+
+#+name: default_curve_benchmarks-delete-many
+#+begin_src ores-shell :tangle default_curve_benchmarks-delete-many.ores :exports none
+default_curve_benchmarks delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 78CB7A9F-F89A-5655-81F3-D7DE2215F7BE
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks_versions.list=.
+
+#+name: default_curve_benchmarks-versions
+#+begin_src ores-shell :tangle default_curve_benchmarks-versions.ores :exports none
+default_curve_benchmarks versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 7B41F3BC-59A9-55B1-A873-F8981F022A6C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_benchmarks version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_benchmarks_versions.get=.
+
+#+name: default_curve_benchmarks-version
+#+begin_src ores-shell :tangle default_curve_benchmarks-version.ores :exports none
+default_curve_benchmarks version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

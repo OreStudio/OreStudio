@@ -68,9 +68,9 @@ output_column_kind kind_named(std::string_view kind) {
 
 output_family parse(std::string_view line) {
     const auto fields = split(line, '\t');
-    if (fields.size() != 12)
+    if (fields.size() != 14)
         throw std::invalid_argument("a catalogue line states " + std::to_string(fields.size()) +
-                                    " fields, not twelve: '" + std::string(line) + "'.");
+                                    " fields, not fourteen: '" + std::string(line) + "'.");
 
     output_family family;
     family.code = fields[0];
@@ -84,8 +84,10 @@ output_family parse(std::string_view line) {
     family.measures_open = fields[8] == "1";
     family.header_variants = std::stoi(fields[9]);
     family.sample_file = fields[10];
+    family.alias_patterns = split_list(fields[11]);
+    family.synthetic = fields[12] == "1";
 
-    for (const auto& text : split(fields[11], ',')) {
+    for (const auto& text : split(fields[13], ',')) {
         if (text.empty())
             continue;
         const auto colon = text.rfind(':');
@@ -127,16 +129,17 @@ bool pattern_matches(std::string_view pattern, std::string_view file_name) {
 }
 
 bool is_market_state(const output_family& family) {
-    // The families the store keeps as one payload, stated once. A family of
-    // figures about a trade is a result and belongs to the run's result tables;
-    // these state what the run read, and a row for each value would be millions.
-    static const std::vector<std::string> codes = {"rawcube",
-                                                   "netcube",
-                                                   "stress_scenarios",
-                                                   "scenariostatistics",
-                                                   "todaysmarketcalibration",
-                                                   "scenario",
-                                                   "scenario_fullSurface"};
+    // The families that state the market the run read rather than a figure the
+    // run produced, stated once. The cubes and the sensitivity scenarios state a
+    // trade's or a netting set's value under a shift or a sample, so they are
+    // results and belong to the run's result tables.
+    static const std::vector<std::string> codes = {"stress_scenarios",
+                                                   "scenario_statistics",
+                                                   "scenario_dump",
+                                                   "todays_market_calibration",
+                                                   "market_data_report",
+                                                   "fixings_report",
+                                                   "dividends_report"};
     return std::ranges::find(codes, family.code) != codes.end();
 }
 
@@ -152,10 +155,49 @@ const output_family* family_named(std::string_view code) {
     return it == families.end() ? nullptr : &*it;
 }
 
+bool family_selection::stores(std::string_view code) const {
+    return !std::ranges::binary_search(skipped, code);
+}
+
+family_selection family_selection_of(const std::vector<std::string>& codes) {
+    family_selection selection;
+    for (const auto& code : codes) {
+        const auto first = code.find_first_not_of(" \t");
+        if (first == std::string::npos)
+            continue;
+        const auto last = code.find_last_not_of(" \t");
+        auto trimmed = code.substr(first, last - first + 1);
+        if (family_named(trimmed) == nullptr)
+            throw std::invalid_argument("No output family is named '" + trimmed + "'.");
+        selection.skipped.push_back(std::move(trimmed));
+    }
+    std::ranges::sort(selection.skipped);
+    const auto [from, to] = std::ranges::unique(selection.skipped);
+    selection.skipped.erase(from, to);
+    return selection;
+}
+
+family_selection family_selection_of(std::string_view list) {
+    std::vector<std::string> codes;
+    std::size_t start = 0;
+    while (start <= list.size()) {
+        const auto comma = list.find(',', start);
+        const auto end = comma == std::string_view::npos ? list.size() : comma;
+        codes.emplace_back(list.substr(start, end - start));
+        if (comma == std::string_view::npos)
+            break;
+        start = comma + 1;
+    }
+    return family_selection_of(codes);
+}
+
 const output_family* family_of_file(std::string_view file_name) {
     const auto& families = output_families();
     const auto it = std::ranges::find_if(families, [file_name](const output_family& family) {
-        return pattern_matches(family.file_pattern, file_name);
+        return pattern_matches(family.file_pattern, file_name) ||
+               std::ranges::any_of(family.alias_patterns, [file_name](const std::string& alias) {
+                   return pattern_matches(alias, file_name);
+               });
     });
     return it == families.end() ? nullptr : &*it;
 }

@@ -1,0 +1,326 @@
+:PROPERTIES:
+:ID: 7E02BB05-E808-48BC-A916-6C41B761F82D
+:END:
+#+title: Bump and Reprice Volga ladder
+#+description: The curvature in volatility: the change in the vega figure when the volatility is bumped again, produced by the gamma column of a volatility-factor run.
+#+type: report
+#+level: cross
+#+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+report_code: bump_and_reprice_volga_ladder
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Bump and Reprice Volga ladder. It answers how the value of a book bends when
+a volatility is moved, so a reader sees where a volatility position is convex
+before the surface moves. The trading desk reads it to size a volatility
+hedge, and the market risk function reads it to question a position whose
+value depends on the size of the move. It runs at the close on the end of day
+cycle, and it leaves the engine's own output archive with =sensitivity.csv=
+and =scenario.csv= in it.
+
+* Purpose
+
+It answers what the second order of a book's volatility risk is. The first
+order states the value change for one bump of a volatility. The second order
+states how that first order itself moves, which is the curvature of the value
+in volatility. The decision it feeds is whether a volatility position is worth
+holding through a large surface move, and how much of it to hedge. A book with
+a small first order and a large second order still loses value when the
+surface moves by a long way, and this ladder is the page that says so.
+
+The engine calls the figure gamma, because the column that carries it is the
+=Gamma= column of =sensitivity.csv=. Gamma on a volatility factor is volga.
+It is the curvature of the value in volatility, and it comes from
+=ComputeGamma= in the sensitivity configuration. The name of the report does
+not change the figure. A configuration with =ComputeGamma= on produces it for
+any report that binds the same document.
+
+* Audience
+
+The trading desk reads the ladder to size a hedge against a large surface
+move. The market risk function reads it to separate a position that is
+exposed to the direction of a volatility from one that is exposed to the size
+of the move.
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                 |
+|--------------+-------------------------------------------------------------------------------|
+| trading-desk | The convexity of the vol position by pair, expiry and strike, for a hedge size. |
+| market-risk  | Where the value of the book depends on the size of a surface move.             |
+
+* Frequency
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value                  |
+|-----------+------------------------|
+| Cycle     | end of day             |
+| Frequency | scheduled, end of day  |
+| Batch     | none                   |
+| Owner     | trading-desk           |
+
+The cycle is end of day. A ladder is read as the risk statement of record and
+compared across days. A live ladder would be priced against a body that is not
+reproducible, so the same row on two runs would not be the same figure.
+
+The family seeds no intraday variant of any ladder. A live ladder would need a
+definition whose cut selection is =LIVE=, a run settings row whose market data
+type is =live=, and the same sensitivity configuration. The store seeds none
+of the three for this ladder.
+
+* Inputs
+
+- Trades selected by scope. The scope is the book or the portfolio that the
+  definition states, and the run prices the trades the gather step selects.
+- Market data for the valuation date. The =risk_report_config= row states the
+  market data type. This ladder is end of day, so the type is =eod= and the
+  valuation date is the weekday before the run date. Holiday calendars are not
+  consulted.
+- The six configuration documents the definition binds, one for each
+  configuration type. The types are =conventions=, =curve_configuration=,
+  =todays_market=, =pricing_engines=, =risk_report_config= and
+  =engine_settings=. A definition that omits one of the first five cannot run,
+  because ORE reads all of them before it prices.
+- The sensitivity configuration document, =sensitivity.xml=, which states the
+  shift. The shift is an input in its own right, and the rows of this ladder
+  depend on it.
+
+* Outputs
+
+The run produces the engine's own output archive. The archive holds
+=sensitivity.csv= with the =Delta= and =Gamma= columns, and =scenario.csv=
+with the scenario value behind each of them. The run records where the
+archive landed against the run instance.
+
+The tables that would carry the rows a reader queries are designed on
+[[file:../architecture/report_post_processing.org][Report post-processing]]
+and are not built. So a reader opens the CSV files in the archive, and the
+columns in the next section are the columns of those files.
+
+* Measures
+
+The values below are the ones the files carry. The definitions of the measures
+the catalogue names are on [[file:../domain/risk_reporting.org][Risk reporting]]
+and are not repeated here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure      | Meaning                                                            |
+|--------------+--------------------------------------------------------------------|
+| Base NPV     | Present value of the trade in the run's base currency, before the shift. |
+| Delta        | The value change for one bump of the factor. It is money per shift, and the shift size is already inside it. |
+| Gamma        | The second order figure, written when =ComputeGamma= is on. On a volatility factor it is volga. |
+| Scenario NPV | The value of the trade under the shifted market, as =scenario.csv= states it. |
+| Difference   | The scenario value less the base value, on the same row of =scenario.csv=. |
+
+* Columns and sections
+
+A reader places a volga figure by the factor key and by the shift sizes. The
+bucket columns are the ones that break the key into the parts a desk thinks
+in.
+
+#+ATTR_HTML: :class hug-leading
+| Column          | File            | Role               | What it holds                                        |
+|-----------------+-----------------+--------------------+------------------------------------------------------|
+| TradeId         | sensitivity.csv | key                | The trade the row belongs to.                        |
+| IsPar           | sensitivity.csv | qualifier          | Whether the row states a par rate figure.            |
+| Factor_1        | sensitivity.csv | qualifier, bucket  | The risk factor key, for example an FxVolatility key. |
+| ShiftSize_1     | sensitivity.csv | qualifier, bucket  | The shift applied to the first factor.               |
+| Factor_2        | sensitivity.csv | qualifier, bucket  | The second factor of a pair. Empty on a single-factor row. |
+| ShiftSize_2     | sensitivity.csv | qualifier, bucket  | The shift applied to the second factor.              |
+| Currency        | sensitivity.csv | qualifier, bucket  | The currency of the figures on the row.              |
+| Base NPV        | sensitivity.csv | measure            | The value before the shift.                          |
+| Delta           | sensitivity.csv | measure            | The first order figure, which is vega on a volatility factor. |
+| Gamma           | sensitivity.csv | measure            | The second order figure, which is volga on a volatility factor. |
+| Currency(Trade) | sensitivity.csv | qualifier          | The currency of the trade.                           |
+| Base NPV(Trade) | sensitivity.csv | measure            | The value before the shift, in the trade currency.   |
+| Delta(Trade)    | sensitivity.csv | measure            | The first order figure, in the trade currency.       |
+| Gamma(Trade)    | sensitivity.csv | measure            | The second order figure, in the trade currency.      |
+| Scenario        | sensitivity.csv | qualifier          | The scenario the row belongs to.                     |
+| TradeId         | scenario.csv    | key                | The trade the row belongs to.                        |
+| Factor          | scenario.csv    | key, bucket        | The factor that was shifted.                         |
+| Up/Down         | scenario.csv    | qualifier, bucket  | Which side of the shift the row states.              |
+| Base NPV        | scenario.csv    | measure            | The value before the shift.                          |
+| ShiftSize_1     | scenario.csv    | qualifier, bucket  | The shift applied to the first factor.               |
+| ShiftSize_2     | scenario.csv    | qualifier, bucket  | The shift applied to the second factor.              |
+| Scenario NPV    | scenario.csv    | measure            | The value under the shifted market.                  |
+| Difference      | scenario.csv    | measure            | The scenario value less the base value.              |
+| Base Currency   | scenario.csv    | qualifier          | The currency the figures are expressed in.           |
+
+The volatility factor key is written =FxVolatility/<pair>/<strike>/<expiry>=, so
+the currency pair, the strike and the expiry are parts of =Factor_1=. The
+bucket columns of this page are the currency pair, the expiry and the strike.
+A reader groups the rows by those three parts and reads =Gamma= in each group.
+
+* ORE configuration
+
+A definition of this report binds the =sensitivity= analytic. The analytic
+names the sensitivity configuration document, and that document is the one
+whose root is =SensitivityAnalysis=. ORE validates it against
+=external/ore/xsd/sensitivity.xsd=. The analytic element in the run document
+states the parameters below.
+
+#+begin_src xml
+<Analytic type="sensitivity">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="marketConfigFile">simulation.xml</Parameter>
+  <Parameter name="sensitivityConfigFile">sensitivity.xml</Parameter>
+  <Parameter name="recalibrateModels">Y</Parameter>
+  <Parameter name="parSensitivity">Y</Parameter>
+  <Parameter name="outputSensitivityThreshold">0.000001</Parameter>
+</Analytic>
+#+end_src
+
+The =SensitivityAnalysis= document carries one block for each group of risk
+factors. The groups are the discount curves, the index curves, the yield
+curves, the FX spots, the FX volatilities, the swaption volatilities, the cap
+and floor volatilities, the CDS volatilities, the default and credit curves,
+the equity spots and volatilities, the two inflation curve families, the two
+inflation cap and floor families, the dividend yields, the base correlations,
+the security spreads, the commodity curves and volatilities, the intraday
+power curves, the correlations and the bond future volatilities. It also
+carries four switches that are not factors, and =ComputeGamma= is one of them.
+
+Every factor block states four things. =ShiftType= is =Relative=, =Absolute=
+or =EqualTo=. =ShiftSize= is a real, with an optional =key= for an alternative
+size. =ShiftScheme= is =Forward=, =Backward= or =Central=. The bucket list is
+one of =ShiftTenors=, =ShiftExpiries=, =ShiftStrikes=, =ShiftLossLevels= or
+=ShiftTerms=. =ShiftType= and =ShiftScheme= are enums in
+=external/ore/xsd/ore_types.xsd=.
+
+The fragment below is the FX volatility block of the shipped
+=external/ore/examples/MarketRisk/Input/sensitivity.xml=, trimmed to the first
+currency pair.
+
+#+begin_src xml
+<FxVolatilities>
+  <FxVolatility ccypair="USDEUR">
+    <ShiftType>Relative</ShiftType>
+    <ShiftSize>0.01</ShiftSize>
+    <ShiftScheme>Forward</ShiftScheme>
+    <ShiftExpiries>1Y,2Y,3Y,5Y</ShiftExpiries>
+    <ShiftStrikes/>
+  </FxVolatility>
+</FxVolatilities>
+#+end_src
+
+The block shifts every expiry of the pair by one per cent relative, on the
+forward scheme. Its strike list is empty, and an empty strike list states the
+at-the-money point of each expiry alone. A ladder whose buckets include the
+strike needs the strike list populated, as the full-surface variant of the same
+document states it. A configuration that produces this ladder sets
+=ComputeGamma= on, so the engine also writes the second order column.
+
+The engine writes =sensitivity.csv= with the columns TradeId, IsPar, Factor_1,
+ShiftSize_1, Factor_2, ShiftSize_2, Currency, Base NPV, Delta, Gamma,
+Currency(Trade), Base NPV(Trade), Delta(Trade), Gamma(Trade) and Scenario. It
+writes =scenario.csv= with the columns TradeId, Factor, Up/Down, Base NPV,
+ShiftSize_1, ShiftSize_2, Scenario NPV, Difference and Base Currency. The
+=scenario.csv= rows are the values behind the two sensitivity columns, so a
+reader can check a =Gamma= figure against the scenario that produced it.
+
+The bump is a setting of the configuration and not the identity of the report.
+Two reports over one book that differ only in shift size differ only in the
+document they bind. A 0.1 vol point bump means =ShiftSize= 0.1 on a surface
+stored in vol points, or =Absolute= 0.001 on a surface stored in decimals. The
+store seeds neither, and the store states no shift size at all today.
+
+* Parameters
+
+A definition of this report states the rows below. Where the store states no
+value, the column says so. A parameter is declared with its domain on
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]],
+and a configuration binds it on
+[[proj:projects/ores.reporting/modeling/ores.reporting.configuration_parameter.org][configuration parameter]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                       | Domain                     | Seeded value | Meaning                                                    |
+|---------------------------------+----------------------------+--------------+------------------------------------------------------------|
+| cut_kind_code                   | a kind of cut               | EOD          | The kind of cut the run mints when it starts.               |
+| scope                           | book or portfolio           | none stated  | The trade set the run reads.                               |
+| market_data_type                | live, eod or date           | eod          | The market data the run reads, and so the valuation date.  |
+| sensitivity.sensitivityConfigFile | a file in the file library | sensitivity.xml | The document that states the shifts.                    |
+| sensitivity.recalibrateModels   | Y or N                      | Y            | Whether models are recalibrated before the bump.            |
+| sensitivity.parSensitivity      | Y or N                      | Y            | Whether the figures are also written as par rate values.    |
+| sensitivity.outputSensitivityThreshold | a real                | 0.000001     | The size below which a figure is not written.              |
+| FxVolatilities.ShiftType        | Relative, Absolute, EqualTo | Relative     | How the shift size is read against the factor.             |
+| FxVolatilities.ShiftSize        | a real                      | none stated  | The size of the bump.                                      |
+| FxVolatilities.ShiftScheme      | Forward, Backward, Central  | Forward      | Which side of the factor the bump is measured from.        |
+| FxVolatilities.ShiftExpiries    | a list of periods           | 1Y,2Y,3Y,5Y  | The expiries the bump lands on.                            |
+| FxVolatilities.ShiftStrikes     | a list of strikes           | empty        | The strikes the bump lands on. An empty list states the at-the-money point of each expiry alone. |
+| ComputeGamma                    | a switch                    | none stated  | Whether the engine writes the second order column.          |
+
+* A worked read
+
+1. Open =sensitivity.csv= from the run's output archive. Open
+   =scenario.csv= beside it, because it holds the values behind the columns.
+2. Keep the rows whose =Factor_1= starts with =FxVolatility=. Drop the rows
+   for the curve factors, which the rho ladder and the delta ladder read.
+3. Drop the rows whose =Factor_2= is populated. A row with two factors is a
+   paired row, and the cross-gamma page reads it.
+4. Read the parts of =Factor_1=. The first part is the kind of factor, the
+   second is the currency pair, the third is the strike and the fourth is the
+   expiry.
+5. Group the rows by currency pair, by expiry and by strike, in that order.
+   These are the buckets of the ladder.
+6. Read the =Gamma= column in each bucket. That figure is the volga. A
+   negative figure says the vega of the position falls when the volatility
+   rises again.
+7. Check =ShiftSize_1= against the shift the configuration states. A figure
+   without its shift size is not comparable with a figure from another report.
+8. For one row you doubt, open =scenario.csv= on the same =TradeId= and the
+   same factor. Read =Scenario NPV= and =Difference=. The difference is the
+   value change for the shift that row states.
+9. Compare two days only when the two runs bound the same sensitivity
+   configuration. A change of shift size changes the scale of every figure on
+   the ladder.
+
+* What is not built
+
+- No mapper reads or writes a =SensitivityAnalysis= document. The document is
+  a name in a lookup and a row in the file library, not a modelled entity.
+- The run package carries only the four Setup documents, conventions, curve
+  configuration, today's market and pricing engines. An analytic document that
+  no owner exports never reaches the engine.
+- No volatility market data is seeded. The ACME dataset holds 420 seeded
+  quotes and all of them are =IR_SWAP/RATE/...=. so a volatility factor has nothing to shift, and no volatility
+  sensitivity can be computed until the store holds that data. The refusal is a fact about the environment and not about the
+  report.
+- No shift size is stated anywhere in the store, so the document that would
+  set this ladder has no stored value to read.
+- No stored shape holds a bucketed ladder. The buckets of this page are parts
+  of a factor key, and no table keys a row by a pair of factors.
+- The result store is not built, so a reader opens the CSV files and no table
+  answers a query over them.
+
+* Test coverage
+
+The report has no smoke test of its own. The smoke test that proves the
+machinery without gathering anything is
+[[file:./report_sample_bundle_smoke_test.org][Sample bundle smoke test]].
+
+A test run of this ladder executes the whole pipeline from the gather step and
+records the run. It stops before the engine has a volatility to shift, for the
+two reasons above. The run package carries no analytic document, and the
+dataset seeds no volatility market data. So the report is exercised by the
+full-pipeline proof and not by a run that writes rows.
+
+* Related
+
+- [[file:./reports.org][Reports]], the inventory this page is listed in.
+- [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
+- [[file:../external/ore_output_formats.org][ORE output formats]], the columns of =sensitivity.csv= and =scenario.csv=.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]], the surface this ladder bumps.
+- [[file:./report_delta_ladder.org][Bump and Reprice Delta ladder]], the first order column of the same run.
+- [[file:./report_gamma_ladder.org][Bump and Reprice Gamma ladder]], the second order column on the rate factors.
+- [[file:./report_vanna_ladder.org][Bump and Reprice Vanna ladder]], the paired rows of the same run.
+- [[file:./report_atm_vega_ladder.org][Bump and Reprice ATM vega ladder]], the first order figure at one point of each expiry.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
+- [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], the definition that states the cycle and the cut.
+
+* See also
+
+
+- [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — the structure note that orders this cluster, and where to read this page in it.
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine whose =sensitivity= analytic writes the two files.
+- [[https://www.opensourcerisk.org/][Open Source Risk]], the project home of the engine.

@@ -229,7 +229,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'workflow.v1.workflow_plan_dependencies_events.created',
-    updated: 'workflow.v1.workflow_plan_dependencies_events.updated',
-    deleted: 'workflow.v1.workflow_plan_dependencies_events.deleted',
+    created: 'workflow.v1.events.workflow_plan_dependencies.created',
+    updated: 'workflow.v1.events.workflow_plan_dependencies.updated',
+    deleted: 'workflow.v1.events.workflow_plan_dependencies.deleted',
 } as const;

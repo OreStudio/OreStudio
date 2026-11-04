@@ -29,7 +29,7 @@
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.synthetic.api/feeds/variance_calibration.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <charconv>
@@ -37,6 +37,7 @@
 #include <cmath>
 #include <expected>
 #include <format>
+#include <optional>
 #include <stdexcept>
 
 namespace ores::synthetic::feed {
@@ -83,15 +84,14 @@ policy_date(const std::string& policy, const ores::marketdata::domain::market_cl
                            "' is not latest_on_or_before_clock or exact:<date>");
 }
 
-} // namespace
-
-ORES_SYNTHETIC_API_EXPORT resolved_start
-resolve_fx_start(ores::nats::service::nats_client& auth_nats,
-                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                 const std::vector<ores::synthetic::domain::gmm_component>& components,
-                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
-                 const calibration_policy& policy,
-                 const ores::marketdata::domain::market_clock* clock) {
+resolved_start
+resolve_fx_start_from(ores::nats::service::nats_client& auth_nats,
+                      const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                      const std::vector<ores::synthetic::domain::gmm_component>& components,
+                      std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                      const calibration_policy& policy,
+                      const ores::marketdata::domain::market_clock* clock,
+                      const series_listing* listed) {
     resolved_start out;
     out.level = cfg.gmm_initial_price;
 
@@ -101,7 +101,7 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
     // A config that names no items is calibrated from its class policy: every series that
     // covers the pair from a provider the policy keeps becomes an item, in the policy's order.
     if (items.empty() && cfg.price_source == "fixing") {
-        const auto series = md.list_series();
+        const auto series = listed != nullptr ? *listed : md.list_series();
         if (!series) {
             BOOST_LOG_SEV(lg(), ores::logging::warn)
                 << "Feed " << cfg.source_name
@@ -294,6 +294,31 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
     return out;
 }
 
+} // namespace
+
+ORES_SYNTHETIC_API_EXPORT resolved_start
+resolve_fx_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                 const std::vector<ores::synthetic::domain::gmm_component>& components,
+                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock) {
+    return resolve_fx_start_from(
+        auth_nats, cfg, components, std::move(items), policy, clock, nullptr);
+}
+
+ORES_SYNTHETIC_API_EXPORT resolved_start
+resolve_fx_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                 const std::vector<ores::synthetic::domain::gmm_component>& components,
+                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock,
+                 const series_listing& series) {
+    return resolve_fx_start_from(
+        auth_nats, cfg, components, std::move(items), policy, clock, &series);
+}
+
 ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>
 make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
@@ -301,6 +326,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   const std::vector<ores::synthetic::domain::fx_spot_fixing_item>& fixing_items,
                   const calibration_policy& policy,
+                  const std::optional<ores::synthetic::domain::variance_calibration>& variance,
                   ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter,
                   const ores::marketdata::domain::market_clock* clock) {
@@ -348,14 +374,51 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                           std::string(", its fixed level"))
                                   << (start.note.empty() ? "" : ". " + start.note);
     }
+    // A run that took no fixing records the level it kept, so its start states the level the run
+    // began at even after a later calibration moves the config's level. The config holds the level
+    // as a double, so its shortest spelling is what is recorded.
+    if (!start.from_fixing) {
+        if (const auto kept = ores::utility::decimal::decimal::from_double(initial_price))
+            start.value = *kept;
+        else
+            BOOST_LOG_SEV(lg(), warn)
+                << "Feed " << cfg.source_name << " records no start level: " << kept.error();
+    }
 
-    auto process = ores::analytics::quant::service::process_factory::make_process(
-        cfg.process_type,
-        std::move(means),
-        std::move(stdevs),
-        std::move(weights),
-        initial_price,
-        price_stream_for(scheduler.run_seed(), cfg.source_name));
+    std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process;
+    if (cfg.variance_model == "gjr_garch") {
+        const auto calibrated = calibrated_variance(cfg, variance, components);
+        // A configuration fault the caller must see: the config names a calibration that is not
+        // approved, so the reason goes back to the person who started the feed.
+        if (!calibrated)
+            throw std::invalid_argument("Feed " + cfg.source_name +
+                                        " did not start: " + calibrated.error() + ".");
+        const auto& choice = *calibrated;
+        start.variance = choice.record;
+        BOOST_LOG_SEV(lg(), info) << "Feed " << cfg.source_name
+                                  << " carries a GJR-GARCH variance from calibration "
+                                  << choice.record.calibration_id << " version "
+                                  << choice.record.calibration_version << ", persistence "
+                                  << choice.record.persistence;
+        process = ores::analytics::quant::service::process_factory::make_gjr_garch_process(
+            cfg.process_type,
+            std::move(means),
+            std::move(stdevs),
+            std::move(weights),
+            initial_price,
+            price_stream_for(scheduler.run_seed(), cfg.source_name),
+            choice.shape,
+            cfg.ticks_per_hour * hours_per_market_day,
+            choice.record.initial_ratio);
+    } else {
+        process = ores::analytics::quant::service::process_factory::make_process(
+            cfg.process_type,
+            std::move(means),
+            std::move(stdevs),
+            std::move(weights),
+            initial_price,
+            price_stream_for(scheduler.run_seed(), cfg.source_name));
+    }
 
     const auto arrival = to_arrival_spec(cfg);
     const auto compatibility = ores::analytics::quant::domain::validate_step_compatibility(

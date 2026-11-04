@@ -158,7 +158,7 @@ TEST_CASE("inflation_curve_config_commands_process_add_requires_a_session", "[co
     std::ostringstream out;
 
     command_feedback::reset();
-    inflation_curve_config_commands::process_add(out, session, inflation_curve_config_tokens(19));
+    inflation_curve_config_commands::process_add(out, session, inflation_curve_config_tokens(16));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -192,7 +192,7 @@ TEST_CASE("inflation_curve_config_commands_process_set_requires_a_session", "[co
     std::ostringstream out;
 
     command_feedback::reset();
-    inflation_curve_config_commands::process_set(out, session, inflation_curve_config_tokens(19));
+    inflation_curve_config_commands::process_set(out, session, inflation_curve_config_tokens(16));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -227,7 +227,7 @@ TEST_CASE("inflation_curve_config_commands_process_put_many_requires_a_session",
 
     command_feedback::reset();
     inflation_curve_config_commands::process_put_many(
-        out, session, inflation_curve_config_tokens(19));
+        out, session, inflation_curve_config_tokens(16));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

@@ -62,8 +62,12 @@
 \ir ./marketdata_observation_lineages_notify_trigger_drop.sql
 \ir ./marketdata_observation_lineages_drop.sql
 \ir ./marketdata_tick_coords_drop.sql
-\ir ./marketdata_market_state_payloads_notify_trigger_drop.sql
-\ir ./marketdata_market_state_payloads_drop.sql
+\ir ./marketdata_market_input_values_notify_trigger_drop.sql
+\ir ./marketdata_market_input_values_drop.sql
+\ir ./marketdata_market_calibration_values_notify_trigger_drop.sql
+\ir ./marketdata_market_calibration_values_drop.sql
+\ir ./marketdata_market_scenario_values_notify_trigger_drop.sql
+\ir ./marketdata_market_scenario_values_drop.sql
 \ir ./marketdata_ticks_drop.sql
 \ir ./marketdata_market_observations_drop.sql
 \ir ./marketdata_series_identity_views_drop.sql

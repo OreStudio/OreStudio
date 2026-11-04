@@ -25,7 +25,14 @@
 #ifndef ORES_IAM_API_MESSAGING_BOOTSTRAP_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_BOOTSTRAP_PROTOCOL_HPP
 
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::iam::messaging {
 
@@ -39,6 +46,9 @@ struct bootstrap_status_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const bootstrap_status_request&,
+                           const bootstrap_status_request&) = default;
 };
 
 struct bootstrap_status_response {
@@ -65,6 +75,9 @@ struct bootstrap_status_response {
      * came from the build the server is running.
      */
     std::string version;
+
+    friend bool operator==(const bootstrap_status_response&,
+                           const bootstrap_status_response&) = default;
 };
 
 struct create_initial_admin_request {
@@ -80,6 +93,9 @@ struct create_initial_admin_request {
     std::string principal;
     std::string password;
     std::string email;
+
+    friend bool operator==(const create_initial_admin_request&,
+                           const create_initial_admin_request&) = default;
 };
 
 struct create_initial_admin_response {
@@ -88,8 +104,120 @@ struct create_initial_admin_response {
     std::string account_id;
     std::string tenant_name;
     std::string tenant_id;
+
+    friend bool operator==(const create_initial_admin_response&,
+                           const create_initial_admin_response&) = default;
 };
 
+/**
+ * @brief The members of bootstrap_status_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bootstrap_status_request&) {
+    return std::tuple{};
 }
+
+/**
+ * @brief The members of bootstrap_status_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bootstrap_status_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"is_in_bootstrap_mode",
+                                      &bootstrap_status_response::is_in_bootstrap_mode},
+        ::ores::utility::codec::field{"message", &bootstrap_status_response::message},
+        ::ores::utility::codec::field{"has_tenant", &bootstrap_status_response::has_tenant},
+        ::ores::utility::codec::field{"version", &bootstrap_status_response::version},
+    };
+}
+
+/**
+ * @brief The members of create_initial_admin_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const create_initial_admin_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"principal", &create_initial_admin_request::principal},
+        ::ores::utility::codec::field{"password", &create_initial_admin_request::password},
+        ::ores::utility::codec::field{"email", &create_initial_admin_request::email},
+    };
+}
+
+/**
+ * @brief The members of create_initial_admin_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const create_initial_admin_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &create_initial_admin_response::success},
+        ::ores::utility::codec::field{"error_message",
+                                      &create_initial_admin_response::error_message},
+        ::ores::utility::codec::field{"account_id", &create_initial_admin_response::account_id},
+        ::ores::utility::codec::field{"tenant_name", &create_initial_admin_response::tenant_name},
+        ::ores::utility::codec::field{"tenant_id", &create_initial_admin_response::tenant_id},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::bootstrap_status_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::bootstrap_status_request& v);
+    static ores::iam::messaging::bootstrap_status_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::bootstrap_status_request& v);
+    static ores::iam::messaging::bootstrap_status_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::bootstrap_status_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::bootstrap_status_response& v);
+    static ores::iam::messaging::bootstrap_status_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::bootstrap_status_response& v);
+    static ores::iam::messaging::bootstrap_status_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::create_initial_admin_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::create_initial_admin_request& v);
+    static ores::iam::messaging::create_initial_admin_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::create_initial_admin_request& v);
+    static ores::iam::messaging::create_initial_admin_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::create_initial_admin_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::create_initial_admin_response& v);
+    static ores::iam::messaging::create_initial_admin_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::create_initial_admin_response& v);
+    static ores::iam::messaging::create_initial_admin_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

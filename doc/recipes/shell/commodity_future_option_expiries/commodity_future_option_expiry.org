@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 3A3EB896-C432-570A-8BF1-F3A9B1F9FF57
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_future_option_expiries commands from the shell?
+#+description: Every command the commodity_future_option_expiries submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_future_option_expiries:
+
+This file documents the commodity_future_option_expiries resource at the shell, one section per command. Every command is a subcommand of =commodity_future_option_expiries=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7B7E4341-3284-5D76-BCA6-DDDBDD893926
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries.list=.
+
+#+name: commodity_future_option_expiries-list
+#+begin_src ores-shell :tangle commodity_future_option_expiries-list.ores :exports none
+commodity_future_option_expiries list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 70CCA221-DC5E-53F6-939E-5C1D829C14FE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries.get=.
+
+#+name: commodity_future_option_expiries-get
+#+begin_src ores-shell :tangle commodity_future_option_expiries-get.ores :exports none
+commodity_future_option_expiries get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 9D7CF783-EE12-56A0-92FB-98542659324B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries.get_many=.
+
+#+name: commodity_future_option_expiries-get-many
+#+begin_src ores-shell :tangle commodity_future_option_expiries-get-many.ores :exports none
+commodity_future_option_expiries get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: AD0460EF-98EE-596D-8744-B8D275A8F992
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries add <convention_id> <option_expiry_month_lag> <option_contract_frequency> <option_expiry_offset> <option_calendar_days_before> <option_min_business_days_before> <option_expiry_day> <option_nth_nth> <option_nth_weekday> <option_expiry_last_weekday_of_month> <option_expiry_weekly_day_of_the_week> <option_business_day_convention> <option_underlying_future_convention> <option_continuation_mappings> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries.put=.
+
+#+name: commodity_future_option_expiries-add
+#+begin_src ores-shell :tangle commodity_future_option_expiries-add.ores :exports none
+commodity_future_option_expiries add 00000000-0000-0000-0000-000000000000 - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: EABCB119-C4A8-53B1-9216-4696CB2598F9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries set <id> <convention_id> <option_expiry_month_lag> <option_contract_frequency> <option_expiry_offset> <option_calendar_days_before> <option_min_business_days_before> <option_expiry_day> <option_nth_nth> <option_nth_weekday> <option_expiry_last_weekday_of_month> <option_expiry_weekly_day_of_the_week> <option_business_day_convention> <option_underlying_future_convention> <option_continuation_mappings> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries.put=.
+
+#+name: commodity_future_option_expiries-set
+#+begin_src ores-shell :tangle commodity_future_option_expiries-set.ores :exports none
+commodity_future_option_expiries set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 47026B09-4CE2-5044-9412-E3FDD0CAB7E5
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries put-many --count <n> <id> <convention_id> <option_expiry_month_lag> <option_contract_frequency> <option_expiry_offset> <option_calendar_days_before> <option_min_business_days_before> <option_expiry_day> <option_nth_nth> <option_nth_weekday> <option_expiry_last_weekday_of_month> <option_expiry_weekly_day_of_the_week> <option_business_day_convention> <option_underlying_future_convention> <option_continuation_mappings> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries.put_many=.
+
+#+name: commodity_future_option_expiries-put-many
+#+begin_src ores-shell :tangle commodity_future_option_expiries-put-many.ores :exports none
+commodity_future_option_expiries put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D0C8A04B-BB9E-5062-9CB0-9F26346A9FB2
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries.delete=.
+
+#+name: commodity_future_option_expiries-delete
+#+begin_src ores-shell :tangle commodity_future_option_expiries-delete.ores :exports none
+commodity_future_option_expiries delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 562C456D-5FAA-5D90-B281-8A3AFBF49730
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries.delete_many=.
+
+#+name: commodity_future_option_expiries-delete-many
+#+begin_src ores-shell :tangle commodity_future_option_expiries-delete-many.ores :exports none
+commodity_future_option_expiries delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-convention-id=
+:PROPERTIES:
+:ID: 6A572113-1D53-52AD-95DF-7794D2E9E77B
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries by-convention-id <convention_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries.list_by_convention_id=.
+
+#+name: commodity_future_option_expiries-by-convention-id
+#+begin_src ores-shell :tangle commodity_future_option_expiries-by-convention-id.ores :exports none
+commodity_future_option_expiries by-convention-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 231D29A1-A334-5037-B8D3-5EFD662A45C5
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries_versions.list=.
+
+#+name: commodity_future_option_expiries-versions
+#+begin_src ores-shell :tangle commodity_future_option_expiries-versions.ores :exports none
+commodity_future_option_expiries versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: ECFE2CF5-FC2D-5084-8F43-C79374AC0B8D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_option_expiries version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_option_expiries_versions.get=.
+
+#+name: commodity_future_option_expiries-version
+#+begin_src ores-shell :tangle commodity_future_option_expiries-version.ores :exports none
+commodity_future_option_expiries version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

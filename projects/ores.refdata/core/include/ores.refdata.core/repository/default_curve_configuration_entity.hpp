@@ -27,7 +27,6 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -59,26 +58,10 @@ struct default_curve_configuration_entity {
     bool is_inline = false;
     std::optional<int> priority;
     std::optional<std::string> default_curve_type;
-    std::optional<std::string> discount_curve;
     std::optional<std::string> day_counter;
     std::optional<std::string> recovery_rate;
-    std::optional<std::string> start_date;
-    bool has_quotes = false;
-    std::optional<std::string> benchmark_curve;
-    std::optional<std::string> reinterpreted_yield_curve;
-    std::optional<std::string> source_curve;
-    std::optional<std::string> pillars;
-    std::optional<int> spot_lag;
-    std::optional<std::string> calendar;
-    std::optional<std::string> conventions;
     std::optional<std::string> extrapolation;
-    std::optional<ores::utility::decimal::decimal> running_spread;
-    std::optional<std::string> index_term;
-    std::optional<std::string> imply_default_from_market;
     std::optional<std::string> allow_negative_rates;
-    std::optional<std::string> price_is_upfront;
-    std::optional<std::string> initial_state;
-    std::optional<std::string> states;
     int position = 0;
     std::string modified_by;
     std::string performed_by;
@@ -101,26 +84,10 @@ struct default_curve_configuration_entity {
                query_builder::bind("is_inline", &e::is_inline) |
                query_builder::bind("priority", &e::priority) |
                query_builder::bind("default_curve_type", &e::default_curve_type) |
-               query_builder::bind("discount_curve", &e::discount_curve) |
                query_builder::bind("day_counter", &e::day_counter) |
                query_builder::bind("recovery_rate", &e::recovery_rate) |
-               query_builder::bind("start_date", &e::start_date) |
-               query_builder::bind("has_quotes", &e::has_quotes) |
-               query_builder::bind("benchmark_curve", &e::benchmark_curve) |
-               query_builder::bind("reinterpreted_yield_curve", &e::reinterpreted_yield_curve) |
-               query_builder::bind("source_curve", &e::source_curve) |
-               query_builder::bind("pillars", &e::pillars) |
-               query_builder::bind("spot_lag", &e::spot_lag) |
-               query_builder::bind("calendar", &e::calendar) |
-               query_builder::bind("conventions", &e::conventions) |
                query_builder::bind("extrapolation", &e::extrapolation) |
-               query_builder::bind("running_spread", &e::running_spread) |
-               query_builder::bind("index_term", &e::index_term) |
-               query_builder::bind("imply_default_from_market", &e::imply_default_from_market) |
                query_builder::bind("allow_negative_rates", &e::allow_negative_rates) |
-               query_builder::bind("price_is_upfront", &e::price_is_upfront) |
-               query_builder::bind("initial_state", &e::initial_state) |
-               query_builder::bind("states", &e::states) |
                query_builder::bind("position", &e::position) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

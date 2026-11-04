@@ -27,13 +27,13 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
 #include <optional>
-#include <rfl/json.hpp>
 
 namespace ores::ore::service::messaging {
 
@@ -111,7 +111,7 @@ void run_configuration_handler::import_run_configuration(ores::nats::message msg
     start_workflow_message swm;
     swm.type = "run_configuration_import_workflow";
     swm.tenant_id = boost::uuids::to_string(ctx->tenant_id().to_uuid());
-    swm.request_json = rfl::json::write(execute);
+    swm.request_json = ores::utility::codec::json::write(execute);
     swm.correlation_id = correlation_id;
     swm.instance_id = instance_id;
     nats_.js_publish(start_workflow_message::nats_subject,
@@ -180,7 +180,8 @@ void run_configuration_import_handler::execute(ores::nats::message msg) {
         return;
     }
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    const auto req = rfl::json::read<run_configuration_import_execute_request>(sv);
+    const auto req =
+        ores::utility::codec::json::try_read<run_configuration_import_execute_request>(sv);
     if (!req) {
         wf->fail("Failed to decode run_configuration_import_execute_request");
         ack.accept();
@@ -196,7 +197,7 @@ void run_configuration_import_handler::execute(ores::nats::message msg) {
         for (const auto& warning : result.warnings)
             BOOST_LOG_SEV(lg(), warn)
                 << "run configuration import | corr=" << req->correlation_id << " " << warning;
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "run configuration import failed | corr="
@@ -215,7 +216,8 @@ void run_configuration_import_handler::rollback(ores::nats::message msg) {
         return;
     }
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    const auto req = rfl::json::read<run_configuration_import_rollback_request>(sv);
+    const auto req =
+        ores::utility::codec::json::try_read<run_configuration_import_rollback_request>(sv);
     if (!req) {
         wf->fail("Failed to decode run_configuration_import_rollback_request");
         ack.accept();

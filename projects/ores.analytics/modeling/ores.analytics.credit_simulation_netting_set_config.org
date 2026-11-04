@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2F6A8C41-7D93-4B05-9E18-3C4A7B1D6502
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.credit_simulation_netting_set_config
 #+description: Codegen entity model for the analytics =credit_simulation_netting_set_config= table. One netting set a credit simulation covers.

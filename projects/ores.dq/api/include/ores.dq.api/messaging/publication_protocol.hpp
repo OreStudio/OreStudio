@@ -43,6 +43,8 @@ namespace ores::dq::messaging {
 
 struct publication_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const publication_key&, const publication_key&) = default;
 };
 
 struct publication_write {
@@ -57,25 +59,35 @@ struct publication_write {
     std::int64_t records_deleted;
     std::string published_by;
     std::chrono::system_clock::time_point published_at;
+
+    friend bool operator==(const publication_write&, const publication_write&) = default;
 };
 
 struct publication_change {
     publication_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const publication_change&, const publication_change&) = default;
 };
 
 struct publication_removal {
     publication_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const publication_removal&, const publication_removal&) = default;
 };
 
 struct publication_lookup {
     publication_key key;
     std::optional<ores::dq::domain::publication> publication;
+
+    friend bool operator==(const publication_lookup&, const publication_lookup&) = default;
 };
 
 struct publications_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const publications_filter&, const publications_filter&) = default;
 };
 
 struct publication_event {
@@ -85,6 +97,8 @@ struct publication_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const publication_event&, const publication_event&) = default;
 };
 
 struct list_publications_request {
@@ -101,12 +115,18 @@ struct list_publications_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<publications_filter> filter;
+
+    friend bool operator==(const list_publications_request&,
+                           const list_publications_request&) = default;
 };
 
 struct list_publications_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::publication> publications;
     std::uint64_t total;
+
+    friend bool operator==(const list_publications_response&,
+                           const list_publications_response&) = default;
 };
 
 struct get_publication_request {
@@ -120,11 +140,17 @@ struct get_publication_request {
      */
     static constexpr bool requires_session = true;
     publication_key key;
+
+    friend bool operator==(const get_publication_request&,
+                           const get_publication_request&) = default;
 };
 
 struct get_publication_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::publication> publication;
+
+    friend bool operator==(const get_publication_response&,
+                           const get_publication_response&) = default;
 };
 
 struct get_many_publications_request {
@@ -138,11 +164,17 @@ struct get_many_publications_request {
      */
     static constexpr bool requires_session = true;
     std::vector<publication_key> keys;
+
+    friend bool operator==(const get_many_publications_request&,
+                           const get_many_publications_request&) = default;
 };
 
 struct get_many_publications_response {
     ores::utility::domain::result result;
     std::vector<publication_lookup> entries;
+
+    friend bool operator==(const get_many_publications_response&,
+                           const get_many_publications_response&) = default;
 };
 
 struct put_publication_request {
@@ -157,11 +189,17 @@ struct put_publication_request {
     static constexpr bool requires_session = true;
     publication_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_publication_request&,
+                           const put_publication_request&) = default;
 };
 
 struct put_publication_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::publication> publication;
+
+    friend bool operator==(const put_publication_response&,
+                           const put_publication_response&) = default;
 };
 
 struct put_many_publications_request {
@@ -176,11 +214,17 @@ struct put_many_publications_request {
     static constexpr bool requires_session = true;
     std::vector<publication_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_publications_request&,
+                           const put_many_publications_request&) = default;
 };
 
 struct put_many_publications_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::publication> publications;
+
+    friend bool operator==(const put_many_publications_response&,
+                           const put_many_publications_response&) = default;
 };
 
 struct delete_publication_request {
@@ -195,10 +239,16 @@ struct delete_publication_request {
     static constexpr bool requires_session = true;
     publication_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_publication_request&,
+                           const delete_publication_request&) = default;
 };
 
 struct delete_publication_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_publication_response&,
+                           const delete_publication_response&) = default;
 };
 
 struct delete_many_publications_request {
@@ -213,10 +263,16 @@ struct delete_many_publications_request {
     static constexpr bool requires_session = true;
     std::vector<publication_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_publications_request&,
+                           const delete_many_publications_request&) = default;
 };
 
 struct delete_many_publications_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_publications_response&,
+                           const delete_many_publications_response&) = default;
 };
 
 /**
@@ -228,9 +284,9 @@ struct delete_many_publications_response {
  * of them.
  */
 namespace publication_event_subjects {
-inline constexpr std::string_view created = "dq.v1.publications_events.created";
-inline constexpr std::string_view updated = "dq.v1.publications_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.publications_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.publications.created";
+inline constexpr std::string_view updated = "dq.v1.events.publications.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.publications.deleted";
 }
 /**
  * @brief The members of publication_key, named as the wire names them and in the order

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: FB4A11C5-07EA-4923-B8AC-65F46EBA517C
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.report_definition
@@ -224,6 +225,24 @@ result store, =ignore= records only that the engine produced them.
 std::string("execute")
 #+end_src
 
+** skipped_families
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The output families a run of this definition does not store as rows, as the
+catalogue names them, separated by commas. Empty stores every family, so a new
+definition, and a family the catalogue gains later, is stored by default. The
+engine's files stay in the object store whatever this says, so a family skipped
+here can be read later.
+
+#+begin_src cpp :name generator
+std::string{}
+#+end_src
+
 ** is_official
 :PROPERTIES:
 :type:          boolean
@@ -408,6 +427,17 @@ The import is a catalogue of report templates. It has no party, lifecycle state,
 :type: text
 :nullable: true
 :END:
+
+** cut_kind_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+The kind of cut the catalogue says the report prices from. A catalogue states a
+kind and never a body, because a cut's identity belongs to one database and the
+catalogue is copied into many. Empty for a report the catalogue does not yet
+classify by cycle, which the publish leaves as the close it has always read.
 
 * Artefact indexes
 

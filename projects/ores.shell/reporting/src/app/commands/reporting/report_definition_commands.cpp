@@ -30,7 +30,7 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <chrono>
@@ -39,8 +39,6 @@
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -143,8 +141,8 @@ void report_definition_commands::register_commands(cli::Menu& root_menu, nats_cl
         },
         "add <name> <party_id> <description> <report_type> <fsm_state_id> <schedule_expression> "
         "<concurrency_policy> <scheduler_job_id> <run_grant_id> <pre_processing> "
-        "<prepared_input_key> <post_processing> <is_official> <regulatory_book_type> "
-        "<cut_kind_code> <cut_id> <reason> <commentary>");
+        "<prepared_input_key> <post_processing> <skipped_families> <is_official> "
+        "<regulatory_book_type> <cut_kind_code> <cut_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,7 +151,7 @@ void report_definition_commands::register_commands(cli::Menu& root_menu, nats_cl
         },
         "set <id> <name> <party_id> <description> <report_type> <fsm_state_id> "
         "<schedule_expression> <concurrency_policy> <scheduler_job_id> <run_grant_id> "
-        "<pre_processing> <prepared_input_key> <post_processing> <is_official> "
+        "<pre_processing> <prepared_input_key> <post_processing> <skipped_families> <is_official> "
         "<regulatory_book_type> <cut_kind_code> <cut_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -163,7 +161,7 @@ void report_definition_commands::register_commands(cli::Menu& root_menu, nats_cl
         },
         "put-many --count <n> <id> <name> <party_id> <description> <report_type> <fsm_state_id> "
         "<schedule_expression> <concurrency_policy> <scheduler_job_id> <run_grant_id> "
-        "<pre_processing> <prepared_input_key> <post_processing> <is_official> "
+        "<pre_processing> <prepared_input_key> <post_processing> <skipped_families> <is_official> "
         "<regulatory_book_type> <cut_kind_code> <cut_id> <reason> <commentary>");
 
     menu->Insert(
@@ -242,7 +240,9 @@ void report_definition_commands::process_list(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_definition_commands::process_get(std::ostream& out,
@@ -285,7 +285,9 @@ void report_definition_commands::process_get(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_definition_commands::process_get_many(std::ostream& out,
@@ -332,7 +334,9 @@ void report_definition_commands::process_get_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_definition_commands::process_add(std::ostream& out,
@@ -359,8 +363,8 @@ void report_definition_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -390,6 +394,8 @@ void report_definition_commands::process_add(std::ostream& out,
         report_definition_read_token(
             req.change.write.post_processing, parsed->positionals[next++], "post_processing");
         report_definition_read_token(
+            req.change.write.skipped_families, parsed->positionals[next++], "skipped_families");
+        report_definition_read_token(
             req.change.write.is_official, parsed->positionals[next++], "is_official");
         report_definition_read_token(req.change.write.regulatory_book_type,
                                      parsed->positionals[next++],
@@ -411,7 +417,9 @@ void report_definition_commands::process_add(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_definition_commands::process_set(std::ostream& out,
@@ -440,8 +448,8 @@ void report_definition_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -471,6 +479,8 @@ void report_definition_commands::process_set(std::ostream& out,
         report_definition_read_token(
             req.change.write.post_processing, parsed->positionals[next++], "post_processing");
         report_definition_read_token(
+            req.change.write.skipped_families, parsed->positionals[next++], "skipped_families");
+        report_definition_read_token(
             req.change.write.is_official, parsed->positionals[next++], "is_official");
         report_definition_read_token(req.change.write.regulatory_book_type,
                                      parsed->positionals[next++],
@@ -498,7 +508,9 @@ void report_definition_commands::process_set(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_definition_commands::process_put_many(std::ostream& out,
@@ -533,8 +545,8 @@ void report_definition_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 17 + 2) {
-            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 18 + 2) {
+            fail(out) << "Expected " << (change_count * 18 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -566,6 +578,8 @@ void report_definition_commands::process_put_many(std::ostream& out,
             report_definition_read_token(
                 change.write.post_processing, parsed->positionals[next++], "post_processing");
             report_definition_read_token(
+                change.write.skipped_families, parsed->positionals[next++], "skipped_families");
+            report_definition_read_token(
                 change.write.is_official, parsed->positionals[next++], "is_official");
             report_definition_read_token(change.write.regulatory_book_type,
                                          parsed->positionals[next++],
@@ -589,7 +603,9 @@ void report_definition_commands::process_put_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_definition_commands::process_delete(std::ostream& out,
@@ -642,7 +658,9 @@ void report_definition_commands::process_delete(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_definition_commands::process_delete_many(std::ostream& out,
@@ -692,7 +710,9 @@ void report_definition_commands::process_delete_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_definition_commands::process_versions(std::ostream& out,
@@ -741,7 +761,9 @@ void report_definition_commands::process_versions(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_definition_commands::process_version(std::ostream& out,
@@ -789,7 +811,9 @@ void report_definition_commands::process_version(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

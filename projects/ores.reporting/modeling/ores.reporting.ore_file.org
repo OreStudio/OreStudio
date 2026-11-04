@@ -1,0 +1,352 @@
+:PROPERTIES:
+:ID: 8C08A192-DAA3-461A-8240-181C04CAE46E
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.reporting.ore_file
+#+description: Codegen entity model for the reporting ore_file table. A file of an ORE run, as the ORE user guide identifies it.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A file of an ORE run, as the ORE user guide identifies it.
+#+entity_singular: ore_file
+#+entity_plural: ore_files
+#+entity_title: ORE File
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+Reference data naming the files an ORE run reads and writes, one row for each
+file as the ORE user guide identifies it: the market data, the fixing history, the
+NPV report, the NPV cube. The code is the guide's name for the file, so it says
+what the file is and not what a run happened to call it.
+
+A file is not a parameter. Several parameters may name the same file: the NPV
+cube is written by the cubeFile of simulation and read by the cubeFile of xva and
+pfe. Each of those is a file type, and each file type names its file by this
+code. A file no parameter names, such as the master input ore.xml or the log, is
+still a file.
+
+The table recognises a file by its name. The typical name is the name ORE gives
+the file when nothing says otherwise, and the name ORE Studio writes when a run
+has one file of the kind. The regular expression matches every name a run may
+give it, so a file a run wrote can be told apart without knowing which parameter
+named it.
+
+The table describes files. It does not hold the content of a file.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_reporting_ore_files_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The stable code of the file, from the name the ORE user guide gives it, in lower
+case with underscores: market_data, fixing_history, npv_report, npv_cube.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The name of the file as the ORE user guide gives it, for example NPV Cube or
+Fixing History.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** category_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The category the file belongs to, such as configuration, market data or the
+valuation reports.
+
+#+begin_src cpp :name generator
+std::string("configuration")
+#+end_src
+
+** configuration_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+For a configuration document, the configuration type whose entities fill it.
+Nothing for any other file.
+
+** guide_section
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The label of the section of the ORE user guide that describes the file, for
+example sec:market_data. Nothing when the guide has no section for it.
+
+** origin
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Where the file comes from in a run: supplied when the run is given it, produced
+when ORE writes it, packaged when ORE Studio makes it to carry a run to the engine
+and back. A file one analytic produces and another reads is produced; the file
+types of the two parameters say which reads and which writes.
+
+#+begin_src cpp :name generator
+std::string("supplied")
+#+end_src
+
+** format
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The format of the file: xml, csv, csv_gz for a compressed csv, txt, dat for a
+binary file, json, json_gz for a compressed json, tar_gz for a compressed
+archive of other files, or xsd for an XML schema. An xml file is validated
+against the schema schema_ore_file_code names.
+
+#+begin_src cpp :name generator
+std::string("csv")
+#+end_src
+
+** schema_ore_file_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+For an xml file, the ORE file of the XSD that declares its root element, for
+example conventions_schema for the conventions. The schema is itself an ORE file,
+so its contents can be read for each engine version. Nothing for a file that is
+not xml, or an xml file that ORE publishes no schema for.
+
+** typical_filename
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The name ORE gives the file when nothing names it otherwise, and the name ORE
+Studio writes when a run has one file of the kind: npv.csv, cube.csv.gz. For a
+file a run writes once for each trade or netting set, an example of such a name.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + ".csv"
+#+end_src
+
+** filename_regex
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The regular expression every name a run gives the file matches, anchored at both
+ends: ^npv\.csv$, ^exposure_trade_.+\.csv$. No name a run writes matches two files.
+
+#+begin_src cpp :name generator
+std::string("^.+\\.csv$")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the file holds and what a run does with it, for a reader who has never seen
+an ORE run.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the file appears in a list.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_ore_files_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+Domain constraints beyond the standard temporal, natural-key and nil-uuid
+checks the template emits on its own.
+
+| expression |
+|------------|
+| "name" <> '' |
+| "origin" in ('supplied', 'produced', 'packaged') |
+| "format" in ('xml', 'xsd', 'csv', 'csv_gz', 'txt', 'dat', 'json', 'json_gz', 'tar_gz') |
+| "schema_ore_file_code" is null or "format" = 'xml' |
+| "typical_filename" ~ '^[A-Za-z0-9_.-]+$' |
+| "filename_regex" ~ '^\^.*\$$' |
+| "typical_filename" ~ "filename_regex" |
+
+* Foreign keys
+
+** category_code
+:PROPERTIES:
+:table:         ores_reporting_ore_file_categories_tbl
+:target_column: code
+:parent_entity: ore_file_category
+:nullable:      false
+:error_message: Invalid category_code: %. No active ORE file category found with this code.
+:list_by:       true
+:END:
+
+** configuration_type_code
+:PROPERTIES:
+:table:         ores_reporting_configuration_types_tbl
+:target_column: code
+:parent_entity: configuration_type
+:nullable:      true
+:error_message: Invalid configuration_type_code: %. No active configuration type found with this code.
+:list_by:       true
+:END:
+
+** schema_ore_file_code
+:PROPERTIES:
+:table:         ores_reporting_ore_files_tbl
+:target_column: code
+:parent_entity: ore_file
+:nullable:      true
+:error_message: Invalid schema_ore_file_code: %. No active ORE file found with this code.
+:list_by:       true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: file
+:entity_plural_short:   files
+:entity_singular_words: ORE file
+:entity_plural_words:   ORE files
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: at
+:END:
+
+** Table display
+
+| column           | header      |
+|------------------+-------------|
+| code             | Code        |
+| name             | Name        |
+| category_code    | Category    |
+| origin           | Origin      |
+| typical_filename | File Name   |
+| modified_by      | Modified By |
+| version          | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/ore_file.hpp
+:domain_class:           reporting::domain::ore_file
+:protocol_include:       ores.reporting.api/messaging/ore_file_protocol.hpp
+:collection_name:        ore_files
+:key_field:              code
+:get_request_class:      reporting::messaging::get_ore_files_request
+:get_response_class:     reporting::messaging::get_ore_files_response
+:get_message_type:       get_ore_files_request
+:save_request_class:     reporting::messaging::save_ore_file_request
+:save_response_class:    reporting::messaging::save_ore_file_response
+:save_message_type:      save_ore_file_request
+:delete_request_class:   reporting::messaging::delete_ore_file_request
+:delete_response_class:  reporting::messaging::delete_ore_file_response
+:delete_message_type:    delete_ore_file_request
+:END:
+
+*** Detail fields
+
+| field            | label         | type      | is_key | is_required | placeholder |
+|------------------+---------------+-----------+--------+-------------+-------------|
+| code             | Code          | line_edit | true   | true        | e.g. npv_cube |
+| name             | Name          | line_edit |        | true        | e.g. NPV Cube |
+| category_code    | Category      | line_edit |        | true        | e.g. configuration |
+| configuration_type_code | Configuration Type | line_edit | |       | e.g. conventions |
+| guide_section    | Guide Section | line_edit |        |             | e.g. sec:market_data |
+| origin           | Origin        | line_edit |        | true        | supplied or produced |
+| format           | Format        | line_edit |        | true        | e.g. csv |
+| schema_ore_file_code | Schema    | line_edit |        |             | e.g. conventions_schema |
+| typical_filename | File Name     | line_edit |        | true        | e.g. cube.csv.gz |
+| filename_regex   | Name Pattern  | line_edit |        | true        | e.g. ^cube\.csv\.gz$ |
+| description      | Description   | line_edit |        | true        | Enter description |
+| display_order    | Order         | spin_edit |        | true        | Enter order |
+
+*** Columns
+
+| enum_name       | field            | header      | type   | width |
+|-----------------+------------------+-------------+--------+-------|
+| Code            | code             | Code        | string | 200   |
+| Name            | name             | Name        |
+| category_code    | Category    | string | 200   |
+| Category        | category_code    | Category    | string | 160   |
+| Origin          | origin           | Origin      | string | 100   |
+| TypicalFilename | typical_filename | File Name   | string | 200   |
+| Version         | version          | Version     | int    | 80    |
+| ModifiedBy      | modified_by      | Modified By | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+- [[id:65BA1988-C806-4E62-9B37-9CAC5A085C41][ores.reporting.file_type]] — the parameters that name a file, each by this code.

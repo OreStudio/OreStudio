@@ -27,6 +27,9 @@ drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_bond_future
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_cap_floor_volatility_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_cds_volatility_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_commodity_curve_configs_tbl;
+drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_commodity_curve_cross_currencies_tbl;
+drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_commodity_curve_directs_tbl;
+drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_commodity_curve_interpolations_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_commodity_volatility_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_curve_correlation_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_curve_security_configs_tbl;
@@ -40,6 +43,7 @@ drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_inflation_c
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_inflation_curve_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_intraday_power_curve_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_swaption_volatility_configs_tbl;
+drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_swaption_volatility_smiles_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_yield_curve_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_yield_volatility_configs_tbl;
 drop function if exists ores_refdata_validate_curve_values_fn();

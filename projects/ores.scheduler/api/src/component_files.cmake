@@ -21,16 +21,20 @@
 # To modify, update the template and regenerate.
 set(files
     "domain/cron_expression.cpp"
+    "domain/job_definition_codec.cpp"
     "domain/job_definition_json_io.cpp"
     "domain/job_definition_table.cpp"
     "domain/job_definition_table_io.cpp"
     "generators/job_definition_generator.cpp"
+    "messaging/job_definition_protocol_codec.cpp"
+    "messaging/scheduling_operations_protocol_codec.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/cron_expression.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/job_definition.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/job_definition_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/job_definition_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/job_definition_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.api/domain/job_definition_table_io.hpp"

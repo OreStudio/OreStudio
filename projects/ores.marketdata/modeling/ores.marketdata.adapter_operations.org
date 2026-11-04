@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E90EEF7C-087C-4157-A6A1-B4F391396EC0
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.adapter_operations
 #+description: Codegen operation model for the four messages an adapter and the market data service exchange: announce, demand, tick and heartbeat.

@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 7BAEE1D6-055C-4D9E-B7E8-9E9A6E05865E
+:END:
+#+title: The failed copy ingest test times out under parallel suites
+#+description: a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits timed out at its 60 second wait in 1 of 3 ctest runs at -j 4, and passed in every run alone.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:testing:flaky:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The test in =projects/ores.marketdata/service/tests/app_feed_ingest_loop_tests.cpp= failed at line 1120: the warm-up tick of a series was not readable within the 60 second wait. The run was the gate's ctest at =-j 4= on 2026-11-03. The same commit passed in a second ctest run at =-j 4= and in two runs of the suite alone. The test uses a source unique to the run, and no other suite uses the tick writer role, so a NATS clash is not the cause. The cause is not known: lock contention in the shared database, or load from the parallel suites.
+
+If the cause cannot be found, give the suite =RUN_SERIAL=, as =ores.marketdata.core.tests= has.
+
+* Why
+
+The gate runs the suites at =-j 4= since the story "Run only the checks a change needs". A flaky suite makes the gate red for changes that do not touch it.
+
+* References
+
+-
+
+* See also
+
+-

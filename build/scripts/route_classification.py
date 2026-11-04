@@ -322,6 +322,11 @@ RULES = (
          BFF, COMPOSED, "reporting",
          "Each report definition with the row the list would draw for it and the reads that"
          " failed, so the answer says a run could not be checked rather than that it never ran."),
+    Rule("an ORE schema's contents",
+         ("exact", "GET /api/reporting/ore-files/:code/schema"),
+         BFF, COMPOSED, "reporting",
+         "One schema of one engine version: the file catalogue names the schema and the"
+         " stored versions supply its contents, so two collections are joined to answer."),
     Rule("the engine's documented groups",
          ("exact", "GET /api/reporting/engine-settings/documentation"),
          BFF, RESOURCE, "reporting",
@@ -953,6 +958,17 @@ RULES = (
          BFF, COMPOSED, "simulation",
          "The policy a class calibrates under and how every feed of it resolves, with the"
          " coverage counts; nothing starts."),
+    Rule("a calibration run of an asset class",
+         ("exact", "POST /api/synthetic/calibration/:assetClass/run"),
+         BFF, RESOURCE, "simulation",
+         "Calibrates every feed of a class, or the one feed named, and writes each moved level"
+         " and deviation as a new version of the feed config."),
+    Rule("the review of a variance calibration",
+         ("exact", "POST /api/synthetic/calibration/variance/:id/review"),
+         BFF, RESOURCE, "simulation",
+         "Approves or rejects one proposed GJR-GARCH calibration with the reviewer's reason;"
+         " approving supersedes the pair's earlier approval and older proposals and points the"
+         " pair's feeds at it."),
     Rule("the calibration policy of an asset class",
          ("regex", r"^(PUT|DELETE) /api/synthetic/calibration/:assetClass/policy$"),
          BFF, RESOURCE, "simulation",
@@ -968,6 +984,11 @@ RULES = (
          BFF, RESOURCE, "market-data",
          "Records the acceptance of a publisher's terms as the service holds them, or"
          " withdraws it so the adapter no longer fetches the publisher."),
+    Rule("the terms of several public publishers",
+         ("exact", "POST /api/marketdata/public-rates/accept-terms"),
+         BFF, RESOURCE, "market-data",
+         "Accepts the terms of several publishers at the versions read, each as the single"
+         " accept would, and answers every publisher's outcome."),
     Rule("the synthetic feeds",
          ("regex", r"^(GET|POST|DELETE) /api/synthetic/(synthetic|feeds|folder-feeds)"),
          BFF, RESOURCE, "simulation",
@@ -1214,6 +1235,11 @@ VIEWS = {
         "each report definition with the row the list would draw and the reads that "
         "failed, so a failed read is not read as never having run",
         "ETag on the whole view, stale after 60 s"),
+    "an ORE schema's contents": (
+        "ores.reporting",
+        "the catalogue entry that is a schema with this code, and its stored contents "
+        "at the engine version asked for, two reads",
+        "no cache: the schema is read from the store per request"),
     "the synthetic folder tree": (
         "ores.synthetic",
         "the folders and the feeds under each, at any depth, with the count of each "

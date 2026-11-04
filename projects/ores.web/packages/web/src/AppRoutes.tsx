@@ -63,7 +63,6 @@ import { EvolutionPage } from './market/EvolutionPage.js';
 import { SeriesPage } from './market/SeriesPage.js';
 import { GridNodePage } from './operations/GridNodePage.js';
 import { GridAppVersionPage } from './operations/GridAppVersionPage.js';
-import { GridReportRunPage } from './operations/GridReportRunPage.js';
 import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
@@ -142,7 +141,8 @@ import { PricingEngineJourney } from './pricingEngines/PricingEngineJourney.js';
 import { SensitivityTemplatesPage } from './sensitivityTemplates/SensitivityTemplatesPage.js';
 import { SensitivityTemplatePage } from './sensitivityTemplates/SensitivityTemplatePage.js';
 import { ReportPage } from './reporting/ReportPage.js';
-import { ReportRunPage } from './reporting/ReportRunPage.js';
+import { ReportRunPage, ReportRunRedirect } from './reporting/ReportRunPage.js';
+import { RunFilePage } from './reporting/RunFilePage.js';
 import { ReportingPage } from './reporting/ReportingPage.js';
 import { ReportsPage } from './reporting/ReportsPage.js';
 import { CutsPage } from './reporting/cuts/CutsPage.js';
@@ -721,7 +721,7 @@ export function AppRoutes({
                     session,
                     shell,
                     () => (
-                        <GridReportRunPage />
+                        <ReportRunRedirect />
                     ),
                     'workspace',
                 )}
@@ -817,7 +817,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <SubscriptionsPage partyId={view.party.id} />
+                        <SubscriptionsPage partyId={view.party.id} mode={view.mode} />
                     ),
                     'workspace',
                 )}
@@ -1018,6 +1018,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <ReportRunPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/reporting/runs/:id/files/:file"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <RunFilePage />
                     ),
                     'workspace',
                 )}

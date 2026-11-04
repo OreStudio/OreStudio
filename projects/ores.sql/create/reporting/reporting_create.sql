@@ -36,6 +36,12 @@
 \ir ./reporting_report_type_configuration_type_create.sql
 \ir ./reporting_analytic_types_create.sql
 \ir ./reporting_analytic_types_notify_trigger_create.sql
+\ir ./reporting_ore_file_categories_create.sql
+\ir ./reporting_ore_file_categories_notify_trigger_create.sql
+\ir ./reporting_ore_files_create.sql
+\ir ./reporting_ore_files_notify_trigger_create.sql
+\ir ./reporting_ore_file_versions_create.sql
+\ir ./reporting_ore_file_versions_notify_trigger_create.sql
 \ir ./reporting_file_types_create.sql
 \ir ./reporting_file_types_notify_trigger_create.sql
 \ir ./reporting_configuration_analytics_create.sql
@@ -61,6 +67,9 @@
 -- the counts of the body's parts.
 \ir ./reporting_cut_approval_details_create.sql
 \ir ./reporting_cut_approval_details_notify_trigger_create.sql
+-- The read the apply makes into the inbox: the decided cut authorisations whose
+-- decision has not reached the cut yet.
+\ir ./reporting_cut_authorisation_functions_create.sql
 
 \ir ./reporting_ore_parameter_value_domains_create.sql
 \ir ./reporting_ore_parameter_value_domains_notify_trigger_create.sql
@@ -132,6 +141,8 @@
 -- run it belongs to, so these load after the run tables above them.
 \ir ./reporting_report_metrics_create.sql
 \ir ./reporting_report_metrics_notify_trigger_create.sql
+\ir ./reporting_report_text_values_create.sql
+\ir ./reporting_report_text_values_notify_trigger_create.sql
 \ir ./reporting_report_cashflows_create.sql
 \ir ./reporting_report_cashflows_notify_trigger_create.sql
 -- The screen's view of a run's figures. It reads the metric table, so it loads

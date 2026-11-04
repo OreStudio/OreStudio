@@ -83,7 +83,8 @@ constexpr std::array<std::string_view, field_count> field_names{"ccy",
                                                                 "dst",
                                                                 "rating_name",
                                                                 "from_rating",
-                                                                "to_rating"};
+                                                                "to_rating",
+                                                                "surface_id"};
 
 // The vocabularies ORE's parser checks, from OREData's marketdatumparser.cpp
 // and parsers.cpp, and QuantExt's intradaypower.cpp.

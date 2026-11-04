@@ -400,7 +400,7 @@ describe('the Jobs tab', () => {
             record: ['batch', BATCH_ID, named],
         });
 
-        expect(html).toContain(`/operations/grid/report-runs/${RUN}`);
+        expect(html).toContain(`/reporting/runs/${RUN}`);
         expect(html).toContain('Report run');
         expect(html).toContain('>Party<');
         expect(html).not.toContain('Party ID');

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B6FDABE7-C146-4B63-9C87-B18DEA09D27A
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.yield_curve_process_type
 #+description: Reference data table classifying which short-rate process engine (vasicek, cox_ingersoll_ross, hull_white) an ir_curve_generation_config uses to drive its curve.

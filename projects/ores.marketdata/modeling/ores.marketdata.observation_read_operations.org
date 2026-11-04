@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: nil
+:ID: 083B3045-C107-40BC-935C-A94A3DBDB664
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.observation_read_operations
+#+description: Codegen operation model for reading the durable observations of a series: a window of days.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: observation_read_operations
+#+namespace: ores::marketdata::messaging
+#+brief: Reading the durable observations of a series.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+A consumer, a backtest first, asks for the observations of a series over a window of
+days and gets each value with its coordinate, the time it is for, and its source. The
+item is the series' oresmd URI, so one request reads every point of a surface or a
+curve on every day in the window. The values stay decimal text, as they are stored.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** get_observation_window_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.get_observation_window
+:response: get_observation_window_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for every observation of a series in the days up to a date.
+ */
+#+end_src
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series' oresmd URI.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider to read, or empty for the one provider that carries the series.
+ *
+ * A vendor and the derived source can both carry one series. A series that more than
+ * one provider carries is refused as ambiguous unless the request names one.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whose observations to read, or empty for the parties the caller can see.
+ *
+ * An observation is entitled by party, as a fixing is: a service names the party
+ * whose data it needs, and a session that sees no party is refused.
+ */
+#+end_src
+
+*** to
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The last date of the window, included.
+ */
+#+end_src
+
+*** days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many calendar days the window spans, ending on the last date.
+ */
+#+end_src
+
+** get_observation_window_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How the call ended: a session with no party, an ambiguous series, and a
+ * window that is empty or over the ceiling are refused here.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider of the series.
+ */
+#+end_src
+
+*** days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many calendar days the window spans.
+ */
+#+end_src
+
+*** used
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many observations the window holds.
+ */
+#+end_src
+
+*** observed_at
+:PROPERTIES:
+:cpp_type: std::vector<std::chrono::system_clock::time_point>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The time each observation is for, oldest first.
+ */
+#+end_src
+
+*** coordinates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The oresmd URI of each observation's point of the series.
+ */
+#+end_src
+
+*** values
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The value of each observation, in decimal text.
+ */
+#+end_src
+
+*** sources
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The source of each observation.
+ */
+#+end_src
+
+* See also
+
+- [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.
+- [[id:22AEEEA2-2CDE-4ECB-9415-C20F623D4105][ores.marketdata.fixing_read_operations]] — the window reader of fixings this mirrors.

@@ -63,6 +63,11 @@ render_fx_spot_generation_config_fields(const domain::fx_spot_generation_config&
     fields.push_back({.name = "Branching Ratio", .value = std::to_string(v.branching_ratio)});
     fields.push_back({.name = "Decay", .value = std::to_string(v.decay)});
     fields.push_back({.name = "Sensitivity", .value = std::to_string(v.sensitivity)});
+    fields.push_back({.name = "Variance Model", .value = v.variance_model});
+    fields.push_back({.name = "Variance Calibration ID",
+                      .value = v.variance_calibration_id ?
+                                   boost::uuids::to_string(*v.variance_calibration_id) :
+                                   std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5F5B8448-ADA9-4424-8A5D-91B30A200DAA
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.yield_curve_process_parameter_definition
 #+description: Codegen entity model for the synthetic yield_curve_process_parameter_definition table; reference data describing which named parameters each yield curve process type accepts, with user-facing descriptions and validation bounds.

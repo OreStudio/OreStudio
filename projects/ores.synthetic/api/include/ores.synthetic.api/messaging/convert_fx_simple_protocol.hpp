@@ -25,8 +25,14 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_CONVERT_FX_SIMPLE_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_CONVERT_FX_SIMPLE_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -72,6 +78,9 @@ struct convert_fx_simple_request {
     /** @brief Minutes to come half way back to the long-run price; read by Ornstein-Uhlenbeck only.
      */
     double half_life_minutes = 0.0;
+
+    friend bool operator==(const convert_fx_simple_request&,
+                           const convert_fx_simple_request&) = default;
 };
 
 /**
@@ -96,8 +105,94 @@ struct convert_fx_simple_response {
     std::vector<double> gmm_stdevs;
     /** @brief The mixture's weights, κ first under the Ornstein-Uhlenbeck engine. */
     std::vector<double> gmm_weights;
+
+    friend bool operator==(const convert_fx_simple_response&,
+                           const convert_fx_simple_response&) = default;
 };
 
+/**
+ * @brief The members of convert_fx_simple_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const convert_fx_simple_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"process_type", &convert_fx_simple_request::process_type},
+        ::ores::utility::codec::field{"to_simple", &convert_fx_simple_request::to_simple},
+        ::ores::utility::codec::field{"initial_price", &convert_fx_simple_request::initial_price},
+        ::ores::utility::codec::field{"ticks_per_hour", &convert_fx_simple_request::ticks_per_hour},
+        ::ores::utility::codec::field{"gmm_means", &convert_fx_simple_request::gmm_means},
+        ::ores::utility::codec::field{"gmm_stdevs", &convert_fx_simple_request::gmm_stdevs},
+        ::ores::utility::codec::field{"gmm_weights", &convert_fx_simple_request::gmm_weights},
+        ::ores::utility::codec::field{"trend_pct_per_hour",
+                                      &convert_fx_simple_request::trend_pct_per_hour},
+        ::ores::utility::codec::field{"volatility_pct_per_hour",
+                                      &convert_fx_simple_request::volatility_pct_per_hour},
+        ::ores::utility::codec::field{"jump_share_pct", &convert_fx_simple_request::jump_share_pct},
+        ::ores::utility::codec::field{"half_life_minutes",
+                                      &convert_fx_simple_request::half_life_minutes},
+    };
 }
+
+/**
+ * @brief The members of convert_fx_simple_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const convert_fx_simple_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &convert_fx_simple_response::success},
+        ::ores::utility::codec::field{"message", &convert_fx_simple_response::message},
+        ::ores::utility::codec::field{"has_simple_form",
+                                      &convert_fx_simple_response::has_simple_form},
+        ::ores::utility::codec::field{"trend_pct_per_hour",
+                                      &convert_fx_simple_response::trend_pct_per_hour},
+        ::ores::utility::codec::field{"volatility_pct_per_hour",
+                                      &convert_fx_simple_response::volatility_pct_per_hour},
+        ::ores::utility::codec::field{"jump_share_pct",
+                                      &convert_fx_simple_response::jump_share_pct},
+        ::ores::utility::codec::field{"half_life_minutes",
+                                      &convert_fx_simple_response::half_life_minutes},
+        ::ores::utility::codec::field{"gmm_means", &convert_fx_simple_response::gmm_means},
+        ::ores::utility::codec::field{"gmm_stdevs", &convert_fx_simple_response::gmm_stdevs},
+        ::ores::utility::codec::field{"gmm_weights", &convert_fx_simple_response::gmm_weights},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::convert_fx_simple_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::convert_fx_simple_request& v);
+    static ores::synthetic::messaging::convert_fx_simple_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::convert_fx_simple_request& v);
+    static ores::synthetic::messaging::convert_fx_simple_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::convert_fx_simple_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::convert_fx_simple_response& v);
+    static ores::synthetic::messaging::convert_fx_simple_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::convert_fx_simple_response& v);
+    static ores::synthetic::messaging::convert_fx_simple_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

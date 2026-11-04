@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D469834F-DB7C-4486-B43F-CBD984744C36
+:ores.cpp.wire-codec.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.storage.objects

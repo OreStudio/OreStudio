@@ -41,8 +41,9 @@ namespace ores::refdata::domain {
  * The settings of one InflationCurve entry of a curveconfig.xml, one row per
  * curve_definition in the InflationCurves section: the nominal curve it is
  * built over, whether it is zero coupon or year on year, its lag and frequency,
- * and its seasonality. The quotes it is built from are rows of curve_quote, and
- * the seasonality factors rows of inflation_seasonality_factor.
+ * and its interpolation. The quotes it is built from are rows of curve_quote. Its
+ * seasonality is a row of inflation_seasonality, present only when the curve
+ * states one, and the seasonality factors are rows of inflation_seasonality_factor.
  *
  * The schema also allows a list of segments, each a convention and quotes. No
  * corpus document writes one, and the mapper refuses an entry that does rather
@@ -132,21 +133,6 @@ struct inflation_curve_config final {
      * @brief The bootstrap tolerance.
      */
     std::optional<double> tolerance;
-
-    /**
-     * @brief Whether the entry writes a Seasonality element.
-     */
-    bool has_seasonality = false;
-
-    /**
-     * @brief The base date of the seasonality adjustment.
-     */
-    std::optional<std::string> seasonality_base_date;
-
-    /**
-     * @brief The frequency of the seasonality factors.
-     */
-    std::optional<std::string> seasonality_frequency;
 
     /**
      * @brief Whether the curve starts from the last fixing date, as the ORE boolean the document

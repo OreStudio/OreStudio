@@ -21,6 +21,7 @@
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
+#include "ores.ore.core/log/engine_log.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/run_package.hpp"
@@ -32,6 +33,8 @@
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -39,8 +42,7 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
+#include <span>
 #include <string_view>
 
 namespace ores::ore::service::messaging {
@@ -52,6 +54,27 @@ using namespace ores::reporting::messaging;
 namespace {
 
 constexpr std::string_view platform_bucket = ores::storage::api::object_keys::ores_bucket;
+
+/// The trades a package left out, as the canonical log CSV the run reads.
+std::string refusal_log(const std::vector<ores::ore::domain::refused_trade>& refused) {
+    std::vector<ores::ore::log::engine_log_event> events;
+    for (const auto& trade : refused) {
+        ores::ore::log::engine_log_event event;
+        event.ordinal = events.size() + 1;
+        event.severity = "error";
+        event.scope = "Trade";
+        event.message = std::format(
+            "The trade was left out of the run, because its {} XML cannot be written: {}",
+            trade.trade_type.empty() ? std::string("ORE") : trade.trade_type,
+            trade.message);
+        event.message_stated = true;
+        event.subject = "trade";
+        event.subject_id = trade.trade_id;
+        event.source = std::string(ores::ore::net::ore_storage::package_name);
+        events.push_back(std::move(event));
+    }
+    return ores::ore::log::canonical_log_csv(events);
+}
 
 std::string tarball_storage_key(const std::string& instance_id) {
     return ores::ore::net::ore_storage::package_key(instance_id);
@@ -79,7 +102,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<prepare_ore_package_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<prepare_ore_package_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode prepare_ore_package_request");
         ack.accept();
@@ -212,18 +235,21 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         const auto trades =
             transfer.download_blob(std::string(platform_bucket), req.trades_storage_key);
 
-        const auto rows =
-            rfl::msgpack::read<ores::trading::messaging::export_portfolio_response>(trades);
-        if (!rows) {
+        ores::trading::messaging::export_portfolio_response rows;
+        try {
+            rows = ores::utility::codec::
+                wire_traits<ores::trading::messaging::export_portfolio_response>::read_msgpack(
+                    std::as_bytes(std::span(trades)));
+        } catch (const std::exception& e) {
             wf->fail("prepare_ore_package: the gathered trades are not a readable trade "
                      "export: " +
-                     rows.error().what());
+                     std::string(e.what()));
             ack.accept();
             return;
         }
-        if (!rows->success) {
+        if (!rows.success) {
             wf->fail("prepare_ore_package: the gather step stored a failed trade export: " +
-                     rows->message);
+                     rows.message);
             ack.accept();
             return;
         }
@@ -231,9 +257,9 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         if (!market_date) {
             std::string named;
             std::size_t shown = 0;
-            for (const auto& item : rows->items) {
+            for (const auto& item : rows.items) {
                 if (shown == 5) {
-                    named += ", and " + std::to_string(rows->items.size() - shown) + " more";
+                    named += ", and " + std::to_string(rows.items.size() - shown) + " more";
                     break;
                 }
                 if (!named.empty())
@@ -245,7 +271,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                 "prepare_ore_package: the gathered market data carries no dated line, so no run "
                 "can price from it. The run asked for " +
                 (requested_date.empty() ? std::string("no particular date") : requested_date) +
-                ", the package carries " + std::to_string(rows->items.size()) +
+                ", the package carries " + std::to_string(rows.items.size()) +
                 " trade(s): " + named);
             ack.accept();
             return;
@@ -253,8 +279,9 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
 
         const auto reference_curves =
             ores::ore::service::messaging::reference_curve_names_of(owners, req.definition_id);
-        const auto portfolio = ores::ore::xml::exporter::export_portfolio(
-            rows->items, rows->instruments, reference_curves);
+        auto written = ores::ore::xml::exporter::export_portfolio_leaving_out(
+            rows.items, rows.instruments, reference_curves);
+        const auto& portfolio = written.xml;
         {
             const auto target = stage_dir / places.portfolio;
             std::filesystem::create_directories(target.parent_path());
@@ -277,6 +304,17 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
 
         const auto tarball_key = tarball_storage_key(req.report_instance_id);
         transfer.pack_and_upload(stage_dir, std::string(platform_bucket), tarball_key);
+
+        // A trade the package left out is the run's error about that trade. The
+        // run records its errors from the canonical log, so the reasons are
+        // stored in that shape where the run reads them after the engine's.
+        if (!written.refused.empty()) {
+            const auto log = refusal_log(written.refused);
+            transfer.upload_blob(
+                std::string(platform_bucket),
+                ores::ore::net::ore_storage::package_log_key(req.report_instance_id),
+                std::span(log.data(), log.size()));
+        }
 
         // ── Clean up staging directory ────────────────────────────────
         std::filesystem::remove_all(stage_dir);
@@ -324,7 +362,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             "Packaged {} input files, {} trades as {} portfolio bytes + {} market data bytes "
             "into {}",
             input.size(),
-            rows->items.size(),
+            rows.items.size(),
             portfolio.size(),
             market_data.size(),
             tarball_key);
@@ -332,7 +370,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "prepare_ore_package complete | instance="
                                   << req.report_instance_id << " tarball=" << tarball_key;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "prepare_ore_package failed: " << e.what();

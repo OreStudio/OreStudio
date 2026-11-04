@@ -112,26 +112,51 @@ begin
     where dataset_id = v_dataset_id;
 
     insert into ores_dq_curve_segments_artefact_tbl (
-        dataset_id, tenant_id, version, party_id, id, curve_definition_id, segment_type, position, conventions
+        dataset_id, tenant_id, version, party_id, id, curve_definition_id, segment_type, position
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '74043045-16a5-5a5b-b1d9-10779106197a', '1be918ea-5cf8-52e5-985c-8ca390eba26f', 'OIS', 0, 'GBP-OIS-CONVENTIONS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '49cd0562-72bc-5184-805c-de32add5d72e', '05a4fc3c-bf88-579a-8872-2bdc1b2e866d', 'OIS', 0, 'EUR-ESTER-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '43a9c899-e25c-5136-9883-2e40ac218cde', 'a150e32f-371a-5f37-b069-348de2c5723f', 'OIS', 0, 'USD-SOFR-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '97af060a-3515-5964-827b-896d9ebda0d2', '9ae3e93b-a50f-585e-8eae-f663edfcc655', 'OIS', 0, 'CHF-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'ef8ea040-2e6b-5366-87e1-b3013eff1cd4', 'ca79329d-baa7-5ce8-bc7f-76d586c26716', 'OIS', 0, 'JPY-OIS-CONVENTIONS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '8748ea7b-cd3a-5963-a259-d60bdfcc848a', '4df8c9dd-0fd2-5a79-a2fc-680248543bc3', 'OIS', 0, 'CAD-OIS-CONVENTIONS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '83f63436-e382-59b2-8d4b-39faf6051914', '16df4240-c736-5bb9-a30c-537d54ac28b6', 'OIS', 0, 'AUD-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'a9bd5de7-9583-5be9-8821-e03596ea1865', 'ff39e3ec-b18a-560c-8b0b-971c16ff1f2d', 'OIS', 0, 'NZD-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'd780bbf0-d96a-5f7d-867f-07fdd96ebf6a', 'a0749747-5b5d-5b93-8ce3-005d1d8294da', 'OIS', 0, 'SEK-OIS-CONVENTIONS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '9f4cb758-8ab1-516b-9655-eede88c88b8d', 'f813f5a9-7970-5797-9366-22c80ecc0d09', 'OIS', 0, 'NOK-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '88d9b7cd-ee49-58f2-a507-ca95480e0315', 'd4a0b861-9548-535e-9bd1-5fc87ac599f7', 'OIS', 0, 'DKK-DESTR-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '48a9aa9c-1a29-538a-b6cc-49c785f0e552', '780a0e23-e3f6-560b-bbb8-73aef4245006', 'OIS', 0, 'ZAR-ZARONIA-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '2cab2c39-0064-5f82-b913-f3753d3f4b20', '3a43708c-a015-5f67-9bda-0ca4f9351321', 'OIS', 0, 'TRY-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'b4c77c5b-da98-5819-b18d-29ce0349ca9a', '27cf15c6-b78d-55a9-89b9-e4a6581ca078', 'OIS', 0, 'PLN-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '55e65a67-9f60-59f3-8e99-2de1be2948d6', 'e0960488-a875-51c9-ae7b-8105c23d4772', 'OIS', 0, 'CZK-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8', '69896cd9-9ae2-577f-8959-5f75b0d9d6c4', 'OIS', 0, 'HUF-OIS'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '3d08937b-66e6-5cb1-bcc1-5449f90dedde', 'e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1', 'OIS', 0, 'ILS-OIS');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '74043045-16a5-5a5b-b1d9-10779106197a', '1be918ea-5cf8-52e5-985c-8ca390eba26f', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '49cd0562-72bc-5184-805c-de32add5d72e', '05a4fc3c-bf88-579a-8872-2bdc1b2e866d', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '43a9c899-e25c-5136-9883-2e40ac218cde', 'a150e32f-371a-5f37-b069-348de2c5723f', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '97af060a-3515-5964-827b-896d9ebda0d2', '9ae3e93b-a50f-585e-8eae-f663edfcc655', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'ef8ea040-2e6b-5366-87e1-b3013eff1cd4', 'ca79329d-baa7-5ce8-bc7f-76d586c26716', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '8748ea7b-cd3a-5963-a259-d60bdfcc848a', '4df8c9dd-0fd2-5a79-a2fc-680248543bc3', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '83f63436-e382-59b2-8d4b-39faf6051914', '16df4240-c736-5bb9-a30c-537d54ac28b6', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'a9bd5de7-9583-5be9-8821-e03596ea1865', 'ff39e3ec-b18a-560c-8b0b-971c16ff1f2d', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'd780bbf0-d96a-5f7d-867f-07fdd96ebf6a', 'a0749747-5b5d-5b93-8ce3-005d1d8294da', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '9f4cb758-8ab1-516b-9655-eede88c88b8d', 'f813f5a9-7970-5797-9366-22c80ecc0d09', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '88d9b7cd-ee49-58f2-a507-ca95480e0315', 'd4a0b861-9548-535e-9bd1-5fc87ac599f7', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '48a9aa9c-1a29-538a-b6cc-49c785f0e552', '780a0e23-e3f6-560b-bbb8-73aef4245006', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '2cab2c39-0064-5f82-b913-f3753d3f4b20', '3a43708c-a015-5f67-9bda-0ca4f9351321', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'b4c77c5b-da98-5819-b18d-29ce0349ca9a', '27cf15c6-b78d-55a9-89b9-e4a6581ca078', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '55e65a67-9f60-59f3-8e99-2de1be2948d6', 'e0960488-a875-51c9-ae7b-8105c23d4772', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8', '69896cd9-9ae2-577f-8959-5f75b0d9d6c4', 'OIS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '3d08937b-66e6-5cb1-bcc1-5449f90dedde', 'e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1', 'OIS', 0);
+
+    delete from ores_dq_curve_segment_conventions_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_curve_segment_conventions_artefact_tbl (
+        dataset_id, tenant_id, version, party_id, id, curve_segment_id, conventions
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '6c7ab928-b2ff-54e6-80f4-eb899f87a82e', '74043045-16a5-5a5b-b1d9-10779106197a', 'GBP-OIS-CONVENTIONS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '4694e297-9eab-5333-bb8b-407548d0d906', '49cd0562-72bc-5184-805c-de32add5d72e', 'EUR-ESTER-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '3218b65d-39f8-5752-8f05-c3bf485471c4', '43a9c899-e25c-5136-9883-2e40ac218cde', 'USD-SOFR-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'db5f453f-6cf9-5233-b780-b7f276cf3cea', '97af060a-3515-5964-827b-896d9ebda0d2', 'CHF-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '39ff2c94-d7ae-57ba-96ab-d87795f7c8bd', 'ef8ea040-2e6b-5366-87e1-b3013eff1cd4', 'JPY-OIS-CONVENTIONS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '80582d82-5a25-5efa-8dd6-aa5d716e18f6', '8748ea7b-cd3a-5963-a259-d60bdfcc848a', 'CAD-OIS-CONVENTIONS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'e531bfa1-3479-5c22-8918-7304b0c9312c', '83f63436-e382-59b2-8d4b-39faf6051914', 'AUD-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'c4ab5409-2c85-5140-81df-2c685e66ab55', 'a9bd5de7-9583-5be9-8821-e03596ea1865', 'NZD-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '0a3bf786-8d9c-5aa3-a8d3-cc06a0e3fbc6', 'd780bbf0-d96a-5f7d-867f-07fdd96ebf6a', 'SEK-OIS-CONVENTIONS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '1c2b4120-aed0-5dc5-b960-3e01e91af2e2', '9f4cb758-8ab1-516b-9655-eede88c88b8d', 'NOK-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'c20fc84b-e0cc-59b6-acde-6969bb770168', '88d9b7cd-ee49-58f2-a507-ca95480e0315', 'DKK-DESTR-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '1c5a612d-e745-5458-b6ea-d6315dbeac51', '48a9aa9c-1a29-538a-b6cc-49c785f0e552', 'ZAR-ZARONIA-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '57a948da-192c-5770-80e6-94b2e700cd84', '2cab2c39-0064-5f82-b913-f3753d3f4b20', 'TRY-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'bf031d6b-f744-5601-a965-dee0ff5051a3', 'b4c77c5b-da98-5819-b18d-29ce0349ca9a', 'PLN-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '6f1b44d2-a014-5191-b8ac-54da9ca75a1b', '55e65a67-9f60-59f3-8e99-2de1be2948d6', 'CZK-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'df7ebc2b-b3c6-5993-8acc-220b49857e1d', '8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8', 'HUF-OIS'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'fd9baf01-122b-512c-9eb3-994321171a68', '3d08937b-66e6-5cb1-bcc1-5449f90dedde', 'ILS-OIS');
 
     delete from ores_dq_curve_quotes_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -349,10 +374,10 @@ begin
     where dataset_id = v_dataset_id;
 
     insert into ores_dq_inflation_curve_configs_artefact_tbl (
-        dataset_id, tenant_id, version, party_id, id, curve_definition_id, nominal_term_structure, inflation_type, conventions, has_quotes, calendar, day_counter, lag, frequency, base_rate, tolerance, has_seasonality, use_last_fixing_date, interpolation_variable, interpolation_method
+        dataset_id, tenant_id, version, party_id, id, curve_definition_id, nominal_term_structure, inflation_type, conventions, has_quotes, calendar, day_counter, lag, frequency, base_rate, tolerance, use_last_fixing_date, interpolation_variable, interpolation_method
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '329bb19c-6720-5703-974f-a20b2c68b68d', '9519b9b5-4803-55cf-81e5-2afb2db9248b', 'GBP1D', 'ZC', 'UKRPIX_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, false, 'ZeroRate', 'Linear'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'e2c0fdbf-0445-519d-86e9-2a42cdcafbdb', 'd3a2cef3-d406-5135-9238-6c66c7b681e7', 'EUR1D', 'ZC', 'BECPIHL_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, false, 'ZeroRate', 'Linear'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'a461be34-3be2-5eb0-8840-76adeb66b86d', 'd8344edc-dc11-5729-9a1d-148a3b7ffe15', 'USD1D', 'ZC', 'USCPIA_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, false, 'ZeroRate', 'Linear');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '329bb19c-6720-5703-974f-a20b2c68b68d', '9519b9b5-4803-55cf-81e5-2afb2db9248b', 'GBP1D', 'ZC', 'UKRPIX_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, 'ZeroRate', 'Linear'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'e2c0fdbf-0445-519d-86e9-2a42cdcafbdb', 'd3a2cef3-d406-5135-9238-6c66c7b681e7', 'EUR1D', 'ZC', 'BECPIHL_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, 'ZeroRate', 'Linear'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'a461be34-3be2-5eb0-8840-76adeb66b86d', 'd8344edc-dc11-5729-9a1d-148a3b7ffe15', 'USD1D', 'ZC', 'USCPIA_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, 'ZeroRate', 'Linear');
 end $$;

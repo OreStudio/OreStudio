@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct convention_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const convention_key&, const convention_key&) = default;
 };
 
 struct convention_write {
@@ -50,27 +52,37 @@ struct convention_write {
     std::string kind_code;
     std::string name;
     std::optional<std::string> oresmd_uri;
+
+    friend bool operator==(const convention_write&, const convention_write&) = default;
 };
 
 struct convention_change {
     convention_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const convention_change&, const convention_change&) = default;
 };
 
 struct convention_removal {
     convention_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const convention_removal&, const convention_removal&) = default;
 };
 
 struct convention_lookup {
     convention_key key;
     std::optional<ores::refdata::domain::convention> convention;
+
+    friend bool operator==(const convention_lookup&, const convention_lookup&) = default;
 };
 
 struct conventions_filter {
     std::optional<std::string> kind_code;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> kind_code_one_of;
+
+    friend bool operator==(const conventions_filter&, const conventions_filter&) = default;
 };
 
 struct convention_event {
@@ -80,17 +92,24 @@ struct convention_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const convention_event&, const convention_event&) = default;
 };
 
 struct convention_version_key {
     convention_key convention;
     std::uint32_t version;
+
+    friend bool operator==(const convention_version_key&, const convention_version_key&) = default;
 };
 
 struct convention_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const convention_versions_filter&,
+                           const convention_versions_filter&) = default;
 };
 
 struct list_conventions_request {
@@ -108,12 +127,18 @@ struct list_conventions_request {
     ores::utility::domain::order order;
     std::optional<conventions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_conventions_request&,
+                           const list_conventions_request&) = default;
 };
 
 struct list_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::convention> conventions;
     std::uint64_t total;
+
+    friend bool operator==(const list_conventions_response&,
+                           const list_conventions_response&) = default;
 };
 
 struct get_convention_request {
@@ -127,11 +152,16 @@ struct get_convention_request {
      */
     static constexpr bool requires_session = true;
     convention_key key;
+
+    friend bool operator==(const get_convention_request&, const get_convention_request&) = default;
 };
 
 struct get_convention_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::convention> convention;
+
+    friend bool operator==(const get_convention_response&,
+                           const get_convention_response&) = default;
 };
 
 struct get_many_conventions_request {
@@ -145,11 +175,17 @@ struct get_many_conventions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<convention_key> keys;
+
+    friend bool operator==(const get_many_conventions_request&,
+                           const get_many_conventions_request&) = default;
 };
 
 struct get_many_conventions_response {
     ores::utility::domain::result result;
     std::vector<convention_lookup> entries;
+
+    friend bool operator==(const get_many_conventions_response&,
+                           const get_many_conventions_response&) = default;
 };
 
 struct put_convention_request {
@@ -164,11 +200,16 @@ struct put_convention_request {
     static constexpr bool requires_session = true;
     convention_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_convention_request&, const put_convention_request&) = default;
 };
 
 struct put_convention_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::convention> convention;
+
+    friend bool operator==(const put_convention_response&,
+                           const put_convention_response&) = default;
 };
 
 struct put_many_conventions_request {
@@ -183,11 +224,17 @@ struct put_many_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<convention_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_conventions_request&,
+                           const put_many_conventions_request&) = default;
 };
 
 struct put_many_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::convention> conventions;
+
+    friend bool operator==(const put_many_conventions_response&,
+                           const put_many_conventions_response&) = default;
 };
 
 struct delete_convention_request {
@@ -202,10 +249,16 @@ struct delete_convention_request {
     static constexpr bool requires_session = true;
     convention_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_convention_request&,
+                           const delete_convention_request&) = default;
 };
 
 struct delete_convention_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_convention_response&,
+                           const delete_convention_response&) = default;
 };
 
 struct delete_many_conventions_request {
@@ -220,10 +273,16 @@ struct delete_many_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<convention_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_conventions_request&,
+                           const delete_many_conventions_request&) = default;
 };
 
 struct delete_many_conventions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_conventions_response&,
+                           const delete_many_conventions_response&) = default;
 };
 
 struct list_convention_versions_request {
@@ -241,12 +300,18 @@ struct list_convention_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<convention_versions_filter> filter;
+
+    friend bool operator==(const list_convention_versions_request&,
+                           const list_convention_versions_request&) = default;
 };
 
 struct list_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::convention> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_convention_versions_response&,
+                           const list_convention_versions_response&) = default;
 };
 
 struct get_convention_version_request {
@@ -260,11 +325,17 @@ struct get_convention_version_request {
      */
     static constexpr bool requires_session = true;
     convention_version_key key;
+
+    friend bool operator==(const get_convention_version_request&,
+                           const get_convention_version_request&) = default;
 };
 
 struct get_convention_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::convention> version;
+
+    friend bool operator==(const get_convention_version_response&,
+                           const get_convention_version_response&) = default;
 };
 
 /**
@@ -276,9 +347,9 @@ struct get_convention_version_response {
  * of them.
  */
 namespace convention_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.conventions_events.created";
-inline constexpr std::string_view updated = "refdata.v1.conventions_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.conventions_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.conventions.created";
+inline constexpr std::string_view updated = "refdata.v1.events.conventions.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.conventions.deleted";
 }
 /**
  * @brief The members of convention_key, named as the wire names them and in the order

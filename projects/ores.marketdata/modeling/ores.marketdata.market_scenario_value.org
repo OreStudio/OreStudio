@@ -1,0 +1,212 @@
+:PROPERTIES:
+:ID: 4299B277-F907-4EDB-8E4C-12EEB0C9D4C5
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.market_scenario_value
+#+description: Codegen entity model for the marketdata =market_scenario_values= table. One value a scenario a run generated states for one risk factor at one date.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+brief: One value a scenario a run generated states for one risk factor at one date.
+#+entity_singular: market_scenario_value
+#+entity_plural: market_scenario_values
+#+entity_title: Market Scenario Value
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+The market a run generated scenarios over, one value at a time. A stress scenario
+file and a scenario statistics file state one row for each date and scenario, and
+one column for each risk factor the run simulated: a discount factor at a tenor, an
+index curve point, a volatility, a spot. Each of those values is a row here.
+
+This is market state and not a run result: it says what the world looked like
+under each scenario, it is what the engine priced against, and it belongs beside
+the series and the fixings the market data store already keeps.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:subcomponent:  api
+:profile:       readonly-timeseries
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate UUID identifying this value.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The party that owns the run.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:filterable:   true
+:END:
+
+The run that generated the scenario.
+
+** result_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The compute result whose output states the value. A run fans out into one result
+for each workunit, and each result writes its own files.
+
+** source
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The file the reader read, as the engine named it.
+
+** line
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:natural_key:  true
+:END:
+
+The line of the file that states the value, counting the heading as line one.
+
+** as_of
+:PROPERTIES:
+:type:         timestamp with time zone
+:cpp_type:     std::chrono::system_clock::time_point
+:natural_key:  true
+:END:
+
+The date the scenario is for: the row's own date, or the run's priced date when
+the file states none.
+
+** factor
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The risk factor the value is for, as the engine names it: a heading such as
+DiscountCurve/USD/3 or Numeraire.
+
+** report_definition_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:END:
+
+The report the run came from, so a definition's runs are one query.
+
+** family
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:filterable:   true
+:END:
+
+The family the value came from, as the catalogue names it: stress_scenarios or
+scenariostatistics.
+
+** scenario
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:filterable:   true
+:END:
+
+The scenario the value is under, as the row states it, empty when it states none.
+
+** value
+:PROPERTIES:
+:type:         double precision
+:cpp_type:     double
+:END:
+
+The value, as the engine stated it and never formatted.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                    ores_marketdata_market_scenario_values_tbl
+:hypertable:                   true
+:hypertable_partition_column:  as_of
+:hypertable_chunk_interval:    30 days
+:append_insert:                true
+:bitemporal_trigger:           soft_update_delete
+:no_audit_columns:             true
+:rls_tenant_isolation:         true
+:rls_party_isolation:          true
+:END:
+
+** Bitemporal natural keys
+
+A run's scenarios are its own. The key is where the engine stated the value: the
+result, the file, the line and the factor. The insert trigger closes the current
+row of the same key, and the key names the run, so one run never closes another
+run's values.
+
+| column             | nullable |
+|--------------------+----------|
+| party_id           | false    |
+| report_instance_id | false    |
+| result_id          | false    |
+| source             | false    |
+| line               | false    |
+| as_of              | false    |
+| factor             | false    |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:  api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: value
+:entity_plural_short:   values
+:entity_singular_words: market scenario value
+:entity_plural_words:   market scenario values
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Table display
+
+| column   | header   |
+|----------+----------|
+| family   | Family   |
+| scenario | Scenario |
+| factor   | Factor   |
+| value    | Value    |
+| as_of    | As Of    |

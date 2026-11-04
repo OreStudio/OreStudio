@@ -42,6 +42,9 @@ namespace ores::refdata::messaging {
 
 struct tenor_basis_swap_convention_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const tenor_basis_swap_convention_key&,
+                           const tenor_basis_swap_convention_key&) = default;
 };
 
 struct tenor_basis_swap_convention_item {
@@ -49,12 +52,18 @@ struct tenor_basis_swap_convention_item {
     std::optional<ores::refdata::domain::convention> convention;
     std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> pay_receive;
     std::vector<ores::refdata::domain::tenor_basis_swap_long_short> long_short;
+
+    friend bool operator==(const tenor_basis_swap_convention_item&,
+                           const tenor_basis_swap_convention_item&) = default;
 };
 
 struct tenor_basis_swap_convention_write {
     convention_change change;
     std::vector<tenor_basis_swap_pay_receive_change> pay_receive;
     std::vector<tenor_basis_swap_long_short_change> long_short;
+
+    friend bool operator==(const tenor_basis_swap_convention_write&,
+                           const tenor_basis_swap_convention_write&) = default;
 };
 
 struct get_tenor_basis_swap_convention_request {
@@ -68,11 +77,17 @@ struct get_tenor_basis_swap_convention_request {
      */
     static constexpr bool requires_session = true;
     tenor_basis_swap_convention_key key;
+
+    friend bool operator==(const get_tenor_basis_swap_convention_request&,
+                           const get_tenor_basis_swap_convention_request&) = default;
 };
 
 struct get_tenor_basis_swap_convention_response {
     ores::utility::domain::result result;
     std::optional<tenor_basis_swap_convention_item> item;
+
+    friend bool operator==(const get_tenor_basis_swap_convention_response&,
+                           const get_tenor_basis_swap_convention_response&) = default;
 };
 
 struct get_many_tenor_basis_swap_conventions_request {
@@ -87,11 +102,17 @@ struct get_many_tenor_basis_swap_conventions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_swap_convention_key> keys;
+
+    friend bool operator==(const get_many_tenor_basis_swap_conventions_request&,
+                           const get_many_tenor_basis_swap_conventions_request&) = default;
 };
 
 struct get_many_tenor_basis_swap_conventions_response {
     ores::utility::domain::result result;
     std::vector<tenor_basis_swap_convention_item> items;
+
+    friend bool operator==(const get_many_tenor_basis_swap_conventions_response&,
+                           const get_many_tenor_basis_swap_conventions_response&) = default;
 };
 
 struct put_tenor_basis_swap_convention_request {
@@ -106,11 +127,17 @@ struct put_tenor_basis_swap_convention_request {
     static constexpr bool requires_session = true;
     tenor_basis_swap_convention_write item;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tenor_basis_swap_convention_request&,
+                           const put_tenor_basis_swap_convention_request&) = default;
 };
 
 struct put_tenor_basis_swap_convention_response {
     ores::utility::domain::result result;
     std::optional<tenor_basis_swap_convention_item> item;
+
+    friend bool operator==(const put_tenor_basis_swap_convention_response&,
+                           const put_tenor_basis_swap_convention_response&) = default;
 };
 
 struct put_many_tenor_basis_swap_conventions_request {
@@ -126,11 +153,17 @@ struct put_many_tenor_basis_swap_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_swap_convention_write> items;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tenor_basis_swap_conventions_request&,
+                           const put_many_tenor_basis_swap_conventions_request&) = default;
 };
 
 struct put_many_tenor_basis_swap_conventions_response {
     ores::utility::domain::result result;
     std::vector<tenor_basis_swap_convention_item> items;
+
+    friend bool operator==(const put_many_tenor_basis_swap_conventions_response&,
+                           const put_many_tenor_basis_swap_conventions_response&) = default;
 };
 
 }

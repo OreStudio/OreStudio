@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: F024D228-F00B-4AE6-BAB7-35825AB5B0EE
+:END:
+#+title: Run the builds yourself, at four jobs at most
+#+description: The agent runs its own builds with compass build -j 4; another environment shares the machine.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+Run the builds yourself with compass build -j 4 followed by the targets; do not hand a build to the user and wait.
+
+*Why:* The user asked for it so the work does not stop at every build, and capped the jobs at four because another environment builds on the same machine.
+
+*How to apply:* Whenever a change needs compiling before its tests run, build the affected targets with -j 4 or fewer, then run the tests.

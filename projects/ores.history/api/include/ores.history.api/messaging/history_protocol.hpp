@@ -48,6 +48,8 @@ struct entity_history_version {
     std::chrono::system_clock::time_point recorded_at;
     std::vector<ores::diff::domain::field_value> fields;
     ores::diff::domain::diff_result changes;
+
+    friend bool operator==(const entity_history_version&, const entity_history_version&) = default;
 };
 
 /**
@@ -75,12 +77,18 @@ struct get_entity_history_request {
     static constexpr bool requires_session = true;
     std::string entity_type;
     std::string entity_id;
+
+    friend bool operator==(const get_entity_history_request&,
+                           const get_entity_history_request&) = default;
 };
 
 struct get_entity_history_response {
     std::vector<entity_history_version> versions;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const get_entity_history_response&,
+                           const get_entity_history_response&) = default;
 };
 
 

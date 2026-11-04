@@ -23,15 +23,14 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.api/domain/market_series_asset_class_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.api/domain/market_series_asset_class_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace ores::marketdata::domain {
 
 std::ostream& operator<<(std::ostream& s, const market_series_asset_class& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

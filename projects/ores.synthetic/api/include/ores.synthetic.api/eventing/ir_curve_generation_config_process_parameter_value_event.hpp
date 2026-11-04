@@ -28,12 +28,11 @@
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace ores::eventing::domain {
@@ -50,13 +49,14 @@ template <>
 struct entity_event_traits<
     ores::synthetic::messaging::ir_curve_generation_config_process_parameter_value_event> {
     static constexpr std::string_view subject_prefix =
-        "synthetic.v1.ir_curve_generation_config_process_parameter_values_events";
+        "synthetic.v1.events.ir_curve_generation_config_process_parameter_values";
 
     static ores::synthetic::messaging::ir_curve_generation_config_process_parameter_value_event
     from_notification(const entity_event_notification& notification) {
         ores::synthetic::messaging::ir_curve_generation_config_process_parameter_value_event event;
         event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
-        if (const auto key = rfl::json::read<
+        // A key this build cannot read leaves the event's own key default.
+        if (const auto key = ores::utility::codec::json::try_read<
                 ores::synthetic::messaging::ir_curve_generation_config_process_parameter_value_key>(
                 notification.key))
             event.key = *key;

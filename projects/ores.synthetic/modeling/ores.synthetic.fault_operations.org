@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D1F87C08-4628-418C-8289-4948EEFF4DE0
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.fault_operations
 #+description: Codegen operation model for the fault injection of the simulator: the request that sets the faults an adapter shows to the market data service.

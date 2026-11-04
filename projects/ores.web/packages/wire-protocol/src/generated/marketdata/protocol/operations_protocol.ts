@@ -1117,13 +1117,14 @@ export interface StoreMarketStateRequest {
     as_of: string;
     storage_token: string;
     manifest_uris: string[];
+    skipped_families: string[];
 }
 
 export interface StoreMarketStateResponse {
     result: Result;
     families: string[];
-    payloads: number;
-    payload_bytes: number;
+    files: number;
+    rows: number;
     left_alone: string[];
     refusals: string[];
 }

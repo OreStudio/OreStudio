@@ -30,7 +30,7 @@
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <chrono>
@@ -39,8 +39,6 @@
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -147,7 +145,8 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         "add <config_id> <base_currency_code> <quote_currency_code> <source_name> <oresmd_uri> "
         "<price_source> <calibration_window_days> <gmm_initial_price> <ticks_per_hour> "
         "<process_type> <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode> "
-        "<branching_ratio> <decay> <sensitivity> <reason> <commentary>");
+        "<branching_ratio> <decay> <sensitivity> <variance_model> <variance_calibration_id> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -157,8 +156,8 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         "set <id> <config_id> <base_currency_code> <quote_currency_code> <source_name> "
         "<oresmd_uri> <price_source> <calibration_window_days> <gmm_initial_price> "
         "<ticks_per_hour> <process_type> <enabled> <auto_start> <folder_id> <asset_class_code> "
-        "<arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary> [--version "
-        "<n>]");
+        "<arrival_mode> <branching_ratio> <decay> <sensitivity> <variance_model> "
+        "<variance_calibration_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -168,7 +167,8 @@ void fx_spot_generation_config_commands::register_commands(cli::Menu& root_menu,
         "put-many --count <n> <id> <config_id> <base_currency_code> <quote_currency_code> "
         "<source_name> <oresmd_uri> <price_source> <calibration_window_days> <gmm_initial_price> "
         "<ticks_per_hour> <process_type> <enabled> <auto_start> <folder_id> <asset_class_code> "
-        "<arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary>");
+        "<arrival_mode> <branching_ratio> <decay> <sensitivity> <variance_model> "
+        "<variance_calibration_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -246,7 +246,9 @@ void fx_spot_generation_config_commands::process_list(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void fx_spot_generation_config_commands::process_get(std::ostream& out,
@@ -289,7 +291,9 @@ void fx_spot_generation_config_commands::process_get(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void fx_spot_generation_config_commands::process_get_many(std::ostream& out,
@@ -336,7 +340,9 @@ void fx_spot_generation_config_commands::process_get_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void fx_spot_generation_config_commands::process_add(std::ostream& out,
@@ -363,8 +369,8 @@ void fx_spot_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 18 + 2) {
-            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 20 + 2) {
+            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -407,6 +413,11 @@ void fx_spot_generation_config_commands::process_add(std::ostream& out,
             req.change.write.decay, parsed->positionals[next++], "decay");
         fx_spot_generation_config_read_token(
             req.change.write.sensitivity, parsed->positionals[next++], "sensitivity");
+        fx_spot_generation_config_read_token(
+            req.change.write.variance_model, parsed->positionals[next++], "variance_model");
+        fx_spot_generation_config_read_token(req.change.write.variance_calibration_id,
+                                             parsed->positionals[next++],
+                                             "variance_calibration_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -420,7 +431,9 @@ void fx_spot_generation_config_commands::process_add(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void fx_spot_generation_config_commands::process_set(std::ostream& out,
@@ -449,8 +462,8 @@ void fx_spot_generation_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 19 + 2) {
-            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 21 + 2) {
+            fail(out) << "Expected " << (21 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -494,6 +507,11 @@ void fx_spot_generation_config_commands::process_set(std::ostream& out,
             req.change.write.decay, parsed->positionals[next++], "decay");
         fx_spot_generation_config_read_token(
             req.change.write.sensitivity, parsed->positionals[next++], "sensitivity");
+        fx_spot_generation_config_read_token(
+            req.change.write.variance_model, parsed->positionals[next++], "variance_model");
+        fx_spot_generation_config_read_token(req.change.write.variance_calibration_id,
+                                             parsed->positionals[next++],
+                                             "variance_calibration_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -513,7 +531,9 @@ void fx_spot_generation_config_commands::process_set(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void fx_spot_generation_config_commands::process_put_many(std::ostream& out,
@@ -548,8 +568,8 @@ void fx_spot_generation_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 19 + 2) {
-            fail(out) << "Expected " << (change_count * 19 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 21 + 2) {
+            fail(out) << "Expected " << (change_count * 21 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -595,6 +615,11 @@ void fx_spot_generation_config_commands::process_put_many(std::ostream& out,
                 change.write.decay, parsed->positionals[next++], "decay");
             fx_spot_generation_config_read_token(
                 change.write.sensitivity, parsed->positionals[next++], "sensitivity");
+            fx_spot_generation_config_read_token(
+                change.write.variance_model, parsed->positionals[next++], "variance_model");
+            fx_spot_generation_config_read_token(change.write.variance_calibration_id,
+                                                 parsed->positionals[next++],
+                                                 "variance_calibration_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -610,7 +635,9 @@ void fx_spot_generation_config_commands::process_put_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void fx_spot_generation_config_commands::process_delete(std::ostream& out,
@@ -663,7 +690,9 @@ void fx_spot_generation_config_commands::process_delete(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void fx_spot_generation_config_commands::process_delete_many(std::ostream& out,
@@ -714,7 +743,9 @@ void fx_spot_generation_config_commands::process_delete_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void fx_spot_generation_config_commands::process_versions(std::ostream& out,
@@ -763,7 +794,9 @@ void fx_spot_generation_config_commands::process_versions(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void fx_spot_generation_config_commands::process_version(std::ostream& out,
@@ -811,7 +844,9 @@ void fx_spot_generation_config_commands::process_version(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

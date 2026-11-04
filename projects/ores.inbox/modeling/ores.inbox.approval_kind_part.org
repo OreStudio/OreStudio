@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 398C1134-0D3D-44F3-8CE1-2D9FDBFCB902
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.approval_kind_part
 #+description: Codegen junction model for approval_kind_parts: the parts a kind of approval request names.

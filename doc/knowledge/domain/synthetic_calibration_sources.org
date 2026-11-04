@@ -7,11 +7,11 @@
 #+level: cross
 #+filetags: :marketdata:synthetic:calibration:
 #+created: 2026-10-23
-#+updated: 2026-10-28
+#+updated: 2026-11-03
 
 * Summary
 
-A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. For FX the sources are the daily rates of the central banks and public bodies that the Frankfurter API reaches, the ECB and the Federal Reserve H.10 among them, and for curves the US Treasury par yield curve with the central banks' overnight rates. Each publisher is a market data provider, and an adapter publishes what it published every day as a fixing tick, so a feed that starts takes the newest value. The screen shows the time of the value. The table in "What was read, and when" says which terms were read from an official page and which were not.
+A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. For FX the sources are the daily rates of the central banks and public bodies that the Frankfurter API reaches, the ECB and the Federal Reserve H.10 among them, and for curves the US Treasury par yield curve with the central banks' overnight rates. Each publisher is a market data provider, and an adapter publishes what it published every day as a fixing tick, so a feed that starts takes the newest value. The screen shows the time of the value. The table in "What was read, and when" says which terms were read from an official page and which were not. A volatility surface has no free public source, so its starting quotes are inferred from the spot fixings of its pair by a derived source of our own, as "How a volatility surface starts" describes.
 
 * Detail
 
@@ -74,9 +74,32 @@ What the terms say, read on 2026-10-28:
 
 ** How a generator uses a source
 
-Each generator config names the fixing items it may start from, with a rank, a policy and a window for the volatility. The initial value is the latest fixing on or before the date of the market clock, and the volatility is the spread of the log returns over the window. The config does not fetch anything. The public sources adapter publishes the fixings as durable ticks, and a reader returns the value with its provider and its time. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+Each generator config names the fixing items it may start from, with a rank, a policy and a window for the volatility. The initial value is the latest fixing on or before the date of the market clock, and the volatility is the spread of the log returns over the window. The config does not fetch anything. A feed whose daily variance follows a GJR-GARCH reads the same item over the policy's longer variance window, and that history is fitted, stored and reviewed before the feed runs it; see [[id:5B561453-D754-466E-9234-5360AC611F02][Calibrating a synthetic feed: from fixings to a reviewed run]]. The public sources adapter publishes the fixings as durable ticks, and a reader returns the value with its provider and its time. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
 
 A copy of a source's statistics keeps the credit and the notice that its terms ask for. The ECB rule is the strictest, because it allows reuse when the statistics are not modified. So each ECB value is stored exactly as the ECB published it, with the credit "Source: ECB statistics". A pair that one publisher does not quote is usually quoted by another, so a feed takes it directly where it can. Where none does, a cross rate, such as USD/JPY from EUR/JPY and EUR/USD, is computed when the generator starts, from two fixings of one publisher. It is an input to a synthetic price and is not published as an ECB statistic. That is our reading of the policy, and the owner of the ECB policy has not confirmed it. If it proves too strict, the pairs that need a cross take their level from a source that quotes the pair directly.
+
+** The history every environment holds
+
+The GARCH fit of a spot and the derived quotes of a surface need years of fixings, where the level of a spot needs only the latest. Every environment holds five years of daily fixings for each catalogued provider and pair from a static DQ snapshot, taken on a stated date and refreshed by hand. The public sources adapter fetches, for each item, only the days from its latest stored fixing to today, so an environment loaded from an old snapshot catches up in one request per item. The snapshot is published with the repository, which is public, so a provider is in it only if its terms allow its statistics to be redistributed; a provider whose terms allow storage and not redistribution stays adapter-only.
+
+** How a volatility surface starts
+
+A synthetic volatility surface needs starting quotes, and no free public source publishes FX implied volatilities: DBnomics has no such dataset, the BIS and the ECB publish none, the free volatility indices on FRED are equity and rates indices whose storage terms are unread, and the ICE indices there may not be reproduced. The daily FX surfaces on offer are commercial. The starting quotes therefore come from a *derived source*, a publisher of our own whose quotes are inferred from the spot fixings of the pair; [[id:099697A6-8526-48E0-A63D-DB3932C06468][Derivation of FX volatility quotes from historical fixings]] describes how it sits in the system. A real vol source of the same items, where one is available, ranks above it in the generator's calibration policy and replaces it.
+
+The inference reads the Gram-Charlier smile of [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Backus, Foresi, Li and Wu]] at the market's delta pillars. With $\sigma$ the volatility of the log spot over the expiry, $\gamma_1$ its skewness and $\gamma_2$ its excess kurtosis, the 25-delta risk reversal is about $0.225\,\sigma\gamma_1$, the 25-delta smile butterfly about $0.019\,\sigma\gamma_2$, and the ATM volatility $\sigma(1 - \gamma_2/24)$; the paper summary gives the 10-delta points and the derivation. Each input is estimated as follows.
+
+- *The level.* $\sigma$ for an expiry is the realised volatility over a window of the same length, annualised, and never shorter than one month. Option markets price volatility above what is later realised; Della Corte, Ramadorai and Sarno (2016) measure this volatility risk premium in currencies. No free source publishes it, so the ATM level is the realised volatility times an authored multiplier per pair, which defaults to one.
+- *The shape.* Skewness and kurtosis are measured on daily returns over the whole history held, because a pair's shape changes more slowly than its level, and shrunk toward authored priors, $\tilde{\gamma} = w\hat{\gamma} + (1 - w)\gamma^{prior}$ with $w = n/(n + n_0)$. The shrinkage answers the noise: for normal data the standard errors of the two moments are about $\sqrt{6/n}$ and $\sqrt{24/n}$, 0.15 and 0.31 on a year of daily returns, and fat tails make them larger. The shrunk pair, scaled to each expiry as below, is held inside the region where the Gram-Charlier expansion is a density (Jondeau and Rockinger, 2001): the excess kurtosis in $[0, 4]$, and the skewness scaled toward zero as little as keeps the expansion non-negative.
+- *The term structure.* For independent days the skewness and excess kurtosis of an $n$-day return are $\gamma_1/\sqrt{n}$ and $\gamma_2/n$, so the risk reversal falls as $1/\sqrt{t}$, as the skew of the SSVI surface the generator fits does, and the butterfly as $1/t$.
+- *The convention.* The quotes follow the pair's =fx_option_convention=. Where its butterfly style is the broker strangle, the market strangle is solved against a smile fitted to the inferred volatilities.
+
+The computation is native to =ores.analytics.quant=. =math/return_moments.hpp= holds the moments, the shrinkage, the region and the term scaling; =math/fx_delta.hpp= the deltas and strikes of the four delta conventions and the ATM strike; =math/fx_smile_quotes.hpp= the smile and its quotes in a convention, the broker butterfly solved so that the broker strangle prices on the smile as it does at the single volatility; and =math/fx_vol_derivation.hpp= the one entry point from a pair's daily returns and its expiries to its quotes.
+
+The quotes are plausible and not observed. A spot path carries no view of the events an option market prices, no risk premium beyond the authored multiplier, and, with clustered returns, more kurtosis at long horizons than the independent-day scaling gives.
+
+** How derived values relate to their sources
+
+A derived quote, and a cross rate computed from two fixings, are the output of our own computation, and they are never presented as the statistics of the publisher whose fixings fed them. The inputs are stored exactly as published, with their credit, such as "Source: ECB statistics". The outputs carry the identity of the derived publisher alone: no publisher's credit, no publisher's name in their provenance as their source, and no claim that they are a publisher's figures. A person who follows a derived quote's provenance finds the derived publisher and the computation; the fixings it read are an internal input of that computation.
 
 ** What this replaces
 
@@ -89,3 +112,12 @@ The 2016 ORE sample vintage no longer calibrates any generator. The datasets tha
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]] — completes: who owns the configs that carry the calibration entry.
 - [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][The mapping inventory lists the vendor instruments each provider carries]] — completes: the vendor ids the calibrated generators publish.
+- [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Paper summary: accounting for biases in Black-Scholes]] — the smile the starting surface is read from.
+- [[id:099697A6-8526-48E0-A63D-DB3932C06468][Derivation of FX volatility quotes from historical fixings]] — completes: where the derived source sits behind the adapter seam.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — completes: the GARCH fit the five-year history feeds.
+
+** Further reading
+
+- Della Corte, P., Ramadorai, T. and Sarno, L. (2016). "Volatility risk premia and exchange rate predictability." /Journal of Financial Economics/, 120(1), 21-40. [[https://doi.org/10.1016/j.jfineco.2016.02.015][doi:10.1016/j.jfineco.2016.02.015]].
+- Jondeau, E. and Rockinger, M. (2001). "Gram-Charlier densities." /Journal of Economic Dynamics and Control/, 25(10), 1457-1483. [[https://serval.unil.ch/notice/serval:BIB_2F2004420977][Serval record]].
+- [[https://real-statistics.com/tests-normality-and-symmetry/analysis-skewness-kurtosis/][Real Statistics: analysis of skewness and kurtosis]]. The large-sample standard errors and their limits.

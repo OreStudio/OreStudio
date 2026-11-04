@@ -56,26 +56,7 @@ struct commodity_curve_config_entity {
     boost::uuids::uuid party_id;
     boost::uuids::uuid curve_definition_id;
     std::string currency;
-    std::optional<std::string> base_price_curve;
-    std::optional<std::string> base_yield_curve;
-    std::optional<std::string> yield_curve;
-    std::optional<std::string> spot_quote;
-    bool has_quotes = false;
-    std::optional<std::string> day_counter;
-    std::optional<std::string> interpolation_method;
-    std::optional<std::string> conventions;
     std::optional<std::string> extrapolation;
-    bool has_basis_configuration = false;
-    std::optional<std::string> basis_base_price_curve;
-    std::optional<std::string> basis_base_price_conventions;
-    std::optional<std::string> basis_conventions;
-    std::optional<std::string> basis_day_counter;
-    std::optional<std::string> basis_interpolation_method;
-    std::optional<std::string> basis_add_basis;
-    std::optional<int> basis_month_offset;
-    std::optional<std::string> basis_average_base;
-    std::optional<std::string> basis_price_as_historical_fixing;
-    bool has_price_segments = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -95,28 +76,7 @@ struct commodity_curve_config_entity {
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("curve_definition_id", &e::curve_definition_id) |
                query_builder::bind("currency", &e::currency) |
-               query_builder::bind("base_price_curve", &e::base_price_curve) |
-               query_builder::bind("base_yield_curve", &e::base_yield_curve) |
-               query_builder::bind("yield_curve", &e::yield_curve) |
-               query_builder::bind("spot_quote", &e::spot_quote) |
-               query_builder::bind("has_quotes", &e::has_quotes) |
-               query_builder::bind("day_counter", &e::day_counter) |
-               query_builder::bind("interpolation_method", &e::interpolation_method) |
-               query_builder::bind("conventions", &e::conventions) |
                query_builder::bind("extrapolation", &e::extrapolation) |
-               query_builder::bind("has_basis_configuration", &e::has_basis_configuration) |
-               query_builder::bind("basis_base_price_curve", &e::basis_base_price_curve) |
-               query_builder::bind("basis_base_price_conventions",
-                                   &e::basis_base_price_conventions) |
-               query_builder::bind("basis_conventions", &e::basis_conventions) |
-               query_builder::bind("basis_day_counter", &e::basis_day_counter) |
-               query_builder::bind("basis_interpolation_method", &e::basis_interpolation_method) |
-               query_builder::bind("basis_add_basis", &e::basis_add_basis) |
-               query_builder::bind("basis_month_offset", &e::basis_month_offset) |
-               query_builder::bind("basis_average_base", &e::basis_average_base) |
-               query_builder::bind("basis_price_as_historical_fixing",
-                                   &e::basis_price_as_historical_fixing) |
-               query_builder::bind("has_price_segments", &e::has_price_segments) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

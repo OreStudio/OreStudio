@@ -21,12 +21,14 @@
 #define ORES_REPORTING_API_WORKFLOW_ENGINE_SETTINGS_APPLY_WORKFLOW_HPP
 
 #include "ores.inbox.api/workflow/apply_step_command.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include <rfl/json.hpp>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::workflow {
@@ -47,6 +49,12 @@ inline constexpr std::string_view apply_engine_settings_changes_subject =
 struct engine_settings_apply_workflow_request {
     std::string request_id;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_apply_workflow_request&) {
+    return std::tuple{
+        utility::codec::field{"request_id", &engine_settings_apply_workflow_request::request_id}};
+}
+static_assert(utility::codec::names_every_member<engine_settings_apply_workflow_request>());
 
 /**
  * @brief Registers the engine_settings_apply_workflow definition.
@@ -82,11 +90,13 @@ register_engine_settings_apply_workflow(ores::workflow::service::workflow_regist
                          const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
         // A start that names no request has no steps. The engine logs that and
         // creates no instance, which is the refusal a caller needs.
-        const auto parsed = rfl::json::read<engine_settings_apply_workflow_request>(request_json);
+        const auto parsed =
+            ores::utility::codec::json::try_read<engine_settings_apply_workflow_request>(
+                request_json);
         if (!parsed || parsed->request_id.empty())
             return {};
 
-        const auto command = rfl::json::write(
+        const auto command = utility::codec::json::write(
             ores::inbox::workflow::apply_step_command{.request_id = parsed->request_id});
         const auto build = [command](const std::string& /*request_json*/,
                                      const workflow_step_results& /*results*/) {

@@ -46,11 +46,17 @@ export interface CurveEntity {
     readonly vector: string;
 }
 
-/** A child element an entry holds, and the column that records its presence. */
+/**
+ * A child element an entry holds, and how the entry records its presence: a
+ * column of the entry's rows, or the rows of an entity the element's
+ * construction writes.
+ */
 export interface CurveBlock {
     readonly element: string;
     /** The column that records whether the entry holds the element, and empty for none. */
     readonly presence: string;
+    /** The entity whose row states the element, and empty for none. */
+    readonly presenceEntity: string;
 }
 
 /** One kind of a collection row, and the leaves the projection reads for it. */
@@ -60,10 +66,18 @@ export interface CurveCollectionKind {
     readonly leaves: readonly CurveCollectionLeaf[];
 }
 
-/** One leaf of a kind: the column that holds it and the ORE element it is. */
+/**
+ * One leaf of a kind: the ORE element it is, and the part of the row that holds
+ * it. A row's kinds share no settings column, so each leaf is in a part of the
+ * row, joined to it by the collection's part key.
+ */
 export interface CurveCollectionLeaf {
     readonly column: string;
     readonly ore: string;
+    /** The part table that holds the leaf. */
+    readonly entity: string;
+    /** The document vector that carries the part's rows. */
+    readonly vector: string;
 }
 
 /** A child element an entry holds rows of, and the columns that place its leaves. */
@@ -80,6 +94,8 @@ export interface CurveCollection {
     readonly kindColumn: string;
     /** The column a quote of one row joins back to, or empty for no quotes. */
     readonly quoteParent: string;
+    /** The column a part of one row joins back to. */
+    readonly partParent: string;
     /** The kinds a row may state, and the leaves each kind reads. */
     readonly kinds: readonly CurveCollectionKind[];
 }
@@ -271,10 +287,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'ParametricSmileConfiguration',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -284,6 +302,10 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         entryElement: 'SwaptionVolatility',
         definitionKey: 'curve_definition_id',
         entities: [
+            {
+                entity: 'swaption_volatility_smile',
+                vector: 'swaption_volatility_smiles',
+            },
             {
                 entity: 'swaption_proxy_config',
                 vector: 'swaption_proxy_configs',
@@ -392,41 +414,44 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
             {
                 entity: 'swaption_volatility_config',
+                column: 'quote_tag',
+                ore: 'QuoteTag',
+                xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/QuoteTag',
+            },
+            {
+                entity: 'swaption_volatility_smile',
                 column: 'smile_option_tenors',
                 ore: 'SmileOptionTenors',
                 xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileOptionTenors',
             },
             {
-                entity: 'swaption_volatility_config',
+                entity: 'swaption_volatility_smile',
                 column: 'smile_swap_tenors',
                 ore: 'SmileSwapTenors',
                 xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileSwapTenors',
             },
             {
-                entity: 'swaption_volatility_config',
+                entity: 'swaption_volatility_smile',
                 column: 'smile_spreads',
                 ore: 'SmileSpreads',
                 xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileSpreads',
-            },
-            {
-                entity: 'swaption_volatility_config',
-                column: 'quote_tag',
-                ore: 'QuoteTag',
-                xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/QuoteTag',
             },
         ],
         blocks: [
             {
                 element: 'ProxyConfig',
                 presence: '',
+                presenceEntity: 'swaption_proxy_config',
             },
             {
                 element: 'ParametricSmileConfiguration',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -513,6 +538,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -717,18 +743,22 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'ProxyConfig',
                 presence: '',
+                presenceEntity: 'cap_floor_proxy_config',
             },
             {
                 element: 'ParametricSmileConfiguration',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'BootstrapConfig',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -801,10 +831,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Terms',
                 presence: '',
+                presenceEntity: 'cds_volatility_term',
             },
             {
                 element: 'StrikeSurface',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -859,6 +891,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Configurations',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -951,14 +984,17 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Report',
                 presence: 'has_report',
+                presenceEntity: '',
             },
             {
                 element: 'BootstrapConfig',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'Segments',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [
@@ -969,6 +1005,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 parentKey: 'curve_definition_id',
                 kindColumn: 'segment_type',
                 quoteParent: 'curve_segment_id',
+                partParent: 'curve_segment_id',
                 kinds: [
                     {
                         kind: 'Direct',
@@ -976,18 +1013,26 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                         ],
                     },
@@ -997,22 +1042,32 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'projection_curve',
                                 ore: 'ProjectionCurve',
+                                entity: 'curve_segment_projection',
+                                vector: 'segment_projections',
                             },
                         ],
                     },
@@ -1022,22 +1077,32 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'projection_curve',
                                 ore: 'ProjectionCurve',
+                                entity: 'curve_segment_projection',
+                                vector: 'segment_projections',
                             },
                         ],
                     },
@@ -1047,34 +1112,50 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'projection_curve_pay',
                                 ore: 'ProjectionCurvePay',
+                                entity: 'curve_segment_tenor_basis_curves',
+                                vector: 'segment_tenor_basis_curves',
                             },
                             {
                                 column: 'projection_curve_receive',
                                 ore: 'ProjectionCurveReceive',
+                                entity: 'curve_segment_tenor_basis_curves',
+                                vector: 'segment_tenor_basis_curves',
                             },
                             {
                                 column: 'projection_curve_long',
                                 ore: 'ProjectionCurveLong',
+                                entity: 'curve_segment_tenor_basis_curves',
+                                vector: 'segment_tenor_basis_curves',
                             },
                             {
                                 column: 'projection_curve_short',
                                 ore: 'ProjectionCurveShort',
+                                entity: 'curve_segment_tenor_basis_curves',
+                                vector: 'segment_tenor_basis_curves',
                             },
                         ],
                     },
@@ -1084,34 +1165,50 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'discount_curve',
                                 ore: 'DiscountCurve',
+                                entity: 'curve_segment_cross_currency_terms',
+                                vector: 'segment_cross_currency_terms',
                             },
                             {
                                 column: 'spot_rate',
                                 ore: 'SpotRate',
+                                entity: 'curve_segment_cross_currency_terms',
+                                vector: 'segment_cross_currency_terms',
                             },
                             {
                                 column: 'projection_curve_domestic',
                                 ore: 'ProjectionCurveDomestic',
+                                entity: 'curve_segment_cross_currency_terms',
+                                vector: 'segment_cross_currency_terms',
                             },
                             {
                                 column: 'projection_curve_foreign',
                                 ore: 'ProjectionCurveForeign',
+                                entity: 'curve_segment_cross_currency_terms',
+                                vector: 'segment_cross_currency_terms',
                             },
                         ],
                     },
@@ -1121,22 +1218,32 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'reference_curve',
                                 ore: 'ReferenceCurve',
+                                entity: 'curve_segment_reference',
+                                vector: 'segment_references',
                             },
                         ],
                     },
@@ -1146,18 +1253,26 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                         ],
                     },
@@ -1167,18 +1282,26 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'extrapolate_flat',
                                 ore: 'ExtrapolateFlat',
+                                entity: 'curve_segment_extrapolation',
+                                vector: 'segment_extrapolations',
                             },
                         ],
                     },
@@ -1188,14 +1311,20 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'conventions',
                                 ore: 'Conventions',
+                                entity: 'curve_segment_convention',
+                                vector: 'segment_conventions',
                             },
                             {
                                 column: 'reference_curve',
                                 ore: 'ReferenceCurve',
+                                entity: 'curve_segment_reference',
+                                vector: 'segment_references',
                             },
                             {
                                 column: 'extrapolate_flat',
                                 ore: 'ExtrapolateFlat',
+                                entity: 'curve_segment_extrapolation',
+                                vector: 'segment_extrapolations',
                             },
                         ],
                     },
@@ -1203,20 +1332,28 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                         kind: 'WeightedAverage',
                         leaves: [
                             {
-                                column: 'reference_curve',
+                                column: 'reference_curve_1',
                                 ore: 'ReferenceCurve1',
+                                entity: 'curve_segment_weighted_average',
+                                vector: 'segment_weighted_averages',
                             },
                             {
                                 column: 'reference_curve_2',
                                 ore: 'ReferenceCurve2',
+                                entity: 'curve_segment_weighted_average',
+                                vector: 'segment_weighted_averages',
                             },
                             {
                                 column: 'weight_1',
                                 ore: 'Weight1',
+                                entity: 'curve_segment_weighted_average',
+                                vector: 'segment_weighted_averages',
                             },
                             {
                                 column: 'weight_2',
                                 ore: 'Weight2',
+                                entity: 'curve_segment_weighted_average',
+                                vector: 'segment_weighted_averages',
                             },
                         ],
                     },
@@ -1226,6 +1363,8 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'reference_curve',
                                 ore: 'ReferenceCurve',
+                                entity: 'curve_segment_reference',
+                                vector: 'segment_references',
                             },
                         ],
                     },
@@ -1235,30 +1374,44 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                             {
                                 column: 'pillar_choice',
                                 ore: 'PillarChoice',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'priority',
                                 ore: 'Priority',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'min_distance',
                                 ore: 'MinDistance',
+                                entity: 'curve_segment_pillar_rule',
+                                vector: 'segment_pillar_rules',
                             },
                             {
                                 column: 'ibor_index',
                                 ore: 'IborIndex',
+                                entity: 'curve_segment_ibor_fallback',
+                                vector: 'segment_ibor_fallbacks',
                             },
                             {
                                 column: 'rfr_curve',
                                 ore: 'RfrCurve',
+                                entity: 'curve_segment_ibor_fallback',
+                                vector: 'segment_ibor_fallbacks',
                             },
                             {
                                 column: 'rfr_index',
                                 ore: 'RfrIndex',
+                                entity: 'curve_segment_ibor_fallback',
+                                vector: 'segment_ibor_fallbacks',
                             },
                             {
                                 column: 'spread',
                                 ore: 'Spread',
+                                entity: 'curve_segment_ibor_fallback',
+                                vector: 'segment_ibor_fallbacks',
                             },
                         ],
                     },
@@ -1271,6 +1424,10 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         entryElement: 'InflationCurve',
         definitionKey: 'curve_definition_id',
         entities: [
+            {
+                entity: 'inflation_seasonality',
+                vector: 'inflation_seasonalities',
+            },
             {
                 entity: 'inflation_seasonality_factor',
                 vector: 'seasonality_factors',
@@ -1375,11 +1532,13 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         blocks: [
             {
                 element: 'Seasonality',
-                presence: 'has_seasonality',
+                presence: '',
+                presenceEntity: 'inflation_seasonality',
             },
             {
                 element: 'Quotes',
                 presence: 'has_quotes',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -1512,10 +1671,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
             {
                 element: 'BootstrapConfig',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -1602,10 +1763,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'DividendInterpolation',
                 presence: 'has_dividend_interpolation',
+                presenceEntity: '',
             },
             {
                 element: 'Quotes',
                 presence: 'has_quotes',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -1698,10 +1861,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'VolatilityConfig',
                 presence: 'has_volatility_config',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -1899,6 +2064,22 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 entity: 'commodity_curve_config',
                 vector: 'commodity_curves',
             },
+            {
+                entity: 'commodity_curve_cross_currency',
+                vector: 'commodity_curve_cross_currencies',
+            },
+            {
+                entity: 'commodity_curve_interpolation',
+                vector: 'commodity_curve_interpolations',
+            },
+            {
+                entity: 'commodity_curve_direct',
+                vector: 'commodity_curve_directs',
+            },
+            {
+                entity: 'commodity_curve_basis',
+                vector: 'commodity_curve_bases',
+            },
         ],
         parameters: [
             {
@@ -1921,69 +2102,73 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
             {
                 entity: 'commodity_curve_config',
+                column: 'extrapolation',
+                ore: 'Extrapolation',
+                xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/Extrapolation',
+            },
+            {
+                entity: 'commodity_curve_cross_currency',
                 column: 'base_price_curve',
                 ore: 'BasePriceCurve',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/BasePriceCurve',
             },
             {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_cross_currency',
                 column: 'base_yield_curve',
                 ore: 'BaseYieldCurve',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/BaseYieldCurve',
             },
             {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_cross_currency',
                 column: 'yield_curve',
                 ore: 'YieldCurve',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/YieldCurve',
             },
             {
-                entity: 'commodity_curve_config',
-                column: 'spot_quote',
-                ore: 'SpotQuote',
-                xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/SpotQuote',
-            },
-            {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_interpolation',
                 column: 'day_counter',
                 ore: 'DayCounter',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/DayCounter',
             },
             {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_interpolation',
                 column: 'interpolation_method',
                 ore: 'InterpolationMethod',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/InterpolationMethod',
             },
             {
-                entity: 'commodity_curve_config',
+                entity: 'commodity_curve_direct',
+                column: 'spot_quote',
+                ore: 'SpotQuote',
+                xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/SpotQuote',
+            },
+            {
+                entity: 'commodity_curve_direct',
                 column: 'conventions',
                 ore: 'Conventions',
                 xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/Conventions',
-            },
-            {
-                entity: 'commodity_curve_config',
-                column: 'extrapolation',
-                ore: 'Extrapolation',
-                xpath: 'CurveConfiguration/CommodityCurves/CommodityCurve/Extrapolation',
             },
         ],
         blocks: [
             {
                 element: 'BasisConfiguration',
-                presence: 'has_basis_configuration',
+                presence: '',
+                presenceEntity: 'commodity_curve_basis',
             },
             {
                 element: 'PriceSegments',
-                presence: 'has_price_segments',
+                presence: '',
+                presenceEntity: 'commodity_price_segment',
             },
             {
                 element: 'Quotes',
                 presence: 'has_quotes',
+                presenceEntity: '',
             },
             {
                 element: 'BootstrapConfig',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -2088,10 +2273,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'VolatilityConfig',
                 presence: 'has_volatility_config',
+                presenceEntity: '',
             },
             {
                 element: 'Report',
                 presence: '',
+                presenceEntity: '',
             },
         ],
         collections: [],
@@ -2283,6 +2470,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'VolatilityConfig',
                 presence: 'has_volatility_config',
+                presenceEntity: '',
             },
         ],
         collections: [],

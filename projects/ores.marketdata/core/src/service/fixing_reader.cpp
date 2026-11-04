@@ -20,6 +20,7 @@
 #include "ores.marketdata.core/service/fixing_reader.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.marketdata.core/repository/fixing_read_repository.hpp"
+#include "ores.marketdata.core/service/series_resolution.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -36,61 +37,6 @@ using ores::database::domain::refuse;
 using ores::utility::domain::result;
 
 namespace {
-
-/// The context a read of @p party_id sees, or the refusal of a party it may not read.
-std::variant<ores::database::context, result> scope_to_party(ores::database::context ctx,
-                                                             const std::string& party_id) {
-    if (party_id.empty())
-        return ctx;
-    boost::uuids::uuid named;
-    try {
-        named = boost::uuids::string_generator{}(party_id);
-    } catch (const std::exception&) {
-        return refuse(outcome_code::filter_range_invalid, {.field = "party_id", .value = party_id});
-    }
-    // A service holds no party of its own, so it names the party whose data it reads. A
-    // session that sees parties narrows to the one it names, and only to one it can see.
-    if (!ctx.visible_party_ids().empty() &&
-        std::ranges::find(ctx.visible_party_ids(), named) == ctx.visible_party_ids().end())
-        return refuse(outcome_code::party_required, {.entity = "fixings"});
-    return ctx.with_party(ctx.tenant_id(), named, {named}, ctx.service_account());
-}
-
-/// The one series an item names, or the refusal of a read that cannot name one.
-std::variant<repository::fixing_series, result> resolve(ores::database::context ctx,
-                                                        const std::string& item,
-                                                        const std::string& provider_code,
-                                                        const std::string& party_id) {
-    const auto scoped = scope_to_party(std::move(ctx), party_id);
-    if (const auto* refused = std::get_if<result>(&scoped))
-        return *refused;
-    ctx = std::get<ores::database::context>(scoped);
-    // The party policy shows a session with no party no fixing, so an empty reply would look
-    // like an item with no fixings.
-    if (ctx.visible_party_ids().empty())
-        return refuse(outcome_code::party_required, {.entity = "fixings"});
-    const auto series = repository::fixing_read_repository{}.series_of(ctx, item, provider_code);
-    if (series.empty())
-        return refuse(outcome_code::not_found, {.entity = "fixing item " + item});
-    if (series.size() > 1) {
-        // One provider can reach a session through two parties, so the refusal names both
-        // counts; naming the provider settles only the second.
-        std::set<std::string> parties;
-        std::set<std::string> providers;
-        for (const auto& s : series) {
-            parties.insert(boost::uuids::to_string(s.party_id));
-            providers.insert(s.provider_code);
-        }
-        std::string list;
-        for (const auto& p : providers)
-            list += (list.empty() ? "" : ", ") + p;
-        return refuse(outcome_code::series_ambiguous,
-                      {.entity = "fixings",
-                       .value = std::to_string(series.size()),
-                       .reason = std::to_string(parties.size()) + " parties; providers " + list});
-    }
-    return series.front();
-}
 
 template <typename Response>
 void name_the_source(ores::database::context ctx,
@@ -115,7 +61,8 @@ messaging::get_fixing_response fixing_reader::latest(ores::database::context ctx
             refuse(outcome_code::filter_range_invalid, {.field = "on_or_before", .value = "date"});
         return response;
     }
-    const auto resolved = resolve(ctx, request.item, request.provider_code, request.party_id);
+    const auto resolved = resolve_series(
+        ctx, request.item, request.provider_code, request.party_id, "fixings", "fixing item");
     if (const auto* refused = std::get_if<result>(&resolved)) {
         response.result = *refused;
         return response;
@@ -155,7 +102,8 @@ fixing_reader::window(ores::database::context ctx,
                    {.entity = "fixings", .limit = std::to_string(max_days) + " days"});
         return response;
     }
-    const auto resolved = resolve(ctx, request.item, request.provider_code, request.party_id);
+    const auto resolved = resolve_series(
+        ctx, request.item, request.provider_code, request.party_id, "fixings", "fixing item");
     if (const auto* refused = std::get_if<result>(&resolved)) {
         response.result = *refused;
         return response;

@@ -26,28 +26,42 @@
 #define ORES_IAM_API_MESSAGING_ACCOUNT_CREDENTIAL_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/account_credential.hpp"
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
 
 struct account_credential_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const account_credential_key&, const account_credential_key&) = default;
 };
 
 struct account_credential_lookup {
     account_credential_key key;
     std::optional<ores::iam::domain::account_credential> account_credential;
+
+    friend bool operator==(const account_credential_lookup&,
+                           const account_credential_lookup&) = default;
 };
 
 struct account_credentials_filter {
     std::optional<boost::uuids::uuid> account_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+
+    friend bool operator==(const account_credentials_filter&,
+                           const account_credentials_filter&) = default;
 };
 
 struct account_credential_event {
@@ -57,17 +71,26 @@ struct account_credential_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const account_credential_event&,
+                           const account_credential_event&) = default;
 };
 
 struct account_credential_version_key {
     account_credential_key account_credential;
     std::uint32_t version;
+
+    friend bool operator==(const account_credential_version_key&,
+                           const account_credential_version_key&) = default;
 };
 
 struct account_credential_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const account_credential_versions_filter&,
+                           const account_credential_versions_filter&) = default;
 };
 
 struct list_account_credentials_request {
@@ -85,12 +108,18 @@ struct list_account_credentials_request {
     ores::utility::domain::order order;
     std::optional<account_credentials_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_account_credentials_request&,
+                           const list_account_credentials_request&) = default;
 };
 
 struct list_account_credentials_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_credential> account_credentials;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_credentials_response&,
+                           const list_account_credentials_response&) = default;
 };
 
 struct get_account_credential_request {
@@ -104,11 +133,17 @@ struct get_account_credential_request {
      */
     static constexpr bool requires_session = true;
     account_credential_key key;
+
+    friend bool operator==(const get_account_credential_request&,
+                           const get_account_credential_request&) = default;
 };
 
 struct get_account_credential_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_credential> account_credential;
+
+    friend bool operator==(const get_account_credential_response&,
+                           const get_account_credential_response&) = default;
 };
 
 struct get_many_account_credentials_request {
@@ -122,11 +157,17 @@ struct get_many_account_credentials_request {
      */
     static constexpr bool requires_session = true;
     std::vector<account_credential_key> keys;
+
+    friend bool operator==(const get_many_account_credentials_request&,
+                           const get_many_account_credentials_request&) = default;
 };
 
 struct get_many_account_credentials_response {
     ores::utility::domain::result result;
     std::vector<account_credential_lookup> entries;
+
+    friend bool operator==(const get_many_account_credentials_response&,
+                           const get_many_account_credentials_response&) = default;
 };
 
 struct list_by_account_id_account_credentials_request {
@@ -146,12 +187,18 @@ struct list_by_account_id_account_credentials_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_credentials_filter> filter;
+
+    friend bool operator==(const list_by_account_id_account_credentials_request&,
+                           const list_by_account_id_account_credentials_request&) = default;
 };
 
 struct list_by_account_id_account_credentials_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_credential> account_credentials;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_account_id_account_credentials_response&,
+                           const list_by_account_id_account_credentials_response&) = default;
 };
 
 struct list_account_credential_versions_request {
@@ -169,12 +216,18 @@ struct list_account_credential_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_credential_versions_filter> filter;
+
+    friend bool operator==(const list_account_credential_versions_request&,
+                           const list_account_credential_versions_request&) = default;
 };
 
 struct list_account_credential_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_credential> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_credential_versions_response&,
+                           const list_account_credential_versions_response&) = default;
 };
 
 struct get_account_credential_version_request {
@@ -188,11 +241,17 @@ struct get_account_credential_version_request {
      */
     static constexpr bool requires_session = true;
     account_credential_version_key key;
+
+    friend bool operator==(const get_account_credential_version_request&,
+                           const get_account_credential_version_request&) = default;
 };
 
 struct get_account_credential_version_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_credential> version;
+
+    friend bool operator==(const get_account_credential_version_response&,
+                           const get_account_credential_version_response&) = default;
 };
 
 /**
@@ -204,11 +263,523 @@ struct get_account_credential_version_response {
  * of them.
  */
 namespace account_credential_event_subjects {
-inline constexpr std::string_view created = "iam.v1.account_credentials_events.created";
-inline constexpr std::string_view updated = "iam.v1.account_credentials_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.account_credentials.created";
+inline constexpr std::string_view updated = "iam.v1.events.account_credentials.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.deleted";
+}
+/**
+ * @brief The members of account_credential_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_credential_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &account_credential_key::id},
+    };
 }
 
+/**
+ * @brief The members of account_credential_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_credential_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &account_credential_lookup::key},
+        utility::codec::field{"account_credential", &account_credential_lookup::account_credential},
+    };
 }
+
+/**
+ * @brief The members of account_credentials_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_credentials_filter&) {
+    return std::tuple{
+        utility::codec::field{"account_id", &account_credentials_filter::account_id},
+        utility::codec::field{"id_one_of", &account_credentials_filter::id_one_of},
+        utility::codec::field{"account_id_one_of", &account_credentials_filter::account_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of account_credential_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_credential_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &account_credential_event::event_id},
+        utility::codec::field{"key", &account_credential_event::key},
+        utility::codec::field{"action", &account_credential_event::action},
+        utility::codec::field{"version", &account_credential_event::version},
+        utility::codec::field{"occurred_at", &account_credential_event::occurred_at},
+        utility::codec::field{"correlation_id", &account_credential_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of account_credential_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_credential_version_key&) {
+    return std::tuple{
+        utility::codec::field{"account_credential",
+                              &account_credential_version_key::account_credential},
+        utility::codec::field{"version", &account_credential_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of account_credential_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_credential_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &account_credential_versions_filter::version},
+        utility::codec::field{"from_version", &account_credential_versions_filter::from_version},
+        utility::codec::field{"to_version", &account_credential_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_account_credentials_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_credentials_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_account_credentials_request::offset},
+        utility::codec::field{"limit", &list_account_credentials_request::limit},
+        utility::codec::field{"order", &list_account_credentials_request::order},
+        utility::codec::field{"filter", &list_account_credentials_request::filter},
+        utility::codec::field{"as_of", &list_account_credentials_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_account_credentials_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_credentials_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_account_credentials_response::result},
+        utility::codec::field{"account_credentials",
+                              &list_account_credentials_response::account_credentials},
+        utility::codec::field{"total", &list_account_credentials_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_account_credential_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_credential_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_account_credential_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_account_credential_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_credential_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_account_credential_response::result},
+        utility::codec::field{"account_credential",
+                              &get_account_credential_response::account_credential},
+    };
+}
+
+/**
+ * @brief The members of get_many_account_credentials_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_account_credentials_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_account_credentials_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_account_credentials_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_account_credentials_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_account_credentials_response::result},
+        utility::codec::field{"entries", &get_many_account_credentials_response::entries},
+    };
+}
+
+/**
+ * @brief The members of list_by_account_id_account_credentials_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_account_id_account_credentials_request&) {
+    return std::tuple{
+        utility::codec::field{"account_id",
+                              &list_by_account_id_account_credentials_request::account_id},
+        utility::codec::field{"scope", &list_by_account_id_account_credentials_request::scope},
+        utility::codec::field{"offset", &list_by_account_id_account_credentials_request::offset},
+        utility::codec::field{"limit", &list_by_account_id_account_credentials_request::limit},
+        utility::codec::field{"order", &list_by_account_id_account_credentials_request::order},
+        utility::codec::field{"filter", &list_by_account_id_account_credentials_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_account_id_account_credentials_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_account_id_account_credentials_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_account_id_account_credentials_response::result},
+        utility::codec::field{
+            "account_credentials",
+            &list_by_account_id_account_credentials_response::account_credentials},
+        utility::codec::field{"total", &list_by_account_id_account_credentials_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_account_credential_versions_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_credential_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_account_credential_versions_request::key},
+        utility::codec::field{"offset", &list_account_credential_versions_request::offset},
+        utility::codec::field{"limit", &list_account_credential_versions_request::limit},
+        utility::codec::field{"order", &list_account_credential_versions_request::order},
+        utility::codec::field{"filter", &list_account_credential_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_account_credential_versions_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_credential_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_account_credential_versions_response::result},
+        utility::codec::field{"versions", &list_account_credential_versions_response::versions},
+        utility::codec::field{"total", &list_account_credential_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_account_credential_version_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_credential_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_account_credential_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_account_credential_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_credential_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_account_credential_version_response::result},
+        utility::codec::field{"version", &get_account_credential_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_credential_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_credential_key& v);
+    static ores::iam::messaging::account_credential_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_credential_key& v);
+    static ores::iam::messaging::account_credential_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_credential_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_credential_lookup& v);
+    static ores::iam::messaging::account_credential_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_credential_lookup& v);
+    static ores::iam::messaging::account_credential_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_credentials_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_credentials_filter& v);
+    static ores::iam::messaging::account_credentials_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_credentials_filter& v);
+    static ores::iam::messaging::account_credentials_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_credential_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_credential_event& v);
+    static ores::iam::messaging::account_credential_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_credential_event& v);
+    static ores::iam::messaging::account_credential_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_credential_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_credential_version_key& v);
+    static ores::iam::messaging::account_credential_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_credential_version_key& v);
+    static ores::iam::messaging::account_credential_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_credential_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::account_credential_versions_filter& v);
+    static ores::iam::messaging::account_credential_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::account_credential_versions_filter& v);
+    static ores::iam::messaging::account_credential_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_account_credentials_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_account_credentials_request& v);
+    static ores::iam::messaging::list_account_credentials_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_account_credentials_request& v);
+    static ores::iam::messaging::list_account_credentials_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_account_credentials_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_account_credentials_response& v);
+    static ores::iam::messaging::list_account_credentials_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_account_credentials_response& v);
+    static ores::iam::messaging::list_account_credentials_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_credential_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_account_credential_request& v);
+    static ores::iam::messaging::get_account_credential_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_account_credential_request& v);
+    static ores::iam::messaging::get_account_credential_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_credential_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_account_credential_response& v);
+    static ores::iam::messaging::get_account_credential_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::get_account_credential_response& v);
+    static ores::iam::messaging::get_account_credential_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_account_credentials_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::get_many_account_credentials_request& v);
+    static ores::iam::messaging::get_many_account_credentials_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::get_many_account_credentials_request& v);
+    static ores::iam::messaging::get_many_account_credentials_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::get_many_account_credentials_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::get_many_account_credentials_response& v);
+    static ores::iam::messaging::get_many_account_credentials_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::get_many_account_credentials_response& v);
+    static ores::iam::messaging::get_many_account_credentials_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::list_by_account_id_account_credentials_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::list_by_account_id_account_credentials_request& v);
+    static ores::iam::messaging::list_by_account_id_account_credentials_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_by_account_id_account_credentials_request& v);
+    static ores::iam::messaging::list_by_account_id_account_credentials_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::list_by_account_id_account_credentials_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::list_by_account_id_account_credentials_response& v);
+    static ores::iam::messaging::list_by_account_id_account_credentials_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_by_account_id_account_credentials_response& v);
+    static ores::iam::messaging::list_by_account_id_account_credentials_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::list_account_credential_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::list_account_credential_versions_request& v);
+    static ores::iam::messaging::list_account_credential_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_account_credential_versions_request& v);
+    static ores::iam::messaging::list_account_credential_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::list_account_credential_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::list_account_credential_versions_response& v);
+    static ores::iam::messaging::list_account_credential_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_account_credential_versions_response& v);
+    static ores::iam::messaging::list_account_credential_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::get_account_credential_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::get_account_credential_version_request& v);
+    static ores::iam::messaging::get_account_credential_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::get_account_credential_version_request& v);
+    static ores::iam::messaging::get_account_credential_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::get_account_credential_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::get_account_credential_version_response& v);
+    static ores::iam::messaging::get_account_credential_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::get_account_credential_version_response& v);
+    static ores::iam::messaging::get_account_credential_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct inflation_cap_floor_volatility_strikes_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const inflation_cap_floor_volatility_strikes_key&,
+                           const inflation_cap_floor_volatility_strikes_key&) = default;
 };
 
 struct inflation_cap_floor_volatility_strikes_write {
@@ -50,26 +53,41 @@ struct inflation_cap_floor_volatility_strikes_write {
     boost::uuids::uuid inflation_cap_floor_volatility_config_id;
     std::string axis;
     std::string strikes;
+
+    friend bool operator==(const inflation_cap_floor_volatility_strikes_write&,
+                           const inflation_cap_floor_volatility_strikes_write&) = default;
 };
 
 struct inflation_cap_floor_volatility_strikes_change {
     inflation_cap_floor_volatility_strikes_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const inflation_cap_floor_volatility_strikes_change&,
+                           const inflation_cap_floor_volatility_strikes_change&) = default;
 };
 
 struct inflation_cap_floor_volatility_strikes_removal {
     inflation_cap_floor_volatility_strikes_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const inflation_cap_floor_volatility_strikes_removal&,
+                           const inflation_cap_floor_volatility_strikes_removal&) = default;
 };
 
 struct inflation_cap_floor_volatility_strikes_lookup {
     inflation_cap_floor_volatility_strikes_key key;
     std::optional<ores::refdata::domain::inflation_cap_floor_volatility_strikes>
         inflation_cap_floor_volatility_strikes;
+
+    friend bool operator==(const inflation_cap_floor_volatility_strikes_lookup&,
+                           const inflation_cap_floor_volatility_strikes_lookup&) = default;
 };
 
 struct inflation_cap_floor_volatility_strikes_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const inflation_cap_floor_volatility_strikes_filter&,
+                           const inflation_cap_floor_volatility_strikes_filter&) = default;
 };
 
 struct inflation_cap_floor_volatility_strikes_event {
@@ -79,17 +97,26 @@ struct inflation_cap_floor_volatility_strikes_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const inflation_cap_floor_volatility_strikes_event&,
+                           const inflation_cap_floor_volatility_strikes_event&) = default;
 };
 
 struct inflation_cap_floor_volatility_strikes_version_key {
     inflation_cap_floor_volatility_strikes_key inflation_cap_floor_volatility_strikes;
     std::uint32_t version;
+
+    friend bool operator==(const inflation_cap_floor_volatility_strikes_version_key&,
+                           const inflation_cap_floor_volatility_strikes_version_key&) = default;
 };
 
 struct inflation_cap_floor_volatility_strikes_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const inflation_cap_floor_volatility_strikes_versions_filter&,
+                           const inflation_cap_floor_volatility_strikes_versions_filter&) = default;
 };
 
 struct list_inflation_cap_floor_volatility_strikes_request {
@@ -108,12 +135,18 @@ struct list_inflation_cap_floor_volatility_strikes_request {
     ores::utility::domain::order order;
     std::optional<inflation_cap_floor_volatility_strikes_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_inflation_cap_floor_volatility_strikes_request&,
+                           const list_inflation_cap_floor_volatility_strikes_request&) = default;
 };
 
 struct list_inflation_cap_floor_volatility_strikes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_cap_floor_volatility_strikes> inflation_strikes;
     std::uint64_t total;
+
+    friend bool operator==(const list_inflation_cap_floor_volatility_strikes_response&,
+                           const list_inflation_cap_floor_volatility_strikes_response&) = default;
 };
 
 struct get_inflation_cap_floor_volatility_strikes_request {
@@ -128,12 +161,18 @@ struct get_inflation_cap_floor_volatility_strikes_request {
      */
     static constexpr bool requires_session = true;
     inflation_cap_floor_volatility_strikes_key key;
+
+    friend bool operator==(const get_inflation_cap_floor_volatility_strikes_request&,
+                           const get_inflation_cap_floor_volatility_strikes_request&) = default;
 };
 
 struct get_inflation_cap_floor_volatility_strikes_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::inflation_cap_floor_volatility_strikes>
         inflation_cap_floor_volatility_strikes;
+
+    friend bool operator==(const get_inflation_cap_floor_volatility_strikes_response&,
+                           const get_inflation_cap_floor_volatility_strikes_response&) = default;
 };
 
 struct get_many_inflation_cap_floor_volatility_strikes_request {
@@ -148,11 +187,19 @@ struct get_many_inflation_cap_floor_volatility_strikes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<inflation_cap_floor_volatility_strikes_key> keys;
+
+    friend bool
+    operator==(const get_many_inflation_cap_floor_volatility_strikes_request&,
+               const get_many_inflation_cap_floor_volatility_strikes_request&) = default;
 };
 
 struct get_many_inflation_cap_floor_volatility_strikes_response {
     ores::utility::domain::result result;
     std::vector<inflation_cap_floor_volatility_strikes_lookup> entries;
+
+    friend bool
+    operator==(const get_many_inflation_cap_floor_volatility_strikes_response&,
+               const get_many_inflation_cap_floor_volatility_strikes_response&) = default;
 };
 
 struct put_inflation_cap_floor_volatility_strikes_request {
@@ -168,12 +215,18 @@ struct put_inflation_cap_floor_volatility_strikes_request {
     static constexpr bool requires_session = true;
     inflation_cap_floor_volatility_strikes_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_inflation_cap_floor_volatility_strikes_request&,
+                           const put_inflation_cap_floor_volatility_strikes_request&) = default;
 };
 
 struct put_inflation_cap_floor_volatility_strikes_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::inflation_cap_floor_volatility_strikes>
         inflation_cap_floor_volatility_strikes;
+
+    friend bool operator==(const put_inflation_cap_floor_volatility_strikes_response&,
+                           const put_inflation_cap_floor_volatility_strikes_response&) = default;
 };
 
 struct put_many_inflation_cap_floor_volatility_strikes_request {
@@ -189,11 +242,19 @@ struct put_many_inflation_cap_floor_volatility_strikes_request {
     static constexpr bool requires_session = true;
     std::vector<inflation_cap_floor_volatility_strikes_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool
+    operator==(const put_many_inflation_cap_floor_volatility_strikes_request&,
+               const put_many_inflation_cap_floor_volatility_strikes_request&) = default;
 };
 
 struct put_many_inflation_cap_floor_volatility_strikes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_cap_floor_volatility_strikes> inflation_strikes;
+
+    friend bool
+    operator==(const put_many_inflation_cap_floor_volatility_strikes_response&,
+               const put_many_inflation_cap_floor_volatility_strikes_response&) = default;
 };
 
 struct delete_inflation_cap_floor_volatility_strikes_request {
@@ -209,10 +270,16 @@ struct delete_inflation_cap_floor_volatility_strikes_request {
     static constexpr bool requires_session = true;
     inflation_cap_floor_volatility_strikes_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_inflation_cap_floor_volatility_strikes_request&,
+                           const delete_inflation_cap_floor_volatility_strikes_request&) = default;
 };
 
 struct delete_inflation_cap_floor_volatility_strikes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_inflation_cap_floor_volatility_strikes_response&,
+                           const delete_inflation_cap_floor_volatility_strikes_response&) = default;
 };
 
 struct delete_many_inflation_cap_floor_volatility_strikes_request {
@@ -228,10 +295,18 @@ struct delete_many_inflation_cap_floor_volatility_strikes_request {
     static constexpr bool requires_session = true;
     std::vector<inflation_cap_floor_volatility_strikes_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool
+    operator==(const delete_many_inflation_cap_floor_volatility_strikes_request&,
+               const delete_many_inflation_cap_floor_volatility_strikes_request&) = default;
 };
 
 struct delete_many_inflation_cap_floor_volatility_strikes_response {
     ores::utility::domain::result result;
+
+    friend bool
+    operator==(const delete_many_inflation_cap_floor_volatility_strikes_response&,
+               const delete_many_inflation_cap_floor_volatility_strikes_response&) = default;
 };
 
 struct list_inflation_cap_floor_volatility_strikes_versions_request {
@@ -250,12 +325,20 @@ struct list_inflation_cap_floor_volatility_strikes_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<inflation_cap_floor_volatility_strikes_versions_filter> filter;
+
+    friend bool
+    operator==(const list_inflation_cap_floor_volatility_strikes_versions_request&,
+               const list_inflation_cap_floor_volatility_strikes_versions_request&) = default;
 };
 
 struct list_inflation_cap_floor_volatility_strikes_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_cap_floor_volatility_strikes> versions;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_inflation_cap_floor_volatility_strikes_versions_response&,
+               const list_inflation_cap_floor_volatility_strikes_versions_response&) = default;
 };
 
 struct get_inflation_cap_floor_volatility_strikes_version_request {
@@ -270,11 +353,19 @@ struct get_inflation_cap_floor_volatility_strikes_version_request {
      */
     static constexpr bool requires_session = true;
     inflation_cap_floor_volatility_strikes_version_key key;
+
+    friend bool
+    operator==(const get_inflation_cap_floor_volatility_strikes_version_request&,
+               const get_inflation_cap_floor_volatility_strikes_version_request&) = default;
 };
 
 struct get_inflation_cap_floor_volatility_strikes_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::inflation_cap_floor_volatility_strikes> version;
+
+    friend bool
+    operator==(const get_inflation_cap_floor_volatility_strikes_version_response&,
+               const get_inflation_cap_floor_volatility_strikes_version_response&) = default;
 };
 
 /**
@@ -287,11 +378,11 @@ struct get_inflation_cap_floor_volatility_strikes_version_response {
  */
 namespace inflation_cap_floor_volatility_strikes_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.inflation_cap_floor_volatility_strikes_events.created";
+    "refdata.v1.events.inflation_cap_floor_volatility_strikes.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.inflation_cap_floor_volatility_strikes_events.updated";
+    "refdata.v1.events.inflation_cap_floor_volatility_strikes.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.inflation_cap_floor_volatility_strikes_events.deleted";
+    "refdata.v1.events.inflation_cap_floor_volatility_strikes.deleted";
 }
 /**
  * @brief The members of inflation_cap_floor_volatility_strikes_key, named as the wire names them

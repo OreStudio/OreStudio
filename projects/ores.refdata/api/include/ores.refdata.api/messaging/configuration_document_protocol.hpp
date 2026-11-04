@@ -31,7 +31,11 @@
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
+#include "ores.refdata.api/domain/commodity_curve_basis.hpp"
 #include "ores.refdata.api/domain/commodity_curve_config.hpp"
+#include "ores.refdata.api/domain/commodity_curve_cross_currency.hpp"
+#include "ores.refdata.api/domain/commodity_curve_direct.hpp"
+#include "ores.refdata.api/domain/commodity_curve_interpolation.hpp"
 #include "ores.refdata.api/domain/commodity_price_segment.hpp"
 #include "ores.refdata.api/domain/commodity_volatility_config.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
@@ -48,7 +52,17 @@
 #include "ores.refdata.api/domain/curve_report_configuration.hpp"
 #include "ores.refdata.api/domain/curve_security_config.hpp"
 #include "ores.refdata.api/domain/curve_segment.hpp"
+#include "ores.refdata.api/domain/curve_segment_convention.hpp"
+#include "ores.refdata.api/domain/curve_segment_cross_currency_terms.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
+#include "ores.refdata.api/domain/curve_segment_discount_ratio.hpp"
+#include "ores.refdata.api/domain/curve_segment_extrapolation.hpp"
+#include "ores.refdata.api/domain/curve_segment_ibor_fallback.hpp"
+#include "ores.refdata.api/domain/curve_segment_pillar_rule.hpp"
+#include "ores.refdata.api/domain/curve_segment_projection.hpp"
+#include "ores.refdata.api/domain/curve_segment_reference.hpp"
+#include "ores.refdata.api/domain/curve_segment_tenor_basis_curves.hpp"
+#include "ores.refdata.api/domain/curve_segment_weighted_average.hpp"
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
 #include "ores.refdata.api/domain/curve_volatility_constant.hpp"
 #include "ores.refdata.api/domain/curve_volatility_curve.hpp"
@@ -59,8 +73,13 @@
 #include "ores.refdata.api/domain/curve_volatility_smile.hpp"
 #include "ores.refdata.api/domain/curve_volatility_smile_parameter.hpp"
 #include "ores.refdata.api/domain/curve_volatility_strike_surface.hpp"
+#include "ores.refdata.api/domain/default_curve_benchmark.hpp"
+#include "ores.refdata.api/domain/default_curve_cds_terms.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
+#include "ores.refdata.api/domain/default_curve_market_terms.hpp"
+#include "ores.refdata.api/domain/default_curve_transition_matrix.hpp"
+#include "ores.refdata.api/domain/default_curve_yield_reinterpretation.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_volatility_config.hpp"
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
@@ -68,10 +87,12 @@
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_strikes.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
+#include "ores.refdata.api/domain/inflation_seasonality.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
 #include "ores.refdata.api/domain/swaption_proxy_config.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
+#include "ores.refdata.api/domain/swaption_volatility_smile.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
 #include <string>
@@ -89,6 +110,8 @@ struct fx_convention {
     ores::refdata::domain::currency_pair_convention convention;
     int spot_days = 0;
     std::vector<std::string> advance_calendars;
+
+    friend bool operator==(const fx_convention&, const fx_convention&) = default;
 };
 
 /**
@@ -107,6 +130,12 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::inflation_curve_config> inflation_curves;
     std::vector<ores::refdata::domain::default_curve_config> default_curves;
     std::vector<ores::refdata::domain::commodity_curve_config> commodity_curves;
+    std::vector<ores::refdata::domain::commodity_curve_interpolation>
+        commodity_curve_interpolations;
+    std::vector<ores::refdata::domain::commodity_curve_direct> commodity_curve_directs;
+    std::vector<ores::refdata::domain::commodity_curve_cross_currency>
+        commodity_curve_cross_currencies;
+    std::vector<ores::refdata::domain::commodity_curve_basis> commodity_curve_bases;
     std::vector<ores::refdata::domain::fx_volatility_config> fx_volatilities;
     std::vector<ores::refdata::domain::fx_volatility_smile> fx_volatility_smiles;
     std::vector<ores::refdata::domain::yield_volatility_config> yield_volatilities;
@@ -133,6 +162,7 @@ struct curve_configuration_document {
         inflation_volatility_strikes;
     std::vector<ores::refdata::domain::swaption_volatility_config> swaption_volatilities;
     std::vector<ores::refdata::domain::swaption_proxy_config> swaption_proxy_configs;
+    std::vector<ores::refdata::domain::swaption_volatility_smile> swaption_volatility_smiles;
     std::vector<ores::refdata::domain::cap_floor_volatility_config> cap_floor_volatilities;
     std::vector<ores::refdata::domain::cap_floor_proxy_config> cap_floor_proxy_configs;
     std::vector<ores::refdata::domain::curve_parametric_smile> parametric_smiles;
@@ -144,13 +174,35 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::curve_global_report> global_reports;
     std::vector<ores::refdata::domain::commodity_price_segment> commodity_price_segments;
     std::vector<ores::refdata::domain::default_curve_configuration> default_curve_configurations;
+    std::vector<ores::refdata::domain::default_curve_market_terms> default_curve_market_terms;
+    std::vector<ores::refdata::domain::default_curve_cds_terms> default_curve_cds_terms;
+    std::vector<ores::refdata::domain::default_curve_benchmark> default_curve_benchmarks;
+    std::vector<ores::refdata::domain::default_curve_transition_matrix>
+        default_curve_transition_matrices;
+    std::vector<ores::refdata::domain::default_curve_yield_reinterpretation>
+        default_curve_yield_reinterpretations;
+    std::vector<ores::refdata::domain::inflation_seasonality> inflation_seasonalities;
     std::vector<ores::refdata::domain::inflation_seasonality_factor> seasonality_factors;
     std::vector<ores::refdata::domain::curve_security_config> securities;
     std::vector<ores::refdata::domain::intraday_power_curve_config> intraday_power_curves;
     std::vector<ores::refdata::domain::curve_bootstrap_config> bootstrap_configs;
     std::vector<ores::refdata::domain::curve_segment> segments;
     std::vector<ores::refdata::domain::curve_segment_curve> segment_curves;
+    std::vector<ores::refdata::domain::curve_segment_convention> segment_conventions;
+    std::vector<ores::refdata::domain::curve_segment_pillar_rule> segment_pillar_rules;
+    std::vector<ores::refdata::domain::curve_segment_projection> segment_projections;
+    std::vector<ores::refdata::domain::curve_segment_tenor_basis_curves> segment_tenor_basis_curves;
+    std::vector<ores::refdata::domain::curve_segment_cross_currency_terms>
+        segment_cross_currency_terms;
+    std::vector<ores::refdata::domain::curve_segment_reference> segment_references;
+    std::vector<ores::refdata::domain::curve_segment_weighted_average> segment_weighted_averages;
+    std::vector<ores::refdata::domain::curve_segment_discount_ratio> segment_discount_ratios;
+    std::vector<ores::refdata::domain::curve_segment_extrapolation> segment_extrapolations;
+    std::vector<ores::refdata::domain::curve_segment_ibor_fallback> segment_ibor_fallbacks;
     std::vector<ores::refdata::domain::curve_quote> quotes;
+
+    friend bool operator==(const curve_configuration_document&,
+                           const curve_configuration_document&) = default;
 };
 
 /**
@@ -180,6 +232,9 @@ struct save_curve_configuration_document_request {
     std::string reason_code;
     /** The words that go with the reason, empty when the reason needs none. */
     std::string commentary;
+
+    friend bool operator==(const save_curve_configuration_document_request&,
+                           const save_curve_configuration_document_request&) = default;
 };
 
 /**
@@ -189,6 +244,9 @@ struct save_curve_configuration_document_response {
     bool success = false;
     std::string message;
     std::string id;
+
+    friend bool operator==(const save_curve_configuration_document_response&,
+                           const save_curve_configuration_document_response&) = default;
 };
 
 /**
@@ -208,6 +266,9 @@ struct get_curve_configuration_document_request {
     /** When the session acts for no party, as a workflow step's does, the party whose rows to read.
      */
     std::string party_id;
+
+    friend bool operator==(const get_curve_configuration_document_request&,
+                           const get_curve_configuration_document_request&) = default;
 };
 
 /**
@@ -217,6 +278,9 @@ struct get_curve_configuration_document_response {
     bool success = false;
     std::string message;
     curve_configuration_document document;
+
+    friend bool operator==(const get_curve_configuration_document_response&,
+                           const get_curve_configuration_document_response&) = default;
 };
 
 /**
@@ -237,6 +301,9 @@ struct delete_curve_configuration_document_request {
      */
     static constexpr bool requires_session = true;
     std::string configuration_id;
+
+    friend bool operator==(const delete_curve_configuration_document_request&,
+                           const delete_curve_configuration_document_request&) = default;
 };
 
 /**
@@ -245,6 +312,9 @@ struct delete_curve_configuration_document_request {
 struct delete_curve_configuration_document_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const delete_curve_configuration_document_response&,
+                           const delete_curve_configuration_document_response&) = default;
 };
 
 }

@@ -33,7 +33,6 @@
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
-#include <rfl/json.hpp>
 
 namespace ores::scheduler::messaging {
 

@@ -26,11 +26,11 @@ Numbers for the translation-unit cost of reflect-cpp and sqlgen, and how much of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -50,9 +50,10 @@ The measure of success is the total build time of the whole system.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Time-trace single files and a random sample of 100 files without ccache, and
+take reflect-cpp's exclusive time from each trace. Extrapolate the full build
+from the sample. Leave the totals after each option to the move itself, because
+an option's total is only real once the code for it exists.
 
 * Measurements
 
@@ -134,3 +135,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The baseline and reflect-cpp's share are measured; the totals after each option
+are not, and they move to the task Measure the full build after the move
+(7254F18A-2C86-4264-8E69-413AF69C760E) in the story Replace sqlgen and
+reflect-cpp with generated code.
+
+- reflect-cpp is 21.2% of the sampled compile CPU (11.0% +/- 2.1% per file, 95%),
+  a lower bound because module-wide optimisation is not attributed.
+- A full build without ccache is about 17.2 CPU hours, about 5.7 wall hours at 3
+  jobs.
+- The peak memory of one file is 3.72 GiB, and that peak holds the build slot to
+  3 jobs.
+- Most of reflect-cpp's time is in small types used everywhere (=decimal=,
+  =audit_record=, =tenant_id=), so one-time codecs for them are the cheapest lever.
+- Header parsing and the backend are larger levers than the codecs, and they
+  stack with them; the precompiled header, unity build and optimisation-level
+  tasks measured those.
+
+The first two acceptance bullets, the baseline and the share, are met. The last
+two, each option's total and its job count, are not, for the reason above.

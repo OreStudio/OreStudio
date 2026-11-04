@@ -262,78 +262,6 @@ KINDS = {
         ("BusinessDayConvention", "business_day_convention", "bdc"),
         ("Outright", "outright", "bool"),
     ]),
-    "CommodityFuture": ("commodity_future", [
-        ("ContractFrequency", "contract_frequency", "frequency"),
-        ("Calendar", "calendar", "text"),
-        ("ExpiryCalendar", "expiry_calendar", "text"),
-        ("ExpiryMonthLag", "expiry_month_lag", "int"),
-        ("OneContractMonth", "one_contract_month", "text"),
-        ("OffsetDays", "offset_days", "int"),
-        ("BusinessDayConvention", "business_day_convention", "bdc"),
-        ("AdjustBeforeOffset", "adjust_before_offset", "bool"),
-        ("IsAveraging", "is_averaging", "bool"),
-        ("OptionExpiryMonthLag", "option_expiry_month_lag", "int"),
-        ("OptionContractFrequency", "option_contract_frequency", "frequency"),
-        ("OptionExpiryOffset", "option_expiry_offset", "int"),
-        ("OptionCalendarDaysBefore", "option_calendar_days_before", "int"),
-        ("OptionMinBusinessDaysBefore", "option_min_business_days_before", "int"),
-        ("OptionExpiryDay", "option_expiry_day", "int"),
-        ("OptionExpiryLastWeekdayOfMonth", "option_expiry_last_weekday_of_month", "text"),
-        ("OptionExpiryWeeklyDayOfTheWeek", "option_expiry_weekly_day_of_the_week", "text"),
-        ("OptionBusinessDayConvention", "option_business_day_convention", "bdc"),
-        ("HoursPerDay", "hours_per_day", "int"),
-        ("IndexName", "index_name", "text"),
-        ("SavingsTime", "savings_time", "text"),
-        ("DeliveryLocation", "delivery_location", "text"),
-        ("BalanceOfTheMonth", "balance_of_the_month", "bool"),
-        ("BalanceOfTheMonthPricingCalendar", "balance_of_the_month_pricing_calendar", "text"),
-        ("OptionUnderlyingFutureConvention", "option_underlying_future_convention", "text"),
-    ]),
-    "CrossCurrencyBasis": ("cross_currency_basis", [
-        ("SettlementDays", "settlement_days", "int"),
-        ("SettlementCalendar", "settlement_calendar", "text"),
-        ("RollConvention", "roll_convention", "bdc"),
-        ("FlatIndex", "flat_index", "text"),
-        ("SpreadIndex", "spread_index", "text"),
-        ("EOM", "eom", "bool"),
-        ("IsResettable", "is_resettable", "bool"),
-        ("FlatIndexIsResettable", "flat_index_is_resettable", "bool"),
-        ("FlatTenor", "flat_tenor", "text"),
-        ("SpreadTenor", "spread_tenor", "text"),
-        ("SpreadPaymentLag", "spread_payment_lag", "int"),
-        ("FlatPaymentLag", "flat_payment_lag", "int"),
-        ("SpreadIncludeSpread", "spread_include_spread", "bool"),
-        ("SpreadLookback", "spread_lookback", "text"),
-        ("SpreadFixingDays", "spread_fixing_days", "int"),
-        ("SpreadRateCutoff", "spread_rate_cutoff", "int"),
-        ("SpreadIsAveraged", "spread_is_averaged", "bool"),
-        ("SpreadObservationShift", "spread_observation_shift", "bool"),
-        ("FlatIncludeSpread", "flat_include_spread", "bool"),
-        ("FlatLookback", "flat_lookback", "text"),
-        ("FlatFixingDays", "flat_fixing_days", "int"),
-        ("FlatRateCutoff", "flat_rate_cutoff", "int"),
-        ("FlatIsAveraged", "flat_is_averaged", "bool"),
-        ("FlatObservationShift", "flat_observation_shift", "bool"),
-    ]),
-    "CrossCurrencyFixFloat": ("cross_currency_fix_float", [
-        ("SettlementDays", "settlement_days", "int"),
-        ("SettlementCalendar", "settlement_calendar", "text"),
-        ("SettlementConvention", "settlement_convention", "bdc"),
-        ("FixedCurrency", "fixed_currency", "text"),
-        ("FixedFrequency", "fixed_frequency", "frequency"),
-        ("FixedConvention", "fixed_convention", "bdc"),
-        ("FixedDayCounter", "fixed_day_count_fraction", "daycounter"),
-        ("Index", "index", "text"),
-        ("EOM", "eom", "bool"),
-        ("IsResettable", "is_resettable", "bool"),
-        ("FloatIndexIsResettable", "float_index_is_resettable", "bool"),
-        ("IncludeSpread", "include_spread", "bool"),
-        ("Lookback", "lookback", "text"),
-        ("FixingDays", "fixing_days", "int"),
-        ("RateCutoff", "rate_cutoff", "int"),
-        ("IsAveraged", "is_averaged", "bool"),
-        ("ObservationShift", "observation_shift", "bool"),
-    ]),
     "Deposit": ("deposit", [
         ("IndexBased", "index_based", "bool"),
         ("Index", "index", "text"),
@@ -463,16 +391,237 @@ CUT_KINDS = {
 }
 
 # Kinds whose live shape is a composite: one canonical entry becomes a central
-# convention row plus one row in exactly one of the kind's part tables. Each
-# live table gets its own artefact table, and a part names the central row by
-# its name and kind rather than by a uuid, because the uuid is made by the
-# publish. The form is the mapper's choice: a row that carries PayIndex or
-# ReceiveIndex is the paying and receiving form, every other row is the long
-# and short form.
+# convention row plus one row in each part table its parts_of names. Each live
+# table gets its own artefact table, and a part names the central row by its
+# name and kind rather than by a uuid, because the uuid is made by the publish.
+#
+# A tenor basis swap fills exactly one of its two parts, and the form is the
+# mapper's choice: a row that carries PayIndex or ReceiveIndex is the paying and
+# receiving form, every other row is the long and short form. A cross-currency
+# fix-float swap and a cross-currency basis swap each fill all three of their
+# parts. A commodity future fills its contract terms, and each optional part
+# only when the row states that block.
+def tenor_basis_swap_parts(fields):
+    pay_receive = (fields.get("PayIndex", "").strip()
+                   or fields.get("ReceiveIndex", "").strip())
+    return ["pay_receive" if pay_receive else "long_short"]
+
+
+COMMODITY_FUTURE_OPTION_FIELDS = (
+    "OptionExpiryMonthLag", "OptionContractFrequency", "OptionExpiryOffset",
+    "OptionCalendarDaysBefore", "OptionMinBusinessDaysBefore", "OptionExpiryDay",
+    "OptionExpiryLastWeekdayOfMonth", "OptionExpiryWeeklyDayOfTheWeek",
+    "OptionBusinessDayConvention", "OptionUnderlyingFutureConvention",
+)
+
+
+def commodity_future_parts(fields):
+    decoded = decode_commodity_future(fields)
+    parts = ["contract_terms"]
+    if any(c.startswith("anchor_") for c in decoded):
+        parts.append("expiry_anchor")
+    if (any(fields.get(f, "").strip() for f in COMMODITY_FUTURE_OPTION_FIELDS)
+            or "option_continuation_mappings" in decoded):
+        parts.append("option_expiry")
+    if "off_peak_index" in decoded:
+        parts.append("off_peak_index")
+    if "averaging_commodity_name" in decoded:
+        parts.append("averaging_terms")
+    return parts
+
+
 COMPOSITE_KINDS = {
+    "CommodityFuture": {
+        "kind_code": "COMMODITY_FUTURE",
+        "central_table": "ores_dq_conventions_artefact_tbl",
+        "parts_of": commodity_future_parts,
+        "parts": {
+            "contract_terms": {
+                "table":
+                    "ores_dq_commodity_future_contract_terms_artefact_tbl",
+                "mapping": [
+                    ("ContractFrequency", "contract_frequency", "frequency"),
+                    ("Calendar", "calendar", "text"),
+                    ("ExpiryCalendar", "expiry_calendar", "text"),
+                    ("ExpiryMonthLag", "expiry_month_lag", "int"),
+                    ("OneContractMonth", "one_contract_month", "text"),
+                    ("OffsetDays", "offset_days", "int"),
+                    ("BusinessDayConvention", "business_day_convention", "bdc"),
+                    ("AdjustBeforeOffset", "adjust_before_offset", "bool"),
+                    ("IsAveraging", "is_averaging", "bool"),
+                    (None, "valid_contract_months", "decoded"),
+                    ("HoursPerDay", "hours_per_day", "int"),
+                    ("IndexName", "index_name", "text"),
+                    ("SavingsTime", "savings_time", "text"),
+                    ("DeliveryLocation", "delivery_location", "text"),
+                    ("BalanceOfTheMonth", "balance_of_the_month", "bool"),
+                    ("BalanceOfTheMonthPricingCalendar",
+                     "balance_of_the_month_pricing_calendar", "text"),
+                    (None, "prohibited_expiries", "decoded"),
+                    (None, "future_continuation_mappings", "decoded"),
+                ],
+            },
+            "expiry_anchor": {
+                "table":
+                    "ores_dq_commodity_future_expiry_anchors_artefact_tbl",
+                "mapping": [
+                    (None, "anchor_day_of_month", "decoded"),
+                    (None, "anchor_calendar_days_before", "decoded"),
+                    (None, "anchor_business_days_after", "decoded"),
+                    (None, "anchor_nth_nth", "decoded"),
+                    (None, "anchor_nth_weekday", "decoded"),
+                    (None, "anchor_last_weekday", "decoded"),
+                    (None, "anchor_weekly_day_of_the_week", "decoded"),
+                ],
+            },
+            "option_expiry": {
+                "table":
+                    "ores_dq_commodity_future_option_expiries_artefact_tbl",
+                "mapping": [
+                    ("OptionExpiryMonthLag", "option_expiry_month_lag", "int"),
+                    ("OptionContractFrequency", "option_contract_frequency",
+                     "frequency"),
+                    ("OptionExpiryOffset", "option_expiry_offset", "int"),
+                    ("OptionCalendarDaysBefore", "option_calendar_days_before",
+                     "int"),
+                    ("OptionMinBusinessDaysBefore",
+                     "option_min_business_days_before", "int"),
+                    ("OptionExpiryDay", "option_expiry_day", "int"),
+                    ("OptionExpiryLastWeekdayOfMonth",
+                     "option_expiry_last_weekday_of_month", "text"),
+                    ("OptionExpiryWeeklyDayOfTheWeek",
+                     "option_expiry_weekly_day_of_the_week", "text"),
+                    ("OptionBusinessDayConvention",
+                     "option_business_day_convention", "bdc"),
+                    ("OptionUnderlyingFutureConvention",
+                     "option_underlying_future_convention", "text"),
+                    (None, "option_continuation_mappings", "decoded"),
+                ],
+            },
+            "off_peak_index": {
+                "table":
+                    "ores_dq_commodity_future_off_peak_indexes_artefact_tbl",
+                "mapping": [
+                    (None, "off_peak_index", "decoded"),
+                    (None, "peak_index", "decoded"),
+                    (None, "off_peak_hours", "decoded"),
+                    (None, "peak_calendar", "decoded"),
+                ],
+            },
+            "averaging_terms": {
+                "table":
+                    "ores_dq_commodity_future_averaging_terms_artefact_tbl",
+                "mapping": [
+                    (None, "averaging_commodity_name", "decoded"),
+                    (None, "averaging_period", "decoded"),
+                    (None, "averaging_pricing_calendar", "decoded"),
+                    (None, "averaging_conventions", "decoded"),
+                    (None, "averaging_use_business_days", "decoded"),
+                    (None, "averaging_delivery_roll_days", "decoded"),
+                    (None, "averaging_future_month_offset", "decoded"),
+                    (None, "averaging_daily_expiry_offset", "decoded"),
+                ],
+            },
+        },
+    },
+    "CrossCurrencyBasis": {
+        "kind_code": "CROSS_CURRENCY_BASIS",
+        "central_table": "ores_dq_conventions_artefact_tbl",
+        "parts_of": lambda fields: ["swap_terms", "flat_leg", "spread_leg"],
+        "parts": {
+            "swap_terms": {
+                "table":
+                    "ores_dq_cross_currency_basis_swap_terms_artefact_tbl",
+                "mapping": [
+                    ("SettlementDays", "settlement_days", "int"),
+                    ("SettlementCalendar", "settlement_calendar", "text"),
+                    ("RollConvention", "roll_convention", "bdc"),
+                    ("EOM", "eom", "bool"),
+                    ("IsResettable", "is_resettable", "bool"),
+                ],
+            },
+            "flat_leg": {
+                "table":
+                    "ores_dq_cross_currency_basis_flat_legs_artefact_tbl",
+                "mapping": [
+                    ("FlatIndex", "flat_index", "text"),
+                    ("FlatIndexIsResettable", "flat_index_is_resettable",
+                     "bool"),
+                    ("FlatTenor", "flat_tenor", "text"),
+                    ("FlatPaymentLag", "flat_payment_lag", "int"),
+                    ("FlatIncludeSpread", "flat_include_spread", "bool"),
+                    ("FlatLookback", "flat_lookback", "text"),
+                    ("FlatFixingDays", "flat_fixing_days", "int"),
+                    ("FlatRateCutoff", "flat_rate_cutoff", "int"),
+                    ("FlatIsAveraged", "flat_is_averaged", "bool"),
+                    ("FlatObservationShift", "flat_observation_shift", "bool"),
+                ],
+            },
+            "spread_leg": {
+                "table":
+                    "ores_dq_cross_currency_basis_spread_legs_artefact_tbl",
+                "mapping": [
+                    ("SpreadIndex", "spread_index", "text"),
+                    ("SpreadTenor", "spread_tenor", "text"),
+                    ("SpreadPaymentLag", "spread_payment_lag", "int"),
+                    ("SpreadIncludeSpread", "spread_include_spread", "bool"),
+                    ("SpreadLookback", "spread_lookback", "text"),
+                    ("SpreadFixingDays", "spread_fixing_days", "int"),
+                    ("SpreadRateCutoff", "spread_rate_cutoff", "int"),
+                    ("SpreadIsAveraged", "spread_is_averaged", "bool"),
+                    ("SpreadObservationShift", "spread_observation_shift", "bool"),
+                ],
+            },
+        },
+    },
+    "CrossCurrencyFixFloat": {
+        "kind_code": "CROSS_CURRENCY_FIX_FLOAT",
+        "central_table": "ores_dq_conventions_artefact_tbl",
+        "parts_of": lambda fields: ["swap_terms", "fixed_leg", "float_leg"],
+        "parts": {
+            "swap_terms": {
+                "table":
+                    "ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl",
+                "mapping": [
+                    ("SettlementDays", "settlement_days", "int"),
+                    ("SettlementCalendar", "settlement_calendar", "text"),
+                    ("SettlementConvention", "settlement_convention", "bdc"),
+                    ("EOM", "eom", "bool"),
+                    ("IsResettable", "is_resettable", "bool"),
+                ],
+            },
+            "fixed_leg": {
+                "table":
+                    "ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl",
+                "mapping": [
+                    ("FixedCurrency", "fixed_currency", "text"),
+                    ("FixedFrequency", "fixed_frequency", "frequency"),
+                    ("FixedConvention", "fixed_convention", "bdc"),
+                    ("FixedDayCounter", "fixed_day_count_fraction",
+                     "daycounter"),
+                ],
+            },
+            "float_leg": {
+                "table":
+                    "ores_dq_cross_currency_fix_float_float_legs_artefact_tbl",
+                "mapping": [
+                    ("Index", "index", "text"),
+                    ("FloatIndexIsResettable", "float_index_is_resettable",
+                     "bool"),
+                    ("IncludeSpread", "include_spread", "bool"),
+                    ("Lookback", "lookback", "text"),
+                    ("FixingDays", "fixing_days", "int"),
+                    ("RateCutoff", "rate_cutoff", "int"),
+                    ("IsAveraged", "is_averaged", "bool"),
+                    ("ObservationShift", "observation_shift", "bool"),
+                ],
+            },
+        },
+    },
     "TenorBasisSwap": {
         "kind_code": "TENOR_BASIS_SWAP",
         "central_table": "ores_dq_conventions_artefact_tbl",
+        "parts_of": tenor_basis_swap_parts,
         "parts": {
             "pay_receive": {
                 "table":
@@ -530,14 +679,11 @@ INDEX_KINDS = ("IborIndex", "OvernightIndex", "ZeroInflationIndex", "SwapIndex")
 # the kind does not define the index in its id. The model doc string names the
 # same field. A kind absent here names no index, so its rows carry no URI: it is
 # a requirement, per the model doc string. An atomised kind is not a flat row
-# and is not listed here: its central row stages no URI, because the kind names
-# two indices and the column holds the URI of a kind that names one.
+# and is not listed here: its central row stages no URI, because the index the
+# kind names lives on one of its parts.
 PRIMARY_INDEX = {
     "AverageOIS": ("Index",),
     "BMABasisSwap": ("Index", "BMAIndex"),
-    "CommodityFuture": ("IndexName",),
-    "CrossCurrencyBasis": ("FlatIndex", "SpreadIndex"),
-    "CrossCurrencyFixFloat": ("Index",),
     "Deposit": ("Index",),
     "FRA": ("Index",),
     "Future": ("Index",),
@@ -795,16 +941,15 @@ def build_rows(rows, kind, spec, index_map):
 def build_composite_rows(rows, kind):
     """Return the staging blocks an atomised convention kind seeds.
 
-    One canonical entry stages a central convention row and one row in exactly
-    one of the kind's part tables. The part names the central row by the
+    One canonical entry stages a central convention row and one row in each
+    part table the kind's parts_of names for it. The part names the central row by the
     convention's name and kind, never by a uuid: the uuid is made by the
     publish, and the kind is part of the central identity.
 
-    The central row stages no oresmd_uri. The column holds the URI of a kind
-    that names one index, and an atomised kind names two: PayIndex and
-    ReceiveIndex, or LongIndex and ShortIndex. The live write path leaves the
-    column null for every kind, so staging null here keeps the corpus and the
-    store in agreement.
+    The central row stages no oresmd_uri. The central row is shared by every
+    atomised kind, and the index a kind names lives on one of its parts. The
+    live write path leaves the column null for every kind, so staging null here
+    keeps the corpus and the store in agreement.
     """
     spec = COMPOSITE_KINDS[kind]
     kind_code = sql_literal(spec["kind_code"])
@@ -837,19 +982,21 @@ def build_composite_rows(rows, kind):
         blocks["central"]["rows"].append(
             ["v_dataset_id", "v_tenant_id", kind_code, name, "null"])
 
-        pay_receive = (fields.get("PayIndex", "").strip()
-                       or fields.get("ReceiveIndex", "").strip())
-        part = "pay_receive" if pay_receive else "long_short"
-        part_spec = spec["parts"][part]
-        cells = ["v_dataset_id", "v_tenant_id", name, kind_code]
-        for field, column, ptype in part_spec["mapping"]:
-            if field not in fields:
-                cells.append("null")
-                continue
-            raw = fields[field]
-            parsed = raw if ptype == "text" else PARSERS[ptype](kind, field, raw)
-            cells.append(sql_literal(parsed))
-        blocks[part]["rows"].append(cells)
+        decoded = NESTED[kind](fields) if kind in NESTED else {}
+        for part in spec["parts_of"](fields):
+            part_spec = spec["parts"][part]
+            cells = ["v_dataset_id", "v_tenant_id", name, kind_code]
+            for field, column, ptype in part_spec["mapping"]:
+                if ptype == "decoded":
+                    cells.append(sql_literal(decoded.get(column)))
+                    continue
+                if field not in fields:
+                    cells.append("null")
+                    continue
+                raw = fields[field]
+                parsed = raw if ptype == "text" else PARSERS[ptype](kind, field, raw)
+                cells.append(sql_literal(parsed))
+            blocks[part]["rows"].append(cells)
     return list(blocks.values())
 
 
@@ -940,34 +1087,22 @@ HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*
 -- The single ore.conventions dataset carries the one canonical instrument
 -- convention set. One artefact table per live convention table holds the rows;
 -- the publish function ores_refdata_publish_conventions_from_dq_fn resolves
--- each artefact table to its live table by name. The atomised tenor basis swap
--- stages into the central convention artefact table and its two part artefact
+-- each artefact table to its live table by name. The atomised kinds, the
+-- tenor basis swap, the two cross-currency swaps and the commodity future,
+-- stage into the central convention artefact table and their part artefact
 -- tables. Each block is seeded only when its own table holds no rows for the
 -- dataset, so a block added later still seeds. Each flat row's oresmd_uri is
 -- the oresmd fixing URI of the ORE index the row names, read from
 -- tools/ore_conventions/oresmd_index_map.tsv; a kind that names no index (a
--- requirement) carries null. The atomised convention's central row stages
--- null, because the kind names two indices and the live write path leaves the
--- column null.
+-- requirement) carries null. An atomised convention's central row stages
+-- null, because the central row is shared by every atomised kind and the live
+-- write path leaves the column null.
 
 """
 
 
 # Columns a flat kind contributes only through its nested decoder.
 NESTED_COLUMNS = {
-    "CommodityFuture": [
-        "valid_contract_months", "anchor_day_of_month",
-        "anchor_calendar_days_before", "anchor_business_days_after",
-        "anchor_nth_nth", "anchor_nth_weekday", "anchor_last_weekday",
-        "anchor_weekly_day_of_the_week", "off_peak_index", "peak_index",
-        "off_peak_hours", "peak_calendar",
-        "averaging_commodity_name", "averaging_period",
-        "averaging_pricing_calendar", "averaging_conventions",
-        "averaging_use_business_days", "averaging_delivery_roll_days",
-        "averaging_future_month_offset", "averaging_daily_expiry_offset",
-        "prohibited_expiries", "future_continuation_mappings",
-        "option_continuation_mappings",
-    ],
     "IntradayPowerLoad": ["explicit_load_profile", "business_day_load_rules"],
 }
 

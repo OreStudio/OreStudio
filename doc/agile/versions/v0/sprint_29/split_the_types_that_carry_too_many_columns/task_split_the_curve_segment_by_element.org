@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/split-the-curve-segment-by-element
+#+pr: 4385
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A curve segment's element is its type, not a value of one of its columns. Each e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -99,9 +99,76 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Segment model columns before and after the split | 33 before, 28 of them nullable and every nullable one an element setting; 5 after: id, party_id, curve_definition_id, segment_type, position | the =* Columns= headings of =ores.refdata.curve_segment.org=, =git show 2c52d7fdfd:= against the branch | d45830eed7 |
+| Segment row columns after the split | 13: id, tenant_id, version, party_id, curve_definition_id, segment_type, position and the six audit and temporal columns | =information_schema.columns= of =ores_refdata_curve_segments_tbl= on the live database | d45830eed7 |
+| Parts the elements fill | 10 tables, each at most one row per segment | the Parts table in Notes; =refdata_curve_segment_parts_validate_fn_create.sql= | d45830eed7 |
+| Acme segments and their convention parts after provisioning | 35 segments, 35 conventions, 0 segments without one, 0 orphan parts, 0 pillar rules | =seg_shape.sql= against the provisioned database | d45830eed7 |
+| Suites | every ctest suite passed except ores.web, which passed once the saved family count was 44; ores.refdata.core 508 test cases | =ctest -j 4=, then =ctest -R ores.web.tests= | f6abfc4332 |
 
 * Notes
+
+** The settings each element reads
+
+The ORE schema (=external/ore/xsd/curveconfig.xsd=) and the projection's
+=import_segments= agree on what each of the twelve elements states. Neither
+the convention nor the pillar settings are shared by every element, so neither
+can stay on the segment row:
+
+| Element          | Conventions | Pillar settings | Its own settings                        |
+|------------------+-------------+-----------------+-----------------------------------------|
+| Direct           | optional    | yes             | none                                    |
+| Simple           | required    | yes             | the projection curve                    |
+| AverageOIS       | required    | yes             | the projection curve                    |
+| TenorBasis       | required    | yes             | four projection curves                  |
+| CrossCurrency    | required    | yes             | discount curve, spot rate, two curves   |
+| ZeroSpread       | required    | yes             | the reference curve                     |
+| DiscountRatio    | optional    | yes             | three curves and their currencies       |
+| FittedBond       | none        | yes             | the flat extrapolation flag             |
+| BondYieldShifted | required    | none            | the reference curve, the flat flag      |
+| WeightedAverage  | none        | none            | two reference curves and two weights    |
+| YieldPlusDefault | none        | none            | the reference curve                     |
+| IborFallback     | none        | yes             | the ibor index, the RFR curve and index, the spread |
+
+** The parts
+
+A part is one component: fields that hold one invariant. An element has a part
+when it states that component, and a segment holds at most one row of each
+part, so each part's =curve_segment_id= is unique on the live rows. The parts
+are children of the segment, keyed by its id, as =curve_segment_curve= is:
+
+| Part                               | Columns                                              | Elements                                                                  |
+|------------------------------------+------------------------------------------------------+---------------------------------------------------------------------------|
+| curve_segment_convention           | conventions                                          | Direct, Simple, AverageOIS, TenorBasis, CrossCurrency, ZeroSpread, DiscountRatio, BondYieldShifted |
+| curve_segment_pillar_rule          | pillar_choice, priority, min_distance                | Direct, Simple, AverageOIS, TenorBasis, CrossCurrency, ZeroSpread, DiscountRatio, FittedBond, IborFallback |
+| curve_segment_projection           | projection_curve                                     | Simple, AverageOIS                                                        |
+| curve_segment_tenor_basis_curves   | projection_curve_pay, _receive, _long, _short        | TenorBasis                                                                |
+| curve_segment_cross_currency_terms | discount_curve, spot_rate, projection_curve_domestic, _foreign | CrossCurrency                                                   |
+| curve_segment_reference            | reference_curve                                      | ZeroSpread, BondYieldShifted, YieldPlusDefault                            |
+| curve_segment_weighted_average     | reference_curve_1, reference_curve_2, weight_1, weight_2 | WeightedAverage                                                       |
+| curve_segment_discount_ratio       | base_curve, numerator_curve, denominator_curve and their currencies | DiscountRatio                                              |
+| curve_segment_extrapolation        | extrapolate_flat                                     | FittedBond, BondYieldShifted                                              |
+| curve_segment_ibor_fallback        | ibor_index, rfr_curve, rfr_index, spread             | IborFallback                                                              |
+
+The shared components are parts of their own, rather than columns repeated on
+a part per element, because each holds one invariant every element that states
+it agrees on: the pillar settings are the same three rules wherever they
+appear. A part per element would repeat the convention column on eight tables
+and the pillar settings on nine. The volatility split did the same with the
+proxy block two kinds share.
+
+A part's row exists only when the element states it. A required field makes
+the part present on every segment of the elements that require it; a part of
+optional fields is written only when the document states one of them, so no
+part row is all null.
+
+** Where the element-to-part rule lives
+
+The projection's =import_segments= is the one statement of which element
+reads which part: each element's loop calls one reader per part it has. The
+section generator already reads that function to tell the screen which leaves
+a kind shows. It now also reads which part each leaf is in, and it writes the
+SQL that refuses a part row whose segment's element does not have that part.
+So the screen, the database and the projection cannot disagree about it.
 
 * Test Scenarios
 
@@ -118,12 +185,54 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4385][#4385]] | [refdata,ore,sql,web] Split the curve segment by element |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Discount ratio export writes an empty curve where the old export refused a missing one | curve_configuration_projection.cpp | Declined | The reader refuses a document that leaves a discount ratio curve or its currency out, as the schema requires, so the import never stores an empty one; row 6 records the test that proves it. |
+| 2 | The convention validator checks the flat convention tables and the central row by name, not the family's parts | refdata_conventions_validate_fn_create.sql | Declined | Unchanged by this task; the segment's convention reference is the same reference as before, now on its part. |
+| 3 | The Acme configuration generator rewrites pricing_model_product_parameters.json, which main never regenerated | generate_configuration_data.py | Captured | Not this task's data; the file was restored and the drift captured. |
+| 4 | The section generator reads the projection by regular expression | generate_curve_section_parameters.py | Declined | The generator already worked this way; the part readers keep the statement shapes it reads, and =curve-sections-wiring= fails the gate if the generated TypeScript or SQL drifts from the projection. |
+| 5 | Each part's eventing test seeds its segment through a hand-written helper | curve_segment_seed.hpp | Accepted | A generic test cannot satisfy a rule across two rows; the models name the helper in =parent_seed=, so the generated tests stay generated. |
+| 6 | PR #4385 review: DiscountRatio import stores empty curves when a curve element is missing | xml_curve_configuration_projection_roundtrip_tests.cpp | Declined, test added | The reader checks a document against the schema and refuses a discount ratio that leaves out a curve or a curve's currency before the projection reads it, so no part holds an empty curve; a new test pins both refusals. |
+| 7 | PR #4385 review: the part validator runs on part insert only, so a segment's type change does not re-check its parts | refdata_curve_segment_parts_validate_fn_create.sql | Captured | The export refuses the mismatch, so no document leaves the store wrong; a trigger validation sees one column, so the re-check needs its own design (capture recheck_a_curve_segments_parts_when_its_type_changes). |
+| 8 | PR #4385 review: a segment whose type has no segment_types row passes the validator | refdata_curve_segment_parts_validate_fn_create.sql | Declined | The segment's insert trigger refuses a type with no live row, so a live segment always has a kind; the comment states only the missing segment case. |
+| 9 | PR #4385 review: an unreadable ExtrapolateFlat could become false | curve_configuration_projection.cpp | Declined | boolean_text throws on any value other than true, false, 1 or 0, so value_or(false) only meets a value it already read. |
+| 10 | PR #4385 review: confirm the round trip covers every element, with and without its optional parts | xml_curve_configuration_projection_roundtrip_tests.cpp | Declined | every_segment_element_round_trips holds all twelve elements, a Direct with no convention and a FittedBond with no ExtrapolateFlat among them. |
+| 11 | PR #4385 review: mark generated files linguist-generated | .gitattributes | Declined | Every generated file carries its AUTO-GENERATED header and is checked by the drift gate; a repository-wide attribute policy is not this task's change. |
+| 12 | PR #4385 review: no data migration for the 28 dropped columns | refdata_curve_segments_create.sql | Declined | The database is rebuilt from the schema and the seeds; the project keeps no migrations, and the seeds write each segment's convention as its part. |
 
 * Result
+
+The element is the reason for the split, not the column count. A curve
+segment's =Type= fixes one of twelve ORE elements, and the schema and the
+projection agree on what each element states: no setting is shared by all
+twelve, not even the convention or the pillar settings. So the segment row
+keeps only what every element has, its definition, its type and its place,
+and each component of settings is a part of the segment keyed by its id: the
+convention, the pillar rules, the projection curve, the tenor basis curves,
+the cross currency terms, the reference curve, the weighted average, the
+discount ratio, the flat extrapolation flag and the ibor fallback. A shared
+component is one part rather than a column repeated on a part per element,
+because the pillar rules are the same three rules wherever they appear.
+
+The projection's =import_segments= is the one statement of which element has
+which part: each element's loop calls one reader per part. The section
+generator follows those calls, so the screen's leaves name the part each is
+in, and it writes the SQL functions each part's trigger calls to refuse a part
+its segment's element does not have. The export takes each segment's parts
+from an index and refuses a part of the wrong element, a part of no segment
+and a second row of one part. A part of optional fields is written only when
+the element states one of them, so no part row is empty.
+
+The ORE round trip of every corpus file and of every element is unchanged,
+the live Acme publish stores 35 segments with 35 convention parts and no
+other part, and the database refuses a part on the wrong element.
+
+The component audit: =validate_docs.sh= passes for all 39 components. The ten
+parts are refdata entities of the shape =curve_segment_curve= already has, a
+child keyed by the segment's id, so no component gains a part or a boundary;
+the ore projection, the document service, the shell aggregator, the SQL lists
+and the BFF only name the new entities.

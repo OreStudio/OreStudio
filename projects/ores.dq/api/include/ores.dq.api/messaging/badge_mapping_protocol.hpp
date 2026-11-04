@@ -44,32 +44,44 @@ namespace ores::dq::messaging {
 struct badge_mapping_key {
     std::string code_domain_code;
     std::string entity_code;
+
+    friend bool operator==(const badge_mapping_key&, const badge_mapping_key&) = default;
 };
 
 struct badge_mapping_write {
     std::string code_domain_code;
     std::string entity_code;
     std::string badge_code;
+
+    friend bool operator==(const badge_mapping_write&, const badge_mapping_write&) = default;
 };
 
 struct badge_mapping_change {
     badge_mapping_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const badge_mapping_change&, const badge_mapping_change&) = default;
 };
 
 struct badge_mapping_removal {
     badge_mapping_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const badge_mapping_removal&, const badge_mapping_removal&) = default;
 };
 
 struct badge_mapping_lookup {
     badge_mapping_key key;
     std::optional<ores::dq::domain::badge_mapping> badge_mapping;
+
+    friend bool operator==(const badge_mapping_lookup&, const badge_mapping_lookup&) = default;
 };
 
 struct badge_mappings_filter {
     std::optional<std::string> code_domain_code;
     std::optional<std::vector<std::string>> code_domain_code_one_of;
+
+    friend bool operator==(const badge_mappings_filter&, const badge_mappings_filter&) = default;
 };
 
 struct badge_mapping_event {
@@ -79,6 +91,8 @@ struct badge_mapping_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const badge_mapping_event&, const badge_mapping_event&) = default;
 };
 
 struct list_badge_mappings_request {
@@ -95,12 +109,18 @@ struct list_badge_mappings_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<badge_mappings_filter> filter;
+
+    friend bool operator==(const list_badge_mappings_request&,
+                           const list_badge_mappings_request&) = default;
 };
 
 struct list_badge_mappings_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_mapping> badge_mappings;
     std::uint64_t total;
+
+    friend bool operator==(const list_badge_mappings_response&,
+                           const list_badge_mappings_response&) = default;
 };
 
 struct get_badge_mapping_request {
@@ -114,11 +134,17 @@ struct get_badge_mapping_request {
      */
     static constexpr bool requires_session = true;
     badge_mapping_key key;
+
+    friend bool operator==(const get_badge_mapping_request&,
+                           const get_badge_mapping_request&) = default;
 };
 
 struct get_badge_mapping_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::badge_mapping> badge_mapping;
+
+    friend bool operator==(const get_badge_mapping_response&,
+                           const get_badge_mapping_response&) = default;
 };
 
 struct get_many_badge_mappings_request {
@@ -132,11 +158,17 @@ struct get_many_badge_mappings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<badge_mapping_key> keys;
+
+    friend bool operator==(const get_many_badge_mappings_request&,
+                           const get_many_badge_mappings_request&) = default;
 };
 
 struct get_many_badge_mappings_response {
     ores::utility::domain::result result;
     std::vector<badge_mapping_lookup> entries;
+
+    friend bool operator==(const get_many_badge_mappings_response&,
+                           const get_many_badge_mappings_response&) = default;
 };
 
 struct put_badge_mapping_request {
@@ -151,11 +183,17 @@ struct put_badge_mapping_request {
     static constexpr bool requires_session = true;
     badge_mapping_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_badge_mapping_request&,
+                           const put_badge_mapping_request&) = default;
 };
 
 struct put_badge_mapping_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::badge_mapping> badge_mapping;
+
+    friend bool operator==(const put_badge_mapping_response&,
+                           const put_badge_mapping_response&) = default;
 };
 
 struct put_many_badge_mappings_request {
@@ -170,11 +208,17 @@ struct put_many_badge_mappings_request {
     static constexpr bool requires_session = true;
     std::vector<badge_mapping_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_badge_mappings_request&,
+                           const put_many_badge_mappings_request&) = default;
 };
 
 struct put_many_badge_mappings_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_mapping> badge_mappings;
+
+    friend bool operator==(const put_many_badge_mappings_response&,
+                           const put_many_badge_mappings_response&) = default;
 };
 
 struct delete_badge_mapping_request {
@@ -189,10 +233,16 @@ struct delete_badge_mapping_request {
     static constexpr bool requires_session = true;
     badge_mapping_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_badge_mapping_request&,
+                           const delete_badge_mapping_request&) = default;
 };
 
 struct delete_badge_mapping_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_badge_mapping_response&,
+                           const delete_badge_mapping_response&) = default;
 };
 
 struct delete_many_badge_mappings_request {
@@ -207,10 +257,16 @@ struct delete_many_badge_mappings_request {
     static constexpr bool requires_session = true;
     std::vector<badge_mapping_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_badge_mappings_request&,
+                           const delete_many_badge_mappings_request&) = default;
 };
 
 struct delete_many_badge_mappings_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_badge_mappings_response&,
+                           const delete_many_badge_mappings_response&) = default;
 };
 
 struct list_by_code_domain_code_badge_mappings_request {
@@ -230,12 +286,18 @@ struct list_by_code_domain_code_badge_mappings_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<badge_mappings_filter> filter;
+
+    friend bool operator==(const list_by_code_domain_code_badge_mappings_request&,
+                           const list_by_code_domain_code_badge_mappings_request&) = default;
 };
 
 struct list_by_code_domain_code_badge_mappings_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_mapping> badge_mappings;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_code_domain_code_badge_mappings_response&,
+                           const list_by_code_domain_code_badge_mappings_response&) = default;
 };
 
 /**

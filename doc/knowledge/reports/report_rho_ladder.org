@@ -1,0 +1,304 @@
+:PROPERTIES:
+:ID: C004FD5F-33F0-49D1-893D-9F66FC62342E
+:END:
+#+title: Bump and Reprice Rho ladder
+#+description: The value change for a bump of the discount and projection curves at each tenor, with the two effects kept apart.
+#+type: report
+#+level: cross
++#+filetags: :report:market-risk:greeks:rates:sensitivity:eod:
+#+created: 2026-11-03
+#+updated: 2026-11-04
+#+report_code: bump_and_reprice_rho_ladder
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Bump and Reprice Rho ladder. It states the value change when the rate at each
+point of the discount curve and of the projection curve moves, and it keeps the
+two effects apart. Market risk reads it to separate the cost of discounting from
+the cost of the forward rate, and a desk reads it to choose which curve to hedge.
+It runs on the end of day cycle and leaves the engine's output archive in storage.
+The result store that would ingest the archive is not built yet, so the run
+records where the archive landed.
+
+* Purpose
+
+It answers a question about one curve and one point at a time. If the rate at
+this point of this curve moves, how much money does the scope change by? The
+answer feeds two decisions. Market risk decides whether the book's exposure sits
+on the discount curve or on the projection curve. A desk decides which of the two
+to hedge with a swap.
+
+The distinction matters because one trade reads both curves. A swap discounts its
+cash flows on one curve and projects its floating rate on another. A single
+number that adds the two effects hides which curve moved, and this report does not
+add them.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                       |
+|--------------+-------------------------------------------------------------------------------------|
+| market-risk  | The discount effect and the projection effect, stated separately at each tenor.     |
+| trading-desk | Which curve a hedge should address, and at which tenor the exposure sits.           |
+
+* Frequency
+
+The rates delta ladder runs on both cycles. The plain definition selects the =LIVE=
+cut and reads the market data of the instant it starts, so a desk questions the
+shape of its rate risk while the day is still moving. Its "(EOD)" twin selects the
+=EOD= cut and values the portfolio at the weekday before the run date, which is the
+figure market risk compares across closes. A live ladder is indicative and a close
+ladder stands, so the two are separate definitions with separate run settings and
+neither run replaces the record of the other.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value            |
+|-----------+------------------|
+| Cycle     | eod and intraday |
+| Frequency | scheduled        |
+| Batch     | none             |
+| Owner     | market-risk      |
+
+The plain definition selects the =LIVE= cut and its run settings row states market
+data type =live=; the twin selects =EOD= and states =eod=. Holiday calendars are not
+consulted, so the close is the weekday before the run date whether or not that
+weekday traded.
+
+* Inputs
+
+- Trades selected by the definition's scope. The scope is a row of the definition
+  and the taxonomy fixes the shapes it accepts, on
+  [[file:../domain/risk_reporting.org][Risk reporting]].
+- Market data at the authorised end of day cut. The run records the cut it read
+  against the run instance, with its label, kind and instant.
+- The risk report configuration the definition binds. It switches on the
+  =sensitivity= analytic, states the base currency and names =sensitivity.xml= as
+  the =sensitivityConfigFile=. The analytic states =recalibrateModels= =Y=,
+  =outputSensitivityThreshold= =0.000001=, =parSensitivity= =Y= and
+  =marketConfigFile= =simulation.xml=.
+- A sensitivity document with a block for each curve family. The discount curves
+  and the index curves are separate blocks in the shipped document, so a reader
+  sees the two effects in two rows rather than in one.
+
+* Outputs
+
+The run produces the engine's own output archive and records where that archive
+landed against the run instance. The archive holds =sensitivity.csv=, which
+carries one row for each trade, curve and bucket, and =scenario.csv=, which
+carries the scenario value behind each row.
+
+The rows a reader would query in a table are a later phase. The result store is
+designed on [[file:../architecture/report_post_processing.org][Report post-processing]]
+and is not built yet.
+
+* Measures
+
+The catalogue states the measure as a 0.1 per cent change of the rate at each
+point. That statement names the size of the bump the report is for. It does not
+change what the file holds, because the bump is a setting of the configuration
+and not the identity of the report. A reader who wants another size changes
+=ShiftSize= in the document and runs again.
+
+=Delta= is a value change and not a derivative. The shift size is already inside
+it, so the figure is money per bump and not a ratio.
+
+#+ATTR_HTML: :class hug-leading
+| Measure          | Meaning                                                                    |
+|------------------+----------------------------------------------------------------------------|
+| Discount effect  | The value change for a move at one point of a discount curve.               |
+| Projection effect| The value change for a move at one point of an index or projection curve.   |
+| Base NPV         | The value of the trade before the shift.                                   |
+| Scenario NPV     | The value of the trade after the shift, from =scenario.csv=.               |
+| Difference       | The change from the base value to the scenario value.                      |
+
+* Columns and sections
+
+The reader opens the engine's CSV files, because the result store is not built.
+The tables below state the columns of the two files this report writes. The
+definitions are on
+[[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]].
+
+#+ATTR_HTML: :class hug-leading
+| Column           | Holds                                                                   |
+|------------------+-------------------------------------------------------------------------|
+| TradeId          | The trade the row belongs to.                                           |
+| IsPar            | Whether the row states a par sensitivity.                               |
+| Factor_1         | The key of the factor that was shifted, and the bucket the row sits in. |
+| ShiftSize_1      | The size of the shift on =Factor_1=, in the factor's own unit.          |
+| Factor_2         | The second factor of a cross row, and empty for a one-factor row.       |
+| ShiftSize_2      | The size of the shift on =Factor_2=.                                    |
+| Currency         | The currency the base value and the Delta are stated in.                |
+| Base NPV         | The value of the trade before the shift.                                |
+| Delta            | The value change at the shift, in money.                                |
+| Gamma            | The second-order change, empty unless gamma is switched on.             |
+| Currency(Trade)  | The currency of the trade.                                             |
+| Base NPV(Trade)  | The trade's value in its own currency.                                  |
+| Delta(Trade)     | The trade's Delta in its own currency.                                  |
+| Gamma(Trade)     | The trade's Gamma in its own currency.                                  |
+| Scenario         | The label of the scenario the row belongs to.                           |
+
+#+ATTR_HTML: :class hug-leading
+| Column       | Holds                                                             |
+|--------------+-------------------------------------------------------------------|
+| TradeId      | The trade the row belongs to.                                     |
+| Factor       | The key of the factor that was shifted.                           |
+| Up/Down      | Which side of the base value the row states.                      |
+| Base NPV     | The value of the trade before the shift.                          |
+| ShiftSize_1  | The size of the shift on the factor.                              |
+| ShiftSize_2  | The size of a second shift, for a paired row.                     |
+| Scenario NPV | The value of the trade after the shift.                           |
+| Difference   | The change from the base value to the scenario value.             |
+| Base Currency| The base currency of the run.                                     |
+
+A reader places a figure by the bucket columns. =Factor_1= states the curve family
+and the curve, and =ShiftSize_1= states the shift that produced the figure. A
+discount curve factor starts =DiscountCurve/<ccy>=, as in the =Pair=
+=DiscountCurve/EUR,DiscountCurve/EUR= of the shipped filter. A projection curve
+factor starts =IndexCurve/<index>=, as in =IndexCurve/EUR-EURIBOR-6M/11/10Y=. The
+first segment separates the discount effect from the projection effect, and the
+trailing segments name the bucket.
+
+* ORE configuration
+
+The mechanism has four parts. First, the generated run document carries an
+analytic of type =sensitivity=, and that analytic names =sensitivity.xml= through
+=sensitivityConfigFile=. Second, the root of that document is
+=SensitivityAnalysis=, and ORE validates it against
+=external/ore/xsd/sensitivity.xsd=. Third, the document carries one block for each
+group of risk factors, and the two blocks a rho ladder reads are =DiscountCurves=
+and =IndexCurves=. Fourth, every factor block states =ShiftType=, =ShiftSize=,
+=ShiftScheme= and the bucket list, which for a curve is =ShiftTenors=.
+
+=ShiftType= is =Relative=, =Absolute= or =EqualTo=. =ShiftScheme= is =Forward=,
+=Backward= or =Central=. Both are enumerations in
+=external/ore/xsd/ore_types.xsd=.
+
+The fragment below is trimmed from
+=external/ore/examples/MarketRisk/Input/sensitivity.xml=. It shows one discount
+curve block and one index curve block. The discount curve is keyed by currency and
+the index curve is keyed by index, and that difference is what keeps the two
+effects apart in the output.
+
+#+begin_src xml
+<DiscountCurves>
+  <DiscountCurve ccy="EUR">
+    <ShiftType>Absolute</ShiftType>
+    <ShiftSize>0.0001</ShiftSize>
+    <ShiftSize key="IR_FD">0.001</ShiftSize>
+    <ShiftScheme>Forward</ShiftScheme>
+    <ShiftScheme key="IR_FD">Central</ShiftScheme>
+    <ShiftTenors>2W,1M,3M,6M,9M,1Y,2Y,3Y,4Y,5Y,7Y,10Y,15Y,20Y,25Y,30Y</ShiftTenors>
+  </DiscountCurve>
+</DiscountCurves>
+
+<IndexCurves>
+  <IndexCurve index="EUR-EURIBOR-6M">
+    <ShiftType>Absolute</ShiftType>
+    <ShiftSize>0.0001</ShiftSize>
+    <ShiftSize key="IR_FD">0.001</ShiftSize>
+    <ShiftScheme>Forward</ShiftScheme>
+    <ShiftScheme key="IR_FD">Central</ShiftScheme>
+    <ShiftTenors>2W,1M,3M,6M,9M,1Y,2Y,3Y,4Y,5Y,7Y,10Y,15Y,20Y,25Y,30Y</ShiftTenors>
+    <ParConversion>
+      <Instruments>DEP,DEP,DEP,DEP,DEP,IRS,IRS,IRS,IRS,IRS,IRS,IRS,IRS,IRS,IRS,IRS</Instruments>
+      <SingleCurve>false</SingleCurve>
+      <Conventions>
+        <Convention id="DEP">EUR-EURIBOR-CONVENTIONS</Convention>
+        <Convention id="IRS">EUR-6M-SWAP-CONVENTIONS</Convention>
+        <Convention id="OIS">EUR-OIS-CONVENTIONS</Convention>
+      </Conventions>
+    </ParConversion>
+  </IndexCurve>
+</IndexCurves>
+#+end_src
+
+The engine writes =sensitivity.csv= with the columns the reader saw above, and it
+writes =scenario.csv= with the scenario value and the difference behind each
+figure.
+
+The bump is a setting of the configuration and not the identity of the report.
+Two reports over one book that differ only in shift size differ only in the
+document they bind. Nothing in the name of this report fixes a shift, and nothing
+in the engine knows a rho ladder by name.
+
+* Parameters
+
+A definition of this report states the rows below. The shift itself is not a
+parameter of the store, and no seed states a shift size anywhere.
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                        | Domain                        | Seeded value | Meaning                                                          |
+|----------------------------------+-------------------------------+--------------+------------------------------------------------------------------|
+| cut_kind_code                    | a kind of cut                 | LIVE and EOD | The kind of cut each definition selects: the plain name LIVE, the twin EOD. |
+| market_data_type                 | live, eod or date             | live and eod | The market data each definition reads: the plain name the live cut, the twin the end of day one. |
+| base_currency                    | ISO 4217 code                 | the entity's | The currency the figures are expressed in.                        |
+| sensitivity.sensitivityConfigFile| a name in the file library    | sensitivity.xml | The sensitivity document the analytic reads.                   |
+| sensitivity.recalibrateModels    | Y or N                        | Y            | Whether models are recalibrated before each shift.                |
+| sensitivity.outputSensitivityThreshold | a real                  | 0.000001     | The size below which a change is not written.                     |
+| sensitivity.sensitivityOutputFile| a file name                   | sensitivity.csv | The file the engine writes the rows to.                        |
+| the curve shift                  | a block of the sensitivity document | Absolute 0.0001 | The type and size each curve bucket receives.              |
+
+* A worked read
+
+1. Open the archive the run recorded and take =sensitivity.csv=.
+2. Separate the two families. Keep the rows whose =Factor_1= starts
+   =DiscountCurve/=, and read them as the discount effect. Keep the rows whose
+   =Factor_1= starts =IndexCurve/=, and read them as the projection effect.
+3. Read the bucket. The trailing segments of =Factor_1= name the curve, the
+   bucket number and the tenor.
+4. Read =ShiftSize_1=. It states the size of the move the figure belongs to.
+5. Read the =Delta= column as money per shift. Do not divide it by the shift.
+6. Compare the two families at one tenor. The comparison states which curve the
+   exposure sits on, and it is the reading this report exists for.
+7. Open =scenario.csv= and read =Difference= for the same =TradeId= and
+   =Factor=. It agrees with the =Delta= figure to the printed precision.
+8. Read the same bucket on the previous close. Two closes state whether the
+   exposure moved from one curve to the other.
+
+* What is not built
+
+- No mapper reads or writes a =SensitivityAnalysis= document. The document is a
+  name in a lookup and a row in the file library, and it is not a modelled
+  entity.
+- The run package carries only the four Setup documents, which are conventions,
+  curve configuration, today's market and pricing engines. An analytic document
+  that no owner exports never reaches the engine.
+- No volatility market data is seeded. The ACME dataset holds 420 quotes and all
+  of them are =IR_SWAP/RATE/...=. A book that needs a volatility therefore meets
+  a refusal at the engine, and the run records that refusal.
+- No shift size is stated anywhere in the store. The catalogue states 0.1 per
+  cent and the store cannot repeat that statement as a row.
+- No stored shape holds a bucketed ladder, and nothing in the store holds the
+  two curve effects as separate columns. They are separate rows, told apart by
+  the factor key.
+- The result store is not built, so no table carries the rows a reader queries.
+
+* Test coverage
+
+The sensitivity configuration type is seeded with root =SensitivityAnalysis=, the
+parameter =sensitivityConfigFile= and the owner =ores.analytics=. The document and
+its two surface variants sit in the ORE file library with their descriptions, the
+schema is vendored as =sensitivity_schema=, and the worked configurations are
+vendored.
+
+No substitute is defined for this report, so a test run executes every phase and
+assembles its own bundle. The report is exercised by the full-pipeline proof and
+not by a smoke test. The machinery that proves a bundle without gathering one is
+[[file:./report_sample_bundle_smoke_test.org][Sample bundle smoke test]].
+
+* Related
+
+- [[file:./reports.org][Reports]], where this page is listed.
+- [[file:../domain/risk_reporting.org][Risk reporting]], which holds the classification taxonomy and the measures catalogue.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]], which states the columns of =sensitivity.csv= and =scenario.csv=.
+- [[file:./report_dv01_ladder.org][Bump and Reprice DV01 ladder]], which reads the same rate blocks as par values.
+- [[file:./report_delta_ladder.org][Bump and Reprice Delta ladder]], which is the general case of the ladder family.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], which states the phases every run goes through.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], which states what an end of day cut holds.
+- [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]], the task that lit the sibling reports.
+
+* See also
+
+
+- [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — the structure note that orders this cluster, and where to read this page in it.
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]]: the engine whose =DiscountCurves= and =IndexCurves= blocks produce these rows.

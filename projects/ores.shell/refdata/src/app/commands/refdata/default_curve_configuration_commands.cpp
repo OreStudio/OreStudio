@@ -30,7 +30,7 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <chrono>
@@ -39,8 +39,6 @@
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -144,24 +142,17 @@ void default_curve_configuration_commands::register_commands(cli::Menu& root_men
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <curve_definition_id> <is_inline> <priority> <default_curve_type> <discount_curve> "
-        "<day_counter> <recovery_rate> <start_date> <has_quotes> <benchmark_curve> "
-        "<reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar> <conventions> "
-        "<extrapolation> <running_spread> <index_term> <imply_default_from_market> "
-        "<allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason> "
-        "<commentary>");
+        "add <curve_definition_id> <is_inline> <priority> <default_curve_type> <day_counter> "
+        "<recovery_rate> <extrapolation> <allow_negative_rates> <position> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <curve_definition_id> <is_inline> <priority> <default_curve_type> "
-        "<discount_curve> <day_counter> <recovery_rate> <start_date> <has_quotes> "
-        "<benchmark_curve> <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> "
-        "<calendar> <conventions> <extrapolation> <running_spread> <index_term> "
-        "<imply_default_from_market> <allow_negative_rates> <price_is_upfront> <initial_state> "
-        "<states> <position> <reason> <commentary> [--version <n>]");
+        "set <id> <curve_definition_id> <is_inline> <priority> <default_curve_type> <day_counter> "
+        "<recovery_rate> <extrapolation> <allow_negative_rates> <position> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -169,11 +160,8 @@ void default_curve_configuration_commands::register_commands(cli::Menu& root_men
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <curve_definition_id> <is_inline> <priority> "
-        "<default_curve_type> <discount_curve> <day_counter> <recovery_rate> <start_date> "
-        "<has_quotes> <benchmark_curve> <reinterpreted_yield_curve> <source_curve> <pillars> "
-        "<spot_lag> <calendar> <conventions> <extrapolation> <running_spread> <index_term> "
-        "<imply_default_from_market> <allow_negative_rates> <price_is_upfront> <initial_state> "
-        "<states> <position> <reason> <commentary>");
+        "<default_curve_type> <day_counter> <recovery_rate> <extrapolation> <allow_negative_rates> "
+        "<position> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -251,7 +239,9 @@ void default_curve_configuration_commands::process_list(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void default_curve_configuration_commands::process_get(std::ostream& out,
@@ -294,7 +284,9 @@ void default_curve_configuration_commands::process_get(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void default_curve_configuration_commands::process_get_many(std::ostream& out,
@@ -341,7 +333,9 @@ void default_curve_configuration_commands::process_get_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void default_curve_configuration_commands::process_add(std::ostream& out,
@@ -368,8 +362,8 @@ void default_curve_configuration_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 25 + 2) {
-            fail(out) << "Expected " << (25 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -384,48 +378,14 @@ void default_curve_configuration_commands::process_add(std::ostream& out,
         default_curve_configuration_read_token(
             req.change.write.default_curve_type, parsed->positionals[next++], "default_curve_type");
         default_curve_configuration_read_token(
-            req.change.write.discount_curve, parsed->positionals[next++], "discount_curve");
-        default_curve_configuration_read_token(
             req.change.write.day_counter, parsed->positionals[next++], "day_counter");
         default_curve_configuration_read_token(
             req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
         default_curve_configuration_read_token(
-            req.change.write.start_date, parsed->positionals[next++], "start_date");
-        default_curve_configuration_read_token(
-            req.change.write.has_quotes, parsed->positionals[next++], "has_quotes");
-        default_curve_configuration_read_token(
-            req.change.write.benchmark_curve, parsed->positionals[next++], "benchmark_curve");
-        default_curve_configuration_read_token(req.change.write.reinterpreted_yield_curve,
-                                               parsed->positionals[next++],
-                                               "reinterpreted_yield_curve");
-        default_curve_configuration_read_token(
-            req.change.write.source_curve, parsed->positionals[next++], "source_curve");
-        default_curve_configuration_read_token(
-            req.change.write.pillars, parsed->positionals[next++], "pillars");
-        default_curve_configuration_read_token(
-            req.change.write.spot_lag, parsed->positionals[next++], "spot_lag");
-        default_curve_configuration_read_token(
-            req.change.write.calendar, parsed->positionals[next++], "calendar");
-        default_curve_configuration_read_token(
-            req.change.write.conventions, parsed->positionals[next++], "conventions");
-        default_curve_configuration_read_token(
             req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-        default_curve_configuration_read_token(
-            req.change.write.running_spread, parsed->positionals[next++], "running_spread");
-        default_curve_configuration_read_token(
-            req.change.write.index_term, parsed->positionals[next++], "index_term");
-        default_curve_configuration_read_token(req.change.write.imply_default_from_market,
-                                               parsed->positionals[next++],
-                                               "imply_default_from_market");
         default_curve_configuration_read_token(req.change.write.allow_negative_rates,
                                                parsed->positionals[next++],
                                                "allow_negative_rates");
-        default_curve_configuration_read_token(
-            req.change.write.price_is_upfront, parsed->positionals[next++], "price_is_upfront");
-        default_curve_configuration_read_token(
-            req.change.write.initial_state, parsed->positionals[next++], "initial_state");
-        default_curve_configuration_read_token(
-            req.change.write.states, parsed->positionals[next++], "states");
         default_curve_configuration_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
@@ -441,7 +401,9 @@ void default_curve_configuration_commands::process_add(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void default_curve_configuration_commands::process_set(std::ostream& out,
@@ -470,8 +432,8 @@ void default_curve_configuration_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 26 + 2) {
-            fail(out) << "Expected " << (26 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -487,48 +449,14 @@ void default_curve_configuration_commands::process_set(std::ostream& out,
         default_curve_configuration_read_token(
             req.change.write.default_curve_type, parsed->positionals[next++], "default_curve_type");
         default_curve_configuration_read_token(
-            req.change.write.discount_curve, parsed->positionals[next++], "discount_curve");
-        default_curve_configuration_read_token(
             req.change.write.day_counter, parsed->positionals[next++], "day_counter");
         default_curve_configuration_read_token(
             req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
         default_curve_configuration_read_token(
-            req.change.write.start_date, parsed->positionals[next++], "start_date");
-        default_curve_configuration_read_token(
-            req.change.write.has_quotes, parsed->positionals[next++], "has_quotes");
-        default_curve_configuration_read_token(
-            req.change.write.benchmark_curve, parsed->positionals[next++], "benchmark_curve");
-        default_curve_configuration_read_token(req.change.write.reinterpreted_yield_curve,
-                                               parsed->positionals[next++],
-                                               "reinterpreted_yield_curve");
-        default_curve_configuration_read_token(
-            req.change.write.source_curve, parsed->positionals[next++], "source_curve");
-        default_curve_configuration_read_token(
-            req.change.write.pillars, parsed->positionals[next++], "pillars");
-        default_curve_configuration_read_token(
-            req.change.write.spot_lag, parsed->positionals[next++], "spot_lag");
-        default_curve_configuration_read_token(
-            req.change.write.calendar, parsed->positionals[next++], "calendar");
-        default_curve_configuration_read_token(
-            req.change.write.conventions, parsed->positionals[next++], "conventions");
-        default_curve_configuration_read_token(
             req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-        default_curve_configuration_read_token(
-            req.change.write.running_spread, parsed->positionals[next++], "running_spread");
-        default_curve_configuration_read_token(
-            req.change.write.index_term, parsed->positionals[next++], "index_term");
-        default_curve_configuration_read_token(req.change.write.imply_default_from_market,
-                                               parsed->positionals[next++],
-                                               "imply_default_from_market");
         default_curve_configuration_read_token(req.change.write.allow_negative_rates,
                                                parsed->positionals[next++],
                                                "allow_negative_rates");
-        default_curve_configuration_read_token(
-            req.change.write.price_is_upfront, parsed->positionals[next++], "price_is_upfront");
-        default_curve_configuration_read_token(
-            req.change.write.initial_state, parsed->positionals[next++], "initial_state");
-        default_curve_configuration_read_token(
-            req.change.write.states, parsed->positionals[next++], "states");
         default_curve_configuration_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
@@ -550,7 +478,9 @@ void default_curve_configuration_commands::process_set(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void default_curve_configuration_commands::process_put_many(std::ostream& out,
@@ -585,8 +515,8 @@ void default_curve_configuration_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 26 + 2) {
-            fail(out) << "Expected " << (change_count * 26 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -604,48 +534,14 @@ void default_curve_configuration_commands::process_put_many(std::ostream& out,
             default_curve_configuration_read_token(
                 change.write.default_curve_type, parsed->positionals[next++], "default_curve_type");
             default_curve_configuration_read_token(
-                change.write.discount_curve, parsed->positionals[next++], "discount_curve");
-            default_curve_configuration_read_token(
                 change.write.day_counter, parsed->positionals[next++], "day_counter");
             default_curve_configuration_read_token(
                 change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
             default_curve_configuration_read_token(
-                change.write.start_date, parsed->positionals[next++], "start_date");
-            default_curve_configuration_read_token(
-                change.write.has_quotes, parsed->positionals[next++], "has_quotes");
-            default_curve_configuration_read_token(
-                change.write.benchmark_curve, parsed->positionals[next++], "benchmark_curve");
-            default_curve_configuration_read_token(change.write.reinterpreted_yield_curve,
-                                                   parsed->positionals[next++],
-                                                   "reinterpreted_yield_curve");
-            default_curve_configuration_read_token(
-                change.write.source_curve, parsed->positionals[next++], "source_curve");
-            default_curve_configuration_read_token(
-                change.write.pillars, parsed->positionals[next++], "pillars");
-            default_curve_configuration_read_token(
-                change.write.spot_lag, parsed->positionals[next++], "spot_lag");
-            default_curve_configuration_read_token(
-                change.write.calendar, parsed->positionals[next++], "calendar");
-            default_curve_configuration_read_token(
-                change.write.conventions, parsed->positionals[next++], "conventions");
-            default_curve_configuration_read_token(
                 change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-            default_curve_configuration_read_token(
-                change.write.running_spread, parsed->positionals[next++], "running_spread");
-            default_curve_configuration_read_token(
-                change.write.index_term, parsed->positionals[next++], "index_term");
-            default_curve_configuration_read_token(change.write.imply_default_from_market,
-                                                   parsed->positionals[next++],
-                                                   "imply_default_from_market");
             default_curve_configuration_read_token(change.write.allow_negative_rates,
                                                    parsed->positionals[next++],
                                                    "allow_negative_rates");
-            default_curve_configuration_read_token(
-                change.write.price_is_upfront, parsed->positionals[next++], "price_is_upfront");
-            default_curve_configuration_read_token(
-                change.write.initial_state, parsed->positionals[next++], "initial_state");
-            default_curve_configuration_read_token(
-                change.write.states, parsed->positionals[next++], "states");
             default_curve_configuration_read_token(
                 change.write.position, parsed->positionals[next++], "position");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -663,7 +559,9 @@ void default_curve_configuration_commands::process_put_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void default_curve_configuration_commands::process_delete(std::ostream& out,
@@ -717,7 +615,9 @@ void default_curve_configuration_commands::process_delete(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void default_curve_configuration_commands::process_delete_many(
@@ -767,7 +667,9 @@ void default_curve_configuration_commands::process_delete_many(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void default_curve_configuration_commands::process_versions(std::ostream& out,
@@ -816,7 +718,9 @@ void default_curve_configuration_commands::process_versions(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void default_curve_configuration_commands::process_version(std::ostream& out,
@@ -864,7 +768,9 @@ void default_curve_configuration_commands::process_version(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

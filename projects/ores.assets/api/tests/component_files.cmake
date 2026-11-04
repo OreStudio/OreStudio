@@ -20,8 +20,17 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec_wire_bytes_tests.cpp"
     "domain_image_tag_tests.cpp"
     "domain_image_tests.cpp"
     "domain_tag_tests.cpp"
+    "image_codec_roundtrip_tests.cpp"
+    "image_operations_protocol_codec_roundtrip_tests.cpp"
+    "image_protocol_codec_roundtrip_tests.cpp"
+    "image_tag_codec_roundtrip_tests.cpp"
+    "image_tag_protocol_codec_roundtrip_tests.cpp"
     "main.cpp"
+    "publish_operation_protocol_codec_roundtrip_tests.cpp"
+    "tag_codec_roundtrip_tests.cpp"
+    "tag_protocol_codec_roundtrip_tests.cpp"
 )

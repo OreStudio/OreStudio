@@ -26,17 +26,26 @@
 #define ORES_REPORTING_API_MESSAGING_ENGINE_SETTINGS_GROUP_PROTOCOL_HPP
 
 #include "ores.reporting.api/domain/engine_settings_group.hpp"
+#include "ores.reporting.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::messaging {
 
 struct engine_settings_group_key {
     std::string code;
+
+    friend bool operator==(const engine_settings_group_key&,
+                           const engine_settings_group_key&) = default;
 };
 
 struct engine_settings_group_write {
@@ -44,25 +53,40 @@ struct engine_settings_group_write {
     std::string name;
     std::string description;
     int position;
+
+    friend bool operator==(const engine_settings_group_write&,
+                           const engine_settings_group_write&) = default;
 };
 
 struct engine_settings_group_change {
     engine_settings_group_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const engine_settings_group_change&,
+                           const engine_settings_group_change&) = default;
 };
 
 struct engine_settings_group_removal {
     engine_settings_group_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const engine_settings_group_removal&,
+                           const engine_settings_group_removal&) = default;
 };
 
 struct engine_settings_group_lookup {
     engine_settings_group_key key;
     std::optional<ores::reporting::domain::engine_settings_group> engine_settings_group;
+
+    friend bool operator==(const engine_settings_group_lookup&,
+                           const engine_settings_group_lookup&) = default;
 };
 
 struct engine_settings_groups_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const engine_settings_groups_filter&,
+                           const engine_settings_groups_filter&) = default;
 };
 
 struct engine_settings_group_event {
@@ -72,17 +96,26 @@ struct engine_settings_group_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const engine_settings_group_event&,
+                           const engine_settings_group_event&) = default;
 };
 
 struct engine_settings_group_version_key {
     engine_settings_group_key engine_settings_group;
     std::uint32_t version;
+
+    friend bool operator==(const engine_settings_group_version_key&,
+                           const engine_settings_group_version_key&) = default;
 };
 
 struct engine_settings_group_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const engine_settings_group_versions_filter&,
+                           const engine_settings_group_versions_filter&) = default;
 };
 
 struct list_engine_settings_groups_request {
@@ -100,12 +133,18 @@ struct list_engine_settings_groups_request {
     ores::utility::domain::order order;
     std::optional<engine_settings_groups_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_engine_settings_groups_request&,
+                           const list_engine_settings_groups_request&) = default;
 };
 
 struct list_engine_settings_groups_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings_group> groups;
     std::uint64_t total;
+
+    friend bool operator==(const list_engine_settings_groups_response&,
+                           const list_engine_settings_groups_response&) = default;
 };
 
 struct get_engine_settings_group_request {
@@ -119,11 +158,17 @@ struct get_engine_settings_group_request {
      */
     static constexpr bool requires_session = true;
     engine_settings_group_key key;
+
+    friend bool operator==(const get_engine_settings_group_request&,
+                           const get_engine_settings_group_request&) = default;
 };
 
 struct get_engine_settings_group_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::engine_settings_group> engine_settings_group;
+
+    friend bool operator==(const get_engine_settings_group_response&,
+                           const get_engine_settings_group_response&) = default;
 };
 
 struct get_many_engine_settings_groups_request {
@@ -137,11 +182,17 @@ struct get_many_engine_settings_groups_request {
      */
     static constexpr bool requires_session = true;
     std::vector<engine_settings_group_key> keys;
+
+    friend bool operator==(const get_many_engine_settings_groups_request&,
+                           const get_many_engine_settings_groups_request&) = default;
 };
 
 struct get_many_engine_settings_groups_response {
     ores::utility::domain::result result;
     std::vector<engine_settings_group_lookup> entries;
+
+    friend bool operator==(const get_many_engine_settings_groups_response&,
+                           const get_many_engine_settings_groups_response&) = default;
 };
 
 struct put_engine_settings_group_request {
@@ -156,11 +207,17 @@ struct put_engine_settings_group_request {
     static constexpr bool requires_session = true;
     engine_settings_group_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_engine_settings_group_request&,
+                           const put_engine_settings_group_request&) = default;
 };
 
 struct put_engine_settings_group_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::engine_settings_group> engine_settings_group;
+
+    friend bool operator==(const put_engine_settings_group_response&,
+                           const put_engine_settings_group_response&) = default;
 };
 
 struct put_many_engine_settings_groups_request {
@@ -175,11 +232,17 @@ struct put_many_engine_settings_groups_request {
     static constexpr bool requires_session = true;
     std::vector<engine_settings_group_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_engine_settings_groups_request&,
+                           const put_many_engine_settings_groups_request&) = default;
 };
 
 struct put_many_engine_settings_groups_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings_group> groups;
+
+    friend bool operator==(const put_many_engine_settings_groups_response&,
+                           const put_many_engine_settings_groups_response&) = default;
 };
 
 struct delete_engine_settings_group_request {
@@ -194,10 +257,16 @@ struct delete_engine_settings_group_request {
     static constexpr bool requires_session = true;
     engine_settings_group_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_engine_settings_group_request&,
+                           const delete_engine_settings_group_request&) = default;
 };
 
 struct delete_engine_settings_group_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_engine_settings_group_response&,
+                           const delete_engine_settings_group_response&) = default;
 };
 
 struct delete_many_engine_settings_groups_request {
@@ -213,10 +282,16 @@ struct delete_many_engine_settings_groups_request {
     static constexpr bool requires_session = true;
     std::vector<engine_settings_group_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_engine_settings_groups_request&,
+                           const delete_many_engine_settings_groups_request&) = default;
 };
 
 struct delete_many_engine_settings_groups_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_engine_settings_groups_response&,
+                           const delete_many_engine_settings_groups_response&) = default;
 };
 
 struct list_engine_settings_group_versions_request {
@@ -235,12 +310,18 @@ struct list_engine_settings_group_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<engine_settings_group_versions_filter> filter;
+
+    friend bool operator==(const list_engine_settings_group_versions_request&,
+                           const list_engine_settings_group_versions_request&) = default;
 };
 
 struct list_engine_settings_group_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings_group> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_engine_settings_group_versions_response&,
+                           const list_engine_settings_group_versions_response&) = default;
 };
 
 struct get_engine_settings_group_version_request {
@@ -255,11 +336,17 @@ struct get_engine_settings_group_version_request {
      */
     static constexpr bool requires_session = true;
     engine_settings_group_version_key key;
+
+    friend bool operator==(const get_engine_settings_group_version_request&,
+                           const get_engine_settings_group_version_request&) = default;
 };
 
 struct get_engine_settings_group_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::engine_settings_group> version;
+
+    friend bool operator==(const get_engine_settings_group_version_response&,
+                           const get_engine_settings_group_version_response&) = default;
 };
 
 /**
@@ -271,11 +358,804 @@ struct get_engine_settings_group_version_response {
  * of them.
  */
 namespace engine_settings_group_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.engine_settings_groups_events.created";
-inline constexpr std::string_view updated = "reporting.v1.engine_settings_groups_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.engine_settings_groups_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.engine_settings_groups.created";
+inline constexpr std::string_view updated = "reporting.v1.events.engine_settings_groups.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.engine_settings_groups.deleted";
+}
+/**
+ * @brief The members of engine_settings_group_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &engine_settings_group_key::code},
+    };
 }
 
+/**
+ * @brief The members of engine_settings_group_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &engine_settings_group_write::code},
+        utility::codec::field{"name", &engine_settings_group_write::name},
+        utility::codec::field{"description", &engine_settings_group_write::description},
+        utility::codec::field{"position", &engine_settings_group_write::position},
+    };
 }
+
+/**
+ * @brief The members of engine_settings_group_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &engine_settings_group_change::write},
+        utility::codec::field{"precondition", &engine_settings_group_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of engine_settings_group_removal, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &engine_settings_group_removal::key},
+        utility::codec::field{"precondition", &engine_settings_group_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of engine_settings_group_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &engine_settings_group_lookup::key},
+        utility::codec::field{"engine_settings_group",
+                              &engine_settings_group_lookup::engine_settings_group},
+    };
+}
+
+/**
+ * @brief The members of engine_settings_groups_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_groups_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &engine_settings_groups_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of engine_settings_group_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &engine_settings_group_event::event_id},
+        utility::codec::field{"key", &engine_settings_group_event::key},
+        utility::codec::field{"action", &engine_settings_group_event::action},
+        utility::codec::field{"version", &engine_settings_group_event::version},
+        utility::codec::field{"occurred_at", &engine_settings_group_event::occurred_at},
+        utility::codec::field{"correlation_id", &engine_settings_group_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of engine_settings_group_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_version_key&) {
+    return std::tuple{
+        utility::codec::field{"engine_settings_group",
+                              &engine_settings_group_version_key::engine_settings_group},
+        utility::codec::field{"version", &engine_settings_group_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of engine_settings_group_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_group_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &engine_settings_group_versions_filter::version},
+        utility::codec::field{"from_version", &engine_settings_group_versions_filter::from_version},
+        utility::codec::field{"to_version", &engine_settings_group_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_engine_settings_groups_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_engine_settings_groups_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_engine_settings_groups_request::offset},
+        utility::codec::field{"limit", &list_engine_settings_groups_request::limit},
+        utility::codec::field{"order", &list_engine_settings_groups_request::order},
+        utility::codec::field{"filter", &list_engine_settings_groups_request::filter},
+        utility::codec::field{"as_of", &list_engine_settings_groups_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_engine_settings_groups_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_engine_settings_groups_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_engine_settings_groups_response::result},
+        utility::codec::field{"groups", &list_engine_settings_groups_response::groups},
+        utility::codec::field{"total", &list_engine_settings_groups_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_engine_settings_group_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_group_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_engine_settings_group_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_engine_settings_group_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_group_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_engine_settings_group_response::result},
+        utility::codec::field{"engine_settings_group",
+                              &get_engine_settings_group_response::engine_settings_group},
+    };
+}
+
+/**
+ * @brief The members of get_many_engine_settings_groups_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_engine_settings_groups_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_engine_settings_groups_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_engine_settings_groups_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_engine_settings_groups_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_engine_settings_groups_response::result},
+        utility::codec::field{"entries", &get_many_engine_settings_groups_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_engine_settings_group_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_engine_settings_group_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_engine_settings_group_request::change},
+        utility::codec::field{"intent", &put_engine_settings_group_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_engine_settings_group_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_engine_settings_group_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_engine_settings_group_response::result},
+        utility::codec::field{"engine_settings_group",
+                              &put_engine_settings_group_response::engine_settings_group},
+    };
+}
+
+/**
+ * @brief The members of put_many_engine_settings_groups_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_engine_settings_groups_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_engine_settings_groups_request::changes},
+        utility::codec::field{"intent", &put_many_engine_settings_groups_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_engine_settings_groups_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_engine_settings_groups_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_engine_settings_groups_response::result},
+        utility::codec::field{"groups", &put_many_engine_settings_groups_response::groups},
+    };
+}
+
+/**
+ * @brief The members of delete_engine_settings_group_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_engine_settings_group_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_engine_settings_group_request::removal},
+        utility::codec::field{"intent", &delete_engine_settings_group_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_engine_settings_group_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_engine_settings_group_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_engine_settings_group_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_engine_settings_groups_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_engine_settings_groups_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_engine_settings_groups_request::removals},
+        utility::codec::field{"intent", &delete_many_engine_settings_groups_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_engine_settings_groups_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_engine_settings_groups_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_engine_settings_groups_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_engine_settings_group_versions_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_engine_settings_group_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_engine_settings_group_versions_request::key},
+        utility::codec::field{"offset", &list_engine_settings_group_versions_request::offset},
+        utility::codec::field{"limit", &list_engine_settings_group_versions_request::limit},
+        utility::codec::field{"order", &list_engine_settings_group_versions_request::order},
+        utility::codec::field{"filter", &list_engine_settings_group_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_engine_settings_group_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_engine_settings_group_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_engine_settings_group_versions_response::result},
+        utility::codec::field{"versions", &list_engine_settings_group_versions_response::versions},
+        utility::codec::field{"total", &list_engine_settings_group_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_engine_settings_group_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_group_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_engine_settings_group_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_engine_settings_group_version_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_group_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_engine_settings_group_version_response::result},
+        utility::codec::field{"version", &get_engine_settings_group_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_group_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::engine_settings_group_key& v);
+    static ores::reporting::messaging::engine_settings_group_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_group_key& v);
+    static ores::reporting::messaging::engine_settings_group_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_group_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::engine_settings_group_write& v);
+    static ores::reporting::messaging::engine_settings_group_write read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_group_write& v);
+    static ores::reporting::messaging::engine_settings_group_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_group_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::engine_settings_group_change& v);
+    static ores::reporting::messaging::engine_settings_group_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_group_change& v);
+    static ores::reporting::messaging::engine_settings_group_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_group_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::engine_settings_group_removal& v);
+    static ores::reporting::messaging::engine_settings_group_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_group_removal& v);
+    static ores::reporting::messaging::engine_settings_group_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_group_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::engine_settings_group_lookup& v);
+    static ores::reporting::messaging::engine_settings_group_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_group_lookup& v);
+    static ores::reporting::messaging::engine_settings_group_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_groups_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::engine_settings_groups_filter& v);
+    static ores::reporting::messaging::engine_settings_groups_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_groups_filter& v);
+    static ores::reporting::messaging::engine_settings_groups_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_group_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::engine_settings_group_event& v);
+    static ores::reporting::messaging::engine_settings_group_event read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_group_event& v);
+    static ores::reporting::messaging::engine_settings_group_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_group_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::engine_settings_group_version_key& v);
+    static ores::reporting::messaging::engine_settings_group_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_group_version_key& v);
+    static ores::reporting::messaging::engine_settings_group_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_group_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::engine_settings_group_versions_filter& v);
+    static ores::reporting::messaging::engine_settings_group_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_group_versions_filter& v);
+    static ores::reporting::messaging::engine_settings_group_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_engine_settings_groups_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_engine_settings_groups_request& v);
+    static ores::reporting::messaging::list_engine_settings_groups_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_engine_settings_groups_request& v);
+    static ores::reporting::messaging::list_engine_settings_groups_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_engine_settings_groups_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_engine_settings_groups_response& v);
+    static ores::reporting::messaging::list_engine_settings_groups_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_engine_settings_groups_response& v);
+    static ores::reporting::messaging::list_engine_settings_groups_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_engine_settings_group_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_engine_settings_group_request& v);
+    static ores::reporting::messaging::get_engine_settings_group_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_engine_settings_group_request& v);
+    static ores::reporting::messaging::get_engine_settings_group_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_engine_settings_group_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_engine_settings_group_response& v);
+    static ores::reporting::messaging::get_engine_settings_group_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_engine_settings_group_response& v);
+    static ores::reporting::messaging::get_engine_settings_group_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_engine_settings_groups_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_engine_settings_groups_request& v);
+    static ores::reporting::messaging::get_many_engine_settings_groups_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_engine_settings_groups_request& v);
+    static ores::reporting::messaging::get_many_engine_settings_groups_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_engine_settings_groups_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_engine_settings_groups_response& v);
+    static ores::reporting::messaging::get_many_engine_settings_groups_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_engine_settings_groups_response& v);
+    static ores::reporting::messaging::get_many_engine_settings_groups_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_engine_settings_group_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_engine_settings_group_request& v);
+    static ores::reporting::messaging::put_engine_settings_group_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_engine_settings_group_request& v);
+    static ores::reporting::messaging::put_engine_settings_group_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_engine_settings_group_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_engine_settings_group_response& v);
+    static ores::reporting::messaging::put_engine_settings_group_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_engine_settings_group_response& v);
+    static ores::reporting::messaging::put_engine_settings_group_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_engine_settings_groups_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_engine_settings_groups_request& v);
+    static ores::reporting::messaging::put_many_engine_settings_groups_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_engine_settings_groups_request& v);
+    static ores::reporting::messaging::put_many_engine_settings_groups_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_engine_settings_groups_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_engine_settings_groups_response& v);
+    static ores::reporting::messaging::put_many_engine_settings_groups_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_engine_settings_groups_response& v);
+    static ores::reporting::messaging::put_many_engine_settings_groups_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_engine_settings_group_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_engine_settings_group_request& v);
+    static ores::reporting::messaging::delete_engine_settings_group_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_engine_settings_group_request& v);
+    static ores::reporting::messaging::delete_engine_settings_group_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_engine_settings_group_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_engine_settings_group_response& v);
+    static ores::reporting::messaging::delete_engine_settings_group_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_engine_settings_group_response& v);
+    static ores::reporting::messaging::delete_engine_settings_group_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_engine_settings_groups_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_engine_settings_groups_request& v);
+    static ores::reporting::messaging::delete_many_engine_settings_groups_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_engine_settings_groups_request& v);
+    static ores::reporting::messaging::delete_many_engine_settings_groups_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_engine_settings_groups_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_engine_settings_groups_response& v);
+    static ores::reporting::messaging::delete_many_engine_settings_groups_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_engine_settings_groups_response& v);
+    static ores::reporting::messaging::delete_many_engine_settings_groups_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_engine_settings_group_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_engine_settings_group_versions_request& v);
+    static ores::reporting::messaging::list_engine_settings_group_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_engine_settings_group_versions_request& v);
+    static ores::reporting::messaging::list_engine_settings_group_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_engine_settings_group_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_engine_settings_group_versions_response& v);
+    static ores::reporting::messaging::list_engine_settings_group_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::list_engine_settings_group_versions_response& v);
+    static ores::reporting::messaging::list_engine_settings_group_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_engine_settings_group_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_engine_settings_group_version_request& v);
+    static ores::reporting::messaging::get_engine_settings_group_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_engine_settings_group_version_request& v);
+    static ores::reporting::messaging::get_engine_settings_group_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_engine_settings_group_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_engine_settings_group_version_response& v);
+    static ores::reporting::messaging::get_engine_settings_group_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_engine_settings_group_version_response& v);
+    static ores::reporting::messaging::get_engine_settings_group_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

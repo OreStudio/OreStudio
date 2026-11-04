@@ -29,6 +29,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
 import { useBadge } from '../ui/AccountLockBadge.js';
 import { Label } from '../ui/Label.js';
+import { Button } from '../ui/Primitives.js';
 import { parseTimestamp } from '../ui/Time.js';
 
 /**
@@ -156,6 +157,28 @@ export function HealthSummary({ tally }: { readonly tally: ReportHealthTally }):
     );
 }
 
+/**
+ * The expression a definition carries when it runs only when a person asks.
+ *
+ * The scheduler needs an expression, and one that never fires is the statement
+ * that the report is on demand: the 31st of February is a day no month has, so
+ * the job the scheduler keeps fires on nothing. The list and the page both name
+ * this expression, so it is stated once.
+ */
+export const ON_DEMAND_SCHEDULE = '0 0 31 2 *';
+
+/**
+ * Whether a definition reads as on demand.
+ *
+ * A report with no scheduler job fires on nothing, whatever expression it keeps,
+ * so that is the first fact. A job whose expression never fires is the second:
+ * the two are the same statement, and a screen that stated only one would call a
+ * report scheduled that will never run.
+ */
+export function isOnDemand(scheduled: boolean, expression: string): boolean {
+    return !scheduled || expression === ON_DEMAND_SCHEDULE;
+}
+
 /** How long a run took, in milliseconds, or nothing when it has not finished. */
 export function runDuration(startedAt: string | null, completedAt: string | null): number | null {
     if (startedAt === null || completedAt === null) {
@@ -191,4 +214,48 @@ export function Absent(): ReactNode {
             —
         </span>
     );
+}
+
+/**
+ * A row of buttons that narrows a list to one choice, each naming how many rows
+ * it keeps. `labelOf` gives the text of a choice with its count.
+ */
+export function CountFilter<Choice extends string>({
+    choices,
+    chosen,
+    countOf,
+    labelOf,
+    onChoose,
+}: {
+    readonly choices: readonly Choice[];
+    readonly chosen: Choice;
+    readonly countOf: (choice: Choice) => number;
+    readonly labelOf: (choice: Choice, count: number) => string;
+    readonly onChoose: (choice: Choice) => void;
+}): ReactNode {
+    return (
+        <div className="flex flex-wrap gap-2">
+            {choices.map((choice) => (
+                <Button
+                    key={choice}
+                    size="sm"
+                    variant={choice === chosen ? 'primary' : 'secondary'}
+                    onClick={() => onChoose(choice)}
+                >
+                    {labelOf(choice, countOf(choice))}
+                </Button>
+            ))}
+        </div>
+    );
+}
+
+/** A file size as a person reads it, in bytes, KiB or MiB. */
+export function formatBytes(bytes: number): string {
+    if (bytes < 1024) {
+        return `${bytes} B`;
+    }
+    if (bytes < 1024 * 1024) {
+        return `${(bytes / 1024).toFixed(1)} KiB`;
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
 }

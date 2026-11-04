@@ -30,7 +30,7 @@
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <chrono>
@@ -39,8 +39,6 @@
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -240,7 +238,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_list(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void ir_curve_generation_config_process_parameter_value_commands::process_get(
@@ -284,7 +284,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_get(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void ir_curve_generation_config_process_parameter_value_commands::process_get_many(
@@ -333,7 +335,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_get_ma
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void ir_curve_generation_config_process_parameter_value_commands::process_add(
@@ -387,7 +391,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_add(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void ir_curve_generation_config_process_parameter_value_commands::process_set(
@@ -450,7 +456,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_set(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void ir_curve_generation_config_process_parameter_value_commands::process_put_many(
@@ -518,7 +526,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_put_ma
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void ir_curve_generation_config_process_parameter_value_commands::process_delete(
@@ -573,7 +583,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_delete
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void ir_curve_generation_config_process_parameter_value_commands::process_delete_many(
@@ -627,7 +639,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_delete
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void ir_curve_generation_config_process_parameter_value_commands::process_versions(
@@ -678,7 +692,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_versio
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void ir_curve_generation_config_process_parameter_value_commands::process_version(
@@ -729,7 +745,9 @@ void ir_curve_generation_config_process_parameter_value_commands::process_versio
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

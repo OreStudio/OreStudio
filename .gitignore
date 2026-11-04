@@ -159,6 +159,7 @@ tools/.fed_h10_cache/
 
 # Scratch output from a web build or test run, never source.
 projects/ores.web/tmp/
+build/tmp/
 
 .agents/
 build/cdp-timeline.mjs

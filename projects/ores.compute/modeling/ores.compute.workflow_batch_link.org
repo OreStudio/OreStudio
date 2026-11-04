@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5A9D3E27-8C14-4B6E-9F2A-1E7B4D0C8A53
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.workflow_batch_link
 #+description: Codegen entity model for the compute workflow_batch_links table, the async bridge between a batch and the workflow step that waits for it.

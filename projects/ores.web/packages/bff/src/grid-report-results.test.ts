@@ -23,9 +23,11 @@ import { describe, expect, it } from 'vitest';
 import {
     aggregateRows,
     comparedWith,
+    rowsOfRun,
     withGroups,
     withPortfolioTree,
 } from './grid-report-results.js';
+import type { LiveSession } from './sessions.js';
 import type { AggregateRow, RunResultRow } from './grid-report-results.js';
 
 /*
@@ -682,5 +684,65 @@ describe('withPortfolioTree, a parent holding no book of its own', () => {
         ]);
         expect(rows[0]?.trades).toBe(2);
         expect(rows[0]?.totals).toEqual([{ currency: 'GBP', total: '150.00' }]);
+    });
+});
+
+describe('rowsOfRun', () => {
+    const RUN = '22222222-2222-4222-8222-222222222222';
+    const TRADE = '28e6d1c3-b0aa-55fa-9c14-142e3e34092e';
+    const OK = { outcome: 'ok', code: '', message: '', fields: [] };
+    const figure = (measure: string, value: number, currency: string) => ({
+        report_instance_id: RUN,
+        subject_type: 'trade',
+        subject_id: TRADE,
+        measure,
+        currency,
+        counterparty_id: null,
+        figure: value,
+        source: 'npv.csv',
+    });
+
+    function sessionAnswering(reply: unknown): LiveSession {
+        return {
+            client: {
+                async callAuthenticated(
+                    subject: string,
+                    _body: unknown,
+                    schema: { parse: (value: unknown) => unknown },
+                ): Promise<unknown> {
+                    if (subject !== 'reporting.v1.run_results.list') {
+                        throw new Error(`no record read in this test: ${subject}`);
+                    }
+                    return schema.parse(reply);
+                },
+            },
+        } as unknown as LiveSession;
+    }
+
+    it('reads the figures from the results the service replies with', async () => {
+        const read = await rowsOfRun(
+            sessionAnswering({
+                result: OK,
+                results: [figure('npv', 100.5, 'USD'), figure('npv_base', 80, 'GBP')],
+                total: 2,
+            }),
+            RUN,
+        );
+
+        expect(read.reason).toBe('');
+        expect(read.rows).toEqual([
+            expect.objectContaining({
+                trade_id: TRADE,
+                npv: '100.5',
+                npv_currency: 'USD',
+                npv_base: '80',
+            }),
+        ]);
+    });
+
+    it('says the run stored no rows when the service replies with none', async () => {
+        const read = await rowsOfRun(sessionAnswering({ result: OK, results: [], total: 0 }), RUN);
+
+        expect(read.reason).toBe('no-rows');
     });
 });

@@ -28,12 +28,11 @@
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.inbox.api/messaging/approval_request_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace ores::eventing::domain {
@@ -48,14 +47,16 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::inbox::messaging::approval_request_event> {
-    static constexpr std::string_view subject_prefix = "inbox.v1.approval_requests_events";
+    static constexpr std::string_view subject_prefix = "inbox.v1.events.approval_requests";
 
     static ores::inbox::messaging::approval_request_event
     from_notification(const entity_event_notification& notification) {
         ores::inbox::messaging::approval_request_event event;
         event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
+        // A key this build cannot read leaves the event's own key default.
         if (const auto key =
-                rfl::json::read<ores::inbox::messaging::approval_request_key>(notification.key))
+                ores::utility::codec::json::try_read<ores::inbox::messaging::approval_request_key>(
+                    notification.key))
             event.key = *key;
         event.action = notification.action;
         event.version = notification.version;

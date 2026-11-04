@@ -205,7 +205,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.currency_market_tiers_events.created',
-    updated: 'refdata.v1.currency_market_tiers_events.updated',
-    deleted: 'refdata.v1.currency_market_tiers_events.deleted',
+    created: 'refdata.v1.events.currency_market_tiers.created',
+    updated: 'refdata.v1.events.currency_market_tiers.updated',
+    deleted: 'refdata.v1.events.currency_market_tiers.deleted',
 } as const;

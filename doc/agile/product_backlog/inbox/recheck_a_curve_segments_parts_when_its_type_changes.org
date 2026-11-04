@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C6D34C20-252A-4C04-9752-1D615B4842CE
+:END:
+#+title: A curve segment part's insert trigger checks that the segmen…
+#+description: A curve segment part's insert trigger checks that the segment's element has that part (ores_refdata_validate_curve_segment_part_fn), but writing a new version of the segment with a segment_type of another kind does not re-check the parts it already has. The ORE export refuses the mismatch, so a document never leaves the store wrong, but the store can hold it. A trigger validation sees one column, so the check needs the segment's id and type together: a check on the segment's insert that reads its live parts, or a statement the projection generator writes beside the part validators. Raised in the review of PR #4385.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

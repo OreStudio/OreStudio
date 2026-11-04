@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct swaption_volatility_config_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const swaption_volatility_config_key&,
+                           const swaption_volatility_config_key&) = default;
 };
 
 struct swaption_volatility_config_write {
@@ -62,29 +65,41 @@ struct swaption_volatility_config_write {
     std::optional<std::string> swap_tenors;
     std::optional<std::string> short_swap_index_base;
     std::optional<std::string> swap_index_base;
-    std::optional<std::string> smile_option_tenors;
-    std::optional<std::string> smile_swap_tenors;
-    std::optional<std::string> smile_spreads;
     std::optional<std::string> quote_tag;
+
+    friend bool operator==(const swaption_volatility_config_write&,
+                           const swaption_volatility_config_write&) = default;
 };
 
 struct swaption_volatility_config_change {
     swaption_volatility_config_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const swaption_volatility_config_change&,
+                           const swaption_volatility_config_change&) = default;
 };
 
 struct swaption_volatility_config_removal {
     swaption_volatility_config_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const swaption_volatility_config_removal&,
+                           const swaption_volatility_config_removal&) = default;
 };
 
 struct swaption_volatility_config_lookup {
     swaption_volatility_config_key key;
     std::optional<ores::refdata::domain::swaption_volatility_config> swaption_volatility_config;
+
+    friend bool operator==(const swaption_volatility_config_lookup&,
+                           const swaption_volatility_config_lookup&) = default;
 };
 
 struct swaption_volatility_configs_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const swaption_volatility_configs_filter&,
+                           const swaption_volatility_configs_filter&) = default;
 };
 
 struct swaption_volatility_config_event {
@@ -94,17 +109,26 @@ struct swaption_volatility_config_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const swaption_volatility_config_event&,
+                           const swaption_volatility_config_event&) = default;
 };
 
 struct swaption_volatility_config_version_key {
     swaption_volatility_config_key swaption_volatility_config;
     std::uint32_t version;
+
+    friend bool operator==(const swaption_volatility_config_version_key&,
+                           const swaption_volatility_config_version_key&) = default;
 };
 
 struct swaption_volatility_config_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const swaption_volatility_config_versions_filter&,
+                           const swaption_volatility_config_versions_filter&) = default;
 };
 
 struct list_swaption_volatility_configs_request {
@@ -122,12 +146,18 @@ struct list_swaption_volatility_configs_request {
     ores::utility::domain::order order;
     std::optional<swaption_volatility_configs_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_swaption_volatility_configs_request&,
+                           const list_swaption_volatility_configs_request&) = default;
 };
 
 struct list_swaption_volatility_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swaption_volatility_config> swaption_volatility_configs;
     std::uint64_t total;
+
+    friend bool operator==(const list_swaption_volatility_configs_response&,
+                           const list_swaption_volatility_configs_response&) = default;
 };
 
 struct get_swaption_volatility_config_request {
@@ -141,11 +171,17 @@ struct get_swaption_volatility_config_request {
      */
     static constexpr bool requires_session = true;
     swaption_volatility_config_key key;
+
+    friend bool operator==(const get_swaption_volatility_config_request&,
+                           const get_swaption_volatility_config_request&) = default;
 };
 
 struct get_swaption_volatility_config_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::swaption_volatility_config> swaption_volatility_config;
+
+    friend bool operator==(const get_swaption_volatility_config_response&,
+                           const get_swaption_volatility_config_response&) = default;
 };
 
 struct get_many_swaption_volatility_configs_request {
@@ -160,11 +196,17 @@ struct get_many_swaption_volatility_configs_request {
      */
     static constexpr bool requires_session = true;
     std::vector<swaption_volatility_config_key> keys;
+
+    friend bool operator==(const get_many_swaption_volatility_configs_request&,
+                           const get_many_swaption_volatility_configs_request&) = default;
 };
 
 struct get_many_swaption_volatility_configs_response {
     ores::utility::domain::result result;
     std::vector<swaption_volatility_config_lookup> entries;
+
+    friend bool operator==(const get_many_swaption_volatility_configs_response&,
+                           const get_many_swaption_volatility_configs_response&) = default;
 };
 
 struct put_swaption_volatility_config_request {
@@ -179,11 +221,17 @@ struct put_swaption_volatility_config_request {
     static constexpr bool requires_session = true;
     swaption_volatility_config_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_swaption_volatility_config_request&,
+                           const put_swaption_volatility_config_request&) = default;
 };
 
 struct put_swaption_volatility_config_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::swaption_volatility_config> swaption_volatility_config;
+
+    friend bool operator==(const put_swaption_volatility_config_response&,
+                           const put_swaption_volatility_config_response&) = default;
 };
 
 struct put_many_swaption_volatility_configs_request {
@@ -199,11 +247,17 @@ struct put_many_swaption_volatility_configs_request {
     static constexpr bool requires_session = true;
     std::vector<swaption_volatility_config_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_swaption_volatility_configs_request&,
+                           const put_many_swaption_volatility_configs_request&) = default;
 };
 
 struct put_many_swaption_volatility_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swaption_volatility_config> swaption_volatility_configs;
+
+    friend bool operator==(const put_many_swaption_volatility_configs_response&,
+                           const put_many_swaption_volatility_configs_response&) = default;
 };
 
 struct delete_swaption_volatility_config_request {
@@ -219,10 +273,16 @@ struct delete_swaption_volatility_config_request {
     static constexpr bool requires_session = true;
     swaption_volatility_config_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_swaption_volatility_config_request&,
+                           const delete_swaption_volatility_config_request&) = default;
 };
 
 struct delete_swaption_volatility_config_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_swaption_volatility_config_response&,
+                           const delete_swaption_volatility_config_response&) = default;
 };
 
 struct delete_many_swaption_volatility_configs_request {
@@ -238,10 +298,16 @@ struct delete_many_swaption_volatility_configs_request {
     static constexpr bool requires_session = true;
     std::vector<swaption_volatility_config_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_swaption_volatility_configs_request&,
+                           const delete_many_swaption_volatility_configs_request&) = default;
 };
 
 struct delete_many_swaption_volatility_configs_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_swaption_volatility_configs_response&,
+                           const delete_many_swaption_volatility_configs_response&) = default;
 };
 
 struct list_swaption_volatility_config_versions_request {
@@ -260,12 +326,18 @@ struct list_swaption_volatility_config_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<swaption_volatility_config_versions_filter> filter;
+
+    friend bool operator==(const list_swaption_volatility_config_versions_request&,
+                           const list_swaption_volatility_config_versions_request&) = default;
 };
 
 struct list_swaption_volatility_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swaption_volatility_config> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_swaption_volatility_config_versions_response&,
+                           const list_swaption_volatility_config_versions_response&) = default;
 };
 
 struct get_swaption_volatility_config_version_request {
@@ -280,11 +352,17 @@ struct get_swaption_volatility_config_version_request {
      */
     static constexpr bool requires_session = true;
     swaption_volatility_config_version_key key;
+
+    friend bool operator==(const get_swaption_volatility_config_version_request&,
+                           const get_swaption_volatility_config_version_request&) = default;
 };
 
 struct get_swaption_volatility_config_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::swaption_volatility_config> version;
+
+    friend bool operator==(const get_swaption_volatility_config_version_response&,
+                           const get_swaption_volatility_config_version_response&) = default;
 };
 
 /**
@@ -296,9 +374,9 @@ struct get_swaption_volatility_config_version_response {
  * of them.
  */
 namespace swaption_volatility_config_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.swaption_volatility_configs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.swaption_volatility_configs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.swaption_volatility_configs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.swaption_volatility_configs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.swaption_volatility_configs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.swaption_volatility_configs.deleted";
 }
 /**
  * @brief The members of swaption_volatility_config_key, named as the wire names them and in the
@@ -346,11 +424,6 @@ inline constexpr std::string_view deleted = "refdata.v1.swaption_volatility_conf
                               &swaption_volatility_config_write::short_swap_index_base},
         utility::codec::field{"swap_index_base",
                               &swaption_volatility_config_write::swap_index_base},
-        utility::codec::field{"smile_option_tenors",
-                              &swaption_volatility_config_write::smile_option_tenors},
-        utility::codec::field{"smile_swap_tenors",
-                              &swaption_volatility_config_write::smile_swap_tenors},
-        utility::codec::field{"smile_spreads", &swaption_volatility_config_write::smile_spreads},
         utility::codec::field{"quote_tag", &swaption_volatility_config_write::quote_tag},
     };
 }

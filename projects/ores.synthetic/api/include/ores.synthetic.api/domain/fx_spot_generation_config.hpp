@@ -188,6 +188,23 @@ struct fx_spot_generation_config final {
     double sensitivity = 1.0;
 
     /**
+     * @brief How the feed's daily variance moves: "constant", the mixture's own variance on every
+     * day, or "gjr_garch", a GJR-GARCH(1,1) variance carried from one market day to the next that
+     * scales the mixture's shocks, with the shape of the approved calibration the config names.
+     * "gjr_garch" needs an engine that can scale its law, geometric or arithmetic.
+     */
+    std::string variance_model = "constant";
+
+    /**
+     * @brief For "gjr_garch": the approved variance_calibration the feed runs. Naming it here makes
+     * each change of calibration a new version of the config, so the feed's history shows when
+     * every calibration came into use; approving a later calibration of the pair re-points the
+     * feeds that named the earlier one. A feed whose calibration is no longer approved does not
+     * start, and says why.
+     */
+    std::optional<boost::uuids::uuid> variance_calibration_id;
+
+    /**
      * @brief Username of the person who last modified this FX spot generation config.
      */
     std::string modified_by;

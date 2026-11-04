@@ -36,18 +36,20 @@ export interface ReportMetricWrite {
     id: string;
     party_id: string;
     report_instance_id: string;
+    result_id: string;
+    as_of: string;
+    measure: string;
+    source: string;
+    line: number;
+    report_definition_id: string;
     family: string;
     subject_type: string;
     subject_id: string;
-    as_of: string;
-    measure: string;
-    report_definition_id: string;
     currency: string;
     scenario: string;
     factor: string;
     qualifiers: string;
     value: number;
-    source: string;
 }
 
 export interface ReportMetricChange {
@@ -67,14 +69,14 @@ export interface ReportMetricLookup {
 
 export interface ReportMetricsFilter {
     report_instance_id: string | null;
+    measure: string | null;
     family: string | null;
     subject_id: string | null;
-    measure: string | null;
     id_one_of: string[] | null;
     report_instance_id_one_of: string[] | null;
+    measure_one_of: string[] | null;
     family_one_of: string[] | null;
     subject_id_one_of: string[] | null;
-    measure_one_of: string[] | null;
 }
 
 export interface ReportMetricEvent {
@@ -186,7 +188,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'reporting.v1.report_metrics_events.created',
-    updated: 'reporting.v1.report_metrics_events.updated',
-    deleted: 'reporting.v1.report_metrics_events.deleted',
+    created: 'reporting.v1.events.report_metrics.created',
+    updated: 'reporting.v1.events.report_metrics.updated',
+    deleted: 'reporting.v1.events.report_metrics.deleted',
 } as const;

@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct curve_quote_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const curve_quote_key&, const curve_quote_key&) = default;
 };
 
 struct curve_quote_write {
@@ -57,25 +59,35 @@ struct curve_quote_write {
     std::optional<std::string> rate_quote;
     std::optional<std::string> spread_quote;
     int position;
+
+    friend bool operator==(const curve_quote_write&, const curve_quote_write&) = default;
 };
 
 struct curve_quote_change {
     curve_quote_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const curve_quote_change&, const curve_quote_change&) = default;
 };
 
 struct curve_quote_removal {
     curve_quote_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const curve_quote_removal&, const curve_quote_removal&) = default;
 };
 
 struct curve_quote_lookup {
     curve_quote_key key;
     std::optional<ores::refdata::domain::curve_quote> curve_quote;
+
+    friend bool operator==(const curve_quote_lookup&, const curve_quote_lookup&) = default;
 };
 
 struct curve_quotes_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const curve_quotes_filter&, const curve_quotes_filter&) = default;
 };
 
 struct curve_quote_event {
@@ -85,17 +97,25 @@ struct curve_quote_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const curve_quote_event&, const curve_quote_event&) = default;
 };
 
 struct curve_quote_version_key {
     curve_quote_key curve_quote;
     std::uint32_t version;
+
+    friend bool operator==(const curve_quote_version_key&,
+                           const curve_quote_version_key&) = default;
 };
 
 struct curve_quote_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const curve_quote_versions_filter&,
+                           const curve_quote_versions_filter&) = default;
 };
 
 struct list_curve_quotes_request {
@@ -113,12 +133,18 @@ struct list_curve_quotes_request {
     ores::utility::domain::order order;
     std::optional<curve_quotes_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_curve_quotes_request&,
+                           const list_curve_quotes_request&) = default;
 };
 
 struct list_curve_quotes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_quote> quotes;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_quotes_response&,
+                           const list_curve_quotes_response&) = default;
 };
 
 struct get_curve_quote_request {
@@ -132,11 +158,17 @@ struct get_curve_quote_request {
      */
     static constexpr bool requires_session = true;
     curve_quote_key key;
+
+    friend bool operator==(const get_curve_quote_request&,
+                           const get_curve_quote_request&) = default;
 };
 
 struct get_curve_quote_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_quote> curve_quote;
+
+    friend bool operator==(const get_curve_quote_response&,
+                           const get_curve_quote_response&) = default;
 };
 
 struct get_many_curve_quotes_request {
@@ -150,11 +182,17 @@ struct get_many_curve_quotes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<curve_quote_key> keys;
+
+    friend bool operator==(const get_many_curve_quotes_request&,
+                           const get_many_curve_quotes_request&) = default;
 };
 
 struct get_many_curve_quotes_response {
     ores::utility::domain::result result;
     std::vector<curve_quote_lookup> entries;
+
+    friend bool operator==(const get_many_curve_quotes_response&,
+                           const get_many_curve_quotes_response&) = default;
 };
 
 struct put_curve_quote_request {
@@ -169,11 +207,17 @@ struct put_curve_quote_request {
     static constexpr bool requires_session = true;
     curve_quote_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_curve_quote_request&,
+                           const put_curve_quote_request&) = default;
 };
 
 struct put_curve_quote_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_quote> curve_quote;
+
+    friend bool operator==(const put_curve_quote_response&,
+                           const put_curve_quote_response&) = default;
 };
 
 struct put_many_curve_quotes_request {
@@ -188,11 +232,17 @@ struct put_many_curve_quotes_request {
     static constexpr bool requires_session = true;
     std::vector<curve_quote_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_curve_quotes_request&,
+                           const put_many_curve_quotes_request&) = default;
 };
 
 struct put_many_curve_quotes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_quote> quotes;
+
+    friend bool operator==(const put_many_curve_quotes_response&,
+                           const put_many_curve_quotes_response&) = default;
 };
 
 struct delete_curve_quote_request {
@@ -207,10 +257,16 @@ struct delete_curve_quote_request {
     static constexpr bool requires_session = true;
     curve_quote_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_curve_quote_request&,
+                           const delete_curve_quote_request&) = default;
 };
 
 struct delete_curve_quote_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_curve_quote_response&,
+                           const delete_curve_quote_response&) = default;
 };
 
 struct delete_many_curve_quotes_request {
@@ -225,10 +281,16 @@ struct delete_many_curve_quotes_request {
     static constexpr bool requires_session = true;
     std::vector<curve_quote_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_curve_quotes_request&,
+                           const delete_many_curve_quotes_request&) = default;
 };
 
 struct delete_many_curve_quotes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_curve_quotes_response&,
+                           const delete_many_curve_quotes_response&) = default;
 };
 
 struct list_curve_quote_versions_request {
@@ -246,12 +308,18 @@ struct list_curve_quote_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<curve_quote_versions_filter> filter;
+
+    friend bool operator==(const list_curve_quote_versions_request&,
+                           const list_curve_quote_versions_request&) = default;
 };
 
 struct list_curve_quote_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_quote> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_quote_versions_response&,
+                           const list_curve_quote_versions_response&) = default;
 };
 
 struct get_curve_quote_version_request {
@@ -265,11 +333,17 @@ struct get_curve_quote_version_request {
      */
     static constexpr bool requires_session = true;
     curve_quote_version_key key;
+
+    friend bool operator==(const get_curve_quote_version_request&,
+                           const get_curve_quote_version_request&) = default;
 };
 
 struct get_curve_quote_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_quote> version;
+
+    friend bool operator==(const get_curve_quote_version_response&,
+                           const get_curve_quote_version_response&) = default;
 };
 
 /**
@@ -281,9 +355,9 @@ struct get_curve_quote_version_response {
  * of them.
  */
 namespace curve_quote_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.curve_quotes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.curve_quotes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.curve_quotes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.curve_quotes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.curve_quotes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.curve_quotes.deleted";
 }
 /**
  * @brief The members of curve_quote_key, named as the wire names them and in the order

@@ -30,7 +30,7 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <chrono>
@@ -39,8 +39,6 @@
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -147,8 +145,7 @@ void swaption_volatility_config_commands::register_commands(cli::Menu& root_menu
         "add <curve_definition_id> <dimension> <volatility_type> <interpolation> <extrapolation> "
         "<output_volatility_type> <model_shift> <output_shift> <day_counter> <calendar> "
         "<business_day_convention> <option_tenors> <swap_tenors> <short_swap_index_base> "
-        "<swap_index_base> <smile_option_tenors> <smile_swap_tenors> <smile_spreads> <quote_tag> "
-        "<reason> <commentary>");
+        "<swap_index_base> <quote_tag> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -158,8 +155,8 @@ void swaption_volatility_config_commands::register_commands(cli::Menu& root_menu
         "set <id> <curve_definition_id> <dimension> <volatility_type> <interpolation> "
         "<extrapolation> <output_volatility_type> <model_shift> <output_shift> <day_counter> "
         "<calendar> <business_day_convention> <option_tenors> <swap_tenors> "
-        "<short_swap_index_base> <swap_index_base> <smile_option_tenors> <smile_swap_tenors> "
-        "<smile_spreads> <quote_tag> <reason> <commentary> [--version <n>]");
+        "<short_swap_index_base> <swap_index_base> <quote_tag> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
@@ -169,8 +166,7 @@ void swaption_volatility_config_commands::register_commands(cli::Menu& root_menu
         "put-many --count <n> <id> <curve_definition_id> <dimension> <volatility_type> "
         "<interpolation> <extrapolation> <output_volatility_type> <model_shift> <output_shift> "
         "<day_counter> <calendar> <business_day_convention> <option_tenors> <swap_tenors> "
-        "<short_swap_index_base> <swap_index_base> <smile_option_tenors> <smile_swap_tenors> "
-        "<smile_spreads> <quote_tag> <reason> <commentary>");
+        "<short_swap_index_base> <swap_index_base> <quote_tag> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -248,7 +244,9 @@ void swaption_volatility_config_commands::process_list(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void swaption_volatility_config_commands::process_get(std::ostream& out,
@@ -291,7 +289,9 @@ void swaption_volatility_config_commands::process_get(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void swaption_volatility_config_commands::process_get_many(std::ostream& out,
@@ -338,7 +338,9 @@ void swaption_volatility_config_commands::process_get_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void swaption_volatility_config_commands::process_add(std::ostream& out,
@@ -365,8 +367,8 @@ void swaption_volatility_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 19 + 2) {
-            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -405,13 +407,6 @@ void swaption_volatility_config_commands::process_add(std::ostream& out,
                                               "short_swap_index_base");
         swaption_volatility_config_read_token(
             req.change.write.swap_index_base, parsed->positionals[next++], "swap_index_base");
-        swaption_volatility_config_read_token(req.change.write.smile_option_tenors,
-                                              parsed->positionals[next++],
-                                              "smile_option_tenors");
-        swaption_volatility_config_read_token(
-            req.change.write.smile_swap_tenors, parsed->positionals[next++], "smile_swap_tenors");
-        swaption_volatility_config_read_token(
-            req.change.write.smile_spreads, parsed->positionals[next++], "smile_spreads");
         swaption_volatility_config_read_token(
             req.change.write.quote_tag, parsed->positionals[next++], "quote_tag");
         req.intent.reason_code = parsed->positionals[next++];
@@ -427,7 +422,9 @@ void swaption_volatility_config_commands::process_add(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void swaption_volatility_config_commands::process_set(std::ostream& out,
@@ -456,8 +453,8 @@ void swaption_volatility_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 20 + 2) {
-            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -497,13 +494,6 @@ void swaption_volatility_config_commands::process_set(std::ostream& out,
                                               "short_swap_index_base");
         swaption_volatility_config_read_token(
             req.change.write.swap_index_base, parsed->positionals[next++], "swap_index_base");
-        swaption_volatility_config_read_token(req.change.write.smile_option_tenors,
-                                              parsed->positionals[next++],
-                                              "smile_option_tenors");
-        swaption_volatility_config_read_token(
-            req.change.write.smile_swap_tenors, parsed->positionals[next++], "smile_swap_tenors");
-        swaption_volatility_config_read_token(
-            req.change.write.smile_spreads, parsed->positionals[next++], "smile_spreads");
         swaption_volatility_config_read_token(
             req.change.write.quote_tag, parsed->positionals[next++], "quote_tag");
         req.intent.reason_code = parsed->positionals[next++];
@@ -525,7 +515,9 @@ void swaption_volatility_config_commands::process_set(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void swaption_volatility_config_commands::process_put_many(std::ostream& out,
@@ -560,8 +552,8 @@ void swaption_volatility_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 20 + 2) {
-            fail(out) << "Expected " << (change_count * 20 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 17 + 2) {
+            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -603,13 +595,6 @@ void swaption_volatility_config_commands::process_put_many(std::ostream& out,
                                                   "short_swap_index_base");
             swaption_volatility_config_read_token(
                 change.write.swap_index_base, parsed->positionals[next++], "swap_index_base");
-            swaption_volatility_config_read_token(change.write.smile_option_tenors,
-                                                  parsed->positionals[next++],
-                                                  "smile_option_tenors");
-            swaption_volatility_config_read_token(
-                change.write.smile_swap_tenors, parsed->positionals[next++], "smile_swap_tenors");
-            swaption_volatility_config_read_token(
-                change.write.smile_spreads, parsed->positionals[next++], "smile_spreads");
             swaption_volatility_config_read_token(
                 change.write.quote_tag, parsed->positionals[next++], "quote_tag");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -627,7 +612,9 @@ void swaption_volatility_config_commands::process_put_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void swaption_volatility_config_commands::process_delete(std::ostream& out,
@@ -681,7 +668,9 @@ void swaption_volatility_config_commands::process_delete(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void swaption_volatility_config_commands::process_delete_many(
@@ -731,7 +720,9 @@ void swaption_volatility_config_commands::process_delete_many(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void swaption_volatility_config_commands::process_versions(std::ostream& out,
@@ -780,7 +771,9 @@ void swaption_volatility_config_commands::process_versions(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void swaption_volatility_config_commands::process_version(std::ostream& out,
@@ -828,7 +821,9 @@ void swaption_volatility_config_commands::process_version(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

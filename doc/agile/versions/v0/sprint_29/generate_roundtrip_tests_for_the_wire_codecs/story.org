@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: E8979EC7-EC28-483B-86B4-E5AACC6DC967
+:END:
+#+title: Story: Generate roundtrip tests for the wire codecs
+#+description: Codegen emits a JSON and MessagePack roundtrip test for every model that opts in to the wire codec, so no codec depends on a hand-written test.
+#+type: story
+#+level: s2
+#+filetags: :codegen:codec:tests:json:msgpack:sprint_29:v0:
+#+created: 2026-11-02
+#+updated: 2026-11-03
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every type the wire codec writes, from 621 opted-in models, has a generated test that fills it with non-default values, writes it in JSON and MessagePack, reads it back and requires the same value. A codec that drops, renames or mistypes a member fails its test. New opt-ins get the test without anyone writing it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Design written, tasks added.           |
+| Waiting on    | Nothing.                               |
+| Next          | Defaulted equality and the sample table. |
+| Last touched  | 2026-11-02                               |
+
+* Acceptance
+
+- Codegen emits one roundtrip test per opted-in model, for domain entities, junctions, field groups, operations and families.
+- Each test fills every member with a non-default value and requires read(write(v)) == v in JSON and in MessagePack.
+- A member type with no sample value fails to compile, and the error names the type.
+- A deliberately broken codec (a dropped member, a wrong MessagePack type) fails its generated test or its build, with evidence in the story.
+- Every opted-in component regenerates, builds and passes, and the drift check covers the tests.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3CB90542-F66A-4FC0-9052-784A07C7B203][Scaffold story: Generate roundtrip tests for the wire codecs]] | DONE | 2026-11-02 | 2026-11-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:99B5C1BC-70D3-4566-AFE2-69399D39BFE3][Give every generated protocol message a defaulted equality]] | DONE | 2026-11-02 | 2026-11-02 | Generate a defaulted operator== on every protocol message, so a roundtrip test can require the value it read to equal the value it wrote. |
+| [[id:50C06629-9008-4E1E-B511-38E59C66B30B][State a sample value for every wire member type]] | DONE | 2026-11-02 | 2026-11-02 | A C++ sampler gives every wire member type a non-default value, recurses through the wire_fields of nested types, and refuses a type it cannot sample at compile time. |
+| [[id:61A1685A-01D4-4E8A-8CA9-509B51446700][Generate the roundtrip test for entities, junctions and field groups]] | DONE | 2026-11-02 | 2026-11-02 | Add the ores.cpp.wire-codec.roundtrip_tests archetype and emit it for every opted-in domain entity, junction and field group. |
+| [[id:A7C7CC03-52C0-429E-9ACC-836A130556A0][Generate the roundtrip test for protocol messages]] | DONE | 2026-11-03 | 2026-11-03 | Extend the roundtrip archetype to the messages of entities, junctions, operations and families. |
+| [[id:1F9435DC-B993-4BF7-9E8D-1B7317741897][Prove the roundtrip tests catch a broken codec]] | DONE | 2026-11-03 | 2026-11-03 | Break a generated codec on purpose in three ways and show a generated test fails each time. |
+| [[id:EFC2FDA7-146C-42EA-8F51-DA3EBBA6D599][Roll the roundtrip tests out to every codec component]] | ABANDONED | | 2026-11-02 | Regenerate every opted-in component with the roundtrip tests, build at four jobs, and fix what the tests find. |
+| [[id:C796BACD-607A-4A84-B5BE-6F6D2F16B3CB][Fold the hand-written roundtrip checks into the generated tests]] | BACKLOG | | | Delete the roundtrip parts of the hand-written codec tests that the generated tests now cover, and keep only the reflect-cpp byte comparisons. |
+| [[id:64E2DC6F-9108-4B1F-9B37-ED64A8ECF8B1][Give each member of a sample its own value]] | DONE | 2026-11-03 | 2026-11-03 | The sample gives every member of one type the same value, so a codec that reads one member's key into another member of the same type passes the roundtrip test. |
+
+* Context
+
+The wire codec is generated, but no codec test is. Codegen emits shell command
+tests (444), eventing integration tests (360), shell operation tests (20) and
+http route tests (19). None of them roundtrips a type. The nine codegen pytest
+files on the codec check the template text, not a compiled codec. Every C++
+codec test is hand written: =codec_wire_bytes_tests.cpp= in ten api parts, and
+=message_codec_tests.cpp= in dq, refdata and trading. Coverage inside those
+files is partial. For example, refdata has 199 opted-in models and one test
+file, and ores.http has an opted-in model and no codec test.
+
+Measured on 2026-11-02 at 17019adff8, which includes the storage opt-in
+(#4386). The commands are =evidence/count_opted_in_models.py= and
+=evidence/survey_protocol_member_types.py=, run from the repository root:
+
+- 621 models set =ores.cpp.wire-codec.enabled=. 501 have a generator. 66
+  operations, 36 field groups, 13 junctions and 5 entities have none.
+- The generated protocol headers hold 35,801 members. The member types are a
+  small set: domain types, =std::string=, the integer types, =boost::uuids::uuid=,
+  =std::chrono::system_clock::time_point=, =std::chrono::year_month_day=, =bool=,
+  =double=, =ores::utility::decimal::decimal=, and =std::optional= and
+  =std::vector= of these.
+
+* Design
+
+The data shape is a *sample* per type that a model's codec writes: a value
+whose every member differs from its default. A C++ function template,
+=ores::utility::codec::sample<T>(which)=, makes it. It walks the same
+=wire_fields= the codec walks, so it needs no copy of the member lists. The
+generated test is then one line per type.
+
+#+begin_example
+const auto v = sample<ores::storage::messaging::list_objects_response>(0);
+CHECK(object::read_json<list_objects_response>(object::write_json(v)) == v);
+#+end_example
+
+- *The sampler.* =sample<T>(which)= returns one of two fixed values, =which=
+  0 or 1. A member takes the first, or the second when the first equals the
+  member's modelled default. The rules:
+  - A struct that states =wire_fields=: every member set as above. The second
+    sample differs from the first in every member.
+  - An enumeration: the second enumerator, or the first.
+  - =std::string=: text with a quote, a backslash, a newline and a non-ASCII
+    character.
+  - Integer types: the maximum minus one. The second value is one.
+  - =bool=: =true=, or =false=.
+  - =double=: =1.5=, or =-0.25=. Both are exact in binary and in JSON text.
+  - =ores::utility::decimal::decimal=: =12345678901234567.25=, which has more
+    significant digits than a =double= holds.
+  - =std::chrono::system_clock::time_point=: a fixed instant with microseconds.
+  - =std::chrono::year_month_day=: a fixed valid date that is not the epoch.
+  - =boost::uuids::uuid= and =tenant_id=: a fixed non-nil value.
+  - =std::optional<T>=: engaged with the sample of =T=.
+  - =std::vector<T>=: two elements, the first and second samples of =T=.
+  - =std::map<std::string, T>=, durations, =ip::address=, =error_code= and
+    =std::filesystem::path=: a fixed non-default value.
+  Equality is exact. The values are chosen so that both formats hold them
+  exactly, so an inexact result is a codec defect, not a rounding artefact.
+- *Nested modelled types.* A member whose type states =wire_fields=, in any
+  component, takes that type's sample by recursion. No helper is emitted.
+- *Refusal.* A member type outside the rules fails a =static_assert= when the
+  test compiles. The instantiation trace names the type and the struct that
+  holds it. No gap is silent.
+- *The test.* For each type, in JSON and in MessagePack: write the sample, read
+  it back, and require the value to equal the sample. The test also requires
+  that the default value roundtrips.
+- *Placement.* The archetype =ores.cpp.wire-codec.roundtrip_tests= writes
+  =projects/{component_dir}/tests/{entity}_codec_roundtrip_tests.cpp= beside the
+  codec it tests, for every model type the facet covers.
+- *Proof.* The story ends with evidence that the tests catch a broken codec: a
+  member dropped from a field list, a member renamed, and a MessagePack value of
+  the wrong type each fail a generated test.
+
+* Order
+
+1. Defaulted equality on protocol messages, and the sample table. These two are
+   independent.
+2. The archetype for entities, junctions and field groups. It needs the table.
+3. The archetype for protocol messages. It needs the equality and the table.
+4. The mutation proof, then the rollout, then the fold of the hand-written
+   checks.
+
+* Decisions
+
+- *The test guards the member count at compile time.* The sampler fills only
+  the members =wire_fields= names, so a dropped member roundtrips at its
+  default. =names_every_member= compares the struct's member count with the
+  list, less the =:no_wire:= members codegen counts.
+- *Each archetype reaches every opted-in component at once.* The facet opt-in
+  decides for every archetype under it, so no pilot is possible. The rollout
+  task is abandoned, and each archetype task builds and runs every component.
+- *The sampler is C++, not a Python table in codegen.* The codec states each
+  type's members in =wire_fields=, in public view. A Python table would hold a
+  second copy of the member lists and resolve nested types across components
+  itself. The C++ sampler reads the copy the codec reads, and the compiler
+  refuses a gap. This replaces the first design, which put the table in codegen.
+- *The sampler fills every type, not the entity generators.* A generator
+  fills at random and can leave a member at its default, and 120 opted-in
+  models have no generator. The sampler sets every member and is deterministic,
+  so a failure reproduces.
+- *The test requires value equality, not stable bytes.* Equality states the
+  contract directly. Protocol messages have no =operator==== today, so the first
+  task gives every generated message a defaulted one.
+- *The generated tests do not compare with reflect-cpp.* They must outlive it.
+  The hand-written byte comparisons with reflect-cpp stay until the Remove
+  reflect-cpp task deletes them.
+- *One file per model.* This is the codegen norm, as for the shell command
+  tests. The unity build keeps the compile cost down.
+- *One case per protocol message, through a shared helper.* The protocol
+  headers hold about 14,500 messages, so a case per format and value would be
+  about 58,000 cases. =ores::testing::check_wire_roundtrip= states the checks
+  once, and its =INFO= names the value that failed. The generated files declare
+  no names, so they build as unity units.
+
+* Out of scope
+
+- A renamed member. The codec writes and reads under the same name, so a
+  roundtrip cannot see a rename. The hand-written byte comparisons catch it
+  while they last.
+
+- Malformed input per model. The struct codec's refusal of a missing member or a
+  wrong type is tested once in =ores.utility= and in scheduler (#4357).
+- The TypeScript protocol codecs.
+- Comparing bytes with reflect-cpp. See the Decisions.

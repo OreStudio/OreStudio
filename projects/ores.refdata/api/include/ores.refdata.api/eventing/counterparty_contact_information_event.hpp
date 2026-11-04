@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::counterparty_contact_information_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.counterparty_contact_informations_events";
+        "refdata.v1.events.counterparty_contact_informations";
 
     static ores::refdata::messaging::counterparty_contact_information_event
     from_notification(const entity_event_notification& notification) {

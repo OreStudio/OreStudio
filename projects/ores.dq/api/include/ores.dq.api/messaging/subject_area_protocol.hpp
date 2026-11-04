@@ -44,27 +44,37 @@ namespace ores::dq::messaging {
 struct subject_area_key {
     std::string name;
     std::string domain_name;
+
+    friend bool operator==(const subject_area_key&, const subject_area_key&) = default;
 };
 
 struct subject_area_write {
     std::string name;
     std::string domain_name;
     std::string description;
+
+    friend bool operator==(const subject_area_write&, const subject_area_write&) = default;
 };
 
 struct subject_area_change {
     subject_area_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const subject_area_change&, const subject_area_change&) = default;
 };
 
 struct subject_area_removal {
     subject_area_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const subject_area_removal&, const subject_area_removal&) = default;
 };
 
 struct subject_area_lookup {
     subject_area_key key;
     std::optional<ores::dq::domain::subject_area> subject_area;
+
+    friend bool operator==(const subject_area_lookup&, const subject_area_lookup&) = default;
 };
 
 struct subject_area_event {
@@ -74,17 +84,25 @@ struct subject_area_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const subject_area_event&, const subject_area_event&) = default;
 };
 
 struct subject_area_version_key {
     subject_area_key subject_area;
     std::uint32_t version;
+
+    friend bool operator==(const subject_area_version_key&,
+                           const subject_area_version_key&) = default;
 };
 
 struct subject_area_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const subject_area_versions_filter&,
+                           const subject_area_versions_filter&) = default;
 };
 
 struct list_subject_areas_request {
@@ -101,12 +119,18 @@ struct list_subject_areas_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_subject_areas_request&,
+                           const list_subject_areas_request&) = default;
 };
 
 struct list_subject_areas_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::subject_area> areas;
     std::uint64_t total;
+
+    friend bool operator==(const list_subject_areas_response&,
+                           const list_subject_areas_response&) = default;
 };
 
 struct get_subject_area_request {
@@ -120,11 +144,17 @@ struct get_subject_area_request {
      */
     static constexpr bool requires_session = true;
     subject_area_key key;
+
+    friend bool operator==(const get_subject_area_request&,
+                           const get_subject_area_request&) = default;
 };
 
 struct get_subject_area_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::subject_area> subject_area;
+
+    friend bool operator==(const get_subject_area_response&,
+                           const get_subject_area_response&) = default;
 };
 
 struct get_many_subject_areas_request {
@@ -138,11 +168,17 @@ struct get_many_subject_areas_request {
      */
     static constexpr bool requires_session = true;
     std::vector<subject_area_key> keys;
+
+    friend bool operator==(const get_many_subject_areas_request&,
+                           const get_many_subject_areas_request&) = default;
 };
 
 struct get_many_subject_areas_response {
     ores::utility::domain::result result;
     std::vector<subject_area_lookup> entries;
+
+    friend bool operator==(const get_many_subject_areas_response&,
+                           const get_many_subject_areas_response&) = default;
 };
 
 struct put_subject_area_request {
@@ -157,11 +193,17 @@ struct put_subject_area_request {
     static constexpr bool requires_session = true;
     subject_area_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_subject_area_request&,
+                           const put_subject_area_request&) = default;
 };
 
 struct put_subject_area_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::subject_area> subject_area;
+
+    friend bool operator==(const put_subject_area_response&,
+                           const put_subject_area_response&) = default;
 };
 
 struct put_many_subject_areas_request {
@@ -176,11 +218,17 @@ struct put_many_subject_areas_request {
     static constexpr bool requires_session = true;
     std::vector<subject_area_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_subject_areas_request&,
+                           const put_many_subject_areas_request&) = default;
 };
 
 struct put_many_subject_areas_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::subject_area> areas;
+
+    friend bool operator==(const put_many_subject_areas_response&,
+                           const put_many_subject_areas_response&) = default;
 };
 
 struct delete_subject_area_request {
@@ -195,10 +243,16 @@ struct delete_subject_area_request {
     static constexpr bool requires_session = true;
     subject_area_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_subject_area_request&,
+                           const delete_subject_area_request&) = default;
 };
 
 struct delete_subject_area_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_subject_area_response&,
+                           const delete_subject_area_response&) = default;
 };
 
 struct delete_many_subject_areas_request {
@@ -213,10 +267,16 @@ struct delete_many_subject_areas_request {
     static constexpr bool requires_session = true;
     std::vector<subject_area_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_subject_areas_request&,
+                           const delete_many_subject_areas_request&) = default;
 };
 
 struct delete_many_subject_areas_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_subject_areas_response&,
+                           const delete_many_subject_areas_response&) = default;
 };
 
 struct list_subject_area_versions_request {
@@ -234,12 +294,18 @@ struct list_subject_area_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<subject_area_versions_filter> filter;
+
+    friend bool operator==(const list_subject_area_versions_request&,
+                           const list_subject_area_versions_request&) = default;
 };
 
 struct list_subject_area_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::subject_area> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_subject_area_versions_response&,
+                           const list_subject_area_versions_response&) = default;
 };
 
 struct get_subject_area_version_request {
@@ -253,11 +319,17 @@ struct get_subject_area_version_request {
      */
     static constexpr bool requires_session = true;
     subject_area_version_key key;
+
+    friend bool operator==(const get_subject_area_version_request&,
+                           const get_subject_area_version_request&) = default;
 };
 
 struct get_subject_area_version_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::subject_area> version;
+
+    friend bool operator==(const get_subject_area_version_response&,
+                           const get_subject_area_version_response&) = default;
 };
 
 /**
@@ -269,9 +341,9 @@ struct get_subject_area_version_response {
  * of them.
  */
 namespace subject_area_event_subjects {
-inline constexpr std::string_view created = "dq.v1.subject_areas_events.created";
-inline constexpr std::string_view updated = "dq.v1.subject_areas_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.subject_areas_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.subject_areas.created";
+inline constexpr std::string_view updated = "dq.v1.events.subject_areas.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.subject_areas.deleted";
 }
 /**
  * @brief The members of subject_area_key, named as the wire names them and in the order

@@ -40,6 +40,33 @@ struct provider_dispersion final {
 };
 
 /**
+ * @brief How a feed's daily variance started.
+ *
+ * A feed whose variance follows a GJR-GARCH records its shape, whether the shape was
+ * fitted from the item's fixings or is the authored one, and the first day's variance
+ * against the long-run level, so a person can see why a feed opened calm or turbulent.
+ */
+struct variance_start final {
+    /// "constant" or "gjr_garch".
+    std::string model;
+    /// The approved variance calibration the run took its shape from, and the version read.
+    std::string calibration_id;
+    int calibration_version = 0;
+    bool fitted = false;
+    double alpha = 0.0;
+    double gamma = 0.0;
+    double beta = 0.0;
+    /// alpha + beta + gamma times the mixture's p_minus, below one.
+    double persistence = 0.0;
+    /// The first day's variance over the long-run level.
+    double initial_ratio = 1.0;
+    /// The daily returns the fit read; zero when nothing was fitted.
+    int returns = 0;
+    /// Why the authored shape was kept, when it was.
+    std::string note;
+};
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * A feed that starts from a published value records the one it took: the item, the
@@ -61,7 +88,7 @@ struct feed_start final {
     std::string provider_code;
     /// The provider's own id of the item, or empty when no mapping names it.
     std::string vendor_id;
-    /// The fixing's value as the publisher wrote it.
+    /// The fixing's value as the publisher wrote it, or the level a run kept when no fixing set it.
     ores::utility::decimal::decimal value;
     /// True when the item quotes the feed's pair the other way round.
     bool inverted = false;
@@ -91,6 +118,8 @@ struct feed_start final {
     std::vector<provider_dispersion> dispersion;
     /// Why the feed kept its fixed level, or why its spread was not measured.
     std::string note;
+    /// How the daily variance started, for a feed whose variance is modelled.
+    std::optional<variance_start> variance;
 };
 
 }

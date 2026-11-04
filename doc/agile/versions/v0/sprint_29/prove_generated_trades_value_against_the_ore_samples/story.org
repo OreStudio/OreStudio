@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A
+:END:
+#+title: Story: Prove generated trades value against the ORE samples
+#+description: A run of the Acme portfolio dropped 61 of 73 trades. The trade XML we write lacks fields ORE needs, the generator books trades with missing data, and the market has no FX volatilities or pricing engines for most products. Find why the roundtrip tests and the generator checks missed this, close those gaps, and then price the FX exotics and the bond family.
+#+type: story
+#+level: s2
+#+filetags: :trading:ore:synthetic:test:marketdata:sprint_29:v0:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every product type the generator books has a trade that ORE builds and values, and a test that fails when the trade XML or the generated data drifts from the ORE samples.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into the five tasks under Background. |
+| Last touched  | 2026-11-03                               |
+
+* Acceptance
+
+- The roundtrip tests read every ORE sample trade of each product type the
+  generator books, write it back, and fail on any element ORE needs that we drop
+  or rename. The cause of each gap the run below found is stated.
+- The generator's output for each product type is compared with the ORE sample of
+  that type, and the comparison fails on a missing or empty element ORE needs.
+- A run of the Acme portfolio builds every trade the generator books: no trade
+  fails to parse or to build for want of a field, a curve or an index name.
+- Every FX option type and every bond type that ORE prices has the market data and
+  the pricing engine configuration to value it, or is left out of the generator
+  with the reason stated.
+
+* Background
+
+Run eb9acf8b of Group Consolidated Exposure for Acme on 2026-11-03 booked 73
+trades. ORE built 12 of them and the SA-CCR analytic then failed the run. The
+engine's structured log groups the errors as follows.
+
+1. *The trade XML we write is incomplete or wrong*, about 40 trades. OptionData
+   has no =Style=, so ORE says "Option Style unknown" or "Exercise type not
+   recognized". The barrier type is our own code =KnockOut=, where ORE wants
+   =UpAndOut=, =DownAndIn= and the rest, and a single barrier option carries two
+   levels. The FX index is written =GBP/CHF= where ORE wants
+   =FX-<source>-GBP-CHF=. Schedule rules have an empty =StartDate=. FxTaRF has no
+   =RangeBounds=, FxAccumulator no payoff type, Ascot no =FixedLegData= and
+   BondPosition no =BondBasketData=. London's NPV run of 2026-11-03 left out
+   37 more trades its writer refused: BalanceGuaranteedSwap with no =Tranche=,
+   EquityAccumulator with no =RangeBounds=, EquityOptionPosition with no
+   =Underlying= and EquityWorstOfBasketSwap with no =Underlyings=. The
+   roundtrip tests over the ORE samples should have caught each of these; find
+   why they did not.
+2. *The generated data is wrong*, 4 trades. FxSwap is booked with an empty
+   =FarDate= and zero far amounts. A comparison of generated trades with the ORE
+   samples should have caught it.
+3. *The market lacks curves.* Only GBP, USD, HKD and EUR have discount curves,
+   though the market file holds swap quotes for AUD, CAD, CHF, JPY and NZD. This
+   one is fixed by the task [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]], with the vanilla trades, so
+   that a run stores its NPV.
+4. *There are no FX volatilities* in the market data or in todaysmarket.xml, so no
+   FX option values once its XML is right. This needs the volatility work, which
+   is large: surfaces, their quotes and their synthetic generation.
+5. *No pricing engine is configured* for FxVarianceSwap, FxDoubleTouchOption and
+   eight bond types: Bond options, futures, repos, TRS, callable, convertible,
+   forward and position.
+
+Proposed tasks, in order: find and close the roundtrip gaps (group 1); compare
+generated trades with the samples and fix the generator (group 2); fix the trade
+XML mapping, with the model fields it needs such as exercise style and barrier
+direction (group 1); FX volatilities (group 4); pricing engines and bond reference
+data (group 5).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- The SA-CCR analytic: it needs netting set definitions, and ORE does not support
+  Bond in it.
+- The fixes that let a run store its NPV, done on the task named above: the
+  curves of group 3, the FxOption style and the FxSwap far leg. This story still
+  owns the tests that should have caught the last two.

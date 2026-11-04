@@ -32,6 +32,8 @@ though it references [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]].
 
 - [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][Financial Products Markup Language (FpML)]] — industry XML
   standard for representing financial products.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] — every output file ORE writes, generated from the catalogue: the
+  file, its parameter and analytic, its key, every column, and its units.
 - [[id:8BF75172-CD91-461A-A3BA-2B4E913D63A8][ORE output processing]] — the CSV files ORE writes, why their
   shape follows the configuration, and how we read them.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] — FpML mechanism for restricting fields to a

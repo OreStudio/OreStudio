@@ -25,7 +25,14 @@
 #ifndef ORES_IAM_API_MESSAGING_REGISTRATION_POLICY_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_REGISTRATION_POLICY_PROTOCOL_HPP
 
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::iam::messaging {
 
@@ -48,6 +55,9 @@ struct registration_policy_request {
      * @c no_registration_destination rather than naming the system tenant.
      */
     std::string hostname;
+
+    friend bool operator==(const registration_policy_request&,
+                           const registration_policy_request&) = default;
 };
 
 struct registration_policy_response {
@@ -106,8 +116,76 @@ struct registration_policy_response {
      * pending and waits for an administrator to finish setting it up.
      */
     bool usable_now = false;
+
+    friend bool operator==(const registration_policy_response&,
+                           const registration_policy_response&) = default;
 };
 
+/**
+ * @brief The members of registration_policy_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const registration_policy_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"hostname", &registration_policy_request::hostname},
+    };
 }
+
+/**
+ * @brief The members of registration_policy_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const registration_policy_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &registration_policy_response::success},
+        ::ores::utility::codec::field{"message", &registration_policy_response::message},
+        ::ores::utility::codec::field{"error_code", &registration_policy_response::error_code},
+        ::ores::utility::codec::field{"signups_enabled",
+                                      &registration_policy_response::signups_enabled},
+        ::ores::utility::codec::field{"authorization_required",
+                                      &registration_policy_response::authorization_required},
+        ::ores::utility::codec::field{"tenant_id", &registration_policy_response::tenant_id},
+        ::ores::utility::codec::field{"tenant_name", &registration_policy_response::tenant_name},
+        ::ores::utility::codec::field{"party_id", &registration_policy_response::party_id},
+        ::ores::utility::codec::field{"party_name", &registration_policy_response::party_name},
+        ::ores::utility::codec::field{"role_id", &registration_policy_response::role_id},
+        ::ores::utility::codec::field{"role_name", &registration_policy_response::role_name},
+        ::ores::utility::codec::field{"usable_now", &registration_policy_response::usable_now},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::registration_policy_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::registration_policy_request& v);
+    static ores::iam::messaging::registration_policy_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::registration_policy_request& v);
+    static ores::iam::messaging::registration_policy_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::registration_policy_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::registration_policy_response& v);
+    static ores::iam::messaging::registration_policy_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::registration_policy_response& v);
+    static ores::iam::messaging::registration_policy_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

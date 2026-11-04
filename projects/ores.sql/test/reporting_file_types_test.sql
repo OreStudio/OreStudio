@@ -28,6 +28,8 @@
  * - A name may be a pattern with a key, and a pattern with a malformed key is refused
  * - A file type has a known kind and a parameter, and cannot be used by more samples than
  *   name it
+ * - Each file type names the ORE file it is, which states the format and the XSD, and the
+ *   parameters that write and read one file all name the same ORE file
  * - The cube and the scenario data that a simulation writes are read by xva and pfe under the
  *   name the simulation gives them, and the compressed and binary files are named too
  * - A configuration type has one Setup file, so the export finds the file of a bound
@@ -42,7 +44,7 @@
 
 begin;
 
-select plan(26);
+select plan(25);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -136,22 +138,32 @@ select is(
     'every output file is an output');
 
 select results_eq(
-    $$select code, format, xsd_file from t_live
-      where code in ('setup.conventionsFile', 'xva.csaFile', 'xva.collateralBalancesFile',
-                     'setup.fixingDataFile', 'xva.cubeFile', 'npv.outputFileName')
-      order by code$$,
-    $$values ('npv.outputFileName'::text, 'csv'::text, null::text),
-             ('setup.conventionsFile', 'xml', 'conventions.xsd'),
-             ('setup.fixingDataFile', 'txt', null),
-             ('xva.collateralBalancesFile', 'xml', 'collateralbalance.xsd'),
-             ('xva.csaFile', 'xml', 'nettingsetdefinitions.xsd'),
-             ('xva.cubeFile', 'csv_gz', null)$$,
-    'each file has its format, and an xml file has the XSD that validates it');
+    $$select t.code, t.ore_file_code, f.format, x.typical_filename
+        from t_live t
+        join ores_reporting_ore_files_tbl f
+          on f.tenant_id = t.tenant_id and f.code = t.ore_file_code
+         and f.valid_to = ores_utility_infinity_timestamp_fn()
+        left join ores_reporting_ore_files_tbl x
+          on x.tenant_id = f.tenant_id and x.code = f.schema_ore_file_code
+         and x.valid_to = ores_utility_infinity_timestamp_fn()
+       where t.code in ('setup.conventionsFile', 'xva.csaFile', 'xva.collateralBalancesFile',
+                        'setup.fixingDataFile', 'xva.cubeFile', 'npv.outputFileName')
+       order by t.code$$,
+    $$values ('npv.outputFileName'::text, 'npv_report'::text, 'csv'::text, null::text),
+             ('setup.conventionsFile', 'conventions', 'xml', 'conventions.xsd'),
+             ('setup.fixingDataFile', 'fixing_history', 'txt', null),
+             ('xva.collateralBalancesFile', 'collateral_balances', 'xml', 'collateralbalance.xsd'),
+             ('xva.csaFile', 'netting_set_definitions', 'xml', 'nettingsetdefinitions.xsd'),
+             ('xva.cubeFile', 'npv_cube', 'csv_gz', null)$$,
+    'each file type names the ORE file it is, which states the format and names the schema');
 
-select is(
-    (select count(*) from t_live where format <> 'xml' and xsd_file is not null),
-    0::bigint,
-    'only an xml file has an XSD');
+select results_eq(
+    $$select code, ore_file_code from t_live
+       where code in ('simulation.cubeFile', 'xva.cubeFile', 'pfe.cubeFile') order by code$$,
+    $$values ('pfe.cubeFile'::text, 'npv_cube'::text),
+             ('simulation.cubeFile', 'npv_cube'),
+             ('xva.cubeFile', 'npv_cube')$$,
+    'the parameters that write and read one file all name the same ORE file');
 
 select cmp_ok(
     (select min(length(description)) from t_live), '>=', 120,
@@ -159,10 +171,10 @@ select cmp_ok(
 
 create or replace function pg_temp.add_type(p_code text, p_pattern text) returns void as $$
     insert into ores_reporting_file_types_tbl (
-        code, tenant_id, version, analytic_type_code, ore_parameter, direction, format, kind,
+        code, tenant_id, version, analytic_type_code, ore_parameter, direction, ore_file_code, kind,
         configuration_type_code, name_pattern, sample_count, sample_total, description,
         display_order, modified_by, performed_by, change_reason_code, change_commentary)
-    values (p_code, ores_utility_system_tenant_id_fn(), 0, null, 'testSplitFile', 'input', 'xml',
+    values (p_code, ores_utility_system_tenant_id_fn(), 0, null, 'testSplitFile', 'input', 'trade_data',
             'data_file',
             null, p_pattern, 1, 1, 'A test file type.', 999,
             current_user, current_user, 'system.test', 'pgTAP fixture');
@@ -184,10 +196,10 @@ select throws_ok(
 
 select throws_ok(
     $$insert into ores_reporting_file_types_tbl (
-          code, tenant_id, version, analytic_type_code, ore_parameter, direction, format, kind,
+          code, tenant_id, version, analytic_type_code, ore_parameter, direction, ore_file_code, kind,
           configuration_type_code, name_pattern, sample_count, sample_total, description,
           display_order, modified_by, performed_by, change_reason_code, change_commentary)
-      values ('test.nokind', ores_utility_system_tenant_id_fn(), 0, null, 'x', 'input', 'xml', 'folder',
+      values ('test.nokind', ores_utility_system_tenant_id_fn(), 0, null, 'x', 'input', 'trade_data', 'folder',
               null, 'x.xml', 1, 1, 'A test file type.', 999,
               current_user, current_user, 'system.test', 'pgTAP fixture')$$,
     '23514', null,
@@ -195,10 +207,10 @@ select throws_ok(
 
 select throws_ok(
     $$insert into ores_reporting_file_types_tbl (
-          code, tenant_id, version, analytic_type_code, ore_parameter, direction, format, kind,
+          code, tenant_id, version, analytic_type_code, ore_parameter, direction, ore_file_code, kind,
           configuration_type_code, name_pattern, sample_count, sample_total, description,
           display_order, modified_by, performed_by, change_reason_code, change_commentary)
-      values ('test.noparam', ores_utility_system_tenant_id_fn(), 0, null, '', 'input', 'xml', 'data_file',
+      values ('test.noparam', ores_utility_system_tenant_id_fn(), 0, null, '', 'input', 'trade_data', 'data_file',
               null, 'x.xml', 1, 1, 'A test file type.', 999,
               current_user, current_user, 'system.test', 'pgTAP fixture')$$,
     '23514', null,
@@ -206,56 +218,44 @@ select throws_ok(
 
 select throws_ok(
     $$insert into ores_reporting_file_types_tbl (
-          code, tenant_id, version, analytic_type_code, ore_parameter, direction, format, kind,
+          code, tenant_id, version, analytic_type_code, ore_parameter, direction, ore_file_code, kind,
           configuration_type_code, name_pattern, sample_count, sample_total, description,
           display_order, modified_by, performed_by, change_reason_code, change_commentary)
       values ('test.duplicate', ores_utility_system_tenant_id_fn(), 0, null, 'conventionsFile',
-              'input', 'xml', 'input_document', null, 'other.xml', 1, 1, 'A test file type.', 999,
+              'input', 'conventions', 'input_document', null, 'other.xml', 1, 1, 'A test file type.', 999,
               current_user, current_user, 'system.test', 'pgTAP fixture')$$,
     '23505', null,
     'a second file type for the same analytic and parameter is refused');
 
 select throws_ok(
     $$insert into ores_reporting_file_types_tbl (
-          code, tenant_id, version, analytic_type_code, ore_parameter, direction, format, kind,
+          code, tenant_id, version, analytic_type_code, ore_parameter, direction, ore_file_code, kind,
           configuration_type_code, name_pattern, sample_count, sample_total, description,
           display_order, modified_by, performed_by, change_reason_code, change_commentary)
       values ('test.baddirection', ores_utility_system_tenant_id_fn(), 0, null, 'x', 'sideways',
-              'xml', 'data_file', null, 'x.xml', 1, 1, 'A test file type.', 999,
+              'trade_data', 'data_file', null, 'x.xml', 1, 1, 'A test file type.', 999,
               current_user, current_user, 'system.test', 'pgTAP fixture')$$,
     '23514', null,
     'a file type that is neither an input nor an output is refused');
 
-select throws_ok(
+select throws_like(
     $$insert into ores_reporting_file_types_tbl (
-          code, tenant_id, version, analytic_type_code, ore_parameter, direction, format, kind,
+          code, tenant_id, version, analytic_type_code, ore_parameter, direction, ore_file_code, kind,
           configuration_type_code, name_pattern, sample_count, sample_total, description,
           display_order, modified_by, performed_by, change_reason_code, change_commentary)
-      values ('test.badformat', ores_utility_system_tenant_id_fn(), 0, null, 'x', 'input',
-              'pdf', 'data_file', null, 'x.pdf', 1, 1, 'A test file type.', 999,
+      values ('test.nofile', ores_utility_system_tenant_id_fn(), 0, null, 'x', 'input',
+              'no_such_file', 'data_file', null, 'x.xml', 1, 1, 'A test file type.', 999,
               current_user, current_user, 'system.test', 'pgTAP fixture')$$,
-    '23514', null,
-    'a file type of an unknown format is refused');
+    '%No active ORE file found%',
+    'a file type that names no ORE file is refused');
 
 select throws_ok(
     $$insert into ores_reporting_file_types_tbl (
-          code, tenant_id, version, analytic_type_code, ore_parameter, direction, format, kind,
-          xsd_file, configuration_type_code, name_pattern, sample_count, sample_total,
-          description, display_order, modified_by, performed_by, change_reason_code,
-          change_commentary)
-      values ('test.csvxsd', ores_utility_system_tenant_id_fn(), 0, null, 'x', 'input', 'csv',
-              'data_file', 'conventions.xsd', null, 'x.csv', 1, 1, 'A test file type.', 999,
-              current_user, current_user, 'system.test', 'pgTAP fixture')$$,
-    '23514', null,
-    'a file that is not xml has no XSD');
-
-select throws_ok(
-    $$insert into ores_reporting_file_types_tbl (
-          code, tenant_id, version, analytic_type_code, ore_parameter, direction, format, kind,
+          code, tenant_id, version, analytic_type_code, ore_parameter, direction, ore_file_code, kind,
           configuration_type_code, name_pattern, sample_count, sample_total, description,
           display_order, modified_by, performed_by, change_reason_code, change_commentary)
       values ('test.secondsetup', ores_utility_system_tenant_id_fn(), 0, null, 'otherFile',
-              'input', 'xml', 'input_document', 'conventions', 'other.xml', 1, 1,
+              'input', 'conventions', 'input_document', 'conventions', 'other.xml', 1, 1,
               'A test file type.', 999,
               current_user, current_user, 'system.test', 'pgTAP fixture')$$,
     '23505', null,

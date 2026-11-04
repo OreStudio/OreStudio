@@ -26,17 +26,25 @@
 #define ORES_INBOX_API_MESSAGING_NOTIFICATION_KIND_PROTOCOL_HPP
 
 #include "ores.inbox.api/domain/notification_kind.hpp"
+#include "ores.inbox.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::inbox::messaging {
 
 struct notification_kind_key {
     std::string code;
+
+    friend bool operator==(const notification_kind_key&, const notification_kind_key&) = default;
 };
 
 struct notification_kind_write {
@@ -46,25 +54,40 @@ struct notification_kind_write {
     std::string message_key;
     bool mail_optional;
     int display_order;
+
+    friend bool operator==(const notification_kind_write&,
+                           const notification_kind_write&) = default;
 };
 
 struct notification_kind_change {
     notification_kind_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const notification_kind_change&,
+                           const notification_kind_change&) = default;
 };
 
 struct notification_kind_removal {
     notification_kind_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const notification_kind_removal&,
+                           const notification_kind_removal&) = default;
 };
 
 struct notification_kind_lookup {
     notification_kind_key key;
     std::optional<ores::inbox::domain::notification_kind> notification_kind;
+
+    friend bool operator==(const notification_kind_lookup&,
+                           const notification_kind_lookup&) = default;
 };
 
 struct notification_kinds_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const notification_kinds_filter&,
+                           const notification_kinds_filter&) = default;
 };
 
 struct notification_kind_event {
@@ -74,17 +97,26 @@ struct notification_kind_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const notification_kind_event&,
+                           const notification_kind_event&) = default;
 };
 
 struct notification_kind_version_key {
     notification_kind_key notification_kind;
     std::uint32_t version;
+
+    friend bool operator==(const notification_kind_version_key&,
+                           const notification_kind_version_key&) = default;
 };
 
 struct notification_kind_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const notification_kind_versions_filter&,
+                           const notification_kind_versions_filter&) = default;
 };
 
 struct list_notification_kinds_request {
@@ -102,12 +134,18 @@ struct list_notification_kinds_request {
     ores::utility::domain::order order;
     std::optional<notification_kinds_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_notification_kinds_request&,
+                           const list_notification_kinds_request&) = default;
 };
 
 struct list_notification_kinds_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_kind> notification_kinds;
     std::uint64_t total;
+
+    friend bool operator==(const list_notification_kinds_response&,
+                           const list_notification_kinds_response&) = default;
 };
 
 struct get_notification_kind_request {
@@ -121,11 +159,17 @@ struct get_notification_kind_request {
      */
     static constexpr bool requires_session = true;
     notification_kind_key key;
+
+    friend bool operator==(const get_notification_kind_request&,
+                           const get_notification_kind_request&) = default;
 };
 
 struct get_notification_kind_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::notification_kind> notification_kind;
+
+    friend bool operator==(const get_notification_kind_response&,
+                           const get_notification_kind_response&) = default;
 };
 
 struct get_many_notification_kinds_request {
@@ -139,11 +183,17 @@ struct get_many_notification_kinds_request {
      */
     static constexpr bool requires_session = true;
     std::vector<notification_kind_key> keys;
+
+    friend bool operator==(const get_many_notification_kinds_request&,
+                           const get_many_notification_kinds_request&) = default;
 };
 
 struct get_many_notification_kinds_response {
     ores::utility::domain::result result;
     std::vector<notification_kind_lookup> entries;
+
+    friend bool operator==(const get_many_notification_kinds_response&,
+                           const get_many_notification_kinds_response&) = default;
 };
 
 struct put_notification_kind_request {
@@ -158,11 +208,17 @@ struct put_notification_kind_request {
     static constexpr bool requires_session = true;
     notification_kind_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_notification_kind_request&,
+                           const put_notification_kind_request&) = default;
 };
 
 struct put_notification_kind_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::notification_kind> notification_kind;
+
+    friend bool operator==(const put_notification_kind_response&,
+                           const put_notification_kind_response&) = default;
 };
 
 struct put_many_notification_kinds_request {
@@ -177,11 +233,17 @@ struct put_many_notification_kinds_request {
     static constexpr bool requires_session = true;
     std::vector<notification_kind_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_notification_kinds_request&,
+                           const put_many_notification_kinds_request&) = default;
 };
 
 struct put_many_notification_kinds_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_kind> notification_kinds;
+
+    friend bool operator==(const put_many_notification_kinds_response&,
+                           const put_many_notification_kinds_response&) = default;
 };
 
 struct delete_notification_kind_request {
@@ -196,10 +258,16 @@ struct delete_notification_kind_request {
     static constexpr bool requires_session = true;
     notification_kind_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_notification_kind_request&,
+                           const delete_notification_kind_request&) = default;
 };
 
 struct delete_notification_kind_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_notification_kind_response&,
+                           const delete_notification_kind_response&) = default;
 };
 
 struct delete_many_notification_kinds_request {
@@ -214,10 +282,16 @@ struct delete_many_notification_kinds_request {
     static constexpr bool requires_session = true;
     std::vector<notification_kind_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_notification_kinds_request&,
+                           const delete_many_notification_kinds_request&) = default;
 };
 
 struct delete_many_notification_kinds_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_notification_kinds_response&,
+                           const delete_many_notification_kinds_response&) = default;
 };
 
 struct list_notification_kind_versions_request {
@@ -235,12 +309,18 @@ struct list_notification_kind_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<notification_kind_versions_filter> filter;
+
+    friend bool operator==(const list_notification_kind_versions_request&,
+                           const list_notification_kind_versions_request&) = default;
 };
 
 struct list_notification_kind_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_kind> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_notification_kind_versions_response&,
+                           const list_notification_kind_versions_response&) = default;
 };
 
 struct get_notification_kind_version_request {
@@ -254,11 +334,17 @@ struct get_notification_kind_version_request {
      */
     static constexpr bool requires_session = true;
     notification_kind_version_key key;
+
+    friend bool operator==(const get_notification_kind_version_request&,
+                           const get_notification_kind_version_request&) = default;
 };
 
 struct get_notification_kind_version_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::notification_kind> version;
+
+    friend bool operator==(const get_notification_kind_version_response&,
+                           const get_notification_kind_version_response&) = default;
 };
 
 /**
@@ -270,11 +356,765 @@ struct get_notification_kind_version_response {
  * of them.
  */
 namespace notification_kind_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.notification_kinds_events.created";
-inline constexpr std::string_view updated = "inbox.v1.notification_kinds_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.notification_kinds_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.notification_kinds.created";
+inline constexpr std::string_view updated = "inbox.v1.events.notification_kinds.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.notification_kinds.deleted";
+}
+/**
+ * @brief The members of notification_kind_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_kind_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &notification_kind_key::code},
+    };
 }
 
+/**
+ * @brief The members of notification_kind_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_kind_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &notification_kind_write::code},
+        utility::codec::field{"name", &notification_kind_write::name},
+        utility::codec::field{"description", &notification_kind_write::description},
+        utility::codec::field{"message_key", &notification_kind_write::message_key},
+        utility::codec::field{"mail_optional", &notification_kind_write::mail_optional},
+        utility::codec::field{"display_order", &notification_kind_write::display_order},
+    };
 }
+
+/**
+ * @brief The members of notification_kind_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_kind_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &notification_kind_change::write},
+        utility::codec::field{"precondition", &notification_kind_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of notification_kind_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_kind_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &notification_kind_removal::key},
+        utility::codec::field{"precondition", &notification_kind_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of notification_kind_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_kind_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &notification_kind_lookup::key},
+        utility::codec::field{"notification_kind", &notification_kind_lookup::notification_kind},
+    };
+}
+
+/**
+ * @brief The members of notification_kinds_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_kinds_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &notification_kinds_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of notification_kind_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_kind_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &notification_kind_event::event_id},
+        utility::codec::field{"key", &notification_kind_event::key},
+        utility::codec::field{"action", &notification_kind_event::action},
+        utility::codec::field{"version", &notification_kind_event::version},
+        utility::codec::field{"occurred_at", &notification_kind_event::occurred_at},
+        utility::codec::field{"correlation_id", &notification_kind_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of notification_kind_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_kind_version_key&) {
+    return std::tuple{
+        utility::codec::field{"notification_kind",
+                              &notification_kind_version_key::notification_kind},
+        utility::codec::field{"version", &notification_kind_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of notification_kind_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_kind_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &notification_kind_versions_filter::version},
+        utility::codec::field{"from_version", &notification_kind_versions_filter::from_version},
+        utility::codec::field{"to_version", &notification_kind_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_notification_kinds_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_notification_kinds_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_notification_kinds_request::offset},
+        utility::codec::field{"limit", &list_notification_kinds_request::limit},
+        utility::codec::field{"order", &list_notification_kinds_request::order},
+        utility::codec::field{"filter", &list_notification_kinds_request::filter},
+        utility::codec::field{"as_of", &list_notification_kinds_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_notification_kinds_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_notification_kinds_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_notification_kinds_response::result},
+        utility::codec::field{"notification_kinds",
+                              &list_notification_kinds_response::notification_kinds},
+        utility::codec::field{"total", &list_notification_kinds_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_notification_kind_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_notification_kind_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_notification_kind_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_notification_kind_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_notification_kind_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_notification_kind_response::result},
+        utility::codec::field{"notification_kind",
+                              &get_notification_kind_response::notification_kind},
+    };
+}
+
+/**
+ * @brief The members of get_many_notification_kinds_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_notification_kinds_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_notification_kinds_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_notification_kinds_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_notification_kinds_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_notification_kinds_response::result},
+        utility::codec::field{"entries", &get_many_notification_kinds_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_notification_kind_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_notification_kind_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_notification_kind_request::change},
+        utility::codec::field{"intent", &put_notification_kind_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_notification_kind_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_notification_kind_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_notification_kind_response::result},
+        utility::codec::field{"notification_kind",
+                              &put_notification_kind_response::notification_kind},
+    };
+}
+
+/**
+ * @brief The members of put_many_notification_kinds_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_notification_kinds_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_notification_kinds_request::changes},
+        utility::codec::field{"intent", &put_many_notification_kinds_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_notification_kinds_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_notification_kinds_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_notification_kinds_response::result},
+        utility::codec::field{"notification_kinds",
+                              &put_many_notification_kinds_response::notification_kinds},
+    };
+}
+
+/**
+ * @brief The members of delete_notification_kind_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_notification_kind_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_notification_kind_request::removal},
+        utility::codec::field{"intent", &delete_notification_kind_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_notification_kind_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_notification_kind_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_notification_kind_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_notification_kinds_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_notification_kinds_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_notification_kinds_request::removals},
+        utility::codec::field{"intent", &delete_many_notification_kinds_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_notification_kinds_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_notification_kinds_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_notification_kinds_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_notification_kind_versions_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_notification_kind_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_notification_kind_versions_request::key},
+        utility::codec::field{"offset", &list_notification_kind_versions_request::offset},
+        utility::codec::field{"limit", &list_notification_kind_versions_request::limit},
+        utility::codec::field{"order", &list_notification_kind_versions_request::order},
+        utility::codec::field{"filter", &list_notification_kind_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_notification_kind_versions_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_notification_kind_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_notification_kind_versions_response::result},
+        utility::codec::field{"versions", &list_notification_kind_versions_response::versions},
+        utility::codec::field{"total", &list_notification_kind_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_notification_kind_version_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_notification_kind_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_notification_kind_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_notification_kind_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_notification_kind_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_notification_kind_version_response::result},
+        utility::codec::field{"version", &get_notification_kind_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_kind_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_kind_key& v);
+    static ores::inbox::messaging::notification_kind_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::notification_kind_key& v);
+    static ores::inbox::messaging::notification_kind_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_kind_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_kind_write& v);
+    static ores::inbox::messaging::notification_kind_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::notification_kind_write& v);
+    static ores::inbox::messaging::notification_kind_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_kind_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_kind_change& v);
+    static ores::inbox::messaging::notification_kind_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::notification_kind_change& v);
+    static ores::inbox::messaging::notification_kind_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_kind_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_kind_removal& v);
+    static ores::inbox::messaging::notification_kind_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::notification_kind_removal& v);
+    static ores::inbox::messaging::notification_kind_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_kind_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_kind_lookup& v);
+    static ores::inbox::messaging::notification_kind_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::notification_kind_lookup& v);
+    static ores::inbox::messaging::notification_kind_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_kinds_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_kinds_filter& v);
+    static ores::inbox::messaging::notification_kinds_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::notification_kinds_filter& v);
+    static ores::inbox::messaging::notification_kinds_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_kind_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_kind_event& v);
+    static ores::inbox::messaging::notification_kind_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::notification_kind_event& v);
+    static ores::inbox::messaging::notification_kind_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_kind_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_kind_version_key& v);
+    static ores::inbox::messaging::notification_kind_version_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::notification_kind_version_key& v);
+    static ores::inbox::messaging::notification_kind_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::notification_kind_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::notification_kind_versions_filter& v);
+    static ores::inbox::messaging::notification_kind_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::notification_kind_versions_filter& v);
+    static ores::inbox::messaging::notification_kind_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::list_notification_kinds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::list_notification_kinds_request& v);
+    static ores::inbox::messaging::list_notification_kinds_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_notification_kinds_request& v);
+    static ores::inbox::messaging::list_notification_kinds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::list_notification_kinds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_notification_kinds_response& v);
+    static ores::inbox::messaging::list_notification_kinds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_notification_kinds_response& v);
+    static ores::inbox::messaging::list_notification_kinds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_notification_kind_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_notification_kind_request& v);
+    static ores::inbox::messaging::get_notification_kind_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_notification_kind_request& v);
+    static ores::inbox::messaging::get_notification_kind_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_notification_kind_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_notification_kind_response& v);
+    static ores::inbox::messaging::get_notification_kind_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_notification_kind_response& v);
+    static ores::inbox::messaging::get_notification_kind_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_many_notification_kinds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_many_notification_kinds_request& v);
+    static ores::inbox::messaging::get_many_notification_kinds_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_many_notification_kinds_request& v);
+    static ores::inbox::messaging::get_many_notification_kinds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_many_notification_kinds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_many_notification_kinds_response& v);
+    static ores::inbox::messaging::get_many_notification_kinds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_many_notification_kinds_response& v);
+    static ores::inbox::messaging::get_many_notification_kinds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::put_notification_kind_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::put_notification_kind_request& v);
+    static ores::inbox::messaging::put_notification_kind_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_notification_kind_request& v);
+    static ores::inbox::messaging::put_notification_kind_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::put_notification_kind_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::put_notification_kind_response& v);
+    static ores::inbox::messaging::put_notification_kind_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_notification_kind_response& v);
+    static ores::inbox::messaging::put_notification_kind_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::put_many_notification_kinds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::put_many_notification_kinds_request& v);
+    static ores::inbox::messaging::put_many_notification_kinds_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_many_notification_kinds_request& v);
+    static ores::inbox::messaging::put_many_notification_kinds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::put_many_notification_kinds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::put_many_notification_kinds_response& v);
+    static ores::inbox::messaging::put_many_notification_kinds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_many_notification_kinds_response& v);
+    static ores::inbox::messaging::put_many_notification_kinds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::delete_notification_kind_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_notification_kind_request& v);
+    static ores::inbox::messaging::delete_notification_kind_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_notification_kind_request& v);
+    static ores::inbox::messaging::delete_notification_kind_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_notification_kind_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_notification_kind_response& v);
+    static ores::inbox::messaging::delete_notification_kind_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_notification_kind_response& v);
+    static ores::inbox::messaging::delete_notification_kind_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_many_notification_kinds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_many_notification_kinds_request& v);
+    static ores::inbox::messaging::delete_many_notification_kinds_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_many_notification_kinds_request& v);
+    static ores::inbox::messaging::delete_many_notification_kinds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_many_notification_kinds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_many_notification_kinds_response& v);
+    static ores::inbox::messaging::delete_many_notification_kinds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_many_notification_kinds_response& v);
+    static ores::inbox::messaging::delete_many_notification_kinds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_notification_kind_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_notification_kind_versions_request& v);
+    static ores::inbox::messaging::list_notification_kind_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_notification_kind_versions_request& v);
+    static ores::inbox::messaging::list_notification_kind_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_notification_kind_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_notification_kind_versions_response& v);
+    static ores::inbox::messaging::list_notification_kind_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_notification_kind_versions_response& v);
+    static ores::inbox::messaging::list_notification_kind_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_notification_kind_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_notification_kind_version_request& v);
+    static ores::inbox::messaging::get_notification_kind_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_notification_kind_version_request& v);
+    static ores::inbox::messaging::get_notification_kind_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_notification_kind_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_notification_kind_version_response& v);
+    static ores::inbox::messaging::get_notification_kind_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_notification_kind_version_response& v);
+    static ores::inbox::messaging::get_notification_kind_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

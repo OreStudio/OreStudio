@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 7B0EED43-9012-4A09-AAC0-1059E375F4D0
+:END:
+#+title: Task: Show the variance calibration's history and its review state
+#+description: A feed's history shows every variance calibration record of its pair, before and after approval; the feed and calibration screens say when a fit waits for review; and the fit is plotted from its stored points.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/show-the-variance-calibration-history
+#+pr: 4434
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader follows the whole GJR-GARCH process from the feed. The feed's History tab reads the pair's variance calibration inputs and calibrations as parts of the feed's story, so a stored input, a proposed fit, a rejection, an approval and a supersession each show as an entry with who, when and why. An applied calibration run's commentary on the feed names its GARCH outcome. When a fit of the pair is proposed, the feed's Calibration tab, the class list and the feed's calibration page say that it waits for review and link to it. The calibration page plots the fitted conditional volatility over the input window against the absolute returns it was fitted from, and the pair's calibrations' alpha, gamma, beta and persistence over time.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- After an applied run, the feed's History tab shows the stored input and the proposed calibration as entries, with the change reason system.calibration.
+- After a review, the history shows the decision, the reviewer and the reason, and on approval the superseded calibration and the re-pointed feed.
+- A proposed fit shows as waiting for review on the feed's Calibration tab and on the class list, with a link to the review.
+- The conditional volatility plot is computed from the stored points and the stored shape, and a test checks it against the recursion by hand.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4434][#4434]] | [web] Show the GARCH history, the review state and the fitted volatility |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| L1 | The review form followed the preview, so a stored fit was not reviewable once a newer fixing moved the preview | CalibrationPages.tsx | Accept | The review sits under the chart of the stored fit that waits; the preview card offers none |
+| L2 | Approving a later fit left older proposals waiting for review for ever | feed_config_handler.hpp | Accept | Approval supersedes older proposals of the pair with a reason; a repeat approval closes them too; checked live |
+| L3 | A kept run showed the config's later level, not the level it started at | fx_spot_feed.cpp, feedStart.tsx | Accept | The start records the kept level and the wire no longer blanks it; the tab prefers it; to_wire and the tab are tested; building a feed needs NATS, so the record itself is checked live on synthetic.demo.audusd |
+| L4 | Calibrations sorted by their last change put a just-superseded fit first | varianceRecords.tsx | Accept | Ordered by the input's window end, authored first; tested |
+| L5 | Chart axis labels stretched with the SVG and the top one was cut | varianceRecords.tsx | Accept | Labels are HTML beside the plot |
+| L6 | The class list marked an unstored preview fit as awaiting review | CalibrationPages.tsx | Accept | Only a stored proposal counts; the list counts fits that wait |
+| L7 | The review route had no inventory classification | route_classification.py | Accept | Classified; the inventory is current |
+| L8 | Timeline entries name the entity by its type, such as variance_calibration | Timeline.tsx | Decline | The shared timeline names every child row this way; a label table is its own change |
+| R1.1 | recorded_at must compare correctly; superseded_id reports one | feed_config_handler.hpp | Decline | recorded_at is a time_point, so the comparison is exact; superseded_id was one before this change, and one approval per pair holds (audit) |
+| R1.2 | std::format of a double can give an exponent the decimal parser refuses | fx_spot_feed.cpp | Accept | decimal::from_double records the shortest plain spelling; a refusal is logged |
+| R1.3 | Fitting before the level write could skip it on a throw, or move a number | feed_config_handler.hpp | Decline | Both take the input and the resolution by const reference; calibrate_variance reports a failed read or store in the summary rather than throwing |
+| R1.4 | A pair read stops at 500 records | varianceRecords.tsx | Accept | readPair reads page after page to the server's total; tested with 1203 rows |
+| R1.5 | A zero or null long-run variance breaks the recursion | varianceRecords.tsx | Decline | FittedVolatility returns nothing for a null shape, and the schema requires a positive long-run variance on a fit |
+| R1.6 | Confirm CI is green | PR | Decline | GitHub runs no check on a PR here; the local checks are the gate and their results are in the PR |
+
+* Result
+
+The whole GJR-GARCH process is visible from the feed and the calibration page.
+
+- History. A feed's History tab reads the pair's variance inputs and calibrations
+  with the feed's own versions, through three read-only BFF resources over the
+  service's generated list and history verbs. Each stored step shows: input
+  captured, fit proposed, reviewed, superseded.
+- Commentary. The input names what it captured; the calibration names its shape
+  and that it waits for review, or why it was rejected; the feed's calibration
+  entry names the GJR-GARCH outcome beside the level.
+- Waiting for review. The class list counts the fits that wait; the feed's
+  Calibration tab and the calibration page say which fit waits and lead to its
+  review, which is attached to the stored fit. Approving a fit closes the pair's
+  older proposals.
+- Charts. The fitted daily volatility over the input, beside the size of each
+  move and the long-run level, computed in the browser with the fit's recursion
+  and checked against the stored first-day ratio; and the pair's calibrations over
+  time as small multiples of α, γ, β and persistence, with a table of states and
+  reasons.
+
+| Check | Result |
+|-------+--------|
+| Web suite | 197 files, 2451 tests passed |
+| BFF suite | synthetic tests 85 passed |
+| Recursion | the browser series ends at the stored ratio for 9992a6e9 and bfbb563e (no disagreement shown) |
+| Live review | approving bfbb563e superseded the authored fc63f5c7, re-pointed 2 feeds; a repeat approval superseded 9992a6e9 |
+| Audit | 9 of 9 passed: 2 inputs, 509 points, 42 calibrations, 51 feeds |
+| C++ suites | ores.synthetic.api.tests 844 cases passed; ores.synthetic.service.tests 77 of 78, the failure is "the adapter announces again until the service answers", which a process outside this environment answers (it fails with this environment's marketdata and synthetic services stopped); this change does not touch the announce |
+| Local checks | site-page, web, cmake-sources, lint, org-links, heading-numbers, format, bff-list-requests, route-inventory passed |

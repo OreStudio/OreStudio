@@ -76,6 +76,10 @@ register_file_type_handlers(ores::nats::service::client& nats,
         delete_many_file_types_request::nats_subject,
         file_type_queue_group,
         [h](ores::nats::message msg) { h->delete_many_file_types(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_by_ore_file_code_file_types_request::nats_subject,
+        file_type_queue_group,
+        [h](ores::nats::message msg) { h->list_by_ore_file_code_file_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(list_by_analytic_type_code_file_types_request::nats_subject,
                                         file_type_queue_group,
                                         [h](ores::nats::message msg) {

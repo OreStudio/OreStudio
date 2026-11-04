@@ -41,20 +41,22 @@ render_report_metric_fields(const domain::report_metric& v) {
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Report Instance ID", .value = boost::uuids::to_string(v.report_instance_id)});
-    fields.push_back({.name = "Family", .value = v.family});
-    fields.push_back({.name = "Subject Type", .value = v.subject_type});
-    fields.push_back({.name = "Subject ID", .value = v.subject_id});
+    fields.push_back({.name = "Result ID", .value = boost::uuids::to_string(v.result_id)});
     fields.push_back(
         {.name = "As Of", .value = ores::platform::time::datetime::to_iso8601_utc(v.as_of)});
     fields.push_back({.name = "Measure", .value = v.measure});
+    fields.push_back({.name = "Source", .value = v.source});
+    fields.push_back({.name = "Line", .value = std::to_string(v.line)});
     fields.push_back(
         {.name = "Report Definition ID", .value = boost::uuids::to_string(v.report_definition_id)});
+    fields.push_back({.name = "Family", .value = v.family});
+    fields.push_back({.name = "Subject Type", .value = v.subject_type});
+    fields.push_back({.name = "Subject ID", .value = v.subject_id});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Scenario", .value = v.scenario});
     fields.push_back({.name = "Factor", .value = v.factor});
     fields.push_back({.name = "Qualifiers", .value = v.qualifiers});
     fields.push_back({.name = "Value", .value = std::to_string(v.value)});
-    fields.push_back({.name = "Source", .value = v.source});
 
     return fields;
 }

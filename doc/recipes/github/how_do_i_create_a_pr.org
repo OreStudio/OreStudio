@@ -10,7 +10,7 @@
 #+updated: 2026-09-06
 
 The body content should be assembled via [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR
-summary?]] before running the =gh= command here.
+summary?]] before running =compass pr create= here.
 
 * Question
 

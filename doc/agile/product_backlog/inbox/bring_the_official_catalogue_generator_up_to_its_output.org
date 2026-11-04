@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: AC37CCA4-4141-47C4-8FF2-950E5C5F4BA9
+:END:
+#+title: Bring the official catalogue generator up to its output
+#+description: generate_official_catalogue.py was last changed on 10-28; five commits on 10-30 edited the SQL it writes by hand, so running it would undo the feeds, scopes and routes.
+#+type: capture
+#+level: cross
+#+filetags: :sql:codegen:marketdata:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Port the hand edits made to =marketdata_official_catalogue_populate.sql= on 10-30 into =generate_official_catalogue.py=, and add a check that regenerating from a saved providers response (=--providers=) reproduces the file byte for byte.
+
+* Why
+
+The generator was last changed in 9a8086badd (10-28). Commits 84605bcf70, 234fc57c8c, 8df4dbeb6f, eadd27d323 and 001ba2d8e1 (10-30) edited the SQL by hand, adding the feeds, their scopes and the system party's routes. Running the generator today would remove them. On 11-01 the nested transaction was removed from both by hand, to keep them in step.
+
+* References
+
+- =projects/ores.sql/utility/generate_official_catalogue.py=
+- =projects/ores.sql/populate/marketdata/marketdata_official_catalogue_populate.sql=
+
+* See also
+
+- [[id:F18A305D-FE28-4EAE-BB7F-01787ACDCF2D][Task: Exercise the calibration screens]]

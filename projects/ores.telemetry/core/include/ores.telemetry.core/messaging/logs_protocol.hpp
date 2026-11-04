@@ -26,12 +26,18 @@
 #define ORES_TELEMETRY_CORE_MESSAGING_LOGS_PROTOCOL_HPP
 
 #include "ores.telemetry.core/domain/telemetry_source.hpp"
+#include "ores.telemetry.core/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::telemetry::messaging {
@@ -85,6 +91,8 @@ struct telemetry_log_entry {
      * @brief Server receipt timestamp.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    friend bool operator==(const telemetry_log_entry&, const telemetry_log_entry&) = default;
 };
 
 /**
@@ -146,6 +154,8 @@ struct telemetry_query {
      * @brief Number of results to skip, for pagination.
      */
     std::uint32_t offset = 0;
+
+    friend bool operator==(const telemetry_query&, const telemetry_query&) = default;
 };
 
 /**
@@ -165,6 +175,9 @@ struct get_telemetry_logs_request {
      * @brief The time range and filters the read applies.
      */
     telemetry_query query;
+
+    friend bool operator==(const get_telemetry_logs_request&,
+                           const get_telemetry_logs_request&) = default;
 };
 
 /**
@@ -187,13 +200,13 @@ struct get_telemetry_logs_response {
      * @brief How many entries the filter matches in total.
      */
     std::uint64_t total_count = 0;
+
+    friend bool operator==(const get_telemetry_logs_response&,
+                           const get_telemetry_logs_response&) = default;
 };
 
 /**
  * @brief A single log entry for the fire-and-forget publish protocol.
- *
- * It uses primitive types only, to avoid rfl serialisation issues with
- * boost::uuids::uuid and std::chrono::time_point.
  */
 struct publish_log_entry_item {
     /**
@@ -212,6 +225,8 @@ struct publish_log_entry_item {
      * @brief The log message.
      */
     std::string message;
+
+    friend bool operator==(const publish_log_entry_item&, const publish_log_entry_item&) = default;
 };
 
 /**
@@ -241,8 +256,195 @@ struct publish_log_entries_request {
      * @brief The entries the batch carries.
      */
     std::vector<publish_log_entry_item> entries;
+
+    friend bool operator==(const publish_log_entries_request&,
+                           const publish_log_entries_request&) = default;
 };
 
+/**
+ * @brief The members of telemetry_log_entry, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const telemetry_log_entry&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id", &telemetry_log_entry::id},
+        ::ores::utility::codec::field{"timestamp", &telemetry_log_entry::timestamp},
+        ::ores::utility::codec::field{"source", &telemetry_log_entry::source},
+        ::ores::utility::codec::field{"source_name", &telemetry_log_entry::source_name},
+        ::ores::utility::codec::field{"session_id", &telemetry_log_entry::session_id},
+        ::ores::utility::codec::field{"account_id", &telemetry_log_entry::account_id},
+        ::ores::utility::codec::field{"level", &telemetry_log_entry::level},
+        ::ores::utility::codec::field{"component", &telemetry_log_entry::component},
+        ::ores::utility::codec::field{"message", &telemetry_log_entry::message},
+        ::ores::utility::codec::field{"tag", &telemetry_log_entry::tag},
+        ::ores::utility::codec::field{"recorded_at", &telemetry_log_entry::recorded_at},
+    };
 }
+
+/**
+ * @brief The members of telemetry_query, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const telemetry_query&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"start_time", &telemetry_query::start_time},
+        ::ores::utility::codec::field{"end_time", &telemetry_query::end_time},
+        ::ores::utility::codec::field{"source", &telemetry_query::source},
+        ::ores::utility::codec::field{"source_name", &telemetry_query::source_name},
+        ::ores::utility::codec::field{"session_id", &telemetry_query::session_id},
+        ::ores::utility::codec::field{"account_id", &telemetry_query::account_id},
+        ::ores::utility::codec::field{"level", &telemetry_query::level},
+        ::ores::utility::codec::field{"min_level", &telemetry_query::min_level},
+        ::ores::utility::codec::field{"component", &telemetry_query::component},
+        ::ores::utility::codec::field{"tag", &telemetry_query::tag},
+        ::ores::utility::codec::field{"message_contains", &telemetry_query::message_contains},
+        ::ores::utility::codec::field{"limit", &telemetry_query::limit},
+        ::ores::utility::codec::field{"offset", &telemetry_query::offset},
+    };
+}
+
+/**
+ * @brief The members of get_telemetry_logs_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_telemetry_logs_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"query", &get_telemetry_logs_request::query},
+    };
+}
+
+/**
+ * @brief The members of get_telemetry_logs_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_telemetry_logs_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_telemetry_logs_response::success},
+        ::ores::utility::codec::field{"message", &get_telemetry_logs_response::message},
+        ::ores::utility::codec::field{"entries", &get_telemetry_logs_response::entries},
+        ::ores::utility::codec::field{"total_count", &get_telemetry_logs_response::total_count},
+    };
+}
+
+/**
+ * @brief The members of publish_log_entry_item, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_log_entry_item&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"level", &publish_log_entry_item::level},
+        ::ores::utility::codec::field{"timestamp_ms", &publish_log_entry_item::timestamp_ms},
+        ::ores::utility::codec::field{"component", &publish_log_entry_item::component},
+        ::ores::utility::codec::field{"message", &publish_log_entry_item::message},
+    };
+}
+
+/**
+ * @brief The members of publish_log_entries_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_log_entries_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"source_name", &publish_log_entries_request::source_name},
+        ::ores::utility::codec::field{"tag", &publish_log_entries_request::tag},
+        ::ores::utility::codec::field{"entries", &publish_log_entries_request::entries},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT wire_traits<ores::telemetry::messaging::telemetry_log_entry> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::telemetry_log_entry& v);
+    static ores::telemetry::messaging::telemetry_log_entry read_json(std::string_view text);
+    static std::string write_msgpack(const ores::telemetry::messaging::telemetry_log_entry& v);
+    static ores::telemetry::messaging::telemetry_log_entry
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT wire_traits<ores::telemetry::messaging::telemetry_query> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::telemetry_query& v);
+    static ores::telemetry::messaging::telemetry_query read_json(std::string_view text);
+    static std::string write_msgpack(const ores::telemetry::messaging::telemetry_query& v);
+    static ores::telemetry::messaging::telemetry_query
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_telemetry_logs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::get_telemetry_logs_request& v);
+    static ores::telemetry::messaging::get_telemetry_logs_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_telemetry_logs_request& v);
+    static ores::telemetry::messaging::get_telemetry_logs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_telemetry_logs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::get_telemetry_logs_response& v);
+    static ores::telemetry::messaging::get_telemetry_logs_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_telemetry_logs_response& v);
+    static ores::telemetry::messaging::get_telemetry_logs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT wire_traits<ores::telemetry::messaging::publish_log_entry_item> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::publish_log_entry_item& v);
+    static ores::telemetry::messaging::publish_log_entry_item read_json(std::string_view text);
+    static std::string write_msgpack(const ores::telemetry::messaging::publish_log_entry_item& v);
+    static ores::telemetry::messaging::publish_log_entry_item
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::publish_log_entries_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::publish_log_entries_request& v);
+    static ores::telemetry::messaging::publish_log_entries_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::publish_log_entries_request& v);
+    static ores::telemetry::messaging::publish_log_entries_request
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

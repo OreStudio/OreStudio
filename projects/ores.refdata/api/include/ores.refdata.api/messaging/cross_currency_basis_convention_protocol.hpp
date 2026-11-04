@@ -25,118 +25,49 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CROSS_CURRENCY_BASIS_CONVENTION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CROSS_CURRENCY_BASIS_CONVENTION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
-#include "ores.refdata.api/export.hpp"
-#include "ores.utility/codec/wire_fields.hpp"
-#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/cross_currency_basis_flat_leg.hpp"
+#include "ores.refdata.api/domain/cross_currency_basis_spread_leg.hpp"
+#include "ores.refdata.api/domain/cross_currency_basis_swap_terms.hpp"
+#include "ores.refdata.api/messaging/convention_protocol.hpp"
+#include "ores.refdata.api/messaging/cross_currency_basis_flat_leg_protocol.hpp"
+#include "ores.refdata.api/messaging/cross_currency_basis_spread_leg_protocol.hpp"
+#include "ores.refdata.api/messaging/cross_currency_basis_swap_terms_protocol.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
-#include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <span>
 #include <string>
-#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
 struct cross_currency_basis_convention_key {
-    std::string id;
+    boost::uuids::uuid id;
+
+    friend bool operator==(const cross_currency_basis_convention_key&,
+                           const cross_currency_basis_convention_key&) = default;
+};
+
+struct cross_currency_basis_convention_item {
+    cross_currency_basis_convention_key key;
+    std::optional<ores::refdata::domain::convention> convention;
+    std::vector<ores::refdata::domain::cross_currency_basis_flat_leg> flat_leg;
+    std::vector<ores::refdata::domain::cross_currency_basis_spread_leg> spread_leg;
+    std::vector<ores::refdata::domain::cross_currency_basis_swap_terms> swap_terms;
+
+    friend bool operator==(const cross_currency_basis_convention_item&,
+                           const cross_currency_basis_convention_item&) = default;
 };
 
 struct cross_currency_basis_convention_write {
-    std::string id;
-    int settlement_days;
-    std::optional<std::string> settlement_calendar;
-    std::string roll_convention;
-    std::string flat_index;
-    std::string spread_index;
-    std::optional<bool> eom;
-    std::optional<bool> is_resettable;
-    std::optional<bool> flat_index_is_resettable;
-    std::optional<std::string> flat_tenor;
-    std::optional<std::string> spread_tenor;
-    std::optional<int> spread_payment_lag;
-    std::optional<int> flat_payment_lag;
-    std::optional<bool> spread_include_spread;
-    std::optional<std::string> spread_lookback;
-    std::optional<int> spread_fixing_days;
-    std::optional<int> spread_rate_cutoff;
-    std::optional<bool> spread_is_averaged;
-    std::optional<bool> spread_observation_shift;
-    std::optional<bool> flat_include_spread;
-    std::optional<std::string> flat_lookback;
-    std::optional<int> flat_fixing_days;
-    std::optional<int> flat_rate_cutoff;
-    std::optional<bool> flat_is_averaged;
-    std::optional<bool> flat_observation_shift;
-    std::optional<std::string> oresmd_uri;
-};
+    convention_change change;
+    std::vector<cross_currency_basis_flat_leg_change> flat_leg;
+    std::vector<cross_currency_basis_spread_leg_change> spread_leg;
+    std::vector<cross_currency_basis_swap_terms_change> swap_terms;
 
-struct cross_currency_basis_convention_change {
-    cross_currency_basis_convention_write write;
-    ores::utility::domain::precondition precondition;
-};
-
-struct cross_currency_basis_convention_removal {
-    cross_currency_basis_convention_key key;
-    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
-};
-
-struct cross_currency_basis_convention_lookup {
-    cross_currency_basis_convention_key key;
-    std::optional<ores::refdata::domain::cross_currency_basis_convention>
-        cross_currency_basis_convention;
-};
-
-struct cross_currency_basis_conventions_filter {
-    std::optional<std::vector<std::string>> id_one_of;
-};
-
-struct cross_currency_basis_convention_event {
-    boost::uuids::uuid event_id;
-    cross_currency_basis_convention_key key;
-    std::string action;
-    std::uint32_t version;
-    std::chrono::system_clock::time_point occurred_at;
-    std::optional<std::string> correlation_id;
-};
-
-struct cross_currency_basis_convention_version_key {
-    cross_currency_basis_convention_key cross_currency_basis_convention;
-    std::uint32_t version;
-};
-
-struct cross_currency_basis_convention_versions_filter {
-    std::optional<std::uint32_t> version;
-    std::optional<std::uint32_t> from_version;
-    std::optional<std::uint32_t> to_version;
-};
-
-struct list_cross_currency_basis_conventions_request {
-    using response_type = struct list_cross_currency_basis_conventions_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.cross_currency_basis_conventions.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-    ores::utility::domain::order order;
-    std::optional<cross_currency_basis_conventions_filter> filter;
-    std::optional<std::string> as_of;
-};
-
-struct list_cross_currency_basis_conventions_response {
-    ores::utility::domain::result result;
-    std::vector<ores::refdata::domain::cross_currency_basis_convention>
-        cross_currency_basis_conventions;
-    std::uint64_t total;
+    friend bool operator==(const cross_currency_basis_convention_write&,
+                           const cross_currency_basis_convention_write&) = default;
 };
 
 struct get_cross_currency_basis_convention_request {
@@ -151,12 +82,17 @@ struct get_cross_currency_basis_convention_request {
      */
     static constexpr bool requires_session = true;
     cross_currency_basis_convention_key key;
+
+    friend bool operator==(const get_cross_currency_basis_convention_request&,
+                           const get_cross_currency_basis_convention_request&) = default;
 };
 
 struct get_cross_currency_basis_convention_response {
     ores::utility::domain::result result;
-    std::optional<ores::refdata::domain::cross_currency_basis_convention>
-        cross_currency_basis_convention;
+    std::optional<cross_currency_basis_convention_item> item;
+
+    friend bool operator==(const get_cross_currency_basis_convention_response&,
+                           const get_cross_currency_basis_convention_response&) = default;
 };
 
 struct get_many_cross_currency_basis_conventions_request {
@@ -171,11 +107,17 @@ struct get_many_cross_currency_basis_conventions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<cross_currency_basis_convention_key> keys;
+
+    friend bool operator==(const get_many_cross_currency_basis_conventions_request&,
+                           const get_many_cross_currency_basis_conventions_request&) = default;
 };
 
 struct get_many_cross_currency_basis_conventions_response {
     ores::utility::domain::result result;
-    std::vector<cross_currency_basis_convention_lookup> entries;
+    std::vector<cross_currency_basis_convention_item> items;
+
+    friend bool operator==(const get_many_cross_currency_basis_conventions_response&,
+                           const get_many_cross_currency_basis_conventions_response&) = default;
 };
 
 struct put_cross_currency_basis_convention_request {
@@ -189,14 +131,19 @@ struct put_cross_currency_basis_convention_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    cross_currency_basis_convention_change change;
+    cross_currency_basis_convention_write item;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_cross_currency_basis_convention_request&,
+                           const put_cross_currency_basis_convention_request&) = default;
 };
 
 struct put_cross_currency_basis_convention_response {
     ores::utility::domain::result result;
-    std::optional<ores::refdata::domain::cross_currency_basis_convention>
-        cross_currency_basis_convention;
+    std::optional<cross_currency_basis_convention_item> item;
+
+    friend bool operator==(const put_cross_currency_basis_convention_response&,
+                           const put_cross_currency_basis_convention_response&) = default;
 };
 
 struct put_many_cross_currency_basis_conventions_request {
@@ -210,991 +157,21 @@ struct put_many_cross_currency_basis_conventions_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::vector<cross_currency_basis_convention_change> changes;
+    std::vector<cross_currency_basis_convention_write> items;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_cross_currency_basis_conventions_request&,
+                           const put_many_cross_currency_basis_conventions_request&) = default;
 };
 
 struct put_many_cross_currency_basis_conventions_response {
     ores::utility::domain::result result;
-    std::vector<ores::refdata::domain::cross_currency_basis_convention>
-        cross_currency_basis_conventions;
+    std::vector<cross_currency_basis_convention_item> items;
+
+    friend bool operator==(const put_many_cross_currency_basis_conventions_response&,
+                           const put_many_cross_currency_basis_conventions_response&) = default;
 };
-
-struct delete_cross_currency_basis_convention_request {
-    using response_type = struct delete_cross_currency_basis_convention_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.cross_currency_basis_conventions.delete";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    cross_currency_basis_convention_removal removal;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_cross_currency_basis_convention_response {
-    ores::utility::domain::result result;
-};
-
-struct delete_many_cross_currency_basis_conventions_request {
-    using response_type = struct delete_many_cross_currency_basis_conventions_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.cross_currency_basis_conventions.delete_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<cross_currency_basis_convention_removal> removals;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_many_cross_currency_basis_conventions_response {
-    ores::utility::domain::result result;
-};
-
-struct list_cross_currency_basis_convention_versions_request {
-    using response_type = struct list_cross_currency_basis_convention_versions_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.cross_currency_basis_conventions_versions.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    cross_currency_basis_convention_key key;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-    ores::utility::domain::order order;
-    std::optional<cross_currency_basis_convention_versions_filter> filter;
-};
-
-struct list_cross_currency_basis_convention_versions_response {
-    ores::utility::domain::result result;
-    std::vector<ores::refdata::domain::cross_currency_basis_convention> versions;
-    std::uint64_t total;
-};
-
-struct get_cross_currency_basis_convention_version_request {
-    using response_type = struct get_cross_currency_basis_convention_version_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.cross_currency_basis_conventions_versions.get";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    cross_currency_basis_convention_version_key key;
-};
-
-struct get_cross_currency_basis_convention_version_response {
-    ores::utility::domain::result result;
-    std::optional<ores::refdata::domain::cross_currency_basis_convention> version;
-};
-
-/**
- * @brief The subjects this resource's changes are announced on.
- *
- * An event reports what happened and no caller asked for it, so its last
- * segment is the action rather than a verb. One payload is therefore addressed
- * by three subjects, and a subscriber that wants one action subscribes to one
- * of them.
- */
-namespace cross_currency_basis_convention_event_subjects {
-inline constexpr std::string_view created =
-    "refdata.v1.cross_currency_basis_conventions_events.created";
-inline constexpr std::string_view updated =
-    "refdata.v1.cross_currency_basis_conventions_events.updated";
-inline constexpr std::string_view deleted =
-    "refdata.v1.cross_currency_basis_conventions_events.deleted";
-}
-/**
- * @brief The members of cross_currency_basis_convention_key, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_basis_convention_key&) {
-    return std::tuple{
-        utility::codec::field{"id", &cross_currency_basis_convention_key::id},
-    };
-}
-
-/**
- * @brief The members of cross_currency_basis_convention_write, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_basis_convention_write&) {
-    return std::tuple{
-        utility::codec::field{"id", &cross_currency_basis_convention_write::id},
-        utility::codec::field{"settlement_days",
-                              &cross_currency_basis_convention_write::settlement_days},
-        utility::codec::field{"settlement_calendar",
-                              &cross_currency_basis_convention_write::settlement_calendar},
-        utility::codec::field{"roll_convention",
-                              &cross_currency_basis_convention_write::roll_convention},
-        utility::codec::field{"flat_index", &cross_currency_basis_convention_write::flat_index},
-        utility::codec::field{"spread_index", &cross_currency_basis_convention_write::spread_index},
-        utility::codec::field{"eom", &cross_currency_basis_convention_write::eom},
-        utility::codec::field{"is_resettable",
-                              &cross_currency_basis_convention_write::is_resettable},
-        utility::codec::field{"flat_index_is_resettable",
-                              &cross_currency_basis_convention_write::flat_index_is_resettable},
-        utility::codec::field{"flat_tenor", &cross_currency_basis_convention_write::flat_tenor},
-        utility::codec::field{"spread_tenor", &cross_currency_basis_convention_write::spread_tenor},
-        utility::codec::field{"spread_payment_lag",
-                              &cross_currency_basis_convention_write::spread_payment_lag},
-        utility::codec::field{"flat_payment_lag",
-                              &cross_currency_basis_convention_write::flat_payment_lag},
-        utility::codec::field{"spread_include_spread",
-                              &cross_currency_basis_convention_write::spread_include_spread},
-        utility::codec::field{"spread_lookback",
-                              &cross_currency_basis_convention_write::spread_lookback},
-        utility::codec::field{"spread_fixing_days",
-                              &cross_currency_basis_convention_write::spread_fixing_days},
-        utility::codec::field{"spread_rate_cutoff",
-                              &cross_currency_basis_convention_write::spread_rate_cutoff},
-        utility::codec::field{"spread_is_averaged",
-                              &cross_currency_basis_convention_write::spread_is_averaged},
-        utility::codec::field{"spread_observation_shift",
-                              &cross_currency_basis_convention_write::spread_observation_shift},
-        utility::codec::field{"flat_include_spread",
-                              &cross_currency_basis_convention_write::flat_include_spread},
-        utility::codec::field{"flat_lookback",
-                              &cross_currency_basis_convention_write::flat_lookback},
-        utility::codec::field{"flat_fixing_days",
-                              &cross_currency_basis_convention_write::flat_fixing_days},
-        utility::codec::field{"flat_rate_cutoff",
-                              &cross_currency_basis_convention_write::flat_rate_cutoff},
-        utility::codec::field{"flat_is_averaged",
-                              &cross_currency_basis_convention_write::flat_is_averaged},
-        utility::codec::field{"flat_observation_shift",
-                              &cross_currency_basis_convention_write::flat_observation_shift},
-        utility::codec::field{"oresmd_uri", &cross_currency_basis_convention_write::oresmd_uri},
-    };
-}
-
-/**
- * @brief The members of cross_currency_basis_convention_change, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_basis_convention_change&) {
-    return std::tuple{
-        utility::codec::field{"write", &cross_currency_basis_convention_change::write},
-        utility::codec::field{"precondition",
-                              &cross_currency_basis_convention_change::precondition},
-    };
-}
-
-/**
- * @brief The members of cross_currency_basis_convention_removal, named as the wire names them and
- * in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_basis_convention_removal&) {
-    return std::tuple{
-        utility::codec::field{"key", &cross_currency_basis_convention_removal::key},
-        utility::codec::field{"precondition",
-                              &cross_currency_basis_convention_removal::precondition},
-    };
-}
-
-/**
- * @brief The members of cross_currency_basis_convention_lookup, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_basis_convention_lookup&) {
-    return std::tuple{
-        utility::codec::field{"key", &cross_currency_basis_convention_lookup::key},
-        utility::codec::field{
-            "cross_currency_basis_convention",
-            &cross_currency_basis_convention_lookup::cross_currency_basis_convention},
-    };
-}
-
-/**
- * @brief The members of cross_currency_basis_conventions_filter, named as the wire names them and
- * in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_basis_conventions_filter&) {
-    return std::tuple{
-        utility::codec::field{"id_one_of", &cross_currency_basis_conventions_filter::id_one_of},
-    };
-}
-
-/**
- * @brief The members of cross_currency_basis_convention_event, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_basis_convention_event&) {
-    return std::tuple{
-        utility::codec::field{"event_id", &cross_currency_basis_convention_event::event_id},
-        utility::codec::field{"key", &cross_currency_basis_convention_event::key},
-        utility::codec::field{"action", &cross_currency_basis_convention_event::action},
-        utility::codec::field{"version", &cross_currency_basis_convention_event::version},
-        utility::codec::field{"occurred_at", &cross_currency_basis_convention_event::occurred_at},
-        utility::codec::field{"correlation_id",
-                              &cross_currency_basis_convention_event::correlation_id},
-    };
-}
-
-/**
- * @brief The members of cross_currency_basis_convention_version_key, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_basis_convention_version_key&) {
-    return std::tuple{
-        utility::codec::field{
-            "cross_currency_basis_convention",
-            &cross_currency_basis_convention_version_key::cross_currency_basis_convention},
-        utility::codec::field{"version", &cross_currency_basis_convention_version_key::version},
-    };
-}
-
-/**
- * @brief The members of cross_currency_basis_convention_versions_filter, named as the wire names
- * them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const cross_currency_basis_convention_versions_filter&) {
-    return std::tuple{
-        utility::codec::field{"version", &cross_currency_basis_convention_versions_filter::version},
-        utility::codec::field{"from_version",
-                              &cross_currency_basis_convention_versions_filter::from_version},
-        utility::codec::field{"to_version",
-                              &cross_currency_basis_convention_versions_filter::to_version},
-    };
-}
-
-/**
- * @brief The members of list_cross_currency_basis_conventions_request, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const list_cross_currency_basis_conventions_request&) {
-    return std::tuple{
-        utility::codec::field{"offset", &list_cross_currency_basis_conventions_request::offset},
-        utility::codec::field{"limit", &list_cross_currency_basis_conventions_request::limit},
-        utility::codec::field{"order", &list_cross_currency_basis_conventions_request::order},
-        utility::codec::field{"filter", &list_cross_currency_basis_conventions_request::filter},
-        utility::codec::field{"as_of", &list_cross_currency_basis_conventions_request::as_of},
-    };
-}
-
-/**
- * @brief The members of list_cross_currency_basis_conventions_response, named as the wire names
- * them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const list_cross_currency_basis_conventions_response&) {
-    return std::tuple{
-        utility::codec::field{"result", &list_cross_currency_basis_conventions_response::result},
-        utility::codec::field{
-            "cross_currency_basis_conventions",
-            &list_cross_currency_basis_conventions_response::cross_currency_basis_conventions},
-        utility::codec::field{"total", &list_cross_currency_basis_conventions_response::total},
-    };
-}
-
-/**
- * @brief The members of get_cross_currency_basis_convention_request, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const get_cross_currency_basis_convention_request&) {
-    return std::tuple{
-        utility::codec::field{"key", &get_cross_currency_basis_convention_request::key},
-    };
-}
-
-/**
- * @brief The members of get_cross_currency_basis_convention_response, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const get_cross_currency_basis_convention_response&) {
-    return std::tuple{
-        utility::codec::field{"result", &get_cross_currency_basis_convention_response::result},
-        utility::codec::field{
-            "cross_currency_basis_convention",
-            &get_cross_currency_basis_convention_response::cross_currency_basis_convention},
-    };
-}
-
-/**
- * @brief The members of get_many_cross_currency_basis_conventions_request, named as the wire names
- * them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const get_many_cross_currency_basis_conventions_request&) {
-    return std::tuple{
-        utility::codec::field{"keys", &get_many_cross_currency_basis_conventions_request::keys},
-    };
-}
-
-/**
- * @brief The members of get_many_cross_currency_basis_conventions_response, named as the wire names
- * them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(const get_many_cross_currency_basis_conventions_response&) {
-    return std::tuple{
-        utility::codec::field{"result",
-                              &get_many_cross_currency_basis_conventions_response::result},
-        utility::codec::field{"entries",
-                              &get_many_cross_currency_basis_conventions_response::entries},
-    };
-}
-
-/**
- * @brief The members of put_cross_currency_basis_convention_request, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const put_cross_currency_basis_convention_request&) {
-    return std::tuple{
-        utility::codec::field{"change", &put_cross_currency_basis_convention_request::change},
-        utility::codec::field{"intent", &put_cross_currency_basis_convention_request::intent},
-    };
-}
-
-/**
- * @brief The members of put_cross_currency_basis_convention_response, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const put_cross_currency_basis_convention_response&) {
-    return std::tuple{
-        utility::codec::field{"result", &put_cross_currency_basis_convention_response::result},
-        utility::codec::field{
-            "cross_currency_basis_convention",
-            &put_cross_currency_basis_convention_response::cross_currency_basis_convention},
-    };
-}
-
-/**
- * @brief The members of put_many_cross_currency_basis_conventions_request, named as the wire names
- * them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const put_many_cross_currency_basis_conventions_request&) {
-    return std::tuple{
-        utility::codec::field{"changes",
-                              &put_many_cross_currency_basis_conventions_request::changes},
-        utility::codec::field{"intent", &put_many_cross_currency_basis_conventions_request::intent},
-    };
-}
-
-/**
- * @brief The members of put_many_cross_currency_basis_conventions_response, named as the wire names
- * them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(const put_many_cross_currency_basis_conventions_response&) {
-    return std::tuple{
-        utility::codec::field{"result",
-                              &put_many_cross_currency_basis_conventions_response::result},
-        utility::codec::field{
-            "cross_currency_basis_conventions",
-            &put_many_cross_currency_basis_conventions_response::cross_currency_basis_conventions},
-    };
-}
-
-/**
- * @brief The members of delete_cross_currency_basis_convention_request, named as the wire names
- * them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const delete_cross_currency_basis_convention_request&) {
-    return std::tuple{
-        utility::codec::field{"removal", &delete_cross_currency_basis_convention_request::removal},
-        utility::codec::field{"intent", &delete_cross_currency_basis_convention_request::intent},
-    };
-}
-
-/**
- * @brief The members of delete_cross_currency_basis_convention_response, named as the wire names
- * them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const delete_cross_currency_basis_convention_response&) {
-    return std::tuple{
-        utility::codec::field{"result", &delete_cross_currency_basis_convention_response::result},
-    };
-}
-
-/**
- * @brief The members of delete_many_cross_currency_basis_conventions_request, named as the wire
- * names them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(const delete_many_cross_currency_basis_conventions_request&) {
-    return std::tuple{
-        utility::codec::field{"removals",
-                              &delete_many_cross_currency_basis_conventions_request::removals},
-        utility::codec::field{"intent",
-                              &delete_many_cross_currency_basis_conventions_request::intent},
-    };
-}
-
-/**
- * @brief The members of delete_many_cross_currency_basis_conventions_response, named as the wire
- * names them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(const delete_many_cross_currency_basis_conventions_response&) {
-    return std::tuple{
-        utility::codec::field{"result",
-                              &delete_many_cross_currency_basis_conventions_response::result},
-    };
-}
-
-/**
- * @brief The members of list_cross_currency_basis_convention_versions_request, named as the wire
- * names them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(const list_cross_currency_basis_convention_versions_request&) {
-    return std::tuple{
-        utility::codec::field{"key", &list_cross_currency_basis_convention_versions_request::key},
-        utility::codec::field{"offset",
-                              &list_cross_currency_basis_convention_versions_request::offset},
-        utility::codec::field{"limit",
-                              &list_cross_currency_basis_convention_versions_request::limit},
-        utility::codec::field{"order",
-                              &list_cross_currency_basis_convention_versions_request::order},
-        utility::codec::field{"filter",
-                              &list_cross_currency_basis_convention_versions_request::filter},
-    };
-}
-
-/**
- * @brief The members of list_cross_currency_basis_convention_versions_response, named as the wire
- * names them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(const list_cross_currency_basis_convention_versions_response&) {
-    return std::tuple{
-        utility::codec::field{"result",
-                              &list_cross_currency_basis_convention_versions_response::result},
-        utility::codec::field{"versions",
-                              &list_cross_currency_basis_convention_versions_response::versions},
-        utility::codec::field{"total",
-                              &list_cross_currency_basis_convention_versions_response::total},
-    };
-}
-
-/**
- * @brief The members of get_cross_currency_basis_convention_version_request, named as the wire
- * names them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(const get_cross_currency_basis_convention_version_request&) {
-    return std::tuple{
-        utility::codec::field{"key", &get_cross_currency_basis_convention_version_request::key},
-    };
-}
-
-/**
- * @brief The members of get_cross_currency_basis_convention_version_response, named as the wire
- * names them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(const get_cross_currency_basis_convention_version_response&) {
-    return std::tuple{
-        utility::codec::field{"result",
-                              &get_cross_currency_basis_convention_version_response::result},
-        utility::codec::field{"version",
-                              &get_cross_currency_basis_convention_version_response::version},
-    };
-}
-
 
 }
-namespace ores::utility::codec {
-
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::cross_currency_basis_convention_key> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::cross_currency_basis_convention_key& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_key
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::cross_currency_basis_convention_key& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_key
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::cross_currency_basis_convention_write> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::cross_currency_basis_convention_write& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_write
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::cross_currency_basis_convention_write& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_write
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::cross_currency_basis_convention_change> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::cross_currency_basis_convention_change& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_change
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::cross_currency_basis_convention_change& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_change
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::cross_currency_basis_convention_removal> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::cross_currency_basis_convention_removal& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_removal
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::cross_currency_basis_convention_removal& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_removal
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::cross_currency_basis_convention_lookup> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::cross_currency_basis_convention_lookup& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_lookup
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::cross_currency_basis_convention_lookup& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_lookup
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::cross_currency_basis_conventions_filter> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::cross_currency_basis_conventions_filter& v);
-    static ores::refdata::messaging::cross_currency_basis_conventions_filter
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::cross_currency_basis_conventions_filter& v);
-    static ores::refdata::messaging::cross_currency_basis_conventions_filter
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::cross_currency_basis_convention_event> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::cross_currency_basis_convention_event& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_event
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::cross_currency_basis_convention_event& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_event
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::cross_currency_basis_convention_version_key> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::cross_currency_basis_convention_version_key& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_version_key
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::cross_currency_basis_convention_version_key& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_version_key
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::cross_currency_basis_convention_versions_filter> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::cross_currency_basis_convention_versions_filter& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_versions_filter
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::cross_currency_basis_convention_versions_filter& v);
-    static ores::refdata::messaging::cross_currency_basis_convention_versions_filter
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::list_cross_currency_basis_conventions_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::list_cross_currency_basis_conventions_request& v);
-    static ores::refdata::messaging::list_cross_currency_basis_conventions_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::list_cross_currency_basis_conventions_request& v);
-    static ores::refdata::messaging::list_cross_currency_basis_conventions_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::list_cross_currency_basis_conventions_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::list_cross_currency_basis_conventions_response& v);
-    static ores::refdata::messaging::list_cross_currency_basis_conventions_response
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::list_cross_currency_basis_conventions_response& v);
-    static ores::refdata::messaging::list_cross_currency_basis_conventions_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::get_cross_currency_basis_convention_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::get_cross_currency_basis_convention_request& v);
-    static ores::refdata::messaging::get_cross_currency_basis_convention_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::get_cross_currency_basis_convention_request& v);
-    static ores::refdata::messaging::get_cross_currency_basis_convention_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::get_cross_currency_basis_convention_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::get_cross_currency_basis_convention_response& v);
-    static ores::refdata::messaging::get_cross_currency_basis_convention_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::get_cross_currency_basis_convention_response& v);
-    static ores::refdata::messaging::get_cross_currency_basis_convention_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::get_many_cross_currency_basis_conventions_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::get_many_cross_currency_basis_conventions_request& v);
-    static ores::refdata::messaging::get_many_cross_currency_basis_conventions_request
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::get_many_cross_currency_basis_conventions_request& v);
-    static ores::refdata::messaging::get_many_cross_currency_basis_conventions_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::get_many_cross_currency_basis_conventions_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::get_many_cross_currency_basis_conventions_response& v);
-    static ores::refdata::messaging::get_many_cross_currency_basis_conventions_response
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::get_many_cross_currency_basis_conventions_response& v);
-    static ores::refdata::messaging::get_many_cross_currency_basis_conventions_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::put_cross_currency_basis_convention_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::put_cross_currency_basis_convention_request& v);
-    static ores::refdata::messaging::put_cross_currency_basis_convention_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::put_cross_currency_basis_convention_request& v);
-    static ores::refdata::messaging::put_cross_currency_basis_convention_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::put_cross_currency_basis_convention_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::put_cross_currency_basis_convention_response& v);
-    static ores::refdata::messaging::put_cross_currency_basis_convention_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::refdata::messaging::put_cross_currency_basis_convention_response& v);
-    static ores::refdata::messaging::put_cross_currency_basis_convention_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::put_many_cross_currency_basis_conventions_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::put_many_cross_currency_basis_conventions_request& v);
-    static ores::refdata::messaging::put_many_cross_currency_basis_conventions_request
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::put_many_cross_currency_basis_conventions_request& v);
-    static ores::refdata::messaging::put_many_cross_currency_basis_conventions_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::put_many_cross_currency_basis_conventions_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::put_many_cross_currency_basis_conventions_response& v);
-    static ores::refdata::messaging::put_many_cross_currency_basis_conventions_response
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::put_many_cross_currency_basis_conventions_response& v);
-    static ores::refdata::messaging::put_many_cross_currency_basis_conventions_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::delete_cross_currency_basis_convention_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::delete_cross_currency_basis_convention_request& v);
-    static ores::refdata::messaging::delete_cross_currency_basis_convention_request
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::delete_cross_currency_basis_convention_request& v);
-    static ores::refdata::messaging::delete_cross_currency_basis_convention_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::delete_cross_currency_basis_convention_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::refdata::messaging::delete_cross_currency_basis_convention_response& v);
-    static ores::refdata::messaging::delete_cross_currency_basis_convention_response
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::delete_cross_currency_basis_convention_response& v);
-    static ores::refdata::messaging::delete_cross_currency_basis_convention_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::delete_many_cross_currency_basis_conventions_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::delete_many_cross_currency_basis_conventions_request& v);
-    static ores::refdata::messaging::delete_many_cross_currency_basis_conventions_request
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::delete_many_cross_currency_basis_conventions_request& v);
-    static ores::refdata::messaging::delete_many_cross_currency_basis_conventions_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::delete_many_cross_currency_basis_conventions_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::delete_many_cross_currency_basis_conventions_response& v);
-    static ores::refdata::messaging::delete_many_cross_currency_basis_conventions_response
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::delete_many_cross_currency_basis_conventions_response& v);
-    static ores::refdata::messaging::delete_many_cross_currency_basis_conventions_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::list_cross_currency_basis_convention_versions_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::list_cross_currency_basis_convention_versions_request& v);
-    static ores::refdata::messaging::list_cross_currency_basis_convention_versions_request
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::list_cross_currency_basis_convention_versions_request& v);
-    static ores::refdata::messaging::list_cross_currency_basis_convention_versions_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::list_cross_currency_basis_convention_versions_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::list_cross_currency_basis_convention_versions_response& v);
-    static ores::refdata::messaging::list_cross_currency_basis_convention_versions_response
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::list_cross_currency_basis_convention_versions_response& v);
-    static ores::refdata::messaging::list_cross_currency_basis_convention_versions_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::get_cross_currency_basis_convention_version_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::get_cross_currency_basis_convention_version_request& v);
-    static ores::refdata::messaging::get_cross_currency_basis_convention_version_request
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::get_cross_currency_basis_convention_version_request& v);
-    static ores::refdata::messaging::get_cross_currency_basis_convention_version_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REFDATA_API_EXPORT
-    wire_traits<ores::refdata::messaging::get_cross_currency_basis_convention_version_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::refdata::messaging::get_cross_currency_basis_convention_version_response& v);
-    static ores::refdata::messaging::get_cross_currency_basis_convention_version_response
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::refdata::messaging::get_cross_currency_basis_convention_version_response& v);
-    static ores::refdata::messaging::get_cross_currency_basis_convention_version_response
-    read_msgpack(std::span<const std::byte> data);
-};
-}
-
 
 #endif

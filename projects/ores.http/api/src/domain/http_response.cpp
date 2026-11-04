@@ -18,8 +18,10 @@
  *
  */
 #include "ores.http.api/domain/http_response.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include <tuple>
 
 namespace ores::http::domain {
 
@@ -28,6 +30,11 @@ namespace {
 struct error_message final {
     std::string error;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const error_message&) {
+    return std::tuple{ores::utility::codec::field{"error", &error_message::error}};
+}
+static_assert(ores::utility::codec::names_every_member<error_message>());
 
 }
 
@@ -40,7 +47,7 @@ http_response http_response::json(const std::string& body, http_status status) {
 }
 
 http_response http_response::error(http_status status, const std::string& message) {
-    return json(rfl::json::write(error_message{message}), status);
+    return json(ores::utility::codec::json::write(error_message{message}), status);
 }
 
 http_response http_response::not_found(const std::string& message) {

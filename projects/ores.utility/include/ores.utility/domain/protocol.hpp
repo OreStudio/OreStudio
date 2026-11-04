@@ -45,6 +45,8 @@ struct field_failure {
     std::string field;
     std::string code;
     std::string message;
+
+    friend bool operator==(const field_failure&, const field_failure&) = default;
 };
 
 /**
@@ -59,6 +61,8 @@ struct result {
     std::string code;
     std::string message;
     std::vector<field_failure> fields;
+
+    friend bool operator==(const result&, const result&) = default;
 };
 
 /**
@@ -74,6 +78,8 @@ enum class precondition_kind { any, must_not_exist, must_match_version };
 struct precondition {
     precondition_kind kind = precondition_kind::must_not_exist;
     std::optional<std::uint32_t> version;
+
+    friend bool operator==(const precondition&, const precondition&) = default;
 };
 
 /**
@@ -93,6 +99,8 @@ inline constexpr precondition removal_precondition{precondition_kind::any, std::
 struct change_intent {
     std::string reason_code;
     std::string commentary;
+
+    friend bool operator==(const change_intent&, const change_intent&) = default;
 };
 
 /**
@@ -106,6 +114,8 @@ struct change_intent {
 struct order {
     std::string field;
     bool descending = false;
+
+    friend bool operator==(const order&, const order&) = default;
 };
 
 /**

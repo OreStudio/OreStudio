@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5B7E2C94-8A13-4F60-B9D7-1E4C8A3F5026
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.configuration_parameter
 #+description: Codegen entity model for the reporting =configuration_parameter= table. One value on one configuration, with the definition that says what it means.

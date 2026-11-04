@@ -112,7 +112,11 @@ import {
     gridUsageViewSchema,
     gridViewSchema,
     appVersionPageViewSchema,
-    gridReportRunViewSchema,
+    reportRunDetailViewSchema,
+    reportRunErrorViewSchema,
+    reportRunFileInfoViewSchema,
+    reportRunFilesViewSchema,
+    reportRunRowViewSchema,
     batchPageSchema,
     batchViewSchema,
     resultPageSchema,
@@ -148,7 +152,11 @@ import {
     type GridSeriesView,
     type GridUsageView,
     type AppVersionPageView,
-    type GridReportRunView,
+    type ReportRunDetailView,
+    type ReportRunErrorView,
+    type ReportRunFileInfoView,
+    type ReportRunFilesView,
+    type ReportRunRowView,
     type BatchPage,
     type BatchView,
     type ResultPage,
@@ -178,12 +186,14 @@ import {
     reportDetailSchema,
     reportHealthTallySchema,
     reportNameChoicesSchema,
+    reportScheduleOutcomeSchema,
     reportsPageSchema,
     type ConfigurationDetail,
     type ReportConfigurationBinding,
     type ReportDetail,
     type ReportHealthTally,
     type ReportNameChoice,
+    type ReportScheduleOutcome,
     type ReportsPage,
     cutKindsPageSchema,
     cutKindRecordSchema,
@@ -697,6 +707,21 @@ export const feedStartSchema = z.object({
     dispersion: z
         .array(z.object({ provider_code: z.string(), item: z.string(), basis_points: z.number() }))
         .default([]),
+    variance: z
+        .object({
+            model: z.string(),
+            calibration_id: z.string().default(''),
+            calibration_version: z.int().default(0),
+            fitted: z.boolean(),
+            alpha: z.number(),
+            gamma: z.number(),
+            beta: z.number(),
+            persistence: z.number(),
+            initial_ratio: z.number(),
+            returns: z.int(),
+            note: z.string(),
+        })
+        .nullish(),
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;
@@ -713,6 +738,31 @@ const calibrationCandidateSchema = z.object({
 
 export type CalibrationCandidate = z.infer<typeof calibrationCandidateSchema>;
 
+/** What a calibration run made of a feed's daily variance: its input and its fit. */
+const varianceCalibrationSchema = z.object({
+    input_id: z.string().default(''),
+    calibration_id: z.string().default(''),
+    method: z.string().default(''),
+    state: z.string().default(''),
+    state_reason: z.string().default(''),
+    item: z.string().default(''),
+    provider_code: z.string().default(''),
+    inverted: z.boolean().default(false),
+    window_days: z.int().default(0),
+    window_end: z.string().default(''),
+    point_count: z.int().default(0),
+    used_count: z.int().default(0),
+    alpha: z.number().nullish(),
+    gamma: z.number().nullish(),
+    beta: z.number().nullish(),
+    persistence: z.number().nullish(),
+    starting_variance_ratio: z.number().nullish(),
+    starts: z.int().default(0),
+    starts_agreed: z.boolean().default(false),
+});
+
+export type VarianceCalibration = z.infer<typeof varianceCalibrationSchema>;
+
 /** How one feed of a class resolves under the policy, and what it states against it. */
 const calibratedFeedSchema = z.object({
     config_id: z.string(),
@@ -724,6 +774,12 @@ const calibratedFeedSchema = z.object({
     refused: z.boolean(),
     start: feedStartSchema,
     candidates: z.array(calibrationCandidateSchema).default([]),
+    running: z.boolean().default(false),
+    /** What an applied calibration did; empty on a read that writes nothing. */
+    outcome: z.enum(['', 'updated', 'unchanged', 'kept', 'refused', 'failed']).default(''),
+    outcome_message: z.string().default(''),
+    variance: varianceCalibrationSchema.nullish(),
+    current_variance: varianceCalibrationSchema.nullish(),
 });
 
 export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;
@@ -734,6 +790,13 @@ const calibrationSchema = z.object({
     policy: z.object({
         from_policy_row: z.boolean(),
         window_days: z.int(),
+        variance_window_days: z.int().default(0),
+        variance_approval_mode: z.string().default('manual'),
+        variance_min_returns: z.int().default(0),
+        variance_require_starts_agree: z.boolean().default(false),
+        variance_min_persistence: z.number().default(0),
+        variance_max_persistence: z.number().default(0),
+        variance_min_reaction: z.number().default(0),
         allow_inverse: z.boolean(),
         fallback_code: z.string(),
         provider_order: z.array(z.string()),
@@ -981,6 +1044,7 @@ export interface ReportEdit {
     readonly pre_processing: string;
     readonly prepared_input_key: string;
     readonly post_processing: string;
+    readonly skipped_families: string;
 }
 
 /**
@@ -1057,44 +1121,12 @@ export interface RunResults {
     readonly baseline: BaselineSummary | null;
 }
 
-/** One report run, as the reporting area reads it. */
-export interface ReportRunDetail {
-    readonly id: string;
-    readonly name: string;
-    readonly party_id: string;
-    readonly definition_id: string;
-    readonly kind: string;
-    readonly state_name: string;
-    readonly started_at: string;
-    readonly completed_at: string;
-    readonly priced_at: string;
-    readonly price_note: string;
-    readonly output_message: string;
-    readonly output_storage_key: string;
-}
-
 /** A run's results, as the server answered them. */
 export interface RunResults {
     readonly level: ResultLevel;
     readonly rows: readonly unknown[];
     readonly totals: readonly Money[];
     readonly reason: ResultReason;
-}
-
-/** One report run, as the reporting area reads it. */
-export interface ReportRunDetail {
-    readonly id: string;
-    readonly name: string;
-    readonly party_id: string;
-    readonly definition_id: string;
-    readonly kind: string;
-    readonly state_name: string;
-    readonly started_at: string;
-    readonly completed_at: string;
-    readonly priced_at: string;
-    readonly price_note: string;
-    readonly output_message: string;
-    readonly output_storage_key: string;
 }
 
 /** One book's share of a run. */
@@ -1117,6 +1149,15 @@ function resultReasonOf(value: string | undefined): ResultReason {
     const found = RESULT_REASONS.find((candidate) => candidate === value);
     return found ?? '';
 }
+
+/** What became of one publisher in a list accept. */
+const termsOutcomeSchema = z.object({
+    code: z.string(),
+    success: z.boolean(),
+    message: z.string(),
+});
+export type TermsOutcome = z.infer<typeof termsOutcomeSchema>;
+const termsListReplySchema = z.object({ outcomes: z.array(termsOutcomeSchema) });
 
 export const api = {
     /**
@@ -1933,6 +1974,8 @@ export const api = {
         readonly partyId: string | null;
         /** The text the name and the description are searched for, or empty for none. */
         readonly search: string;
+        /** The kind of cut the list is narrowed to, or empty for every kind. */
+        readonly cutKind: string;
     }): Promise<ReportsPage> {
         const query = new URLSearchParams({
             offset: String(page.offset),
@@ -1940,6 +1983,9 @@ export const api = {
             sort: page.sort,
             descending: page.descending ? 'true' : 'false',
         });
+        if (page.cutKind !== '') {
+            query.set('cut_kind', page.cutKind);
+        }
         if (page.partyId !== null) {
             query.set('party_id', page.partyId);
         }
@@ -2423,12 +2469,60 @@ export const api = {
     },
 
     /** How every feed of a class resolves under its policy; nothing starts. */
-    async calibration(assetClass: string): Promise<Calibration> {
+    /** A class's calibration, or only the feed that @p configId names when it is given. */
+    async calibration(assetClass: string, configId?: string): Promise<Calibration> {
+        const query = configId === undefined ? '' : `?configId=${encodeURIComponent(configId)}`;
         return calibrationSchema.parse(
-            await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}`, {
+            await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}${query}`, {
                 method: 'GET',
             }),
         );
+    },
+
+    /**
+     * Calibrates one feed of a class and stores what moved as a new version of its config.
+     * A running feed takes the stored values at its next start.
+     */
+    async runCalibration(assetClass: string, configId: string): Promise<CalibratedFeed> {
+        const reply = z.object({ feeds: z.array(calibratedFeedSchema) }).parse(
+            await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}/run`, {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ configId }),
+            }),
+        );
+        const feed = reply.feeds[0];
+        if (feed === undefined) {
+            throw new Error(`The calibration of ${configId} answered no feed.`);
+        }
+        return feed;
+    },
+
+    /**
+     * Approves or rejects a proposed variance calibration with the reviewer's reason. Approving
+     * points the pair's GJR-GARCH feeds at it. Only the system tenant may.
+     */
+    async reviewVarianceCalibration(
+        calibrationId: string,
+        decision: 'approve' | 'reject',
+        reason: string,
+    ): Promise<{ state: string; repointedFeeds: readonly string[]; message: string }> {
+        return z
+            .object({
+                state: z.string(),
+                repointedFeeds: z.array(z.string()).default([]),
+                message: z.string().default(''),
+            })
+            .parse(
+                await request(
+                    `/api/synthetic/calibration/variance/${encodeURIComponent(calibrationId)}/review`,
+                    {
+                        method: 'POST',
+                        headers: JSON_HEADERS,
+                        body: JSON.stringify({ decision, reason }),
+                    },
+                ),
+            );
     },
 
     /** States a class's calibration policy. Only the system tenant may. */
@@ -2556,6 +2650,20 @@ export const api = {
             method: 'POST',
             body: JSON.stringify({ version }),
         });
+    },
+
+    /**
+     * Accepts several publishers' terms, each at the version the person read. One refusal
+     * does not stop the others, so each publisher's outcome comes back.
+     */
+    async acceptProvidersTerms(
+        providers: readonly { readonly code: string; readonly version: number }[],
+    ): Promise<readonly TermsOutcome[]> {
+        const reply = await request('/api/marketdata/public-rates/accept-terms', {
+            method: 'POST',
+            body: JSON.stringify({ providers }),
+        });
+        return termsListReplySchema.parse(reply).outcomes;
     },
 
     /** Withdraws a publisher's acceptance, so it is no longer fetched. */
@@ -3690,13 +3798,6 @@ export const api = {
         );
     },
 
-    /** The report run that dispatched a batch. */
-    async gridReportRun(id: string): Promise<GridReportRunView> {
-        return gridReportRunViewSchema.parse(
-            await request(`/api/operations/grid/report-runs/${id}`, { method: 'GET' }),
-        );
-    },
-
     /** One trade as it stood at one version, which is what a run records. */
     async tradeVersion(id: string, version: number): Promise<unknown | null> {
         const reply = (await request(`/api/trades/${id}/versions/${version}`, {
@@ -3719,17 +3820,53 @@ export const api = {
         return reply.runId ?? '';
     },
 
+    /**
+     * Schedules one report definition, and answers what the operation did.
+     *
+     * The expression is the schedule the job will fire on, which an on-demand
+     * report has none of: giving one is what activates it. A definition that
+     * already holds a schedule answers with nothing changed, and a definition of
+     * a party the session does not act for is refused in the operation's words.
+     */
+    async scheduleReport(id: string, scheduleExpression?: string): Promise<ReportScheduleOutcome> {
+        return reportScheduleOutcomeSchema.parse(
+            await request('/api/reporting/reports/schedule', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    ids: [id],
+                    ...(scheduleExpression === undefined
+                        ? {}
+                        : { schedule_expression: scheduleExpression }),
+                }),
+            }),
+        );
+    },
+
+    /** Removes a report definition's schedule, which leaves it on demand. */
+    async unscheduleReport(id: string): Promise<ReportScheduleOutcome> {
+        return reportScheduleOutcomeSchema.parse(
+            await request('/api/reporting/reports/unschedule', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ ids: [id] }),
+            }),
+        );
+    },
+
     /** The runs of one report, newest first. */
-    async reportRuns(id: string): Promise<readonly unknown[]> {
+    async reportRuns(id: string): Promise<readonly ReportRunRowView[]> {
         const reply = (await request(`/api/reporting/reports/${id}/runs`, {
             method: 'GET',
         })) as { runs?: readonly unknown[] };
-        return reply.runs ?? [];
+        return (reply.runs ?? []).map((one) => reportRunRowViewSchema.parse(one));
     },
 
-    /** One report run, with the state it reached and what it said. */
-    async reportRun(id: string): Promise<ReportRunDetail> {
-        return (await request(`/api/reporting/runs/${id}`, { method: 'GET' })) as ReportRunDetail;
+    /** One report run: the state it reached, its batch, and where its output is. */
+    async reportRun(id: string): Promise<ReportRunDetailView> {
+        return reportRunDetailViewSchema.parse(
+            await request(`/api/reporting/runs/${id}`, { method: 'GET' }),
+        );
     },
 
     /** The results of one run, at the level the reader asked for. */
@@ -3759,17 +3896,39 @@ export const api = {
         };
     },
 
-    /** Where the run's output archive is downloaded from. */
-    reportRunOutputUrl(id: string): string {
-        return `/api/reporting/runs/${encodeURIComponent(id)}/output`;
+    /** Every file a report run read and wrote, inputs first. */
+    async reportRunFiles(id: string): Promise<ReportRunFilesView> {
+        return reportRunFilesViewSchema.parse(
+            await request(`/api/reporting/runs/${encodeURIComponent(id)}/files`, { method: 'GET' }),
+        );
     },
 
-    /** The errors a report run recorded. */
-    async gridReportRunErrors(id: string): Promise<readonly unknown[]> {
-        const reply = (await request(`/api/operations/grid/report-runs/${id}/errors`, {
+    /** One file of a run, with the ORE file it is and the parameters that name it. */
+    async reportRunFileInfo(runId: string, fileId: string): Promise<ReportRunFileInfoView> {
+        return reportRunFileInfoViewSchema.parse(
+            await request(
+                `/api/reporting/runs/${encodeURIComponent(runId)}/files/${encodeURIComponent(fileId)}/info`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /** Where an ORE schema is downloaded from, with its includes, at one engine version. */
+    oreSchemaUrl(code: string, engineVersion: string): string {
+        return `/api/reporting/ore-files/${encodeURIComponent(code)}/schema?version=${encodeURIComponent(engineVersion)}`;
+    },
+
+    /** Where one file of a run is downloaded from, by its id in the run's list. */
+    reportRunFileUrl(runId: string, fileId: string): string {
+        return `/api/reporting/runs/${encodeURIComponent(runId)}/files/${encodeURIComponent(fileId)}`;
+    },
+
+    /** The problems a report run recorded, one row each. */
+    async reportRunErrors(id: string): Promise<readonly ReportRunErrorView[]> {
+        const reply = (await request(`/api/reporting/runs/${id}/errors`, {
             method: 'GET',
         })) as { errors?: readonly unknown[] };
-        return reply.errors ?? [];
+        return (reply.errors ?? []).map((one) => reportRunErrorViewSchema.parse(one));
     },
 
     /** One app version with its packages and the other versions of its app. */

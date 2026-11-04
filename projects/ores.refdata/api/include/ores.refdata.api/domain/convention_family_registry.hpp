@@ -97,30 +97,78 @@ inline constexpr convention_family_entry convention_families[] = {
      "refdata.v1.commodity_forward_conventions",
      true,
      convention_write_mode::party},
-    {"commodity_future",
-     "commodity_future_convention",
-     "ores::refdata::domain::commodity_future_convention",
-     "refdata.v1.commodity_future_conventions",
+    {"commodity_future_averaging_terms",
+     "commodity_future_averaging_terms",
+     "ores::refdata::domain::commodity_future_averaging_terms",
+     "refdata.v1.commodity_future_averaging_terms",
      true,
-     convention_write_mode::party},
+     convention_write_mode::by_id},
+    {"commodity_future_contract_terms",
+     "commodity_future_contract_terms",
+     "ores::refdata::domain::commodity_future_contract_terms",
+     "refdata.v1.commodity_future_contract_terms",
+     true,
+     convention_write_mode::by_id},
+    {"commodity_future_expiry_anchor",
+     "commodity_future_expiry_anchor",
+     "ores::refdata::domain::commodity_future_expiry_anchor",
+     "refdata.v1.commodity_future_expiry_anchors",
+     true,
+     convention_write_mode::by_id},
+    {"commodity_future_off_peak_index",
+     "commodity_future_off_peak_index",
+     "ores::refdata::domain::commodity_future_off_peak_index",
+     "refdata.v1.commodity_future_off_peak_indexes",
+     true,
+     convention_write_mode::by_id},
+    {"commodity_future_option_expiry",
+     "commodity_future_option_expiry",
+     "ores::refdata::domain::commodity_future_option_expiry",
+     "refdata.v1.commodity_future_option_expiries",
+     true,
+     convention_write_mode::by_id},
     {"convention",
      "convention",
      "ores::refdata::domain::convention",
      "refdata.v1.conventions",
      true,
      convention_write_mode::by_id},
-    {"cross_currency_basis",
-     "cross_currency_basis_convention",
-     "ores::refdata::domain::cross_currency_basis_convention",
-     "refdata.v1.cross_currency_basis_conventions",
+    {"cross_currency_basis_flat_leg",
+     "cross_currency_basis_flat_leg",
+     "ores::refdata::domain::cross_currency_basis_flat_leg",
+     "refdata.v1.cross_currency_basis_flat_legs",
      true,
-     convention_write_mode::party},
-    {"cross_currency_fix_float",
-     "cross_currency_fix_float_convention",
-     "ores::refdata::domain::cross_currency_fix_float_convention",
-     "refdata.v1.cross_currency_fix_float_conventions",
+     convention_write_mode::by_id},
+    {"cross_currency_basis_spread_leg",
+     "cross_currency_basis_spread_leg",
+     "ores::refdata::domain::cross_currency_basis_spread_leg",
+     "refdata.v1.cross_currency_basis_spread_legs",
      true,
-     convention_write_mode::party},
+     convention_write_mode::by_id},
+    {"cross_currency_basis_swap_terms",
+     "cross_currency_basis_swap_terms",
+     "ores::refdata::domain::cross_currency_basis_swap_terms",
+     "refdata.v1.cross_currency_basis_swap_terms",
+     true,
+     convention_write_mode::by_id},
+    {"cross_currency_fix_float_fixed_leg",
+     "cross_currency_fix_float_fixed_leg",
+     "ores::refdata::domain::cross_currency_fix_float_fixed_leg",
+     "refdata.v1.cross_currency_fix_float_fixed_legs",
+     true,
+     convention_write_mode::by_id},
+    {"cross_currency_fix_float_float_leg",
+     "cross_currency_fix_float_float_leg",
+     "ores::refdata::domain::cross_currency_fix_float_float_leg",
+     "refdata.v1.cross_currency_fix_float_float_legs",
+     true,
+     convention_write_mode::by_id},
+    {"cross_currency_fix_float_swap_terms",
+     "cross_currency_fix_float_swap_terms",
+     "ores::refdata::domain::cross_currency_fix_float_swap_terms",
+     "refdata.v1.cross_currency_fix_float_swap_terms",
+     true,
+     convention_write_mode::by_id},
     {"deposit",
      "deposit_convention",
      "ores::refdata::domain::deposit_convention",
@@ -236,10 +284,18 @@ enum class convention_family_key : std::size_t {
     cds,
     cms_spread_option,
     commodity_forward,
-    commodity_future,
+    commodity_future_averaging_terms,
+    commodity_future_contract_terms,
+    commodity_future_expiry_anchor,
+    commodity_future_off_peak_index,
+    commodity_future_option_expiry,
     convention,
-    cross_currency_basis,
-    cross_currency_fix_float,
+    cross_currency_basis_flat_leg,
+    cross_currency_basis_spread_leg,
+    cross_currency_basis_swap_terms,
+    cross_currency_fix_float_fixed_leg,
+    cross_currency_fix_float_float_leg,
+    cross_currency_fix_float_swap_terms,
     deposit,
     fra,
     future,
@@ -272,16 +328,41 @@ static_assert(
 static_assert(
     convention_families[static_cast<std::size_t>(convention_family_key::commodity_forward)].key ==
     "commodity_forward");
-static_assert(convention_families[static_cast<std::size_t>(convention_family_key::commodity_future)]
-                  .key == "commodity_future");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_averaging_terms)]
+                  .key == "commodity_future_averaging_terms");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_contract_terms)]
+                  .key == "commodity_future_contract_terms");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_expiry_anchor)]
+                  .key == "commodity_future_expiry_anchor");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_off_peak_index)]
+                  .key == "commodity_future_off_peak_index");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::commodity_future_option_expiry)]
+                  .key == "commodity_future_option_expiry");
 static_assert(convention_families[static_cast<std::size_t>(convention_family_key::convention)]
                   .key == "convention");
-static_assert(
-    convention_families[static_cast<std::size_t>(convention_family_key::cross_currency_basis)]
-        .key == "cross_currency_basis");
-static_assert(
-    convention_families[static_cast<std::size_t>(convention_family_key::cross_currency_fix_float)]
-        .key == "cross_currency_fix_float");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_basis_flat_leg)]
+                  .key == "cross_currency_basis_flat_leg");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_basis_spread_leg)]
+                  .key == "cross_currency_basis_spread_leg");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_basis_swap_terms)]
+                  .key == "cross_currency_basis_swap_terms");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_fix_float_fixed_leg)]
+                  .key == "cross_currency_fix_float_fixed_leg");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_fix_float_float_leg)]
+                  .key == "cross_currency_fix_float_float_leg");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_fix_float_swap_terms)]
+                  .key == "cross_currency_fix_float_swap_terms");
 static_assert(convention_families[static_cast<std::size_t>(convention_family_key::deposit)].key ==
               "deposit");
 static_assert(convention_families[static_cast<std::size_t>(convention_family_key::fra)].key ==

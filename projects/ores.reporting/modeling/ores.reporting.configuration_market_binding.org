@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ID: 90B90247-376D-4EDA-958D-5ABE66A8B14D
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.configuration_market_binding
 #+description: Codegen entity model for the reporting =configuration_market_binding= table. The configuration set a run binds to each market role.

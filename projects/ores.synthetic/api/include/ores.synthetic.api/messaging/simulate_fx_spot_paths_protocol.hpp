@@ -25,9 +25,15 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_SIMULATE_FX_SPOT_PATHS_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_SIMULATE_FX_SPOT_PATHS_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -68,6 +74,9 @@ struct simulate_fx_spot_paths_request {
     int num_paths = 5;
     /** @brief Base RNG seed; path i uses seed + i. Change to reseed. */
     std::uint32_t seed = 1;
+
+    friend bool operator==(const simulate_fx_spot_paths_request&,
+                           const simulate_fx_spot_paths_request&) = default;
 };
 
 /**
@@ -78,8 +87,82 @@ struct simulate_fx_spot_paths_response {
     std::string message;
     /** @brief num_paths series, each of num_ticks prices. */
     std::vector<std::vector<double>> paths;
+
+    friend bool operator==(const simulate_fx_spot_paths_response&,
+                           const simulate_fx_spot_paths_response&) = default;
 };
 
+/**
+ * @brief The members of simulate_fx_spot_paths_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const simulate_fx_spot_paths_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"gmm_means", &simulate_fx_spot_paths_request::gmm_means},
+        ::ores::utility::codec::field{"gmm_stdevs", &simulate_fx_spot_paths_request::gmm_stdevs},
+        ::ores::utility::codec::field{"gmm_weights", &simulate_fx_spot_paths_request::gmm_weights},
+        ::ores::utility::codec::field{"process_type",
+                                      &simulate_fx_spot_paths_request::process_type},
+        ::ores::utility::codec::field{"initial_price",
+                                      &simulate_fx_spot_paths_request::initial_price},
+        ::ores::utility::codec::field{"num_ticks", &simulate_fx_spot_paths_request::num_ticks},
+        ::ores::utility::codec::field{"num_paths", &simulate_fx_spot_paths_request::num_paths},
+        ::ores::utility::codec::field{"seed", &simulate_fx_spot_paths_request::seed},
+    };
 }
+
+/**
+ * @brief The members of simulate_fx_spot_paths_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const simulate_fx_spot_paths_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &simulate_fx_spot_paths_response::success},
+        ::ores::utility::codec::field{"message", &simulate_fx_spot_paths_response::message},
+        ::ores::utility::codec::field{"paths", &simulate_fx_spot_paths_response::paths},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::simulate_fx_spot_paths_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::simulate_fx_spot_paths_request& v);
+    static ores::synthetic::messaging::simulate_fx_spot_paths_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::simulate_fx_spot_paths_request& v);
+    static ores::synthetic::messaging::simulate_fx_spot_paths_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::simulate_fx_spot_paths_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::simulate_fx_spot_paths_response& v);
+    static ores::synthetic::messaging::simulate_fx_spot_paths_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::simulate_fx_spot_paths_response& v);
+    static ores::synthetic::messaging::simulate_fx_spot_paths_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

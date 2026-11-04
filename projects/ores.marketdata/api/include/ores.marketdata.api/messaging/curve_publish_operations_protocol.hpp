@@ -25,9 +25,16 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_CURVE_PUBLISH_OPERATIONS_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_CURVE_PUBLISH_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::marketdata::messaging {
 
@@ -77,6 +84,8 @@ struct publish_curve_request {
      * Required when the call raises a request, and ignored when it applies one.
      */
     std::string reason = "";
+
+    friend bool operator==(const publish_curve_request&, const publish_curve_request&) = default;
 };
 
 struct publish_curve_response {
@@ -110,8 +119,73 @@ struct publish_curve_response {
      * Empty when the call raised a request or was refused.
      */
     std::string published_by;
+
+    friend bool operator==(const publish_curve_response&, const publish_curve_response&) = default;
 };
 
+/**
+ * @brief The members of publish_curve_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_curve_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"bootstrap_config_id",
+                                      &publish_curve_request::bootstrap_config_id},
+        ::ores::utility::codec::field{"as_of", &publish_curve_request::as_of},
+        ::ores::utility::codec::field{"approval_request_id",
+                                      &publish_curve_request::approval_request_id},
+        ::ores::utility::codec::field{"reason", &publish_curve_request::reason},
+    };
 }
+
+/**
+ * @brief The members of publish_curve_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_curve_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &publish_curve_response::success},
+        ::ores::utility::codec::field{"message", &publish_curve_response::message},
+        ::ores::utility::codec::field{"approval_request_id",
+                                      &publish_curve_response::approval_request_id},
+        ::ores::utility::codec::field{"state_code", &publish_curve_response::state_code},
+        ::ores::utility::codec::field{"published_at", &publish_curve_response::published_at},
+        ::ores::utility::codec::field{"published_by", &publish_curve_response::published_by},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::publish_curve_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::publish_curve_request& v);
+    static ores::marketdata::messaging::publish_curve_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::publish_curve_request& v);
+    static ores::marketdata::messaging::publish_curve_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::publish_curve_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::publish_curve_response& v);
+    static ores::marketdata::messaging::publish_curve_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::publish_curve_response& v);
+    static ores::marketdata::messaging::publish_curve_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

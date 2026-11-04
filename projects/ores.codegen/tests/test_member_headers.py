@@ -62,6 +62,13 @@ def test_a_bare_member_takes_the_same_codec_header(tmp_path):
     assert headers == ["ores.x.api/domain/widget_role_codec.hpp"]
 
 
+def test_a_member_named_from_the_own_namespace_takes_the_same_codec_header(tmp_path):
+    """A message in the component's own namespace writes "domain::x"."""
+    headers = _member_headers(["std::vector<domain::widget_role>"], a_model_dir(tmp_path),
+                              a_model())
+    assert headers == ["ores.x.api/domain/widget_role_codec.hpp"]
+
+
 def test_a_field_group_takes_its_own_header(tmp_path):
     """A group states its shape in its own header, not in a codec header."""
     headers = _member_headers(["widget_details"], a_model_dir(tmp_path), a_model())
@@ -110,3 +117,16 @@ def test_the_model_dir_states_which_names_are_groups(tmp_path):
     assert "widget" in names
     assert "widget_role" in names
     assert "widget_details" in groups
+
+
+def test_an_own_type_outside_the_model_dir_takes_the_models_root(tmp_path):
+    """A component whose domain is in core does not have it in api.
+
+    An enum of the model's own component has no model of its own, so it is
+    resolved by its namespace, and the namespace names the component, not the
+    subcomponent the component keeps its domain in.
+    """
+    model = {"component": "x", "subcomponent": "core", "component_include": "x.core"}
+    headers = _member_headers(["ores::x::domain::widget_state"], a_model_dir(tmp_path),
+                              model)
+    assert headers == ["ores.x.core/domain/widget_state.hpp"]

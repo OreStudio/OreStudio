@@ -21,6 +21,7 @@ block beside them is optional.
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #include "ores.trading.api/domain/bond_option_settlement.hpp"

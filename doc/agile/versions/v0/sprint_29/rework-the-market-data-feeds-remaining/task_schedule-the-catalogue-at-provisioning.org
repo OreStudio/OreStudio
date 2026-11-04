@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 9271AE36-7C6F-4193-A4B0-CCCB3A4DA76E
+:END:
+#+title: Task: Schedule the catalogue when Acme is provisioned
+#+description: A provisioned Acme ticks nothing: the catalogue states schedules but no one schedules the reports. The provisioner should, as the run's administrator, with its own credentials.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/schedule-the-catalogue-at-provisioning
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A fresh Acme is provisioned with its catalogue scheduled, and the reports tick without a person acting.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- A schedule_reports step kind, ordered by the acme_demo profile after the parties are provisioned.
+- The step schedules every definition with a real schedule as the run's administrator, skips the on-demand placeholder, and is idempotent.
+- A fresh create provisions, schedules, and a report fires; the jobs and grants are read back.
+- The tests, gates and docs are green.
+
+* Plan
+
+The decision that shaped the work: the step schedules what each party
+*publishes* rather than a list the profile states. A profile row that named
+definitions would be a copy of the catalogue that goes stale, and the catalogue
+is the thing that already says when each report runs.
+
+1. The notation: =schedule_reports= as a step kind in
+   =provision_tenant_workflow.hpp=, with its words, its budget
+   (=orchestrating_step_timeout=) and its need. It needs =load_staff=, because a
+   party's report definitions arrive with the bundles the staff step names; a
+   run that orders no staff step resolves the need through the party chain.
+2. The rule: a definition is scheduled when its schedule is a cron the calendar
+   reaches. The on-demand placeholder =0 0 31 2 *= is not, and neither is a
+   malformed expression. The rule lives in
+   =ores.iam.core/messaging/report_schedule_selection.hpp= as a pure function
+   over (id, schedule, holds-a-job), so the selection is testable without a
+   server.
+3. The executor: one client per party, because the reporting operation makes the
+   run grant for the session's party and refuses a definition of another one (the
+   live refusal is in the evidence file); read that party's definitions a page at
+   a time; select; call =reporting.v1.ops.schedule_report_definitions= once per
+   party with a budget above the client's default, because one call can carry
+   thirty definitions and each costs a grant, a scheduler write and a save.
+4. Idempotence: check the operation first. =schedule_one= returns early on a
+   definition that already names a scheduler job, before it creates a grant, and
+   the run-grant table holds a unique index on the natural key, so a repeat
+   cannot mint a second grant. The step therefore only has to not ask twice,
+   which is the selection's =holds_scheduler_job= branch.
+5. The profile: the =acme_demo= row at order 70, naming the four parties the
+   staff step loads and nothing else; =generate_trades= moves from 70 to 80,
+   because scheduling reads the parties' published data and not their trades.
+6. The tests: the kind is declared, executed and ordered after the staff; the
+   arguments name parties and nothing else; the selection picks a real cron,
+   skips the placeholder and a non-cron, and asks for nothing a definition
+   already holds; the profile row is ordered between the staff step and the
+   trades and names the four parties the staff step names.
+7. The gates: the codegen suite reads the kind table and requires every sentence
+   it declares in the three web catalogues, so the two sentences are translated
+   in the same branch.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Definitions published to the four Acme parties | 101 | =select count(*) from ores_reporting_report_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()= | e42fe4a1d8 |
+| Definitions the step scheduled | 92 | the step result's =report_schedules=, per party 10 + 30 + 26 + 26 | e42fe4a1d8 |
+| Definitions left on demand (0 0 31 2 *) | 9 | =select count(*) from ores_reporting_report_definitions_tbl where schedule_expression = '0 0 31 2 *'= | e42fe4a1d8 |
+| Scheduler jobs the catalogue now holds | 92 | =select count(*) from ores_scheduler_job_definitions_tbl where job_name like 'report_definition.%'= | e42fe4a1d8 |
+| Run grants the catalogue now holds | 92 | =select count(*) from ores_iam_run_grants_tbl where resource like 'reporting.report_definition/%'= | e42fe4a1d8 |
+| Reports that fired at the next boundary | 3 (Headline Position, */10) | =select count(*) from ores_reporting_report_instances_tbl where valid_to = ores_utility_infinity_timestamp_fn()= | e42fe4a1d8 |
+| Jobs and grants after a repeated schedule call | 92 and 92, unchanged; =scheduled_count= 0 | =compass shell= -> =report_operations schedule-report-definitions=, see the evidence file | e42fe4a1d8 |
+| iam.core suite | 324 cases, all passed | =compass test run -- -R ores.iam.core.tests= | e42fe4a1d8 |
+| iam.api suite | all passed | =compass test run -- -R ores.iam.api.tests= | e42fe4a1d8 |
+
+The raw output of every number is in
+[[file:evidence/schedule_the_catalogue_walkthrough.txt][the walkthrough]].
+
+* Notes
+
+- The step acts as the run's administrator because that is the identity the
+  reporting operation makes the run grant for, and the same identity the
+  tenant's own setup run already runs as. No password is added: the handler
+  mints the token from the run's administrator, as it does for every other
+  step.
+- The operation requires the caller's session party to be the definition's
+  party. That is why the step mints a client per party; acting as the
+  administrator's own party for all four was refused live, and the refusal is
+  in the evidence file.
+- The nine on-demand definitions are the catalogue's desk maps and the
+  ladders' spot report. They hold no job and no grant, which is the point: a
+  person asks for them when they want them.
+- A report fires and its run does not yet complete. The engine refuses the
+  book the population generated (trade XML it cannot parse), which is the
+  subject of the task "Complete the ACME report inputs and prove they run".
+  This task's claim is only that the catalogue fires by itself.
+- A second provision of the same tenant is not a path the product offers: the
+  provisioner refuses a tenant code that exists, and the backlog holds the gap
+  as "a provisioning run cannot be resumed". Idempotence was therefore proven
+  at the two layers a re-provision would reach, the step's selection (unit
+  test) and the operation (live re-issue).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped, on this branch:
+
+- =schedule_reports= is a step kind of the provisioning notation: a kind
+  constant, its words and budget in =words_for_step_kind=, membership of
+  =provision_step_kinds= and =provision_executed_step_kinds=, the need that
+  orders it after the staff, its action in =classify_step_kind= and its
+  argument parser. It is code like every other kind, so a profile that orders
+  it is refused by a build that cannot execute it.
+- The executor reads each named party's published definitions as that party,
+  selects the ones whose schedule is a real cron, calls
+  =reporting.v1.ops.schedule_report_definitions= once per party under the run's
+  administrator, and reports per party what it scheduled, what already held a
+  job, what is on demand and what is not a cron. It never fails a run because a
+  report is on demand.
+- =iam.core= links =ores.reporting.api= and =ores.scheduler.api=, declared in
+  its component model so the generated build file states them.
+- The =acme_demo= profile orders the step at 70, naming the four parties the
+  staff step loads and nothing else; =generate_trades= moves to 80.
+- Tests: the notation (declared, executed, not system-scoped, ordered after the
+  staff, its command carries the parties), the arguments, the selection's four
+  rules including idempotence, and the profile row (ordered after the parties
+  and before the trades; names exactly the parties the staff step names).
+- Docs: the profile page now states ten steps and why the schedule comes where
+  it does; the report families note states how a schedule reaches the
+  scheduler, what the placeholder means, and that the UI Schedule action is
+  still a separate feature; the three web catalogues carry the kind's
+  sentences.
+
+Acceptance, met:
+
+- A =schedule_reports= step kind ordered by the =acme_demo= profile after the
+  parties are provisioned. ✔
+- The step schedules every definition with a real schedule as the run's
+  administrator, skips the on-demand placeholder, and is idempotent. ✔
+  (92 scheduled, 9 on demand, and a repeat asks for nothing.)
+- A fresh create provisions, schedules, and a report fires; the jobs and grants
+  are read back. ✔ ([[file:evidence/schedule_the_catalogue_walkthrough.txt][walkthrough]])
+- The tests, gates and docs are green. ✔ for the suites and the checks this
+  change touches (see below); the local check run also reports five failures
+  that this branch carried before it, listed under "What remains".
+
+What remains, and is not this task's:
+
+- The report *runs* fail inside the engine on the trade XML the population
+  generates. That is the task "Complete the ACME report inputs and prove they
+  run", and it is why the evidence shows a fire and not a figure.
+- The Schedule action on a report's screen is still a separate feature: a
+  person cannot schedule or unschedule one definition from the UI yet, and the
+  prose says so.
+- Six local checks fail on this branch for reasons this change does not
+  cause, each verified untouched by it: =web= (prettier on four files from the
+  branch's earlier web commits), =structure-notes= (27 pages, every report page
+  and =risk_reporting.org=, missing the back-link the hub now requires),
+  =er-diagram= (=ores_schema.dq_staging.puml= one line stale), =format=
+  (=cut_assembly.cpp=, two lines), =xml-benchmark-recorded= (an XML change with
+  no benchmark row), and =component-drift= on =ores.storage.service=, whose
+  =CMakeLists.txt= links =msgpack-c= by hand since =a337e95529= and whose model
+  does not state it. The run that reports the last one is the whole-catalogue
+  sweep, which an unclassified path (the agile pages) asks for; the drift check
+  of the component this task changed, =iam-cpp=, reports "No drift".
+- The branch is 102 commits behind =origin/main=, and the seeder dataset model
+  =acme_corporation/dataset_overview.org= states a =#+type: dataset_overview=
+  the current codegen does not recognise, so =seeder.sh generate= refuses that
+  dataset before it renders anything. The seed generators therefore cannot be
+  run on this tree; the profile row this task added is hand-written SQL, as
+  every profile row is.

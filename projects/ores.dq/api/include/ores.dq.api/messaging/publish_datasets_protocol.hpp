@@ -25,8 +25,14 @@
 #ifndef ORES_DQ_API_MESSAGING_PUBLISH_DATASETS_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_PUBLISH_DATASETS_PROTOCOL_HPP
 
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -60,6 +66,9 @@ struct publish_datasets_request {
      * @brief Whether a dataset's dependencies are published with it.
      */
     bool resolve_dependencies = true;
+
+    friend bool operator==(const publish_datasets_request&,
+                           const publish_datasets_request&) = default;
 };
 
 /**
@@ -82,8 +91,71 @@ struct publish_datasets_response {
      * @brief How many datasets were dispatched.
      */
     int datasets_dispatched = 0;
+
+    friend bool operator==(const publish_datasets_response&,
+                           const publish_datasets_response&) = default;
 };
 
+/**
+ * @brief The members of publish_datasets_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_datasets_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"dataset_ids", &publish_datasets_request::dataset_ids},
+        ::ores::utility::codec::field{"mode", &publish_datasets_request::mode},
+        ::ores::utility::codec::field{"published_by", &publish_datasets_request::published_by},
+        ::ores::utility::codec::field{"resolve_dependencies",
+                                      &publish_datasets_request::resolve_dependencies},
+    };
 }
+
+/**
+ * @brief The members of publish_datasets_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_datasets_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &publish_datasets_response::success},
+        ::ores::utility::codec::field{"message", &publish_datasets_response::message},
+        ::ores::utility::codec::field{"instance_id", &publish_datasets_response::instance_id},
+        ::ores::utility::codec::field{"datasets_dispatched",
+                                      &publish_datasets_response::datasets_dispatched},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_datasets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::publish_datasets_request& v);
+    static ores::dq::messaging::publish_datasets_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::publish_datasets_request& v);
+    static ores::dq::messaging::publish_datasets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_datasets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::publish_datasets_response& v);
+    static ores::dq::messaging::publish_datasets_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::publish_datasets_response& v);
+    static ores::dq::messaging::publish_datasets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

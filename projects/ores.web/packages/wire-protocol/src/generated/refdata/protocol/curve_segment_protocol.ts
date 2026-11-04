@@ -37,34 +37,6 @@ export interface CurveSegmentWrite {
     curve_definition_id: string;
     segment_type: string;
     position: number;
-    conventions: string | null;
-    pillar_choice: string | null;
-    priority: number | null;
-    min_distance: number | null;
-    projection_curve: string | null;
-    discount_curve: string | null;
-    spot_rate: string | null;
-    projection_curve_domestic: string | null;
-    projection_curve_foreign: string | null;
-    projection_curve_pay: string | null;
-    projection_curve_receive: string | null;
-    projection_curve_long: string | null;
-    projection_curve_short: string | null;
-    reference_curve: string | null;
-    reference_curve_2: string | null;
-    weight_1: number | null;
-    weight_2: number | null;
-    ibor_index: string | null;
-    rfr_curve: string | null;
-    rfr_index: string | null;
-    spread: string | null;
-    base_curve: string | null;
-    base_curve_currency: string | null;
-    numerator_curve: string | null;
-    numerator_curve_currency: string | null;
-    denominator_curve: string | null;
-    denominator_curve_currency: string | null;
-    extrapolate_flat: boolean | null;
 }
 
 export interface CurveSegmentChange {
@@ -233,7 +205,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.curve_segments_events.created',
-    updated: 'refdata.v1.curve_segments_events.updated',
-    deleted: 'refdata.v1.curve_segments_events.deleted',
+    created: 'refdata.v1.events.curve_segments.created',
+    updated: 'refdata.v1.events.curve_segments.updated',
+    deleted: 'refdata.v1.events.curve_segments.deleted',
 } as const;

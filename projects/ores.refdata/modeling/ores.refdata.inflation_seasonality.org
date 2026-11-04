@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 48BD0237-EAC0-4536-9CBE-3541954DD9AE
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.inflation_seasonality
+#+description: Codegen entity model for the refdata =inflation_seasonality= table. One part of an inflation curve: the base date and frequency of the seasonality adjustment it applies.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The base date and frequency of an ORE inflation curve's seasonality adjustment.
+#+entity_singular: inflation_seasonality
+#+entity_plural: inflation_seasonalities
+#+entity_title: Inflation Seasonality
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+ORE's =seasonalityType= requires =BaseDate=, =Frequency= and =Factors=
+together. The inflation curve held them as =has_seasonality= and two nullable
+columns, which could say a curve has a seasonality with no base date. A row of
+this part is the seasonality: it exists only where the curve states one, so its
+presence replaces the flag, and its base date and frequency are required.
+
+The factors stay rows of =inflation_seasonality_factor=, keyed by the same
+curve entry. The export refuses factors with no seasonality. ORE allows a
+seasonality whose =Factors= holds no =Factor=, so the part does not require one.
+
+A curve entry holds at most one row of this part, so the generated table adds
+the unique index on the live rows of =(tenant_id, curve_definition_id)=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:unique:   true
+:END:
+
+The curve entry this part belongs to, as the inflation curve row and its
+factors are keyed.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** base_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The date the seasonality factors start from, as ORE's =BaseDate=.
+
+#+begin_src cpp :name generator
+std::string("2020-01-01")
+#+end_src
+
+** frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The period each factor covers, as ORE's =Frequency=.
+
+#+begin_src cpp :name generator
+std::string("Monthly")
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_inflation_seasonalities_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+** Checks
+
+| expression         |
+|--------------------|
+| "base_date" <> ''  |
+| "frequency" <> ''  |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: inflation_seasonality
+:entity_plural_short:   inflation_seasonalities
+:entity_singular_words: inflation seasonality
+:entity_plural_words:   inflation seasonalities
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C5C7E70-9DBE-4E11-B797-A85FB0C602A1][ores.refdata.inflation_curve_config]] — the curve this seasonality belongs to.
+- [[id:34F339B8-5C3B-4E10-BAC3-5D0FB67BA2F7][ores.refdata.inflation_seasonality_factor]] — its factors.
+- [[id:06F7D57F-82C7-440D-91D7-54EED11EBB85][Split the swaption smile and the inflation seasonality]] — the task that introduced it.

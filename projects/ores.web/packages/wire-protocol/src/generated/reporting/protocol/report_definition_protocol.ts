@@ -46,6 +46,7 @@ export interface ReportDefinitionWrite {
     pre_processing: string;
     prepared_input_key: string;
     post_processing: string;
+    skipped_families: string;
     is_official: boolean;
     regulatory_book_type: string | null;
     cut_kind_code: string | null;
@@ -223,7 +224,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'reporting.v1.report_definitions_events.created',
-    updated: 'reporting.v1.report_definitions_events.updated',
-    deleted: 'reporting.v1.report_definitions_events.deleted',
+    created: 'reporting.v1.events.report_definitions.created',
+    updated: 'reporting.v1.events.report_definitions.updated',
+    deleted: 'reporting.v1.events.report_definitions.deleted',
 } as const;

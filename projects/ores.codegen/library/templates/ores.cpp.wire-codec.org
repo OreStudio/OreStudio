@@ -4,13 +4,13 @@
 #+title: ores.cpp.wire-codec
 #+description: A domain type's own JSON and MessagePack functions, generated from its field list.
 #+type: facet
-#+model_types: domain_entity junction operation family
+#+model_types: domain_entity junction operation family field_group
 #+default: disabled
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-10-29
-#+updated: 2026-10-29
+#+updated: 2026-11-03
 
 This page is the node for the =ores.cpp.wire-codec= facet of the codegen
 template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
@@ -20,9 +20,11 @@ table to them.
 
 * Summary
 
-Two templates generating a type's wire codec: the header that states the four
-functions and the =wire_traits= specialisation that names them, and the
-translation unit that holds the field list and the four definitions.
+Templates generating a type's wire codec: the header that states the four
+functions and the =wire_traits= specialisation that names them, the
+translation unit that holds the field list and the four definitions, and the
+tests that require each type and each protocol message to read back what it
+wrote.
 
 * The ores.cpp.wire-codec facet
 
@@ -55,6 +57,8 @@ what =rfl::Skip= does for the reflector this replaces.
 | [[id:9A5DB007-BF55-43DC-9C2F-479A501BA44A][ores.cpp.wire-codec.codec_header]] | Declares a type's four wire functions and the wire_traits specialisation naming them. =wire-codec= facet. |
 | [[id:82D600B6-D48F-4BED-B4CB-BFF0DFCEC5B0][ores.cpp.wire-codec.codec_impl]] | States a type's field list and defines its four wire functions over it. =wire-codec= facet. |
 | [[id:6A583145-C60B-4EDC-A17E-03226578C168][ores.cpp.wire-codec.protocol_codec_impl]] | Defines each protocol message's four wire functions. =wire-codec= facet. |
+| [[id:CD30006E-A327-4254-8BA0-A3FF95CD51A6][ores.cpp.wire-codec.protocol_roundtrip_tests]] | Requires each protocol message to read back exactly what its wire codec wrote, in JSON and in MessagePack. =wire-codec= facet. |
+| [[id:32E1CFE6-AD54-4DB9-9F2D-14504A2124DA][ores.cpp.wire-codec.roundtrip_tests]] | Requires a type to read back exactly what its wire codec wrote, in JSON and in MessagePack. =wire-codec= facet. |
 
 * See also
 

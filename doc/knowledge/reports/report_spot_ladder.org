@@ -1,0 +1,249 @@
+:PROPERTIES:
+:ID: DE8B8E26-DD38-4686-AE79-831083B0351C
+:END:
+#+title: Bump and Reprice Spot Ladder
+#+description: The full forward curve of a currency pair, every tenor's outright rate, read from the live cut rather than from a valuation, for a desk quoting and hedging at a named tenor.
+#+type: report
+#+level: cross
+#+filetags: :report:trading-desk:market-data:intraday:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+report_code: spot_ladder
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Bump and Reprice Spot Ladder. It states the full forward curve of a currency pair, every tenor's
+outright rate, so a desk reads the whole curve while it quotes and hedges at a
+named tenor. The trading desk reads it, on the book scope, and its methodology is
+audit-derived. It holds a never firing schedule, so it is inactive until a person
+activates it, and then a person asks for one while quoting. It leaves the
+engine's own output archive behind and records the cut its run minted. The result
+store that would carry the rows is not built, so a reader opens the CSV files in
+the archive.
+
+* Purpose
+
+It answers what a currency pair's forward curve is at a tenor the desk names, and
+what the neighbouring tenors are. The decision it feeds is a quote. The desk
+states a forward rate at one tenor, and the ladder tells it whether that tenor
+sits where the curve says it should, and what a hedge at a nearby tenor would
+cost.
+
+The catalogue states the report is read from the live cut and not from a
+valuation, because a desk asks for it in the middle of a quote. It therefore
+holds a schedule and fires only when the definition is activated. A definition
+that fires on its own would produce ladders nobody asked for, at instants nobody
+chose.
+
+The section "What is not built" states what a run of the seeded definition
+actually leaves behind, because the analytic the definition binds inspects the
+book and does not price it.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                  |
+|--------------+--------------------------------------------------------------------------------|
+| trading-desk | The forward rate at the tenor being quoted, and the tenors either side of it, so the desk prices a quote and places a hedge against one curve. |
+
+* Frequency
+
+Cycle =intraday=, started by a person. The definition is seeded with the
+expression =0 0 31 2 *=, which can never fire, so the definition is inactive
+until a person activates it. Once it is active, a person asks for a run while
+quoting and hedging at a named tenor.
+
+The concurrency policy is =skip=. A firing that arrives while a run of the same
+definition is in flight is dropped.
+
+The definition states =cut_kind_code= =LIVE=. A LIVE cut mints at the instant the
+run begins and carries the indicative label.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value             |
+|-----------+-------------------|
+| Cycle     | intraday          |
+| Frequency | on demand         |
+| Batch     | none              |
+| Owner     | market-risk       |
+
+* Inputs
+
+- Trades selected by scope. The scope shape is =book=.
+- Market data at the instant the run starts. The run mints a LIVE cut, which
+  holds what the store held then, and the curve the run builds comes from that
+  body.
+- The risk report configuration the definition binds, =Portfolio details -
+  Global Portfolio=. The row states the market data type =live= and the base
+  currency, which is the entity's.
+- The engine settings row the definition binds. The pricing engine for a live
+  definition is =Intraday Indicative=.
+
+A definition binds six configuration documents, one per configuration type. The
+six codes are =conventions=, =curve_configuration=, =todays_market=,
+=pricing_engines=, =risk_report_config= and =engine_settings=. A definition that
+omits one of the first five cannot run, because ORE reads all of them before it
+prices.
+
+* Outputs
+
+The run produces the engine's own output archive. The archive holds the CSV
+artefacts of the one bound analytic, =portfolioDetails=. Those files are
+=marketObjects.csv= and =riskFactors.csv=. The run also records the cut it minted,
+with the cut's identity, its label, its kind and its instant.
+
+The rows a reader would query are a later phase. The result store is designed on
+[[file:../architecture/report_post_processing.org][Report post-processing]] and
+is not built, so a reader opens the CSV files in the archive.
+
+* Measures
+
+The set is the catalogue's for this report. The definitions are on
+[[file:../domain/risk_reporting.org][Risk reporting]] and are not repeated here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure              | Meaning                                                                 |
+|----------------------+-------------------------------------------------------------------------|
+| Forward outright rate | The rate at which a currency pair can be bought or sold for a stated tenor, as the curve states it. |
+| Swap points          | The difference between the forward rate and the spot rate at that tenor, where the desk reads the ladder that way. |
+| Forward points       | The same difference read for a forward outright, where the desk reads the ladder that way. |
+
+The aggregation can be out of today, out of tomorrow or out of spot. The choice
+states the date the points are counted from, and a reader who compares two
+ladders states which one the ladder was built on.
+
+* Columns and sections
+
+The analytic writes two files. The tables below state the columns of those files,
+as
+[[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] lists them. The
+values in both files are names, not amounts.
+
+=marketObjects.csv= holds the market objects a portfolio depends on, one row for
+each kind, with the objects of that kind.
+
+#+ATTR_HTML: :class hug-leading
+| Column           | Kind | What it holds                                              |
+|------------------+------+------------------------------------------------------------|
+| MarketObjectType | text | The kind of market object, and the key of the row.         |
+| MarketObjectName | text | The name of one object of that kind, so the row states which curve, index or surface the book reads. |
+
+=riskFactors.csv= holds the risk factors a portfolio depends on, one row for each
+kind, with the factors of that kind.
+
+#+ATTR_HTML: :class hug-leading
+| Column         | Kind | What it holds                                                |
+|----------------+------+--------------------------------------------------------------|
+| RiskFactorType | text | The kind of risk factor, and the key of the row.             |
+| RiskFactorName | text | The name of one factor of that kind, so the row states which factor key the book is exposed to. |
+
+Neither file carries a column for a tenor, a rate or a points figure. The two
+files list names, so the reader of a run of the seeded definition learns which
+objects and which factors the book reads, and not what the curve states.
+
+* ORE configuration
+
+The configuration binds one analytic. The fragment is trimmed from
+=external/ore/examples/Legacy/Example_74/Input/ore.xml=.
+
+#+begin_src xml
+<Analytic type="portfolioDetails">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="riskFactorFileName">riskFactors.csv</Parameter>
+  <Parameter name="marketObjectFileName">marketObjects.csv</Parameter>
+</Analytic>
+#+end_src
+
+The two parameters name the two output files. =portfolioDetails= is the analytic
+a report asks for when it inspects data rather than prices it, because ORE needs
+at least one analytic in the document and a report of this kind has no valuation
+to request.
+
+* Parameters
+
+A definition of this report states the rows below. The values are the seeded
+ones; the domains are the ones the engine and the classification taxonomy fix.
+The mechanism is on
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                       | Domain                | Seeded value      | Meaning                                              |
+|---------------------------------+-----------------------+-------------------+------------------------------------------------------|
+| cut_kind_code                   | a kind of cut         | LIVE              | The kind of cut the run mints at the instant it starts. |
+| market_data_type                | live, eod or date     | live              | The market data the run reads.                       |
+| base_currency                   | ISO 4217 code         | the entity's      | The currency the figures are expressed in.           |
+| portfolioDetails.riskFactorFileName  | a file name      | riskFactors.csv   | The file the risk factors are written to.            |
+| portfolioDetails.marketObjectFileName | a file name     | marketObjects.csv | The file the market objects are written to.           |
+
+* A worked read
+
+A person reads this report at the screen in the order below. No run has produced
+rows yet, so the steps name the files and the comparisons and quote no figure.
+
+1. Open the archive the run recorded and take =riskFactors.csv= first. Read the
+   =RiskFactorType= column to see which kinds of factor the book depends on, and
+   the =RiskFactorName= column to see which factor keys sit under each kind.
+2. Find the rows whose type states a discount curve or a yield curve. Those rows
+   are the curve factors, and the names in them carry the currency and the index
+   of each curve.
+3. Find the rows whose type states an FX spot. The name states the currency pair,
+   so a reader connects the ladder to the pair the desk is quoting.
+4. Open =marketObjects.csv= and read =MarketObjectType= against
+   =MarketObjectName=. The objects of the curve kind are the curves the run
+   built, and a reader matches each one to the factor rows of step 2.
+5. Compare the curve names in the two files. A curve the market objects list and
+   the risk factors do not is a curve the book reads and does not address, and it
+   is the first thing a reader checks before asking for a rate.
+6. Look for a column that states a tenor, a rate, a discount factor or a points
+   figure. No such column exists in either file, so the ladder of rates a desk
+   asked for is not in the archive.
+7. Compare the set of market objects with the pair the desk named. If the pair is
+   absent from both files, the book reads no curve for it, and a ladder for that
+   pair cannot come from this book.
+
+* What is not built
+
+- No seeded analytic writes a ladder of forward outrights per tenor.
+- The forward rates come from the curve the run builds. ORE writes them as the
+  curve's quotes and discount factors, in =curves.csv=, which only the =curves=
+  analytic writes.
+- The definition binds the portfolio details, so the seeded report lists the
+  market objects the book reads and not a ladder of rates.
+- The dataset holds no volatility market data. Its 420 seeded quotes are all
+  =IR_SWAP/RATE/...=, with no =FX_OPTION/RATE_LNVOL= quote and no volatility
+  surface configuration. so a volatility factor has nothing to shift, and no volatility
+  sensitivity can be computed until the store holds that data.
+- The result store is not built, so a reader opens the CSV files in the archive.
+- No shift size is stated anywhere in the store, and no stored shape holds a
+  bucketed ladder.
+
+* Test coverage
+
+The =portfolioDetails= analytic type and the two file types are in the store, and
+the worked configuration the fragment comes from is vendored.
+
+The definition cannot run until a person activates it, because its schedule
+expression never fires. A test run therefore starts from a person or from a
+direct invocation, and it proves the gather, the cut and the generated run
+document. It proves no ladder of rates, because the bound analytic writes names.
+The pricing phase also stops where the engine needs a volatility, so a run of this
+definition records the refusal and not a priced book.
+
+* Related
+
+- [[file:./reports.org][Reports]], the inventory this page is listed in.
+- [[file:./report_spot_greeks.org][Bump and Reprice Spot Greeks]], the spot risk view of the same cut.
+- [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what a LIVE cut holds and what it does not.
+- [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], how the definition and its schedule are seated.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
+- [[file:../architecture/report_compute_handoff.org][Report compute handoff]], how the run reaches the grid.
+- [[file:../architecture/report_post_processing.org][Report post-processing]], the store that would hold the rows.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]]
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]]
+
+* See also
+
+
+- [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — the structure note that orders this cluster, and where to read this page in it.
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine whose =portfolioDetails= analytic writes these two files.

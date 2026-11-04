@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 17EB5750-8798-4AEE-8877-771E9B22C55D
+:END:
+#+title: Task: Seed five years of public fixings from a DQ dataset
+#+description: A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today.
+#+type: task
+#+level: s1
+#+filetags: :seed_the_public_fixings_history:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new environment gets years of public fixings without calling the publishers' API. A DQ dataset holds a static snapshot of five years of daily fixings for every supported currency, and each environment loads it through DQ publishing. The snapshot is refreshed only now and then, by hand. Everything after its last day is the adapter's job: for each item it fetches from the latest stored fixing to today, whether the gap is a day or months. The derived vol source and the GARCH calibration need this depth of history.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- A DQ dataset holds a static snapshot of five years of daily fixings for every catalogued provider and pair, with the date it was taken. No scheduled job writes it; a documented command refreshes it when someone chooses to.
+- DQ publishing loads the dataset as durable fixing ticks with their provider, time and credit, the same rows the adapter would write.
+- The public sources adapter fetches, for each item, only the days from its latest stored fixing to today, so an environment loaded from an old snapshot catches up in one fetch per item.
+- Each provider's terms allow the dataset to be redistributed in the public repository, or that provider is left out of the dataset and stays adapter-only.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Why: every environment backfills its window from the publishers' API when
+  it starts. With about ten environments recreated often, the same history is
+  fetched again and again, and a rate limit or a ban is likely soon.
+- This changes the decision of 2026-10-28 in
+  [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]],
+  that DQ is for canned data and the adapter carries the public sources. Both
+  hold after this task: the dataset is a canned history up to its last day, and
+  the adapter carries every day after it. The note records the change.
+- A dataset in the repository is published, not only stored, because the
+  repository is public. Storage permission is not enough: each provider's terms
+  must allow redistribution. The ECB allows reuse of unmodified statistics with
+  the credit "Source: ECB statistics". A provider whose terms do not allow it
+  stays adapter-only.
+- The snapshot is static and refreshed rarely, by a command someone runs, not
+  by a nightly job. An old snapshot is not a fault: the adapter fills the gap.
+  A refresh only shortens the gap the environments fetch.
+- The fixings are durable and keyed by item, provider and date, so a second
+  load of the same days is a no-op, and the snapshot and the adapter can overlap.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

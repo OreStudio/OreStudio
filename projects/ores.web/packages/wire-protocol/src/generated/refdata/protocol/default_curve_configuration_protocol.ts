@@ -38,26 +38,10 @@ export interface DefaultCurveConfigurationWrite {
     is_inline: boolean;
     priority: number | null;
     default_curve_type: string | null;
-    discount_curve: string | null;
     day_counter: string | null;
     recovery_rate: string | null;
-    start_date: string | null;
-    has_quotes: boolean;
-    benchmark_curve: string | null;
-    reinterpreted_yield_curve: string | null;
-    source_curve: string | null;
-    pillars: string | null;
-    spot_lag: number | null;
-    calendar: string | null;
-    conventions: string | null;
     extrapolation: string | null;
-    running_spread: string | null;
-    index_term: string | null;
-    imply_default_from_market: string | null;
     allow_negative_rates: string | null;
-    price_is_upfront: string | null;
-    initial_state: string | null;
-    states: string | null;
     position: number;
 }
 
@@ -232,7 +216,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.default_curve_configurations_events.created',
-    updated: 'refdata.v1.default_curve_configurations_events.updated',
-    deleted: 'refdata.v1.default_curve_configurations_events.deleted',
+    created: 'refdata.v1.events.default_curve_configurations.created',
+    updated: 'refdata.v1.events.default_curve_configurations.updated',
+    deleted: 'refdata.v1.events.default_curve_configurations.deleted',
 } as const;

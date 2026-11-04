@@ -217,7 +217,7 @@ function render(permissions: readonly string[]): string {
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter>
-                    <SubscriptionsPage partyId={PARTY} />
+                    <SubscriptionsPage partyId={PARTY} mode="tenant-administration" />
                 </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,

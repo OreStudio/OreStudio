@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: E7EC122B-4E52-5FC5-BA1D-E8BCDB553B8A
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the default_curve_yield_reinterpretations commands from the shell?
+#+description: Every command the default_curve_yield_reinterpretations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:default_curve_yield_reinterpretations:
+
+This file documents the default_curve_yield_reinterpretations resource at the shell, one section per command. Every command is a subcommand of =default_curve_yield_reinterpretations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5A0ED52F-AC8A-54E7-8A2E-189DE98E87E3
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations.list=.
+
+#+name: default_curve_yield_reinterpretations-list
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-list.ores :exports none
+default_curve_yield_reinterpretations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2B6E39AE-9B21-5D9E-9715-86B41F7DD898
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations get <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations.get=.
+
+#+name: default_curve_yield_reinterpretations-get
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-get.ores :exports none
+default_curve_yield_reinterpretations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A928674F-A27A-5673-9C5C-7082618E07FC
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations.get_many=.
+
+#+name: default_curve_yield_reinterpretations-get-many
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-get-many.ores :exports none
+default_curve_yield_reinterpretations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C0D23960-3EE5-5329-9408-A727FEB9D147
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations add <default_curve_configuration_id> <reinterpreted_yield_curve> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations.put=.
+
+#+name: default_curve_yield_reinterpretations-add
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-add.ores :exports none
+default_curve_yield_reinterpretations add 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 08677ABD-AFAE-556D-97F6-343305E11A06
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations set <id> <default_curve_configuration_id> <reinterpreted_yield_curve> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations.put=.
+
+#+name: default_curve_yield_reinterpretations-set
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-set.ores :exports none
+default_curve_yield_reinterpretations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 9791929B-EEFE-5FC8-826D-9CB942AE509E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations put-many --count <n> <id> <default_curve_configuration_id> <reinterpreted_yield_curve> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations.put_many=.
+
+#+name: default_curve_yield_reinterpretations-put-many
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-put-many.ores :exports none
+default_curve_yield_reinterpretations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 2A46B0EC-16C3-57C4-8BBC-2F21039CD1D0
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations.delete=.
+
+#+name: default_curve_yield_reinterpretations-delete
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-delete.ores :exports none
+default_curve_yield_reinterpretations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 99F2CE1E-8353-5873-9DF6-F6B591EEAD3B
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations.delete_many=.
+
+#+name: default_curve_yield_reinterpretations-delete-many
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-delete-many.ores :exports none
+default_curve_yield_reinterpretations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C7D868B5-893A-5B02-88E0-683EBFB05B02
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations_versions.list=.
+
+#+name: default_curve_yield_reinterpretations-versions
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-versions.ores :exports none
+default_curve_yield_reinterpretations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: ED863E0D-7CD2-5B0E-8909-517BFE028E72
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_yield_reinterpretations version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_yield_reinterpretations_versions.get=.
+
+#+name: default_curve_yield_reinterpretations-version
+#+begin_src ores-shell :tangle default_curve_yield_reinterpretations-version.ores :exports none
+default_curve_yield_reinterpretations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

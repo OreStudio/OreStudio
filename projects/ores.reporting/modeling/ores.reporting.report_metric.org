@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BD6335F9-290A-4BE2-8F96-49D047DFF106
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.report_metric
 #+description: Codegen entity model for the reporting =report_metric= table. One figure a run produced, at one subject and one observation date.
@@ -11,7 +12,7 @@
 #+entity_plural: report_metrics
 #+entity_title: Report Metric
 #+created: 2026-10-27
-#+updated: 2026-10-31
+#+updated: 2026-11-01
 
 One figure a run produced, at one subject and one observation date, with the
 qualifiers that say what the figure is about. Every family whose row is keys,
@@ -61,6 +62,16 @@ The party that owns the run.
 
 The run that produced the figure.
 
+** result_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The compute result whose output states the figure. A run fans out into one result
+for each workunit, and each result writes its own files.
+
 ** report_definition_id
 :PROPERTIES:
 :type:         uuid
@@ -73,7 +84,6 @@ The report the run came from, so a definition's runs are one query.
 :PROPERTIES:
 :type:         text
 :cpp_type:     std::string
-:natural_key:  true
 :filterable:   true
 :END:
 
@@ -84,7 +94,6 @@ is what tells a reader which reader produced the row.
 :PROPERTIES:
 :type:         text
 :cpp_type:     std::string
-:natural_key:  true
 :END:
 
 The kind of record the figure is about: trade, netting_set, portfolio, or row
@@ -94,7 +103,6 @@ when the family states no record.
 :PROPERTIES:
 :type:         text
 :cpp_type:     std::string
-:natural_key:  true
 :filterable:   true
 :END:
 
@@ -173,9 +181,21 @@ The figure, as the engine stated it and never formatted.
 :PROPERTIES:
 :type:         text
 :cpp_type:     std::string
+:natural_key:  true
 :END:
 
-The family and the row the reader read, for provenance.
+The file the reader read, as the engine named it.
+
+** line
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:natural_key:  true
+:END:
+
+The line of the file that states the figure, counting the heading as line one. A
+file such as a sensitivity states many rows with the same trade, date and
+heading, so only the file and the line tell one figure from another.
 
 * SQL
 
@@ -194,20 +214,20 @@ The family and the row the reader read, for provenance.
 
 ** Bitemporal natural keys
 
-A run's figures are its own. The insert trigger closes the current row of the
-same key, and the key names the run, so posting one run never closes another
-run's rows.
+A run's figures are its own. The key is where the engine stated the figure: the
+result, the file, the line and the heading. The insert trigger closes the current
+row of the same key, and the key names the run, so posting one run never closes
+another run's rows.
 
 | column             | nullable |
 |--------------------+----------|
 | party_id           | false    |
 | report_instance_id | false    |
+| result_id          | false    |
+| source             | false    |
+| line               | false    |
 | as_of              | false    |
-| family             | false    |
-| subject_type       | false    |
-| subject_id         | false    |
 | measure            | false    |
-| currency           | false    |
 
 * C++
 

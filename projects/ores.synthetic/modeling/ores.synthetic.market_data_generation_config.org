@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8771702C-0BC4-4955-8D7E-DDBE2497D5B3
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.market_data_generation_config
 #+description: Codegen entity model for the synthetic market_data_generation_config table; a named, system-owned recipe for generating synthetic market data.

@@ -44,6 +44,9 @@ namespace ores::trading::messaging {
 struct balance_guaranteed_swap_tranche_key {
     boost::uuids::uuid trade_id;
     int sequence_number;
+
+    friend bool operator==(const balance_guaranteed_swap_tranche_key&,
+                           const balance_guaranteed_swap_tranche_key&) = default;
 };
 
 struct balance_guaranteed_swap_tranche_write {
@@ -53,27 +56,42 @@ struct balance_guaranteed_swap_tranche_write {
     std::optional<std::string> description;
     std::string security_id;
     std::int64_t seniority;
+
+    friend bool operator==(const balance_guaranteed_swap_tranche_write&,
+                           const balance_guaranteed_swap_tranche_write&) = default;
 };
 
 struct balance_guaranteed_swap_tranche_change {
     balance_guaranteed_swap_tranche_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const balance_guaranteed_swap_tranche_change&,
+                           const balance_guaranteed_swap_tranche_change&) = default;
 };
 
 struct balance_guaranteed_swap_tranche_removal {
     balance_guaranteed_swap_tranche_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const balance_guaranteed_swap_tranche_removal&,
+                           const balance_guaranteed_swap_tranche_removal&) = default;
 };
 
 struct balance_guaranteed_swap_tranche_lookup {
     balance_guaranteed_swap_tranche_key key;
     std::optional<ores::trading::domain::balance_guaranteed_swap_tranche>
         balance_guaranteed_swap_tranche;
+
+    friend bool operator==(const balance_guaranteed_swap_tranche_lookup&,
+                           const balance_guaranteed_swap_tranche_lookup&) = default;
 };
 
 struct balance_guaranteed_swap_tranches_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const balance_guaranteed_swap_tranches_filter&,
+                           const balance_guaranteed_swap_tranches_filter&) = default;
 };
 
 struct balance_guaranteed_swap_tranche_event {
@@ -83,17 +101,26 @@ struct balance_guaranteed_swap_tranche_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const balance_guaranteed_swap_tranche_event&,
+                           const balance_guaranteed_swap_tranche_event&) = default;
 };
 
 struct balance_guaranteed_swap_tranche_version_key {
     balance_guaranteed_swap_tranche_key balance_guaranteed_swap_tranche;
     std::uint32_t version;
+
+    friend bool operator==(const balance_guaranteed_swap_tranche_version_key&,
+                           const balance_guaranteed_swap_tranche_version_key&) = default;
 };
 
 struct balance_guaranteed_swap_tranche_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const balance_guaranteed_swap_tranche_versions_filter&,
+                           const balance_guaranteed_swap_tranche_versions_filter&) = default;
 };
 
 struct list_balance_guaranteed_swap_tranches_request {
@@ -112,6 +139,9 @@ struct list_balance_guaranteed_swap_tranches_request {
     ores::utility::domain::order order;
     std::optional<balance_guaranteed_swap_tranches_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_balance_guaranteed_swap_tranches_request&,
+                           const list_balance_guaranteed_swap_tranches_request&) = default;
 };
 
 struct list_balance_guaranteed_swap_tranches_response {
@@ -119,6 +149,9 @@ struct list_balance_guaranteed_swap_tranches_response {
     std::vector<ores::trading::domain::balance_guaranteed_swap_tranche>
         balance_guaranteed_swap_tranches;
     std::uint64_t total;
+
+    friend bool operator==(const list_balance_guaranteed_swap_tranches_response&,
+                           const list_balance_guaranteed_swap_tranches_response&) = default;
 };
 
 struct get_balance_guaranteed_swap_tranche_request {
@@ -133,12 +166,18 @@ struct get_balance_guaranteed_swap_tranche_request {
      */
     static constexpr bool requires_session = true;
     balance_guaranteed_swap_tranche_key key;
+
+    friend bool operator==(const get_balance_guaranteed_swap_tranche_request&,
+                           const get_balance_guaranteed_swap_tranche_request&) = default;
 };
 
 struct get_balance_guaranteed_swap_tranche_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::balance_guaranteed_swap_tranche>
         balance_guaranteed_swap_tranche;
+
+    friend bool operator==(const get_balance_guaranteed_swap_tranche_response&,
+                           const get_balance_guaranteed_swap_tranche_response&) = default;
 };
 
 struct get_many_balance_guaranteed_swap_tranches_request {
@@ -153,11 +192,17 @@ struct get_many_balance_guaranteed_swap_tranches_request {
      */
     static constexpr bool requires_session = true;
     std::vector<balance_guaranteed_swap_tranche_key> keys;
+
+    friend bool operator==(const get_many_balance_guaranteed_swap_tranches_request&,
+                           const get_many_balance_guaranteed_swap_tranches_request&) = default;
 };
 
 struct get_many_balance_guaranteed_swap_tranches_response {
     ores::utility::domain::result result;
     std::vector<balance_guaranteed_swap_tranche_lookup> entries;
+
+    friend bool operator==(const get_many_balance_guaranteed_swap_tranches_response&,
+                           const get_many_balance_guaranteed_swap_tranches_response&) = default;
 };
 
 struct put_balance_guaranteed_swap_tranche_request {
@@ -173,12 +218,18 @@ struct put_balance_guaranteed_swap_tranche_request {
     static constexpr bool requires_session = true;
     balance_guaranteed_swap_tranche_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_balance_guaranteed_swap_tranche_request&,
+                           const put_balance_guaranteed_swap_tranche_request&) = default;
 };
 
 struct put_balance_guaranteed_swap_tranche_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::balance_guaranteed_swap_tranche>
         balance_guaranteed_swap_tranche;
+
+    friend bool operator==(const put_balance_guaranteed_swap_tranche_response&,
+                           const put_balance_guaranteed_swap_tranche_response&) = default;
 };
 
 struct put_many_balance_guaranteed_swap_tranches_request {
@@ -194,12 +245,18 @@ struct put_many_balance_guaranteed_swap_tranches_request {
     static constexpr bool requires_session = true;
     std::vector<balance_guaranteed_swap_tranche_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_balance_guaranteed_swap_tranches_request&,
+                           const put_many_balance_guaranteed_swap_tranches_request&) = default;
 };
 
 struct put_many_balance_guaranteed_swap_tranches_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::balance_guaranteed_swap_tranche>
         balance_guaranteed_swap_tranches;
+
+    friend bool operator==(const put_many_balance_guaranteed_swap_tranches_response&,
+                           const put_many_balance_guaranteed_swap_tranches_response&) = default;
 };
 
 struct delete_balance_guaranteed_swap_tranche_request {
@@ -215,10 +272,16 @@ struct delete_balance_guaranteed_swap_tranche_request {
     static constexpr bool requires_session = true;
     balance_guaranteed_swap_tranche_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_balance_guaranteed_swap_tranche_request&,
+                           const delete_balance_guaranteed_swap_tranche_request&) = default;
 };
 
 struct delete_balance_guaranteed_swap_tranche_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_balance_guaranteed_swap_tranche_response&,
+                           const delete_balance_guaranteed_swap_tranche_response&) = default;
 };
 
 struct delete_many_balance_guaranteed_swap_tranches_request {
@@ -234,10 +297,16 @@ struct delete_many_balance_guaranteed_swap_tranches_request {
     static constexpr bool requires_session = true;
     std::vector<balance_guaranteed_swap_tranche_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_balance_guaranteed_swap_tranches_request&,
+                           const delete_many_balance_guaranteed_swap_tranches_request&) = default;
 };
 
 struct delete_many_balance_guaranteed_swap_tranches_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_balance_guaranteed_swap_tranches_response&,
+                           const delete_many_balance_guaranteed_swap_tranches_response&) = default;
 };
 
 struct list_by_trade_id_balance_guaranteed_swap_tranches_request {
@@ -257,6 +326,10 @@ struct list_by_trade_id_balance_guaranteed_swap_tranches_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<balance_guaranteed_swap_tranches_filter> filter;
+
+    friend bool
+    operator==(const list_by_trade_id_balance_guaranteed_swap_tranches_request&,
+               const list_by_trade_id_balance_guaranteed_swap_tranches_request&) = default;
 };
 
 struct list_by_trade_id_balance_guaranteed_swap_tranches_response {
@@ -264,6 +337,10 @@ struct list_by_trade_id_balance_guaranteed_swap_tranches_response {
     std::vector<ores::trading::domain::balance_guaranteed_swap_tranche>
         balance_guaranteed_swap_tranches;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_trade_id_balance_guaranteed_swap_tranches_response&,
+               const list_by_trade_id_balance_guaranteed_swap_tranches_response&) = default;
 };
 
 struct list_balance_guaranteed_swap_tranche_versions_request {
@@ -282,12 +359,18 @@ struct list_balance_guaranteed_swap_tranche_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<balance_guaranteed_swap_tranche_versions_filter> filter;
+
+    friend bool operator==(const list_balance_guaranteed_swap_tranche_versions_request&,
+                           const list_balance_guaranteed_swap_tranche_versions_request&) = default;
 };
 
 struct list_balance_guaranteed_swap_tranche_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::balance_guaranteed_swap_tranche> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_balance_guaranteed_swap_tranche_versions_response&,
+                           const list_balance_guaranteed_swap_tranche_versions_response&) = default;
 };
 
 struct get_balance_guaranteed_swap_tranche_version_request {
@@ -302,11 +385,17 @@ struct get_balance_guaranteed_swap_tranche_version_request {
      */
     static constexpr bool requires_session = true;
     balance_guaranteed_swap_tranche_version_key key;
+
+    friend bool operator==(const get_balance_guaranteed_swap_tranche_version_request&,
+                           const get_balance_guaranteed_swap_tranche_version_request&) = default;
 };
 
 struct get_balance_guaranteed_swap_tranche_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::balance_guaranteed_swap_tranche> version;
+
+    friend bool operator==(const get_balance_guaranteed_swap_tranche_version_response&,
+                           const get_balance_guaranteed_swap_tranche_version_response&) = default;
 };
 
 /**
@@ -319,11 +408,11 @@ struct get_balance_guaranteed_swap_tranche_version_response {
  */
 namespace balance_guaranteed_swap_tranche_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.balance_guaranteed_swap_tranches_events.created";
+    "trading.v1.events.balance_guaranteed_swap_tranches.created";
 inline constexpr std::string_view updated =
-    "trading.v1.balance_guaranteed_swap_tranches_events.updated";
+    "trading.v1.events.balance_guaranteed_swap_tranches.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.balance_guaranteed_swap_tranches_events.deleted";
+    "trading.v1.events.balance_guaranteed_swap_tranches.deleted";
 }
 /**
  * @brief The members of balance_guaranteed_swap_tranche_key, named as the wire names them and in

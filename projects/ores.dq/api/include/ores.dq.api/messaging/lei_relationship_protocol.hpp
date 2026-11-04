@@ -43,15 +43,23 @@ namespace ores::dq::messaging {
 
 struct lei_relationship_key {
     std::string relationship_start_node_node_id;
+
+    friend bool operator==(const lei_relationship_key&, const lei_relationship_key&) = default;
 };
 
 struct lei_relationship_lookup {
     lei_relationship_key key;
     std::optional<ores::dq::domain::lei_relationship> lei_relationship;
+
+    friend bool operator==(const lei_relationship_lookup&,
+                           const lei_relationship_lookup&) = default;
 };
 
 struct lei_relationships_filter {
     std::optional<std::vector<std::string>> relationship_start_node_node_id_one_of;
+
+    friend bool operator==(const lei_relationships_filter&,
+                           const lei_relationships_filter&) = default;
 };
 
 struct lei_relationship_event {
@@ -61,6 +69,8 @@ struct lei_relationship_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const lei_relationship_event&, const lei_relationship_event&) = default;
 };
 
 struct list_lei_relationships_request {
@@ -77,12 +87,18 @@ struct list_lei_relationships_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<lei_relationships_filter> filter;
+
+    friend bool operator==(const list_lei_relationships_request&,
+                           const list_lei_relationships_request&) = default;
 };
 
 struct list_lei_relationships_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::lei_relationship> relationships;
     std::uint64_t total;
+
+    friend bool operator==(const list_lei_relationships_response&,
+                           const list_lei_relationships_response&) = default;
 };
 
 struct get_lei_relationship_request {
@@ -96,11 +112,17 @@ struct get_lei_relationship_request {
      */
     static constexpr bool requires_session = true;
     lei_relationship_key key;
+
+    friend bool operator==(const get_lei_relationship_request&,
+                           const get_lei_relationship_request&) = default;
 };
 
 struct get_lei_relationship_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::lei_relationship> lei_relationship;
+
+    friend bool operator==(const get_lei_relationship_response&,
+                           const get_lei_relationship_response&) = default;
 };
 
 struct get_many_lei_relationships_request {
@@ -114,11 +136,17 @@ struct get_many_lei_relationships_request {
      */
     static constexpr bool requires_session = true;
     std::vector<lei_relationship_key> keys;
+
+    friend bool operator==(const get_many_lei_relationships_request&,
+                           const get_many_lei_relationships_request&) = default;
 };
 
 struct get_many_lei_relationships_response {
     ores::utility::domain::result result;
     std::vector<lei_relationship_lookup> entries;
+
+    friend bool operator==(const get_many_lei_relationships_response&,
+                           const get_many_lei_relationships_response&) = default;
 };
 
 /**
@@ -130,9 +158,9 @@ struct get_many_lei_relationships_response {
  * of them.
  */
 namespace lei_relationship_event_subjects {
-inline constexpr std::string_view created = "dq.v1.lei_relationships_events.created";
-inline constexpr std::string_view updated = "dq.v1.lei_relationships_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.lei_relationships_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.lei_relationships.created";
+inline constexpr std::string_view updated = "dq.v1.events.lei_relationships.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.deleted";
 }
 /**
  * @brief The members of lei_relationship_key, named as the wire names them and in the order

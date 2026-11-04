@@ -26,17 +26,26 @@
 #define ORES_REPORTING_API_MESSAGING_REPORT_CONFIGURATION_PROTOCOL_HPP
 
 #include "ores.reporting.api/domain/report_configuration.hpp"
+#include "ores.reporting.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::messaging {
 
 struct report_configuration_key {
     std::string configuration_type_code;
+
+    friend bool operator==(const report_configuration_key&,
+                           const report_configuration_key&) = default;
 };
 
 struct report_configuration_write {
@@ -44,21 +53,33 @@ struct report_configuration_write {
     boost::uuids::uuid report_definition_id;
     std::string configuration_type_code;
     boost::uuids::uuid configuration_id;
+
+    friend bool operator==(const report_configuration_write&,
+                           const report_configuration_write&) = default;
 };
 
 struct report_configuration_change {
     report_configuration_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const report_configuration_change&,
+                           const report_configuration_change&) = default;
 };
 
 struct report_configuration_removal {
     report_configuration_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const report_configuration_removal&,
+                           const report_configuration_removal&) = default;
 };
 
 struct report_configuration_lookup {
     report_configuration_key key;
     std::optional<ores::reporting::domain::report_configuration> report_configuration;
+
+    friend bool operator==(const report_configuration_lookup&,
+                           const report_configuration_lookup&) = default;
 };
 
 struct report_configurations_filter {
@@ -69,6 +90,9 @@ struct report_configurations_filter {
     std::optional<std::vector<boost::uuids::uuid>> report_definition_id_one_of;
     std::optional<std::vector<std::string>> configuration_type_code_one_of;
     std::optional<std::vector<boost::uuids::uuid>> configuration_id_one_of;
+
+    friend bool operator==(const report_configurations_filter&,
+                           const report_configurations_filter&) = default;
 };
 
 struct report_configuration_event {
@@ -78,17 +102,26 @@ struct report_configuration_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const report_configuration_event&,
+                           const report_configuration_event&) = default;
 };
 
 struct report_configuration_version_key {
     report_configuration_key report_configuration;
     std::uint32_t version;
+
+    friend bool operator==(const report_configuration_version_key&,
+                           const report_configuration_version_key&) = default;
 };
 
 struct report_configuration_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const report_configuration_versions_filter&,
+                           const report_configuration_versions_filter&) = default;
 };
 
 struct list_report_configurations_request {
@@ -106,12 +139,18 @@ struct list_report_configurations_request {
     ores::utility::domain::order order;
     std::optional<report_configurations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_report_configurations_request&,
+                           const list_report_configurations_request&) = default;
 };
 
 struct list_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_configurations_response&,
+                           const list_report_configurations_response&) = default;
 };
 
 struct get_report_configuration_request {
@@ -125,11 +164,17 @@ struct get_report_configuration_request {
      */
     static constexpr bool requires_session = true;
     report_configuration_key key;
+
+    friend bool operator==(const get_report_configuration_request&,
+                           const get_report_configuration_request&) = default;
 };
 
 struct get_report_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_configuration> report_configuration;
+
+    friend bool operator==(const get_report_configuration_response&,
+                           const get_report_configuration_response&) = default;
 };
 
 struct get_many_report_configurations_request {
@@ -143,11 +188,17 @@ struct get_many_report_configurations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<report_configuration_key> keys;
+
+    friend bool operator==(const get_many_report_configurations_request&,
+                           const get_many_report_configurations_request&) = default;
 };
 
 struct get_many_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<report_configuration_lookup> entries;
+
+    friend bool operator==(const get_many_report_configurations_response&,
+                           const get_many_report_configurations_response&) = default;
 };
 
 struct put_report_configuration_request {
@@ -162,11 +213,17 @@ struct put_report_configuration_request {
     static constexpr bool requires_session = true;
     report_configuration_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_report_configuration_request&,
+                           const put_report_configuration_request&) = default;
 };
 
 struct put_report_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_configuration> report_configuration;
+
+    friend bool operator==(const put_report_configuration_response&,
+                           const put_report_configuration_response&) = default;
 };
 
 struct put_many_report_configurations_request {
@@ -181,11 +238,17 @@ struct put_many_report_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<report_configuration_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_report_configurations_request&,
+                           const put_many_report_configurations_request&) = default;
 };
 
 struct put_many_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
+
+    friend bool operator==(const put_many_report_configurations_response&,
+                           const put_many_report_configurations_response&) = default;
 };
 
 struct delete_report_configuration_request {
@@ -200,10 +263,16 @@ struct delete_report_configuration_request {
     static constexpr bool requires_session = true;
     report_configuration_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_report_configuration_request&,
+                           const delete_report_configuration_request&) = default;
 };
 
 struct delete_report_configuration_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_report_configuration_response&,
+                           const delete_report_configuration_response&) = default;
 };
 
 struct delete_many_report_configurations_request {
@@ -219,10 +288,16 @@ struct delete_many_report_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<report_configuration_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_report_configurations_request&,
+                           const delete_many_report_configurations_request&) = default;
 };
 
 struct delete_many_report_configurations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_report_configurations_response&,
+                           const delete_many_report_configurations_response&) = default;
 };
 
 struct list_by_report_definition_id_report_configurations_request {
@@ -242,12 +317,20 @@ struct list_by_report_definition_id_report_configurations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_configurations_filter> filter;
+
+    friend bool
+    operator==(const list_by_report_definition_id_report_configurations_request&,
+               const list_by_report_definition_id_report_configurations_request&) = default;
 };
 
 struct list_by_report_definition_id_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_report_definition_id_report_configurations_response&,
+               const list_by_report_definition_id_report_configurations_response&) = default;
 };
 
 struct list_by_configuration_type_code_report_configurations_request {
@@ -267,12 +350,20 @@ struct list_by_configuration_type_code_report_configurations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_configurations_filter> filter;
+
+    friend bool
+    operator==(const list_by_configuration_type_code_report_configurations_request&,
+               const list_by_configuration_type_code_report_configurations_request&) = default;
 };
 
 struct list_by_configuration_type_code_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_configuration_type_code_report_configurations_response&,
+               const list_by_configuration_type_code_report_configurations_response&) = default;
 };
 
 struct list_by_configuration_id_report_configurations_request {
@@ -292,12 +383,19 @@ struct list_by_configuration_id_report_configurations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_configurations_filter> filter;
+
+    friend bool operator==(const list_by_configuration_id_report_configurations_request&,
+                           const list_by_configuration_id_report_configurations_request&) = default;
 };
 
 struct list_by_configuration_id_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_configuration_id_report_configurations_response&,
+               const list_by_configuration_id_report_configurations_response&) = default;
 };
 
 struct list_report_configuration_versions_request {
@@ -316,12 +414,18 @@ struct list_report_configuration_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_configuration_versions_filter> filter;
+
+    friend bool operator==(const list_report_configuration_versions_request&,
+                           const list_report_configuration_versions_request&) = default;
 };
 
 struct list_report_configuration_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_configuration_versions_response&,
+                           const list_report_configuration_versions_response&) = default;
 };
 
 struct get_report_configuration_version_request {
@@ -336,11 +440,17 @@ struct get_report_configuration_version_request {
      */
     static constexpr bool requires_session = true;
     report_configuration_version_key key;
+
+    friend bool operator==(const get_report_configuration_version_request&,
+                           const get_report_configuration_version_request&) = default;
 };
 
 struct get_report_configuration_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_configuration> version;
+
+    friend bool operator==(const get_report_configuration_version_response&,
+                           const get_report_configuration_version_response&) = default;
 };
 
 /**
@@ -352,11 +462,1056 @@ struct get_report_configuration_version_response {
  * of them.
  */
 namespace report_configuration_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.report_configurations_events.created";
-inline constexpr std::string_view updated = "reporting.v1.report_configurations_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.report_configurations_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.report_configurations.created";
+inline constexpr std::string_view updated = "reporting.v1.events.report_configurations.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.report_configurations.deleted";
+}
+/**
+ * @brief The members of report_configuration_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_configuration_key&) {
+    return std::tuple{
+        utility::codec::field{"configuration_type_code",
+                              &report_configuration_key::configuration_type_code},
+    };
 }
 
+/**
+ * @brief The members of report_configuration_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_configuration_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &report_configuration_write::id},
+        utility::codec::field{"report_definition_id",
+                              &report_configuration_write::report_definition_id},
+        utility::codec::field{"configuration_type_code",
+                              &report_configuration_write::configuration_type_code},
+        utility::codec::field{"configuration_id", &report_configuration_write::configuration_id},
+    };
 }
+
+/**
+ * @brief The members of report_configuration_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_configuration_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &report_configuration_change::write},
+        utility::codec::field{"precondition", &report_configuration_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of report_configuration_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_configuration_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &report_configuration_removal::key},
+        utility::codec::field{"precondition", &report_configuration_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of report_configuration_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_configuration_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &report_configuration_lookup::key},
+        utility::codec::field{"report_configuration",
+                              &report_configuration_lookup::report_configuration},
+    };
+}
+
+/**
+ * @brief The members of report_configurations_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_configurations_filter&) {
+    return std::tuple{
+        utility::codec::field{"report_definition_id",
+                              &report_configurations_filter::report_definition_id},
+        utility::codec::field{"configuration_type_code",
+                              &report_configurations_filter::configuration_type_code},
+        utility::codec::field{"configuration_id", &report_configurations_filter::configuration_id},
+        utility::codec::field{"id_one_of", &report_configurations_filter::id_one_of},
+        utility::codec::field{"report_definition_id_one_of",
+                              &report_configurations_filter::report_definition_id_one_of},
+        utility::codec::field{"configuration_type_code_one_of",
+                              &report_configurations_filter::configuration_type_code_one_of},
+        utility::codec::field{"configuration_id_one_of",
+                              &report_configurations_filter::configuration_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of report_configuration_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_configuration_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &report_configuration_event::event_id},
+        utility::codec::field{"key", &report_configuration_event::key},
+        utility::codec::field{"action", &report_configuration_event::action},
+        utility::codec::field{"version", &report_configuration_event::version},
+        utility::codec::field{"occurred_at", &report_configuration_event::occurred_at},
+        utility::codec::field{"correlation_id", &report_configuration_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of report_configuration_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_configuration_version_key&) {
+    return std::tuple{
+        utility::codec::field{"report_configuration",
+                              &report_configuration_version_key::report_configuration},
+        utility::codec::field{"version", &report_configuration_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of report_configuration_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_configuration_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &report_configuration_versions_filter::version},
+        utility::codec::field{"from_version", &report_configuration_versions_filter::from_version},
+        utility::codec::field{"to_version", &report_configuration_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_report_configurations_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_configurations_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_report_configurations_request::offset},
+        utility::codec::field{"limit", &list_report_configurations_request::limit},
+        utility::codec::field{"order", &list_report_configurations_request::order},
+        utility::codec::field{"filter", &list_report_configurations_request::filter},
+        utility::codec::field{"as_of", &list_report_configurations_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_report_configurations_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_configurations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_report_configurations_response::result},
+        utility::codec::field{"report_configurations",
+                              &list_report_configurations_response::report_configurations},
+        utility::codec::field{"total", &list_report_configurations_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_report_configuration_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_configuration_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_report_configuration_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_report_configuration_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_configuration_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_report_configuration_response::result},
+        utility::codec::field{"report_configuration",
+                              &get_report_configuration_response::report_configuration},
+    };
+}
+
+/**
+ * @brief The members of get_many_report_configurations_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_report_configurations_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_report_configurations_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_report_configurations_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_report_configurations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_report_configurations_response::result},
+        utility::codec::field{"entries", &get_many_report_configurations_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_report_configuration_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_report_configuration_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_report_configuration_request::change},
+        utility::codec::field{"intent", &put_report_configuration_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_report_configuration_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_report_configuration_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_report_configuration_response::result},
+        utility::codec::field{"report_configuration",
+                              &put_report_configuration_response::report_configuration},
+    };
+}
+
+/**
+ * @brief The members of put_many_report_configurations_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_report_configurations_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_report_configurations_request::changes},
+        utility::codec::field{"intent", &put_many_report_configurations_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_report_configurations_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_report_configurations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_report_configurations_response::result},
+        utility::codec::field{"report_configurations",
+                              &put_many_report_configurations_response::report_configurations},
+    };
+}
+
+/**
+ * @brief The members of delete_report_configuration_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_report_configuration_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_report_configuration_request::removal},
+        utility::codec::field{"intent", &delete_report_configuration_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_report_configuration_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_report_configuration_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_report_configuration_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_report_configurations_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_report_configurations_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_report_configurations_request::removals},
+        utility::codec::field{"intent", &delete_many_report_configurations_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_report_configurations_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_report_configurations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_report_configurations_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_report_definition_id_report_configurations_request, named as the
+ * wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_report_definition_id_report_configurations_request&) {
+    return std::tuple{
+        utility::codec::field{
+            "report_definition_id",
+            &list_by_report_definition_id_report_configurations_request::report_definition_id},
+        utility::codec::field{"scope",
+                              &list_by_report_definition_id_report_configurations_request::scope},
+        utility::codec::field{"offset",
+                              &list_by_report_definition_id_report_configurations_request::offset},
+        utility::codec::field{"limit",
+                              &list_by_report_definition_id_report_configurations_request::limit},
+        utility::codec::field{"order",
+                              &list_by_report_definition_id_report_configurations_request::order},
+        utility::codec::field{"filter",
+                              &list_by_report_definition_id_report_configurations_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_report_definition_id_report_configurations_response, named as the
+ * wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_report_definition_id_report_configurations_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_by_report_definition_id_report_configurations_response::result},
+        utility::codec::field{
+            "report_configurations",
+            &list_by_report_definition_id_report_configurations_response::report_configurations},
+        utility::codec::field{"total",
+                              &list_by_report_definition_id_report_configurations_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_by_configuration_type_code_report_configurations_request, named as the
+ * wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_configuration_type_code_report_configurations_request&) {
+    return std::tuple{
+        utility::codec::field{"configuration_type_code",
+                              &list_by_configuration_type_code_report_configurations_request::
+                                  configuration_type_code},
+        utility::codec::field{
+            "scope", &list_by_configuration_type_code_report_configurations_request::scope},
+        utility::codec::field{
+            "offset", &list_by_configuration_type_code_report_configurations_request::offset},
+        utility::codec::field{
+            "limit", &list_by_configuration_type_code_report_configurations_request::limit},
+        utility::codec::field{
+            "order", &list_by_configuration_type_code_report_configurations_request::order},
+        utility::codec::field{
+            "filter", &list_by_configuration_type_code_report_configurations_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_configuration_type_code_report_configurations_response, named as
+ * the wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_configuration_type_code_report_configurations_response&) {
+    return std::tuple{
+        utility::codec::field{
+            "result", &list_by_configuration_type_code_report_configurations_response::result},
+        utility::codec::field{
+            "report_configurations",
+            &list_by_configuration_type_code_report_configurations_response::report_configurations},
+        utility::codec::field{
+            "total", &list_by_configuration_type_code_report_configurations_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_by_configuration_id_report_configurations_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_configuration_id_report_configurations_request&) {
+    return std::tuple{
+        utility::codec::field{
+            "configuration_id",
+            &list_by_configuration_id_report_configurations_request::configuration_id},
+        utility::codec::field{"scope",
+                              &list_by_configuration_id_report_configurations_request::scope},
+        utility::codec::field{"offset",
+                              &list_by_configuration_id_report_configurations_request::offset},
+        utility::codec::field{"limit",
+                              &list_by_configuration_id_report_configurations_request::limit},
+        utility::codec::field{"order",
+                              &list_by_configuration_id_report_configurations_request::order},
+        utility::codec::field{"filter",
+                              &list_by_configuration_id_report_configurations_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_configuration_id_report_configurations_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_configuration_id_report_configurations_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_by_configuration_id_report_configurations_response::result},
+        utility::codec::field{
+            "report_configurations",
+            &list_by_configuration_id_report_configurations_response::report_configurations},
+        utility::codec::field{"total",
+                              &list_by_configuration_id_report_configurations_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_report_configuration_versions_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_configuration_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_report_configuration_versions_request::key},
+        utility::codec::field{"offset", &list_report_configuration_versions_request::offset},
+        utility::codec::field{"limit", &list_report_configuration_versions_request::limit},
+        utility::codec::field{"order", &list_report_configuration_versions_request::order},
+        utility::codec::field{"filter", &list_report_configuration_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_report_configuration_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_configuration_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_report_configuration_versions_response::result},
+        utility::codec::field{"versions", &list_report_configuration_versions_response::versions},
+        utility::codec::field{"total", &list_report_configuration_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_report_configuration_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_configuration_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_report_configuration_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_report_configuration_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_configuration_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_report_configuration_version_response::result},
+        utility::codec::field{"version", &get_report_configuration_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_configuration_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_configuration_key& v);
+    static ores::reporting::messaging::report_configuration_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_configuration_key& v);
+    static ores::reporting::messaging::report_configuration_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_configuration_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_configuration_write& v);
+    static ores::reporting::messaging::report_configuration_write read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_configuration_write& v);
+    static ores::reporting::messaging::report_configuration_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_configuration_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_configuration_change& v);
+    static ores::reporting::messaging::report_configuration_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_configuration_change& v);
+    static ores::reporting::messaging::report_configuration_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_configuration_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::report_configuration_removal& v);
+    static ores::reporting::messaging::report_configuration_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_configuration_removal& v);
+    static ores::reporting::messaging::report_configuration_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_configuration_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_configuration_lookup& v);
+    static ores::reporting::messaging::report_configuration_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_configuration_lookup& v);
+    static ores::reporting::messaging::report_configuration_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_configurations_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::report_configurations_filter& v);
+    static ores::reporting::messaging::report_configurations_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_configurations_filter& v);
+    static ores::reporting::messaging::report_configurations_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_configuration_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_configuration_event& v);
+    static ores::reporting::messaging::report_configuration_event read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_configuration_event& v);
+    static ores::reporting::messaging::report_configuration_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_configuration_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::report_configuration_version_key& v);
+    static ores::reporting::messaging::report_configuration_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_configuration_version_key& v);
+    static ores::reporting::messaging::report_configuration_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_configuration_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::report_configuration_versions_filter& v);
+    static ores::reporting::messaging::report_configuration_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_configuration_versions_filter& v);
+    static ores::reporting::messaging::report_configuration_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_configurations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_configurations_request& v);
+    static ores::reporting::messaging::list_report_configurations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_configurations_request& v);
+    static ores::reporting::messaging::list_report_configurations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_configurations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_configurations_response& v);
+    static ores::reporting::messaging::list_report_configurations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_configurations_response& v);
+    static ores::reporting::messaging::list_report_configurations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_configuration_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_report_configuration_request& v);
+    static ores::reporting::messaging::get_report_configuration_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_configuration_request& v);
+    static ores::reporting::messaging::get_report_configuration_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_configuration_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_report_configuration_response& v);
+    static ores::reporting::messaging::get_report_configuration_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_configuration_response& v);
+    static ores::reporting::messaging::get_report_configuration_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_report_configurations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_report_configurations_request& v);
+    static ores::reporting::messaging::get_many_report_configurations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_report_configurations_request& v);
+    static ores::reporting::messaging::get_many_report_configurations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_report_configurations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_report_configurations_response& v);
+    static ores::reporting::messaging::get_many_report_configurations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_report_configurations_response& v);
+    static ores::reporting::messaging::get_many_report_configurations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_report_configuration_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_report_configuration_request& v);
+    static ores::reporting::messaging::put_report_configuration_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_report_configuration_request& v);
+    static ores::reporting::messaging::put_report_configuration_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_report_configuration_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_report_configuration_response& v);
+    static ores::reporting::messaging::put_report_configuration_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_report_configuration_response& v);
+    static ores::reporting::messaging::put_report_configuration_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_report_configurations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_report_configurations_request& v);
+    static ores::reporting::messaging::put_many_report_configurations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_report_configurations_request& v);
+    static ores::reporting::messaging::put_many_report_configurations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_report_configurations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_report_configurations_response& v);
+    static ores::reporting::messaging::put_many_report_configurations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_report_configurations_response& v);
+    static ores::reporting::messaging::put_many_report_configurations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_report_configuration_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_report_configuration_request& v);
+    static ores::reporting::messaging::delete_report_configuration_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_report_configuration_request& v);
+    static ores::reporting::messaging::delete_report_configuration_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_report_configuration_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_report_configuration_response& v);
+    static ores::reporting::messaging::delete_report_configuration_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_report_configuration_response& v);
+    static ores::reporting::messaging::delete_report_configuration_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_report_configurations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_report_configurations_request& v);
+    static ores::reporting::messaging::delete_many_report_configurations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_report_configurations_request& v);
+    static ores::reporting::messaging::delete_many_report_configurations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_report_configurations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_report_configurations_response& v);
+    static ores::reporting::messaging::delete_many_report_configurations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_report_configurations_response& v);
+    static ores::reporting::messaging::delete_many_report_configurations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<
+    ores::reporting::messaging::list_by_report_definition_id_report_configurations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::
+                   list_by_report_definition_id_report_configurations_request& v);
+    static ores::reporting::messaging::list_by_report_definition_id_report_configurations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::
+                      list_by_report_definition_id_report_configurations_request& v);
+    static ores::reporting::messaging::list_by_report_definition_id_report_configurations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<
+    ores::reporting::messaging::list_by_report_definition_id_report_configurations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::
+                   list_by_report_definition_id_report_configurations_response& v);
+    static ores::reporting::messaging::list_by_report_definition_id_report_configurations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::
+                      list_by_report_definition_id_report_configurations_response& v);
+    static ores::reporting::messaging::list_by_report_definition_id_report_configurations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<
+    ores::reporting::messaging::list_by_configuration_type_code_report_configurations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::
+                   list_by_configuration_type_code_report_configurations_request& v);
+    static ores::reporting::messaging::list_by_configuration_type_code_report_configurations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::
+                      list_by_configuration_type_code_report_configurations_request& v);
+    static ores::reporting::messaging::list_by_configuration_type_code_report_configurations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<
+    ores::reporting::messaging::list_by_configuration_type_code_report_configurations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::
+                   list_by_configuration_type_code_report_configurations_response& v);
+    static ores::reporting::messaging::
+        list_by_configuration_type_code_report_configurations_response
+        read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::
+                      list_by_configuration_type_code_report_configurations_response& v);
+    static ores::reporting::messaging::
+        list_by_configuration_type_code_report_configurations_response
+        read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<
+    ores::reporting::messaging::list_by_configuration_id_report_configurations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::reporting::messaging::list_by_configuration_id_report_configurations_request&
+            v);
+    static ores::reporting::messaging::list_by_configuration_id_report_configurations_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::list_by_configuration_id_report_configurations_request&
+            v);
+    static ores::reporting::messaging::list_by_configuration_id_report_configurations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<
+    ores::reporting::messaging::list_by_configuration_id_report_configurations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::reporting::messaging::list_by_configuration_id_report_configurations_response&
+            v);
+    static ores::reporting::messaging::list_by_configuration_id_report_configurations_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::reporting::messaging::list_by_configuration_id_report_configurations_response&
+            v);
+    static ores::reporting::messaging::list_by_configuration_id_report_configurations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_configuration_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_configuration_versions_request& v);
+    static ores::reporting::messaging::list_report_configuration_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_configuration_versions_request& v);
+    static ores::reporting::messaging::list_report_configuration_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_configuration_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_configuration_versions_response& v);
+    static ores::reporting::messaging::list_report_configuration_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_configuration_versions_response& v);
+    static ores::reporting::messaging::list_report_configuration_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_configuration_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_report_configuration_version_request& v);
+    static ores::reporting::messaging::get_report_configuration_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_configuration_version_request& v);
+    static ores::reporting::messaging::get_report_configuration_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_configuration_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_report_configuration_version_response& v);
+    static ores::reporting::messaging::get_report_configuration_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_configuration_version_response& v);
+    static ores::reporting::messaging::get_report_configuration_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

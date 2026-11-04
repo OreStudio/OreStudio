@@ -38,9 +38,8 @@ export interface FileTypeWrite {
     analytic_type_code: string | null;
     ore_parameter: string;
     direction: string;
-    format: string;
-    xsd_file: string | null;
     kind: string;
+    ore_file_code: string;
     configuration_type_code: string | null;
     name_pattern: string;
     is_default: boolean;
@@ -67,10 +66,12 @@ export interface FileTypeLookup {
 }
 
 export interface FileTypesFilter {
+    ore_file_code: string | null;
     analytic_type_code: string | null | null;
     configuration_type_code: string | null | null;
     produced_by_file_type_code: string | null | null;
     code_one_of: string[] | null;
+    ore_file_code_one_of: string[] | null;
     analytic_type_code_one_of: string[] | null;
     configuration_type_code_one_of: string[] | null;
     produced_by_file_type_code_one_of: string[] | null;
@@ -166,6 +167,21 @@ export interface DeleteManyFileTypesResponse {
     result: Result;
 }
 
+export interface ListByOreFileCodeFileTypesRequest {
+    ore_file_code: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: FileTypesFilter | null;
+}
+
+export interface ListByOreFileCodeFileTypesResponse {
+    result: Result;
+    types: FileType[];
+    total: number;
+}
+
 export interface ListByAnalyticTypeCodeFileTypesRequest {
     analytic_type_code: string | null;
     scope: Scope;
@@ -242,6 +258,7 @@ export const subjects = {
     put_many_file_types_request: 'reporting.v1.file_types.put_many',
     delete_file_type_request: 'reporting.v1.file_types.delete',
     delete_many_file_types_request: 'reporting.v1.file_types.delete_many',
+    list_by_ore_file_code_file_types_request: 'reporting.v1.file_types.list_by_ore_file_code',
     list_by_analytic_type_code_file_types_request:
         'reporting.v1.file_types.list_by_analytic_type_code',
     list_by_configuration_type_code_file_types_request:
@@ -264,6 +281,7 @@ export const requiresSession = {
     put_many_file_types_request: true,
     delete_file_type_request: true,
     delete_many_file_types_request: true,
+    list_by_ore_file_code_file_types_request: true,
     list_by_analytic_type_code_file_types_request: true,
     list_by_configuration_type_code_file_types_request: true,
     list_by_produced_by_file_type_code_file_types_request: true,
@@ -277,7 +295,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'reporting.v1.file_types_events.created',
-    updated: 'reporting.v1.file_types_events.updated',
-    deleted: 'reporting.v1.file_types_events.deleted',
+    created: 'reporting.v1.events.file_types.created',
+    updated: 'reporting.v1.events.file_types.updated',
+    deleted: 'reporting.v1.events.file_types.deleted',
 } as const;

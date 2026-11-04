@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: D5A1A642-5982-4B7F-A0F9-4D0921FC8D91
+:END:
+#+title: Task: Keep the derived FX volatility quotes for backtesting
+#+description: Store each day's derived ATM, RR and BF quotes for good, as fixings are, so a backtest can read years of them; today they age out of the tick table after seven days.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/keep-derived-vol-quotes-for-backtesting
+#+pr: 4416
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A backtest can read the derived FX volatility quotes of any past day from the store. Today they are quotes: the age gate admits only the current day and the tick table keeps seven days, so history exists only as something to recompute. This task gives them a durable home, as market_fixing is for fixings, and fills it for the history the fixings cover.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- Each day's derived ATM, RR and BF quotes are kept with no retention, keyed by series and date, with a correction stored as a new version.
+- The derived source can write past days, so the history the stored fixings cover is filled once and kept.
+- A reader returns the derived quotes of a series over a window, as the fixing reader does.
+- Derivation of FX volatility quotes from historical fixings states the durable storage.
+
+* Plan
+
+The store already has a durable, versioned home for a series' values at a coordinate:
+=market_observations=, a hypertable with no retention, whose corrections are kept as
+versions by its soft-update trigger, under a =market_series= whose =derivation_kind=
+says whether the series is observed or derived. Ticks, the seven-day table, are the
+only short-lived store. So the derived quotes take that home rather than a new one.
+
+1. Marketdata: a window reader of a series' observations, as the fixing reader is for
+   fixings: an item, its provider, a party, an end day and a number of days, answered
+   with each coordinate's value at each observation time.
+2. The derived source: one =market_series= per pair under the provider =derived= with
+   the derivation kind =FX_VOL_DERIVATION=, and the day's quotes written as its
+   observations at the end of their day. On start it fills each past day the stored
+   fixings cover and the store does not yet hold, each day derived only from the
+   fixings up to it.
+3. The derivation note states the durable storage.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4416][#4416]] | [synthetic] Keep the derived FX volatility quotes for backtesting |
+| [[https://github.com/OreStudio/OreStudio/pull/4415][#4415]] | [marketdata] Read the observations of a series over a window of days |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A backtest can read the derived FX volatility quotes of any past day from the store.
+
+- Marketdata reads the observations of a series over a window of days,
+  =get_observation_window=, every point each day with its coordinate, as the
+  fixing reader does for fixings, refusing a window above 3,660 days or one that
+  holds more than the 5,000 observations a reply carries (PR 4415). The fixing
+  reader's party scoping and ambiguity refusals are shared by both readers.
+- The derived source keeps each day's quotes as the observations of one
+  =fx_option= series per pair under its own provider, whose derivation kind is
+  =FX_VOL_DERIVATION=. On start it reads the days each series holds and derives
+  every other day the stored fixings cover, each from the returns on or before it;
+  afterwards it writes each new day. History is kept for every pair of its
+  universe, demanded or not. The market data client writes series and observations,
+  and the synthetic service may write both.
+- Derivation of FX volatility quotes from historical fixings states the durable
+  storage.
+- Tests: 17 reader test cases against the database, and 20 derived source test
+  cases, among them a past day derived from its returns alone, a history kept once
+  and then a day at a time, and no day the store holds written again.
+| R2.1 | A batch could end inside a day, so a failed write left a day held in part, which the days held count as whole | derived_fx_vol_adapter.cpp | Accept | A batch ends only between days |
+| R2.2 | A retried write sends new random ids | derived_fx_vol_adapter.cpp | Accept, no change | The store keys a current observation by series, time and coordinate, and its insert trigger closes the older row, so a retry is a new version, never a second current row; a name-based id would be refused as existing under the default precondition and block the retry |
+| R2.3 | The windows that read the days held may leave gaps | derived_fx_vol_adapter.cpp | Accept, no change | A window holds to - days + 1 to to, both included, so windows ending 120 days apart tile the history; a comment says so |
+| R2.4 | persist derives again over the whole history on each cycle | derived_fx_vol_feed.cpp | Accept | A pair whose days held cover every return is skipped before the convention is read; tested |
+| R2.5 | A day whose quotes cannot be derived is silently retried each cycle | derived_fx_vol.cpp, derived_fx_vol_feed.cpp | Accept | derive_missing_days names the underived days; persist reports their count once and holds them until a restart; tested |
+| R2.6 | The construction order, the delegation choice, a double blank line, and an id parse that throws | derived_fx_vol_adapter.cpp | Accept | Commented, removed, and the ids parse to an error rather than throw |

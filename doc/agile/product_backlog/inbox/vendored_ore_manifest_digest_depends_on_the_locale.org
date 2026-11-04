@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: F34B65A6-301F-47CB-A9A2-1FBAB84788EA
+:END:
+#+title: The vendored ORE manifest's digest depends on the locale
+#+description: update_ore_samples.sh orders the vendored paths with sort, which follows the locale, before it hashes them, so the tree_sha256 in external/ore/xsd/manifest.json is en_GB order and differs under the C locale. The ORE file seed check reproduces it by calling sort the same way; the digest should order the paths by bytes, with LC_ALL=C, so it is the same on every machine.
+#+type: capture
+#+level: cross
+#+filetags: :tooling:ore:reproducibility:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+external/ore/tools/update_ore_samples.sh computes the tree_sha256 of a vendored
+directory by passing the paths through sort before hashing them. sort follows the
+locale, so the digest in external/ore/xsd/manifest.json is the en_GB order of the
+paths, and the same files give another digest under the C locale.
+
+* Why
+
+The digest is meant to be reproducible from a re-sync of the same commit, and
+the ORE file seed check relies on it to prove the vendored schemas were not
+edited. The check reproduces it by calling sort the same way, which holds only on
+a machine with the same collation. Ordering the paths by bytes, with LC_ALL=C in
+the script, makes the digest the same everywhere; the manifests then need
+regenerating once.
+
+* References
+
+- =external/ore/tools/update_ore_samples.sh=, the tree hash.
+- =projects/ores.sql/utility/generate_file_types_populate.py=, =vendored_schemas=.
+
+* See also
+
+- [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]], the story it came from.

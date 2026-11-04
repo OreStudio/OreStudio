@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/cross_currency_fix_float_swap_terms/cross_currency_fix_float_swap_terms.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+cross_currency_fix_float_swap_terms get 00000000-0000-0000-0000-000000000000

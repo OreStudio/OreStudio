@@ -27,6 +27,10 @@ import { subjects as sessionSubjects } from '@ores/wire-protocol/generated/marke
 import { subjects as supplierSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/supplier_protocol';
 import { subjects as providerSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/provider_protocol';
 import { subjects as termsSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/provider_terms_operations_protocol';
+import {
+    subjects as termsListSubjects,
+    type AcceptManyProviderTermsRequest,
+} from '@ores/wire-protocol/generated/marketdata/protocol/provider_terms_list_operations_protocol';
 import { invalidRequest } from './errors.js';
 import { input, readAll } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -427,6 +431,64 @@ export function registerPublicRatesRoutes(
             throw invalidRequest(reply.message);
         }
         return { message: reply.message };
+    });
+
+    /**
+     * Accepts the terms of several providers, each at the version the person read. Each is
+     * accepted as the single accept would accept it, and one refusal does not stop the rest,
+     * so the answer is every provider's outcome rather than an error.
+     */
+    server.post('/api/marketdata/public-rates/accept-terms', async (request) => {
+        const session = requireSession(request);
+        const { providers } = input(
+            z.object({
+                providers: z
+                    .array(
+                        z.object({
+                            code: z.string().min(1).max(100),
+                            version: z.number().int().min(1),
+                        }),
+                    )
+                    .min(1)
+                    .max(100),
+            }),
+            request.body,
+        );
+        const reply = await session.client.callAuthenticated(
+            termsListSubjects.accept_many_provider_terms_request,
+            {
+                providers: providers.map((p) => ({
+                    provider_code: p.code,
+                    provider_version: p.version,
+                })),
+            } satisfies AcceptManyProviderTermsRequest,
+            z.looseObject({
+                success: z.boolean().default(false),
+                message: z.string().default(''),
+                outcomes: z
+                    .array(
+                        z.looseObject({
+                            provider_code: z.string(),
+                            success: z.boolean().default(false),
+                            message: z.string().default(''),
+                            accepted_by: z.string().default(''),
+                            accepted_at: z.string().nullable().default(null),
+                        }),
+                    )
+                    .default([]),
+            }),
+        );
+        return {
+            success: reply.success,
+            message: reply.message,
+            outcomes: reply.outcomes.map((o) => ({
+                code: o.provider_code,
+                success: o.success,
+                message: o.message,
+                accepted_by: o.accepted_by,
+                accepted_at: o.accepted_at,
+            })),
+        };
     });
 
     server.post('/api/marketdata/public-rates/:code/accept-terms', async (request) => {

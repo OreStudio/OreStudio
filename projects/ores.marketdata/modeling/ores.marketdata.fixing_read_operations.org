@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: nil
 :ID: 22AEEEA2-2CDE-4ECB-9415-C20F623D4105
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.fixing_read_operations
 #+description: Codegen operation model for reading the durable fixings: the latest on or before a date, and a window of days.

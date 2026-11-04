@@ -18,6 +18,7 @@
  *
  */
 #include "conventions_fields.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <format>
 #include <sstream>
 #include <stdexcept>
@@ -355,6 +356,19 @@ void put_decimal(record_writer& w, std::string_view name, double value) {
 void put_decimal(record_writer& w, std::string_view name, const std::optional<double>& value) {
     if (value)
         put_decimal(w, name, *value);
+}
+
+// A convention is identified by its party, its kind and the name it carries in
+// the source document. The mapper knows the kind and the name but not the
+// party, so it cannot state that identity and does not try: the store resolves
+// it once the session's party is known. What the mapper emits instead is a
+// provisional key, minted fresh for each convention it maps, so the part rows
+// can reach their central row inside one mapped document. The store discards
+// the provisional key and writes the row under the key the identity resolves
+// to, so the provisional key is never an identity.
+boost::uuids::uuid provisional_uuid() {
+    static thread_local ores::utility::uuid::uuid_v7_generator generator;
+    return generator();
 }
 
 }

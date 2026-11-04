@@ -47,7 +47,6 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/generators/workflow_instance_generator.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include <boost/log/sources/severity_feature.hpp>

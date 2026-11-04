@@ -13,13 +13,14 @@
 #+entity_plural: inflation_curve_configs
 #+entity_title: Inflation Curve Config
 #+created: 2026-10-03
-#+updated: 2026-10-03
+#+updated: 2026-11-02
 
 The settings of one =InflationCurve= entry of a =curveconfig.xml=, one row per
 =curve_definition= in the =InflationCurves= section: the nominal curve it is
 built over, whether it is zero coupon or year on year, its lag and frequency,
-and its seasonality. The quotes it is built from are rows of =curve_quote=, and
-the seasonality factors rows of =inflation_seasonality_factor=.
+and its interpolation. The quotes it is built from are rows of =curve_quote=. Its
+seasonality is a row of =inflation_seasonality=, present only when the curve
+states one, and the seasonality factors are rows of =inflation_seasonality_factor=.
 
 The schema also allows a list of segments, each a convention and quotes. No
 corpus document writes one, and the mapper refuses an entry that does rather
@@ -219,45 +220,6 @@ std::nullopt
 :END:
 
 The bootstrap tolerance.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** has_seasonality
-:PROPERTIES:
-:type:     boolean
-:cpp_type: bool
-:nullable: false
-:END:
-
-Whether the entry writes a =Seasonality= element.
-
-#+begin_src cpp :name generator
-false
-#+end_src
-
-** seasonality_base_date
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The base date of the seasonality adjustment.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** seasonality_frequency
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The frequency of the seasonality factors.
 
 #+begin_src cpp :name generator
 std::nullopt

@@ -38,8 +38,18 @@
 #include "ores.refdata.core/repository/curve_quote_repository.hpp"
 #include "ores.refdata.core/repository/curve_report_configuration_repository.hpp"
 #include "ores.refdata.core/repository/curve_security_config_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_convention_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_cross_currency_terms_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_curve_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_discount_ratio_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_extrapolation_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_ibor_fallback_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_pillar_rule_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_projection_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_reference_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_tenor_basis_curves_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_weighted_average_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_constant_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_curve_repository.hpp"
@@ -50,8 +60,13 @@
 #include "ores.refdata.core/repository/curve_volatility_smile_parameter_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_smile_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_strike_surface_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_benchmark_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_cds_terms_repository.hpp"
 #include "ores.refdata.core/repository/default_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/default_curve_configuration_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_market_terms_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_transition_matrix_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_yield_reinterpretation_repository.hpp"
 #include "ores.refdata.core/repository/equity_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/equity_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/fx_volatility_config_repository.hpp"
@@ -60,9 +75,11 @@
 #include "ores.refdata.core/repository/inflation_cap_floor_volatility_strikes_repository.hpp"
 #include "ores.refdata.core/repository/inflation_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_factor_repository.hpp"
+#include "ores.refdata.core/repository/inflation_seasonality_repository.hpp"
 #include "ores.refdata.core/repository/intraday_power_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/swaption_proxy_config_repository.hpp"
 #include "ores.refdata.core/repository/swaption_volatility_config_repository.hpp"
+#include "ores.refdata.core/repository/swaption_volatility_smile_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -115,8 +132,38 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
                     reason,
                     commentary);
     write_amendment(ctx_,
+                    default_curve_market_terms_repository(),
+                    std::move(v.default_curve_market_terms),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    default_curve_cds_terms_repository(),
+                    std::move(v.default_curve_cds_terms),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    default_curve_benchmark_repository(),
+                    std::move(v.default_curve_benchmarks),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    default_curve_transition_matrix_repository(),
+                    std::move(v.default_curve_transition_matrices),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    default_curve_yield_reinterpretation_repository(),
+                    std::move(v.default_curve_yield_reinterpretations),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
                     inflation_curve_config_repository(),
                     std::move(v.inflation_curves),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    inflation_seasonality_repository(),
+                    std::move(v.inflation_seasonalities),
                     reason,
                     commentary);
     write_amendment(ctx_,
@@ -221,6 +268,11 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
                     reason,
                     commentary);
     write_amendment(ctx_,
+                    swaption_volatility_smile_repository(),
+                    std::move(v.swaption_volatility_smiles),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
                     cap_floor_volatility_config_repository(),
                     std::move(v.cap_floor_volatilities),
                     reason,
@@ -273,6 +325,56 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
     write_amendment(ctx_, curve_segment_repository(), std::move(v.segments), reason, commentary);
     write_amendment(
         ctx_, curve_segment_curve_repository(), std::move(v.segment_curves), reason, commentary);
+    write_amendment(ctx_,
+                    curve_segment_convention_repository(),
+                    std::move(v.segment_conventions),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_segment_pillar_rule_repository(),
+                    std::move(v.segment_pillar_rules),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_segment_projection_repository(),
+                    std::move(v.segment_projections),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_segment_tenor_basis_curves_repository(),
+                    std::move(v.segment_tenor_basis_curves),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_segment_cross_currency_terms_repository(),
+                    std::move(v.segment_cross_currency_terms),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_segment_reference_repository(),
+                    std::move(v.segment_references),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_segment_weighted_average_repository(),
+                    std::move(v.segment_weighted_averages),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_segment_discount_ratio_repository(),
+                    std::move(v.segment_discount_ratios),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_segment_extrapolation_repository(),
+                    std::move(v.segment_extrapolations),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_segment_ibor_fallback_repository(),
+                    std::move(v.segment_ibor_fallbacks),
+                    reason,
+                    commentary);
     write_amendment(ctx_, curve_quote_repository(), std::move(v.quotes), reason, commentary);
 }
 
@@ -297,7 +399,24 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
     r.default_curves = read_where(ctx_, default_curve_config_repository(), of_definition);
     r.default_curve_configurations =
         read_where(ctx_, default_curve_configuration_repository(), of_definition);
+    std::set<boost::uuids::uuid> configurations;
+    for (const auto& c : r.default_curve_configurations)
+        configurations.insert(c.id);
+    const auto of_configuration = [&](const auto& row) {
+        return configurations.contains(row.default_curve_configuration_id);
+    };
+    r.default_curve_market_terms =
+        read_where(ctx_, default_curve_market_terms_repository(), of_configuration);
+    r.default_curve_cds_terms =
+        read_where(ctx_, default_curve_cds_terms_repository(), of_configuration);
+    r.default_curve_benchmarks =
+        read_where(ctx_, default_curve_benchmark_repository(), of_configuration);
+    r.default_curve_transition_matrices =
+        read_where(ctx_, default_curve_transition_matrix_repository(), of_configuration);
+    r.default_curve_yield_reinterpretations =
+        read_where(ctx_, default_curve_yield_reinterpretation_repository(), of_configuration);
     r.inflation_curves = read_where(ctx_, inflation_curve_config_repository(), of_definition);
+    r.inflation_seasonalities = read_where(ctx_, inflation_seasonality_repository(), of_definition);
     r.seasonality_factors =
         read_where(ctx_, inflation_seasonality_factor_repository(), of_definition);
     r.securities = read_where(ctx_, curve_security_config_repository(), of_definition);
@@ -370,6 +489,8 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
     };
     r.swaption_proxy_configs =
         read_where(ctx_, swaption_proxy_config_repository(), of_swaption_entry);
+    r.swaption_volatility_smiles =
+        read_where(ctx_, swaption_volatility_smile_repository(), of_swaption_entry);
     r.cap_floor_volatilities =
         read_where(ctx_, cap_floor_volatility_config_repository(), of_definition);
     std::set<boost::uuids::uuid> cap_floor_entries;
@@ -394,9 +515,26 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
     std::set<boost::uuids::uuid> segments;
     for (const auto& s : r.segments)
         segments.insert(s.id);
-    r.segment_curves = read_where(ctx_, curve_segment_curve_repository(), [&](const auto& row) {
+    const auto of_segment = [&](const auto& row) {
         return segments.contains(row.curve_segment_id);
-    });
+    };
+    r.segment_curves = read_where(ctx_, curve_segment_curve_repository(), of_segment);
+    r.segment_conventions = read_where(ctx_, curve_segment_convention_repository(), of_segment);
+    r.segment_pillar_rules = read_where(ctx_, curve_segment_pillar_rule_repository(), of_segment);
+    r.segment_projections = read_where(ctx_, curve_segment_projection_repository(), of_segment);
+    r.segment_tenor_basis_curves =
+        read_where(ctx_, curve_segment_tenor_basis_curves_repository(), of_segment);
+    r.segment_cross_currency_terms =
+        read_where(ctx_, curve_segment_cross_currency_terms_repository(), of_segment);
+    r.segment_references = read_where(ctx_, curve_segment_reference_repository(), of_segment);
+    r.segment_weighted_averages =
+        read_where(ctx_, curve_segment_weighted_average_repository(), of_segment);
+    r.segment_discount_ratios =
+        read_where(ctx_, curve_segment_discount_ratio_repository(), of_segment);
+    r.segment_extrapolations =
+        read_where(ctx_, curve_segment_extrapolation_repository(), of_segment);
+    r.segment_ibor_fallbacks =
+        read_where(ctx_, curve_segment_ibor_fallback_repository(), of_segment);
     return r;
 }
 
@@ -404,6 +542,29 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
     const auto d = get(id);
     if (!d.quotes.empty())
         curve_quote_repository().remove(ctx_, ids_of(d.quotes));
+    if (!d.segment_conventions.empty())
+        curve_segment_convention_repository().remove(ctx_, ids_of(d.segment_conventions));
+    if (!d.segment_pillar_rules.empty())
+        curve_segment_pillar_rule_repository().remove(ctx_, ids_of(d.segment_pillar_rules));
+    if (!d.segment_projections.empty())
+        curve_segment_projection_repository().remove(ctx_, ids_of(d.segment_projections));
+    if (!d.segment_tenor_basis_curves.empty())
+        curve_segment_tenor_basis_curves_repository().remove(ctx_,
+                                                             ids_of(d.segment_tenor_basis_curves));
+    if (!d.segment_cross_currency_terms.empty())
+        curve_segment_cross_currency_terms_repository().remove(
+            ctx_, ids_of(d.segment_cross_currency_terms));
+    if (!d.segment_references.empty())
+        curve_segment_reference_repository().remove(ctx_, ids_of(d.segment_references));
+    if (!d.segment_weighted_averages.empty())
+        curve_segment_weighted_average_repository().remove(ctx_,
+                                                           ids_of(d.segment_weighted_averages));
+    if (!d.segment_discount_ratios.empty())
+        curve_segment_discount_ratio_repository().remove(ctx_, ids_of(d.segment_discount_ratios));
+    if (!d.segment_extrapolations.empty())
+        curve_segment_extrapolation_repository().remove(ctx_, ids_of(d.segment_extrapolations));
+    if (!d.segment_ibor_fallbacks.empty())
+        curve_segment_ibor_fallback_repository().remove(ctx_, ids_of(d.segment_ibor_fallbacks));
     if (!d.segment_curves.empty())
         curve_segment_curve_repository().remove(ctx_, ids_of(d.segment_curves));
     if (!d.segments.empty())
@@ -427,6 +588,8 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
         cap_floor_volatility_config_repository().remove(ctx_, ids_of(d.cap_floor_volatilities));
     if (!d.swaption_proxy_configs.empty())
         swaption_proxy_config_repository().remove(ctx_, ids_of(d.swaption_proxy_configs));
+    if (!d.swaption_volatility_smiles.empty())
+        swaption_volatility_smile_repository().remove(ctx_, ids_of(d.swaption_volatility_smiles));
     if (!d.swaption_volatilities.empty())
         swaption_volatility_config_repository().remove(ctx_, ids_of(d.swaption_volatilities));
     if (!d.inflation_volatility_strikes.empty())
@@ -480,8 +643,22 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
         curve_security_config_repository().remove(ctx_, ids_of(d.securities));
     if (!d.seasonality_factors.empty())
         inflation_seasonality_factor_repository().remove(ctx_, ids_of(d.seasonality_factors));
+    if (!d.inflation_seasonalities.empty())
+        inflation_seasonality_repository().remove(ctx_, ids_of(d.inflation_seasonalities));
     if (!d.inflation_curves.empty())
         inflation_curve_config_repository().remove(ctx_, ids_of(d.inflation_curves));
+    if (!d.default_curve_market_terms.empty())
+        default_curve_market_terms_repository().remove(ctx_, ids_of(d.default_curve_market_terms));
+    if (!d.default_curve_cds_terms.empty())
+        default_curve_cds_terms_repository().remove(ctx_, ids_of(d.default_curve_cds_terms));
+    if (!d.default_curve_benchmarks.empty())
+        default_curve_benchmark_repository().remove(ctx_, ids_of(d.default_curve_benchmarks));
+    if (!d.default_curve_transition_matrices.empty())
+        default_curve_transition_matrix_repository().remove(
+            ctx_, ids_of(d.default_curve_transition_matrices));
+    if (!d.default_curve_yield_reinterpretations.empty())
+        default_curve_yield_reinterpretation_repository().remove(
+            ctx_, ids_of(d.default_curve_yield_reinterpretations));
     if (!d.default_curve_configurations.empty())
         default_curve_configuration_repository().remove(ctx_,
                                                         ids_of(d.default_curve_configurations));

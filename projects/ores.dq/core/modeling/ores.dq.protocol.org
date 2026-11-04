@@ -381,72 +381,72 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.artefact_types_events.created= | Published when an artefact type is created |
-| =dq.v1.artefact_types_events.deleted= | Published when an artefact type is deleted |
-| =dq.v1.artefact_types_events.updated= | Published when an artefact type is updated |
-| =dq.v1.badge_definitions_events.created= | Published when a badge definition is created |
-| =dq.v1.badge_definitions_events.deleted= | Published when a badge definition is deleted |
-| =dq.v1.badge_definitions_events.updated= | Published when a badge definition is updated |
-| =dq.v1.badge_severities_events.created= | Published when a badge severity is created |
-| =dq.v1.badge_severities_events.deleted= | Published when a badge severity is deleted |
-| =dq.v1.badge_severities_events.updated= | Published when a badge severity is updated |
-| =dq.v1.catalogs_events.created= | Published when a catalog is created |
-| =dq.v1.catalogs_events.deleted= | Published when a catalog is deleted |
-| =dq.v1.catalogs_events.updated= | Published when a catalog is updated |
-| =dq.v1.change_reason_categories_events.created= | Published when a change reason category is created |
-| =dq.v1.change_reason_categories_events.deleted= | Published when a change reason category is deleted |
-| =dq.v1.change_reason_categories_events.updated= | Published when a change reason category is updated |
-| =dq.v1.change_reasons_events.created= | Published when a change reason is created |
-| =dq.v1.change_reasons_events.deleted= | Published when a change reason is deleted |
-| =dq.v1.change_reasons_events.updated= | Published when a change reason is updated |
-| =dq.v1.code_domains_events.created= | Published when a code domain is created |
-| =dq.v1.code_domains_events.deleted= | Published when a code domain is deleted |
-| =dq.v1.code_domains_events.updated= | Published when a code domain is updated |
-| =dq.v1.coding_scheme_authority_types_events.created= | Published when a coding scheme authority type is created |
-| =dq.v1.coding_scheme_authority_types_events.deleted= | Published when a coding scheme authority type is deleted |
-| =dq.v1.coding_scheme_authority_types_events.updated= | Published when a coding scheme authority type is updated |
-| =dq.v1.coding_schemes_events.created= | Published when a coding scheme is created |
-| =dq.v1.coding_schemes_events.deleted= | Published when a coding scheme is deleted |
-| =dq.v1.coding_schemes_events.updated= | Published when a coding scheme is updated |
-| =dq.v1.data_domains_events.created= | Published when a data domain is created |
-| =dq.v1.data_domains_events.deleted= | Published when a data domain is deleted |
-| =dq.v1.data_domains_events.updated= | Published when a data domain is updated |
-| =dq.v1.dataset_bundles_events.created= | Published when a dataset bundle is created |
-| =dq.v1.dataset_bundles_events.deleted= | Published when a dataset bundle is deleted |
-| =dq.v1.dataset_bundles_events.updated= | Published when a dataset bundle is updated |
-| =dq.v1.datasets_events.created= | Published when a dataset is created |
-| =dq.v1.datasets_events.deleted= | Published when a dataset is deleted |
-| =dq.v1.datasets_events.updated= | Published when a dataset is updated |
-| =dq.v1.fsm_states_events.created= | Published when an FSM state is created |
-| =dq.v1.fsm_states_events.deleted= | Published when an FSM state is deleted |
-| =dq.v1.fsm_states_events.updated= | Published when an FSM state is updated |
-| =dq.v1.fsm_transitions_events.created= | Published when an FSM transition is created |
-| =dq.v1.fsm_transitions_events.deleted= | Published when an FSM transition is deleted |
-| =dq.v1.fsm_transitions_events.updated= | Published when an FSM transition is updated |
-| =dq.v1.lei_entities_events.created= | Published when an LEI entity is created |
-| =dq.v1.lei_entities_events.deleted= | Published when an LEI entity is deleted |
-| =dq.v1.lei_entities_events.updated= | Published when an LEI entity is updated |
-| =dq.v1.lei_relationships_events.created= | Published when an LEI relationship is created |
-| =dq.v1.lei_relationships_events.deleted= | Published when an LEI relationship is deleted |
-| =dq.v1.lei_relationships_events.updated= | Published when an LEI relationship is updated |
-| =dq.v1.methodologies_events.created= | Published when a methodology is created |
-| =dq.v1.methodologies_events.deleted= | Published when a methodology is deleted |
-| =dq.v1.methodologies_events.updated= | Published when a methodology is updated |
-| =dq.v1.nature_dimensions_events.created= | Published when a nature dimension is created |
-| =dq.v1.nature_dimensions_events.deleted= | Published when a nature dimension is deleted |
-| =dq.v1.nature_dimensions_events.updated= | Published when a nature dimension is updated |
-| =dq.v1.origin_dimensions_events.created= | Published when an origin dimension is created |
-| =dq.v1.origin_dimensions_events.deleted= | Published when an origin dimension is deleted |
-| =dq.v1.origin_dimensions_events.updated= | Published when an origin dimension is updated |
-| =dq.v1.publications_events.created= | Published when a publication is created |
-| =dq.v1.publications_events.deleted= | Published when a publication is deleted |
-| =dq.v1.publications_events.updated= | Published when a publication is updated |
-| =dq.v1.subject_areas_events.created= | Published when a subject area is created |
-| =dq.v1.subject_areas_events.deleted= | Published when a subject area is deleted |
-| =dq.v1.subject_areas_events.updated= | Published when a subject area is updated |
-| =dq.v1.treatment_dimensions_events.created= | Published when a treatment dimension is created |
-| =dq.v1.treatment_dimensions_events.deleted= | Published when a treatment dimension is deleted |
-| =dq.v1.treatment_dimensions_events.updated= | Published when a treatment dimension is updated |
+| =dq.v1.events.artefact_types.created= | Published when an artefact type is created |
+| =dq.v1.events.artefact_types.deleted= | Published when an artefact type is deleted |
+| =dq.v1.events.artefact_types.updated= | Published when an artefact type is updated |
+| =dq.v1.events.badge_definitions.created= | Published when a badge definition is created |
+| =dq.v1.events.badge_definitions.deleted= | Published when a badge definition is deleted |
+| =dq.v1.events.badge_definitions.updated= | Published when a badge definition is updated |
+| =dq.v1.events.badge_severities.created= | Published when a badge severity is created |
+| =dq.v1.events.badge_severities.deleted= | Published when a badge severity is deleted |
+| =dq.v1.events.badge_severities.updated= | Published when a badge severity is updated |
+| =dq.v1.events.catalogs.created= | Published when a catalog is created |
+| =dq.v1.events.catalogs.deleted= | Published when a catalog is deleted |
+| =dq.v1.events.catalogs.updated= | Published when a catalog is updated |
+| =dq.v1.events.change_reason_categories.created= | Published when a change reason category is created |
+| =dq.v1.events.change_reason_categories.deleted= | Published when a change reason category is deleted |
+| =dq.v1.events.change_reason_categories.updated= | Published when a change reason category is updated |
+| =dq.v1.events.change_reasons.created= | Published when a change reason is created |
+| =dq.v1.events.change_reasons.deleted= | Published when a change reason is deleted |
+| =dq.v1.events.change_reasons.updated= | Published when a change reason is updated |
+| =dq.v1.events.code_domains.created= | Published when a code domain is created |
+| =dq.v1.events.code_domains.deleted= | Published when a code domain is deleted |
+| =dq.v1.events.code_domains.updated= | Published when a code domain is updated |
+| =dq.v1.events.coding_scheme_authority_types.created= | Published when a coding scheme authority type is created |
+| =dq.v1.events.coding_scheme_authority_types.deleted= | Published when a coding scheme authority type is deleted |
+| =dq.v1.events.coding_scheme_authority_types.updated= | Published when a coding scheme authority type is updated |
+| =dq.v1.events.coding_schemes.created= | Published when a coding scheme is created |
+| =dq.v1.events.coding_schemes.deleted= | Published when a coding scheme is deleted |
+| =dq.v1.events.coding_schemes.updated= | Published when a coding scheme is updated |
+| =dq.v1.events.data_domains.created= | Published when a data domain is created |
+| =dq.v1.events.data_domains.deleted= | Published when a data domain is deleted |
+| =dq.v1.events.data_domains.updated= | Published when a data domain is updated |
+| =dq.v1.events.dataset_bundles.created= | Published when a dataset bundle is created |
+| =dq.v1.events.dataset_bundles.deleted= | Published when a dataset bundle is deleted |
+| =dq.v1.events.dataset_bundles.updated= | Published when a dataset bundle is updated |
+| =dq.v1.events.datasets.created= | Published when a dataset is created |
+| =dq.v1.events.datasets.deleted= | Published when a dataset is deleted |
+| =dq.v1.events.datasets.updated= | Published when a dataset is updated |
+| =dq.v1.events.fsm_states.created= | Published when an FSM state is created |
+| =dq.v1.events.fsm_states.deleted= | Published when an FSM state is deleted |
+| =dq.v1.events.fsm_states.updated= | Published when an FSM state is updated |
+| =dq.v1.events.fsm_transitions.created= | Published when an FSM transition is created |
+| =dq.v1.events.fsm_transitions.deleted= | Published when an FSM transition is deleted |
+| =dq.v1.events.fsm_transitions.updated= | Published when an FSM transition is updated |
+| =dq.v1.events.lei_entities.created= | Published when an LEI entity is created |
+| =dq.v1.events.lei_entities.deleted= | Published when an LEI entity is deleted |
+| =dq.v1.events.lei_entities.updated= | Published when an LEI entity is updated |
+| =dq.v1.events.lei_relationships.created= | Published when an LEI relationship is created |
+| =dq.v1.events.lei_relationships.deleted= | Published when an LEI relationship is deleted |
+| =dq.v1.events.lei_relationships.updated= | Published when an LEI relationship is updated |
+| =dq.v1.events.methodologies.created= | Published when a methodology is created |
+| =dq.v1.events.methodologies.deleted= | Published when a methodology is deleted |
+| =dq.v1.events.methodologies.updated= | Published when a methodology is updated |
+| =dq.v1.events.nature_dimensions.created= | Published when a nature dimension is created |
+| =dq.v1.events.nature_dimensions.deleted= | Published when a nature dimension is deleted |
+| =dq.v1.events.nature_dimensions.updated= | Published when a nature dimension is updated |
+| =dq.v1.events.origin_dimensions.created= | Published when an origin dimension is created |
+| =dq.v1.events.origin_dimensions.deleted= | Published when an origin dimension is deleted |
+| =dq.v1.events.origin_dimensions.updated= | Published when an origin dimension is updated |
+| =dq.v1.events.publications.created= | Published when a publication is created |
+| =dq.v1.events.publications.deleted= | Published when a publication is deleted |
+| =dq.v1.events.publications.updated= | Published when a publication is updated |
+| =dq.v1.events.subject_areas.created= | Published when a subject area is created |
+| =dq.v1.events.subject_areas.deleted= | Published when a subject area is deleted |
+| =dq.v1.events.subject_areas.updated= | Published when a subject area is updated |
+| =dq.v1.events.treatment_dimensions.created= | Published when a treatment dimension is created |
+| =dq.v1.events.treatment_dimensions.deleted= | Published when a treatment dimension is deleted |
+| =dq.v1.events.treatment_dimensions.updated= | Published when a treatment dimension is updated |
 
 * Useful Pages
 

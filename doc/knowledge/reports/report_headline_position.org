@@ -47,6 +47,12 @@ for it during the day; the schedule produces it at the close. It is not a member
 of the ten-report [[file:../domain/risk_reporting.org][Market Risk EOD set]], so
 nothing orders it after the market data cut.
 
+The two cycles are two seeded definitions, because a definition states one cut
+selection. =Headline Position= selects the LIVE cut and runs every ten minutes,
+and =Headline Position (EOD)= selects the end of day cut and runs at the close.
+They read one run settings document, so the two differ in the body they price
+from and in nothing else.
+
 #+ATTR_HTML: :class hug-leading
 | Field     | Value                        |
 |-----------+------------------------------|
@@ -97,6 +103,33 @@ here.
 | YTD P&L    | NPV minus the previous year-end NPV.                          |
 | Delta P&L  | The P&L the report attributes to directional (Delta) risk.    |
 
+* Columns and sections
+
+The seeded definition binds two analytics, the =npv= and the one the
+methodology selects, so the archive carries the files those analytics write. A
+reader uses three of them.
+
+=nvp.csv= gives one row for each trade, and a reader sums its =NPV(Base)= column
+to obtain the present value of a book. Its columns are =TradeId=, =TradeType=,
+=Maturity=, =MaturityTime=, =NPV=, =NpvCurrency=, =NPV(Base)=, =BaseCurrency=,
+=Notional=, =NotionalCurrency=, =Notional(Base)=, =NettingSet= and
+=CounterParty=.
+
+=sensitivity.csv= gives one row for each trade and risk factor, for a definition
+that computes its Greeks. Its columns are =TradeId=, =IsPar=, =Factor_1=,
+=ShiftSize_1=, =Factor_2=, =ShiftSize_2=, =Currency=, =Base NPV=, =Delta=,
+=Gamma=, =Currency(Trade)=, =Base NPV(Trade)=, =Delta(Trade)=, =Gamma(Trade)= and
+=Scenario=. A =Delta= is a value change in money, and the shift size that
+produced it is in =ShiftSize_1=, already inside the number.
+
+=scenario.csv= holds the value of each trade in each shifted market, with
+columns =TradeId=, =Factor=, =Up/Down=, =Base NPV=, =ShiftSize_1=,
+=ShiftSize_2=, =Scenario NPV=, =Difference= and =Base Currency=.
+
+A definition that selects the =risk-predict= methodology writes no sensitivity
+file. It reads the Greeks the platform already holds, so the archive carries the
+present values and the approximation the report makes from them.
+
 * ORE configuration
 
 The =numeric-bump= methodology is ORE's =sensitivity= analytic. The fragment
@@ -133,22 +166,65 @@ runs no valuation and needs no =Analytic= element.
 
 * Parameters
 
-A definition of this report states the rows below. No seed declares these
-ore parameters yet, so the domains in the table are the ones the
-classification taxonomy and the engine fix, and the registry rows are still to
-be written. The mechanism is on
+A definition of this report states the rows below. The first five and the last
+four are the ones the seeded definition states, and a reader finds them on the
+definition and on the run settings it binds. The rest are the choices the
+business catalogue fixes for the report and that no seeded row carries yet. The
+mechanism is on
 [[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]].
 
 #+ATTR_HTML: :class hug-leading
-| Parameter       | Domain                                    | Default     | Meaning                                                    |
-|-----------------+-------------------------------------------+-------------+--------------------------------------------------------------|
-| scope           | book or portfolio                          | none        | The trade set the run selects.                             |
-| as_of_date      | ISO date                                   | none        | The date the valuation is taken at.                        |
-| cycle           | intraday or eod                            | eod         | Which market data cut the run reads.                       |
-| methodology     | risk-predict or numeric-bump               | risk-predict | Whether Greeks are read or computed.                       |
-| greek_set       | the measures catalogue                     | PV, Delta   | The measures the report carries.                           |
-| base_currency   | ISO 4217 code                              | EUR         | The currency the P&L measures are expressed in.            |
-| aggregation     | book, portfolio, currency pair, greek, unit hedge | scope | How the engine groups the rows it writes.            |
+| Parameter                     | Domain                                    | Seeded value     | Meaning                                                    |
+|-------------------------------+-------------------------------------------+------------------+--------------------------------------------------------------|
+| cut_kind_code                 | a kind of cut                             | LIVE             | The kind of cut the run mints at the instant it starts.     |
+| scope_portfolio               | a portfolio of the party                  | Global Portfolio | The subtree the run reads.                                  |
+| base_currency                 | ISO 4217 code                             | the entity's     | The currency the figures are expressed in.                  |
+| market_data_type              | live, eod or date                         | live             | The market data the run reads, and the date it values at.    |
+| npv.baseCurrency              | ISO 4217 code                             | the entity's     | The currency the present values are expressed in.           |
+| sensitivity.recalibrateModels | Y or N                                    | Y                | Whether models are recalibrated before bumping.             |
+| sensitivity.parSensitivity    | Y or N                                    | Y                | Whether par-rate sensitivities are computed.                |
+| sensitivity.outputSensitivityThreshold | a real                            | 0.000001         | The smallest figure the engine writes.                      |
+| sensitivity.sensitivityConfigFile | a file name                           | sensitivity.xml  | The sensitivity configuration the analytic shifts from.     |
+| methodology                   | risk-predict or numeric-bump               | not stated       | Whether Greeks are read or computed.                        |
+| greek_set                     | the measures catalogue                     | not stated       | The measures the report carries.                            |
+| aggregation                   | book, portfolio, currency pair, greek, unit hedge | not stated | How the engine groups the rows it writes.                |
+| as_of_date                    | ISO date                                   | the run's        | The date the valuation is taken at, resolved from the market data type. |
+
+* A worked read
+
+A person reads the intraday definition as a picture of risk that moves, and
+reads the close definition for a figure that stands.
+
+1. Open the run for the entity, the book and the time. Read the run instance
+   first. A run of this definition mints a LIVE cut, and the cut's label carries
+   the entity and the instant, so a reader can tell two runs of one day apart.
+2. Take =npv.csv=, select the rows for the book and sum =NPV(Base)=. That total
+   is the present value at the instant the run started.
+3. Compare with the total from the last run of the same definition. The two
+   totals are two bodies of market data and two results, so their difference is
+   a movement and not one figure computed twice.
+4. Take =sensitivity.csv= and group by =Factor_1=. Sum =Delta= in each group.
+   The largest groups are where the book's risk sits, and the =ShiftSize_1=
+   column says what each figure was measured against.
+5. Choose the deeper report from the largest group. A curve factor sends the
+   reader to a rates ladder, a volatility factor to a vol ladder, and a spot
+   factor to a spot ladder.
+6. When the day closes, read the
+   [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][close definition]] for the figures
+   that are signed off. A later run of this definition never replaces them.
+
+* What is not built
+
+- The report prices from a live cut, so two runs of a day do not reproduce each
+  other. The run records the body it priced from; it cannot return the body.
+- The dataset holds curve quotes only, and no volatility market data, so a
+  volatility factor has nothing to shift and no volatility sensitivity can be
+  computed until the store holds that data.
+- The result store is not built, so the figures live in the archive and a reader
+  opens the CSVs by hand.
+- The methodology the definition states is the computed one. The
+  =risk-predict= path, which reads stored Greeks instead of revaluing, has no
+  configuration and no seeded definition.
 
 * Test coverage
 
@@ -161,13 +237,16 @@ The smoke test that proves the machinery without gathering anything is
 
 * Related
 
-- [[file:./reports.org][Reports]] — the inventory this page is listed in.
-- [[file:../domain/risk_reporting.org][Risk reporting]] — the classification taxonomy and the measures catalogue.
-- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] — the phases every run goes through.
-- [[file:../architecture/report_compute_handoff.org][Report compute handoff]] — how the run reaches the grid.
-- [[file:../workflows/workflow_report_execution.org][Report execution]] — the workflow that runs it.
+- [[file:./reports.org][Reports]], the inventory this page is listed in.
+- [[id:07F92413-794A-4855-B761-73CC3CAF03C6][Headline Position (EOD)]], the close twin, on the authorised end of day cut.
+- [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
+- [[file:../architecture/report_compute_handoff.org][Report compute handoff]], how the run reaches the grid.
+- [[file:../workflows/workflow_report_execution.org][Report execution]], the workflow that runs it.
 - [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]]
 
 * See also
 
-- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]] — the valuation engine this report's numeric-bump path runs on.
+
+- [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — the structure note that orders this cluster, and where to read this page in it.
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine this report's numeric-bump path runs on.

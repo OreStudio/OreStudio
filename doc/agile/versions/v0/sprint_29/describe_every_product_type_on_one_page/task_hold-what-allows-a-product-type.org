@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/hold-what-allows-a-product-type
+#+pr: 4438
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -26,12 +26,12 @@ The page can answer which books allow a type and who may book one. Both answers 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-31                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
 
 * Acceptance
 
@@ -43,9 +43,28 @@ The page can answer which books allow a type and who may book one. Both answers 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two junctions, and one column that decides which of them applies.
+
+- =ores_refdata_book_product_types_tbl= holds the product types a book allows,
+  and =ores_refdata_books_tbl.restricts_product_types= says whether the junction
+  is the allowed set or whether the book allows everything. An unrestricted book
+  keeps no rows, so the same absence of rows means "all" on one book and "none"
+  on another, and the flag is what tells them apart.
+- =ores_iam_role_product_types_tbl= holds the product types a role may book. A
+  blank junction permits nothing, which is the safe reading for an authority and
+  the opposite of a book.
+- Both name the catalogue by code, a soft reference: the catalogue belongs to the
+  trading component and a foreign key would point refdata and IAM at the trades.
+- The booking path reads the book's flag first, then the junction, and refuses
+  with the rule that refused it.
+- A book published from a curated dataset states its allowed set: the books
+  publish writes the book with =restricts_product_types = true= and takes every
+  code the system catalogue holds. A later restriction is a row removed, not a
+  flag flipped, and every published book starts from the catalogue as it stands.
+- A provisioned tenant's roles all permit the whole catalogue, because the role
+  junction is the grant and a role with no rows permits nothing. A tenant that
+  could not book what the system catalogue states would be provisioned unable to
+  trade.
 
 * Measurements
 
@@ -59,9 +78,89 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Product types in the catalogue | 121, all in the system tenant | =select count(*) from ores_trading_product_types_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | 57de6412e8 |
+| Codes a published book allows | 121 per book: 242 junction rows for the 2 books of the ACME group dataset | =pg_prove ... test/refdata_book_product_types_seed_test.sql= | 57de6412e8 |
+| Grants a provisioned tenant starts with | 31 roles x 121 codes | =select count(*) from ores_iam_roles_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | 57de6412e8 |
+| Books whose rule the booking path reads | one read of the book, and the junction only when it restricts | =projects/ores.trading/core/src/service/bus_book_rules.cpp= | 57de6412e8 |
 
 * Notes
+
+** 2026-11-03 — the model decides the question the acceptance asks
+
+A book with no rows and a role with no rows mean opposite things, and that is the
+part worth stating rather than discovering: a book is a container a tenant
+configures, so a blank set is "nothing was restricted"; a role is an authority a
+tenant grants, so a blank set is "nothing was granted". The book carries a flag
+to say which; the role does not need one, because its junction is the grant.
+
+Both junctions name the catalogue by code rather than by a foreign key. The
+catalogue is the trading component's and the junctions belong to refdata and IAM,
+so a key would point the reference data at the trades; the same soft reference is
+what the instrument tables already use for a product type.
+
+** 2026-11-03 — the seed goes where the rows are made, not into a populate script
+
+The obvious home for the ACME seed is =populate/acme/=, beside the books and
+accounts, and it is the wrong one: publication is a runtime act, so a rebuilt
+database holds the ACME artefacts and no book. A populate script would write
+junction rows for books that do not exist yet and the seed would be empty on
+every run that mattered.
+
+So each junction is seeded where its rows are created:
+
+- =ores_refdata_publish_books_from_dq_fn= writes the book with
+  =restricts_product_types = true= and then takes every code the system
+  catalogue holds for the books it just inserted. The rows are held in a temp
+  table between the two statements so the publish still reports books rather
+  than the cross product.
+- =ores_iam_provision_tenant_fn= copies the system roles into a new tenant and
+  now grants each copied role the whole catalogue. A tenant is provisioned
+  unable to trade otherwise, because the role junction is the grant.
+
+** 2026-11-03 — the booking path asks one question and gets two answers
+
+The port was =book_status_port=, answering only whether a book is open. It is
+now =book_rules_port=, and the one reading of the book answers both the status
+and the flag, so a book is read once per booking and the junction is read only
+when the book restricts its product types — which is the reading the flag exists
+to spare. A refusal is coded =product_type_not_allowed= and its message names the
+rule and the type it refused, so a caller can tell it from a frozen book.
+
+An answer that cannot be had is still logged and let through. The rule is the
+book's own policy, not a permission, and a booking refused because refdata was
+busy would delete the trade a desk is trying to book. The trader holds
+=refdata::book_product_types:read= so the refusal comes from the book's rule
+rather than from a missing permission.
+
+** 2026-11-03 — what this task leaves
+
+The tenant purger deletes the trading tables it can enumerate and the IAM
+tables it names, and it names neither of the two junctions: a purge leaves their
+rows behind, as it already leaves the books they point at. That gap predates this
+task — no purge reaches the books at all — and closing it means deciding what a
+purge does with books, which is its own task.
+
+** 2026-11-03 — a test counts relationships, not rows
+
+Four marketdata suites were red on main because they asserted the size of a
+seed: ten feeds, five routes, two adapters, two suppliers, four feed scopes.
+Main's derived FX volatility catalogue added one of each and the suites failed
+without anything being wrong. The counts are now relationships that follow the
+data:
+
+- every feed names a catalogued publisher and an enabled session;
+- every public publisher reads through the Frankfurter session at end of day,
+  and routes the classes its feed states, at FX among them;
+- every feed scope names a publisher the vendor instruments belong to, and every
+  public feed carries a scope;
+- the adapters and suppliers the system tenant holds are exactly the ones the
+  dataset stages, compared as sets;
+- an insert-only publish skips as many rows as the dataset stages, whatever that
+  number is.
+
+The same rule settled this task's own suite: it asks whether a book allows
+exactly the catalogue's codes, not whether it allows 121 of them. A count is a
+fact about today's data, and a test that states it fails on the next good day.
 
 * Test Scenarios
 
@@ -78,7 +177,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4438][#4438]] | [refdata] Seed and enforce the product types a book and a role allow |
 
 * Review
 
@@ -87,3 +186,49 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two junctions exist, are seeded where their rows are made, and the booking
+path enforces the book's rule.
+
+** What a reader can now see
+
+- A book lists the product types it allows, and a role lists the product types
+  it permits: =ores_refdata_book_product_types_tbl= and
+  =ores_iam_role_product_types_tbl=, both naming the catalogue by code.
+- An unrestricted book and one that allows nothing are told apart by
+  =restricts_product_types=, and a book published from a curated dataset states
+  its allowed set instead of leaving the question open.
+- A booking of a product type the book does not allow is refused with
+  =product_type_not_allowed=, and the message names the rule and the code.
+
+** How it is proved
+
+- A pgTAP suite, =test/refdata_book_product_types_seed_test.sql=, publishes the
+  ACME group books into a fixture party and checks all nine claims: the two
+  books, the 121 codes each allows, that nothing outside the catalogue is
+  allowed, the two flag readings, and the grants a provisioned tenant gets.
+- A C++ case books a trade into a book that refuses its type and asserts the
+  refusal, the code it carries, the rule its message names, and that no anchor
+  was written. Another asserts the port reads the junction only when the book
+  restricts, and asks as the caller.
+- All 83 pgTAP suites pass, the 98 ctest suites pass, the codegen suite passes
+  1861 tests, and every local check passes.
+
+** The purge deletes what the task added
+
+The tenant purger was a hand-written list of tables, and the two junctions were
+not on it: purging a tenant would have left its books, its allowed product types
+and its role grants behind. It is now a sweep of the catalogue — every public
+table that carries a tenant_id — so a table cannot be forgotten, and the new
+junctions are purged without the function naming them. Each table's delete rules
+are disabled around its own delete; the comparator follows the column's own
+type, so a uuid comparison still reaches the tenant index and only the two
+audit tables that record an operator's tenant as a string are compared as text;
+a pass that frees nothing ends the sweep; and the two functions are security
+definer, because disabling a table's rules is an owner's act. That privilege is
+not free, so execute is revoked from PUBLIC and granted to the read-write role
+by name, and both functions guard the system-tenant context themselves.
+
+A pgTAP suite, =test/iam_tenant_purge_test.sql=, proves it on a tenant that owns
+a book and its allowed types: it counts the tenant's rows across every table
+that carries one before the purge, and again after, and expects zero.

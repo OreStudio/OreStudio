@@ -54,6 +54,8 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "branching_ratio" double precision not null default 0.0,
     "decay" double precision not null default 1.0,
     "sensitivity" double precision not null default 1.0,
+    "variance_model" text not null default 'constant',
+    "variance_calibration_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -78,7 +80,10 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     check ("process_type" in ('geometric', 'arithmetic', 'ornstein_uhlenbeck')),
     check ("price_source" in ('fixed', 'fixing')),
     check ("gmm_initial_price" > 0),
-    check ("calibration_window_days" is null or "calibration_window_days" between 2 and 180)
+    check ("calibration_window_days" is null or "calibration_window_days" between 2 and 180),
+    check ("variance_model" in ('constant', 'gjr_garch')),
+    check ("variance_model" <> 'gjr_garch' or "process_type" in ('geometric', 'arithmetic')),
+    check ("variance_model" <> 'gjr_garch' or "variance_calibration_id" is not null)
 );
 
 -- Composite natural key: unique combination for active records
@@ -127,6 +132,19 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid folder_id: %. No active folder found with this id.', NEW.folder_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate variance_calibration_id (optional soft FK to ores_synthetic_variance_calibrations_tbl)
+    if NEW.variance_calibration_id is not null then
+        if not exists (
+            select 1 from ores_synthetic_variance_calibrations_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.variance_calibration_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid variance_calibration_id: %. No active variance_calibration found with this id.', NEW.variance_calibration_id
                 using errcode = '23503';
         end if;
     end if;

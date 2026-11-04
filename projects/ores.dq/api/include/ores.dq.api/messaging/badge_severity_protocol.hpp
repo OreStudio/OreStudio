@@ -43,6 +43,8 @@ namespace ores::dq::messaging {
 
 struct badge_severity_key {
     std::string code;
+
+    friend bool operator==(const badge_severity_key&, const badge_severity_key&) = default;
 };
 
 struct badge_severity_write {
@@ -50,25 +52,36 @@ struct badge_severity_write {
     std::string name;
     std::string description;
     int display_order;
+
+    friend bool operator==(const badge_severity_write&, const badge_severity_write&) = default;
 };
 
 struct badge_severity_change {
     badge_severity_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const badge_severity_change&, const badge_severity_change&) = default;
 };
 
 struct badge_severity_removal {
     badge_severity_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const badge_severity_removal&, const badge_severity_removal&) = default;
 };
 
 struct badge_severity_lookup {
     badge_severity_key key;
     std::optional<ores::dq::domain::badge_severity> badge_severity;
+
+    friend bool operator==(const badge_severity_lookup&, const badge_severity_lookup&) = default;
 };
 
 struct badge_severities_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const badge_severities_filter&,
+                           const badge_severities_filter&) = default;
 };
 
 struct badge_severity_event {
@@ -78,17 +91,25 @@ struct badge_severity_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const badge_severity_event&, const badge_severity_event&) = default;
 };
 
 struct badge_severity_version_key {
     badge_severity_key badge_severity;
     std::uint32_t version;
+
+    friend bool operator==(const badge_severity_version_key&,
+                           const badge_severity_version_key&) = default;
 };
 
 struct badge_severity_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const badge_severity_versions_filter&,
+                           const badge_severity_versions_filter&) = default;
 };
 
 struct list_badge_severities_request {
@@ -106,12 +127,18 @@ struct list_badge_severities_request {
     ores::utility::domain::order order;
     std::optional<badge_severities_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_badge_severities_request&,
+                           const list_badge_severities_request&) = default;
 };
 
 struct list_badge_severities_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_severity> severities;
     std::uint64_t total;
+
+    friend bool operator==(const list_badge_severities_response&,
+                           const list_badge_severities_response&) = default;
 };
 
 struct get_badge_severity_request {
@@ -125,11 +152,17 @@ struct get_badge_severity_request {
      */
     static constexpr bool requires_session = true;
     badge_severity_key key;
+
+    friend bool operator==(const get_badge_severity_request&,
+                           const get_badge_severity_request&) = default;
 };
 
 struct get_badge_severity_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::badge_severity> badge_severity;
+
+    friend bool operator==(const get_badge_severity_response&,
+                           const get_badge_severity_response&) = default;
 };
 
 struct get_many_badge_severities_request {
@@ -143,11 +176,17 @@ struct get_many_badge_severities_request {
      */
     static constexpr bool requires_session = true;
     std::vector<badge_severity_key> keys;
+
+    friend bool operator==(const get_many_badge_severities_request&,
+                           const get_many_badge_severities_request&) = default;
 };
 
 struct get_many_badge_severities_response {
     ores::utility::domain::result result;
     std::vector<badge_severity_lookup> entries;
+
+    friend bool operator==(const get_many_badge_severities_response&,
+                           const get_many_badge_severities_response&) = default;
 };
 
 struct put_badge_severity_request {
@@ -162,11 +201,17 @@ struct put_badge_severity_request {
     static constexpr bool requires_session = true;
     badge_severity_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_badge_severity_request&,
+                           const put_badge_severity_request&) = default;
 };
 
 struct put_badge_severity_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::badge_severity> badge_severity;
+
+    friend bool operator==(const put_badge_severity_response&,
+                           const put_badge_severity_response&) = default;
 };
 
 struct put_many_badge_severities_request {
@@ -181,11 +226,17 @@ struct put_many_badge_severities_request {
     static constexpr bool requires_session = true;
     std::vector<badge_severity_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_badge_severities_request&,
+                           const put_many_badge_severities_request&) = default;
 };
 
 struct put_many_badge_severities_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_severity> severities;
+
+    friend bool operator==(const put_many_badge_severities_response&,
+                           const put_many_badge_severities_response&) = default;
 };
 
 struct delete_badge_severity_request {
@@ -200,10 +251,16 @@ struct delete_badge_severity_request {
     static constexpr bool requires_session = true;
     badge_severity_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_badge_severity_request&,
+                           const delete_badge_severity_request&) = default;
 };
 
 struct delete_badge_severity_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_badge_severity_response&,
+                           const delete_badge_severity_response&) = default;
 };
 
 struct delete_many_badge_severities_request {
@@ -218,10 +275,16 @@ struct delete_many_badge_severities_request {
     static constexpr bool requires_session = true;
     std::vector<badge_severity_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_badge_severities_request&,
+                           const delete_many_badge_severities_request&) = default;
 };
 
 struct delete_many_badge_severities_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_badge_severities_response&,
+                           const delete_many_badge_severities_response&) = default;
 };
 
 struct list_badge_severity_versions_request {
@@ -239,12 +302,18 @@ struct list_badge_severity_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<badge_severity_versions_filter> filter;
+
+    friend bool operator==(const list_badge_severity_versions_request&,
+                           const list_badge_severity_versions_request&) = default;
 };
 
 struct list_badge_severity_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_severity> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_badge_severity_versions_response&,
+                           const list_badge_severity_versions_response&) = default;
 };
 
 struct get_badge_severity_version_request {
@@ -258,11 +327,17 @@ struct get_badge_severity_version_request {
      */
     static constexpr bool requires_session = true;
     badge_severity_version_key key;
+
+    friend bool operator==(const get_badge_severity_version_request&,
+                           const get_badge_severity_version_request&) = default;
 };
 
 struct get_badge_severity_version_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::badge_severity> version;
+
+    friend bool operator==(const get_badge_severity_version_response&,
+                           const get_badge_severity_version_response&) = default;
 };
 
 /**
@@ -274,9 +349,9 @@ struct get_badge_severity_version_response {
  * of them.
  */
 namespace badge_severity_event_subjects {
-inline constexpr std::string_view created = "dq.v1.badge_severities_events.created";
-inline constexpr std::string_view updated = "dq.v1.badge_severities_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.badge_severities_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.badge_severities.created";
+inline constexpr std::string_view updated = "dq.v1.events.badge_severities.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.badge_severities.deleted";
 }
 /**
  * @brief The members of badge_severity_key, named as the wire names them and in the order

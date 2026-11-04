@@ -1539,7 +1539,7 @@ def derive_junction_events(junction):
 
     A junction that states ``:events: true`` announces its changes like any
     entity: a notify trigger names the link by both columns, and the service
-    publishes it on ``<component>.v1.<name>_events``. Sets the table's channel
+    publishes it on ``<component>.v1.events.<name>``. Sets the table's channel
     name, the subject prefix, and the declarations the trigger spells for each
     key column. A key column is spelled as text, which is what the JSON key
     record reads back, whatever the column's own type.
@@ -1556,7 +1556,7 @@ def derive_junction_events(junction):
                 f"{owner}: cannot announce a link keyed by the date column "
                 f"{junction[side]['column']}")
     junction['events_channel'] = table[:-len('_tbl')]
-    junction['event_prefix'] = f"{junction['component']}.v1.{junction['name']}_events"
+    junction['event_prefix'] = f"{junction['component']}.v1.events.{junction['name']}"
     junction['event_key_columns'] = [
         {'column': column, 'last': index == len(columns) - 1}
         for index, column in enumerate(columns)]
@@ -1727,6 +1727,7 @@ def _member_headers(cpp_types, model_path, domain_entity):
     root = "ores." + (
         domain_entity.get("component_include") or (
             f"{domain_entity.get('component')}.{domain_entity.get('subcomponent')}"))
+    own = "ores." + str(domain_entity.get("component") or "")
     out = []
 
     def add(header):
@@ -1754,7 +1755,14 @@ def _member_headers(cpp_types, model_path, domain_entity):
             # The wire envelope's own types arrive through its header.
             if parts[1] == "utility":
                 continue
-            add_named(name, f"{parts[0]}.{parts[1]}.api")
+            # A type of the model's own component is under the model's own
+            # root, which is its api subcomponent for most and core for some.
+            owner = f"{parts[0]}.{parts[1]}"
+            add_named(name, root if owner == own else f"{owner}.api")
+        # A message in the component's own namespace names its types as
+        # "domain::x", which is neither of the two forms above.
+        for name in re.findall(r"(?<![\w:])domain::(\w+)", cpp_type):
+            add_named(name, root)
         for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
             add_named(name, None)
     return out
@@ -1882,6 +1890,71 @@ def _facet_enabled(model_path, facet, addresses):
     return all(is_enabled(address, facet, "ores.cpp", overrides, False)
                for address in addresses)
 
+
+_OBSERVER_SPECIALISATION = re.compile(
+    r"entity_write_observer<\s*(?:::)?ores::\w+::repository::(\w+)_entity\s*>")
+
+
+@functools.lru_cache(maxsize=None)
+def _write_observers(component_root):
+    """Each observed entity of a component, with the header that observes it.
+
+    A component observes an entity's writes by specialising
+    entity_write_observer for its entity type, and the specialisation only acts
+    where the repository sees it. The specialisations are the record of which
+    entities are observed, so they are read from the headers that state them.
+    Two headers observing one entity is refused, because only one of them can
+    be the one a repository sees.
+    """
+    root = Path(component_root)
+    observed = {}
+    for header in sorted(root.glob("**/include/**/*.hpp")):
+        text = header.read_text(encoding="utf-8", errors="ignore")
+        if "entity_write_observer<" not in text:
+            continue
+        parts = header.relative_to(root).parts
+        include = "/".join(parts[parts.index("include") + 1:])
+        for entity in _OBSERVER_SPECIALISATION.findall(text):
+            if entity in observed and observed[entity] != include:
+                raise ValueError(
+                    f"the entity {entity} is observed in both {observed[entity]} and "
+                    f"{include}; a repository can see only one of them.")
+            observed[entity] = include
+    return observed
+
+
+def _unseen_write_observer(model_text, entity, observers):
+    """The observer header an observed entity's model does not include, or None."""
+    header = observers.get(entity)
+    if header is None:
+        return None
+    return None if f'#include "{header}"' in model_text else header
+
+
+def _require_visible_write_observer(model_path, entity):
+    """Refuse a model whose observed entity's repository would not see its observer.
+
+    Without the include, the repository writes through the primary template and
+    observes nothing, and whether it sees the specialisation depends on which
+    unity batch it lands in. That failed silently once, for 32 repositories.
+    """
+    if not model_path or not entity:
+        return
+    # A component's models live in its modeling directory, beside the include
+    # trees the observers are declared in. A model elsewhere is a fixture with
+    # no component around it, so there is nothing to scan.
+    modeling = Path(model_path).resolve().parent
+    if modeling.name != "modeling":
+        return
+    header = _unseen_write_observer(
+        Path(model_path).read_text(encoding="utf-8"), entity,
+        _write_observers(str(modeling.parent)))
+    if header is not None:
+        raise ValueError(
+            f"{Path(model_path).name}: the entity {entity} is observed in {header}, "
+            f"but the model's repository does not include it, so its writes would "
+            f"go unobserved. Add an impl_includes block naming "
+            f'#include "{header}".')
 
 def _protocol_enabled(model_path):
     """Whether a model generates its protocol header, after its own overrides."""
@@ -2774,16 +2847,8 @@ def _mapper_include_gates(entity: dict[str, Any]) -> dict[str, bool]:
         for t in enum_types
         if (m := re.fullmatch(r'ores::(\w+)::domain::(\w+)', t or ''))
     })
-    # A column the model states a store transform for names the transform in
-    # the mapper's write direction, so the header that declares it is included
-    # once however many columns ask for the same one.
-    transform_headers = sorted({
-        c['store_transform_include'] for c in columns
-        if c.get('store_transform_include')
-    })
     return {
         'mapper_enum_includes': [{'path': h} for h in enum_headers],
-        'mapper_store_transform_includes': [{'path': h} for h in transform_headers],
         'mapper_uses_optional': any(
             c.get('is_optional_uuid') or c.get('is_optional_timestamp')
             or (c.get('is_date') and c.get('is_optional_date'))
@@ -4365,6 +4430,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['has_no_wire_columns'] = any(
                 c.get('no_wire') for c in domain_entity['columns']
             )
+            # The roundtrip test checks the struct's member count against its
+            # wire_fields, so it needs the members the shape leaves out.
+            domain_entity['wire_left_out'] = sum(
+                1 for c in domain_entity['columns']
+                if c.get('no_wire') and not c.get('sql_only')
+                and not c.get('is_identity_group_column'))
             # The mapper's own include gate: read and write both convert
             # through boost::asio::ip, which the mapper template includes
             # under this flag rather than relying on a transitive include
@@ -6437,6 +6508,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['message_codec_includes'] = _message_codec_includes(
             domain_entity, model_path)
         domain_entity['has_generated_wire_codec'] = _has_wire_codec(model_path)
+        _require_visible_write_observer(model_path, domain_entity.get('entity_singular'))
         # The wire-shape function below iterates a message's fields, and a
         # field states its own name, which shadows the message's. The message
         # states its name a second time so the field loop can still reach it.
@@ -6763,6 +6835,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         junction['wire_codec_includes'] = _codec_includes(junction, model_path)
         junction['message_codec_includes'] = _message_codec_includes(junction, model_path)
         junction['has_generated_wire_codec'] = _has_wire_codec(model_path)
+        # The junction codec names every column, so its shape leaves none out.
+        junction['wire_left_out'] = 0
+        _require_visible_write_observer(model_path, junction.get('name_singular'))
         for _message in junction['messages']:
             _message['struct_name'] = _message['name']
         # The record a caller sends, on the shape rather than on the junction
@@ -6802,6 +6877,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                                        _HTTP_RECIPE_TEMPLATE)):
             _shape = junction_entity_shape(junction)
             _shape['messages'] = junction['messages']
+            # The route and shell units encode through the junction's own
+            # codec where it has one, as an entity's do.
+            _shape['has_generated_wire_codec'] = junction['has_generated_wire_codec']
             _shape['write_fields'] = write_record_for(_shape)
             _shape['operations'] = _ops
             for _verb, _verb_ops in operations_by_verb(_ops).items():
@@ -6966,6 +7044,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             fg['component_dir'] = f"ores.{component}"
         fg['component_include_upper'] = fg['component_include'].replace('.', '_').upper()
         fg['has_generated_wire_codec'] = _has_wire_codec(model_path)
+        # Every field of a group is a struct member, unlike an entity column,
+        # which may be sql_only or sit inside the identity group.
+        fg['wire_left_out'] = sum(1 for f in fg.get('fields') or [] if f.get('no_wire'))
+        # A group's members may be entities, whose shapes are in their codec
+        # headers, so the group's roundtrip test includes them.
+        fg['wire_codec_includes'] = _member_headers(
+            (f.get('cpp_type', '') for f in fg.get('fields') or []), model_path, fg)
         # Compute include-guard suffix from entity_singular
         if 'entity_singular' in fg:
             fg['entity_singular_upper'] = fg['entity_singular'].upper()

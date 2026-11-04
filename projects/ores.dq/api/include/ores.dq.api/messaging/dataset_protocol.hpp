@@ -43,6 +43,8 @@ namespace ores::dq::messaging {
 
 struct dataset_key {
     std::string code;
+
+    friend bool operator==(const dataset_key&, const dataset_key&) = default;
 };
 
 struct dataset_write {
@@ -66,25 +68,35 @@ struct dataset_write {
     std::chrono::system_clock::time_point ingestion_timestamp;
     std::optional<std::string> license_info;
     std::string artefact_type;
+
+    friend bool operator==(const dataset_write&, const dataset_write&) = default;
 };
 
 struct dataset_change {
     dataset_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const dataset_change&, const dataset_change&) = default;
 };
 
 struct dataset_removal {
     dataset_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const dataset_removal&, const dataset_removal&) = default;
 };
 
 struct dataset_lookup {
     dataset_key key;
     std::optional<ores::dq::domain::dataset> dataset;
+
+    friend bool operator==(const dataset_lookup&, const dataset_lookup&) = default;
 };
 
 struct datasets_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const datasets_filter&, const datasets_filter&) = default;
 };
 
 struct dataset_event {
@@ -94,17 +106,24 @@ struct dataset_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const dataset_event&, const dataset_event&) = default;
 };
 
 struct dataset_version_key {
     dataset_key dataset;
     std::uint32_t version;
+
+    friend bool operator==(const dataset_version_key&, const dataset_version_key&) = default;
 };
 
 struct dataset_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const dataset_versions_filter&,
+                           const dataset_versions_filter&) = default;
 };
 
 struct list_datasets_request {
@@ -122,12 +141,16 @@ struct list_datasets_request {
     ores::utility::domain::order order;
     std::optional<datasets_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_datasets_request&, const list_datasets_request&) = default;
 };
 
 struct list_datasets_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset> datasets;
     std::uint64_t total;
+
+    friend bool operator==(const list_datasets_response&, const list_datasets_response&) = default;
 };
 
 struct get_dataset_request {
@@ -141,11 +164,15 @@ struct get_dataset_request {
      */
     static constexpr bool requires_session = true;
     dataset_key key;
+
+    friend bool operator==(const get_dataset_request&, const get_dataset_request&) = default;
 };
 
 struct get_dataset_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::dataset> dataset;
+
+    friend bool operator==(const get_dataset_response&, const get_dataset_response&) = default;
 };
 
 struct get_many_datasets_request {
@@ -159,11 +186,17 @@ struct get_many_datasets_request {
      */
     static constexpr bool requires_session = true;
     std::vector<dataset_key> keys;
+
+    friend bool operator==(const get_many_datasets_request&,
+                           const get_many_datasets_request&) = default;
 };
 
 struct get_many_datasets_response {
     ores::utility::domain::result result;
     std::vector<dataset_lookup> entries;
+
+    friend bool operator==(const get_many_datasets_response&,
+                           const get_many_datasets_response&) = default;
 };
 
 struct put_dataset_request {
@@ -178,11 +211,15 @@ struct put_dataset_request {
     static constexpr bool requires_session = true;
     dataset_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_dataset_request&, const put_dataset_request&) = default;
 };
 
 struct put_dataset_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::dataset> dataset;
+
+    friend bool operator==(const put_dataset_response&, const put_dataset_response&) = default;
 };
 
 struct put_many_datasets_request {
@@ -197,11 +234,17 @@ struct put_many_datasets_request {
     static constexpr bool requires_session = true;
     std::vector<dataset_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_datasets_request&,
+                           const put_many_datasets_request&) = default;
 };
 
 struct put_many_datasets_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset> datasets;
+
+    friend bool operator==(const put_many_datasets_response&,
+                           const put_many_datasets_response&) = default;
 };
 
 struct delete_dataset_request {
@@ -216,10 +259,15 @@ struct delete_dataset_request {
     static constexpr bool requires_session = true;
     dataset_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_dataset_request&, const delete_dataset_request&) = default;
 };
 
 struct delete_dataset_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_dataset_response&,
+                           const delete_dataset_response&) = default;
 };
 
 struct delete_many_datasets_request {
@@ -234,10 +282,16 @@ struct delete_many_datasets_request {
     static constexpr bool requires_session = true;
     std::vector<dataset_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_datasets_request&,
+                           const delete_many_datasets_request&) = default;
 };
 
 struct delete_many_datasets_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_datasets_response&,
+                           const delete_many_datasets_response&) = default;
 };
 
 struct list_dataset_versions_request {
@@ -255,12 +309,18 @@ struct list_dataset_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<dataset_versions_filter> filter;
+
+    friend bool operator==(const list_dataset_versions_request&,
+                           const list_dataset_versions_request&) = default;
 };
 
 struct list_dataset_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_dataset_versions_response&,
+                           const list_dataset_versions_response&) = default;
 };
 
 struct get_dataset_version_request {
@@ -274,11 +334,17 @@ struct get_dataset_version_request {
      */
     static constexpr bool requires_session = true;
     dataset_version_key key;
+
+    friend bool operator==(const get_dataset_version_request&,
+                           const get_dataset_version_request&) = default;
 };
 
 struct get_dataset_version_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::dataset> version;
+
+    friend bool operator==(const get_dataset_version_response&,
+                           const get_dataset_version_response&) = default;
 };
 
 /**
@@ -290,9 +356,9 @@ struct get_dataset_version_response {
  * of them.
  */
 namespace dataset_event_subjects {
-inline constexpr std::string_view created = "dq.v1.datasets_events.created";
-inline constexpr std::string_view updated = "dq.v1.datasets_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.datasets.created";
+inline constexpr std::string_view updated = "dq.v1.events.datasets.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
 }
 /**
  * @brief The members of dataset_key, named as the wire names them and in the order

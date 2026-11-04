@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 248D66E3-4FC1-4A95-BEBC-35686227B58C
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.seed_profile_parameter
 #+description: Codegen entity model for the iam seed_profile_parameter table. Drives the C++ domain class, mapper, repository, service, handler, protocol and SQL schema generation from a single literate source.

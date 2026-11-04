@@ -21,7 +21,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import cookie from '@fastify/cookie';
@@ -71,6 +71,7 @@ import { registerGridAppVersionRoutes } from './grid-app-versions.js';
 import { registerGridReportRunRoutes } from './grid-report-runs.js';
 import { registerGridReportResultsRoutes } from './grid-report-results.js';
 import { registerGridDownloadRoutes } from './grid-downloads.js';
+import { registerReportRunFileRoutes } from './report-run-files.js';
 import { registerGridJobsRoutes } from './grid-jobs.js';
 import { registerOperationsRoutes } from './operations.js';
 import { registerRecordRoutes } from './records.js';
@@ -629,6 +630,12 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     // BFF's lines for that request, so a failure on screen leads to its log lines.
     server.addHook('onSend', async (request, reply) => {
         reply.header('x-request-id', request.id);
+        // An answer to the API is the session's own record, read a moment ago:
+        // a browser that kept it would show the rows from before the change.
+        // A route that states its own lifetime keeps it.
+        if (request.url.startsWith('/api/') && reply.getHeader('cache-control') === undefined) {
+            reply.header('cache-control', 'private, no-store');
+        }
     });
 
     /*
@@ -2725,6 +2732,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerGridReportRunRoutes(server, requireSession);
     registerGridReportResultsRoutes(server, requireSession);
     registerGridDownloadRoutes(server, requireSession);
+    registerReportRunFileRoutes(server, requireSession);
 
     /**
      * The reasons a write may carry.
@@ -3046,7 +3054,12 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     const browserDirectory = browserBundleDirectory();
     const browserBundle = existsSync(browserDirectory) ? browserDirectory : undefined;
     if (browserBundle !== undefined) {
-        void server.register(fastifyStatic, { root: browserBundle });
+        void server.register(fastifyStatic, {
+            root: browserBundle,
+            setHeaders: (reply, path) => {
+                reply.header('cache-control', bundleCacheControl(browserBundle, path));
+            },
+        });
         server.log.info({ directory: browserBundle }, 'serving the browser bundle');
     } else {
         server.log.info(
@@ -3099,6 +3112,21 @@ function readPem(value: string, label: string): string {
  */
 export function browserBundleDirectory(): string {
     return resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'web', 'dist');
+}
+
+/**
+ * How long a browser may keep a file of the bundle.
+ *
+ * A file under the bundle's assets/ carries its content's hash in its name, so a new build
+ * names new files and the old ones may be kept for good. The entry point names
+ * those files, so it is never kept: a browser that kept it would run the build
+ * it first loaded, even after a reload.
+ */
+export function bundleCacheControl(root: string, path: string): string {
+    const within = relative(root, path).split(sep);
+    return within.length > 1 && within[0] === 'assets'
+        ? 'public, max-age=31536000, immutable'
+        : 'no-store';
 }
 
 /** Whether a request belongs to the API rather than the interface's own routes. */

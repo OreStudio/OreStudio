@@ -1,0 +1,31 @@
+rules: returns>=250, starts agree, 0.80<=persistence<=0.995, alpha+gamma/2>=0.01
+pair | state | returns | starts_agreed | persistence | alpha | gamma | outcome
+AUD/USD | approved | 254 | True | 0.9876 | 0.0745 | -0.0665 | not proposed: Fitted from a full year of IMF fixings; the starts agree.
+CAD/JPY | proposed | 271 | False | 0.6443 | 0.00823 | 0.0719 | waits: starts disagree, persistence out of range
+EUR/AUD | proposed | 280 | True | 0.9496 | 5.07e-11 | 0.101 | passes
+EUR/CAD | proposed | 280 | True | 0.6796 | 0.0533 | 0.0091 | waits: persistence out of range
+EUR/CHF | proposed | 280 | True | 0.3616 | 0.000717 | 0.401 | waits: persistence out of range
+EUR/GBP | proposed | 280 | True | 0.9987 | 5.7e-11 | 0.0451 | waits: persistence out of range
+EUR/JPY | proposed | 280 | False | 0.1670 | 8.94e-11 | 0.133 | waits: starts disagree, persistence out of range
+EUR/NOK | proposed | 280 | False | 0.7892 | 0.0459 | 0.065 | waits: starts disagree, persistence out of range
+EUR/SEK | proposed | 280 | True | 0.9359 | 0.144 | -0.0706 | passes
+EUR/USD | proposed | 280 | True | 0.9551 | 0.0114 | 0.0229 | passes
+GBP/USD | proposed | 270 | True | 0.9783 | 0.0137 | 0.0235 | passes
+NZD/USD | proposed | 258 | True | 0.9603 | 0.00764 | 0.0291 | passes
+USD/BRL | proposed | 262 | True | 0.9792 | 0.00401 | 0.0755 | passes
+USD/CAD | rejected | 242 | False | 0.0000 | 0 | 0 | not proposed: the input holds 242 daily returns and a fit needs 250
+USD/CHF | proposed | 256 | True | 0.9375 | 2.74e-12 | 2.96e-11 | waits: no reaction
+USD/CLP | proposed | 266 | True | 0.9350 | 0.12 | -0.112 | passes
+USD/CZK | proposed | 258 | False | 0.9616 | 0.0479 | -0.0479 | waits: starts disagree
+USD/DKK | proposed | 254 | True | 0.9555 | 0.0315 | -0.0109 | passes
+USD/ILS | proposed | 253 | True | 0.9649 | 0.0122 | 0.0127 | passes
+USD/INR | rejected | 249 | False | 0.0000 | 0 | 0 | not proposed: the input holds 249 daily returns and a fit needs 250
+USD/JPY | proposed | 256 | True | 0.2190 | 2.93e-11 | 0.315 | waits: persistence out of range
+USD/KRW | proposed | 256 | True | 0.8691 | 0.13 | -0.108 | passes
+USD/MXN | proposed | 254 | True | 0.9208 | 0.198 | -0.198 | passes
+USD/NOK | proposed | 252 | False | 1.0000 | 6.13e-11 | 0.0408 | waits: starts disagree, persistence out of range
+USD/PLN | proposed | 264 | True | 0.9222 | 0.107 | -0.107 | passes
+USD/SEK | rejected | 248 | False | 0.0000 | 0 | 0 | not proposed: the input holds 248 daily returns and a fit needs 250
+USD/SGD | proposed | 264 | True | 0.9931 | 0.0164 | 0.0506 | passes
+USD/TRY | proposed | 275 | False | 0.3608 | 0.000208 | 0.721 | waits: starts disagree, persistence out of range
+proposed fits: 24; pass: 13; wait: 11

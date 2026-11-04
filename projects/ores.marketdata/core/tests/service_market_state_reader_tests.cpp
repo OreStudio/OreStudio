@@ -17,15 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "market_state_run_fixture.hpp"
 #include "ores.marketdata.core/service/market_state_reader.hpp"
-#include "ores.ore.core/results/payload_index.hpp"
-#include "ores.utility/compression/gzip.hpp"
-#include "ores.utility/convert/base64_converter.hpp"
-#include "ores.utility/crypto/sha256.hpp"
-#include <boost/json.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <cstdint>
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -34,19 +31,12 @@ namespace {
 const std::string market_state_tags("[marketdata][market_state_reader]");
 
 using ores::marketdata::service::market_state_file;
-using ores::marketdata::service::market_state_run;
 using ores::marketdata::service::read_market_state;
+using ores::marketdata::tests::a_market_state_run;
 
 const auto priced_at = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31};
 
-market_state_run the_run() {
-    return market_state_run{.party_id = boost::uuids::random_generator()(),
-                            .report_instance_id = boost::uuids::random_generator()(),
-                            .report_definition_id = boost::uuids::random_generator()(),
-                            .as_of = priced_at};
-}
-
-std::string two_date_cube_file() {
+std::string two_date_scenario_file() {
     return "#Date,Scenario,Numeraire,DiscountCurve/USD/0,DiscountCurve/USD/1\n"
            "2026-10-31,BASE,1.0,0.99,0.98\n"
            "2026-10-31,UP,1.0,1.01,1.00\n"
@@ -55,102 +45,207 @@ std::string two_date_cube_file() {
 
 }
 
-TEST_CASE("a cube is stored as one compressed payload with an index of its keys",
+TEST_CASE("a scenario file is stored as one value for each factor of each line",
           market_state_tags) {
-    const auto run = the_run();
+    const auto run = a_market_state_run(priced_at);
     const auto result = boost::uuids::random_generator()();
-    const auto body = two_date_cube_file();
+    const auto outcome = read_market_state({market_state_file{.result_id = result,
+                                                              .name = "stress_scenarios.csv",
+                                                              .body = two_date_scenario_file()}},
+                                           run);
+
+    REQUIRE(outcome.refusals.empty());
+    CHECK(outcome.left_alone.empty());
+    CHECK(outcome.families == std::vector<std::string>{"stress_scenarios"});
+    CHECK(outcome.calibration_values.empty());
+
+    // Three lines, three factors each.
+    REQUIRE(outcome.scenario_values.size() == 9);
+
+    const auto found = std::ranges::find_if(outcome.scenario_values, [](const auto& one) {
+        return one.line == 3 && one.factor == "DiscountCurve/USD/0";
+    });
+    REQUIRE(found != outcome.scenario_values.end());
+    CHECK(found->scenario == "UP");
+    CHECK(found->value == 1.01);
+    CHECK(found->family == "stress_scenarios");
+    CHECK(found->source == "stress_scenarios.csv");
+    CHECK(found->result_id == result);
+    CHECK(found->party_id == run.party_id);
+    CHECK(found->report_instance_id == run.report_instance_id);
+    CHECK(found->report_definition_id == run.report_definition_id);
+    CHECK(found->as_of == std::chrono::sys_days{std::chrono::year{2026} / 10 / 31});
+
+    // The line's own date is the observation, not the run's.
+    const auto later = std::ranges::find_if(outcome.scenario_values,
+                                            [](const auto& one) { return one.line == 4; });
+    REQUIRE(later != outcome.scenario_values.end());
+    CHECK(later->as_of == std::chrono::sys_days{std::chrono::year{2026} / 11 / 30});
+}
+
+TEST_CASE("a calibration is stored as one value for each line, text kept as text",
+          market_state_tags) {
+    const auto run = a_market_state_run(priced_at);
     const auto outcome = read_market_state(
-        {market_state_file{.result_id = result, .name = "stress_scenarios.csv", .body = body}},
+        {market_state_file{
+            .name = "todaysmarketcalibration.csv",
+            .body = "#MarketObjectType,MarketObjectId,ResultId,ResultKey1,ResultKey2,ResultKey3,"
+                    "ResultType,ResultValue\n"
+                    "yieldCurve,USD1D,currency,,,,string,USD\n"
+                    "yieldCurve,USD1D,time,2016-02-08,MM/RATE/USD/0D/1D,,double,0.00821918\n"}},
         run);
 
     REQUIRE(outcome.refusals.empty());
-    REQUIRE(outcome.payloads.size() == 1);
-    CHECK(outcome.left_alone.empty());
+    CHECK(outcome.scenario_values.empty());
+    REQUIRE(outcome.calibration_values.size() == 2);
 
-    const auto& payload = outcome.payloads.front();
-    CHECK(payload.family == "stress_scenarios");
-    CHECK(payload.file_name == "stress_scenarios.csv");
-    CHECK(payload.party_id == run.party_id);
-    CHECK(payload.report_instance_id == run.report_instance_id);
-    CHECK(payload.report_definition_id == run.report_definition_id);
-    CHECK(payload.as_of == priced_at);
-    CHECK(payload.row_count == 3);
-    CHECK(payload.column_count == 5);
-    CHECK_FALSE(payload.keys_truncated);
-    CHECK(payload.result_id == result);
+    const auto& text = outcome.calibration_values[0];
+    CHECK(text.market_object_type == "yieldCurve");
+    CHECK(text.market_object_id == "USD1D");
+    CHECK(text.result_name == "currency");
+    CHECK(text.value == "USD");
+    CHECK_FALSE(text.figure.has_value());
+    CHECK(text.line == 2);
+    CHECK(text.as_of == priced_at);
 
-    // The headings and the keys are read out of the index the reader wrote, so a
-    // screen can find a slice without unpacking the file.
-    const auto columns = boost::json::parse(payload.column_names).as_array();
-    REQUIRE(columns.size() == 5);
-    CHECK(columns[0].as_string() == "Date");
+    const auto& pillar = outcome.calibration_values[1];
+    CHECK(pillar.result_key_1 == "2016-02-08");
+    CHECK(pillar.result_key_2 == "MM/RATE/USD/0D/1D");
+    REQUIRE(pillar.figure.has_value());
+    CHECK(*pillar.figure == 0.00821918);
+    CHECK(pillar.line == 3);
+}
 
-    const auto keys = boost::json::parse(payload.key_values).as_object();
-    const auto& dates = keys.at("Date").as_array();
-    CHECK(dates.size() == 2);
-    CHECK(dates[0].as_string() == "2026-10-31");
-    CHECK(dates[1].as_string() == "2026-11-30");
-    CHECK(keys.at("Scenario").as_array().size() == 2);
+TEST_CASE("a market-state family the definition skips stores no rows and is named",
+          market_state_tags) {
+    auto run = a_market_state_run(priced_at);
+    run.families = ores::ore::results::family_selection_of("stress_scenarios");
+    const auto outcome = read_market_state(
+        {market_state_file{.name = "stress_scenarios.csv", .body = two_date_scenario_file()},
+         market_state_file{
+             .name = "todaysmarketcalibration.csv",
+             .body = "#MarketObjectType,MarketObjectId,ResultId,ResultKey1,ResultKey2,ResultKey3,"
+                     "ResultType,ResultValue\n"
+                     "yieldCurve,USD1D,currency,,,,string,USD\n"}},
+        run);
 
-    // The payload is the file itself: compressed, then held as text.
-    const auto compressed_bytes =
-        ores::utility::convert::base64_converter::convert(payload.payload);
-    const auto unpacked = ores::utility::compression::gzip_decompress(std::span<const char>(
-        reinterpret_cast<const char*>(compressed_bytes.data()), compressed_bytes.size()));
-    CHECK(std::string(unpacked.begin(), unpacked.end()) == body);
-    CHECK(payload.payload_bytes ==
-          static_cast<int>(ores::utility::compression::gzip_compress(
-                               std::span<const char>(body.data(), body.size()))
-                               .size()));
-    CHECK(payload.content_sha256 == ores::utility::crypto::sha256::hex_digest(body));
+    REQUIRE(outcome.refusals.empty());
+    CHECK(outcome.scenario_values.empty());
+    CHECK(outcome.skipped == std::vector<std::string>{"stress_scenarios.csv"});
+    CHECK(outcome.calibration_values.size() == 1);
+    CHECK(outcome.families == std::vector<std::string>{"todays_market_calibration"});
+}
+
+TEST_CASE("the quotes, fixings and dividends a run read are one value for each line",
+          market_state_tags) {
+    const auto run = a_market_state_run(priced_at);
+    const auto outcome = read_market_state(
+        {market_state_file{.name = "marketdata.csv",
+                           .body = "#datumDate,datumId,datumValue\n"
+                                   "2026-10-30,FX/RATE/EUR/USD,1.17\n"
+                                   "2026-10-30,FX/RATE/GBP/USD,1.35\n"},
+         market_state_file{.name = "dividends.csv",
+                           .body = "#dividendExDate,equityId,dividendRate,dividendPaymentDate\n"
+                                   "2026-03-20,SP5,1.25,2026-04-01\n"}},
+        run);
+
+    REQUIRE(outcome.refusals.empty());
+    CHECK(outcome.families == std::vector<std::string>{"market_data_report", "dividends_report"});
+    REQUIRE(outcome.input_values.size() == 3);
+
+    const auto& gbp = outcome.input_values[1];
+    CHECK(gbp.family == "market_data_report");
+    CHECK(gbp.datum_id == "FX/RATE/GBP/USD");
+    CHECK(gbp.value == 1.35);
+    CHECK(gbp.line == 3);
+    CHECK(gbp.source == "marketdata.csv");
+    CHECK(gbp.as_of == std::chrono::sys_days{std::chrono::year{2026} / 10 / 30});
+    CHECK_FALSE(gbp.payment_date.has_value());
+
+    const auto& dividend = outcome.input_values[2];
+    CHECK(dividend.family == "dividends_report");
+    CHECK(dividend.datum_id == "SP5");
+    REQUIRE(dividend.payment_date.has_value());
+    CHECK(*dividend.payment_date == std::chrono::sys_days{std::chrono::year{2026} / 4 / 1});
 }
 
 TEST_CASE("a run's results are left alone rather than stored as market state", market_state_tags) {
     const auto outcome = read_market_state(
         {market_state_file{.name = "npv.csv", .body = "#TradeId,NPV\nT1,1.0\n"},
+         market_state_file{.name = "netcube.csv", .body = "#Id,NettingSet\n"},
          market_state_file{.name = "something-else.txt", .body = "not a table\n"}},
-        the_run());
+        a_market_state_run(priced_at));
 
     CHECK(outcome.refusals.empty());
-    CHECK(outcome.payloads.empty());
-    REQUIRE(outcome.left_alone.size() == 2);
-    CHECK(outcome.left_alone[0] == "npv.csv");
-    CHECK(outcome.left_alone[1] == "something-else.txt");
+    CHECK(outcome.scenario_values.empty());
+    CHECK(outcome.calibration_values.empty());
+    CHECK(outcome.families.empty());
+    CHECK(outcome.left_alone ==
+          std::vector<std::string>{"npv.csv", "netcube.csv", "something-else.txt"});
 }
 
 TEST_CASE("a market-state file with no heading stops the run's state", market_state_tags) {
     const auto outcome =
-        read_market_state({market_state_file{.name = "rawcube.csv", .body = ""}}, the_run());
+        read_market_state({market_state_file{.name = "stress_scenarios.csv", .body = ""}},
+                          a_market_state_run(priced_at));
 
     REQUIRE_FALSE(outcome.refusals.empty());
-    CHECK(outcome.refusals.front().find("rawcube") != std::string::npos);
-    CHECK(outcome.payloads.empty());
+    CHECK(outcome.refusals.front().find("stress_scenarios") != std::string::npos);
+    CHECK(outcome.scenario_values.empty());
+}
+
+TEST_CASE("a scenario line whose date is not a date stops the run's state", market_state_tags) {
+    const auto outcome =
+        read_market_state({market_state_file{.name = "stress_scenarios.csv",
+                                             .body = "#Date,Scenario,Numeraire\nsoon,BASE,1.0\n"}},
+                          a_market_state_run(priced_at));
+
+    REQUIRE(outcome.refusals.size() == 1);
+    CHECK(outcome.refusals.front().find("line 2") != std::string::npos);
+}
+
+TEST_CASE("a scenario file refused part way leaves no rows and names no family",
+          market_state_tags) {
+    const auto outcome = read_market_state({market_state_file{.name = "stress_scenarios.csv",
+                                                              .body = "#Date,Scenario,Numeraire\n"
+                                                                      "2026-10-31,BASE,1.0\n"
+                                                                      "soon,UP,1.0\n"}},
+                                           a_market_state_run(priced_at));
+
+    REQUIRE(outcome.refusals.size() == 1);
+    CHECK(outcome.refusals.front().find("line 3") != std::string::npos);
+    CHECK(outcome.scenario_values.empty());
+    CHECK(outcome.families.empty());
 }
 
 TEST_CASE("each result of a run keeps its own file of the same name", market_state_tags) {
     const auto first = boost::uuids::random_generator()();
     const auto second = boost::uuids::random_generator()();
-    const auto outcome = read_market_state(
-        {market_state_file{.result_id = first, .name = "netcube.csv", .body = two_date_cube_file()},
-         market_state_file{
-             .result_id = second, .name = "netcube.csv", .body = two_date_cube_file()}},
-        the_run());
+    const auto outcome = read_market_state({market_state_file{.result_id = first,
+                                                              .name = "stress_scenarios.csv",
+                                                              .body = two_date_scenario_file()},
+                                            market_state_file{.result_id = second,
+                                                              .name = "stress_scenarios.csv",
+                                                              .body = two_date_scenario_file()}},
+                                           a_market_state_run(priced_at));
 
     REQUIRE(outcome.refusals.empty());
-    REQUIRE(outcome.payloads.size() == 2);
-    CHECK(outcome.payloads[0].result_id == first);
-    CHECK(outcome.payloads[1].result_id == second);
+    REQUIRE(outcome.scenario_values.size() == 18);
+    CHECK(std::ranges::count_if(outcome.scenario_values,
+                                [&](const auto& one) { return one.result_id == first; }) == 9);
+    CHECK(std::ranges::count_if(outcome.scenario_values,
+                                [&](const auto& one) { return one.result_id == second; }) == 9);
 }
 
 TEST_CASE("a result that states the same file twice is refused", market_state_tags) {
     const auto result = boost::uuids::random_generator()();
-    const auto outcome = read_market_state(
-        {market_state_file{
-             .result_id = result, .name = "netcube.csv", .body = two_date_cube_file()},
-         market_state_file{
-             .result_id = result, .name = "netcube.csv", .body = two_date_cube_file()}},
-        the_run());
+    const auto outcome = read_market_state({market_state_file{.result_id = result,
+                                                              .name = "stress_scenarios.csv",
+                                                              .body = two_date_scenario_file()},
+                                            market_state_file{.result_id = result,
+                                                              .name = "stress_scenarios.csv",
+                                                              .body = two_date_scenario_file()}},
+                                           a_market_state_run(priced_at));
 
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.refusals.front().find("twice") != std::string::npos);

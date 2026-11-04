@@ -206,7 +206,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'analytics.v1.sensitivity_methods_events.created',
-    updated: 'analytics.v1.sensitivity_methods_events.updated',
-    deleted: 'analytics.v1.sensitivity_methods_events.deleted',
+    created: 'analytics.v1.events.sensitivity_methods.created',
+    updated: 'analytics.v1.events.sensitivity_methods.updated',
+    deleted: 'analytics.v1.events.sensitivity_methods.deleted',
 } as const;

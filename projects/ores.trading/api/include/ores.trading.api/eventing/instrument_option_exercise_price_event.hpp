@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::trading::messaging::instrument_option_exercise_price_event> {
     static constexpr std::string_view subject_prefix =
-        "trading.v1.instrument_option_exercise_prices_events";
+        "trading.v1.events.instrument_option_exercise_prices";
 
     static ores::trading::messaging::instrument_option_exercise_price_event
     from_notification(const entity_event_notification& notification) {

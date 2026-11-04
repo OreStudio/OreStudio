@@ -2,6 +2,7 @@
 :ores.cpp.shell-command.enabled: true
 :ores.cpp.http-route.enabled: true
 :ID: 3D9A5E71-4C2B-4F8A-9E6D-1B7C3A5F8D20
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.auth_event_operations
 #+description: Codegen operation model for the authentication event log read, rendered to C++ and the BFF route from one source.

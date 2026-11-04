@@ -51,11 +51,15 @@ namespace provider_terms_test {
 
 const std::string terms_subject("ores.test.provider_terms.accept");
 const std::string withdraw_subject("ores.test.provider_terms.withdraw");
+const std::string many_subject("ores.test.provider_terms.accept_many");
 const std::string terms_accept_permission("marketdata::providers:accept_terms");
 
 using ores::marketdata::messaging::accept_provider_terms_request;
 using ores::marketdata::messaging::accept_provider_terms_response;
 using ores::marketdata::messaging::withdraw_provider_terms_request;
+using ores::marketdata::messaging::accept_many_provider_terms_request;
+using ores::marketdata::messaging::accept_many_provider_terms_response;
+using ores::marketdata::messaging::provider_terms_choice;
 using ores::marketdata::messaging::withdraw_provider_terms_response;
 using ores::marketdata::tests::system_party_of_the_test_tenant;
 using ores::marketdata::tests::test_audience;
@@ -68,6 +72,7 @@ struct terms_fixture {
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     std::optional<ores::nats::service::subscription> sub;
     std::optional<ores::nats::service::subscription> withdraw_sub;
+    std::optional<ores::nats::service::subscription> many_sub;
     boost::uuids::uuid party;
     std::string code;
     /// The account that reads and accepts the terms; the store accepts only an account's name.
@@ -102,6 +107,11 @@ struct terms_fixture {
             withdraw_subject, "ores.marketdata.service", [this](ores::nats::message msg) {
                 ores::marketdata::messaging::provider_terms_handler h(nats, db.context(), verifier);
                 h.withdraw(std::move(msg));
+            });
+        many_sub = nats.queue_subscribe(
+            many_subject, "ores.marketdata.service", [this](ores::nats::message msg) {
+                ores::marketdata::messaging::provider_terms_handler h(nats, db.context(), verifier);
+                h.accept_many(std::move(msg));
             });
     }
 
@@ -151,6 +161,17 @@ struct terms_fixture {
             terms_subject, ores::nats::default_wire_codec().encode(req), headers);
     }
 
+    ores::nats::message accept_many(const std::vector<provider_terms_choice>& providers,
+                                    const std::vector<std::string>& roles) {
+        accept_many_provider_terms_request req;
+        req.providers = providers;
+        std::unordered_map<std::string, std::string> headers;
+        headers[std::string(ores::nats::headers::authorization)] =
+            std::string(ores::nats::headers::bearer_prefix) + token(roles);
+        return nats.request_sync(
+            many_subject, ores::nats::default_wire_codec().encode(req), headers);
+    }
+
     ores::nats::message withdraw(const std::vector<std::string>& roles) {
         withdraw_provider_terms_request req;
         req.provider_code = code;
@@ -175,6 +196,7 @@ accept_provider_terms_response decode_terms_reply(const ores::nats::message& rep
 using provider_terms_test::decode_terms_reply;
 using provider_terms_test::terms_accept_permission;
 using provider_terms_test::terms_fixture;
+using ores::marketdata::messaging::accept_many_provider_terms_response;
 using ores::marketdata::messaging::withdraw_provider_terms_response;
 
 TEST_CASE("terms_read_at_the_current_version_are_accepted_by_the_reader",
@@ -278,4 +300,126 @@ TEST_CASE("withdrawing_terms_never_accepted_writes_nothing",
 
     CHECK(response->success);
     CHECK(f.latest().version == read.version);
+}
+
+TEST_CASE("a_token_without_the_accept_permission_cannot_withdraw_the_terms",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    REQUIRE(decode_terms_reply(f.accept(0, {terms_accept_permission})).success);
+    const auto accepted = f.latest();
+
+    const auto reply = f.withdraw({"marketdata::providers:read"});
+
+    REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+    CHECK(f.latest().version == accepted.version);
+    CHECK_FALSE(f.latest().terms_accepted_digest.empty());
+}
+
+TEST_CASE("withdrawing_the_terms_of_an_unknown_provider_fails_and_says_so",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+
+    const auto reply = f.withdraw({terms_accept_permission});
+    REQUIRE_FALSE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    const auto response =
+        ores::nats::default_wire_codec().decode<withdraw_provider_terms_response>(reply.data);
+    REQUIRE(response);
+
+    CHECK_FALSE(response->success);
+    CHECK(response->message.find("No provider") != std::string::npos);
+}
+
+TEST_CASE("a_list_accept_records_each_provider_it_can_and_says_why_not_for_the_rest",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    const auto read = f.latest();
+    const std::string unknown = "no-such-" + f.code;
+
+    const auto reply = f.accept_many({{.provider_code = f.code, .provider_version = read.version},
+                                      {.provider_code = unknown, .provider_version = 0}},
+                                     {terms_accept_permission});
+
+    REQUIRE_FALSE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    const auto response =
+        ores::nats::default_wire_codec().decode<accept_many_provider_terms_response>(reply.data);
+    REQUIRE(response);
+    CHECK_FALSE(response->success);
+    CHECK(response->message == "Accepted the terms of 1 of 2 provider(s).");
+    REQUIRE(response->outcomes.size() == 2);
+    CHECK(response->outcomes[0].provider_code == f.code);
+    CHECK(response->outcomes[0].success);
+    CHECK(response->outcomes[0].accepted_by == f.reader);
+    CHECK(response->outcomes[1].provider_code == unknown);
+    CHECK_FALSE(response->outcomes[1].success);
+    CHECK(response->outcomes[1].message == "No provider '" + unknown + "'.");
+    CHECK(f.latest().terms_accepted_by == f.reader);
+}
+
+TEST_CASE("a_token_without_the_accept_permission_cannot_accept_a_list",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+
+    const auto reply = f.accept_many({{.provider_code = f.code, .provider_version = 0}},
+                                     {"marketdata::providers:read"});
+
+    REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+    CHECK(f.latest().terms_accepted_digest.empty());
+}
+
+TEST_CASE("a_list_accept_at_a_version_read_before_the_terms_changed_is_refused",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    REQUIRE(decode_terms_reply(f.accept(0, {terms_accept_permission})).success);
+    const auto read = f.latest();
+    auto changed = read;
+    changed.terms_url = "https://terms.example/changed/" + f.code;
+    ores::marketdata::repository::provider_repository{}.write(f.db.context(), changed);
+    const auto after_change = f.latest();
+    REQUIRE(after_change.version > read.version);
+
+    const auto reply = f.accept_many({{.provider_code = f.code, .provider_version = read.version}},
+                                     {terms_accept_permission});
+
+    const auto response =
+        ores::nats::default_wire_codec().decode<accept_many_provider_terms_response>(reply.data);
+    REQUIRE(response);
+    REQUIRE(response->outcomes.size() == 1);
+    CHECK_FALSE(response->outcomes[0].success);
+    CHECK(response->outcomes[0].message.find("Read them again") != std::string::npos);
+    CHECK(f.latest().version == after_change.version);
+}
+
+TEST_CASE("a_list_accept_of_more_than_one_hundred_providers_is_refused",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    const std::vector<provider_terms_test::provider_terms_choice> many(
+        101, {.provider_code = f.code, .provider_version = 0});
+
+    const auto reply = f.accept_many(many, {terms_accept_permission});
+
+    REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "bad_request");
+    CHECK(f.latest().terms_accepted_digest.empty());
+}
+
+TEST_CASE("accepting_terms_already_accepted_succeeds_and_writes_nothing",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    REQUIRE(decode_terms_reply(f.accept(0, {terms_accept_permission})).success);
+    const auto accepted = f.latest();
+
+    const auto again = decode_terms_reply(f.accept(0, {terms_accept_permission}));
+
+    CHECK(again.success);
+    CHECK(again.message == "The terms of '" + f.code + "' are already accepted.");
+    CHECK(again.accepted_by == f.reader);
+    CHECK(f.latest().version == accepted.version);
 }

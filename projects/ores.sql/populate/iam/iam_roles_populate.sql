@@ -102,7 +102,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'analytics::todays_market_configs:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::trades:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'marketdata::market_series:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'marketdata::market_state_payloads:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'marketdata::market_scenario_values:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'marketdata::market_calibration_values:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'marketdata::market_input_values:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'storage::objects:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'storage::objects:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'compute::batches:write');
@@ -117,14 +119,22 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cds_conventions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cms_spread_option_conventions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::commodity_forward_conventions:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::commodity_future_conventions:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::commodity_future_averaging_terms:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::commodity_future_contract_terms:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::commodity_future_expiry_anchors:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::commodity_future_off_peak_indexes:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::commodity_future_option_expiries:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::counterparties:read');
     -- The blotter states each row's instrument by the code a desk quotes, which
     -- only the instrument-code catalogue holds.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::instrument_codes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::counterparty_identifiers:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cross_currency_basis_conventions:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cross_currency_fix_float_conventions:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cross_currency_basis_flat_legs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cross_currency_basis_spread_legs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cross_currency_basis_swap_terms:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cross_currency_fix_float_fixed_legs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cross_currency_fix_float_float_legs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::cross_currency_fix_float_swap_terms:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::currencies:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::deposit_conventions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::fra_conventions:read');
@@ -283,8 +293,17 @@ BEGIN
     -- the read to one run with the filter, and tenant isolation keeps another
     -- tenant's rows out. The read model is the screen's view of them.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::run_results:read');
+    -- A run's page names every file the run read and wrote by the ORE file it
+    -- is, and groups them by category. Both are reference data shared by the
+    -- tenant, so every member reads them.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_files:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_file_categories:read');
+    -- The schema of an XML file is downloaded from the contents of its ORE file at
+    -- the engine version that ran it, so every member reads those too.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_file_versions:read');
     -- The metrics of a run are read the same way, and by the same scoping.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_metrics:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_text_values:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_cashflows:read');
     -- The health word resolves a run's state id to a state name, and the
     -- schedule cell reads the definition's job in the scheduler.
@@ -395,6 +414,10 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::ir_curve_generation_configs:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::folders:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::fx_spot_generation_configs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::variance_calibration_inputs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::variance_calibration_input_points:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::variance_calibrations:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::variance_calibrations:review');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::ir_curve_generation_configs:write');
     -- The curve the desk sees evolve, and the slices it reads through: the
     -- *Watch a curve or surface evolve* journey states the series read, and
@@ -406,7 +429,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_observations:read');
     -- A member reads the market state of its own tenant's runs, which is what a
     -- run priced against and what the report screens explain a figure with.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'marketdata::market_state_payloads:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'marketdata::market_scenario_values:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'marketdata::market_calibration_values:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'marketdata::market_input_values:read');
     -- *Adjust a curve or surface by hand*: the trader is the maker, and the
     -- correction is the write the journey makes.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_observations:write');
@@ -447,6 +472,15 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::ir_curve_bootstrap_pillars:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::ir_curve_bootstrap_pillars:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::ir_curve_bootstrap_pillars:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::fx_vol_surface_blueprints:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::fx_vol_surface_blueprints:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::fx_vol_surface_blueprints:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::fx_vol_surface_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::fx_vol_surface_pillars:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::fx_vol_surface_pillars:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::fx_vol_surface_pillar_sources:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::fx_vol_surface_pillar_sources:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::fx_vol_surface_pillar_sources:delete');
 
     -- Assign permissions to Sales role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Sales', 'refdata::currencies:read');
@@ -641,15 +675,39 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_forward_conventions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_forward_conventions:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_forward_conventions:delete');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_conventions:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_conventions:write');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_conventions:delete');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_conventions:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_conventions:write');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_conventions:delete');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_conventions:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_conventions:write');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_conventions:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_averaging_terms:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_averaging_terms:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_averaging_terms:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_contract_terms:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_contract_terms:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_contract_terms:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_expiry_anchors:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_expiry_anchors:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_expiry_anchors:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_off_peak_indexes:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_off_peak_indexes:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_off_peak_indexes:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_option_expiries:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_option_expiries:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::commodity_future_option_expiries:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_flat_legs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_flat_legs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_flat_legs:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_spread_legs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_spread_legs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_spread_legs:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_swap_terms:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_swap_terms:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_basis_swap_terms:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_fixed_legs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_fixed_legs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_fixed_legs:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_float_legs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_float_legs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_float_legs:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_swap_terms:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_swap_terms:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::cross_currency_fix_float_swap_terms:delete');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::currency_pair_conventions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::currency_pair_conventions:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::currency_pair_conventions:delete');
@@ -832,6 +890,9 @@ BEGIN
     -- maker; Operations reads the recipe behind a curve it is asked about.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::ir_curve_bootstrap_configs:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::ir_curve_bootstrap_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::fx_vol_surface_blueprints:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::fx_vol_surface_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::fx_vol_surface_pillar_sources:read');
 
     -- Assign permissions to Support role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'iam::accounts:read');
@@ -859,6 +920,9 @@ BEGIN
     -- The curve blueprints read only, as Support reads everything it supports.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'refdata::ir_curve_bootstrap_configs:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'refdata::ir_curve_bootstrap_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'refdata::fx_vol_surface_blueprints:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'refdata::fx_vol_surface_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'refdata::fx_vol_surface_pillar_sources:read');
 
     -- Assign permissions to Viewer role (default for new accounts)
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::currencies:read');
@@ -888,6 +952,9 @@ BEGIN
     -- changes none of them.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::ir_curve_bootstrap_configs:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::ir_curve_bootstrap_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::fx_vol_surface_blueprints:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::fx_vol_surface_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::fx_vol_surface_pillar_sources:read');
     -- The publisher the published screens name. A viewer reads the published
     -- curves and the blueprints behind them, and every one of those screens
     -- draws the account that published a set with its picture and its full
@@ -1106,6 +1173,11 @@ BEGIN
     -- A feed whose price source is "fixing" reads the latest public fixing, which is a tick
     -- class of its own on a table of its own, so the read is granted by its own name.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_fixings:read');
+    -- The derived source's universe is the vendor instruments the catalogue holds for it.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_data_vendor_instruments:read');
+    -- The derived source keeps its quotes as the observations of a series of its own.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_series:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_observations:write');
 
     -- ORE Import service: workflow management + delegated refdata/trading writes
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'ORE Import workflow domain service', false);
@@ -1199,7 +1271,10 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'trading::structures:read');
     -- The tree names each trade's product and the class its family belongs to,
     -- which only the type catalogue states.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'trading::trade_types:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'trading::product_types:read');
+    -- A product type's home market and the markets it also references are rows
+    -- of their own, so reading the type alone would leave the market column blank.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'trading::product_type_asset_classes:read');
     -- The kind is chosen at grouping, and it decides what the customer
     -- receives, so the desk reads the catalogue before it groups.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'trading::structure_kinds:read');
@@ -1215,6 +1290,10 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'trading::bond_instruments:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'trading::bond_issues:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::books:read');
+    -- The booking path reads the book's flag and then the product types it
+    -- allows, so a trader needs to read both: a type the book forbids must be
+    -- refused by the book's rule and not by a missing permission.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::book_product_types:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::portfolios:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::counterparties:read');
     -- The blotter states each row's instrument by the code a desk quotes, which
@@ -1240,7 +1319,10 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'trading::structures:read');
     -- The tree names each trade's product and the class its family belongs to,
     -- which only the type catalogue states.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'trading::trade_types:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'trading::product_types:read');
+    -- A product type's home market and the markets it also references are rows
+    -- of their own, so reading the type alone would leave the market column blank.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'trading::product_type_asset_classes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'trading::structure_members:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::books:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::portfolios:read');
@@ -1265,10 +1347,37 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::structures:read');
     -- The tree names each trade's product and the class its family belongs to,
     -- which only the type catalogue states.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::trade_types:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::product_types:read');
+    -- A product type's home market and the markets it also references are rows
+    -- of their own, so reading the type alone would leave the market column blank.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::product_type_asset_classes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::structure_members:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::trade_authorisation_requests:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::books:read');
+
+    -- The trading desk runs reports on demand, so Trading may mint the run grant.
+    -- The grantor must hold every permission in the role it grants, and the run
+    -- token is narrowed to what the grantor holds, so the whole set is copied:
+    -- a subset would leave the run unable to write its batch and the market
+    -- data it produces. A trader cannot exceed the run: the token is still
+    -- narrowed, and the run's rows are scoped to its party by policy.
+    DECLARE
+        permission_code text;
+    BEGIN
+        FOR permission_code IN
+            SELECT perm.code
+            FROM ores_iam_role_permissions_tbl rp
+            JOIN ores_iam_roles_tbl r ON r.id = rp.role_id
+            JOIN ores_iam_permissions_tbl perm ON perm.id = rp.permission_id
+            WHERE r.name = 'ReportRun'
+              AND r.tenant_id = ores_utility_system_tenant_id_fn()
+              AND r.valid_to = ores_utility_infinity_timestamp_fn()
+              AND rp.valid_to = ores_utility_infinity_timestamp_fn()
+        LOOP
+            PERFORM ores_iam_role_permissions_assign_fn(
+                ores_utility_system_tenant_id_fn(), 'Trading', permission_code);
+        END LOOP;
+    END;
 
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::trade_summaries:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::trade_identifiers:read');
@@ -1282,7 +1391,10 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::structures:read');
     -- The tree names each trade's product and the class its family belongs to,
     -- which only the type catalogue states.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::trade_types:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::product_types:read');
+    -- A product type's home market and the markets it also references are rows
+    -- of their own, so reading the type alone would leave the market column blank.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::product_type_asset_classes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'trading::structure_members:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::books:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::portfolios:read');

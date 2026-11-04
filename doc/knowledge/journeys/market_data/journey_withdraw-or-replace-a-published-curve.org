@@ -141,7 +141,7 @@ hold is a superseded link or a withdrawn marker; see /What is missing/.
 | Watch for the decision | Read the queue and decide | =inbox.v1.ops.list_approval_queue=, =inbox.v1.ops.decide_approval= | exists |
 | Apply the withdrawal | Take the published curve out of use | =marketdata.v1.curve_bootstrap.withdraw= | missing |
 | Apply the replacement | Publish a corrected version in its place, linked to the one it supersedes | =marketdata.v1.curve_bootstrap.replace= | missing |
-| See the consumers change | Announce the change on the series' own event | =marketdata.v1.market_series_events.updated=, =marketdata.v1.market_observations_events.updated= | partial |
+| See the consumers change | Announce the change on the series' own event | =marketdata.v1.events.market_series.updated=, =marketdata.v1.events.market_observations.updated= | partial |
 | See the consumers change | Raise a notice to the consumers | =inbox.v1.ops.raise_notification= | partial |
 
 The history read is the generic one,

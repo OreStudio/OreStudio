@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct csa_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const csa_key&, const csa_key&) = default;
 };
 
 struct csa_write {
@@ -68,27 +70,37 @@ struct csa_write {
     std::optional<bool> calculate_im_amount;
     std::optional<bool> calculate_vm_amount;
     std::optional<std::string> non_exempt_im_regulations;
+
+    friend bool operator==(const csa_write&, const csa_write&) = default;
 };
 
 struct csa_change {
     csa_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const csa_change&, const csa_change&) = default;
 };
 
 struct csa_removal {
     csa_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const csa_removal&, const csa_removal&) = default;
 };
 
 struct csa_lookup {
     csa_key key;
     std::optional<ores::refdata::domain::csa> csa;
+
+    friend bool operator==(const csa_lookup&, const csa_lookup&) = default;
 };
 
 struct csas_filter {
     std::optional<boost::uuids::uuid> netting_set_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> netting_set_id_one_of;
+
+    friend bool operator==(const csas_filter&, const csas_filter&) = default;
 };
 
 struct csa_event {
@@ -98,17 +110,23 @@ struct csa_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const csa_event&, const csa_event&) = default;
 };
 
 struct csa_version_key {
     csa_key csa;
     std::uint32_t version;
+
+    friend bool operator==(const csa_version_key&, const csa_version_key&) = default;
 };
 
 struct csa_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const csa_versions_filter&, const csa_versions_filter&) = default;
 };
 
 struct list_csas_request {
@@ -126,12 +144,16 @@ struct list_csas_request {
     ores::utility::domain::order order;
     std::optional<csas_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_csas_request&, const list_csas_request&) = default;
 };
 
 struct list_csas_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::csa> csas;
     std::uint64_t total;
+
+    friend bool operator==(const list_csas_response&, const list_csas_response&) = default;
 };
 
 struct get_csa_request {
@@ -145,11 +167,15 @@ struct get_csa_request {
      */
     static constexpr bool requires_session = true;
     csa_key key;
+
+    friend bool operator==(const get_csa_request&, const get_csa_request&) = default;
 };
 
 struct get_csa_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::csa> csa;
+
+    friend bool operator==(const get_csa_response&, const get_csa_response&) = default;
 };
 
 struct get_many_csas_request {
@@ -163,11 +189,15 @@ struct get_many_csas_request {
      */
     static constexpr bool requires_session = true;
     std::vector<csa_key> keys;
+
+    friend bool operator==(const get_many_csas_request&, const get_many_csas_request&) = default;
 };
 
 struct get_many_csas_response {
     ores::utility::domain::result result;
     std::vector<csa_lookup> entries;
+
+    friend bool operator==(const get_many_csas_response&, const get_many_csas_response&) = default;
 };
 
 struct put_csa_request {
@@ -182,11 +212,15 @@ struct put_csa_request {
     static constexpr bool requires_session = true;
     csa_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_csa_request&, const put_csa_request&) = default;
 };
 
 struct put_csa_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::csa> csa;
+
+    friend bool operator==(const put_csa_response&, const put_csa_response&) = default;
 };
 
 struct put_many_csas_request {
@@ -201,11 +235,15 @@ struct put_many_csas_request {
     static constexpr bool requires_session = true;
     std::vector<csa_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_csas_request&, const put_many_csas_request&) = default;
 };
 
 struct put_many_csas_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::csa> csas;
+
+    friend bool operator==(const put_many_csas_response&, const put_many_csas_response&) = default;
 };
 
 struct delete_csa_request {
@@ -220,10 +258,14 @@ struct delete_csa_request {
     static constexpr bool requires_session = true;
     csa_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_csa_request&, const delete_csa_request&) = default;
 };
 
 struct delete_csa_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_csa_response&, const delete_csa_response&) = default;
 };
 
 struct delete_many_csas_request {
@@ -238,10 +280,16 @@ struct delete_many_csas_request {
     static constexpr bool requires_session = true;
     std::vector<csa_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_csas_request&,
+                           const delete_many_csas_request&) = default;
 };
 
 struct delete_many_csas_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_csas_response&,
+                           const delete_many_csas_response&) = default;
 };
 
 struct list_by_netting_set_id_csas_request {
@@ -260,12 +308,18 @@ struct list_by_netting_set_id_csas_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<csas_filter> filter;
+
+    friend bool operator==(const list_by_netting_set_id_csas_request&,
+                           const list_by_netting_set_id_csas_request&) = default;
 };
 
 struct list_by_netting_set_id_csas_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::csa> csas;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_netting_set_id_csas_response&,
+                           const list_by_netting_set_id_csas_response&) = default;
 };
 
 struct list_csa_versions_request {
@@ -283,12 +337,18 @@ struct list_csa_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<csa_versions_filter> filter;
+
+    friend bool operator==(const list_csa_versions_request&,
+                           const list_csa_versions_request&) = default;
 };
 
 struct list_csa_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::csa> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_csa_versions_response&,
+                           const list_csa_versions_response&) = default;
 };
 
 struct get_csa_version_request {
@@ -302,11 +362,17 @@ struct get_csa_version_request {
      */
     static constexpr bool requires_session = true;
     csa_version_key key;
+
+    friend bool operator==(const get_csa_version_request&,
+                           const get_csa_version_request&) = default;
 };
 
 struct get_csa_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::csa> version;
+
+    friend bool operator==(const get_csa_version_response&,
+                           const get_csa_version_response&) = default;
 };
 
 /**
@@ -318,9 +384,9 @@ struct get_csa_version_response {
  * of them.
  */
 namespace csa_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.csas_events.created";
-inline constexpr std::string_view updated = "refdata.v1.csas_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.csas_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.csas.created";
+inline constexpr std::string_view updated = "refdata.v1.events.csas.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.csas.deleted";
 }
 /**
  * @brief The members of csa_key, named as the wire names them and in the order

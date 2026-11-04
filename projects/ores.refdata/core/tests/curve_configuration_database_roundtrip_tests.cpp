@@ -26,25 +26,33 @@
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
-#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
-#include "ores.refdata.core/repository/commodity_future_convention_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_contract_terms_repository.hpp"
+#include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"
 #include "ores.refdata.core/repository/curve_definition_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_convention_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_repository.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 #include "ores.refdata.core/repository/equity_curve_config_repository.hpp"
+#include "ores.refdata.core/repository/inflation_seasonality_repository.hpp"
 #include "ores.refdata.core/repository/inflation_swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.refdata.core/repository/swaption_volatility_smile_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.testing/conventions_rows.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/two_parties.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -59,6 +67,7 @@
  * says it must: a convention, a day counter or a segment type it does not hold.
  */
 
+using namespace ores::logging;
 using ores::testing::rows_of;
 
 namespace {
@@ -134,6 +143,50 @@ void write_missing(const ores::database::context& ctx,
             missing.push_back(r);
     if (!missing.empty())
         repo.write(ctx, missing);
+}
+
+// Writes the commodity futures the tenant does not hold yet, matched by name:
+// each one's central row and the contract terms every commodity future fills,
+// as the tenant's system party, because the central table refuses a row with no
+// party. The volatilities resolve a future by its central row, so the optional
+// parts are not written.
+void write_missing_commodity_futures(ores::testing::scoped_database_helper& h,
+                                     const conventions_package& mapped) {
+    const auto& ctx = h.context();
+    boost::uuids::uuid system_party{};
+    for (const auto& p : party_repository().read_latest(ctx))
+        if (p.tenant_id == h.tenant_id() && p.party_category == "System")
+            system_party = p.id;
+    REQUIRE(system_party != boost::uuids::uuid{});
+
+    convention_repository conventions;
+    std::set<std::string> held;
+    for (const auto& r : conventions.read_latest(ctx))
+        if (r.identity.kind_code == "COMMODITY_FUTURE")
+            held.insert(r.payload.name);
+
+    std::vector<ores::refdata::domain::convention> central;
+    std::set<boost::uuids::uuid> written;
+    for (auto r : rows_of<ores::refdata::domain::convention>(mapped, "convention")) {
+        if (r.identity.kind_code != "COMMODITY_FUTURE" || held.contains(r.payload.name))
+            continue;
+        r.identity.party_id = system_party;
+        written.insert(r.identity.id);
+        central.push_back(std::move(r));
+    }
+    std::vector<ores::refdata::domain::commodity_future_contract_terms> terms;
+    for (auto r : rows_of<ores::refdata::domain::commodity_future_contract_terms>(
+             mapped, "commodity_future_contract_terms")) {
+        if (!written.contains(r.convention_id))
+            continue;
+        r.party_id = system_party;
+        terms.push_back(std::move(r));
+    }
+    REQUIRE(terms.size() == central.size());
+    if (central.empty())
+        return;
+    conventions.write(ctx, central);
+    commodity_future_contract_terms_repository().write(ctx, terms);
 }
 
 // The conventions the example's curves name, written so the segment trigger
@@ -225,12 +278,14 @@ TEST_CASE("a segment naming a convention the tenant does not hold is refused",
     write_conventions(h.context());
 
     auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
-    REQUIRE(!mapped.segments.empty());
-    mapped.segments.front().conventions = "NO-SUCH-CONVENTION";
+    REQUIRE(!mapped.segment_conventions.empty());
+    mapped.segment_conventions.front().conventions = "NO-SUCH-CONVENTION";
 
     curve_configuration_repository().write(h.context(), mapped.config);
     curve_definition_repository().write(h.context(), mapped.definitions);
-    CHECK_THROWS(curve_segment_repository().write(h.context(), mapped.segments.front()));
+    curve_segment_repository().write(h.context(), mapped.segments);
+    CHECK_THROWS(curve_segment_convention_repository().write(h.context(),
+                                                             mapped.segment_conventions.front()));
 }
 
 TEST_CASE("a yield curve naming a day counter ORE does not spell is refused",
@@ -264,6 +319,30 @@ TEST_CASE("a segment of a type the vocabulary does not hold is refused",
     CHECK_THROWS(curve_segment_repository().write(h.context(), mapped.segments.front()));
 }
 
+TEST_CASE("a default curve part its configuration's type does not have is refused",
+          "[curveconfig][database][roundtrip]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info)
+        << "a default curve part its configuration's type does not have is refused";
+    ores::testing::scoped_database_helper h;
+    write_input_conventions(h.context());
+
+    auto mapped = curve_configuration_projection::map(equity_and_securities());
+    const auto cds = std::ranges::find_if(mapped.default_curve_configurations, [](const auto& c) {
+        return c.default_curve_type == std::optional<std::string>("SpreadCDS") ||
+               c.default_curve_type == std::optional<std::string>("HazardRate");
+    });
+    REQUIRE(cds != mapped.default_curve_configurations.end());
+    ores::refdata::domain::default_curve_benchmark p;
+    p.default_curve_configuration_id = cds->id;
+    p.pillars = "1Y";
+    mapped.default_curve_benchmarks.push_back(p);
+
+    CHECK_THROWS_WITH(
+        write(h.context(), mapped),
+        Catch::Matchers::ContainsSubstring("default curve has no default_curve_benchmark part"));
+}
+
 TEST_CASE("default, equity and inflation curves and securities round trip through the database",
           "[curveconfig][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
@@ -277,6 +356,7 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     REQUIRE(!mapped.equity_curves.empty());
     REQUIRE(!mapped.securities.empty());
     REQUIRE(!mapped.inflation_curves.empty());
+    REQUIRE(!mapped.inflation_seasonalities.empty());
     REQUIRE(!mapped.default_curve_configurations.empty());
     REQUIRE(!mapped.fx_volatilities.empty());
     REQUIRE(!mapped.base_correlations.empty());
@@ -293,6 +373,7 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     CHECK(back.securities.size() == mapped.securities.size());
     CHECK(back.inflation_curves.size() == mapped.inflation_curves.size());
     CHECK(back.default_curve_configurations.size() == mapped.default_curve_configurations.size());
+    CHECK(back.inflation_seasonalities.size() == mapped.inflation_seasonalities.size());
     CHECK(back.seasonality_factors.size() == mapped.seasonality_factors.size());
     CHECK(back.fx_volatilities.size() == mapped.fx_volatilities.size());
     CHECK(back.base_correlations.size() == mapped.base_correlations.size());
@@ -335,10 +416,7 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     ores::testing::scoped_database_helper h;
 
     const auto c = load_conventions("external/ore/examples/Products/Input/conventions.xml");
-    write_missing(h.context(),
-                  commodity_future_convention_repository(),
-                  rows_of<ores::refdata::domain::commodity_future_convention>(split_conventions(c),
-                                                                              "commodity_future"));
+    write_missing_commodity_futures(h, split_conventions(c));
 
     const auto full = load_document(products_example);
     curve_document original;
@@ -378,6 +456,7 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info)
         << "swaption and cap and floor proxies and smiles round trip through the database";
+    std::size_t swaption_smiles = 0;
     for (const std::string path :
          {"external/ore/examples/Legacy/Example_63/Input/curveconfig.xml",
           "external/ore/examples/CurveBuilding/Input/curveconfig_sabr.xml"}) {
@@ -399,6 +478,8 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
         const auto back = read_back(h.context(), mapped);
         CHECK(back.parametric_smiles.size() == mapped.parametric_smiles.size());
         CHECK(back.parametric_smile_parameters.size() == mapped.parametric_smile_parameters.size());
+        CHECK(back.swaption_volatility_smiles.size() == mapped.swaption_volatility_smiles.size());
+        swaption_smiles += mapped.swaption_volatility_smiles.size();
 
         // The store holds one form of each vocabulary value, so the two sides
         // are the document the store returns and the export of it.
@@ -409,6 +490,46 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
         INFO(difference);
         CHECK(difference.empty());
     }
+    CHECK(swaption_smiles > 0);
+}
+
+TEST_CASE("removing a curve configuration removes its smile grids and seasonalities",
+          "[curveconfig][database][roundtrip]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info)
+        << "removing a curve configuration removes its smile grids and seasonalities";
+    using ores::refdata::repository::inflation_seasonality_repository;
+    using ores::refdata::repository::swaption_volatility_smile_repository;
+    ores::testing::scoped_database_helper h;
+    write_input_conventions(h.context());
+
+    const auto seasonal = curve_configuration_projection::map(equity_and_securities());
+    const auto full =
+        load_document("external/ore/examples/CurveBuilding/Input/curveconfig_sabr.xml");
+    curve_document swaptions;
+    swaptions.swaption_volatilities = full.swaption_volatilities;
+    keep(swaptions, "SwaptionVolatilities");
+    const auto smiled = curve_configuration_projection::map(swaptions);
+
+    write(h.context(), seasonal);
+    write(h.context(), smiled);
+    const auto seasonal_back = read_back(h.context(), seasonal);
+    const auto smiled_back = read_back(h.context(), smiled);
+    REQUIRE(!seasonal_back.inflation_seasonalities.empty());
+    REQUIRE(!smiled_back.swaption_volatility_smiles.empty());
+
+    ores::refdata::service::curve_configuration_document_service svc(h.context());
+    svc.remove(seasonal_back.config.id);
+    svc.remove(smiled_back.config.id);
+
+    for (const auto& s : seasonal_back.inflation_seasonalities)
+        CHECK(inflation_seasonality_repository()
+                  .read_latest(h.context(), boost::uuids::to_string(s.id))
+                  .empty());
+    for (const auto& s : smiled_back.swaption_volatility_smiles)
+        CHECK(swaption_volatility_smile_repository()
+                  .read_latest(h.context(), boost::uuids::to_string(s.id))
+                  .empty());
 }
 
 TEST_CASE("a CDS volatility's terms and strike surface round trip through the database",

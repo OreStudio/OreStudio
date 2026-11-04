@@ -1,0 +1,235 @@
+Schedule the catalogue at provisioning — live walkthrough, 2026-11-03
+
+Environment: eager_maxwell, branch feature/schedule-the-catalogue-at-provisioning
+Commit at the time of the run: e42fe4a1d8 ([doc] Document the step that
+schedules what the catalogue states)
+Binaries: ores.iam.service, ores.workflow.service and ores.shell rebuilt from
+that tree; the database was recreated and the services restarted by the check
+command below.
+
+================================================================================
+1. The fresh create, provisioned from the branch's seeds
+================================================================================
+
+Command (bare, no pipe):
+
+    ./compass.sh smoke ticks --fresh --leave-running
+
+Output (tail), 21:12:29:
+
+    tenant        : acme_corporation
+    subscriptions : 10
+    routes        : 10
+    ticks         : 78818
+    first tick    : 2026-11-03 21:08:09.6803+00
+    last tick     : 2026-11-03 21:12:29.880861+00
+    adapter       : bloomberg-a accepted 362, rejected 0 of 362
+    adapter       : boc-frankfurter accepted 27, rejected 0 of 27
+    adapter       : composite-derived accepted 0, rejected 0 of 0
+    adapter       : demo-a accepted 71, rejected 0 of 71
+    adapter       : derived-fx-vol accepted 400, rejected 0 of 400
+    adapter       : ecb-frankfurter accepted 44, rejected 0 of 44
+    adapter       : imf-frankfurter accepted 48, rejected 0 of 48
+    adapter       : lseg-a accepted 14, rejected 0 of 14
+    adapter       : ore-derived accepted 0, rejected 0 of 0
+    adapter       : ore-import accepted 0, rejected 0 of 0
+    adapter       : tcmb-frankfurter accepted 21, rejected 0 of 21
+    evidence      : .../publish/log/ores.marketdata.service.log
+    ✅ ticks smoke passed
+
+The provisioning itself ran as `bootstrap setup ... --profile acme_demo` from
+the shell, which is the path an operator takes on a fresh database.
+
+================================================================================
+2. The run's steps, with the schedule step in its place
+================================================================================
+
+    ./compass.sh sql -- -c "select s.step_index, s.name, s.completed_at
+        from ores_workflow_workflow_steps_tbl s
+        where s.workflow_id = '7013c133-a7fb-477a-9eed-adab8651f328'
+        and s.valid_to = ores_utility_infinity_timestamp_fn()
+        order by s.step_index"
+
+     step_index |         name          |         completed_at
+    ------------+-----------------------+-------------------------------
+              0 | publish_bundle        | 2026-11-03 21:07:17.540101+00
+              1 | import_lei_hierarchy  | 2026-11-03 21:07:20.440865+00
+              2 | provision_party       | 2026-11-03 21:08:07.354988+00
+              3 | load_staff            | 2026-11-03 21:08:47.451934+00
+              4 | set_staff_passwords   | 2026-11-03 21:12:25.111861+00
+              5 | attach_photos         | 2026-11-03 21:12:19.905516+00
+              6 | subscribe_market_data | 2026-11-03 21:08:07.713486+00
+              7 | schedule_reports      | 2026-11-03 21:12:10.278628+00
+              8 | generate_trades       | 2026-11-03 21:11:47.358719+00
+              9 | complete_provisioning | 2026-11-03 21:12:25.54386+00
+
+The run (tenant_setup_workflow, 7013c133-...) completed with no error.
+
+================================================================================
+3. What the step reported, per party
+================================================================================
+
+    ./compass.sh sql -- -c "select jsonb_pretty(s.response_json) from
+        ores_workflow_workflow_steps_tbl s
+        where s.workflow_id = '7013c133-a7fb-477a-9eed-adab8651f328'
+        and s.name = 'schedule_reports'
+        and s.valid_to = ores_utility_infinity_timestamp_fn()"
+
+    {
+        "kind": "schedule_reports",
+        "report_schedules": [
+            { "party": "Acme Corporation Plc",   "scheduled": 10, "already_scheduled": 0,
+              "on_demand": 0,  "not_a_cron": 0 },
+            { "party": "ACME Corporation UK plc", "scheduled": 30, "already_scheduled": 0,
+              "on_demand": 5,  "not_a_cron": 0 },
+            { "party": "ACME Corporation US Inc", "scheduled": 26, "already_scheduled": 0,
+              "on_demand": 2,  "not_a_cron": 0 },
+            { "party": "ACME Corporation HK Ltd", "scheduled": 26, "already_scheduled": 0,
+              "on_demand": 2,  "not_a_cron": 0 }
+        ],
+        "parties": [ four party ids ],
+        ... every other field of the step result is empty ...
+    }
+
+92 scheduled, 9 left on demand, 0 not a cron, 0 already scheduled. The nine are
+the catalogue's on-demand reports (Bump and Reprice Spot Ladder, Spike Map,
+Strike Map, Option Map, Trades Since Last In, ...), which state 0 0 31 2 *.
+
+================================================================================
+4. The scheduler holds the jobs, the definitions hold their grants
+================================================================================
+
+    ./compass.sh sql -- -c "select
+      (select count(*) from ores_scheduler_job_definitions_tbl
+         where job_name like 'report_definition.%'
+         and valid_to = ores_utility_infinity_timestamp_fn()) as jobs,
+      (select count(*) from ores_iam_run_grants_tbl
+         where resource like 'reporting.report_definition/%'
+         and valid_to = ores_utility_infinity_timestamp_fn()) as grants,
+      (select count(*) from ores_reporting_report_definitions_tbl
+         where scheduler_job_id is not null
+         and valid_to = ores_utility_infinity_timestamp_fn()) as scheduled_defs,
+      (select count(*) from ores_reporting_report_definitions_tbl
+         where valid_to = ores_utility_infinity_timestamp_fn()) as definitions"
+
+     jobs | grants | scheduled_defs | definitions
+    ------+--------+----------------+-------------
+       92 |     92 |             92 |         101
+
+One job per scheduled definition (the job is named report_definition.<id>), one
+run grant per scheduled definition, and the nine on-demand definitions hold
+neither:
+
+    ./compass.sh sql -- -c "select count(*) as on_demand_defs,
+        count(scheduler_job_id) as with_job, count(run_grant_id) as with_grant
+        from ores_reporting_report_definitions_tbl
+        where schedule_expression = '0 0 31 2 *'
+        and valid_to = ores_utility_infinity_timestamp_fn()"
+
+     on_demand_defs | with_job | with_grant
+    ----------------+----------+------------
+                  9 |        0 |          0
+
+A sample of the jobs:
+
+    report_definition.0ac857b2-... | */15 8-17 * * 1-5 | t
+    report_definition.0b51968c-... | 0 5 * * 1-5      | t
+    report_definition.76935e4b-... | */10 * * * *      | t
+
+================================================================================
+5. A report fires within its schedule, with no person acting
+================================================================================
+
+Three parties carry Headline Position, all three on */10 * * * *:
+
+    ./compass.sh sql -- -c "select d.name, p.full_name as party
+        from ores_reporting_report_definitions_tbl d
+        join ores_refdata_parties_tbl p on p.id = d.party_id
+          and p.valid_to = ores_utility_infinity_timestamp_fn()
+        where d.name = 'Headline Position'
+          and d.valid_to = ores_utility_infinity_timestamp_fn() order by p.full_name"
+
+           name       |          party
+    ------------------+-------------------------
+     Headline Position | ACME Corporation HK Ltd
+     Headline Position | ACME Corporation UK plc
+     Headline Position | ACME Corporation US Inc
+
+The schedule step finished at 21:12:10, and the scheduler fired those three at
+the next ten-minute boundary:
+
+    ./compass.sh sql -- -c "select j.job_name, j.schedule_expression,
+        ji.triggered_at::time, ji.status
+        from ores_scheduler_job_instances_tbl ji
+        join ores_scheduler_job_definitions_tbl j on j.id = ji.job_definition_id
+        where j.job_name like 'report_definition.%' order by ji.triggered_at"
+
+                        job_name                        | schedule_expression |  triggered_at   |  status
+    ----------------------------------------------------+---------------------+-----------------+-----------
+     report_definition.76935e4b-a08b-4456-abb9-9c4ecbe3c930 | */10 * * * *    | 21:20:00.769586 | succeeded
+     report_definition.2e2d5b33-cc8b-4229-913f-37b490e3b7bd | */10 * * * *    | 21:20:00.966159 | succeeded
+     report_definition.8d550dfe-dc4c-4b27-94b2-030fb8c03501 | */10 * * * *    | 21:20:01.159793 | succeeded
+
+and the reporting service admitted one run for each:
+
+    ./compass.sh sql -- -c "select i.name, i.started_at::time as started,
+        i.completed_at::time as completed, left(i.output_message, 58) as msg
+        from ores_reporting_report_instances_tbl i
+        where i.valid_to = ores_utility_infinity_timestamp_fn() order by i.name"
+
+                     name                     |     started     |    completed    |              msg
+    ----------------------------------------------+-----------------+-----------------+--------------------------------
+     Headline Position 2026-11-03 21:20:00.896705 | 21:20:00.896705 | 21:20:16.668455 | The run's compute job failed with outcome 3: Engine exited
+     Headline Position 2026-11-03 21:20:01.089192 | 21:20:01.089192 | 21:20:15.71297  | The run's compute job failed with outcome 3: Engine exited
+     Headline Position 2026-11-03 21:20:01.245070 | 21:20:01.24507  | 21:20:25.924508 | The run's compute job failed with outcome 3: Engine exited
+
+A run is created, admitted, dispatched to a compute wrapper and priced, and the
+engine refuses the book it was handed: exit code 255 on the trade XML the
+population generated (FxTouchOption, CommodityTaRF, CreditLinkedSwap and
+CommodityForwardVolatilityAgreement trades that OREData cannot parse). That
+refusal is the subject of the task "Complete the ACME report inputs and prove
+they run", not of this one: what this task changed is that the catalogue fires
+by itself, at the boundary its own schedule states, with no person acting.
+
+================================================================================
+6. A second schedule attempt creates nothing
+================================================================================
+
+The provisioner refuses a tenant code that exists ("the tenant code and hostname
+are free" is the first check), so a second provision of the same tenant is not a
+path the product offers yet; the backlog holds it as "a provisioning run cannot
+be resumed". The re-provision path was therefore exercised at the two layers a
+re-provision would reach, in order.
+
+(a) The step's selection, as a unit test: a definition that already holds a
+    scheduler job is asked for nothing. See
+    projects/ores.iam/core/tests/provision_schedule_reports_tests.cpp,
+    "a second provision asks for nothing the first already scheduled".
+
+(b) The operation the step calls, live, re-issued for three definitions that
+    already hold jobs, as the tenant's own administrator:
+
+        ./compass.sh shell --no-login -l <script>
+        > login tenant_admin@acme_corporation Secure-Password-123
+        ✓ Login successful!
+          User: tenant_admin
+          Tenant: Acme Corporation (482df22b-ee2c-4482-b741-ea937154a2f7)
+          Party: Acme Corporation Plc
+        > report_operations schedule-report-definitions 083454f1-...,5c6e5ffd-...,1bdff2f3-...
+        {"success":true,"message":"","scheduled_count":0,"failed_ids":[]}
+
+    and the counts are the same afterwards:
+
+         jobs | grants | scheduled_defs
+        ------+--------+----------------
+           92 |     92 |             92
+
+(c) The party check the operation applies, seen from the same session when it
+    names another party's definition:
+
+        {"success":false,"message":"Act for the definition's party to schedule it: its runs act
+         in that party, with your consent.","scheduled_count":0,
+         "failed_ids":[ three ids ]}
+
+    which is why the step mints one client per party rather than acting as the
+    administrator's own party for all four.

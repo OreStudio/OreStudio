@@ -22,13 +22,13 @@
 #include "ores.reporting.core/repository/report_error_event_repository.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <algorithm>
 #include <chrono>
 #include <format>
 #include <map>
-#include <rfl/json.hpp>
 #include <set>
 #include <stdexcept>
 #include <tuple>
@@ -95,7 +95,8 @@ std::map<std::string, int> trade_versions_of_run(const ores::database::context& 
         repository::report_input_bundle_repository().find_by_instance_id(ctx, report_instance_id);
     if (!bundle || !bundle->trade_versions)
         return {};
-    const auto parsed = rfl::json::read<std::map<std::string, int>>(*bundle->trade_versions);
+    const auto parsed =
+        ores::utility::codec::json::try_read<std::map<std::string, int>>(*bundle->trade_versions);
     if (!parsed)
         return {};
     return *parsed;
@@ -148,8 +149,9 @@ bool run_holds_errors(const ores::database::context& ctx, const std::string& ins
 report_error_recorder::report_error_recorder(ores::database::context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::string report_error_recorder::record_engine_errors(const std::string& report_instance_id,
-                                                        const std::vector<engine_log_row>& errors) {
+recorded_engine_errors
+report_error_recorder::record_engine_errors(const std::string& report_instance_id,
+                                            const std::vector<engine_log_row>& errors) {
     if (errors.empty())
         return {};
 
@@ -250,14 +252,18 @@ std::string report_error_recorder::record_engine_errors(const std::string& repor
         rows = std::move(kept);
 
         repository::report_error_event_repository().write(ctx_, rows);
-        return {};
+
+        recorded_engine_errors recorded;
+        for (const auto& row : rows)
+            (row.severity == "error" ? recorded.stored.errors : recorded.stored.warnings) += 1;
+        return recorded;
     } catch (const std::exception& e) {
         // Two callers can both find no rows and both write. The unique indexes
         // let one win; the other is told the run already holds its errors,
         // which is what it set out to make true.
         if (std::string_view(e.what()).find("duplicate key") != std::string_view::npos)
             return {};
-        return std::format("The run's errors could not be stored: {}", e.what());
+        return {.failure = std::format("The run's errors could not be stored: {}", e.what())};
     }
 }
 

@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: F18A305D-FE28-4EAE-BB7F-01787ACDCF2D
+:END:
+#+title: Task: Exercise the calibration screens
+#+description: Test the calibration list, the feed record and flow tabs, the policy screen and the calibrate action end to end, record the defects, and fix them on this branch.
+#+type: task
+#+level: s1
+#+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
+#+owner: marco
+#+branch: feature/exercise-the-calibration-screens
+#+pr: 4354
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person runs a calibration and sees it happen, feed by feed, and can read
+later what each calibration changed. The calibration screens match the
+accepted prototype, and every oresmd URI on them opens its market data.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-01                               |
+
+* Acceptance
+
+- Calibrate all calibrates one feed a call, and each feed's row shows a mark
+  and the server's words as it finishes.
+- An applied calibration writes each moved level and deviation as a new
+  version of the feed, under =system.calibration=, with a commentary that names
+  the fixing; a run on the same fixings writes nothing.
+- A running feed whose calibration changed says it applies at its next start,
+  and the run offers to restart those feeds.
+- A feed's History tab keeps every version and filters to its calibrations.
+- The feed page follows the prototype: banner, record tab, flow tab with the
+  recent calibrations.
+- A fixing URI links to its fixing series page.
+- The two points the PR #4331 review asked before merge are addressed.
+
+* Plan
+
+DSH started the task and built the list action, the system-only guard, the
+outcome filter and a progress panel. The panel ticked three fixed stages around
+one read, and the events tab restated that read; calibration stored nothing, so
+there was no log to show.
+
+1. Server: the calibrate request names one feed and asks to apply. The handler
+   compares the resolved level and deviations with the stored ones
+   (=change_of=, a pure function) and writes what moved through the generated
+   services, claiming the versions it read.
+2. BFF: =POST /api/synthetic/calibration/:assetClass/run=.
+3. Web: a run panel driven one feed a call; the feed page rebuilt to the
+   prototype; a Calibration only filter on the History tab; fixing URIs link to
+   the fixing series page.
+4. The PR #4331 review: claimed writes in accept and withdraw, two tests.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| FX calibration read, 51 feeds, 28 from a fixing, before | 16.3 to 26.3 s | =curl -w '%{time_total}' /api/synthetic/calibration/fx= | 458177a454 |
+| The same read, after | 3.2 to 3.6 s | the same | d525606767 |
+| One feed's calibration read | 0.20 to 0.28 s | =curl -w '%{time_total}' '/api/synthetic/calibration/fx?configId=...'= | d525606767 |
+| Latest fixing query, unbounded, as the marketdata role | 108 ms (98 planning) | =explain (analyze, summary)= | 458177a454 |
+| The same query bounded to 31 days | 3.4 ms | the same | 2b03d0c50b |
+| Table grants to the owner, rw and ro roles, old and new setup_schema.sql | 7678, identical | =information_schema.role_table_grants= diff | 3615bd4b57 |
+
+* Notes
+
+- Calibration writes versions (2026-11-01, chosen by the user). The stored
+  level becomes the last calibrated value, so =keep_fixed= keeps that one; the
+  hand-entered value stays in the history.
+- A running feed is not restarted by a run: a restart moves the series to the
+  new level in one step, so the run offers it and the person chooses.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:CEBFDA90-F42A-4278-87A3-6305FDE59A6B][Exercise the calibration screens end to end]] | PENDING | The user walked the screens on 2026-11-01; the defects found are fixed on this branch. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4354][#4354]] | [synthetic] Calibrate feed by feed, store each calibration, and make the screens work |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: an applied calibration needed only the read permission, and the services it writes through check none | feed_config_handler.hpp | Accept | An applied calibration now needs the config and component write permissions; a test refuses a read-only token and still answers its read. |
+| 2 | Local review: the shared FX build rows could go stale where offers are kept and built later | feed_kind_registry.cpp | Decline | The runner rebuilds its offers on each apply and builds inside that pass, so the rows live for one pass. |
+| 3 | Local review: a calibration writes the components, then the level; a failed level write leaves the components written | feed_config_handler.hpp | Decline | Each write claims the version it read and the outcome names what was not written; a second run converges, as =change_of= writes only what moved. |
+| 4 | Local review: misspell-fixer flags "existant" and "sucesso" in fr.ts and pt.ts | i18n locales | Decline | Words of those languages, on lines this branch does not touch. |
+| 5 | PR #4354 review: a failed level write leaves the new mixture stored | feed_config_handler.hpp | Accept | The outcome now says the deviations are stored and that calibrating again writes the level alone; writing the level first only moves the gap. |
+| 6 | PR #4354 review: applying does not guard the system feeds as start and stop do | feed_config_handler.hpp | Accept | Applying now needs a system-tenant caller; a test refuses a tenant that holds both writes. |
+| 7 | PR #4354 review: the inner candidate loop shadows the outer one | feed_config_handler.hpp | Accept | Renamed to =tried=. |
+| 8 | PR #4354 review: say why healthy() reads three times and what it does to callers with results pending | connection.cpp | Accept | The comment names the message, the TLS close notice and the end of file, keeps pending results, and the retryable error for a later close. |
+| 9 | PR #4354 review: no test for the half-written calibration | feed_config_handler.hpp | Decline | The handler writes through concrete services, so failing only the second write needs a seam it does not have; the fix is the outcome message. |
+| 10 | PR #4354 review: record the calibration scenario before merge? | scenario | Decline | The user walked the screens and asked to merge. |
+
+* Result
+
+Calibration is now an event in the feed's history. A run calibrates the feeds one
+at a time and each row shows the server's words as it finishes; an applied
+calibration writes what moved as a new version under =system.calibration=, and a
+second run writes nothing. The feed page follows the prototype, its Flow tab
+lists the recent calibrations, the History tab filters to them, and a fixing URI
+opens its series.
+
+Walking the screens found faults that kept them from working at all: the
+calibration policy, provider order and fallback subjects had no handler, the BFF
+read their lists from the wrong fields, the calibrate read sent too few fields,
+and accepting terms sent no content type. All are fixed. The reads were slow:
+the list took up to 26 s and now takes about 3.4 s, a feed's page 0.2 s.
+
+The database now creates without a warning, pg_stat_statements is installed
+when the server preloads it, and the official catalogue no longer ends the
+populate transaction early. Accepting the public terms at setup is the follow-on
+task. A pooled connection the server closed, as a postgres restart does, is now
+reset before it is leased, where it used to fail the first request on it. A new
+=handler-registrars= check fails when a generated registrar has no responder; it
+covers seven components, and the 54 registrars of the other seven are captured.

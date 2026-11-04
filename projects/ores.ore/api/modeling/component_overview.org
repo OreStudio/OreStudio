@@ -5,7 +5,6 @@
 #+description: The shared contract for the ORE integration component — the ORE import, saga-step and storage protocols.
 #+type: ores.codegen.component
 #+component_kind: api
-#+header_only: true
 #+level: cross
 #+filetags: :ore:api:component:
 #+created: 2026-05-19
@@ -27,8 +26,8 @@ protocols for importing an ORE directory, for the saga steps the engine
 drives, and for locating the import tarball in object storage; and the
 workflow registration the ORE import runs under.
 
-It is header-only: =ores.ore.api.lib= is an INTERFACE library that carries
-its include path and the libraries its headers name, with no compiled body.
+Its compiled body is the generated wire codec of each protocol, so a caller
+encodes and decodes the ORE messages without compiling the encoder itself.
 
 * Inputs
 
@@ -48,9 +47,9 @@ its include path and the libraries its headers name, with no compiled body.
 
 * Dependencies
 
-- =ores.platform=, =ores.storage=, =ores.logging=, =ores.workflow.api= and
-  =ores.eventing.api= — linked publicly, so consumers inherit them.
-- =ores.utility= — linked privately.
+- =ores.platform=, =ores.storage=, =ores.logging=, =ores.workflow.api=,
+  =ores.eventing.api= and =ores.utility= — linked publicly, because the
+  headers name them, so consumers inherit them.
 
 =ores.storage= is public because the import target helpers name a bucket,
 so every consumer of this part inherits the object-storage client.
@@ -76,7 +75,7 @@ The suites link what the profile cannot know about.
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
-    INTERFACE
+    PUBLIC
         ores.platform.lib
         ores.storage.api.lib
         ores.logging.lib

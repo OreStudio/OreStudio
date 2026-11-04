@@ -221,10 +221,10 @@ Two gaps are known, and both are changes rather than open questions.
 - [[id:8E71C928-6618-455F-AECA-102AACB07883][One map answers which ORE
   element a row is]] — the lookup half: this page is what the lookup finds, and
   that page is what finds it.
-- [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value is converted at
-  the entity mapper, never in the codec]] — *contradicts* the reading of this
-  page that would put the twenty-seven spellings in the set today: they live in
-  the mapper, and this page states what the change would move.
+- [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value reaches the row in
+  the form the value set names]] — *completes* this page on the write side: the
+  mapping file states the renderings here, and that page states the two
+  boundaries that read it.
 - [[id:17032DC3-55F4-42FD-B3C1-C33D8DCED488][Consolidate the ORE element
   maps]] — the task that gives the leaf link one home before the alias work
   adds rows to the sets.

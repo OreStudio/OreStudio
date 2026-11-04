@@ -46,9 +46,6 @@ export interface InflationCurveConfigWrite {
     frequency: string;
     base_rate: string | null;
     tolerance: number | null;
-    has_seasonality: boolean;
-    seasonality_base_date: string | null;
-    seasonality_frequency: string | null;
     use_last_fixing_date: string | null;
     interpolation_variable: string | null;
     interpolation_method: string | null;
@@ -221,7 +218,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.inflation_curve_configs_events.created',
-    updated: 'refdata.v1.inflation_curve_configs_events.updated',
-    deleted: 'refdata.v1.inflation_curve_configs_events.deleted',
+    created: 'refdata.v1.events.inflation_curve_configs.created',
+    updated: 'refdata.v1.events.inflation_curve_configs.updated',
+    deleted: 'refdata.v1.events.inflation_curve_configs.deleted',
 } as const;

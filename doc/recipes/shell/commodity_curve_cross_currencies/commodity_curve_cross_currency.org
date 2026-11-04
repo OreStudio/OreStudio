@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: FD3B5A40-9FD3-55E2-A4D6-D27D60F5CC56
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_curve_cross_currencies commands from the shell?
+#+description: Every command the commodity_curve_cross_currencies submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_curve_cross_currencies:
+
+This file documents the commodity_curve_cross_currencies resource at the shell, one section per command. Every command is a subcommand of =commodity_curve_cross_currencies=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 54E269BD-7416-5864-911E-C8E574CEDB1F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies.list=.
+
+#+name: commodity_curve_cross_currencies-list
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-list.ores :exports none
+commodity_curve_cross_currencies list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 469F0C15-471D-5F32-8A69-B5705A0DCEA5
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies.get=.
+
+#+name: commodity_curve_cross_currencies-get
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-get.ores :exports none
+commodity_curve_cross_currencies get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 285CFE65-756A-5819-864F-C66F7402017D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies.get_many=.
+
+#+name: commodity_curve_cross_currencies-get-many
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-get-many.ores :exports none
+commodity_curve_cross_currencies get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 23A32FA6-9EF0-5BA6-8F51-384E8A6089E3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies add <curve_definition_id> <base_price_curve> <base_yield_curve> <yield_curve> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies.put=.
+
+#+name: commodity_curve_cross_currencies-add
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-add.ores :exports none
+commodity_curve_cross_currencies add 00000000-0000-0000-0000-000000000000 - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 791F735A-8301-5B63-94FF-2445D6EAFC90
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies set <id> <curve_definition_id> <base_price_curve> <base_yield_curve> <yield_curve> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies.put=.
+
+#+name: commodity_curve_cross_currencies-set
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-set.ores :exports none
+commodity_curve_cross_currencies set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: F86C9DC0-6092-56A6-9A9A-F1DDF1C6DF26
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies put-many --count <n> <id> <curve_definition_id> <base_price_curve> <base_yield_curve> <yield_curve> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies.put_many=.
+
+#+name: commodity_curve_cross_currencies-put-many
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-put-many.ores :exports none
+commodity_curve_cross_currencies put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 703B9B57-71D5-513C-B7F7-83A7885766FD
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies.delete=.
+
+#+name: commodity_curve_cross_currencies-delete
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-delete.ores :exports none
+commodity_curve_cross_currencies delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: EC054F0F-D03D-507E-8964-984887949ADC
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies.delete_many=.
+
+#+name: commodity_curve_cross_currencies-delete-many
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-delete-many.ores :exports none
+commodity_curve_cross_currencies delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 2A17B0A2-E2D4-516E-A25D-6583E953B736
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies_versions.list=.
+
+#+name: commodity_curve_cross_currencies-versions
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-versions.ores :exports none
+commodity_curve_cross_currencies versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6231412B-6A74-5F8A-A02E-01249FB75185
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_cross_currencies version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_cross_currencies_versions.get=.
+
+#+name: commodity_curve_cross_currencies-version
+#+begin_src ores-shell :tangle commodity_curve_cross_currencies-version.ores :exports none
+commodity_curve_cross_currencies version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

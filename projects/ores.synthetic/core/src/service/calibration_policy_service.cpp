@@ -105,6 +105,13 @@ calibration_policy_to_domain(const messaging::calibration_policy_write& write) {
     v.id = write.id;
     v.asset_class_code = write.asset_class_code;
     v.window_days = write.window_days;
+    v.variance_window_days = write.variance_window_days;
+    v.variance_approval_mode = write.variance_approval_mode;
+    v.variance_min_returns = write.variance_min_returns;
+    v.variance_require_starts_agree = write.variance_require_starts_agree;
+    v.variance_min_persistence = write.variance_min_persistence;
+    v.variance_max_persistence = write.variance_max_persistence;
+    v.variance_min_reaction = write.variance_min_reaction;
     v.allow_inverse = write.allow_inverse;
     v.fallback_code = write.fallback_code;
     return v;

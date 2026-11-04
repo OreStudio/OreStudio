@@ -43,6 +43,8 @@ namespace ores::trading::messaging {
 
 struct trade_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const trade_key&, const trade_key&) = default;
 };
 
 struct trade_write {
@@ -57,21 +59,29 @@ struct trade_write {
     int external_version;
     std::string draft_reason_code;
     std::string economic_digest;
+
+    friend bool operator==(const trade_write&, const trade_write&) = default;
 };
 
 struct trade_change {
     trade_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const trade_change&, const trade_change&) = default;
 };
 
 struct trade_removal {
     trade_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const trade_removal&, const trade_removal&) = default;
 };
 
 struct trade_lookup {
     trade_key key;
     std::optional<ores::trading::domain::trade> trade;
+
+    friend bool operator==(const trade_lookup&, const trade_lookup&) = default;
 };
 
 struct trades_filter {
@@ -83,6 +93,8 @@ struct trades_filter {
     std::optional<std::vector<std::string>> trade_type_one_of;
     std::optional<std::vector<ores::trading::domain::counterparty_scope>> counterparty_scope_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const trades_filter&, const trades_filter&) = default;
 };
 
 struct trade_event {
@@ -92,17 +104,23 @@ struct trade_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const trade_event&, const trade_event&) = default;
 };
 
 struct trade_version_key {
     trade_key trade;
     std::uint32_t version;
+
+    friend bool operator==(const trade_version_key&, const trade_version_key&) = default;
 };
 
 struct trade_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const trade_versions_filter&, const trade_versions_filter&) = default;
 };
 
 struct list_trades_request {
@@ -120,12 +138,16 @@ struct list_trades_request {
     ores::utility::domain::order order;
     std::optional<trades_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_trades_request&, const list_trades_request&) = default;
 };
 
 struct list_trades_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade> trades;
     std::uint64_t total;
+
+    friend bool operator==(const list_trades_response&, const list_trades_response&) = default;
 };
 
 struct get_trade_request {
@@ -139,11 +161,15 @@ struct get_trade_request {
      */
     static constexpr bool requires_session = true;
     trade_key key;
+
+    friend bool operator==(const get_trade_request&, const get_trade_request&) = default;
 };
 
 struct get_trade_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade> trade;
+
+    friend bool operator==(const get_trade_response&, const get_trade_response&) = default;
 };
 
 struct get_many_trades_request {
@@ -157,11 +183,17 @@ struct get_many_trades_request {
      */
     static constexpr bool requires_session = true;
     std::vector<trade_key> keys;
+
+    friend bool operator==(const get_many_trades_request&,
+                           const get_many_trades_request&) = default;
 };
 
 struct get_many_trades_response {
     ores::utility::domain::result result;
     std::vector<trade_lookup> entries;
+
+    friend bool operator==(const get_many_trades_response&,
+                           const get_many_trades_response&) = default;
 };
 
 struct put_trade_request {
@@ -176,11 +208,15 @@ struct put_trade_request {
     static constexpr bool requires_session = true;
     trade_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_trade_request&, const put_trade_request&) = default;
 };
 
 struct put_trade_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade> trade;
+
+    friend bool operator==(const put_trade_response&, const put_trade_response&) = default;
 };
 
 struct put_many_trades_request {
@@ -195,11 +231,17 @@ struct put_many_trades_request {
     static constexpr bool requires_session = true;
     std::vector<trade_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_trades_request&,
+                           const put_many_trades_request&) = default;
 };
 
 struct put_many_trades_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade> trades;
+
+    friend bool operator==(const put_many_trades_response&,
+                           const put_many_trades_response&) = default;
 };
 
 struct delete_trade_request {
@@ -214,10 +256,14 @@ struct delete_trade_request {
     static constexpr bool requires_session = true;
     trade_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_trade_request&, const delete_trade_request&) = default;
 };
 
 struct delete_trade_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_trade_response&, const delete_trade_response&) = default;
 };
 
 struct delete_many_trades_request {
@@ -232,10 +278,16 @@ struct delete_many_trades_request {
     static constexpr bool requires_session = true;
     std::vector<trade_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_trades_request&,
+                           const delete_many_trades_request&) = default;
 };
 
 struct delete_many_trades_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_trades_response&,
+                           const delete_many_trades_response&) = default;
 };
 
 struct list_trade_versions_request {
@@ -253,12 +305,18 @@ struct list_trade_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<trade_versions_filter> filter;
+
+    friend bool operator==(const list_trade_versions_request&,
+                           const list_trade_versions_request&) = default;
 };
 
 struct list_trade_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_versions_response&,
+                           const list_trade_versions_response&) = default;
 };
 
 struct get_trade_version_request {
@@ -272,11 +330,17 @@ struct get_trade_version_request {
      */
     static constexpr bool requires_session = true;
     trade_version_key key;
+
+    friend bool operator==(const get_trade_version_request&,
+                           const get_trade_version_request&) = default;
 };
 
 struct get_trade_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade> version;
+
+    friend bool operator==(const get_trade_version_response&,
+                           const get_trade_version_response&) = default;
 };
 
 /**
@@ -288,9 +352,9 @@ struct get_trade_version_response {
  * of them.
  */
 namespace trade_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trades_events.created";
-inline constexpr std::string_view updated = "trading.v1.trades_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trades_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trades.created";
+inline constexpr std::string_view updated = "trading.v1.events.trades.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trades.deleted";
 }
 /**
  * @brief The members of trade_key, named as the wire names them and in the order

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9CCB36D2-D297-478D-8968-41FE16623FBC
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.synthetic.fx_spot_generation_config
@@ -12,7 +13,7 @@
 #+entity_title: FX Spot Generation Config
 #+brief: Configuration for generating synthetic FX spot observations.
 #+created: 2026-06-30
-#+updated: 2026-06-30
+#+updated: 2026-11-03
 
 A typed sub-configuration owned by a =market_data_generation_config=. Describes
 how to synthesise the tick stream for a single FX spot rate: which ORE market
@@ -355,6 +356,42 @@ leaves today's behaviour unchanged.
 1.0
 #+end_src
 
+** variance_model
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "constant"
+:default:       'constant'
+:END:
+
+How the feed's daily variance moves: "constant", the mixture's own variance on
+every day, or "gjr_garch", a GJR-GARCH(1,1) variance carried from one market day
+to the next that scales the mixture's shocks, with the shape of the approved
+calibration the config names. "gjr_garch" needs an engine that can scale its law,
+geometric or arithmetic.
+
+#+begin_src cpp :name generator
+std::string("constant")
+#+end_src
+
+** variance_calibration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+For "gjr_garch": the approved =variance_calibration= the feed runs. Naming it here
+makes each change of calibration a new version of the config, so the feed's
+history shows when every calibration came into use; approving a later calibration
+of the pair re-points the feeds that named the earlier one. A feed whose
+calibration is no longer approved does not start, and says why.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * Artefact columns
 :PROPERTIES:
 :key: id
@@ -466,6 +503,48 @@ For hawkes: how fast a burst fades, per second.
 
 How strongly a market-wide regime moves this row, where one is the average.
 
+** variance_model
+:PROPERTIES:
+:type: text
+:default: 'constant'
+:END:
+
+How the daily variance moves: constant or gjr_garch.
+
+** garch_alpha
+:PROPERTIES:
+:type: double precision
+:default: 0.05
+:END:
+
+For gjr_garch: the reaction to a day's move. The four GARCH columns are the
+authored shape the publish installs as the pair's approved calibration, when the
+pair has none; the live config names that calibration instead of holding them.
+
+** garch_gamma
+:PROPERTIES:
+:type: double precision
+:default: 0.0
+:END:
+
+For gjr_garch: the extra reaction to a fall.
+
+** garch_beta
+:PROPERTIES:
+:type: double precision
+:default: 0.9
+:END:
+
+For gjr_garch: the carry-over of a day's variance.
+
+** garch_window_days
+:PROPERTIES:
+:type: integer
+:default: 1826
+:END:
+
+For gjr_garch: the days of fixings the fit reads.
+
 * Artefact indexes
 
 ** base_currency_code
@@ -500,6 +579,9 @@ How strongly a market-wide regime moves this row, where one is the average.
 | "price_source" in ('fixed', 'fixing')                 |
 | "gmm_initial_price" > 0                                |
 | "calibration_window_days" is null or "calibration_window_days" between 2 and 180 |
+| "variance_model" in ('constant', 'gjr_garch')       |
+| "variance_model" <> 'gjr_garch' or "process_type" in ('geometric', 'arithmetic') |
+| "variance_model" <> 'gjr_garch' or "variance_calibration_id" is not null |
 
 * Foreign keys
 
@@ -514,6 +596,13 @@ How strongly a market-wide regime moves this row, where one is the average.
 :PROPERTIES:
 :table:         ores_synthetic_folders_tbl
 :error_message: Invalid folder_id: %. No active folder found with this id.
+:nullable:      true
+:END:
+
+** variance_calibration_id
+:PROPERTIES:
+:table:         ores_synthetic_variance_calibrations_tbl
+:error_message: Invalid variance_calibration_id: %. No active variance_calibration found with this id.
 :nullable:      true
 :END:
 

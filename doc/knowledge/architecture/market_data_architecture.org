@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:marketdata:nats:synthetic:adapters:structure_note:
 #+created: 2026-06-28
-#+updated: 2026-10-30
+#+updated: 2026-11-03
 
 * Summary
 
@@ -147,9 +147,10 @@ data, and why the two differ only inside the adapter.
     the mapping of each, with the vendor's own documents.
 11. [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][The mapping inventory lists the vendor instruments each provider carries]]. The rows the bundle installs, which need a check, and what is not inventoried.
 12. [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]. The free sources that set the level of the synthetic ticks, their terms, and what is still open.
-13. [[id:7C994EDE-829A-4F82-A095-D9E5198E2AD9][The notation of a provider is an independent class that roundtrips]]. The classes that read and write the ids of Bloomberg, LSEG and Demo, and the corpus that proves it.
-14. [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]]. Each publisher is a provider, one adapter sends their fixings as durable ticks, and a feed starts from the latest one.
-15. [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ticks because ownership, demand and a smoke check agree]]. Why a provisioned tenant did not tick, the shortcomings it showed and the order of the work.
+13. [[id:099697A6-8526-48E0-A63D-DB3932C06468][Derivation of FX volatility quotes from historical fixings]]. Where no public source exists, an adapter of our own infers values from the stored fixings and publishes them under its own identity, so a vendor can replace it.
+14. [[id:7C994EDE-829A-4F82-A095-D9E5198E2AD9][The notation of a provider is an independent class that roundtrips]]. The classes that read and write the ids of Bloomberg, LSEG and Demo, and the corpus that proves it.
+15. [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]]. Each publisher is a provider, one adapter sends their fixings as durable ticks, and a feed starts from the latest one.
+16. [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ticks because ownership, demand and a smoke check agree]]. Why a provisioned tenant did not tick, the shortcomings it showed and the order of the work.
 
 #+caption: A live adapter and the simulator behind the same contract.
 #+attr_html: :width 100%
@@ -184,6 +185,7 @@ Read this section to drive the service and to read what it leaves behind.
 6. [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]]. How an ORE market data vintage becomes observations.
 7. [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]]. Why the chain is auditable through publication, and where it breaks.
 8. [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]. The recipe, the quotes, the solve, the checks and the candidate.
+9. [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]. The same construction for a surface, read after the curve because it differs only where a surface differs: a calibration in the place of a bootstrap, and a check of the result as well as of the recipe.
 
 After this section a reader is competent at starting, inspecting and reading
 every part of the service from a screen or from the shell.
@@ -197,9 +199,11 @@ section depends on it.
 2. [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], then [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], then [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]]. One asset class end to end.
 3. [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], then [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], then [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], then [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]].
    The second asset class.
-4. [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]]. The process interface and the seeding rule.
-5. [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. The mathematics.
-6. [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]]. The dry-run operations.
+4. [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
+   The third asset class, the FX volatility surface, read after the IR curve because its generator follows the curve's, with the one step a curve does not need: contributors between the state and the quotes.
+5. [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]]. The process interface and the seeding rule.
+6. [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. The mathematics.
+7. [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]]. The dry-run operations.
 
 After this section a reader is competent at reading a generator config as a recipe
 and at saying which parts of a new asset class are config and which are code.

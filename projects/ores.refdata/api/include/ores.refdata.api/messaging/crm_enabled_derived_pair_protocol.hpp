@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct crm_enabled_derived_pair_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const crm_enabled_derived_pair_key&,
+                           const crm_enabled_derived_pair_key&) = default;
 };
 
 struct crm_enabled_derived_pair_write {
@@ -52,25 +55,40 @@ struct crm_enabled_derived_pair_write {
     std::string base_currency_code;
     std::string quote_currency_code;
     bool enabled;
+
+    friend bool operator==(const crm_enabled_derived_pair_write&,
+                           const crm_enabled_derived_pair_write&) = default;
 };
 
 struct crm_enabled_derived_pair_change {
     crm_enabled_derived_pair_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const crm_enabled_derived_pair_change&,
+                           const crm_enabled_derived_pair_change&) = default;
 };
 
 struct crm_enabled_derived_pair_removal {
     crm_enabled_derived_pair_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const crm_enabled_derived_pair_removal&,
+                           const crm_enabled_derived_pair_removal&) = default;
 };
 
 struct crm_enabled_derived_pair_lookup {
     crm_enabled_derived_pair_key key;
     std::optional<ores::refdata::domain::crm_enabled_derived_pair> crm_enabled_derived_pair;
+
+    friend bool operator==(const crm_enabled_derived_pair_lookup&,
+                           const crm_enabled_derived_pair_lookup&) = default;
 };
 
 struct crm_enabled_derived_pairs_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const crm_enabled_derived_pairs_filter&,
+                           const crm_enabled_derived_pairs_filter&) = default;
 };
 
 struct crm_enabled_derived_pair_event {
@@ -80,17 +98,26 @@ struct crm_enabled_derived_pair_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const crm_enabled_derived_pair_event&,
+                           const crm_enabled_derived_pair_event&) = default;
 };
 
 struct crm_enabled_derived_pair_version_key {
     crm_enabled_derived_pair_key crm_enabled_derived_pair;
     std::uint32_t version;
+
+    friend bool operator==(const crm_enabled_derived_pair_version_key&,
+                           const crm_enabled_derived_pair_version_key&) = default;
 };
 
 struct crm_enabled_derived_pair_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const crm_enabled_derived_pair_versions_filter&,
+                           const crm_enabled_derived_pair_versions_filter&) = default;
 };
 
 struct list_crm_enabled_derived_pairs_request {
@@ -108,12 +135,18 @@ struct list_crm_enabled_derived_pairs_request {
     ores::utility::domain::order order;
     std::optional<crm_enabled_derived_pairs_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_crm_enabled_derived_pairs_request&,
+                           const list_crm_enabled_derived_pairs_request&) = default;
 };
 
 struct list_crm_enabled_derived_pairs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::crm_enabled_derived_pair> crm_enabled_derived_pairs;
     std::uint64_t total;
+
+    friend bool operator==(const list_crm_enabled_derived_pairs_response&,
+                           const list_crm_enabled_derived_pairs_response&) = default;
 };
 
 struct get_crm_enabled_derived_pair_request {
@@ -127,11 +160,17 @@ struct get_crm_enabled_derived_pair_request {
      */
     static constexpr bool requires_session = true;
     crm_enabled_derived_pair_key key;
+
+    friend bool operator==(const get_crm_enabled_derived_pair_request&,
+                           const get_crm_enabled_derived_pair_request&) = default;
 };
 
 struct get_crm_enabled_derived_pair_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::crm_enabled_derived_pair> crm_enabled_derived_pair;
+
+    friend bool operator==(const get_crm_enabled_derived_pair_response&,
+                           const get_crm_enabled_derived_pair_response&) = default;
 };
 
 struct get_many_crm_enabled_derived_pairs_request {
@@ -146,11 +185,17 @@ struct get_many_crm_enabled_derived_pairs_request {
      */
     static constexpr bool requires_session = true;
     std::vector<crm_enabled_derived_pair_key> keys;
+
+    friend bool operator==(const get_many_crm_enabled_derived_pairs_request&,
+                           const get_many_crm_enabled_derived_pairs_request&) = default;
 };
 
 struct get_many_crm_enabled_derived_pairs_response {
     ores::utility::domain::result result;
     std::vector<crm_enabled_derived_pair_lookup> entries;
+
+    friend bool operator==(const get_many_crm_enabled_derived_pairs_response&,
+                           const get_many_crm_enabled_derived_pairs_response&) = default;
 };
 
 struct put_crm_enabled_derived_pair_request {
@@ -165,11 +210,17 @@ struct put_crm_enabled_derived_pair_request {
     static constexpr bool requires_session = true;
     crm_enabled_derived_pair_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_crm_enabled_derived_pair_request&,
+                           const put_crm_enabled_derived_pair_request&) = default;
 };
 
 struct put_crm_enabled_derived_pair_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::crm_enabled_derived_pair> crm_enabled_derived_pair;
+
+    friend bool operator==(const put_crm_enabled_derived_pair_response&,
+                           const put_crm_enabled_derived_pair_response&) = default;
 };
 
 struct put_many_crm_enabled_derived_pairs_request {
@@ -185,11 +236,17 @@ struct put_many_crm_enabled_derived_pairs_request {
     static constexpr bool requires_session = true;
     std::vector<crm_enabled_derived_pair_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_crm_enabled_derived_pairs_request&,
+                           const put_many_crm_enabled_derived_pairs_request&) = default;
 };
 
 struct put_many_crm_enabled_derived_pairs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::crm_enabled_derived_pair> crm_enabled_derived_pairs;
+
+    friend bool operator==(const put_many_crm_enabled_derived_pairs_response&,
+                           const put_many_crm_enabled_derived_pairs_response&) = default;
 };
 
 struct delete_crm_enabled_derived_pair_request {
@@ -204,10 +261,16 @@ struct delete_crm_enabled_derived_pair_request {
     static constexpr bool requires_session = true;
     crm_enabled_derived_pair_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_crm_enabled_derived_pair_request&,
+                           const delete_crm_enabled_derived_pair_request&) = default;
 };
 
 struct delete_crm_enabled_derived_pair_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_crm_enabled_derived_pair_response&,
+                           const delete_crm_enabled_derived_pair_response&) = default;
 };
 
 struct delete_many_crm_enabled_derived_pairs_request {
@@ -223,10 +286,16 @@ struct delete_many_crm_enabled_derived_pairs_request {
     static constexpr bool requires_session = true;
     std::vector<crm_enabled_derived_pair_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_crm_enabled_derived_pairs_request&,
+                           const delete_many_crm_enabled_derived_pairs_request&) = default;
 };
 
 struct delete_many_crm_enabled_derived_pairs_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_crm_enabled_derived_pairs_response&,
+                           const delete_many_crm_enabled_derived_pairs_response&) = default;
 };
 
 struct list_crm_enabled_derived_pair_versions_request {
@@ -245,12 +314,18 @@ struct list_crm_enabled_derived_pair_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<crm_enabled_derived_pair_versions_filter> filter;
+
+    friend bool operator==(const list_crm_enabled_derived_pair_versions_request&,
+                           const list_crm_enabled_derived_pair_versions_request&) = default;
 };
 
 struct list_crm_enabled_derived_pair_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::crm_enabled_derived_pair> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_crm_enabled_derived_pair_versions_response&,
+                           const list_crm_enabled_derived_pair_versions_response&) = default;
 };
 
 struct get_crm_enabled_derived_pair_version_request {
@@ -265,11 +340,17 @@ struct get_crm_enabled_derived_pair_version_request {
      */
     static constexpr bool requires_session = true;
     crm_enabled_derived_pair_version_key key;
+
+    friend bool operator==(const get_crm_enabled_derived_pair_version_request&,
+                           const get_crm_enabled_derived_pair_version_request&) = default;
 };
 
 struct get_crm_enabled_derived_pair_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::crm_enabled_derived_pair> version;
+
+    friend bool operator==(const get_crm_enabled_derived_pair_version_response&,
+                           const get_crm_enabled_derived_pair_version_response&) = default;
 };
 
 /**
@@ -281,9 +362,9 @@ struct get_crm_enabled_derived_pair_version_response {
  * of them.
  */
 namespace crm_enabled_derived_pair_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.crm_enabled_derived_pairs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.crm_enabled_derived_pairs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pairs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.crm_enabled_derived_pairs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.crm_enabled_derived_pairs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.crm_enabled_derived_pairs.deleted";
 }
 /**
  * @brief The members of crm_enabled_derived_pair_key, named as the wire names them and in the order

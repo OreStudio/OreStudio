@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 46
+Tables: 50
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -782,9 +782,8 @@ package "reporting" #E0F7FA {
           analytic_type_code : text <<FK>>
         * ore_parameter : text
         * direction : text
-        * format : text
-          xsd_file : text
         * kind : text
+        * ore_file_code : text <<FK>>
           configuration_type_code : text <<FK>>
         * name_pattern : text
         * is_default : boolean
@@ -852,6 +851,121 @@ package "reporting" #E0F7FA {
     The xpath stays here because it is the leaf's address in the document, which is
     what the import and the convention screens show. The entity, the table and the
     column are what the guard needs, because a trigger sees a row of one table.
+    end note
+
+    entity ores_reporting_ore_file_categories_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * origin : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_file_categories_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    ORE File Category Table
+    Reference data grouping the files of an ORE run, so a screen can show the market
+    data apart from the configuration and the risk reports apart from the XVA
+    reports. Each ORE file belongs to one category.
+    The categories a run is given follow the chapters of the ORE user guide: the
+    master input, the configuration documents, the trade data and the market data.
+    The categories ORE writes follow the three steps of the guide's ORE Data Flow
+    chapter, with the reports a person reads kept apart from the data files one
+    analytic writes for another. One category is ORE Studio's own: the archives a run
+    travels in to the engine and back.
+    end note
+
+    entity ores_reporting_ore_file_versions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * ore_file_code : text <<FK>>
+        * engine_version : text
+        * content : text
+        * sha256 : text
+        * bytes : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_file_versions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    ORE File Version Table
+    The contents of an ORE file as one version of the ORE engine ships it. The engine
+    ships some files itself, the XML schemas above all, and the schema of a version
+    is the one a document of that version must validate against: a schema of another
+    version may accept what the engine refuses, or refuse what it reads.
+    One row holds one file at one engine version, with its digest and its size, so a
+    run's page can hand a person the schema of the engine that ran it. A schema that
+    includes others is complete only with them; the includes are read from the
+    contents, which state them, so the two cannot disagree.
+    The seed loads the files vendored in external/ore for the engine version their
+    manifest states. A later engine version adds rows beside the earlier ones and
+    replaces none of them.
+    end note
+
+    entity ores_reporting_ore_files_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * category_code : text <<FK>>
+          configuration_type_code : text <<FK>>
+          guide_section : text
+        * origin : text
+        * format : text
+          schema_ore_file_code : text
+        * typical_filename : text
+        * filename_regex : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_files_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    ORE File Table
+    Reference data naming the files an ORE run reads and writes, one row for each
+    file as the ORE user guide identifies it: the market data, the fixing history, the
+    NPV report, the NPV cube. The code is the guide's name for the file, so it says
+    what the file is and not what a run happened to call it.
+    A file is not a parameter. Several parameters may name the same file: the NPV
+    cube is written by the cubeFile of simulation and read by the cubeFile of xva and
+    pfe. Each of those is a file type, and each file type names its file by this
+    code. A file no parameter names, such as the master input ore.xml or the log, is
+    still a file.
+    The table recognises a file by its name. The typical name is the name ORE gives
+    the file when nothing says otherwise, and the name ORE Studio writes when a run
+    has one file of the kind. The regular expression matches every name a run may
+    give it, so a file a run wrote can be told apart without knowing which parameter
+    named it.
+    The table describes files. It does not hold the content of a file.
     end note
 
     entity ores_reporting_ore_parameter_setting_value_sets_tbl <<temporal>> #C6F0D8 {
@@ -1198,6 +1312,7 @@ package "reporting" #E0F7FA {
         * pre_processing : text
           prepared_input_key : text
         * post_processing : text
+        * skipped_families : text
         * is_official : boolean
           regulatory_book_type : text <<FK>>
           cut_kind_code : text <<FK>>
@@ -1445,17 +1560,19 @@ package "reporting" #E0F7FA {
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
+        * measure : text
+        * source : text
+        * line : integer
+        * report_definition_id : uuid <<FK>>
         * family : text
         * subject_type : text
         * subject_id : text <<FK>>
-        * measure : text
-        * report_definition_id : uuid <<FK>>
         * currency : text
           scenario : text
           factor : text
           qualifiers : text
         * value : double
-        * source : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -1472,6 +1589,43 @@ package "reporting" #E0F7FA {
     run. A figure the engine stated as its null string is not here at all, because
     there is nothing to store. The subject_id is the engine's own identifier, such
     as a trade id or a netting set id, so it is text and not a uuid.
+    end note
+
+    entity ores_reporting_report_text_values_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
+        * source : text
+        * line : integer
+        * report_definition_id : uuid <<FK>>
+        * family : text
+        * subject_type : text
+        * subject_id : text <<FK>>
+        * name : text
+        * value_type : text
+        * value : text
+          figure : double
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_text_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Text Value Table
+    One value a run stated as text rather than as a figure. Some outputs say what a
+    run was about rather than what it computed: the pricing engine and model a trade
+    used, the market objects and risk factors a portfolio depends on, the indices and
+    counterparties it names, and the calibrated model. Each value is a name and its
+    text, about a trade when the file names one, with the number beside it when the
+    engine stated the value as a double.
+    The row is written once, with the run, and never edited; a correction is a new
+    run.
     end note
 
     entity ores_reporting_report_trigger_events_tbl  #F7E5FF {
@@ -1687,8 +1841,12 @@ ores_reporting_engine_settings_group_settings_tbl ||--o{ ores_reporting_engine_s
 ores_reporting_configurations_tbl ||--o{ ores_reporting_engine_settings_tbl : "has"
 ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_execution_tbl : "has"
 ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_fixings_tbl : "has"
+ores_reporting_ore_files_tbl ||--o{ ores_reporting_file_types_tbl : "has"
 ores_reporting_analytic_types_tbl ||--o{ ores_reporting_file_types_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_file_types_tbl : "has"
+ores_reporting_ore_files_tbl ||--o{ ores_reporting_ore_file_versions_tbl : "has"
+ores_reporting_ore_file_categories_tbl ||--o{ ores_reporting_ore_files_tbl : "has"
+ores_reporting_configuration_types_tbl ||--o{ ores_reporting_ore_files_tbl : "has"
 ores_reporting_ore_parameter_value_domains_tbl ||--o{ ores_reporting_ore_parameters_tbl : "has"
 ores_reporting_report_definitions_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"

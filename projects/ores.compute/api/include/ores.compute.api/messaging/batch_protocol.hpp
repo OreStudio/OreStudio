@@ -26,38 +26,54 @@
 #define ORES_COMPUTE_API_MESSAGING_BATCH_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/batch.hpp"
+#include "ores.compute.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::compute::messaging {
 
 struct batch_key {
     std::string external_ref;
+
+    friend bool operator==(const batch_key&, const batch_key&) = default;
 };
 
 struct batch_write {
     boost::uuids::uuid id;
     std::string external_ref;
     std::string status;
+
+    friend bool operator==(const batch_write&, const batch_write&) = default;
 };
 
 struct batch_change {
     batch_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const batch_change&, const batch_change&) = default;
 };
 
 struct batch_removal {
     batch_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const batch_removal&, const batch_removal&) = default;
 };
 
 struct batch_lookup {
     batch_key key;
     std::optional<ores::compute::domain::batch> batch;
+
+    friend bool operator==(const batch_lookup&, const batch_lookup&) = default;
 };
 
 struct batches_filter {
@@ -67,6 +83,8 @@ struct batches_filter {
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> status_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const batches_filter&, const batches_filter&) = default;
 };
 
 struct batch_event {
@@ -76,17 +94,23 @@ struct batch_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const batch_event&, const batch_event&) = default;
 };
 
 struct batch_version_key {
     batch_key batch;
     std::uint32_t version;
+
+    friend bool operator==(const batch_version_key&, const batch_version_key&) = default;
 };
 
 struct batch_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const batch_versions_filter&, const batch_versions_filter&) = default;
 };
 
 struct list_batches_request {
@@ -104,12 +128,16 @@ struct list_batches_request {
     ores::utility::domain::order order;
     std::optional<batches_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_batches_request&, const list_batches_request&) = default;
 };
 
 struct list_batches_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::batch> batches;
     std::uint64_t total;
+
+    friend bool operator==(const list_batches_response&, const list_batches_response&) = default;
 };
 
 struct get_batch_request {
@@ -123,11 +151,15 @@ struct get_batch_request {
      */
     static constexpr bool requires_session = true;
     batch_key key;
+
+    friend bool operator==(const get_batch_request&, const get_batch_request&) = default;
 };
 
 struct get_batch_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::batch> batch;
+
+    friend bool operator==(const get_batch_response&, const get_batch_response&) = default;
 };
 
 struct get_many_batches_request {
@@ -141,11 +173,17 @@ struct get_many_batches_request {
      */
     static constexpr bool requires_session = true;
     std::vector<batch_key> keys;
+
+    friend bool operator==(const get_many_batches_request&,
+                           const get_many_batches_request&) = default;
 };
 
 struct get_many_batches_response {
     ores::utility::domain::result result;
     std::vector<batch_lookup> entries;
+
+    friend bool operator==(const get_many_batches_response&,
+                           const get_many_batches_response&) = default;
 };
 
 struct put_batch_request {
@@ -160,11 +198,15 @@ struct put_batch_request {
     static constexpr bool requires_session = true;
     batch_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_batch_request&, const put_batch_request&) = default;
 };
 
 struct put_batch_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::batch> batch;
+
+    friend bool operator==(const put_batch_response&, const put_batch_response&) = default;
 };
 
 struct put_many_batches_request {
@@ -179,11 +221,17 @@ struct put_many_batches_request {
     static constexpr bool requires_session = true;
     std::vector<batch_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_batches_request&,
+                           const put_many_batches_request&) = default;
 };
 
 struct put_many_batches_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::batch> batches;
+
+    friend bool operator==(const put_many_batches_response&,
+                           const put_many_batches_response&) = default;
 };
 
 struct delete_batch_request {
@@ -198,10 +246,14 @@ struct delete_batch_request {
     static constexpr bool requires_session = true;
     batch_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_batch_request&, const delete_batch_request&) = default;
 };
 
 struct delete_batch_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_batch_response&, const delete_batch_response&) = default;
 };
 
 struct delete_many_batches_request {
@@ -216,10 +268,16 @@ struct delete_many_batches_request {
     static constexpr bool requires_session = true;
     std::vector<batch_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_batches_request&,
+                           const delete_many_batches_request&) = default;
 };
 
 struct delete_many_batches_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_batches_response&,
+                           const delete_many_batches_response&) = default;
 };
 
 struct list_batch_versions_request {
@@ -237,12 +295,18 @@ struct list_batch_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<batch_versions_filter> filter;
+
+    friend bool operator==(const list_batch_versions_request&,
+                           const list_batch_versions_request&) = default;
 };
 
 struct list_batch_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::batch> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_batch_versions_response&,
+                           const list_batch_versions_response&) = default;
 };
 
 struct get_batch_version_request {
@@ -256,11 +320,17 @@ struct get_batch_version_request {
      */
     static constexpr bool requires_session = true;
     batch_version_key key;
+
+    friend bool operator==(const get_batch_version_request&,
+                           const get_batch_version_request&) = default;
 };
 
 struct get_batch_version_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::batch> version;
+
+    friend bool operator==(const get_batch_version_response&,
+                           const get_batch_version_response&) = default;
 };
 
 /**
@@ -272,11 +342,699 @@ struct get_batch_version_response {
  * of them.
  */
 namespace batch_event_subjects {
-inline constexpr std::string_view created = "compute.v1.batches_events.created";
-inline constexpr std::string_view updated = "compute.v1.batches_events.updated";
-inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
+inline constexpr std::string_view created = "compute.v1.events.batches.created";
+inline constexpr std::string_view updated = "compute.v1.events.batches.updated";
+inline constexpr std::string_view deleted = "compute.v1.events.batches.deleted";
+}
+/**
+ * @brief The members of batch_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const batch_key&) {
+    return std::tuple{
+        utility::codec::field{"external_ref", &batch_key::external_ref},
+    };
 }
 
+/**
+ * @brief The members of batch_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const batch_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &batch_write::id},
+        utility::codec::field{"external_ref", &batch_write::external_ref},
+        utility::codec::field{"status", &batch_write::status},
+    };
 }
+
+/**
+ * @brief The members of batch_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const batch_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &batch_change::write},
+        utility::codec::field{"precondition", &batch_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of batch_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const batch_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &batch_removal::key},
+        utility::codec::field{"precondition", &batch_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of batch_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const batch_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &batch_lookup::key},
+        utility::codec::field{"batch", &batch_lookup::batch},
+    };
+}
+
+/**
+ * @brief The members of batches_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const batches_filter&) {
+    return std::tuple{
+        utility::codec::field{"party_id", &batches_filter::party_id},
+        utility::codec::field{"status", &batches_filter::status},
+        utility::codec::field{"id_one_of", &batches_filter::id_one_of},
+        utility::codec::field{"party_id_one_of", &batches_filter::party_id_one_of},
+        utility::codec::field{"status_one_of", &batches_filter::status_one_of},
+        utility::codec::field{"search", &batches_filter::search},
+    };
+}
+
+/**
+ * @brief The members of batch_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const batch_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &batch_event::event_id},
+        utility::codec::field{"key", &batch_event::key},
+        utility::codec::field{"action", &batch_event::action},
+        utility::codec::field{"version", &batch_event::version},
+        utility::codec::field{"occurred_at", &batch_event::occurred_at},
+        utility::codec::field{"correlation_id", &batch_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of batch_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const batch_version_key&) {
+    return std::tuple{
+        utility::codec::field{"batch", &batch_version_key::batch},
+        utility::codec::field{"version", &batch_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of batch_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const batch_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &batch_versions_filter::version},
+        utility::codec::field{"from_version", &batch_versions_filter::from_version},
+        utility::codec::field{"to_version", &batch_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_batches_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_batches_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_batches_request::offset},
+        utility::codec::field{"limit", &list_batches_request::limit},
+        utility::codec::field{"order", &list_batches_request::order},
+        utility::codec::field{"filter", &list_batches_request::filter},
+        utility::codec::field{"as_of", &list_batches_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_batches_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_batches_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_batches_response::result},
+        utility::codec::field{"batches", &list_batches_response::batches},
+        utility::codec::field{"total", &list_batches_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_batch_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_batch_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_batch_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_batch_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_batch_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_batch_response::result},
+        utility::codec::field{"batch", &get_batch_response::batch},
+    };
+}
+
+/**
+ * @brief The members of get_many_batches_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_batches_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_batches_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_batches_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_batches_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_batches_response::result},
+        utility::codec::field{"entries", &get_many_batches_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_batch_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_batch_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_batch_request::change},
+        utility::codec::field{"intent", &put_batch_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_batch_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_batch_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_batch_response::result},
+        utility::codec::field{"batch", &put_batch_response::batch},
+    };
+}
+
+/**
+ * @brief The members of put_many_batches_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_batches_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_batches_request::changes},
+        utility::codec::field{"intent", &put_many_batches_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_batches_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_batches_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_batches_response::result},
+        utility::codec::field{"batches", &put_many_batches_response::batches},
+    };
+}
+
+/**
+ * @brief The members of delete_batch_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_batch_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_batch_request::removal},
+        utility::codec::field{"intent", &delete_batch_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_batch_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_batch_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_batch_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_batches_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_batches_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_batches_request::removals},
+        utility::codec::field{"intent", &delete_many_batches_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_batches_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_batches_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_batches_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_batch_versions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_batch_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_batch_versions_request::key},
+        utility::codec::field{"offset", &list_batch_versions_request::offset},
+        utility::codec::field{"limit", &list_batch_versions_request::limit},
+        utility::codec::field{"order", &list_batch_versions_request::order},
+        utility::codec::field{"filter", &list_batch_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_batch_versions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_batch_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_batch_versions_response::result},
+        utility::codec::field{"versions", &list_batch_versions_response::versions},
+        utility::codec::field{"total", &list_batch_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_batch_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_batch_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_batch_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_batch_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_batch_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_batch_version_response::result},
+        utility::codec::field{"version", &get_batch_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::batch_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::batch_key& v);
+    static ores::compute::messaging::batch_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::batch_key& v);
+    static ores::compute::messaging::batch_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::batch_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::batch_write& v);
+    static ores::compute::messaging::batch_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::batch_write& v);
+    static ores::compute::messaging::batch_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::batch_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::batch_change& v);
+    static ores::compute::messaging::batch_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::batch_change& v);
+    static ores::compute::messaging::batch_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::batch_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::batch_removal& v);
+    static ores::compute::messaging::batch_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::batch_removal& v);
+    static ores::compute::messaging::batch_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::batch_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::batch_lookup& v);
+    static ores::compute::messaging::batch_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::batch_lookup& v);
+    static ores::compute::messaging::batch_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::batches_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::batches_filter& v);
+    static ores::compute::messaging::batches_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::batches_filter& v);
+    static ores::compute::messaging::batches_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::batch_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::batch_event& v);
+    static ores::compute::messaging::batch_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::batch_event& v);
+    static ores::compute::messaging::batch_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::batch_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::batch_version_key& v);
+    static ores::compute::messaging::batch_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::batch_version_key& v);
+    static ores::compute::messaging::batch_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::batch_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::batch_versions_filter& v);
+    static ores::compute::messaging::batch_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::batch_versions_filter& v);
+    static ores::compute::messaging::batch_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_batches_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_batches_request& v);
+    static ores::compute::messaging::list_batches_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::list_batches_request& v);
+    static ores::compute::messaging::list_batches_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_batches_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_batches_response& v);
+    static ores::compute::messaging::list_batches_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::list_batches_response& v);
+    static ores::compute::messaging::list_batches_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_batch_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_batch_request& v);
+    static ores::compute::messaging::get_batch_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_batch_request& v);
+    static ores::compute::messaging::get_batch_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_batch_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_batch_response& v);
+    static ores::compute::messaging::get_batch_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_batch_response& v);
+    static ores::compute::messaging::get_batch_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_many_batches_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_many_batches_request& v);
+    static ores::compute::messaging::get_many_batches_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_many_batches_request& v);
+    static ores::compute::messaging::get_many_batches_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_many_batches_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_many_batches_response& v);
+    static ores::compute::messaging::get_many_batches_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_many_batches_response& v);
+    static ores::compute::messaging::get_many_batches_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_batch_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_batch_request& v);
+    static ores::compute::messaging::put_batch_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_batch_request& v);
+    static ores::compute::messaging::put_batch_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_batch_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_batch_response& v);
+    static ores::compute::messaging::put_batch_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_batch_response& v);
+    static ores::compute::messaging::put_batch_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_many_batches_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_many_batches_request& v);
+    static ores::compute::messaging::put_many_batches_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_many_batches_request& v);
+    static ores::compute::messaging::put_many_batches_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_many_batches_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_many_batches_response& v);
+    static ores::compute::messaging::put_many_batches_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_many_batches_response& v);
+    static ores::compute::messaging::put_many_batches_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_batch_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_batch_request& v);
+    static ores::compute::messaging::delete_batch_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::delete_batch_request& v);
+    static ores::compute::messaging::delete_batch_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_batch_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_batch_response& v);
+    static ores::compute::messaging::delete_batch_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::delete_batch_response& v);
+    static ores::compute::messaging::delete_batch_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_many_batches_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_many_batches_request& v);
+    static ores::compute::messaging::delete_many_batches_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::delete_many_batches_request& v);
+    static ores::compute::messaging::delete_many_batches_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_many_batches_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_many_batches_response& v);
+    static ores::compute::messaging::delete_many_batches_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::delete_many_batches_response& v);
+    static ores::compute::messaging::delete_many_batches_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_batch_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_batch_versions_request& v);
+    static ores::compute::messaging::list_batch_versions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::list_batch_versions_request& v);
+    static ores::compute::messaging::list_batch_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_batch_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_batch_versions_response& v);
+    static ores::compute::messaging::list_batch_versions_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::list_batch_versions_response& v);
+    static ores::compute::messaging::list_batch_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_batch_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_batch_version_request& v);
+    static ores::compute::messaging::get_batch_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_batch_version_request& v);
+    static ores::compute::messaging::get_batch_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_batch_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_batch_version_response& v);
+    static ores::compute::messaging::get_batch_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_batch_version_response& v);
+    static ores::compute::messaging::get_batch_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

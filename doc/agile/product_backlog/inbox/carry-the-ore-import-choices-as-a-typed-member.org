@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 6470FA25-7711-4043-88F7-E16E88F590EE
+:END:
+#+title: Carry the ORE import choices as a typed member, not a JSON s…
+#+description: Carry the ORE import choices as a typed member, not a JSON string. ore_import_request and ore_import_execute_request carry import_choices_json, a string the shell fills with rfl::json::write(choices) (projects/ores.shell/application/src/app/commands/trading/ore_commands.cpp:637) and the execute handler parses back (ore_import_execute_handler.cpp, step 3). The web protocol twin declares it as a string too. That is untyped data on the wire: nothing checks the choices' shape until the handler runs. Model the choices in ores.ore.api (planner::import_choices lives in ores.ore.core, which the api cannot name), make the member typed in both requests, and move the shell and web callers. The ore codec task gave import_choices wire_fields and enum text forms, so the typed member needs no new codec.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -162,6 +162,12 @@ the schema settles each case:
 See [[id:8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9][the task]] for the shapes and the
 reasoning.
 
+The =cap_floor_volatility_config= row says one of =use_effecive_volatility= and
+=use_effective_volatility= is dead. That is wrong: the schema states both
+=UseEffeciveVolatility= and =UseEffectiveVolatility=.
+[[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][The re-inventory]] records it with the
+verdicts that remain.
+
 * Recommendations
 
 The split task takes the 17 types the table marks =split=, worst

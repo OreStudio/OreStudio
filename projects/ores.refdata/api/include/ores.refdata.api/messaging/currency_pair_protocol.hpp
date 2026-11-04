@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct currency_pair_key {
     std::string pair_code;
+
+    friend bool operator==(const currency_pair_key&, const currency_pair_key&) = default;
 };
 
 struct currency_pair_write {
@@ -50,26 +52,36 @@ struct currency_pair_write {
     std::string base_currency;
     std::string quote_currency;
     std::string classification;
+
+    friend bool operator==(const currency_pair_write&, const currency_pair_write&) = default;
 };
 
 struct currency_pair_change {
     currency_pair_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const currency_pair_change&, const currency_pair_change&) = default;
 };
 
 struct currency_pair_removal {
     currency_pair_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const currency_pair_removal&, const currency_pair_removal&) = default;
 };
 
 struct currency_pair_lookup {
     currency_pair_key key;
     std::optional<ores::refdata::domain::currency_pair> currency_pair;
+
+    friend bool operator==(const currency_pair_lookup&, const currency_pair_lookup&) = default;
 };
 
 struct currency_pairs_filter {
     std::optional<std::vector<std::string>> pair_code_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const currency_pairs_filter&, const currency_pairs_filter&) = default;
 };
 
 struct currency_pair_event {
@@ -79,17 +91,25 @@ struct currency_pair_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const currency_pair_event&, const currency_pair_event&) = default;
 };
 
 struct currency_pair_version_key {
     currency_pair_key currency_pair;
     std::uint32_t version;
+
+    friend bool operator==(const currency_pair_version_key&,
+                           const currency_pair_version_key&) = default;
 };
 
 struct currency_pair_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const currency_pair_versions_filter&,
+                           const currency_pair_versions_filter&) = default;
 };
 
 struct list_currency_pairs_request {
@@ -107,12 +127,18 @@ struct list_currency_pairs_request {
     ores::utility::domain::order order;
     std::optional<currency_pairs_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_currency_pairs_request&,
+                           const list_currency_pairs_request&) = default;
 };
 
 struct list_currency_pairs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_pair> pairs;
     std::uint64_t total;
+
+    friend bool operator==(const list_currency_pairs_response&,
+                           const list_currency_pairs_response&) = default;
 };
 
 struct get_currency_pair_request {
@@ -126,11 +152,17 @@ struct get_currency_pair_request {
      */
     static constexpr bool requires_session = true;
     currency_pair_key key;
+
+    friend bool operator==(const get_currency_pair_request&,
+                           const get_currency_pair_request&) = default;
 };
 
 struct get_currency_pair_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::currency_pair> currency_pair;
+
+    friend bool operator==(const get_currency_pair_response&,
+                           const get_currency_pair_response&) = default;
 };
 
 struct get_many_currency_pairs_request {
@@ -144,11 +176,17 @@ struct get_many_currency_pairs_request {
      */
     static constexpr bool requires_session = true;
     std::vector<currency_pair_key> keys;
+
+    friend bool operator==(const get_many_currency_pairs_request&,
+                           const get_many_currency_pairs_request&) = default;
 };
 
 struct get_many_currency_pairs_response {
     ores::utility::domain::result result;
     std::vector<currency_pair_lookup> entries;
+
+    friend bool operator==(const get_many_currency_pairs_response&,
+                           const get_many_currency_pairs_response&) = default;
 };
 
 struct put_currency_pair_request {
@@ -163,11 +201,17 @@ struct put_currency_pair_request {
     static constexpr bool requires_session = true;
     currency_pair_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_currency_pair_request&,
+                           const put_currency_pair_request&) = default;
 };
 
 struct put_currency_pair_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::currency_pair> currency_pair;
+
+    friend bool operator==(const put_currency_pair_response&,
+                           const put_currency_pair_response&) = default;
 };
 
 struct put_many_currency_pairs_request {
@@ -182,11 +226,17 @@ struct put_many_currency_pairs_request {
     static constexpr bool requires_session = true;
     std::vector<currency_pair_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_currency_pairs_request&,
+                           const put_many_currency_pairs_request&) = default;
 };
 
 struct put_many_currency_pairs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_pair> pairs;
+
+    friend bool operator==(const put_many_currency_pairs_response&,
+                           const put_many_currency_pairs_response&) = default;
 };
 
 struct delete_currency_pair_request {
@@ -201,10 +251,16 @@ struct delete_currency_pair_request {
     static constexpr bool requires_session = true;
     currency_pair_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_currency_pair_request&,
+                           const delete_currency_pair_request&) = default;
 };
 
 struct delete_currency_pair_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_currency_pair_response&,
+                           const delete_currency_pair_response&) = default;
 };
 
 struct delete_many_currency_pairs_request {
@@ -219,10 +275,16 @@ struct delete_many_currency_pairs_request {
     static constexpr bool requires_session = true;
     std::vector<currency_pair_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_currency_pairs_request&,
+                           const delete_many_currency_pairs_request&) = default;
 };
 
 struct delete_many_currency_pairs_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_currency_pairs_response&,
+                           const delete_many_currency_pairs_response&) = default;
 };
 
 struct list_currency_pair_versions_request {
@@ -240,12 +302,18 @@ struct list_currency_pair_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<currency_pair_versions_filter> filter;
+
+    friend bool operator==(const list_currency_pair_versions_request&,
+                           const list_currency_pair_versions_request&) = default;
 };
 
 struct list_currency_pair_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_pair> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_currency_pair_versions_response&,
+                           const list_currency_pair_versions_response&) = default;
 };
 
 struct get_currency_pair_version_request {
@@ -259,11 +327,17 @@ struct get_currency_pair_version_request {
      */
     static constexpr bool requires_session = true;
     currency_pair_version_key key;
+
+    friend bool operator==(const get_currency_pair_version_request&,
+                           const get_currency_pair_version_request&) = default;
 };
 
 struct get_currency_pair_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::currency_pair> version;
+
+    friend bool operator==(const get_currency_pair_version_response&,
+                           const get_currency_pair_version_response&) = default;
 };
 
 /**
@@ -275,9 +349,9 @@ struct get_currency_pair_version_response {
  * of them.
  */
 namespace currency_pair_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.currency_pairs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.currency_pairs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.currency_pairs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.currency_pairs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.currency_pairs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.currency_pairs.deleted";
 }
 /**
  * @brief The members of currency_pair_key, named as the wire names them and in the order

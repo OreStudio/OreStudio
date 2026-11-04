@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6C7FBF9C-21F4-44FE-8E12-5731BCE14399
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.market_series_identity
 #+description: Codegen entity model for the projection that makes a series identity joinable -- one column per identity field the codec schema declares, written from the same parse that writes the oresmd URI.
@@ -592,6 +593,16 @@ schema row does not declare it.
 The =source= of an FX fixing (=FX-SOURCE-CCY1-CCY2=), as the index grammar spells
 it, or empty when the identity is not an FX fixing. Two FX fixings of one currency
 pair differ only in their source, so the column is what keeps them apart.
+
+** surface_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =surface_id= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
 
 ** tenor
 :PROPERTIES:

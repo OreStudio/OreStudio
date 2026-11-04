@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: ED84BE8A-5538-4825-A374-AB5786899D8A
+:END:
+#+title: ores.refdata.commodity_curve_interpolation
+#+description: Codegen entity model for the refdata =commodity_curve_interpolation= table. One part of a commodity curve: the day counter and interpolation a direct or piecewise commodity curve is built with.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The day counter and interpolation a direct or piecewise commodity curve is built with.
+#+entity_singular: commodity_curve_interpolation
+#+entity_plural: commodity_curve_interpolations
+#+entity_title: Commodity Curve Interpolation
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+How a commodity curve built from its own quotes or price segments
+interpolates, as ORE's =DayCounter= and =InterpolationMethod=. The direct and
+piecewise constructions read them; a cross currency curve takes its shape from
+its base curve, and a basis curve states its own inside its basis
+configuration.
+
+A commodity curve holds at most one row of this part, so the generated table
+adds the unique index on the live rows of =(tenant_id, curve_definition_id)=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:unique:   true
+:END:
+
+The curve entry this part belongs to, as the commodity curve row is keyed.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The day counter the curve is built on, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** interpolation_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the curve interpolates between its pillars.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_curve_interpolations_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: interpolation
+:entity_plural_short:   interpolations
+:entity_singular_words: commodity curve interpolation
+:entity_plural_words:   commodity curve interpolations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:2052FD37-EB0C-4A10-A2CF-8CE8BFC14678][ores.refdata.commodity_curve_config]] — the commodity curve this part belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:40C8D641-A53C-4FB7-94E5-29812C70E66B][Split the ORE curve entries by construction]] — the task that split it.

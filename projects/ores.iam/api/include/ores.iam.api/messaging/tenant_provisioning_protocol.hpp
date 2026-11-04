@@ -25,9 +25,15 @@
 #ifndef ORES_IAM_API_MESSAGING_TENANT_PROVISIONING_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_TENANT_PROVISIONING_PROTOCOL_HPP
 
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -109,6 +115,9 @@ struct provision_tenant_command {
      * default is refused, and so is a required parameter whose value is empty.
      */
     std::vector<std::string> parameters;
+
+    friend bool operator==(const provision_tenant_command&,
+                           const provision_tenant_command&) = default;
 };
 
 /**
@@ -135,6 +144,9 @@ struct provision_tenant_command_response {
      * @brief Id of the administrator account it created.
      */
     std::string account_id;
+
+    friend bool operator==(const provision_tenant_command_response&,
+                           const provision_tenant_command_response&) = default;
 };
 
 /**
@@ -194,6 +206,9 @@ struct provision_party_command {
      * described by hand.
      */
     std::string lei;
+
+    friend bool operator==(const provision_party_command&,
+                           const provision_party_command&) = default;
 };
 
 struct provision_party_command_response {
@@ -209,8 +224,134 @@ struct provision_party_command_response {
      * @brief Id of the party the request resolved.
      */
     std::string party_id;
+
+    friend bool operator==(const provision_party_command_response&,
+                           const provision_party_command_response&) = default;
 };
 
+/**
+ * @brief The members of provision_tenant_command, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const provision_tenant_command&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"profile_code", &provision_tenant_command::profile_code},
+        ::ores::utility::codec::field{"tenant_code", &provision_tenant_command::tenant_code},
+        ::ores::utility::codec::field{"tenant_name", &provision_tenant_command::tenant_name},
+        ::ores::utility::codec::field{"tenant_hostname",
+                                      &provision_tenant_command::tenant_hostname},
+        ::ores::utility::codec::field{"tenant_description",
+                                      &provision_tenant_command::tenant_description},
+        ::ores::utility::codec::field{"admin_username", &provision_tenant_command::admin_username},
+        ::ores::utility::codec::field{"admin_email", &provision_tenant_command::admin_email},
+        ::ores::utility::codec::field{"admin_password", &provision_tenant_command::admin_password},
+        ::ores::utility::codec::field{"parameters", &provision_tenant_command::parameters},
+    };
 }
+
+/**
+ * @brief The members of provision_tenant_command_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const provision_tenant_command_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &provision_tenant_command_response::success},
+        ::ores::utility::codec::field{"message", &provision_tenant_command_response::message},
+        ::ores::utility::codec::field{"instance_id",
+                                      &provision_tenant_command_response::instance_id},
+        ::ores::utility::codec::field{"tenant_id", &provision_tenant_command_response::tenant_id},
+        ::ores::utility::codec::field{"account_id", &provision_tenant_command_response::account_id},
+    };
+}
+
+/**
+ * @brief The members of provision_party_command, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const provision_party_command&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"party", &provision_party_command::party},
+        ::ores::utility::codec::field{"profile_code", &provision_party_command::profile_code},
+        ::ores::utility::codec::field{"lei", &provision_party_command::lei},
+    };
+}
+
+/**
+ * @brief The members of provision_party_command_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const provision_party_command_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &provision_party_command_response::success},
+        ::ores::utility::codec::field{"message", &provision_party_command_response::message},
+        ::ores::utility::codec::field{"instance_id",
+                                      &provision_party_command_response::instance_id},
+        ::ores::utility::codec::field{"party_id", &provision_party_command_response::party_id},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::provision_tenant_command> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::provision_tenant_command& v);
+    static ores::iam::messaging::provision_tenant_command read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::provision_tenant_command& v);
+    static ores::iam::messaging::provision_tenant_command
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::provision_tenant_command_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::provision_tenant_command_response& v);
+    static ores::iam::messaging::provision_tenant_command_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::provision_tenant_command_response& v);
+    static ores::iam::messaging::provision_tenant_command_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::provision_party_command> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::provision_party_command& v);
+    static ores::iam::messaging::provision_party_command read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::provision_party_command& v);
+    static ores::iam::messaging::provision_party_command
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::provision_party_command_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::provision_party_command_response& v);
+    static ores::iam::messaging::provision_party_command_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::provision_party_command_response& v);
+    static ores::iam::messaging::provision_party_command_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

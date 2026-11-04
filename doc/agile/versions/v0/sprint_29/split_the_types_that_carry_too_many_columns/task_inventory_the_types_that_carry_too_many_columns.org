@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-10-29
+#+updated: 2026-11-02
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,11 +26,11 @@ One page lists every generated persistent type with the numbers that decide its 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Done; the report and its lever are written. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close, and start the split task.       |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance

@@ -99,6 +99,18 @@ export function parseJson(text: string): unknown {
     }
 }
 
+/**
+ * The request's headers. Every string body this client sends is JSON, and the server reads a
+ * body without a JSON content type as plain text, so a string body gets that type by default.
+ */
+function headersOf(init: RequestInit): Headers {
+    const headers = new Headers(init.headers);
+    if (typeof init.body === 'string' && !headers.has('content-type')) {
+        headers.set('content-type', 'application/json');
+    }
+    return headers;
+}
+
 /** Sends a request and returns the decoded body, or throws an {@link ApiFailure}. */
 export async function request(path: string, init: RequestInit): Promise<unknown> {
     const operation = operationOf(path, init);
@@ -108,6 +120,7 @@ export async function request(path: string, init: RequestInit): Promise<unknown>
             // The session cookie is HttpOnly and must ride along.
             credentials: 'same-origin',
             ...init,
+            headers: headersOf(init),
         });
     } catch {
         const failure = new ApiFailure(

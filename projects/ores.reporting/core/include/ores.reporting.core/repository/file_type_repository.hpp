@@ -124,6 +124,31 @@ public:
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
     /**
+     * @brief Reads latest file types filtered by ore_file_code, with pagination.
+     * @param ctx Repository context with database connection
+     * @param ore_file_code The ore_file_code to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::file_type> read_latest_by_ore_file_code(
+        context ctx,
+        const std::string& ore_file_code,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::file_types_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active file types filtered by ore_file_code.
+     */
+    std::uint32_t get_total_type_count_by_ore_file_code(
+        context ctx,
+        const std::string& ore_file_code,
+        const std::optional<messaging::file_types_filter>& filter = std::nullopt);
+
+
+    /**
      * @brief Reads latest file types filtered by analytic_type_code, with pagination.
      * @param ctx Repository context with database connection
      * @param analytic_type_code The analytic_type_code to filter by

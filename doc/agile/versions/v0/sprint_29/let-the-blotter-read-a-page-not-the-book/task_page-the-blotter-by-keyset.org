@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: D2C3CA5F-E041-42C6-94EB-041EF16E175E
+:END:
+#+title: Task: Page the blotter by keyset
+#+description: An offset page re-walks what it skips, so the hundredth page costs more than the first. Page by the sort key and the row id, so every page costs what the first costs.
+#+type: task
+#+level: s1
+#+filetags: :let-the-blotter-read-a-page-not-the-book:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr: 4403
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:44A58042-462F-46E2-93A5-F6936D38B411][Let the blotter read a page, not the book]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:44A58042-462F-46E2-93A5-F6936D38B411][Let the blotter read a page, not the book]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-01                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [#4403](https://github.com/OreStudio/OreStudio/pull/4403) | [trading] Answer the blotter's two questions with two reads |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The page is a keyset read. =read_blotter_page= reads one page after a key the
+service itself wrote: the sort value and the row id, joined by a separator no
+value holds. The default order is the trade date, newest first, then the id. A
+page with no key is the first page. =trading.v1.blotter.page= carries the key
+back to the screen, and =is_sortable= refuses a field the order cannot state, so
+the page and the list cannot disagree about what an order means.
+
+Merged on main in #4403 at =b903acb4=. The four =[page]= cases in
+=trading/core/tests/blotter_rail_tests.cpp= cover a page of five read in twos, a
+page after a key, the page's agreement with its rail, and every sortable field
+stating a key.
+
+Two costs remain, and they are not this task's: the key is compared as text, so
+no index serves the order, and the page reads the union view, so it pays for
+each row's laterals. [[id:A0AE98E4-DF2E-4D75-9099-FF3E2555B5B1][List a package as
+the trade it is]] and
+[[id:2A42890A-63B5-4076-B934-E98685795CF0][Order the page by an indexed key]]
+carry them.

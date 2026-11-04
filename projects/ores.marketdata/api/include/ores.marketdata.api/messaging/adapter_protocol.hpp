@@ -26,26 +26,38 @@
 #define ORES_MARKETDATA_API_MESSAGING_ADAPTER_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/adapter.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
 
 struct adapter_key {
     std::string code;
+
+    friend bool operator==(const adapter_key&, const adapter_key&) = default;
 };
 
 struct adapter_lookup {
     adapter_key key;
     std::optional<ores::marketdata::domain::adapter> adapter;
+
+    friend bool operator==(const adapter_lookup&, const adapter_lookup&) = default;
 };
 
 struct adapters_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const adapters_filter&, const adapters_filter&) = default;
 };
 
 struct adapter_event {
@@ -55,17 +67,24 @@ struct adapter_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const adapter_event&, const adapter_event&) = default;
 };
 
 struct adapter_version_key {
     adapter_key adapter;
     std::uint32_t version;
+
+    friend bool operator==(const adapter_version_key&, const adapter_version_key&) = default;
 };
 
 struct adapter_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const adapter_versions_filter&,
+                           const adapter_versions_filter&) = default;
 };
 
 struct list_adapters_request {
@@ -83,12 +102,16 @@ struct list_adapters_request {
     ores::utility::domain::order order;
     std::optional<adapters_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_adapters_request&, const list_adapters_request&) = default;
 };
 
 struct list_adapters_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::adapter> adapters;
     std::uint64_t total;
+
+    friend bool operator==(const list_adapters_response&, const list_adapters_response&) = default;
 };
 
 struct get_adapter_request {
@@ -102,11 +125,15 @@ struct get_adapter_request {
      */
     static constexpr bool requires_session = true;
     adapter_key key;
+
+    friend bool operator==(const get_adapter_request&, const get_adapter_request&) = default;
 };
 
 struct get_adapter_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::adapter> adapter;
+
+    friend bool operator==(const get_adapter_response&, const get_adapter_response&) = default;
 };
 
 struct get_many_adapters_request {
@@ -120,11 +147,17 @@ struct get_many_adapters_request {
      */
     static constexpr bool requires_session = true;
     std::vector<adapter_key> keys;
+
+    friend bool operator==(const get_many_adapters_request&,
+                           const get_many_adapters_request&) = default;
 };
 
 struct get_many_adapters_response {
     ores::utility::domain::result result;
     std::vector<adapter_lookup> entries;
+
+    friend bool operator==(const get_many_adapters_response&,
+                           const get_many_adapters_response&) = default;
 };
 
 struct list_adapter_versions_request {
@@ -142,12 +175,18 @@ struct list_adapter_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<adapter_versions_filter> filter;
+
+    friend bool operator==(const list_adapter_versions_request&,
+                           const list_adapter_versions_request&) = default;
 };
 
 struct list_adapter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::adapter> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_adapter_versions_response&,
+                           const list_adapter_versions_response&) = default;
 };
 
 struct get_adapter_version_request {
@@ -161,11 +200,17 @@ struct get_adapter_version_request {
      */
     static constexpr bool requires_session = true;
     adapter_version_key key;
+
+    friend bool operator==(const get_adapter_version_request&,
+                           const get_adapter_version_request&) = default;
 };
 
 struct get_adapter_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::adapter> version;
+
+    friend bool operator==(const get_adapter_version_response&,
+                           const get_adapter_version_response&) = default;
 };
 
 /**
@@ -177,11 +222,442 @@ struct get_adapter_version_response {
  * of them.
  */
 namespace adapter_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.adapters_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.adapters_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.adapters.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.adapters.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.adapters.deleted";
+}
+/**
+ * @brief The members of adapter_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &adapter_key::code},
+    };
 }
 
+/**
+ * @brief The members of adapter_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &adapter_lookup::key},
+        utility::codec::field{"adapter", &adapter_lookup::adapter},
+    };
 }
+
+/**
+ * @brief The members of adapters_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapters_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &adapters_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of adapter_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &adapter_event::event_id},
+        utility::codec::field{"key", &adapter_event::key},
+        utility::codec::field{"action", &adapter_event::action},
+        utility::codec::field{"version", &adapter_event::version},
+        utility::codec::field{"occurred_at", &adapter_event::occurred_at},
+        utility::codec::field{"correlation_id", &adapter_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of adapter_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_version_key&) {
+    return std::tuple{
+        utility::codec::field{"adapter", &adapter_version_key::adapter},
+        utility::codec::field{"version", &adapter_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of adapter_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &adapter_versions_filter::version},
+        utility::codec::field{"from_version", &adapter_versions_filter::from_version},
+        utility::codec::field{"to_version", &adapter_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_adapters_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_adapters_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_adapters_request::offset},
+        utility::codec::field{"limit", &list_adapters_request::limit},
+        utility::codec::field{"order", &list_adapters_request::order},
+        utility::codec::field{"filter", &list_adapters_request::filter},
+        utility::codec::field{"as_of", &list_adapters_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_adapters_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_adapters_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_adapters_response::result},
+        utility::codec::field{"adapters", &list_adapters_response::adapters},
+        utility::codec::field{"total", &list_adapters_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_adapter_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_adapter_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_adapter_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_adapter_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_adapter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_adapter_response::result},
+        utility::codec::field{"adapter", &get_adapter_response::adapter},
+    };
+}
+
+/**
+ * @brief The members of get_many_adapters_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_adapters_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_adapters_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_adapters_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_adapters_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_adapters_response::result},
+        utility::codec::field{"entries", &get_many_adapters_response::entries},
+    };
+}
+
+/**
+ * @brief The members of list_adapter_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_adapter_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_adapter_versions_request::key},
+        utility::codec::field{"offset", &list_adapter_versions_request::offset},
+        utility::codec::field{"limit", &list_adapter_versions_request::limit},
+        utility::codec::field{"order", &list_adapter_versions_request::order},
+        utility::codec::field{"filter", &list_adapter_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_adapter_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_adapter_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_adapter_versions_response::result},
+        utility::codec::field{"versions", &list_adapter_versions_response::versions},
+        utility::codec::field{"total", &list_adapter_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_adapter_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_adapter_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_adapter_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_adapter_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_adapter_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_adapter_version_response::result},
+        utility::codec::field{"version", &get_adapter_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::adapter_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_key& v);
+    static ores::marketdata::messaging::adapter_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_key& v);
+    static ores::marketdata::messaging::adapter_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::adapter_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_lookup& v);
+    static ores::marketdata::messaging::adapter_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_lookup& v);
+    static ores::marketdata::messaging::adapter_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::adapters_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapters_filter& v);
+    static ores::marketdata::messaging::adapters_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapters_filter& v);
+    static ores::marketdata::messaging::adapters_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::adapter_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_event& v);
+    static ores::marketdata::messaging::adapter_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_event& v);
+    static ores::marketdata::messaging::adapter_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::adapter_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_version_key& v);
+    static ores::marketdata::messaging::adapter_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_version_key& v);
+    static ores::marketdata::messaging::adapter_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::adapter_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_versions_filter& v);
+    static ores::marketdata::messaging::adapter_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_versions_filter& v);
+    static ores::marketdata::messaging::adapter_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::list_adapters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::list_adapters_request& v);
+    static ores::marketdata::messaging::list_adapters_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::list_adapters_request& v);
+    static ores::marketdata::messaging::list_adapters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::list_adapters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::list_adapters_response& v);
+    static ores::marketdata::messaging::list_adapters_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::list_adapters_response& v);
+    static ores::marketdata::messaging::list_adapters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::get_adapter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_adapter_request& v);
+    static ores::marketdata::messaging::get_adapter_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::get_adapter_request& v);
+    static ores::marketdata::messaging::get_adapter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::get_adapter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_adapter_response& v);
+    static ores::marketdata::messaging::get_adapter_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::get_adapter_response& v);
+    static ores::marketdata::messaging::get_adapter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_adapters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_many_adapters_request& v);
+    static ores::marketdata::messaging::get_many_adapters_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_adapters_request& v);
+    static ores::marketdata::messaging::get_many_adapters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_adapters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_many_adapters_response& v);
+    static ores::marketdata::messaging::get_many_adapters_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_adapters_response& v);
+    static ores::marketdata::messaging::get_many_adapters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_adapter_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_adapter_versions_request& v);
+    static ores::marketdata::messaging::list_adapter_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_adapter_versions_request& v);
+    static ores::marketdata::messaging::list_adapter_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_adapter_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_adapter_versions_response& v);
+    static ores::marketdata::messaging::list_adapter_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_adapter_versions_response& v);
+    static ores::marketdata::messaging::list_adapter_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_adapter_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_adapter_version_request& v);
+    static ores::marketdata::messaging::get_adapter_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_adapter_version_request& v);
+    static ores::marketdata::messaging::get_adapter_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_adapter_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_adapter_version_response& v);
+    static ores::marketdata::messaging::get_adapter_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_adapter_version_response& v);
+    static ores::marketdata::messaging::get_adapter_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

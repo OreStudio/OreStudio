@@ -87,36 +87,22 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <curve_definition_id> <currency> <base_price_curve> <base_yield_curve>
-     * <yield_curve> <spot_quote> <has_quotes> <day_counter> <interpolation_method> <conventions>
-     * <extrapolation> <has_basis_configuration> <basis_base_price_curve>
-     * <basis_base_price_conventions> <basis_conventions> <basis_day_counter>
-     * <basis_interpolation_method> <basis_add_basis> <basis_month_offset> <basis_average_base>
-     * <basis_price_as_historical_fixing> <has_price_segments> <reason> <commentary>
+     * @brief add <curve_definition_id> <currency> <extrapolation> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <curve_definition_id> <currency> <base_price_curve> <base_yield_curve>
-     * <yield_curve> <spot_quote> <has_quotes> <day_counter> <interpolation_method> <conventions>
-     * <extrapolation> <has_basis_configuration> <basis_base_price_curve>
-     * <basis_base_price_conventions> <basis_conventions> <basis_day_counter>
-     * <basis_interpolation_method> <basis_add_basis> <basis_month_offset> <basis_average_base>
-     * <basis_price_as_historical_fixing> <has_price_segments> <reason> <commentary> [--version <n>]
+     * @brief set <id> <curve_definition_id> <currency> <extrapolation> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <curve_definition_id> <currency> <base_price_curve>
-     * <base_yield_curve> <yield_curve> <spot_quote> <has_quotes> <day_counter>
-     * <interpolation_method> <conventions> <extrapolation> <has_basis_configuration>
-     * <basis_base_price_curve> <basis_base_price_conventions> <basis_conventions>
-     * <basis_day_counter> <basis_interpolation_method> <basis_add_basis> <basis_month_offset>
-     * <basis_average_base> <basis_price_as_historical_fixing> <has_price_segments> <reason>
+     * @brief put-many --count <n> <id> <curve_definition_id> <currency> <extrapolation> <reason>
      * <commentary>
      */
     static void process_put_many(std::ostream& out,

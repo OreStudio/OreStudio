@@ -226,22 +226,22 @@ cut_resolution resolve_run_instant(const domain::cut_kind& kind,
                           instant_text(ctx.run_instant) +
                           ": nothing in the request states the body the assembly built.");
 
+        // The parts a refusal names are the ones the assembly answers: the
+        // reference data and the engine the run executes. The population and the
+        // snapshot have no reference to state, because the store keeps no copy of
+        // either, so the body carries the words it answered instead of a column
+        // that would name nothing. A body that states neither version is not a
+        // body, and the refusal names both.
         std::string missing;
         const auto note = [&missing](const char* part) {
             if (!missing.empty())
                 missing += " and ";
             missing += part;
         };
-        if (!ctx.body->market_data_snapshot_id)
-            note("the market data snapshot");
-        if (!ctx.body->deal_population_id)
-            note("the deal population");
         if (!ctx.body->reference_data_version)
             note("the reference data version");
         if (!ctx.body->engine_version)
             note("the engine version");
-        if (!ctx.body->code_version)
-            note("the code version");
         if (!missing.empty())
             return refuse("A body of kind " + kind.code + " cannot be fixed at " +
                           instant_text(ctx.run_instant) + ": " + missing +
@@ -266,6 +266,8 @@ cut_resolution resolve_run_instant(const domain::cut_kind& kind,
     }
     plan.change_reason_code = "system.new_record";
     plan.change_commentary = "Minted at the instant the run started";
+    if (ctx.body && !ctx.body->note.empty())
+        plan.change_commentary += ", from " + ctx.body->note;
 
     cut_resolution out;
     out.mint = std::move(plan);

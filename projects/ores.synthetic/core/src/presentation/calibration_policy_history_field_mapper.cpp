@@ -41,6 +41,19 @@ render_calibration_policy_fields(const domain::calibration_policy& v) {
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Asset Class Code", .value = v.asset_class_code});
     fields.push_back({.name = "Window Days", .value = std::to_string(v.window_days)});
+    fields.push_back(
+        {.name = "Variance Window Days", .value = std::to_string(v.variance_window_days)});
+    fields.push_back({.name = "Variance Approval Mode", .value = v.variance_approval_mode});
+    fields.push_back(
+        {.name = "Variance Min Returns", .value = std::to_string(v.variance_min_returns)});
+    fields.push_back({.name = "Variance Require Starts Agree",
+                      .value = v.variance_require_starts_agree ? "true" : "false"});
+    fields.push_back(
+        {.name = "Variance Min Persistence", .value = std::to_string(v.variance_min_persistence)});
+    fields.push_back(
+        {.name = "Variance Max Persistence", .value = std::to_string(v.variance_max_persistence)});
+    fields.push_back(
+        {.name = "Variance Min Reaction", .value = std::to_string(v.variance_min_reaction)});
     fields.push_back({.name = "Allow Inverse", .value = v.allow_inverse ? "true" : "false"});
     fields.push_back({.name = "Fallback Code", .value = v.fallback_code});
     using ores::history::domain::provenance_fields;

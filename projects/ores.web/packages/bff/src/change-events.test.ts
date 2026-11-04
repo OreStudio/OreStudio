@@ -56,7 +56,7 @@ function endWindow(): void {
 
 describe('the subject a watch listens on', () => {
     it('is the canonical events collection with every action under it', () => {
-        expect(eventSubject('iam', 'accounts')).toBe('iam.v1.accounts_events.>');
+        expect(eventSubject('iam', 'accounts')).toBe('iam.v1.events.accounts.>');
     });
 
     it('accepts plain names and refuses a wildcard or an extra segment', () => {
@@ -111,7 +111,7 @@ describe('the change registry', () => {
         const heard: string[] = [];
         registry.attach('s1', (c) => heard.push(`${c.entity}@${c.at}`));
         registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
-        open.get('iam.v1.accounts_events.>')?.(change('t1'));
+        open.get('iam.v1.events.accounts.>')?.(change('t1'));
         endWindow();
         expect(heard).toEqual(['accounts@2026-10-10T12:00:03Z']);
     });
@@ -128,7 +128,7 @@ describe('the change registry', () => {
         const watch = [{ component: 'iam', entity: 'accounts' }];
         registry.watch('s1', audience({ tenantId: 't1' }), watch);
         registry.watch('s2', audience({ tenantId: 't2' }), watch);
-        open.get('iam.v1.accounts_events.>')?.(change('t1', undefined, 'first'));
+        open.get('iam.v1.events.accounts.>')?.(change('t1', undefined, 'first'));
         endWindow();
 
         const received = lines.find((line) => line.message === 'change event received');
@@ -154,7 +154,7 @@ describe('the change registry', () => {
         });
         registry.attach('s1', () => undefined);
         registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
-        open.get('iam.v1.accounts_events.>')?.(change('t1'));
+        open.get('iam.v1.events.accounts.>')?.(change('t1'));
         endWindow();
         expect(lines).not.toContain('change event received');
     });
@@ -169,7 +169,7 @@ describe('the change registry', () => {
         const heard: string[] = [];
         registry.attach('s1', (c) => heard.push(c.at));
         registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
-        open.get('iam.v1.accounts_events.>')?.(change(undefined));
+        open.get('iam.v1.events.accounts.>')?.(change(undefined));
         endWindow();
         expect(warnings).toEqual(['change event without a tenant, told to nobody']);
         expect(heard).toEqual([]);
@@ -190,7 +190,7 @@ describe('the change registry', () => {
             return {
                 told,
                 publish: (key, at = 'a', tenant = 't1') =>
-                    open.get('iam.v1.accounts_events.>')?.(change(tenant, undefined, at, key)),
+                    open.get('iam.v1.events.accounts.>')?.(change(tenant, undefined, at, key)),
             };
         }
 
@@ -261,7 +261,7 @@ describe('the change registry', () => {
             const heard: string[] = [];
             registry.attach('s1', (c) => heard.push(c.at));
             registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
-            open.get('iam.v1.accounts_events.>')?.(change('t1', undefined, 'late', { a: '1' }));
+            open.get('iam.v1.events.accounts.>')?.(change('t1', undefined, 'late', { a: '1' }));
             registry.forget('s1');
             endWindow();
             expect(heard).toEqual([]);
@@ -289,11 +289,11 @@ describe('the change registry', () => {
         const watch = [{ component: 'iam', entity: 'accounts' }];
         registry.watch('s1', audience({ tenantId: 't1' }), watch);
         registry.watch('s2', audience({ tenantId: 't2' }), watch);
-        open.get('iam.v1.accounts_events.>')?.(change('t1', undefined, 'first'));
+        open.get('iam.v1.events.accounts.>')?.(change('t1', undefined, 'first'));
         endWindow();
-        open.get('iam.v1.accounts_events.>')?.(change('t2', undefined, 'second'));
+        open.get('iam.v1.events.accounts.>')?.(change('t2', undefined, 'second'));
         endWindow();
-        open.get('iam.v1.accounts_events.>')?.(change(SYSTEM, undefined, 'shared'));
+        open.get('iam.v1.events.accounts.>')?.(change(SYSTEM, undefined, 'shared'));
         endWindow();
         expect(one).toEqual(['first', 'shared']);
         expect(two).toEqual(['second', 'shared']);
@@ -308,7 +308,7 @@ describe('the change registry', () => {
         registry.watch('s1', audience({ everyParty: false, parties: () => parties }), [
             { component: 'refdata', entity: 'party_identifiers' },
         ]);
-        const publish = open.get('refdata.v1.party_identifiers_events.>');
+        const publish = open.get('refdata.v1.events.party_identifiers.>');
         publish?.(change('t1', 'p2', 'before'));
         endWindow();
         parties = new Set(['p2']);
@@ -347,6 +347,6 @@ describe('the change registry', () => {
         registry.attach('s1', () => undefined);
         registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
         registry.watch('s1', audience(), [{ component: 'iam', entity: 'roles' }]);
-        expect([...open.keys()]).toEqual(['iam.v1.roles_events.>']);
+        expect([...open.keys()]).toEqual(['iam.v1.events.roles.>']);
     });
 });

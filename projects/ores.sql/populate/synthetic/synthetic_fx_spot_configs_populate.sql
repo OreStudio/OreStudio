@@ -116,7 +116,10 @@ begin
         price_source, provider_code,
         -- The arrival regime: EUR/USD keeps the periodic default, GBP/USD
         -- clusters, so the seed carries two regimes side by side.
-        arrival_mode, branching_ratio, decay, sensitivity
+        arrival_mode, branching_ratio, decay, sensitivity,
+        -- Every starter feed scales its volatility by the GJR-GARCH daily
+        -- variance, fitted to the pair's fixings when the feed starts.
+        variance_model
     )
     values
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -126,13 +129,15 @@ begin
      -- The feed starts from the newest public fixing of the pair; the price
      -- above is the level it keeps when no source fixes it.
      'fixing', 'ore',
-     'periodic', 0.0, 1.0, 1.0),
+     'periodic', 0.0, 1.0, 1.0,
+     'gjr_garch'),
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
      'Synthetic FX Spot: GBP/USD',
      'Default synthetic FX spot generator for the party''s market data configuration.',
      true, true, 'GBP', 'USD', 1.2650, 3600, 'geometric',
      'fixing', 'ore',
-     'hawkes', 0.5, 10.0, 1.0);
+     'hawkes', 0.5, 10.0, 1.0,
+     'gjr_garch');
 
     insert into ores_dq_gmm_components_artefact_tbl (
         dataset_id, tenant_id, base_currency_code, quote_currency_code,

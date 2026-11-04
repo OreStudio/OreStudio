@@ -43,6 +43,8 @@ namespace ores::trading::messaging {
 
 struct trade_booking_key {
     boost::uuids::uuid trade_id;
+
+    friend bool operator==(const trade_booking_key&, const trade_booking_key&) = default;
 };
 
 struct trade_booking_write {
@@ -54,21 +56,29 @@ struct trade_booking_write {
     std::optional<boost::uuids::uuid> netting_set_identifier_id;
     std::optional<std::chrono::year_month_day> trade_date;
     std::optional<std::chrono::system_clock::time_point> execution_timestamp;
+
+    friend bool operator==(const trade_booking_write&, const trade_booking_write&) = default;
 };
 
 struct trade_booking_change {
     trade_booking_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const trade_booking_change&, const trade_booking_change&) = default;
 };
 
 struct trade_booking_removal {
     trade_booking_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const trade_booking_removal&, const trade_booking_removal&) = default;
 };
 
 struct trade_booking_lookup {
     trade_booking_key key;
     std::optional<ores::trading::domain::trade_booking> trade_booking;
+
+    friend bool operator==(const trade_booking_lookup&, const trade_booking_lookup&) = default;
 };
 
 struct trade_bookings_filter {
@@ -81,6 +91,8 @@ struct trade_bookings_filter {
     std::optional<std::string> trade_date_to;
     std::optional<std::string> execution_timestamp_from;
     std::optional<std::string> execution_timestamp_to;
+
+    friend bool operator==(const trade_bookings_filter&, const trade_bookings_filter&) = default;
 };
 
 struct trade_booking_event {
@@ -90,17 +102,25 @@ struct trade_booking_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const trade_booking_event&, const trade_booking_event&) = default;
 };
 
 struct trade_booking_version_key {
     trade_booking_key trade_booking;
     std::uint32_t version;
+
+    friend bool operator==(const trade_booking_version_key&,
+                           const trade_booking_version_key&) = default;
 };
 
 struct trade_booking_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const trade_booking_versions_filter&,
+                           const trade_booking_versions_filter&) = default;
 };
 
 struct list_trade_bookings_request {
@@ -118,12 +138,18 @@ struct list_trade_bookings_request {
     ores::utility::domain::order order;
     std::optional<trade_bookings_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_trade_bookings_request&,
+                           const list_trade_bookings_request&) = default;
 };
 
 struct list_trade_bookings_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_booking> trade_bookings;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_bookings_response&,
+                           const list_trade_bookings_response&) = default;
 };
 
 struct get_trade_booking_request {
@@ -137,11 +163,17 @@ struct get_trade_booking_request {
      */
     static constexpr bool requires_session = true;
     trade_booking_key key;
+
+    friend bool operator==(const get_trade_booking_request&,
+                           const get_trade_booking_request&) = default;
 };
 
 struct get_trade_booking_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_booking> trade_booking;
+
+    friend bool operator==(const get_trade_booking_response&,
+                           const get_trade_booking_response&) = default;
 };
 
 struct get_many_trade_bookings_request {
@@ -155,11 +187,17 @@ struct get_many_trade_bookings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<trade_booking_key> keys;
+
+    friend bool operator==(const get_many_trade_bookings_request&,
+                           const get_many_trade_bookings_request&) = default;
 };
 
 struct get_many_trade_bookings_response {
     ores::utility::domain::result result;
     std::vector<trade_booking_lookup> entries;
+
+    friend bool operator==(const get_many_trade_bookings_response&,
+                           const get_many_trade_bookings_response&) = default;
 };
 
 struct put_trade_booking_request {
@@ -174,11 +212,17 @@ struct put_trade_booking_request {
     static constexpr bool requires_session = true;
     trade_booking_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_trade_booking_request&,
+                           const put_trade_booking_request&) = default;
 };
 
 struct put_trade_booking_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_booking> trade_booking;
+
+    friend bool operator==(const put_trade_booking_response&,
+                           const put_trade_booking_response&) = default;
 };
 
 struct put_many_trade_bookings_request {
@@ -193,11 +237,17 @@ struct put_many_trade_bookings_request {
     static constexpr bool requires_session = true;
     std::vector<trade_booking_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_trade_bookings_request&,
+                           const put_many_trade_bookings_request&) = default;
 };
 
 struct put_many_trade_bookings_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_booking> trade_bookings;
+
+    friend bool operator==(const put_many_trade_bookings_response&,
+                           const put_many_trade_bookings_response&) = default;
 };
 
 struct delete_trade_booking_request {
@@ -212,10 +262,16 @@ struct delete_trade_booking_request {
     static constexpr bool requires_session = true;
     trade_booking_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_trade_booking_request&,
+                           const delete_trade_booking_request&) = default;
 };
 
 struct delete_trade_booking_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_trade_booking_response&,
+                           const delete_trade_booking_response&) = default;
 };
 
 struct delete_many_trade_bookings_request {
@@ -230,10 +286,16 @@ struct delete_many_trade_bookings_request {
     static constexpr bool requires_session = true;
     std::vector<trade_booking_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_trade_bookings_request&,
+                           const delete_many_trade_bookings_request&) = default;
 };
 
 struct delete_many_trade_bookings_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_trade_bookings_response&,
+                           const delete_many_trade_bookings_response&) = default;
 };
 
 struct list_trade_booking_versions_request {
@@ -251,12 +313,18 @@ struct list_trade_booking_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<trade_booking_versions_filter> filter;
+
+    friend bool operator==(const list_trade_booking_versions_request&,
+                           const list_trade_booking_versions_request&) = default;
 };
 
 struct list_trade_booking_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_booking> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_booking_versions_response&,
+                           const list_trade_booking_versions_response&) = default;
 };
 
 struct get_trade_booking_version_request {
@@ -270,11 +338,17 @@ struct get_trade_booking_version_request {
      */
     static constexpr bool requires_session = true;
     trade_booking_version_key key;
+
+    friend bool operator==(const get_trade_booking_version_request&,
+                           const get_trade_booking_version_request&) = default;
 };
 
 struct get_trade_booking_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_booking> version;
+
+    friend bool operator==(const get_trade_booking_version_response&,
+                           const get_trade_booking_version_response&) = default;
 };
 
 /**
@@ -286,9 +360,9 @@ struct get_trade_booking_version_response {
  * of them.
  */
 namespace trade_booking_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trade_bookings_events.created";
-inline constexpr std::string_view updated = "trading.v1.trade_bookings_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trade_bookings_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trade_bookings.created";
+inline constexpr std::string_view updated = "trading.v1.events.trade_bookings.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trade_bookings.deleted";
 }
 /**
  * @brief The members of trade_booking_key, named as the wire names them and in the order

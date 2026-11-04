@@ -64,6 +64,7 @@
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/marketdata/curve_publish_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/marketdata/provider_terms_operations_operations_commands.hpp"
+#include "ores.shell/app/commands/marketdata/public_terms_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
 #include "ores.shell/app/commands/orgmode_commands.hpp"
@@ -91,6 +92,9 @@
 #include "ores.shell/app/commands/reporting/engine_settings_group_commands.hpp"
 #include "ores.shell/app/commands/reporting/engine_settings_group_setting_commands.hpp"
 #include "ores.shell/app/commands/reporting/file_type_commands.hpp"
+#include "ores.shell/app/commands/reporting/ore_file_category_commands.hpp"
+#include "ores.shell/app/commands/reporting/ore_file_commands.hpp"
+#include "ores.shell/app/commands/reporting/ore_file_version_commands.hpp"
 #include "ores.shell/app/commands/reporting/ore_parameter_commands.hpp"
 #include "ores.shell/app/commands/reporting/ore_parameter_setting_value_set_commands.hpp"
 #include "ores.shell/app/commands/reporting/ore_parameter_settings_commands.hpp"
@@ -189,6 +193,9 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     ore_parameter_value_domain_commands::register_commands(*root, session_);
     ore_parameter_commands::register_commands(*root, session_);
     file_type_commands::register_commands(*root, session_);
+    ore_file_category_commands::register_commands(*root, session_);
+    ore_file_commands::register_commands(*root, session_);
+    ore_file_version_commands::register_commands(*root, session_);
     engine_settings_fixings_commands::register_commands(*root, session_);
     engine_settings_execution_commands::register_commands(*root, session_);
     engine_settings_building_commands::register_commands(*root, session_);
@@ -258,6 +265,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     marketdata_commands::register_commands(*root, session_);
     curve_publish_operations_operations_commands::register_commands(*root, session_);
     provider_terms_operations_operations_commands::register_commands(*root, session_);
+    public_terms_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);
     synthetic_entity_commands::register_commands(*root, session_);
     provision_commands::register_commands(*root, session_);

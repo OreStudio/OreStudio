@@ -121,7 +121,8 @@ handoff in `ores.compute.wrapper` fixes this.
 
 The `ORE Windows engine package` GitHub Actions workflow builds and tests
 the same pinned source and uploads the verified archive and reports as CI
-artifacts. It does not publish to a running OreStudio installation.
+artifacts. Run it manually, in line with the upstream policy that PR checks
+run locally. It does not publish to a running OreStudio installation.
 
 ## Regenerating
 

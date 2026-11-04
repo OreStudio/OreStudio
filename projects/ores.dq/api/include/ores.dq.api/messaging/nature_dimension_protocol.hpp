@@ -43,31 +43,47 @@ namespace ores::dq::messaging {
 
 struct nature_dimension_key {
     std::string code;
+
+    friend bool operator==(const nature_dimension_key&, const nature_dimension_key&) = default;
 };
 
 struct nature_dimension_write {
     std::string code;
     std::string name;
     std::string description;
+
+    friend bool operator==(const nature_dimension_write&, const nature_dimension_write&) = default;
 };
 
 struct nature_dimension_change {
     nature_dimension_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const nature_dimension_change&,
+                           const nature_dimension_change&) = default;
 };
 
 struct nature_dimension_removal {
     nature_dimension_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const nature_dimension_removal&,
+                           const nature_dimension_removal&) = default;
 };
 
 struct nature_dimension_lookup {
     nature_dimension_key key;
     std::optional<ores::dq::domain::nature_dimension> nature_dimension;
+
+    friend bool operator==(const nature_dimension_lookup&,
+                           const nature_dimension_lookup&) = default;
 };
 
 struct nature_dimensions_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const nature_dimensions_filter&,
+                           const nature_dimensions_filter&) = default;
 };
 
 struct nature_dimension_event {
@@ -77,17 +93,25 @@ struct nature_dimension_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const nature_dimension_event&, const nature_dimension_event&) = default;
 };
 
 struct nature_dimension_version_key {
     nature_dimension_key nature_dimension;
     std::uint32_t version;
+
+    friend bool operator==(const nature_dimension_version_key&,
+                           const nature_dimension_version_key&) = default;
 };
 
 struct nature_dimension_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const nature_dimension_versions_filter&,
+                           const nature_dimension_versions_filter&) = default;
 };
 
 struct list_nature_dimensions_request {
@@ -105,12 +129,18 @@ struct list_nature_dimensions_request {
     ores::utility::domain::order order;
     std::optional<nature_dimensions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_nature_dimensions_request&,
+                           const list_nature_dimensions_request&) = default;
 };
 
 struct list_nature_dimensions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::nature_dimension> dimensions;
     std::uint64_t total;
+
+    friend bool operator==(const list_nature_dimensions_response&,
+                           const list_nature_dimensions_response&) = default;
 };
 
 struct get_nature_dimension_request {
@@ -124,11 +154,17 @@ struct get_nature_dimension_request {
      */
     static constexpr bool requires_session = true;
     nature_dimension_key key;
+
+    friend bool operator==(const get_nature_dimension_request&,
+                           const get_nature_dimension_request&) = default;
 };
 
 struct get_nature_dimension_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::nature_dimension> nature_dimension;
+
+    friend bool operator==(const get_nature_dimension_response&,
+                           const get_nature_dimension_response&) = default;
 };
 
 struct get_many_nature_dimensions_request {
@@ -142,11 +178,17 @@ struct get_many_nature_dimensions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<nature_dimension_key> keys;
+
+    friend bool operator==(const get_many_nature_dimensions_request&,
+                           const get_many_nature_dimensions_request&) = default;
 };
 
 struct get_many_nature_dimensions_response {
     ores::utility::domain::result result;
     std::vector<nature_dimension_lookup> entries;
+
+    friend bool operator==(const get_many_nature_dimensions_response&,
+                           const get_many_nature_dimensions_response&) = default;
 };
 
 struct put_nature_dimension_request {
@@ -161,11 +203,17 @@ struct put_nature_dimension_request {
     static constexpr bool requires_session = true;
     nature_dimension_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_nature_dimension_request&,
+                           const put_nature_dimension_request&) = default;
 };
 
 struct put_nature_dimension_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::nature_dimension> nature_dimension;
+
+    friend bool operator==(const put_nature_dimension_response&,
+                           const put_nature_dimension_response&) = default;
 };
 
 struct put_many_nature_dimensions_request {
@@ -180,11 +228,17 @@ struct put_many_nature_dimensions_request {
     static constexpr bool requires_session = true;
     std::vector<nature_dimension_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_nature_dimensions_request&,
+                           const put_many_nature_dimensions_request&) = default;
 };
 
 struct put_many_nature_dimensions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::nature_dimension> dimensions;
+
+    friend bool operator==(const put_many_nature_dimensions_response&,
+                           const put_many_nature_dimensions_response&) = default;
 };
 
 struct delete_nature_dimension_request {
@@ -199,10 +253,16 @@ struct delete_nature_dimension_request {
     static constexpr bool requires_session = true;
     nature_dimension_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_nature_dimension_request&,
+                           const delete_nature_dimension_request&) = default;
 };
 
 struct delete_nature_dimension_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_nature_dimension_response&,
+                           const delete_nature_dimension_response&) = default;
 };
 
 struct delete_many_nature_dimensions_request {
@@ -217,10 +277,16 @@ struct delete_many_nature_dimensions_request {
     static constexpr bool requires_session = true;
     std::vector<nature_dimension_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_nature_dimensions_request&,
+                           const delete_many_nature_dimensions_request&) = default;
 };
 
 struct delete_many_nature_dimensions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_nature_dimensions_response&,
+                           const delete_many_nature_dimensions_response&) = default;
 };
 
 struct list_nature_dimension_versions_request {
@@ -238,12 +304,18 @@ struct list_nature_dimension_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<nature_dimension_versions_filter> filter;
+
+    friend bool operator==(const list_nature_dimension_versions_request&,
+                           const list_nature_dimension_versions_request&) = default;
 };
 
 struct list_nature_dimension_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::nature_dimension> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_nature_dimension_versions_response&,
+                           const list_nature_dimension_versions_response&) = default;
 };
 
 struct get_nature_dimension_version_request {
@@ -257,11 +329,17 @@ struct get_nature_dimension_version_request {
      */
     static constexpr bool requires_session = true;
     nature_dimension_version_key key;
+
+    friend bool operator==(const get_nature_dimension_version_request&,
+                           const get_nature_dimension_version_request&) = default;
 };
 
 struct get_nature_dimension_version_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::nature_dimension> version;
+
+    friend bool operator==(const get_nature_dimension_version_response&,
+                           const get_nature_dimension_version_response&) = default;
 };
 
 /**
@@ -273,9 +351,9 @@ struct get_nature_dimension_version_response {
  * of them.
  */
 namespace nature_dimension_event_subjects {
-inline constexpr std::string_view created = "dq.v1.nature_dimensions_events.created";
-inline constexpr std::string_view updated = "dq.v1.nature_dimensions_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.nature_dimensions_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.nature_dimensions.created";
+inline constexpr std::string_view updated = "dq.v1.events.nature_dimensions.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.deleted";
 }
 /**
  * @brief The members of nature_dimension_key, named as the wire names them and in the order

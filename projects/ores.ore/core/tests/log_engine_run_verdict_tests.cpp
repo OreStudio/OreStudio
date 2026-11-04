@@ -199,3 +199,59 @@ TEST_CASE("a structured failure that states no message is not a reason",
     CHECK(outcome.failure == "The engine's analytic failed. The engine reported:\n"
                              "  Error in ORE analytics: Failed to run analytics PRICING");
 }
+
+TEST_CASE("an analytic that failed leaves the reports of another that ran",
+          "[ore][log][engine_run_verdict]") {
+    // Run eb9acf8b: the pricing analytic wrote npv.csv, then SA-CCR failed on a
+    // trade type it does not support.
+    const auto log = line("NOTICE", "run analytic with label 'PRICING'") +
+                     line("NOTICE", "NPV file written") +
+                     line("NOTICE", "run analytic with label 'PRICING' finished.") +
+                     line("NOTICE", "run analytic with label 'SA_CCR'") +
+                     line("NOTICE", "run analytic with label 'SA_CCR' finished.") +
+                     line("ALERT", "Error in ORE analytics: Failed to run analytics SA_CCR");
+
+    const auto outcome = judge_engine_run({"log.txt", "npv.csv", "runtimes.csv"}, log);
+
+    CHECK(outcome.succeeded);
+    CHECK(outcome.failure.empty());
+}
+
+TEST_CASE("a run fails when every analytic it started failed", "[ore][log][engine_run_verdict]") {
+    const auto log =
+        line("NOTICE", "run analytic with label 'PRICING'") +
+        line("NOTICE", "run analytic with label 'SA_CCR'") +
+        line("ALERT", "Error in ORE analytics: Failed to run analytics PRICING, SA_CCR");
+
+    const auto outcome = judge_engine_run({"log.txt", "runtimes.csv"}, log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure == "The engine's analytic failed. The engine reported:\n"
+                             "  Error in ORE analytics: Failed to run analytics PRICING, SA_CCR");
+}
+
+TEST_CASE("a verdict that names no analytic fails the run whatever else ran",
+          "[ore][log][engine_run_verdict]") {
+    const auto log = line("NOTICE", "run analytic with label 'PRICING'") +
+                     line("ALERT", "Error in ORE analytics: error opening file Input/market.txt");
+
+    const auto outcome = judge_engine_run({"log.txt", "npv.csv"}, log);
+
+    CHECK_FALSE(outcome.succeeded);
+}
+
+TEST_CASE("an analytics failure names the analytic, not a curve",
+          "[ore][log][engine_run_verdict]") {
+    const auto log = line("ALERT",
+                          "StructuredMessage { \"category\": \"Error\", \"group\": \"Analytics\", "
+                          "\"message\": \"Boost assertion failed: px != 0\", \"sub_fields\": [ "
+                          "{ \"name\": \"analyticType\", \"value\": \"PRICING\" } ] }") +
+                     line("ALERT", "Error in ORE analytics: Failed to run analytics PRICING");
+
+    const auto outcome = judge_engine_run({"log.txt", "runtimes.csv"}, log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure.find("Boost assertion failed: px != 0 (analytic PRICING)") !=
+          std::string::npos);
+    CHECK(outcome.failure.find("(curve PRICING)") == std::string::npos);
+}

@@ -70,6 +70,7 @@ export function editOf(row: Readonly<Record<string, unknown>>): ReportEdit {
         pre_processing: String(row['pre_processing'] ?? ''),
         prepared_input_key: String(row['prepared_input_key'] ?? ''),
         post_processing: String(row['post_processing'] ?? ''),
+        skipped_families: String(row['skipped_families'] ?? ''),
     };
 }
 

@@ -15,9 +15,8 @@ Export runs the import backwards and rebuilds a whole ORE input from rows. Each
 document is fetched from the component that owns it and each projection reverses
 it. The one thing a document does not get back is the rendering it arrived with:
 a file that said =F= is stored as =Following=, so the export writes
-=Following=. That is the design, not a defect, and the round-trip tests assert
-the right thing only because they compare the export to the rows rather than to
-the imported text.
+=Following=. That is the design, not a defect, and a test compares the export to
+the rows or to a second read of its own text, never to the text a person supplied.
 
 * The path
 
@@ -48,24 +47,26 @@ owners already hold.
 The rows keep everything a document states except the rendering of a value that
 has more than one. Two consequences, and they are not the same consequence:
 
-- *The export is stable.* The mapper's table maps a stored value to itself, so
-  importing an exported document changes no row, and exporting it again gives the
-  same text. The stored form is a fixed point of the path.
+- *The export is stable.* The set names one form of each value and names itself
+  for it, so importing an exported document changes no row, and exporting it again
+  gives the same text. The stored form is a fixed point of the path.
 - *The export is not the import.* The first export differs from the file the
-  person supplied, in exactly those values the mapper converted. A test that
-  compares an export to an arbitrary input is therefore wrong about what the
-  system promises.
+  person supplied, in exactly those values a boundary converted: the guard
+  rewrites a curve document's =MF=, and a convention document's codec rewrote it
+  before the row existed. A test that compares an export to an arbitrary input is
+  therefore wrong about what the system promises.
 
 The two tests state the promise precisely, and each one covers a different half:
 
 - =projects/ores.ore/core/tests/xml_curve_configuration_projection_roundtrip_tests.cpp:72=
-  compares =write(reverse(map(read(text))))= to =text= over the corpus. It passes
-  because the corpus is already in the stored form for those values, and it is
-  the test that fails if the codec starts converting (see the conversion note).
-- =projects/ores.refdata/core/tests/curve_configuration_database_roundtrip_tests.cpp:262=
-  writes through the store and compares the document it gets back to
-  =as_stored(mapped)=, which is the rows the store received. This is the only
-  test that can be right about a value whose rendering the mapper changed.
+  reads, maps, reverses and writes every curve configuration in the corpus, then
+  reads the result and compares the two records. Both sides pass through the same
+  read, so the case asserts that the projection's shape survives the round trip,
+  and it cannot see a conversion: the curve codec states none.
+- =projects/ores.refdata/core/tests/curve_configuration_database_roundtrip_tests.cpp:259=
+  writes a document through the store and states the round trip on what the store
+  returns: the document the rows hold exports and reads back unchanged. This is
+  the only case that can be right about a value the guard rewrote.
 
 * Why the run document is rebuilt, not read
 
@@ -82,10 +83,10 @@ the property that makes the format one thing rather than a copy per configuratio
 - [[id:7DFE57DE-70C9-4EB6-AF94-DCEC65ADB494][The ORE XML infrastructure]] — the
   structure note that orders this cluster; this page is its third step, and the
   one where the import's work is checked from the other end.
-- [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value is converted at
-  the entity mapper, never in the codec]] — *contradicts* a reading of this page
-  that calls the lost rendering a bug: the conversion is what makes the export a
-  fixed point, so the two pages stand or fall together.
+- [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value reaches the row in
+  the form the value set names]] — *contradicts* a reading of this page that calls
+  the lost rendering a bug: the conversion is what makes the export a fixed
+  point, so the two pages stand or fall together.
 - [[id:9697F09E-441A-4B51-869E-FC59433EEA1E][One component reads every ORE
   document, and none of them stores XML]] — *completes* this page by naming the
   components the export calls, and why it must call one per document rather than

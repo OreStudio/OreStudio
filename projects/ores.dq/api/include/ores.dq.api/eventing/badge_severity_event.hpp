@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::dq::messaging::badge_severity_event> {
-    static constexpr std::string_view subject_prefix = "dq.v1.badge_severities_events";
+    static constexpr std::string_view subject_prefix = "dq.v1.events.badge_severities";
 
     static ores::dq::messaging::badge_severity_event
     from_notification(const entity_event_notification& notification) {

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: FF774B04-12E6-4BDF-B94C-222095651C4F
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.report_error_scope
 #+description: Codegen entity model for the reporting =report_error_scope= table. The scope an error a report run produced is about, taken from the engine's own vocabulary.

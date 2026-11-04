@@ -48,9 +48,10 @@ output_manifest_file file_named(const std::string& name) {
 }
 
 TEST_CASE("a manifest reads back as it was written", manifest_tags) {
-    const output_manifest written{
-        .result_id = "r",
-        .files = {file_named("netcube.csv"), file_named("npv.csv"), file_named("notes.txt")}};
+    const output_manifest written{.result_id = "r",
+                                  .files = {file_named("stress_scenarios.csv"),
+                                            file_named("npv.csv"),
+                                            file_named("notes.txt")}};
 
     const auto read = manifest_from_json(to_json(written));
 
@@ -67,8 +68,11 @@ TEST_CASE("a manifest reads back as it was written", manifest_tags) {
 }
 
 TEST_CASE("a file is state, a result, or neither, as its family says", manifest_tags) {
-    CHECK(is_market_state_file(file_named("netcube.csv")));
-    CHECK_FALSE(is_result_file(file_named("netcube.csv")));
+    CHECK(is_market_state_file(file_named("stress_scenarios.csv")));
+    CHECK_FALSE(is_result_file(file_named("stress_scenarios.csv")));
+
+    CHECK(is_result_file(file_named("netcube.csv")));
+    CHECK(is_result_file(file_named("scenario.csv")));
 
     CHECK(is_result_file(file_named("npv.csv")));
     CHECK_FALSE(is_market_state_file(file_named("npv.csv")));
@@ -86,8 +90,7 @@ TEST_CASE("text that is not a manifest is refused", manifest_tags) {
                     std::runtime_error);
 }
 
-TEST_CASE("a file is fetched from beside its manifest, not from the key it states",
-          manifest_tags) {
+TEST_CASE("a file is fetched from beside its manifest, not from the key it states", manifest_tags) {
     auto stray = file_named("npv.csv");
     stray.key = "compute/output/someone-else/npv.csv.gz";
     const output_manifest manifest{.result_id = "r", .files = {stray}};

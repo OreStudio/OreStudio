@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct party_contact_information_key {
     std::string contact_type;
+
+    friend bool operator==(const party_contact_information_key&,
+                           const party_contact_information_key&) = default;
 };
 
 struct party_contact_information_write {
@@ -59,27 +62,42 @@ struct party_contact_information_write {
     std::string email;
     std::string web_page;
     bool is_primary;
+
+    friend bool operator==(const party_contact_information_write&,
+                           const party_contact_information_write&) = default;
 };
 
 struct party_contact_information_change {
     party_contact_information_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const party_contact_information_change&,
+                           const party_contact_information_change&) = default;
 };
 
 struct party_contact_information_removal {
     party_contact_information_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const party_contact_information_removal&,
+                           const party_contact_information_removal&) = default;
 };
 
 struct party_contact_information_lookup {
     party_contact_information_key key;
     std::optional<ores::refdata::domain::party_contact_information> party_contact_information;
+
+    friend bool operator==(const party_contact_information_lookup&,
+                           const party_contact_information_lookup&) = default;
 };
 
 struct party_contact_informations_filter {
     std::optional<boost::uuids::uuid> party_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+
+    friend bool operator==(const party_contact_informations_filter&,
+                           const party_contact_informations_filter&) = default;
 };
 
 struct party_contact_information_event {
@@ -89,17 +107,26 @@ struct party_contact_information_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const party_contact_information_event&,
+                           const party_contact_information_event&) = default;
 };
 
 struct party_contact_information_version_key {
     party_contact_information_key party_contact_information;
     std::uint32_t version;
+
+    friend bool operator==(const party_contact_information_version_key&,
+                           const party_contact_information_version_key&) = default;
 };
 
 struct party_contact_information_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const party_contact_information_versions_filter&,
+                           const party_contact_information_versions_filter&) = default;
 };
 
 struct list_party_contact_informations_request {
@@ -117,12 +144,18 @@ struct list_party_contact_informations_request {
     ores::utility::domain::order order;
     std::optional<party_contact_informations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_party_contact_informations_request&,
+                           const list_party_contact_informations_request&) = default;
 };
 
 struct list_party_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_contact_information> party_contact_informations;
     std::uint64_t total;
+
+    friend bool operator==(const list_party_contact_informations_response&,
+                           const list_party_contact_informations_response&) = default;
 };
 
 struct get_party_contact_information_request {
@@ -136,11 +169,17 @@ struct get_party_contact_information_request {
      */
     static constexpr bool requires_session = true;
     party_contact_information_key key;
+
+    friend bool operator==(const get_party_contact_information_request&,
+                           const get_party_contact_information_request&) = default;
 };
 
 struct get_party_contact_information_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_contact_information> party_contact_information;
+
+    friend bool operator==(const get_party_contact_information_response&,
+                           const get_party_contact_information_response&) = default;
 };
 
 struct get_many_party_contact_informations_request {
@@ -155,11 +194,17 @@ struct get_many_party_contact_informations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<party_contact_information_key> keys;
+
+    friend bool operator==(const get_many_party_contact_informations_request&,
+                           const get_many_party_contact_informations_request&) = default;
 };
 
 struct get_many_party_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<party_contact_information_lookup> entries;
+
+    friend bool operator==(const get_many_party_contact_informations_response&,
+                           const get_many_party_contact_informations_response&) = default;
 };
 
 struct put_party_contact_information_request {
@@ -174,11 +219,17 @@ struct put_party_contact_information_request {
     static constexpr bool requires_session = true;
     party_contact_information_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_party_contact_information_request&,
+                           const put_party_contact_information_request&) = default;
 };
 
 struct put_party_contact_information_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_contact_information> party_contact_information;
+
+    friend bool operator==(const put_party_contact_information_response&,
+                           const put_party_contact_information_response&) = default;
 };
 
 struct put_many_party_contact_informations_request {
@@ -194,11 +245,17 @@ struct put_many_party_contact_informations_request {
     static constexpr bool requires_session = true;
     std::vector<party_contact_information_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_party_contact_informations_request&,
+                           const put_many_party_contact_informations_request&) = default;
 };
 
 struct put_many_party_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_contact_information> party_contact_informations;
+
+    friend bool operator==(const put_many_party_contact_informations_response&,
+                           const put_many_party_contact_informations_response&) = default;
 };
 
 struct delete_party_contact_information_request {
@@ -213,10 +270,16 @@ struct delete_party_contact_information_request {
     static constexpr bool requires_session = true;
     party_contact_information_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_party_contact_information_request&,
+                           const delete_party_contact_information_request&) = default;
 };
 
 struct delete_party_contact_information_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_party_contact_information_response&,
+                           const delete_party_contact_information_response&) = default;
 };
 
 struct delete_many_party_contact_informations_request {
@@ -232,10 +295,16 @@ struct delete_many_party_contact_informations_request {
     static constexpr bool requires_session = true;
     std::vector<party_contact_information_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_party_contact_informations_request&,
+                           const delete_many_party_contact_informations_request&) = default;
 };
 
 struct delete_many_party_contact_informations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_party_contact_informations_response&,
+                           const delete_many_party_contact_informations_response&) = default;
 };
 
 struct list_by_party_id_party_contact_informations_request {
@@ -255,12 +324,18 @@ struct list_by_party_id_party_contact_informations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_contact_informations_filter> filter;
+
+    friend bool operator==(const list_by_party_id_party_contact_informations_request&,
+                           const list_by_party_id_party_contact_informations_request&) = default;
 };
 
 struct list_by_party_id_party_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_contact_information> party_contact_informations;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_party_id_party_contact_informations_response&,
+                           const list_by_party_id_party_contact_informations_response&) = default;
 };
 
 struct list_party_contact_information_versions_request {
@@ -279,12 +354,18 @@ struct list_party_contact_information_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_contact_information_versions_filter> filter;
+
+    friend bool operator==(const list_party_contact_information_versions_request&,
+                           const list_party_contact_information_versions_request&) = default;
 };
 
 struct list_party_contact_information_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_contact_information> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_party_contact_information_versions_response&,
+                           const list_party_contact_information_versions_response&) = default;
 };
 
 struct get_party_contact_information_version_request {
@@ -299,11 +380,17 @@ struct get_party_contact_information_version_request {
      */
     static constexpr bool requires_session = true;
     party_contact_information_version_key key;
+
+    friend bool operator==(const get_party_contact_information_version_request&,
+                           const get_party_contact_information_version_request&) = default;
 };
 
 struct get_party_contact_information_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_contact_information> version;
+
+    friend bool operator==(const get_party_contact_information_version_response&,
+                           const get_party_contact_information_version_response&) = default;
 };
 
 /**
@@ -315,9 +402,9 @@ struct get_party_contact_information_version_response {
  * of them.
  */
 namespace party_contact_information_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.party_contact_informations_events.created";
-inline constexpr std::string_view updated = "refdata.v1.party_contact_informations_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.party_contact_informations_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.party_contact_informations.created";
+inline constexpr std::string_view updated = "refdata.v1.events.party_contact_informations.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.party_contact_informations.deleted";
 }
 /**
  * @brief The members of party_contact_information_key, named as the wire names them and in the

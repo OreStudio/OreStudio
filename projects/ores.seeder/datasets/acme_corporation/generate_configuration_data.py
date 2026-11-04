@@ -214,10 +214,24 @@ ENTITY_CONFIGURATIONS = {
 # The configuration a report prefers. A report not named here runs on the official
 # numbers. An entity that does not hold the preferred configuration falls back to
 # the official one.
+#
+# A trading desk report that reads the live cut runs on the indicative engines, because
+# its figures are not booked and a slow calibration would delay the answer a desk wants
+# now. The oversight, regulatory, valuation, cashflow and close reports run on the
+# official engines. An engine set is named by what its numbers are worth and not by what
+# a report asks of it, so this table holds no entry for a close twin.
 DEFAULT_PRICING = "EOD Official"
 REPORT_PRICING = {
     "Intraday Risk Monitor": "Intraday Indicative",
     "Headline Position": "Intraday Indicative",
+    "Spot Greeks": "Intraday Indicative",
+    "Triple Vol Spot Ladder": "Intraday Indicative",
+    "Intraday Change": "Intraday Indicative",
+    "Spot Ladder": "Intraday Indicative",
+    "Spike Map": "Intraday Indicative",
+    "Strike Map": "Intraday Indicative",
+    "Option Map": "Intraday Indicative",
+    "Trades Since Last In": "Intraday Indicative",
     "Exposure": "XVA Overnight",
     "CVA/DVA/FVA": "XVA Overnight",
     "Model Calibration": "XVA Overnight",
@@ -227,6 +241,20 @@ REPORT_PRICING = {
     "Delta and Gamma": "Risk Sensitivities",
     "Bucketed DV01": "Risk Sensitivities",
     "Vega": "Risk Sensitivities",
+    # A ladder bumps one factor and reprices the book, so it wants the prices that
+    # carry analytic sensitivities for the same reason the delta, gamma and DV01
+    # reports do. A close twin is left out on purpose: what a report's numbers are
+    # worth does not change because the run reads the authorised cut.
+    "Bump and Reprice Rho Ladder": "Risk Sensitivities",
+    "Bump and Reprice Gamma Ladder": "Risk Sensitivities",
+    "Bump and Reprice Theta Ladder": "Risk Sensitivities",
+    "Bump and Reprice Cross-gamma Ladder": "Risk Sensitivities",
+    "Bump and Reprice ATM Vega Ladder": "Risk Sensitivities",
+    "Bump and Reprice Surface Vega Ladder": "Risk Sensitivities",
+    "Bump and Reprice Risk-reversal Vega Ladder": "Risk Sensitivities",
+    "Bump and Reprice Butterfly Vega Ladder": "Risk Sensitivities",
+    "Bump and Reprice DV01 Ladder": "Risk Sensitivities",
+    "Bump and Reprice Delta Ladder": "Risk Sensitivities",
     "Stressed VaR": "Stress Test Shocked",
     "FRTB SA Capital": "Regulatory FRTB",
 }
@@ -478,7 +506,7 @@ def todays_market():
 def curve_configuration():
     """An overnight discount curve for each currency of the entity, built from the
     overnight swap ladder the synthetic feeds publish."""
-    headers, definitions, yields, segments, quotes = [], [], [], [], []
+    headers, definitions, yields, segments, conventions, quotes = [], [], [], [], [], []
     for company, currencies in ENTITY_CURRENCIES.items():
         header_id = new_uuid(f"curve_configuration:{company}")
         headers.append(row(
@@ -504,7 +532,12 @@ def curve_configuration():
                 segment_id = new_uuid(f"curve_configuration:{company}:{curve_id}:{kind}")
                 segments.append(row(
                     company, id=segment_id, curve_definition_id=definition_id,
-                    segment_type=kind, position=segment_position, conventions=convention))
+                    segment_type=kind, position=segment_position))
+                # A segment's convention is a part of the segment, keyed by its id.
+                part_key = f"curve_configuration:{company}:{curve_id}:{kind}:conventions"
+                conventions.append(row(
+                    company, id=new_uuid(part_key), curve_segment_id=segment_id,
+                    conventions=convention))
                 for number, key in enumerate(quote_keys):
                     quotes.append(row(
                         company,
@@ -514,7 +547,7 @@ def curve_configuration():
 
             segment(0, "OIS", ois_convention,
                     [f"IR_SWAP/RATE/{currency}/{SPOT_LAG}/1D/{tenor}" for tenor in OIS_TENORS])
-    return headers, definitions, yields, segments, quotes
+    return headers, definitions, yields, segments, conventions, quotes
 
 
 def inflation_curve_configuration():
@@ -547,7 +580,7 @@ def inflation_curve_configuration():
                 # takes the engine's own default rather than a guessed word.
                 has_quotes=False, calendar="TARGET",
                 day_counter="A365", lag="3M", frequency="Monthly", base_rate=0.02,
-                tolerance=1e-12, has_seasonality=False, use_last_fixing_date=False,
+                tolerance=1e-12, use_last_fixing_date=False,
                 interpolation_variable="ZeroRate", interpolation_method="Linear"))
     return definitions, configs
 
@@ -566,7 +599,7 @@ def main():
     # The inflation curves join the same curve configuration document, so they
     # publish through the artefact the tenant already reads.
     names = ("curve_configurations", "curve_definitions", "yield_curve_configs", "curve_segments",
-             "curve_quotes")
+             "curve_segment_conventions", "curve_quotes")
     records = list(curve_configuration())
     inflation_definitions, inflation_configs = inflation_curve_configuration()
     records[1] = records[1] + inflation_definitions

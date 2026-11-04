@@ -20,8 +20,10 @@
 #ifndef ORES_SYNTHETIC_API_FEEDS_FIXING_CALIBRATION_HPP
 #define ORES_SYNTHETIC_API_FEEDS_FIXING_CALIBRATION_HPP
 
+#include "ores.analytics.quant/math/gjr_garch.hpp"
 #include "ores.synthetic.api/domain/fx_spot_fixing_item.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include <algorithm>
 #include <cmath>
 #include <expected>
 #include <optional>
@@ -110,6 +112,20 @@ measure_window(const std::vector<double>& values, bool inverted);
 }
 
 /**
+ * @brief Who approves a class's variance calibrations, and the rules a fit must pass for the
+ * policy to approve it. With @c by_policy false a person approves every fit.
+ */
+struct variance_approval_rules final {
+    bool by_policy = false;
+    int min_returns = 250;
+    bool require_starts_agree = true;
+    double min_persistence = 0.80;
+    double max_persistence = 0.995;
+    /// The lowest average reaction to a move, alpha plus half of gamma.
+    double min_reaction = 0.01;
+};
+
+/**
  * @brief The class rule that derives a feed's fixing items.
  *
  * A policy states the window, whether an item may be read the other way round, and the
@@ -117,9 +133,15 @@ measure_window(const std::vector<double>& values, bool inverted);
  * is the automatic default when no policy row exists.
  */
 struct calibration_policy final {
+    /// The policy row this was read from and its version; empty when no row exists.
+    std::string id;
+    int version = 0;
     int window_days = 90;
+    /// The days of fixings a variance calibration's input covers.
+    int variance_window_days = 1826;
     bool allow_inverse = true;
     std::string fallback_code = "keep_fixed";
+    variance_approval_rules variance_approval;
     /// Provider codes, lowest first. Empty means every provider, ordered by code.
     std::vector<std::string> provider_order;
 };
@@ -169,6 +191,30 @@ struct mixture_component final {
  */
 ORES_SYNTHETIC_API_EXPORT std::expected<std::vector<double>, std::string> scaled_stdevs(
     const std::vector<mixture_component>& components, double hourly_spread, int ticks_per_hour);
+
+/**
+ * @brief What a calibration changes in a stored feed: the level, when it moved, and each
+ * component's deviation, when it moved. A value within a rounding of the stored one is no change,
+ * so a calibration that runs again on the same fixings writes nothing.
+ */
+struct calibration_change final {
+    std::optional<double> level;
+    /// One entry for each stored component, in the stored order; empty when none moved.
+    std::vector<std::optional<double>> stdevs;
+
+    [[nodiscard]] bool empty() const {
+        return !level && std::ranges::none_of(stdevs, [](const auto& s) { return s.has_value(); });
+    }
+};
+
+ORES_SYNTHETIC_API_EXPORT calibration_change
+change_of(double stored_level,
+          const std::vector<double>& stored_stdevs,
+          std::optional<double> level,
+          const std::optional<std::vector<double>>& stdevs);
+
+/// The daily returns a GJR-GARCH fit is trusted on: about a year of business days.
+inline constexpr int minimum_garch_returns = 250;
 
 }
 

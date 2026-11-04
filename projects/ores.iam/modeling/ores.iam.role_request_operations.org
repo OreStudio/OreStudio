@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
 :ID: 925723B7-6F2C-40D6-81FF-FC913A723685
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.role_request_operations
 #+description: Codegen operation model for asking for roles: a person raises an iam.role_grant approval request, IAM records the roles it asks for, and the person reads them back, rendered to C++ and TypeScript from one source.

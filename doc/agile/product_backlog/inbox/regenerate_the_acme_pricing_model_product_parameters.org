@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4C116A37-F611-4D57-A717-4C4DF4C7EBDC
+:END:
+#+title: Running projects/ores.seeder/datasets/acme_corporation/gener…
+#+description: Running projects/ores.seeder/datasets/acme_corporation/generate_configuration_data.py on main rewrites pricing_model_product_parameters.json: 761 insertions and 185 deletions, with new rows such as the FxCalibration Bootstrap model parameter and shifted positions. The committed JSON and the seed SQL built from it lag the generator. Found while splitting the curve segment by element (98901652-FEC5-4197-BE47-99F0C8453072); that branch restored the file to keep its diff on scope. Regenerate the JSON and the seed SQL in their own change, and consider a check that the committed seed JSON matches its generator.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

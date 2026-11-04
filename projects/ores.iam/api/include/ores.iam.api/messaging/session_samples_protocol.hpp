@@ -25,8 +25,15 @@
 #ifndef ORES_IAM_API_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
 
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -38,6 +45,8 @@ struct session_sample_dto {
     std::uint64_t sample_time_ms = 0;
     std::uint64_t bytes_sent = 0;
     std::uint64_t bytes_received = 0;
+
+    friend bool operator==(const session_sample_dto&, const session_sample_dto&) = default;
 };
 
 struct get_session_samples_request {
@@ -51,14 +60,99 @@ struct get_session_samples_request {
      */
     static constexpr bool requires_session = true;
     std::string session_id;
+
+    friend bool operator==(const get_session_samples_request&,
+                           const get_session_samples_request&) = default;
 };
 
 struct get_session_samples_response {
     std::vector<session_sample_dto> samples;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const get_session_samples_response&,
+                           const get_session_samples_response&) = default;
 };
 
+/**
+ * @brief The members of session_sample_dto, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const session_sample_dto&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"sample_time_ms", &session_sample_dto::sample_time_ms},
+        ::ores::utility::codec::field{"bytes_sent", &session_sample_dto::bytes_sent},
+        ::ores::utility::codec::field{"bytes_received", &session_sample_dto::bytes_received},
+    };
 }
+
+/**
+ * @brief The members of get_session_samples_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_session_samples_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"session_id", &get_session_samples_request::session_id},
+    };
+}
+
+/**
+ * @brief The members of get_session_samples_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_session_samples_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"samples", &get_session_samples_response::samples},
+        ::ores::utility::codec::field{"success", &get_session_samples_response::success},
+        ::ores::utility::codec::field{"message", &get_session_samples_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::session_sample_dto> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::session_sample_dto& v);
+    static ores::iam::messaging::session_sample_dto read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::session_sample_dto& v);
+    static ores::iam::messaging::session_sample_dto read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_session_samples_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_session_samples_request& v);
+    static ores::iam::messaging::get_session_samples_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_session_samples_request& v);
+    static ores::iam::messaging::get_session_samples_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_session_samples_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_session_samples_response& v);
+    static ores::iam::messaging::get_session_samples_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_session_samples_response& v);
+    static ores::iam::messaging::get_session_samples_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

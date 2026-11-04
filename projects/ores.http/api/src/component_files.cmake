@@ -25,6 +25,7 @@ set(files
     "domain/route.cpp"
     "domain/session_cookie.cpp"
     "domain/session_store.cpp"
+    "messaging/http_info_protocol_codec.cpp"
     "net/http_server.cpp"
     "net/http_server_options.cpp"
     "net/http_session.cpp"

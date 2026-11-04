@@ -212,7 +212,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'trading.v1.bond_issue_legs_events.created',
-    updated: 'trading.v1.bond_issue_legs_events.updated',
-    deleted: 'trading.v1.bond_issue_legs_events.deleted',
+    created: 'trading.v1.events.bond_issue_legs.created',
+    updated: 'trading.v1.events.bond_issue_legs.updated',
+    deleted: 'trading.v1.events.bond_issue_legs.deleted',
 } as const;

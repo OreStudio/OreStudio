@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 67159322-E804-4994-A26F-5D17117DB307
+:END:
+#+title: Find why the CSA and conventions publishes failed now and then
+#+description: The CSA publish and the conventions publish failed now and then in a full SQL run. Splitting the CSA publish into two statements and letting the conventions parts skip a row that exists stopped the failures, but nobody proved the cause.
+#+type: capture
+#+level: cross
+#+filetags: :sql:refdata:dq:test:flaky:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two SQL tests failed now and then in a full run of the suite and passed when run
+alone. The CSA publish in =refdata_publish_from_dq_create.sql= read its staged
+rows through a chain of common table expressions; it now stages them in a
+temporary table and inserts in two statements. The thirteen atomised parts of
+the conventions publish failed on a duplicate key when a dataset was published
+again; each insert now ends in =on conflict do nothing=. The failures stopped
+over nine full runs, but no run reproduced the failure on demand, so the cause
+is not known.
+
+* Why
+
+A fix without a known cause can hide a real defect. The conflict fallback in
+particular may hide a publish that writes the same part twice, which would be
+a bug in the publish rather than in the test. Find the cause, reproduce it, and
+keep or remove each change on that evidence.
+
+* References
+
+- [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]], the task that made the changes.
+- =projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql=, the publish functions.
+- PR 4400, whose review asked for this item.
+
+* See also
+
+- [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]], the story it came from.

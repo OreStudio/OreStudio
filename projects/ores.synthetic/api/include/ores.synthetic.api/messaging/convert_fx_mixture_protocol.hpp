@@ -25,8 +25,14 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_CONVERT_FX_MIXTURE_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_CONVERT_FX_MIXTURE_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -61,6 +67,9 @@ struct convert_fx_mixture_request {
     double initial_price = 1.0;
     /** @brief The feed's rate, which turns the default half-life into κ. */
     int ticks_per_hour = 3600;
+
+    friend bool operator==(const convert_fx_mixture_request&,
+                           const convert_fx_mixture_request&) = default;
 };
 
 /**
@@ -75,8 +84,80 @@ struct convert_fx_mixture_response {
     std::vector<double> gmm_stdevs;
     /** @brief The converted weights, κ first under the Ornstein-Uhlenbeck engine. */
     std::vector<double> gmm_weights;
+
+    friend bool operator==(const convert_fx_mixture_response&,
+                           const convert_fx_mixture_response&) = default;
 };
 
+/**
+ * @brief The members of convert_fx_mixture_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const convert_fx_mixture_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"gmm_means", &convert_fx_mixture_request::gmm_means},
+        ::ores::utility::codec::field{"gmm_stdevs", &convert_fx_mixture_request::gmm_stdevs},
+        ::ores::utility::codec::field{"gmm_weights", &convert_fx_mixture_request::gmm_weights},
+        ::ores::utility::codec::field{"from_process_type",
+                                      &convert_fx_mixture_request::from_process_type},
+        ::ores::utility::codec::field{"to_process_type",
+                                      &convert_fx_mixture_request::to_process_type},
+        ::ores::utility::codec::field{"initial_price", &convert_fx_mixture_request::initial_price},
+        ::ores::utility::codec::field{"ticks_per_hour",
+                                      &convert_fx_mixture_request::ticks_per_hour},
+    };
 }
+
+/**
+ * @brief The members of convert_fx_mixture_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const convert_fx_mixture_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &convert_fx_mixture_response::success},
+        ::ores::utility::codec::field{"message", &convert_fx_mixture_response::message},
+        ::ores::utility::codec::field{"gmm_means", &convert_fx_mixture_response::gmm_means},
+        ::ores::utility::codec::field{"gmm_stdevs", &convert_fx_mixture_response::gmm_stdevs},
+        ::ores::utility::codec::field{"gmm_weights", &convert_fx_mixture_response::gmm_weights},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::convert_fx_mixture_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::convert_fx_mixture_request& v);
+    static ores::synthetic::messaging::convert_fx_mixture_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::convert_fx_mixture_request& v);
+    static ores::synthetic::messaging::convert_fx_mixture_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::convert_fx_mixture_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::convert_fx_mixture_response& v);
+    static ores::synthetic::messaging::convert_fx_mixture_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::convert_fx_mixture_response& v);
+    static ores::synthetic::messaging::convert_fx_mixture_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

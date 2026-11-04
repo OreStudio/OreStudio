@@ -53,6 +53,8 @@ struct calendar_adjustment {
     std::string change_commentary;
     std::string performed_by;
     std::chrono::system_clock::time_point recorded_at;
+
+    friend bool operator==(const calendar_adjustment&, const calendar_adjustment&) = default;
 };
 
 /**
@@ -72,12 +74,18 @@ struct get_calendar_adjustments_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> calendar_codes;
+
+    friend bool operator==(const get_calendar_adjustments_request&,
+                           const get_calendar_adjustments_request&) = default;
 };
 
 struct get_calendar_adjustments_response {
     std::vector<calendar_adjustment> adjustments;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const get_calendar_adjustments_response&,
+                           const get_calendar_adjustments_response&) = default;
 };
 
 }

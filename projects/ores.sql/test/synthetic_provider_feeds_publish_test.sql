@@ -30,7 +30,7 @@
 
 begin;
 
-select plan(9);
+select plan(10);
 
 create temporary table t_dataset on commit drop as
 select id, code from ores_dq_datasets_tbl
@@ -90,6 +90,15 @@ select is(
        and valid_to = ores_utility_infinity_timestamp_fn()),
     14,
     'the collection holds the fourteen cross rates, named for LSEG'
+);
+
+select is(
+    (select count(*)::int from ores_synthetic_fx_spot_generation_configs_tbl
+     where config_id = (select id from t_collection)
+       and variance_model = 'gjr_garch'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    14,
+    'every LSEG cross rate scales its volatility by the GJR-GARCH daily variance'
 );
 
 select is(

@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 04919c94-bcca-47a5-914e-73aef24d28c7
+:END:
+#+title: ores.refdata.book_product_type
+#+description: Codegen junction model for book_product_types: the product types a book allows, when the book states them at all.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:trading:
+#+name: book_product_types
+#+name_singular: book_product_type
+#+name_title: Book Product Type
+#+name_singular_words: allowed product type
+#+brief: A product type a book allows, when the book states its allowed set.
+#+product: ores
+#+schema: public
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+The product types a book allows a trade to be booked under.
+
+A book either states its allowed set or allows everything, and the two are
+different facts:
+
+- =ores_refdata_books_tbl.restricts_product_types= is false, which is every
+  book a tenant creates without saying otherwise: the book allows every product
+  type the catalogue states, now and later, and this junction holds no rows for
+  it.
+- The flag is true: this junction holds the allowed set, and a book with no
+  rows here allows nothing. An empty set is a decision, not a gap.
+
+The distinction matters because the same absence of rows means opposite things.
+The booking path reads the flag first, so an unrestricted book never queries
+this junction.
+
+The product type is named by the code the catalogue states, the same soft
+reference the instrument tables use, because the catalogue belongs to the
+trading component and this junction to refdata: a foreign key would point the
+reference data at the trades.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:history: true
+:events: true
+:history_read_permission: refdata::books:read
+:END:
+
+* Left
+:PROPERTIES:
+:column:        book_id
+:column_short:  book
+:column_title:  Book
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up the product types a book allows
+:list_by:       true
+:END:
+
+ID of the book, or 00000000-0000-0000-0000-000000000000 for a book that does
+not exist.
+
+References ores_refdata_books_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        product_type_code
+:column_short:  product_type
+:column_title:  Product Type
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding the books that allow a product type
+:list_by:       true
+:END:
+
+Code of the product type the book allows.
+
+References ores_trading_product_types_tbl.code (soft FK, because the catalogue
+belongs to the trading component).
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_book_product_types_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** book_id
+:PROPERTIES:
+:table:         ores_refdata_books_tbl
+:error_message: Invalid book_id: %. No active book found with this id.
+:END:
+
+ID of the book; must exist in ores_refdata_books_tbl.
+
+* Repository
+:PROPERTIES:
+:name_singular_short: book_product_type
+:name_short:          book_product_types
+:name_singular_words: allowed product type
+:name_words:          allowed product types
+:order_column:        product_type_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bpt
+:END:
+
+** Table display
+
+| column            | header       |
+|-------------------+--------------|
+| product_type_code | Product Type |
+| version           | Version      |
+
+* See also
+
+- [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product type]] states what a product type is and the one catalogue that
+  holds them.

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7C1F3B52-9D64-4A18-8E27-5B0FA2C6D914
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.run_result
 #+description: Codegen entity model for the run result read model: the figures of a run, at the keys and measures the screen reads.
@@ -153,7 +154,7 @@ The family the figure came from, for provenance.
 
 ** View
 
-The figures of the =npv= family, at the measures the screen reads. A metric of any
+The figures of the =npv_report= family, at the measures the screen reads. A metric of any
 other family is not a result row: the screen shows the portfolio's value, and the
 other families answer other questions.
 
@@ -186,7 +187,7 @@ select m.tenant_id,
        m.value as figure,
        m.source
   from ores_reporting_report_metrics_tbl m
- where m.family = 'npv'
+ where m.family = 'npv_report'
    and m.valid_to = ores_utility_infinity_timestamp_fn()
 #+end_src
 

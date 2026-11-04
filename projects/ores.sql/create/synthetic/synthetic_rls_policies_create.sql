@@ -228,3 +228,57 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- variance_calibration_inputs
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_variance_calibration_inputs_tbl enable row level security;
+
+drop policy if exists variance_calibration_inputs_tenant_isolation_policy
+    on ores_synthetic_variance_calibration_inputs_tbl;
+
+create policy variance_calibration_inputs_tenant_isolation_policy
+on ores_synthetic_variance_calibration_inputs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- variance_calibration_input_points
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_variance_calibration_input_points_tbl enable row level security;
+
+drop policy if exists variance_calibration_input_points_tenant_isolation_policy
+    on ores_synthetic_variance_calibration_input_points_tbl;
+
+create policy variance_calibration_input_points_tenant_isolation_policy
+on ores_synthetic_variance_calibration_input_points_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- variance_calibrations
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_variance_calibrations_tbl enable row level security;
+
+drop policy if exists variance_calibrations_tenant_isolation_policy
+    on ores_synthetic_variance_calibrations_tbl;
+
+create policy variance_calibrations_tenant_isolation_policy
+on ores_synthetic_variance_calibrations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 32FCDE76-1C5A-4AFC-8671-7468C0F024DB
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.risk_report_config

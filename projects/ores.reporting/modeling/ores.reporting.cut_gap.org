@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9B65E3F1-2C04-4D87-A6B9-5E13F0A8C742
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.cut_gap
 #+description: Codegen entity model for the reporting =cut_gap= table. One part of a cut's body that the assembly could not fill, with the item, the part and the reason.

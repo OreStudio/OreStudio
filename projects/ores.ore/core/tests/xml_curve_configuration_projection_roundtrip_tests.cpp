@@ -22,6 +22,8 @@
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.testing/project_root.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <filesystem>
@@ -36,7 +38,8 @@
  * The walk projects every curve configuration document in the corpus to rows
  * and back, and compares the whole document. The cases below the walk cover
  * what no corpus document writes: every segment element in one document, an FX
- * parametric smile, and the refusal of elements the projection cannot hold.
+ * parametric smile, the refusal of elements the projection cannot hold, and
+ * the refusal of parts a segment's or a curve entry's construction does not have.
  */
 
 namespace {
@@ -396,6 +399,113 @@ TEST_CASE("a_row_the_document_has_no_place_for_is_refused_on_export",
     }
 }
 
+TEST_CASE("a_segment_holds_only_the_parts_its_element_has", "[ore][xml][roundtrip][curveconfig]") {
+    auto lg(make_logger(test_suite));
+
+    const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <YieldCurves>
+    <YieldCurve>
+      <CurveId>EUR-ALL</CurveId>
+      <CurveDescription>Two segments</CurveDescription>
+      <Currency>EUR</Currency>
+      <DiscountCurve>EUR-ALL</DiscountCurve>
+      <Segments>
+        <Direct><Type>Zero</Type><Quotes><Quote>ZERO/RATE/EUR/1Y</Quote></Quotes></Direct>
+        <Simple>
+          <Type>Deposit</Type>
+          <Conventions>EUR-DEPOSIT</Conventions>
+          <Quotes><Quote>MM/RATE/EUR/1D</Quote></Quotes>
+        </Simple>
+      </Segments>
+    </YieldCurve>
+  </YieldCurves>
+</CurveConfiguration>)");
+    const auto mapped = curve_configuration_projection::map(original);
+    REQUIRE(mapped.segments.size() == 2);
+    const auto& direct = mapped.segments[0];
+    const auto& simple = mapped.segments[1];
+
+    // A part of optional fields the element leaves out is no row at all: the
+    // direct segment states neither a convention nor a pillar rule.
+    REQUIRE(mapped.segment_conventions.size() == 1);
+    CHECK(mapped.segment_conventions.front().curve_segment_id == simple.id);
+    CHECK(mapped.segment_pillar_rules.empty());
+    CHECK(mapped.segment_projections.empty());
+
+    {
+        auto changed = mapped;
+        ores::refdata::domain::curve_segment_extrapolation p;
+        p.curve_segment_id = simple.id;
+        p.extrapolate_flat = true;
+        changed.segment_extrapolations.push_back(p);
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring("its construction does not have"));
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::curve_segment_convention p;
+        p.curve_segment_id = boost::uuids::random_generator()();
+        p.conventions = "EUR-DEPOSIT";
+        changed.segment_conventions.push_back(p);
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring("is not in the document"));
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::curve_segment_pillar_rule p;
+        p.curve_segment_id = direct.id;
+        p.priority = 1;
+        changed.segment_pillar_rules.push_back(p);
+        changed.segment_pillar_rules.push_back(p);
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring("has two pillar rule rows"));
+    }
+    {
+        auto changed = mapped;
+        changed.segment_conventions.clear();
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring("has no convention"));
+    }
+}
+
+TEST_CASE("a_discount_ratio_segment_missing_a_curve_is_refused",
+          "[ore][xml][roundtrip][curveconfig]") {
+    auto lg(make_logger(test_suite));
+
+    // The reader checks a document against the schema, which requires each of
+    // the three curves and its currency, so the part never holds an empty one.
+
+    const auto document = [](const std::string& curves) {
+        return curve_configuration_projection::read(R"(<CurveConfiguration>
+  <YieldCurves>
+    <YieldCurve>
+      <CurveId>EUR-RATIO</CurveId>
+      <CurveDescription>A discount ratio</CurveDescription>
+      <Currency>EUR</Currency>
+      <DiscountCurve>EUR-RATIO</DiscountCurve>
+      <Segments>
+        <DiscountRatio>
+          <Type>Discount Ratio</Type>
+)" + curves + R"(
+        </DiscountRatio>
+      </Segments>
+    </YieldCurve>
+  </YieldCurves>
+</CurveConfiguration>)");
+    };
+    const std::string base = R"(<BaseCurve currency="EUR">EUR-EONIA</BaseCurve>)";
+    const std::string numerator = R"(<NumeratorCurve currency="USD">USD-SOFR</NumeratorCurve>)";
+    const std::string denominator =
+        R"(<DenominatorCurve currency="USD">USD-FedFunds</DenominatorCurve>)";
+
+    CHECK_NOTHROW(curve_configuration_projection::map(document(base + numerator + denominator)));
+    CHECK_THROWS_WITH(curve_configuration_projection::map(document(base + denominator)),
+                      Catch::Matchers::ContainsSubstring("'NumeratorCurve' is missing"));
+    CHECK_THROWS_WITH(curve_configuration_projection::map(document(
+                          base + numerator + "<DenominatorCurve>USD-FedFunds</DenominatorCurve>")),
+                      Catch::Matchers::ContainsSubstring("'currency' is missing"));
+}
+
 TEST_CASE("a_segment_document_states_its_optional_settings", "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
@@ -444,10 +554,324 @@ TEST_CASE("a_segment_document_states_its_optional_settings", "[ore][xml][roundtr
     CHECK(mapped.yield_curves.front().report_pillar_dates == std::optional<std::string>("1Y, 2Y"));
     REQUIRE(!mapped.quotes.empty());
     CHECK(mapped.quotes.front().optional_flag == std::optional<std::string>("true"));
-    REQUIRE(mapped.segments.front().priority);
-    CHECK(*mapped.segments.front().priority == 2);
-    CHECK(mapped.segments[1].extrapolate_flat == std::optional<bool>(true));
-    CHECK(mapped.segments[2].rfr_index == std::optional<std::string>("CHF-SARON"));
-    REQUIRE(mapped.segments[2].spread);
-    CHECK_FALSE(mapped.segments[2].spread->is_zero());
+    const auto part_of = [](const auto& parts, const auto& segment) {
+        const auto it = std::ranges::find_if(
+            parts, [&](const auto& p) { return p.curve_segment_id == segment.id; });
+        REQUIRE(it != parts.end());
+        return *it;
+    };
+    const auto pillar = part_of(mapped.segment_pillar_rules, mapped.segments[0]);
+    REQUIRE(pillar.priority);
+    CHECK(*pillar.priority == 2);
+    CHECK(part_of(mapped.segment_extrapolations, mapped.segments[1]).extrapolate_flat);
+    const auto fallback = part_of(mapped.segment_ibor_fallbacks, mapped.segments[2]);
+    CHECK(fallback.rfr_index == std::optional<std::string>("CHF-SARON"));
+    REQUIRE(fallback.spread);
+    CHECK_FALSE(fallback.spread->is_zero());
+}
+
+TEST_CASE("a_curve_entry_holds_only_the_parts_its_construction_has",
+          "[ore][xml][roundtrip][curveconfig]") {
+    auto lg(make_logger(test_suite));
+
+    const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <DefaultCurves>
+    <DefaultCurve>
+      <CurveId>CPTY_A_SR_EUR</CurveId>
+      <CurveDescription>A hazard rate curve</CurveDescription>
+      <Currency>EUR</Currency>
+      <Type>HazardRate</Type>
+      <DiscountCurve/>
+      <DayCounter>A360</DayCounter>
+      <RecoveryRate>RECOVERY_RATE/RATE/CPTY_A/SR/EUR</RecoveryRate>
+      <Quotes><Quote>HAZARD_RATE/RATE/CPTY_A/SR/EUR/1Y</Quote></Quotes>
+      <Conventions>CDS-STANDARD-CONVENTIONS</Conventions>
+    </DefaultCurve>
+    <DefaultCurve>
+      <CurveId>BOND_YIELD_EUR_OVER_OIS</CurveId>
+      <CurveDescription>A benchmark curve</CurveDescription>
+      <Currency>EUR</Currency>
+      <Type>Benchmark</Type>
+      <DayCounter>A365</DayCounter>
+      <BenchmarkCurve>Yield/EUR/EUR1D</BenchmarkCurve>
+      <SourceCurve>Yield/EUR/BOND_YIELD_EUR</SourceCurve>
+      <Pillars>1Y,2Y</Pillars>
+      <SpotLag>0</SpotLag>
+      <Calendar>TARGET</Calendar>
+    </DefaultCurve>
+  </DefaultCurves>
+  <CommodityCurves>
+    <CommodityCurve>
+      <CurveId>NaturalGas</CurveId>
+      <CurveDescription>Direct quotes</CurveDescription>
+      <Currency>USD</Currency>
+      <Quotes><Quote>COMMODITY_FWD/PRICE/NaturalGas/*</Quote></Quotes>
+      <DayCounter>A365</DayCounter>
+      <InterpolationMethod>BackwardFlat</InterpolationMethod>
+      <Extrapolation>true</Extrapolation>
+    </CommodityCurve>
+    <CommodityCurve>
+      <CurveId>NaturalGasBasis</CurveId>
+      <CurveDescription>A basis</CurveDescription>
+      <Currency>USD</Currency>
+      <BasisConfiguration>
+        <BasePriceCurve>NaturalGas</BasePriceCurve>
+        <BasePriceConventions>NaturalGas</BasePriceConventions>
+        <BasisQuotes><Quote>COMMODITY_FWD/PRICE/NaturalGasBasis/*</Quote></BasisQuotes>
+        <BasisConventions>NaturalGas</BasisConventions>
+      </BasisConfiguration>
+      <Extrapolation>true</Extrapolation>
+    </CommodityCurve>
+  </CommodityCurves>
+</CurveConfiguration>)");
+    const auto mapped = curve_configuration_projection::map(original);
+    REQUIRE(mapped.default_curve_configurations.size() == 2);
+    const auto& hazard = mapped.default_curve_configurations[0].id;
+    const auto& benchmark = mapped.default_curve_configurations[1].id;
+    REQUIRE(mapped.commodity_curves.size() == 2);
+    const auto& direct = mapped.commodity_curves[0].curve_definition_id;
+    const auto& basis = mapped.commodity_curves[1].curve_definition_id;
+
+    // A part of optional fields the configuration leaves out is no row: the
+    // hazard rate curve states no CDS terms.
+    REQUIRE(mapped.default_curve_market_terms.size() == 1);
+    CHECK(mapped.default_curve_market_terms.front().default_curve_configuration_id == hazard);
+    CHECK(mapped.default_curve_cds_terms.empty());
+    REQUIRE(mapped.default_curve_benchmarks.size() == 1);
+    CHECK(mapped.default_curve_benchmarks.front().default_curve_configuration_id == benchmark);
+    REQUIRE(mapped.commodity_curve_directs.size() == 1);
+    CHECK(mapped.commodity_curve_directs.front().curve_definition_id == direct);
+    REQUIRE(mapped.commodity_curve_interpolations.size() == 1);
+    CHECK(mapped.commodity_curve_interpolations.front().curve_definition_id == direct);
+    REQUIRE(mapped.commodity_curve_bases.size() == 1);
+    CHECK(mapped.commodity_curve_bases.front().curve_definition_id == basis);
+    CHECK(mapped.commodity_curve_cross_currencies.empty());
+
+    const auto refused = [](const auto& changed, const std::string& reason) {
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring(reason));
+    };
+    {
+        auto changed = mapped;
+        ores::refdata::domain::default_curve_benchmark p;
+        p.default_curve_configuration_id = hazard;
+        p.pillars = "1Y";
+        changed.default_curve_benchmarks.push_back(p);
+        refused(changed, "its construction does not have");
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::default_curve_market_terms p;
+        p.default_curve_configuration_id = benchmark;
+        p.conventions = "CDS-STANDARD-CONVENTIONS";
+        changed.default_curve_market_terms.push_back(p);
+        refused(changed, "its construction does not have");
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::default_curve_cds_terms p;
+        p.default_curve_configuration_id = boost::uuids::random_generator()();
+        p.index_term = "5Y";
+        changed.default_curve_cds_terms.push_back(p);
+        refused(changed, "is not in the document");
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::commodity_curve_direct p;
+        p.curve_definition_id = basis;
+        p.spot_quote = "COMMODITY/PRICE/NaturalGas";
+        changed.commodity_curve_directs.push_back(p);
+        refused(changed, "its construction does not have");
+    }
+    {
+        auto changed = mapped;
+        auto p = mapped.commodity_curve_bases.front();
+        p.curve_definition_id = direct;
+        changed.commodity_curve_bases.push_back(p);
+        refused(changed, "its construction does not have");
+    }
+
+    const auto untyped = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <DefaultCurves>
+    <DefaultCurve>
+      <CurveId>CPTY_B_SR_EUR</CurveId>
+      <CurveDescription>No type</CurveDescription>
+      <Currency>EUR</Currency>
+      <DayCounter>A360</DayCounter>
+    </DefaultCurve>
+  </DefaultCurves>
+</CurveConfiguration>)");
+    CHECK_THROWS_WITH(
+        curve_configuration_projection::map(untyped),
+        Catch::Matchers::ContainsSubstring("states neither a Type nor Configurations"));
+}
+
+TEST_CASE("a_swaption_smile_and_an_inflation_seasonality_are_parts_their_entry_states",
+          "[ore][xml][roundtrip][curveconfig]") {
+    auto lg(make_logger(test_suite));
+
+    const std::string text = R"(<CurveConfiguration>
+  <SwaptionVolatilities>
+    <SwaptionVolatility>
+      <CurveId>EUR_SW_N</CurveId>
+      <CurveDescription>An ATM surface that keeps a smile grid it does not use</CurveDescription>
+      <Dimension>ATM</Dimension>
+      <OptionTenors>1Y,2Y</OptionTenors>
+      <SwapTenors>1Y,5Y</SwapTenors>
+      <SmileOptionTenors>2Y</SmileOptionTenors>
+      <SmileSwapTenors>1Y</SmileSwapTenors>
+      <SmileSpreads>-0.005,0,0.005</SmileSpreads>
+    </SwaptionVolatility>
+    <SwaptionVolatility>
+      <CurveId>GBP_SW_N</CurveId>
+      <CurveDescription>An ATM surface</CurveDescription>
+      <Dimension>ATM</Dimension>
+      <OptionTenors>1Y,2Y</OptionTenors>
+      <SwapTenors>1Y,5Y</SwapTenors>
+    </SwaptionVolatility>
+    <SwaptionVolatility>
+      <CurveId>EUR_SW_N_CUBE</CurveId>
+      <CurveDescription>A cube</CurveDescription>
+      <Dimension>Smile</Dimension>
+      <OptionTenors>1Y,2Y</OptionTenors>
+      <SwapTenors>1Y,5Y</SwapTenors>
+      <SmileOptionTenors>1Y</SmileOptionTenors>
+      <SmileSwapTenors>5Y</SmileSwapTenors>
+      <SmileSpreads>-0.01,0,0.01</SmileSpreads>
+    </SwaptionVolatility>
+  </SwaptionVolatilities>
+  <InflationCurves>
+    <InflationCurve>
+      <CurveId>EUHICPXT_ZC_Swaps</CurveId>
+      <CurveDescription>With seasonality</CurveDescription>
+      <NominalTermStructure>Yield/EUR/EUR6M</NominalTermStructure>
+      <Type>ZC</Type>
+      <Calendar>TARGET</Calendar>
+      <Lag>3M</Lag>
+      <Frequency>Monthly</Frequency>
+      <Seasonality>
+        <BaseDate>2016-01-01</BaseDate>
+        <Frequency>Monthly</Frequency>
+        <Factors>
+          <Factor>SEASONALITY/RATE/MULT/EUHICPXT/JAN</Factor>
+          <Factor>SEASONALITY/RATE/MULT/EUHICPXT/FEB</Factor>
+        </Factors>
+      </Seasonality>
+    </InflationCurve>
+    <InflationCurve>
+      <CurveId>UKRPI_ZC_Swaps</CurveId>
+      <CurveDescription>Without seasonality</CurveDescription>
+      <NominalTermStructure>Yield/GBP/GBP6M</NominalTermStructure>
+      <Type>ZC</Type>
+      <Calendar>UK</Calendar>
+      <Lag>2M</Lag>
+      <Frequency>Monthly</Frequency>
+    </InflationCurve>
+  </InflationCurves>
+</CurveConfiguration>)";
+    CHECK(round_trip(text, "parts").empty());
+
+    const auto mapped = curve_configuration_projection::map(read_document(text));
+    // The rows of an entry and of its parts are keyed by the curve the entry
+    // defines, so each is found by its CurveId rather than by its position.
+    const auto definition_of = [&](const std::string& curve_id) {
+        const auto it = std::ranges::find(
+            mapped.definitions, curve_id, [](const auto& d) { return d.curve_id; });
+        REQUIRE(it != mapped.definitions.end());
+        return it->id;
+    };
+    const auto swaption_of = [&](const std::string& curve_id) {
+        const auto definition = definition_of(curve_id);
+        const auto it = std::ranges::find(mapped.swaption_volatilities,
+                                          definition,
+                                          [](const auto& v) { return v.curve_definition_id; });
+        REQUIRE(it != mapped.swaption_volatilities.end());
+        return it->id;
+    };
+    const auto smile_of = [&](const boost::uuids::uuid& entry) {
+        return std::ranges::find(mapped.swaption_volatility_smiles, entry, [](const auto& s) {
+            return s.swaption_volatility_config_id;
+        });
+    };
+    REQUIRE(mapped.swaption_volatilities.size() == 3);
+    const auto atm_with_grid = swaption_of("EUR_SW_N");
+    const auto cube = swaption_of("EUR_SW_N_CUBE");
+    const auto atm = swaption_of("GBP_SW_N");
+    REQUIRE(mapped.inflation_curves.size() == 2);
+    const auto seasonal = definition_of("EUHICPXT_ZC_Swaps");
+    const auto plain = definition_of("UKRPI_ZC_Swaps");
+
+    // A grid is a row wherever the document states one, as ORE reads it only
+    // for a Smile surface but a document may keep it on an ATM one.
+    REQUIRE(mapped.swaption_volatility_smiles.size() == 2);
+    CHECK(smile_of(atm_with_grid) != mapped.swaption_volatility_smiles.end());
+    CHECK(smile_of(atm) == mapped.swaption_volatility_smiles.end());
+    const auto found = smile_of(cube);
+    REQUIRE(found != mapped.swaption_volatility_smiles.end());
+    const auto smile = *found;
+    CHECK(smile.smile_spreads == "-0.01,0,0.01");
+    REQUIRE(mapped.inflation_seasonalities.size() == 1);
+    const auto& season = mapped.inflation_seasonalities.front();
+    CHECK(season.curve_definition_id == seasonal);
+    CHECK(season.base_date == "2016-01-01");
+    CHECK(season.frequency == "Monthly");
+    CHECK(mapped.seasonality_factors.size() == 2);
+
+    const auto refused = [](const auto& changed, const std::string& reason) {
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring(reason));
+    };
+    {
+        auto changed = mapped;
+        changed.swaption_volatility_smiles.push_back(smile);
+        refused(changed, "has two smile grid rows");
+    }
+    {
+        auto changed = mapped;
+        auto p = smile;
+        p.swaption_volatility_config_id = boost::uuids::random_generator()();
+        changed.swaption_volatility_smiles.push_back(p);
+        refused(changed, "is not in the document");
+    }
+    {
+        auto changed = mapped;
+        changed.inflation_seasonalities.clear();
+        refused(changed, "has seasonality factors but no seasonality");
+    }
+    {
+        // ORE's Factors may hold no Factor, so a seasonality with none writes
+        // an empty Factors element rather than being refused.
+        auto changed = mapped;
+        auto p = season;
+        p.curve_definition_id = plain;
+        changed.inflation_seasonalities.push_back(p);
+        const auto written =
+            curve_configuration_projection::write(curve_configuration_projection::reverse(changed));
+        const auto again = curve_configuration_projection::map(read_document(written));
+        CHECK(again.inflation_seasonalities.size() == 2);
+        CHECK(again.seasonality_factors.size() == 2);
+    }
+
+    const auto refused_at_import = [](const std::string& document, const std::string& reason) {
+        CHECK_THROWS_WITH(curve_configuration_projection::map(read_document(document)),
+                          Catch::Matchers::ContainsSubstring(reason));
+    };
+    refused_at_import(R"(<CurveConfiguration>
+  <InflationCurves>
+    <InflationCurve>
+      <CurveId>EUHICPXT_ZC_Swaps</CurveId>
+      <CurveDescription>A seasonality with no factors</CurveDescription>
+      <NominalTermStructure>Yield/EUR/EUR6M</NominalTermStructure>
+      <Type>ZC</Type>
+      <Calendar>TARGET</Calendar>
+      <Lag>3M</Lag>
+      <Frequency>Monthly</Frequency>
+      <Seasonality>
+        <BaseDate>2016-01-01</BaseDate>
+        <Frequency>Monthly</Frequency>
+      </Seasonality>
+    </InflationCurve>
+  </InflationCurves>
+</CurveConfiguration>)",
+                      "required element 'Factors' is missing");
 }

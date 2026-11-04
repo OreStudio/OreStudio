@@ -26,17 +26,26 @@
 #define ORES_ANALYTICS_API_MESSAGING_TODAYS_MARKET_CONFIG_PROTOCOL_HPP
 
 #include "ores.analytics.api/domain/todays_market_config.hpp"
+#include "ores.analytics.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::analytics::messaging {
 
 struct todays_market_config_key {
     std::string name;
+
+    friend bool operator==(const todays_market_config_key&,
+                           const todays_market_config_key&) = default;
 };
 
 struct todays_market_config_write {
@@ -46,27 +55,42 @@ struct todays_market_config_write {
     std::string description;
     std::string config_variant;
     boost::uuids::uuid configuration_id;
+
+    friend bool operator==(const todays_market_config_write&,
+                           const todays_market_config_write&) = default;
 };
 
 struct todays_market_config_change {
     todays_market_config_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const todays_market_config_change&,
+                           const todays_market_config_change&) = default;
 };
 
 struct todays_market_config_removal {
     todays_market_config_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const todays_market_config_removal&,
+                           const todays_market_config_removal&) = default;
 };
 
 struct todays_market_config_lookup {
     todays_market_config_key key;
     std::optional<ores::analytics::domain::todays_market_config> todays_market_config;
+
+    friend bool operator==(const todays_market_config_lookup&,
+                           const todays_market_config_lookup&) = default;
 };
 
 struct todays_market_configs_filter {
     std::optional<boost::uuids::uuid> configuration_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> configuration_id_one_of;
+
+    friend bool operator==(const todays_market_configs_filter&,
+                           const todays_market_configs_filter&) = default;
 };
 
 struct todays_market_config_event {
@@ -76,17 +100,26 @@ struct todays_market_config_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const todays_market_config_event&,
+                           const todays_market_config_event&) = default;
 };
 
 struct todays_market_config_version_key {
     todays_market_config_key todays_market_config;
     std::uint32_t version;
+
+    friend bool operator==(const todays_market_config_version_key&,
+                           const todays_market_config_version_key&) = default;
 };
 
 struct todays_market_config_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const todays_market_config_versions_filter&,
+                           const todays_market_config_versions_filter&) = default;
 };
 
 struct list_todays_market_configs_request {
@@ -104,12 +137,18 @@ struct list_todays_market_configs_request {
     ores::utility::domain::order order;
     std::optional<todays_market_configs_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_todays_market_configs_request&,
+                           const list_todays_market_configs_request&) = default;
 };
 
 struct list_todays_market_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_config> configs;
     std::uint64_t total;
+
+    friend bool operator==(const list_todays_market_configs_response&,
+                           const list_todays_market_configs_response&) = default;
 };
 
 struct get_todays_market_config_request {
@@ -123,11 +162,17 @@ struct get_todays_market_config_request {
      */
     static constexpr bool requires_session = true;
     todays_market_config_key key;
+
+    friend bool operator==(const get_todays_market_config_request&,
+                           const get_todays_market_config_request&) = default;
 };
 
 struct get_todays_market_config_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::todays_market_config> todays_market_config;
+
+    friend bool operator==(const get_todays_market_config_response&,
+                           const get_todays_market_config_response&) = default;
 };
 
 struct get_many_todays_market_configs_request {
@@ -141,11 +186,17 @@ struct get_many_todays_market_configs_request {
      */
     static constexpr bool requires_session = true;
     std::vector<todays_market_config_key> keys;
+
+    friend bool operator==(const get_many_todays_market_configs_request&,
+                           const get_many_todays_market_configs_request&) = default;
 };
 
 struct get_many_todays_market_configs_response {
     ores::utility::domain::result result;
     std::vector<todays_market_config_lookup> entries;
+
+    friend bool operator==(const get_many_todays_market_configs_response&,
+                           const get_many_todays_market_configs_response&) = default;
 };
 
 struct put_todays_market_config_request {
@@ -160,11 +211,17 @@ struct put_todays_market_config_request {
     static constexpr bool requires_session = true;
     todays_market_config_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_todays_market_config_request&,
+                           const put_todays_market_config_request&) = default;
 };
 
 struct put_todays_market_config_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::todays_market_config> todays_market_config;
+
+    friend bool operator==(const put_todays_market_config_response&,
+                           const put_todays_market_config_response&) = default;
 };
 
 struct put_many_todays_market_configs_request {
@@ -179,11 +236,17 @@ struct put_many_todays_market_configs_request {
     static constexpr bool requires_session = true;
     std::vector<todays_market_config_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_todays_market_configs_request&,
+                           const put_many_todays_market_configs_request&) = default;
 };
 
 struct put_many_todays_market_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_config> configs;
+
+    friend bool operator==(const put_many_todays_market_configs_response&,
+                           const put_many_todays_market_configs_response&) = default;
 };
 
 struct delete_todays_market_config_request {
@@ -198,10 +261,16 @@ struct delete_todays_market_config_request {
     static constexpr bool requires_session = true;
     todays_market_config_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_todays_market_config_request&,
+                           const delete_todays_market_config_request&) = default;
 };
 
 struct delete_todays_market_config_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_todays_market_config_response&,
+                           const delete_todays_market_config_response&) = default;
 };
 
 struct delete_many_todays_market_configs_request {
@@ -217,10 +286,16 @@ struct delete_many_todays_market_configs_request {
     static constexpr bool requires_session = true;
     std::vector<todays_market_config_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_todays_market_configs_request&,
+                           const delete_many_todays_market_configs_request&) = default;
 };
 
 struct delete_many_todays_market_configs_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_todays_market_configs_response&,
+                           const delete_many_todays_market_configs_response&) = default;
 };
 
 struct list_by_configuration_id_todays_market_configs_request {
@@ -240,12 +315,19 @@ struct list_by_configuration_id_todays_market_configs_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<todays_market_configs_filter> filter;
+
+    friend bool operator==(const list_by_configuration_id_todays_market_configs_request&,
+                           const list_by_configuration_id_todays_market_configs_request&) = default;
 };
 
 struct list_by_configuration_id_todays_market_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_config> configs;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_configuration_id_todays_market_configs_response&,
+               const list_by_configuration_id_todays_market_configs_response&) = default;
 };
 
 struct list_todays_market_config_versions_request {
@@ -264,12 +346,18 @@ struct list_todays_market_config_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<todays_market_config_versions_filter> filter;
+
+    friend bool operator==(const list_todays_market_config_versions_request&,
+                           const list_todays_market_config_versions_request&) = default;
 };
 
 struct list_todays_market_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_config> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_todays_market_config_versions_response&,
+                           const list_todays_market_config_versions_response&) = default;
 };
 
 struct get_todays_market_config_version_request {
@@ -284,11 +372,17 @@ struct get_todays_market_config_version_request {
      */
     static constexpr bool requires_session = true;
     todays_market_config_version_key key;
+
+    friend bool operator==(const get_todays_market_config_version_request&,
+                           const get_todays_market_config_version_request&) = default;
 };
 
 struct get_todays_market_config_version_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::todays_market_config> version;
+
+    friend bool operator==(const get_todays_market_config_version_response&,
+                           const get_todays_market_config_version_response&) = default;
 };
 
 /**
@@ -300,11 +394,882 @@ struct get_todays_market_config_version_response {
  * of them.
  */
 namespace todays_market_config_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.todays_market_configs_events.created";
-inline constexpr std::string_view updated = "analytics.v1.todays_market_configs_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.todays_market_configs_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.todays_market_configs.created";
+inline constexpr std::string_view updated = "analytics.v1.events.todays_market_configs.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.todays_market_configs.deleted";
+}
+/**
+ * @brief The members of todays_market_config_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const todays_market_config_key&) {
+    return std::tuple{
+        utility::codec::field{"name", &todays_market_config_key::name},
+    };
 }
 
+/**
+ * @brief The members of todays_market_config_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const todays_market_config_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &todays_market_config_write::id},
+        utility::codec::field{"party_id", &todays_market_config_write::party_id},
+        utility::codec::field{"name", &todays_market_config_write::name},
+        utility::codec::field{"description", &todays_market_config_write::description},
+        utility::codec::field{"config_variant", &todays_market_config_write::config_variant},
+        utility::codec::field{"configuration_id", &todays_market_config_write::configuration_id},
+    };
 }
+
+/**
+ * @brief The members of todays_market_config_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const todays_market_config_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &todays_market_config_change::write},
+        utility::codec::field{"precondition", &todays_market_config_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of todays_market_config_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const todays_market_config_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &todays_market_config_removal::key},
+        utility::codec::field{"precondition", &todays_market_config_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of todays_market_config_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const todays_market_config_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &todays_market_config_lookup::key},
+        utility::codec::field{"todays_market_config",
+                              &todays_market_config_lookup::todays_market_config},
+    };
+}
+
+/**
+ * @brief The members of todays_market_configs_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const todays_market_configs_filter&) {
+    return std::tuple{
+        utility::codec::field{"configuration_id", &todays_market_configs_filter::configuration_id},
+        utility::codec::field{"id_one_of", &todays_market_configs_filter::id_one_of},
+        utility::codec::field{"configuration_id_one_of",
+                              &todays_market_configs_filter::configuration_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of todays_market_config_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const todays_market_config_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &todays_market_config_event::event_id},
+        utility::codec::field{"key", &todays_market_config_event::key},
+        utility::codec::field{"action", &todays_market_config_event::action},
+        utility::codec::field{"version", &todays_market_config_event::version},
+        utility::codec::field{"occurred_at", &todays_market_config_event::occurred_at},
+        utility::codec::field{"correlation_id", &todays_market_config_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of todays_market_config_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const todays_market_config_version_key&) {
+    return std::tuple{
+        utility::codec::field{"todays_market_config",
+                              &todays_market_config_version_key::todays_market_config},
+        utility::codec::field{"version", &todays_market_config_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of todays_market_config_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const todays_market_config_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &todays_market_config_versions_filter::version},
+        utility::codec::field{"from_version", &todays_market_config_versions_filter::from_version},
+        utility::codec::field{"to_version", &todays_market_config_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_todays_market_configs_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_todays_market_configs_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_todays_market_configs_request::offset},
+        utility::codec::field{"limit", &list_todays_market_configs_request::limit},
+        utility::codec::field{"order", &list_todays_market_configs_request::order},
+        utility::codec::field{"filter", &list_todays_market_configs_request::filter},
+        utility::codec::field{"as_of", &list_todays_market_configs_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_todays_market_configs_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_todays_market_configs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_todays_market_configs_response::result},
+        utility::codec::field{"configs", &list_todays_market_configs_response::configs},
+        utility::codec::field{"total", &list_todays_market_configs_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_todays_market_config_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_todays_market_config_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_todays_market_config_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_todays_market_config_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_todays_market_config_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_todays_market_config_response::result},
+        utility::codec::field{"todays_market_config",
+                              &get_todays_market_config_response::todays_market_config},
+    };
+}
+
+/**
+ * @brief The members of get_many_todays_market_configs_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_todays_market_configs_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_todays_market_configs_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_todays_market_configs_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_todays_market_configs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_todays_market_configs_response::result},
+        utility::codec::field{"entries", &get_many_todays_market_configs_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_todays_market_config_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_todays_market_config_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_todays_market_config_request::change},
+        utility::codec::field{"intent", &put_todays_market_config_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_todays_market_config_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_todays_market_config_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_todays_market_config_response::result},
+        utility::codec::field{"todays_market_config",
+                              &put_todays_market_config_response::todays_market_config},
+    };
+}
+
+/**
+ * @brief The members of put_many_todays_market_configs_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_todays_market_configs_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_todays_market_configs_request::changes},
+        utility::codec::field{"intent", &put_many_todays_market_configs_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_todays_market_configs_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_todays_market_configs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_todays_market_configs_response::result},
+        utility::codec::field{"configs", &put_many_todays_market_configs_response::configs},
+    };
+}
+
+/**
+ * @brief The members of delete_todays_market_config_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_todays_market_config_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_todays_market_config_request::removal},
+        utility::codec::field{"intent", &delete_todays_market_config_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_todays_market_config_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_todays_market_config_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_todays_market_config_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_todays_market_configs_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_todays_market_configs_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_todays_market_configs_request::removals},
+        utility::codec::field{"intent", &delete_many_todays_market_configs_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_todays_market_configs_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_todays_market_configs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_todays_market_configs_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_configuration_id_todays_market_configs_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_configuration_id_todays_market_configs_request&) {
+    return std::tuple{
+        utility::codec::field{
+            "configuration_id",
+            &list_by_configuration_id_todays_market_configs_request::configuration_id},
+        utility::codec::field{"scope",
+                              &list_by_configuration_id_todays_market_configs_request::scope},
+        utility::codec::field{"offset",
+                              &list_by_configuration_id_todays_market_configs_request::offset},
+        utility::codec::field{"limit",
+                              &list_by_configuration_id_todays_market_configs_request::limit},
+        utility::codec::field{"order",
+                              &list_by_configuration_id_todays_market_configs_request::order},
+        utility::codec::field{"filter",
+                              &list_by_configuration_id_todays_market_configs_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_configuration_id_todays_market_configs_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_configuration_id_todays_market_configs_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_by_configuration_id_todays_market_configs_response::result},
+        utility::codec::field{"configs",
+                              &list_by_configuration_id_todays_market_configs_response::configs},
+        utility::codec::field{"total",
+                              &list_by_configuration_id_todays_market_configs_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_todays_market_config_versions_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_todays_market_config_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_todays_market_config_versions_request::key},
+        utility::codec::field{"offset", &list_todays_market_config_versions_request::offset},
+        utility::codec::field{"limit", &list_todays_market_config_versions_request::limit},
+        utility::codec::field{"order", &list_todays_market_config_versions_request::order},
+        utility::codec::field{"filter", &list_todays_market_config_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_todays_market_config_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_todays_market_config_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_todays_market_config_versions_response::result},
+        utility::codec::field{"versions", &list_todays_market_config_versions_response::versions},
+        utility::codec::field{"total", &list_todays_market_config_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_todays_market_config_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_todays_market_config_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_todays_market_config_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_todays_market_config_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_todays_market_config_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_todays_market_config_version_response::result},
+        utility::codec::field{"version", &get_todays_market_config_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::todays_market_config_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::todays_market_config_key& v);
+    static ores::analytics::messaging::todays_market_config_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::todays_market_config_key& v);
+    static ores::analytics::messaging::todays_market_config_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::todays_market_config_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::todays_market_config_write& v);
+    static ores::analytics::messaging::todays_market_config_write read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::todays_market_config_write& v);
+    static ores::analytics::messaging::todays_market_config_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::todays_market_config_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::todays_market_config_change& v);
+    static ores::analytics::messaging::todays_market_config_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::todays_market_config_change& v);
+    static ores::analytics::messaging::todays_market_config_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::todays_market_config_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::todays_market_config_removal& v);
+    static ores::analytics::messaging::todays_market_config_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::todays_market_config_removal& v);
+    static ores::analytics::messaging::todays_market_config_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::todays_market_config_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::todays_market_config_lookup& v);
+    static ores::analytics::messaging::todays_market_config_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::todays_market_config_lookup& v);
+    static ores::analytics::messaging::todays_market_config_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::todays_market_configs_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::todays_market_configs_filter& v);
+    static ores::analytics::messaging::todays_market_configs_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::todays_market_configs_filter& v);
+    static ores::analytics::messaging::todays_market_configs_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::todays_market_config_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::todays_market_config_event& v);
+    static ores::analytics::messaging::todays_market_config_event read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::todays_market_config_event& v);
+    static ores::analytics::messaging::todays_market_config_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::todays_market_config_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::todays_market_config_version_key& v);
+    static ores::analytics::messaging::todays_market_config_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::todays_market_config_version_key& v);
+    static ores::analytics::messaging::todays_market_config_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::todays_market_config_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::todays_market_config_versions_filter& v);
+    static ores::analytics::messaging::todays_market_config_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::todays_market_config_versions_filter& v);
+    static ores::analytics::messaging::todays_market_config_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_todays_market_configs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_todays_market_configs_request& v);
+    static ores::analytics::messaging::list_todays_market_configs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_todays_market_configs_request& v);
+    static ores::analytics::messaging::list_todays_market_configs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_todays_market_configs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_todays_market_configs_response& v);
+    static ores::analytics::messaging::list_todays_market_configs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_todays_market_configs_response& v);
+    static ores::analytics::messaging::list_todays_market_configs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_todays_market_config_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_todays_market_config_request& v);
+    static ores::analytics::messaging::get_todays_market_config_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_todays_market_config_request& v);
+    static ores::analytics::messaging::get_todays_market_config_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_todays_market_config_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_todays_market_config_response& v);
+    static ores::analytics::messaging::get_todays_market_config_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_todays_market_config_response& v);
+    static ores::analytics::messaging::get_todays_market_config_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_todays_market_configs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_many_todays_market_configs_request& v);
+    static ores::analytics::messaging::get_many_todays_market_configs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_many_todays_market_configs_request& v);
+    static ores::analytics::messaging::get_many_todays_market_configs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_todays_market_configs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_many_todays_market_configs_response& v);
+    static ores::analytics::messaging::get_many_todays_market_configs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_many_todays_market_configs_response& v);
+    static ores::analytics::messaging::get_many_todays_market_configs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_todays_market_config_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_todays_market_config_request& v);
+    static ores::analytics::messaging::put_todays_market_config_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_todays_market_config_request& v);
+    static ores::analytics::messaging::put_todays_market_config_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_todays_market_config_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_todays_market_config_response& v);
+    static ores::analytics::messaging::put_todays_market_config_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_todays_market_config_response& v);
+    static ores::analytics::messaging::put_todays_market_config_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_todays_market_configs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_many_todays_market_configs_request& v);
+    static ores::analytics::messaging::put_many_todays_market_configs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_many_todays_market_configs_request& v);
+    static ores::analytics::messaging::put_many_todays_market_configs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_todays_market_configs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_many_todays_market_configs_response& v);
+    static ores::analytics::messaging::put_many_todays_market_configs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_many_todays_market_configs_response& v);
+    static ores::analytics::messaging::put_many_todays_market_configs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_todays_market_config_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_todays_market_config_request& v);
+    static ores::analytics::messaging::delete_todays_market_config_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_todays_market_config_request& v);
+    static ores::analytics::messaging::delete_todays_market_config_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_todays_market_config_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_todays_market_config_response& v);
+    static ores::analytics::messaging::delete_todays_market_config_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_todays_market_config_response& v);
+    static ores::analytics::messaging::delete_todays_market_config_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_todays_market_configs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_many_todays_market_configs_request& v);
+    static ores::analytics::messaging::delete_many_todays_market_configs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_many_todays_market_configs_request& v);
+    static ores::analytics::messaging::delete_many_todays_market_configs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_todays_market_configs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_many_todays_market_configs_response& v);
+    static ores::analytics::messaging::delete_many_todays_market_configs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_many_todays_market_configs_response& v);
+    static ores::analytics::messaging::delete_many_todays_market_configs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<
+    ores::analytics::messaging::list_by_configuration_id_todays_market_configs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::list_by_configuration_id_todays_market_configs_request&
+            v);
+    static ores::analytics::messaging::list_by_configuration_id_todays_market_configs_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::list_by_configuration_id_todays_market_configs_request&
+            v);
+    static ores::analytics::messaging::list_by_configuration_id_todays_market_configs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<
+    ores::analytics::messaging::list_by_configuration_id_todays_market_configs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::analytics::messaging::list_by_configuration_id_todays_market_configs_response&
+            v);
+    static ores::analytics::messaging::list_by_configuration_id_todays_market_configs_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::analytics::messaging::list_by_configuration_id_todays_market_configs_response&
+            v);
+    static ores::analytics::messaging::list_by_configuration_id_todays_market_configs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_todays_market_config_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_todays_market_config_versions_request& v);
+    static ores::analytics::messaging::list_todays_market_config_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_todays_market_config_versions_request& v);
+    static ores::analytics::messaging::list_todays_market_config_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_todays_market_config_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_todays_market_config_versions_response& v);
+    static ores::analytics::messaging::list_todays_market_config_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_todays_market_config_versions_response& v);
+    static ores::analytics::messaging::list_todays_market_config_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_todays_market_config_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_todays_market_config_version_request& v);
+    static ores::analytics::messaging::get_todays_market_config_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_todays_market_config_version_request& v);
+    static ores::analytics::messaging::get_todays_market_config_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_todays_market_config_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_todays_market_config_version_response& v);
+    static ores::analytics::messaging::get_todays_market_config_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_todays_market_config_version_response& v);
+    static ores::analytics::messaging::get_todays_market_config_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

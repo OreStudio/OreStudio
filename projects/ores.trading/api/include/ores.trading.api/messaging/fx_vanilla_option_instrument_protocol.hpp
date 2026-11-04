@@ -43,6 +43,9 @@ namespace ores::trading::messaging {
 
 struct fx_vanilla_option_instrument_key {
     boost::uuids::uuid trade_id;
+
+    friend bool operator==(const fx_vanilla_option_instrument_key&,
+                           const fx_vanilla_option_instrument_key&) = default;
 };
 
 struct fx_vanilla_option_instrument_write {
@@ -58,25 +61,40 @@ struct fx_vanilla_option_instrument_write {
     std::string exercise_style;
     std::string settlement;
     std::string description;
+
+    friend bool operator==(const fx_vanilla_option_instrument_write&,
+                           const fx_vanilla_option_instrument_write&) = default;
 };
 
 struct fx_vanilla_option_instrument_change {
     fx_vanilla_option_instrument_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const fx_vanilla_option_instrument_change&,
+                           const fx_vanilla_option_instrument_change&) = default;
 };
 
 struct fx_vanilla_option_instrument_removal {
     fx_vanilla_option_instrument_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const fx_vanilla_option_instrument_removal&,
+                           const fx_vanilla_option_instrument_removal&) = default;
 };
 
 struct fx_vanilla_option_instrument_lookup {
     fx_vanilla_option_instrument_key key;
     std::optional<ores::trading::domain::fx_vanilla_option_instrument> fx_vanilla_option_instrument;
+
+    friend bool operator==(const fx_vanilla_option_instrument_lookup&,
+                           const fx_vanilla_option_instrument_lookup&) = default;
 };
 
 struct fx_vanilla_option_instruments_filter {
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const fx_vanilla_option_instruments_filter&,
+                           const fx_vanilla_option_instruments_filter&) = default;
 };
 
 struct fx_vanilla_option_instrument_event {
@@ -86,17 +104,26 @@ struct fx_vanilla_option_instrument_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const fx_vanilla_option_instrument_event&,
+                           const fx_vanilla_option_instrument_event&) = default;
 };
 
 struct fx_vanilla_option_instrument_version_key {
     fx_vanilla_option_instrument_key fx_vanilla_option_instrument;
     std::uint32_t version;
+
+    friend bool operator==(const fx_vanilla_option_instrument_version_key&,
+                           const fx_vanilla_option_instrument_version_key&) = default;
 };
 
 struct fx_vanilla_option_instrument_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const fx_vanilla_option_instrument_versions_filter&,
+                           const fx_vanilla_option_instrument_versions_filter&) = default;
 };
 
 struct list_fx_vanilla_option_instruments_request {
@@ -115,12 +142,18 @@ struct list_fx_vanilla_option_instruments_request {
     ores::utility::domain::order order;
     std::optional<fx_vanilla_option_instruments_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_fx_vanilla_option_instruments_request&,
+                           const list_fx_vanilla_option_instruments_request&) = default;
 };
 
 struct list_fx_vanilla_option_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_vanilla_option_instrument> fx_vanilla_option_instruments;
     std::uint64_t total;
+
+    friend bool operator==(const list_fx_vanilla_option_instruments_response&,
+                           const list_fx_vanilla_option_instruments_response&) = default;
 };
 
 struct get_fx_vanilla_option_instrument_request {
@@ -134,11 +167,17 @@ struct get_fx_vanilla_option_instrument_request {
      */
     static constexpr bool requires_session = true;
     fx_vanilla_option_instrument_key key;
+
+    friend bool operator==(const get_fx_vanilla_option_instrument_request&,
+                           const get_fx_vanilla_option_instrument_request&) = default;
 };
 
 struct get_fx_vanilla_option_instrument_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::fx_vanilla_option_instrument> fx_vanilla_option_instrument;
+
+    friend bool operator==(const get_fx_vanilla_option_instrument_response&,
+                           const get_fx_vanilla_option_instrument_response&) = default;
 };
 
 struct get_many_fx_vanilla_option_instruments_request {
@@ -153,11 +192,17 @@ struct get_many_fx_vanilla_option_instruments_request {
      */
     static constexpr bool requires_session = true;
     std::vector<fx_vanilla_option_instrument_key> keys;
+
+    friend bool operator==(const get_many_fx_vanilla_option_instruments_request&,
+                           const get_many_fx_vanilla_option_instruments_request&) = default;
 };
 
 struct get_many_fx_vanilla_option_instruments_response {
     ores::utility::domain::result result;
     std::vector<fx_vanilla_option_instrument_lookup> entries;
+
+    friend bool operator==(const get_many_fx_vanilla_option_instruments_response&,
+                           const get_many_fx_vanilla_option_instruments_response&) = default;
 };
 
 struct put_fx_vanilla_option_instrument_request {
@@ -172,11 +217,17 @@ struct put_fx_vanilla_option_instrument_request {
     static constexpr bool requires_session = true;
     fx_vanilla_option_instrument_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_fx_vanilla_option_instrument_request&,
+                           const put_fx_vanilla_option_instrument_request&) = default;
 };
 
 struct put_fx_vanilla_option_instrument_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::fx_vanilla_option_instrument> fx_vanilla_option_instrument;
+
+    friend bool operator==(const put_fx_vanilla_option_instrument_response&,
+                           const put_fx_vanilla_option_instrument_response&) = default;
 };
 
 struct put_many_fx_vanilla_option_instruments_request {
@@ -192,11 +243,17 @@ struct put_many_fx_vanilla_option_instruments_request {
     static constexpr bool requires_session = true;
     std::vector<fx_vanilla_option_instrument_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_fx_vanilla_option_instruments_request&,
+                           const put_many_fx_vanilla_option_instruments_request&) = default;
 };
 
 struct put_many_fx_vanilla_option_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_vanilla_option_instrument> fx_vanilla_option_instruments;
+
+    friend bool operator==(const put_many_fx_vanilla_option_instruments_response&,
+                           const put_many_fx_vanilla_option_instruments_response&) = default;
 };
 
 struct delete_fx_vanilla_option_instrument_request {
@@ -212,10 +269,16 @@ struct delete_fx_vanilla_option_instrument_request {
     static constexpr bool requires_session = true;
     fx_vanilla_option_instrument_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_fx_vanilla_option_instrument_request&,
+                           const delete_fx_vanilla_option_instrument_request&) = default;
 };
 
 struct delete_fx_vanilla_option_instrument_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_fx_vanilla_option_instrument_response&,
+                           const delete_fx_vanilla_option_instrument_response&) = default;
 };
 
 struct delete_many_fx_vanilla_option_instruments_request {
@@ -231,10 +294,16 @@ struct delete_many_fx_vanilla_option_instruments_request {
     static constexpr bool requires_session = true;
     std::vector<fx_vanilla_option_instrument_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_fx_vanilla_option_instruments_request&,
+                           const delete_many_fx_vanilla_option_instruments_request&) = default;
 };
 
 struct delete_many_fx_vanilla_option_instruments_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_fx_vanilla_option_instruments_response&,
+                           const delete_many_fx_vanilla_option_instruments_response&) = default;
 };
 
 struct list_fx_vanilla_option_instrument_versions_request {
@@ -253,12 +322,18 @@ struct list_fx_vanilla_option_instrument_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<fx_vanilla_option_instrument_versions_filter> filter;
+
+    friend bool operator==(const list_fx_vanilla_option_instrument_versions_request&,
+                           const list_fx_vanilla_option_instrument_versions_request&) = default;
 };
 
 struct list_fx_vanilla_option_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_vanilla_option_instrument> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_fx_vanilla_option_instrument_versions_response&,
+                           const list_fx_vanilla_option_instrument_versions_response&) = default;
 };
 
 struct get_fx_vanilla_option_instrument_version_request {
@@ -273,11 +348,17 @@ struct get_fx_vanilla_option_instrument_version_request {
      */
     static constexpr bool requires_session = true;
     fx_vanilla_option_instrument_version_key key;
+
+    friend bool operator==(const get_fx_vanilla_option_instrument_version_request&,
+                           const get_fx_vanilla_option_instrument_version_request&) = default;
 };
 
 struct get_fx_vanilla_option_instrument_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::fx_vanilla_option_instrument> version;
+
+    friend bool operator==(const get_fx_vanilla_option_instrument_version_response&,
+                           const get_fx_vanilla_option_instrument_version_response&) = default;
 };
 
 /**
@@ -290,11 +371,11 @@ struct get_fx_vanilla_option_instrument_version_response {
  */
 namespace fx_vanilla_option_instrument_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.fx_vanilla_option_instruments_events.created";
+    "trading.v1.events.fx_vanilla_option_instruments.created";
 inline constexpr std::string_view updated =
-    "trading.v1.fx_vanilla_option_instruments_events.updated";
+    "trading.v1.events.fx_vanilla_option_instruments.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.fx_vanilla_option_instruments_events.deleted";
+    "trading.v1.events.fx_vanilla_option_instruments.deleted";
 }
 /**
  * @brief The members of fx_vanilla_option_instrument_key, named as the wire names them and in the

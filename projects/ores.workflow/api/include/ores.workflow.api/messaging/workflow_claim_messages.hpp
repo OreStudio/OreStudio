@@ -21,10 +21,13 @@
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_CLAIM_MESSAGES_HPP
 
 #include "ores.platform/process/pid.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::workflow::messaging {
 
@@ -45,10 +48,12 @@ namespace ores::workflow::messaging {
  *    take the claim over and the step would be lost to the engine's deadline.
  *    So hold off x (deliveries - 1) must be greater than the lease: here
  *    30 x 9 = 270 seconds against 120.
- *  - The lease must outlast a healthy step, or a second delivery takes work the
- *    first is still running and both do it. The longest step observed in this
- *    environment runs in under 3 seconds, so 120 seconds is forty times the
- *    slowest healthy step, and four times the ack wait.
+ *  - A healthy step may run longer than the lease: provisioning steps run for
+ *    one to several minutes. A delivery whose handler is still running renews
+ *    the lease every @c step_claim_renew_interval and tells the server it is
+ *    still working, so no redelivery takes over a holder that is alive. The
+ *    lease only has to outlast the renewal interval, with room for a slow
+ *    renewal, which 120 seconds against 30 does four times over.
  *  - The lease must sit under the shortest step deadline, or the engine fails
  *    the step before a redelivery can take the claim over. The shortest
  *    deadline this deployment declares is 900 seconds, for a reporting step, so
@@ -58,6 +63,16 @@ namespace ores::workflow::messaging {
  * checking all three rather than only the one that prompted the change.
  */
 inline constexpr std::chrono::seconds step_claim_lease{120};
+
+/**
+ * @brief How often a delivery whose handler is still running renews its claim.
+ *
+ * A quarter of the lease, so three renewals can fail in a row, to a slow engine or a
+ * lost reply, before the lease can end under a holder that is still working.
+ */
+inline constexpr std::chrono::seconds step_claim_renew_interval{step_claim_lease / 4};
+static_assert(step_claim_lease >= 4 * step_claim_renew_interval,
+              "a lease must hold at least three failed renewals before it can end");
 
 /**
  * @brief How long a delivery that lost the claim waits before asking again.
@@ -175,6 +190,84 @@ struct claim_step_response {
     int attempts = 0;
 };
 
+/**
+ * @brief Asks the workflow engine to extend the lease of a claim this delivery holds.
+ *
+ * A handler can run longer than the lease. While it runs, its delivery renews the
+ * lease, so no redelivery can take the step over from a holder that is still working;
+ * a holder that has died stops renewing, and its lease ends as it always did.
+ */
+struct renew_step_claim_request {
+    using response_type = struct renew_step_claim_response;
+    static constexpr std::string_view nats_subject = "workflow.v1.ops.renew_step_claim";
+    static constexpr bool requires_session = true;
+    std::string step_id;
+    std::string tenant_id;
+    /// The holder the claim must still name; a claim another holder took is not renewed.
+    std::string owner;
+};
+
+/**
+ * @brief Whether the lease was extended, and why not when it was not.
+ */
+struct renew_step_claim_response {
+    /// Whether the engine could answer at all.
+    bool success = false;
+    /// True when this holder still holds the claim and its lease now runs a full term again.
+    bool renewed = false;
+    /// The step's state by name when the claim was not renewed: "in_progress" when another
+    /// holder took it, "unknown" when there is no such step, otherwise the state it settled in.
+    std::string state;
+    std::string message;
+};
+
+[[nodiscard]] constexpr auto wire_fields(const claim_step_request&) {
+    return std::tuple{utility::codec::field{"step_id", &claim_step_request::step_id},
+                      utility::codec::field{"tenant_id", &claim_step_request::tenant_id},
+                      utility::codec::field{"owner", &claim_step_request::owner}};
 }
+static_assert(utility::codec::names_every_member<claim_step_request>());
+
+[[nodiscard]] constexpr auto wire_fields(const claim_step_response&) {
+    return std::tuple{utility::codec::field{"success", &claim_step_response::success},
+                      utility::codec::field{"claimed", &claim_step_response::claimed},
+                      utility::codec::field{"state", &claim_step_response::state},
+                      utility::codec::field{"message", &claim_step_response::message},
+                      utility::codec::field{"attempts", &claim_step_response::attempts}};
+}
+static_assert(utility::codec::names_every_member<claim_step_response>());
+
+[[nodiscard]] constexpr auto wire_fields(const renew_step_claim_request&) {
+    return std::tuple{utility::codec::field{"step_id", &renew_step_claim_request::step_id},
+                      utility::codec::field{"tenant_id", &renew_step_claim_request::tenant_id},
+                      utility::codec::field{"owner", &renew_step_claim_request::owner}};
+}
+static_assert(utility::codec::names_every_member<renew_step_claim_request>());
+
+[[nodiscard]] constexpr auto wire_fields(const renew_step_claim_response&) {
+    return std::tuple{utility::codec::field{"success", &renew_step_claim_response::success},
+                      utility::codec::field{"renewed", &renew_step_claim_response::renewed},
+                      utility::codec::field{"state", &renew_step_claim_response::state},
+                      utility::codec::field{"message", &renew_step_claim_response::message}};
+}
+static_assert(utility::codec::names_every_member<renew_step_claim_response>());
+
+}
+
+template <>
+struct ores::utility::codec::wire_traits<ores::workflow::messaging::claim_step_request>
+    : shaped_wire_traits<ores::workflow::messaging::claim_step_request> {};
+
+template <>
+struct ores::utility::codec::wire_traits<ores::workflow::messaging::claim_step_response>
+    : shaped_wire_traits<ores::workflow::messaging::claim_step_response> {};
+
+template <>
+struct ores::utility::codec::wire_traits<ores::workflow::messaging::renew_step_claim_request>
+    : shaped_wire_traits<ores::workflow::messaging::renew_step_claim_request> {};
+
+template <>
+struct ores::utility::codec::wire_traits<ores::workflow::messaging::renew_step_claim_response>
+    : shaped_wire_traits<ores::workflow::messaging::renew_step_claim_response> {};
 
 #endif

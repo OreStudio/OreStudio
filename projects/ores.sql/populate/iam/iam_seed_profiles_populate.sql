@@ -27,10 +27,16 @@
  * cards' copy is the accepted prototype's.
  *
  * The step kinds come from the catalogue in code: publish_bundle,
- * import_lei_hierarchy, provision_party, load_staff, attach_photos,
- * subscribe_market_data and generate_trades. ACME orders all seven, because it
+ * import_lei_hierarchy, provision_party, load_staff, set_staff_passwords,
+ * attach_photos, subscribe_market_data, generate_trades and schedule_reports.
+ * ACME orders every one of them but the two kinds the runs append, because it
  * produces every kind of datum a demonstration needs. Operational orders the
  * three that create real data and no test data at all.
+ *
+ * The schedule_reports row names the parties and nothing else: which reports a
+ * party runs is the catalogue it published, and what each report's schedule is
+ * is the catalogue's own statement, so the row that scheduled them would be a
+ * copy of the catalogue that goes stale.
  *
  * A step's arguments are the profile's, so a profile that wants one party on a
  * different feed states it in the step's row and not in code: ACME's market data
@@ -226,17 +232,37 @@ cross join (values
     -- The book count and the population size are the config's, so a tenant that
     -- wants a thinner book changes a row and not the generator, and gives up the
     -- codes past its slot count by doing so.
-    ('acme_demo', 'generate_trades', 70, '{"configs": [
+    --
+    -- A config that states trade_type_codes books only those types. The holding
+    -- company prices linear products only (the Acme dataset's ENTITY_PRODUCTS),
+    -- so its bond config books plain bonds and its FX config books forwards; it
+    -- keeps its counts, and the population keeps its total.
+    -- The catalogue ticks nothing on its own: a run needs a scheduler job and a
+    -- run grant, and only the reporting schedule operation creates the pair. So
+    -- the run that builds the tenant also schedules what its parties publish,
+    -- as the run's administrator. The row names the four parties and nothing
+    -- else: the definitions come from the bundles the staff step published, and
+    -- a report the catalogue states as on demand is left for a person to ask
+    -- for. Re-provisioning schedules nothing twice.
+    ('acme_demo', 'schedule_reports', 70, '{"parties": [
+        "Acme Corporation Plc",
+        "ACME Corporation UK plc",
+        "ACME Corporation US Inc",
+        "ACME Corporation HK Ltd"
+    ]}'::jsonb),
+    ('acme_demo', 'generate_trades', 80, '{"configs": [
         {"party": "Acme Corporation Plc", "name": "ACME ACMCOR bonds",
          "description": "The bonds the group books, in its intercompany book.",
          "asset_class_code": "bond", "book": "Group Intercompany Loans",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 10, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 10, "structures_per_book": 2,
+         "trade_type_codes": ["Bond"]},
                 {"party": "Acme Corporation Plc", "name": "ACME ACMCOR FX",
          "description": "The foreign exchange trades the group books, in its hedge book.",
          "asset_class_code": "fx", "book": "Group FX Hedges",
          "min_tenor_code": "1M", "max_tenor_code": "2Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 44, "trades_per_book": 63, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 44, "trades_per_book": 63, "structures_per_book": 2,
+         "trade_type_codes": ["FxForward"]},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK bonds",
          "description": "The bonds the UK entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",

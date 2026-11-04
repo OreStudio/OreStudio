@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 4C1F7A62-9B3D-4E58-8C21-6A7D0E3B5F94
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.published_curves_operations
 #+description: Codegen operation model for the published curve screens: the list of a tenant's published sets and candidates, one curve's last sets with the points they hold, and the act that takes a set out of use.

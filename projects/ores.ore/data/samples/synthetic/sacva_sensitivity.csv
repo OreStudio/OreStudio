@@ -1,0 +1,3 @@
+#NettingSet,RiskType,CvaType,MarginType,RiskFactor,Bucket,Value
+CPTY_A,IR,Spread,Delta,USD/1Y,USD,-125.400000
+CPTY_A,FX,Exposure,Delta,EUR,EUR,310.250000

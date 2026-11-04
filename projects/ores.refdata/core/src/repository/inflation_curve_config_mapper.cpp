@@ -60,9 +60,6 @@ inflation_curve_config_mapper::map(const inflation_curve_config_entity& v) {
     r.frequency = v.frequency;
     r.base_rate = v.base_rate;
     r.tolerance = v.tolerance;
-    r.has_seasonality = v.has_seasonality;
-    r.seasonality_base_date = v.seasonality_base_date;
-    r.seasonality_frequency = v.seasonality_frequency;
     r.use_last_fixing_date = v.use_last_fixing_date;
     r.interpolation_variable = v.interpolation_variable;
     r.interpolation_method = v.interpolation_method;
@@ -97,9 +94,6 @@ inflation_curve_config_mapper::map(const domain::inflation_curve_config& v) {
     r.frequency = v.frequency;
     r.base_rate = v.base_rate;
     r.tolerance = v.tolerance;
-    r.has_seasonality = v.has_seasonality;
-    r.seasonality_base_date = v.seasonality_base_date;
-    r.seasonality_frequency = v.seasonality_frequency;
     r.use_last_fixing_date = v.use_last_fixing_date;
     r.interpolation_variable = v.interpolation_variable;
     r.interpolation_method = v.interpolation_method;

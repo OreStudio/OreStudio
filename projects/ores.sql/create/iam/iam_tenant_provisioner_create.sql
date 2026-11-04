@@ -193,6 +193,33 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % role-permission assignments', v_copied_count;
 
+    -- Give every copied role the whole product type catalogue. The junction
+    -- is the grant, so a role with no rows permits nothing, and a tenant that
+    -- could not book what the system catalogue states would be provisioned
+    -- unable to trade. The catalogue is the one copy in the system tenant, and
+    -- it is read, not copied: a product type added to it is bookable by the
+    -- next tenant provisioned without this script changing.
+    insert into ores_iam_role_product_types_tbl (
+        tenant_id, role_id, product_type_code, version,
+        modified_by, performed_by,
+        change_reason_code, change_commentary)
+    select
+        v_tenant_id,
+        r.id,
+        c.code,
+        0,
+        v_actor, v_actor,
+        'system.new_record', 'The system catalogue copied during provisioning'
+    from ores_iam_roles_tbl r
+    cross join ores_trading_product_types_tbl c
+    where r.tenant_id = v_tenant_id
+      and r.valid_to = ores_utility_infinity_timestamp_fn()
+      and c.tenant_id = v_system_tenant_id
+      and c.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % role-product type grants', v_copied_count;
+
     -- =========================================================================
     -- Copy refdata lookup tables from system tenant
     -- =========================================================================
@@ -283,28 +310,13 @@ begin
     raise notice 'Copied % party ID schemes', v_copied_count;
 
     /*
-     * The trading code lists a booked trade is read against: the type it is,
-     * the scheme its identifier is stated in, the kinds of link two trades can
-     * have, the activities that move it, and the structures it can be a leg of.
-     * Without them a tenant answers an empty list to every picker while the
-     * writes still accept the codes.
+     * The trading code lists a booked trade is read against: the scheme its
+     * identifier is stated in, the kinds of link two trades can have, the
+     * activities that move it, and the structures it can be a leg of. Without
+     * them a tenant answers an empty list to every picker while the writes still
+     * accept the codes. The product type catalogue is not among them: it is one
+     * copy in the system tenant, which every tenant reads.
      */
-    -- Trade types
-    insert into ores_trading_trade_types_tbl (
-        code, description, product_type, has_options, has_extension, tenant_id, version,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        code, description, product_type, has_options, has_extension, v_tenant_id, 0,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_trading_trade_types_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % trade types', v_copied_count;
-
     -- Trade ID types
     insert into ores_trading_trade_id_types_tbl (
         code, description, tenant_id, version,

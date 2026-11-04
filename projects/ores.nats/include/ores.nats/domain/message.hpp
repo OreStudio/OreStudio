@@ -65,6 +65,12 @@ public:
     virtual void retry_after(std::chrono::milliseconds delay) = 0;
     /// The message can never be handled; stop delivering it.
     virtual void reject() = 0;
+    /**
+     * @brief Tells the server the delivery is still being worked on, so it waits a full
+     * ack wait again before redelivering. A no-op for a delivery that cannot say so, and
+     * for one already answered. Safe to call from a thread other than the handler's.
+     */
+    virtual void working() {}
 };
 
 /**

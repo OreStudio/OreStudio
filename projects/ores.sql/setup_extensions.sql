@@ -37,6 +37,8 @@
  *   - pgtap: Unit testing framework for pgTAP SQL tests (recommended)
  *   - timescaledb: Time-series database for session analytics (recommended)
  *     If not available, sessions table will use regular PostgreSQL tables.
+ *   - pg_stat_statements: Per-query call counts and times, for finding the
+ *     queries that cost the most. Needs no code; nothing depends on it.
  *
  * PREREQUISITES FOR TIMESCALEDB (optional):
  *   - TimescaleDB must be installed on the system:
@@ -45,6 +47,10 @@
  *   - TimescaleDB must be added to shared_preload_libraries in postgresql.conf:
  *       shared_preload_libraries = 'timescaledb'
  *   - PostgreSQL must be restarted after modifying shared_preload_libraries
+ *
+ * PREREQUISITES FOR PG_STAT_STATEMENTS (optional):
+ *   - It ships with PostgreSQL, but must be in shared_preload_libraries:
+ *       build/scripts/setup_postgres_extensions.sh --configure --restart
  *
  * TIMESCALEDB LICENSE:
  *   Some features (compression, retention policies, continuous aggregates)
@@ -129,6 +135,23 @@ begin
     end if;
 end $$;
 
+-- pg_stat_statements: Query statistics (OPTIONAL)
+-- Its views fail on use when the library is not preloaded, so it is created
+-- only when its GUC, registered by the preloaded library, exists. It lives in
+-- its own schema: its views belong to the superuser, and the grants the DDL
+-- user makes on every table in public would warn on each of them.
+create schema if not exists monitoring;
+
+do $$
+begin
+    if current_setting('pg_stat_statements.max', true) is not null then
+        create extension if not exists pg_stat_statements schema monitoring;
+        raise notice 'Installed: pg_stat_statements';
+    else
+        raise notice 'pg_stat_statements: not in shared_preload_libraries — query statistics are off';
+    end if;
+end $$;
+
 \echo ''
 \echo '=========================================='
 \echo 'Extensions setup complete!'
@@ -138,7 +161,7 @@ end $$;
 -- Show what was installed
 \echo 'Installed extensions:'
 select extname, extversion from pg_extension
-where extname in ('btree_gist', 'unaccent', 'pgtap', 'timescaledb')
+where extname in ('btree_gist', 'unaccent', 'pgtap', 'timescaledb', 'pg_stat_statements')
 order by extname;
 
 \echo ''

@@ -46,7 +46,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Market Data Adapters',
-        'The adapter modules the release defines: the code that reads a supplier service, the asset classes and services it can serve, and the configuration a session of it must state. A row is a definition; whether this installation has the module is what its announce confirms. The release defines two: Frankfurter for public daily rates, and the synthetic simulator.',
+        'The adapter modules the release defines: the code that reads a supplier service, the asset classes and services it can serve, and the configuration a session of it must state. A row is a definition; whether this installation has the module is what its announce confirms. The release defines three: Frankfurter for public daily rates, the synthetic simulator, and the derived source of FX volatility quotes.',
         'ORESTUDIO',
         'The adapter catalogue a session is configured from',
         current_date,
@@ -87,7 +87,12 @@ begin
          'Synthetic simulator', '0.0.29',
          'Runs the synthetic generators the runner authors and sends their ticks.',
          'ores.synthetic.service', 'fx,ir', 'real_time', '{}',
-         20);
+         20),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'derived', 0,
+         'Derived FX volatility', '0.0.29',
+         'Infers the ATM, risk reversal and butterfly quotes of FX pairs from their stored fixings, once a day.',
+         'ores.synthetic.service', 'fx', 'end_of_day', '{}',
+         30);
 end $$;
 
 -- Summary

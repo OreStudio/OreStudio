@@ -2675,6 +2675,54 @@ TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
     }
 }
 
+TEST_CASE("a_trade_the_writer_refuses_is_left_out_and_the_rest_are_written",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    portfolio_projection::document document;
+    ores::ore::xml::record_writer root(*pf::portfolio_document().root, &document);
+    const auto position = [&](const std::string& id, bool typed) {
+        auto trade = root.append("Trade");
+        trade.set_spelling("TradeType", "EquityPosition", "trade type");
+        trade.set_text("id", id);
+        auto data = trade.child("EquityPositionData");
+        data.set_decimal("Quantity", *ores::utility::decimal::decimal::from_string("5000"));
+        auto underlying = data.append("Underlying");
+        if (typed)
+            underlying.set_text("Type", "Equity");
+        underlying.set_text("Name", ".SPX");
+    };
+    position("untyped-underlying-1", false);
+    position("typed-underlying-2", true);
+    root.state("Trade");
+
+    const auto written = portfolio_projection::write_leaving_out(document);
+
+    REQUIRE(written.refused.size() == 1u);
+    CHECK(written.refused[0].trade_id == "untyped-underlying-1");
+    CHECK(written.refused[0].trade_type == "EquityPosition");
+    CHECK(written.refused[0].message.find("required element 'Type'") != std::string::npos);
+    CHECK(written.xml.find("typed-underlying-2") != std::string::npos);
+    CHECK(written.xml.find("untyped-underlying-1") == std::string::npos);
+}
+
+TEST_CASE("a_portfolio_with_no_trade_the_writer_accepts_is_refused",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    portfolio_projection::document document;
+    ores::ore::xml::record_writer root(*pf::portfolio_document().root, &document);
+    auto trade = root.append("Trade");
+    trade.set_spelling("TradeType", "EquityPosition", "trade type");
+    trade.set_text("id", "untyped-underlying-1");
+    auto data = trade.child("EquityPositionData");
+    data.set_decimal("Quantity", *ores::utility::decimal::decimal::from_string("5000"));
+    data.append("Underlying").set_text("Name", ".SPX");
+    root.state("Trade");
+
+    CHECK_THROWS_AS(portfolio_projection::write_leaving_out(document), std::runtime_error);
+}
+
 TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entries",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

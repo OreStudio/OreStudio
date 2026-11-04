@@ -1,0 +1,282 @@
+:PROPERTIES:
+:ID: 07F92413-794A-4855-B761-73CC3CAF03C6
+:END:
+#+title: Headline Position (EOD)
+#+description: The headline Greeks at the close, priced from the day's authorised end of day cut, so market risk signs off on figures that are authoritative and reproducible.
+#+type: report
+#+level: cross
+#+filetags: :report:market-risk:greeks:eod:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+report_code: headline_position_eod
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Headline Position (EOD). It shows the most important Greeks across a trade set
+at the close, so the market risk function signs off on figures that stay
+authoritative for the day. It runs on the schedule at 18:00 on weekdays and on
+demand, and it selects the end of day cut. It leaves the engine's own output
+archive and records the cut its run selected; the result store that would
+ingest the archive is not built yet.
+
+* Purpose
+
+It answers what a book's or a portfolio's headline Greeks were at the close, on
+the market data that the day is booked against. The decision it feeds is the
+sign-off: the market risk function accepts the day's risk position, or it sends
+the desk back for a correction before the numbers stand.
+
+The report exists beside its [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][intraday sibling]]
+because the two answer different questions. The intraday definition says what
+risk looks like now, on an indicative body, and a later run replaces it. This
+definition says what the risk was at the close, on the authorised body, and no
+later run of the intraday definition replaces it. A reader who wants a figure to
+quote or to hedge against reads the intraday one. A reader who wants the figure
+that stands reads this one.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role         | What it takes from the report                                                  |
+|--------------+--------------------------------------------------------------------------------|
+| market-risk  | The figures the day is signed off on, for the whole book or portfolio.          |
+| trading-desk | The close position and the close P&L, for comparison with the trading book.     |
+
+* Frequency
+
+Cycle =eod=. Frequency =scheduled= and =on-demand=. The definition is seeded with
+the expression =0 18 * * 1-5=, which fires it at 18:00 London time on weekdays,
+and a person may ask for one at any time. It is not a member of the ten-report
+Market Risk EOD set, so nothing orders it after the market data cut.
+
+The concurrency policy is =skip=: a firing that arrives while a run of the same
+definition is in flight is dropped, because a second close report of the same
+day answers nothing the first one did not.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value                                  |
+|-----------+----------------------------------------|
+| Cycle     | eod                                    |
+| Frequency | scheduled, on-demand                   |
+| Cut       | EOD                                    |
+| Batch     | none                                   |
+| Owner     | market-risk                            |
+
+* Inputs
+
+- Trades selected by scope. The scope shape is =book= or =portfolio=, and the
+  seeded definition reads the entity's =Global Portfolio=.
+- Market data for the close. The run selects the end of day cut, and it values
+  the portfolio at the weekday before the run date.
+- The risk report configuration the definition binds, =Valuation and
+  sensitivities (EOD) - Global Portfolio=. It states the market data type =eod=
+  and the base currency of the entity.
+- The pricing engine the definition binds, =EOD Official=, which is the set of
+  engines whose numbers are booked.
+
+* Outputs
+
+The run produces the engine's own output archive, which holds the report's CSV
+artefacts, and it records where that archive landed against the run instance. It
+also records the cut the run selected, with the cut's identity, label, kind and
+instant.
+
+The archive is the only shape the figures take today. The rows a reader would
+query are a later phase, designed on
+[[file:../architecture/report_post_processing.org][Report post-processing]] and
+not built.
+
+* Measures
+
+The set is the configuration's. The measures below are the ones the business
+catalogue states this report carries; their definitions are on
+[[file:../domain/risk_reporting.org][Risk reporting]] and are not repeated here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure    | Meaning                                                        |
+|------------+----------------------------------------------------------------|
+| PV         | Present value of the scope at the close.                       |
+| Daily P&L  | The change in NPV since the previous business day.             |
+| MTD P&L    | NPV minus the previous month-end NPV.                          |
+| YTD P&L    | NPV minus the previous year-end NPV.                           |
+| Delta P&L  | The P&L the report attributes to directional risk.             |
+
+The engine aggregates by book, by portfolio, by currency pair, by Greek and by
+unit hedge. The aggregation is the producing engine's, not the reader's.
+
+* Columns and sections
+
+The run binds two analytics, so the archive carries three files a reader uses.
+
+=nvp.csv=, written by the =npv= analytic:
+
+#+ATTR_HTML: :class hug-leading
+| Column            | What it holds                                                |
+|-------------------+--------------------------------------------------------------|
+| TradeId           | The trade the row belongs to.                                |
+| TradeType         | The ORE product type, such as =Swap= or =FxOption=.           |
+| Maturity          | The trade's final date.                                      |
+| MaturityTime      | That date as a time in years from the valuation date.        |
+| NPV               | The present value, in the row's own currency.                |
+| NpvCurrency       | The currency =NPV= is expressed in.                           |
+| NPV(Base)         | The present value in the run's base currency.                |
+| BaseCurrency      | The run's base currency, from the run settings.               |
+| Notional          | The trade notional, in its own currency.                     |
+| NotionalCurrency  | The currency the notional is expressed in.                   |
+| Notional(Base)    | The notional in the run's base currency.                     |
+| NettingSet        | The netting set the trade belongs to.                        |
+| CounterParty      | The counterparty the trade faces.                            |
+
+=sensitivity.csv=, written by the =sensitivity= analytic, one row for each trade
+and risk factor:
+
+#+ATTR_HTML: :class hug-leading
+| Column          | What it holds                                                    |
+|-----------------+--------------------------------------------------------------------|
+| TradeId         | The trade the row belongs to.                                    |
+| IsPar           | Whether the factor is a par rate rather than a zero rate.        |
+| Factor_1        | The risk factor that was shifted, in ORE's spelling.             |
+| ShiftSize_1     | How far it was shifted, in the factor's own unit.                |
+| Factor_2        | The second factor of a cross-gamma row, empty for a single row.  |
+| ShiftSize_2     | How far the second factor was shifted.                           |
+| Currency        | The currency the figures are in.                                 |
+| Base NPV        | The present value before the shift.                              |
+| Delta           | The value change caused by the shift, in money.                  |
+| Gamma           | The second-order change in the same factor, in money.            |
+| Currency(Trade) | The trade's own currency.                                        |
+| Base NPV(Trade) | The present value before the shift, in the trade's currency.      |
+| Delta(Trade)    | The value change, in the trade's currency.                       |
+| Gamma(Trade)    | The second-order change, in the trade's currency.                |
+| Scenario        | A label for the shifted market the row came from.                |
+
+=scenario.csv=, written by the same analytic, holds the value of each trade in
+each shifted market. Its columns are =TradeId=, =Factor=, =Up/Down=,
+=Base NPV=, =ShiftSize_1=, =ShiftSize_2=, =Scenario NPV=, =Difference= and
+=Base Currency=. A reader uses it to check a =Delta= figure against the two
+values it came from.
+
+* ORE configuration
+
+The =npv= analytic states the base currency and the file it writes. The
+=sensitivity= analytic states the two documents it reads and the three
+thresholds the run uses. The fragment is trimmed from
+=external/ore/examples/MarketRisk/Input/ore_sensi.xml=.
+
+#+begin_src xml
+<Analytic type="npv">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="baseCurrency">GBP</Parameter>
+  <Parameter name="outputFileName">npv.csv</Parameter>
+</Analytic>
+<Analytic type="sensitivity">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="marketConfigFile">simulation.xml</Parameter>
+  <Parameter name="sensitivityConfigFile">sensitivity.xml</Parameter>
+  <Parameter name="scenarioOutputFile">scenario.csv</Parameter>
+  <Parameter name="sensitivityOutputFile">sensitivity.csv</Parameter>
+  <Parameter name="outputSensitivityThreshold">0.000001</Parameter>
+  <Parameter name="recalibrateModels">Y</Parameter>
+  <Parameter name="parSensitivity">Y</Parameter>
+</Analytic>
+#+end_src
+
+The run document that carries this fragment is generated, not stored. The
+service builds it from the risk report configuration, the analytics and the
+engine settings the definition binds. The run settings row states the market
+data type =eod=, so the document's =asofDate= is the weekday before the run
+date.
+
+* Parameters
+
+A definition of this report states the rows below. The values are the seeded
+ones. The mechanism is on
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter                     | Domain                   | Seeded value     | Meaning                                                    |
+|-------------------------------+--------------------------+------------------+------------------------------------------------------------|
+| cut_kind_code                 | a kind of cut            | EOD              | The kind of cut the run selects at the close.               |
+| scope_portfolio               | a portfolio of the party | Global Portfolio | The subtree the run reads.                                  |
+| base_currency                 | ISO 4217 code            | the entity's     | The currency the figures are expressed in.                  |
+| market_data_type              | live, eod or date        | eod              | The market data the run reads, and the date it values at.   |
+| npv.baseCurrency              | ISO 4217 code            | the entity's     | The currency the present values are expressed in.           |
+| sensitivity.recalibrateModels | Y or N                   | Y                | Whether models are recalibrated before bumping.             |
+| sensitivity.parSensitivity    | Y or N                   | Y                | Whether par-rate sensitivities are computed.                |
+| sensitivity.outputSensitivityThreshold | a real          | 0.000001         | The smallest figure the engine writes.                     |
+| sensitivity.sensitivityConfigFile | a file name          | sensitivity.xml  | The sensitivity configuration the analytic shifts from.     |
+| sensitivity.marketConfigFile  | a file name              | simulation.xml   | The risk factor description the analytic shifts.            |
+
+* A worked read
+
+A person reads this report once a day, after the desk has closed.
+
+1. Open the run of =Headline Position (EOD)= for the entity and the day. Read
+   the run instance first. It names the cut it selected, and the cut's label and
+   instant say which body the figures came from.
+2. Take =npv.csv= and select the rows whose =NettingSet= is the book under
+   review. Sum =NPV(Base)= over those rows. That total is the present value of
+   the book at the close, and it is the figure the P&L measures are taken
+   against.
+3. Compare that total with the same total from the previous day's run of the
+   same definition. The difference is the daily P&L. Compare with the month end
+   and the year end totals for the MTD and YTD figures.
+4. Take =sensitivity.csv= and group by =Factor_1=. Sum =Delta= within each
+   factor. Read the result as money per shift of that factor, and note that the
+   shift size is stated in =ShiftSize_1= and is already inside the number.
+5. Sort the factor groups by absolute total. The largest groups are the risks the
+   sign-off is really about, and they say which deeper report a reader opens
+   next: a curve ladder, a vol ladder or a spot ladder.
+6. Where a figure looks wrong, take the matching row from =scenario.csv= and
+   check =Difference= against the =Delta= of the same trade and factor. The two
+   agree to the printed precision when the run is sound.
+7. Sign off, or send the book back. The run instance holds the figures that were
+   signed off, and a later run of the intraday definition never replaces it.
+
+* What is not built
+
+The report states what its definition and its configuration state. Four limits
+follow, and a reader must know them.
+
+- The cut is reproducible and the body behind it is not. The run records the cut
+  and its instant, and the market data body that the cut fixes is not
+  materialised. So a rerun tomorrow selects a different cut and returns
+  different figures. The record says which body was signed off, and it cannot
+  hand the body back.
+- The dataset holds curve quotes only, and no volatility market data. A volatility factor therefore has nothing to
+  shift, and no volatility sensitivity can be computed until the store holds that
+  data. This is a fact
+  about the data and not about the report.
+- The result store is not built, so the figures live in the archive. Nothing
+  queries them, and a reader opens the CSVs by hand.
+- The seeded definition runs on =EOD Official= engines. A bump report on
+  analytic sensitivities ideally binds an engine set whose numbers are built for
+  bumping; the ACME dataset carries such a set for London alone, named =Risk
+  Sensitivities=. This definition does not bind it.
+
+* Test coverage
+
+No substitute is defined for this report, so a test run of it executes every
+phase: it gathers trades and market data and assembles its own bundle. The
+report is exercised by the full-pipeline proof, not by a smoke test. The cut
+resolution it relies on is exercised by
+[[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]],
+which proves the same chain for the live selection.
+
+The machinery that proves a run without gathering anything is the
+[[file:./report_sample_bundle_smoke_test.org][Sample bundle smoke test]].
+
+* Related
+
+- [[file:./reports.org][Reports]], the inventory this page is listed in.
+- [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]], the intraday sibling, on the live cut.
+- [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what a cut holds and what it does not.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]], the structure note for the cut this report reads.
+- [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]], the task that seeded the cut selections.
+
+* See also
+
+
+- [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — the structure note that orders this cluster, and where to read this page in it.
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine whose =sensitivity= analytic produces the figures.

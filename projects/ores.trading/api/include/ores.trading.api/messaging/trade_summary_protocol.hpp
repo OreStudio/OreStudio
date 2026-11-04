@@ -43,11 +43,15 @@ namespace ores::trading::messaging {
 
 struct trade_summary_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const trade_summary_key&, const trade_summary_key&) = default;
 };
 
 struct trade_summary_lookup {
     trade_summary_key key;
     std::optional<ores::trading::domain::trade_summary> trade_summary;
+
+    friend bool operator==(const trade_summary_lookup&, const trade_summary_lookup&) = default;
 };
 
 struct trade_summaries_filter {
@@ -75,6 +79,8 @@ struct trade_summaries_filter {
     std::optional<std::string> trade_date_from;
     std::optional<std::string> trade_date_to;
     std::optional<std::string> search;
+
+    friend bool operator==(const trade_summaries_filter&, const trade_summaries_filter&) = default;
 };
 
 struct trade_summary_event {
@@ -84,6 +90,8 @@ struct trade_summary_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const trade_summary_event&, const trade_summary_event&) = default;
 };
 
 struct list_trade_summaries_request {
@@ -100,12 +108,18 @@ struct list_trade_summaries_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<trade_summaries_filter> filter;
+
+    friend bool operator==(const list_trade_summaries_request&,
+                           const list_trade_summaries_request&) = default;
 };
 
 struct list_trade_summaries_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_summary> trade_summaries;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_summaries_response&,
+                           const list_trade_summaries_response&) = default;
 };
 
 struct get_trade_summary_request {
@@ -119,11 +133,17 @@ struct get_trade_summary_request {
      */
     static constexpr bool requires_session = true;
     trade_summary_key key;
+
+    friend bool operator==(const get_trade_summary_request&,
+                           const get_trade_summary_request&) = default;
 };
 
 struct get_trade_summary_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_summary> trade_summary;
+
+    friend bool operator==(const get_trade_summary_response&,
+                           const get_trade_summary_response&) = default;
 };
 
 struct get_many_trade_summaries_request {
@@ -137,11 +157,17 @@ struct get_many_trade_summaries_request {
      */
     static constexpr bool requires_session = true;
     std::vector<trade_summary_key> keys;
+
+    friend bool operator==(const get_many_trade_summaries_request&,
+                           const get_many_trade_summaries_request&) = default;
 };
 
 struct get_many_trade_summaries_response {
     ores::utility::domain::result result;
     std::vector<trade_summary_lookup> entries;
+
+    friend bool operator==(const get_many_trade_summaries_response&,
+                           const get_many_trade_summaries_response&) = default;
 };
 
 /**
@@ -153,9 +179,9 @@ struct get_many_trade_summaries_response {
  * of them.
  */
 namespace trade_summary_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trade_summaries_events.created";
-inline constexpr std::string_view updated = "trading.v1.trade_summaries_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trade_summaries_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trade_summaries.created";
+inline constexpr std::string_view updated = "trading.v1.events.trade_summaries.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trade_summaries.deleted";
 }
 /**
  * @brief The members of trade_summary_key, named as the wire names them and in the order

@@ -152,6 +152,10 @@ namespace ores::{{component}}::domain {
     utility::codec::field{"change_reason_code", &{{name_singular}}::change_reason_code},
     utility::codec::field{"change_commentary", &{{name_singular}}::change_commentary},
     utility::codec::field{"recorded_at", &{{name_singular}}::recorded_at},
+{{#left.enrich_code}}    utility::codec::field{"{{left.column_short}}_code", &{{name_singular}}::{{left.column_short}}_code},
+{{/left.enrich_code}}
+{{#right.enrich_code}}    utility::codec::field{"{{right.column_short}}_code", &{{name_singular}}::{{right.column_short}}_code},
+{{/right.enrich_code}}
     };
 }
 

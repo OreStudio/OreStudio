@@ -28,11 +28,12 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/timeouts.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <exception>
 #include <memory>
-#include <rfl/json.hpp>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace ores::http::routes::iam {
@@ -44,6 +45,21 @@ using ores::nats::service::nats_client;
 namespace messaging = ores::iam::messaging;
 
 namespace {
+
+/**
+ * @brief The request a body states, or nothing when it states none.
+ *
+ * The request's own codec reads it, so this unit needs no shape of the types the
+ * request holds.
+ */
+template <typename T>
+std::optional<T> authorization_read_body(std::string_view body) {
+    try {
+        return ores::utility::codec::wire_traits<T>::read_json(body);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
+}
 
 /**
  * @brief The HTTP response a service error names.
@@ -90,7 +106,9 @@ authorization_forward(const http_request& req, nats_client& session, const Reque
             co_return http_response::internal_error(std::string("Failed to decode response: ") +
                                                     decoded.error().what());
         }
-        co_return http_response::json(rfl::json::write(*decoded));
+        co_return http_response::json(
+            ores::utility::codec::wire_traits<typename Request::response_type>::write_json(
+                *decoded));
     } catch (const ores::nats::service::session_expired_error& e) {
         co_return http_response::unauthorized(e.what());
     } catch (const std::exception& e) {
@@ -104,7 +122,7 @@ boost::asio::awaitable<http_response>
 authorization_routes::handle_assign_role(const http_request& req, nats_client& session) {
     using request_type = messaging::assign_role_request;
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = authorization_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -118,7 +136,7 @@ boost::asio::awaitable<http_response>
 authorization_routes::handle_revoke_role(const http_request& req, nats_client& session) {
     using request_type = messaging::revoke_role_request;
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = authorization_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -132,7 +150,7 @@ boost::asio::awaitable<http_response>
 authorization_routes::handle_get_account_roles(const http_request& req, nats_client& session) {
     using request_type = messaging::get_account_roles_request;
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = authorization_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -146,7 +164,7 @@ boost::asio::awaitable<http_response>
 authorization_routes::handle_get_role_permissions(const http_request& req, nats_client& session) {
     using request_type = messaging::get_role_permissions_request;
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = authorization_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -160,7 +178,7 @@ boost::asio::awaitable<http_response>
 authorization_routes::handle_put_role_permissions(const http_request& req, nats_client& session) {
     using request_type = messaging::put_role_permissions_request;
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = authorization_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }

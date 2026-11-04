@@ -22,89 +22,34 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { CrossCurrencyFixFloatConvention } from '../domain/cross_currency_fix_float_convention.js';
+import type { Convention } from '../domain/convention.js';
+import type { CrossCurrencyFixFloatFixedLeg } from '../domain/cross_currency_fix_float_fixed_leg.js';
+import type { CrossCurrencyFixFloatFloatLeg } from '../domain/cross_currency_fix_float_float_leg.js';
+import type { CrossCurrencyFixFloatSwapTerms } from '../domain/cross_currency_fix_float_swap_terms.js';
+import type { ConventionChange } from './convention_protocol.js';
+import type { CrossCurrencyFixFloatFixedLegChange } from './cross_currency_fix_float_fixed_leg_protocol.js';
+import type { CrossCurrencyFixFloatFloatLegChange } from './cross_currency_fix_float_float_leg_protocol.js';
+import type { CrossCurrencyFixFloatSwapTermsChange } from './cross_currency_fix_float_swap_terms_protocol.js';
 import type { ChangeIntent } from '../../../utility/protocol.js';
-import type { Order } from '../../../utility/protocol.js';
-import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface CrossCurrencyFixFloatConventionKey {
     id: string;
 }
 
+export interface CrossCurrencyFixFloatConventionItem {
+    key: CrossCurrencyFixFloatConventionKey;
+    convention: Convention | null;
+    fixed_leg: CrossCurrencyFixFloatFixedLeg[];
+    float_leg: CrossCurrencyFixFloatFloatLeg[];
+    swap_terms: CrossCurrencyFixFloatSwapTerms[];
+}
+
 export interface CrossCurrencyFixFloatConventionWrite {
-    id: string;
-    settlement_days: number;
-    settlement_calendar: string;
-    settlement_convention: string;
-    fixed_currency: string;
-    fixed_frequency: string;
-    fixed_convention: string;
-    fixed_day_count_fraction: string;
-    index: string;
-    eom: boolean | null;
-    is_resettable: boolean | null;
-    float_index_is_resettable: boolean | null;
-    include_spread: boolean | null;
-    lookback: string | null;
-    fixing_days: number | null;
-    rate_cutoff: number | null;
-    is_averaged: boolean | null;
-    observation_shift: boolean | null;
-    oresmd_uri: string | null;
-}
-
-export interface CrossCurrencyFixFloatConventionChange {
-    write: CrossCurrencyFixFloatConventionWrite;
-    precondition: Precondition;
-}
-
-export interface CrossCurrencyFixFloatConventionRemoval {
-    key: CrossCurrencyFixFloatConventionKey;
-    precondition: Precondition;
-}
-
-export interface CrossCurrencyFixFloatConventionLookup {
-    key: CrossCurrencyFixFloatConventionKey;
-    cross_currency_fix_float_convention: CrossCurrencyFixFloatConvention | null;
-}
-
-export interface CrossCurrencyFixFloatConventionsFilter {
-    id_one_of: string[] | null;
-}
-
-export interface CrossCurrencyFixFloatConventionEvent {
-    event_id: string;
-    key: CrossCurrencyFixFloatConventionKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
-export interface CrossCurrencyFixFloatConventionVersionKey {
-    cross_currency_fix_float_convention: CrossCurrencyFixFloatConventionKey;
-    version: number;
-}
-
-export interface CrossCurrencyFixFloatConventionVersionsFilter {
-    version: number | null;
-    from_version: number | null;
-    to_version: number | null;
-}
-
-export interface ListCrossCurrencyFixFloatConventionsRequest {
-    offset: number;
-    limit: number;
-    order: Order;
-    filter: CrossCurrencyFixFloatConventionsFilter | null;
-    as_of: string | null;
-}
-
-export interface ListCrossCurrencyFixFloatConventionsResponse {
-    result: Result;
-    cross_currency_fix_float_conventions: CrossCurrencyFixFloatConvention[];
-    total: number;
+    change: ConventionChange;
+    fixed_leg: CrossCurrencyFixFloatFixedLegChange[];
+    float_leg: CrossCurrencyFixFloatFloatLegChange[];
+    swap_terms: CrossCurrencyFixFloatSwapTermsChange[];
 }
 
 export interface GetCrossCurrencyFixFloatConventionRequest {
@@ -113,7 +58,7 @@ export interface GetCrossCurrencyFixFloatConventionRequest {
 
 export interface GetCrossCurrencyFixFloatConventionResponse {
     result: Result;
-    cross_currency_fix_float_convention: CrossCurrencyFixFloatConvention | null;
+    item: CrossCurrencyFixFloatConventionItem | null;
 }
 
 export interface GetManyCrossCurrencyFixFloatConventionsRequest {
@@ -122,73 +67,30 @@ export interface GetManyCrossCurrencyFixFloatConventionsRequest {
 
 export interface GetManyCrossCurrencyFixFloatConventionsResponse {
     result: Result;
-    entries: CrossCurrencyFixFloatConventionLookup[];
+    items: CrossCurrencyFixFloatConventionItem[];
 }
 
 export interface PutCrossCurrencyFixFloatConventionRequest {
-    change: CrossCurrencyFixFloatConventionChange;
+    item: CrossCurrencyFixFloatConventionWrite;
     intent: ChangeIntent;
 }
 
 export interface PutCrossCurrencyFixFloatConventionResponse {
     result: Result;
-    cross_currency_fix_float_convention: CrossCurrencyFixFloatConvention | null;
+    item: CrossCurrencyFixFloatConventionItem | null;
 }
 
 export interface PutManyCrossCurrencyFixFloatConventionsRequest {
-    changes: CrossCurrencyFixFloatConventionChange[];
+    items: CrossCurrencyFixFloatConventionWrite[];
     intent: ChangeIntent;
 }
 
 export interface PutManyCrossCurrencyFixFloatConventionsResponse {
     result: Result;
-    cross_currency_fix_float_conventions: CrossCurrencyFixFloatConvention[];
-}
-
-export interface DeleteCrossCurrencyFixFloatConventionRequest {
-    removal: CrossCurrencyFixFloatConventionRemoval;
-    intent: ChangeIntent;
-}
-
-export interface DeleteCrossCurrencyFixFloatConventionResponse {
-    result: Result;
-}
-
-export interface DeleteManyCrossCurrencyFixFloatConventionsRequest {
-    removals: CrossCurrencyFixFloatConventionRemoval[];
-    intent: ChangeIntent;
-}
-
-export interface DeleteManyCrossCurrencyFixFloatConventionsResponse {
-    result: Result;
-}
-
-export interface ListCrossCurrencyFixFloatConventionVersionsRequest {
-    key: CrossCurrencyFixFloatConventionKey;
-    offset: number;
-    limit: number;
-    order: Order;
-    filter: CrossCurrencyFixFloatConventionVersionsFilter | null;
-}
-
-export interface ListCrossCurrencyFixFloatConventionVersionsResponse {
-    result: Result;
-    versions: CrossCurrencyFixFloatConvention[];
-    total: number;
-}
-
-export interface GetCrossCurrencyFixFloatConventionVersionRequest {
-    key: CrossCurrencyFixFloatConventionVersionKey;
-}
-
-export interface GetCrossCurrencyFixFloatConventionVersionResponse {
-    result: Result;
-    version: CrossCurrencyFixFloatConvention | null;
+    items: CrossCurrencyFixFloatConventionItem[];
 }
 
 export const subjects = {
-    list_cross_currency_fix_float_conventions_request:
-        'refdata.v1.cross_currency_fix_float_conventions.list',
     get_cross_currency_fix_float_convention_request:
         'refdata.v1.cross_currency_fix_float_conventions.get',
     get_many_cross_currency_fix_float_conventions_request:
@@ -197,14 +99,6 @@ export const subjects = {
         'refdata.v1.cross_currency_fix_float_conventions.put',
     put_many_cross_currency_fix_float_conventions_request:
         'refdata.v1.cross_currency_fix_float_conventions.put_many',
-    delete_cross_currency_fix_float_convention_request:
-        'refdata.v1.cross_currency_fix_float_conventions.delete',
-    delete_many_cross_currency_fix_float_conventions_request:
-        'refdata.v1.cross_currency_fix_float_conventions.delete_many',
-    list_cross_currency_fix_float_convention_versions_request:
-        'refdata.v1.cross_currency_fix_float_conventions_versions.list',
-    get_cross_currency_fix_float_convention_version_request:
-        'refdata.v1.cross_currency_fix_float_conventions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -212,24 +106,8 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
-    list_cross_currency_fix_float_conventions_request: true,
     get_cross_currency_fix_float_convention_request: true,
     get_many_cross_currency_fix_float_conventions_request: true,
     put_cross_currency_fix_float_convention_request: true,
     put_many_cross_currency_fix_float_conventions_request: true,
-    delete_cross_currency_fix_float_convention_request: true,
-    delete_many_cross_currency_fix_float_conventions_request: true,
-    list_cross_currency_fix_float_convention_versions_request: true,
-    get_cross_currency_fix_float_convention_version_request: true,
-} as const;
-
-/**
- * The subjects this resource's changes are announced on. One payload is
- * addressed by three subjects, because the last segment is the action the
- * payload reports.
- */
-export const eventSubjects = {
-    created: 'refdata.v1.cross_currency_fix_float_conventions_events.created',
-    updated: 'refdata.v1.cross_currency_fix_float_conventions_events.updated',
-    deleted: 'refdata.v1.cross_currency_fix_float_conventions_events.deleted',
 } as const;

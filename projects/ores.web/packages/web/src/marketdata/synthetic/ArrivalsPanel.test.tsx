@@ -23,7 +23,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { MarketRegime, RecordRow } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
-import { ArrivalsDialog, ArrivalsPanel, saveArrivals } from './ArrivalsPanel.js';
+import { ArrivalsDialog, ArrivalsPanel, saveFeedSettings } from './ArrivalsPanel.js';
 
 const noSave = (): Promise<void> => Promise.resolve();
 
@@ -157,25 +157,27 @@ describe('saving a feed’s arrivals', () => {
 
     it('stores, re-reads, restarts and re-reads again', async () => {
         const run = steps();
-        expect(await saveArrivals(run)).toEqual({ kind: 'saved' });
+        expect(await saveFeedSettings(run)).toEqual({ kind: 'saved' });
         expect(run.calls).toEqual(['save', 'saved', 'restart', 'saved']);
     });
 
     it('tells a failed restart from a failed save, and still re-reads the feed', async () => {
         const run = steps('restart');
-        expect(await saveArrivals(run)).toEqual({ kind: 'restartFailed', message: 'no bus' });
+        expect(await saveFeedSettings(run)).toEqual({ kind: 'restartFailed', message: 'no bus' });
         expect(run.calls).toEqual(['save', 'saved', 'restart', 'saved']);
     });
 
     it('neither re-reads nor restarts when the save is refused', async () => {
         const run = steps('save');
-        expect(await saveArrivals(run)).toEqual({ kind: 'failed', message: 'refused' });
+        expect(await saveFeedSettings(run)).toEqual({ kind: 'failed', message: 'refused' });
         expect(run.calls).toEqual(['save']);
     });
 
     it('skips the restart when it is not asked for', async () => {
         const run = steps();
-        expect(await saveArrivals({ save: run.save, saved: run.saved })).toEqual({ kind: 'saved' });
+        expect(await saveFeedSettings({ save: run.save, saved: run.saved })).toEqual({
+            kind: 'saved',
+        });
         expect(run.calls).toEqual(['save', 'saved']);
     });
 });

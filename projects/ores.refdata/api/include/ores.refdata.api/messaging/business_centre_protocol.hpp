@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct business_centre_key {
     std::string code;
+
+    friend bool operator==(const business_centre_key&, const business_centre_key&) = default;
 };
 
 struct business_centre_write {
@@ -52,25 +54,37 @@ struct business_centre_write {
     std::string city_name;
     std::string country_alpha2_code;
     std::string coding_scheme_code;
+
+    friend bool operator==(const business_centre_write&, const business_centre_write&) = default;
 };
 
 struct business_centre_change {
     business_centre_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const business_centre_change&, const business_centre_change&) = default;
 };
 
 struct business_centre_removal {
     business_centre_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const business_centre_removal&,
+                           const business_centre_removal&) = default;
 };
 
 struct business_centre_lookup {
     business_centre_key key;
     std::optional<ores::refdata::domain::business_centre> business_centre;
+
+    friend bool operator==(const business_centre_lookup&, const business_centre_lookup&) = default;
 };
 
 struct business_centres_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const business_centres_filter&,
+                           const business_centres_filter&) = default;
 };
 
 struct business_centre_event {
@@ -80,17 +94,25 @@ struct business_centre_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const business_centre_event&, const business_centre_event&) = default;
 };
 
 struct business_centre_version_key {
     business_centre_key business_centre;
     std::uint32_t version;
+
+    friend bool operator==(const business_centre_version_key&,
+                           const business_centre_version_key&) = default;
 };
 
 struct business_centre_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const business_centre_versions_filter&,
+                           const business_centre_versions_filter&) = default;
 };
 
 struct list_business_centres_request {
@@ -108,12 +130,18 @@ struct list_business_centres_request {
     ores::utility::domain::order order;
     std::optional<business_centres_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_business_centres_request&,
+                           const list_business_centres_request&) = default;
 };
 
 struct list_business_centres_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_centre> centres;
     std::uint64_t total;
+
+    friend bool operator==(const list_business_centres_response&,
+                           const list_business_centres_response&) = default;
 };
 
 struct get_business_centre_request {
@@ -127,11 +155,17 @@ struct get_business_centre_request {
      */
     static constexpr bool requires_session = true;
     business_centre_key key;
+
+    friend bool operator==(const get_business_centre_request&,
+                           const get_business_centre_request&) = default;
 };
 
 struct get_business_centre_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::business_centre> business_centre;
+
+    friend bool operator==(const get_business_centre_response&,
+                           const get_business_centre_response&) = default;
 };
 
 struct get_many_business_centres_request {
@@ -145,11 +179,17 @@ struct get_many_business_centres_request {
      */
     static constexpr bool requires_session = true;
     std::vector<business_centre_key> keys;
+
+    friend bool operator==(const get_many_business_centres_request&,
+                           const get_many_business_centres_request&) = default;
 };
 
 struct get_many_business_centres_response {
     ores::utility::domain::result result;
     std::vector<business_centre_lookup> entries;
+
+    friend bool operator==(const get_many_business_centres_response&,
+                           const get_many_business_centres_response&) = default;
 };
 
 struct put_business_centre_request {
@@ -164,11 +204,17 @@ struct put_business_centre_request {
     static constexpr bool requires_session = true;
     business_centre_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_business_centre_request&,
+                           const put_business_centre_request&) = default;
 };
 
 struct put_business_centre_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::business_centre> business_centre;
+
+    friend bool operator==(const put_business_centre_response&,
+                           const put_business_centre_response&) = default;
 };
 
 struct put_many_business_centres_request {
@@ -183,11 +229,17 @@ struct put_many_business_centres_request {
     static constexpr bool requires_session = true;
     std::vector<business_centre_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_business_centres_request&,
+                           const put_many_business_centres_request&) = default;
 };
 
 struct put_many_business_centres_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_centre> centres;
+
+    friend bool operator==(const put_many_business_centres_response&,
+                           const put_many_business_centres_response&) = default;
 };
 
 struct delete_business_centre_request {
@@ -202,10 +254,16 @@ struct delete_business_centre_request {
     static constexpr bool requires_session = true;
     business_centre_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_business_centre_request&,
+                           const delete_business_centre_request&) = default;
 };
 
 struct delete_business_centre_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_business_centre_response&,
+                           const delete_business_centre_response&) = default;
 };
 
 struct delete_many_business_centres_request {
@@ -220,10 +278,16 @@ struct delete_many_business_centres_request {
     static constexpr bool requires_session = true;
     std::vector<business_centre_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_business_centres_request&,
+                           const delete_many_business_centres_request&) = default;
 };
 
 struct delete_many_business_centres_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_business_centres_response&,
+                           const delete_many_business_centres_response&) = default;
 };
 
 struct list_business_centre_versions_request {
@@ -241,12 +305,18 @@ struct list_business_centre_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<business_centre_versions_filter> filter;
+
+    friend bool operator==(const list_business_centre_versions_request&,
+                           const list_business_centre_versions_request&) = default;
 };
 
 struct list_business_centre_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_centre> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_business_centre_versions_response&,
+                           const list_business_centre_versions_response&) = default;
 };
 
 struct get_business_centre_version_request {
@@ -260,11 +330,17 @@ struct get_business_centre_version_request {
      */
     static constexpr bool requires_session = true;
     business_centre_version_key key;
+
+    friend bool operator==(const get_business_centre_version_request&,
+                           const get_business_centre_version_request&) = default;
 };
 
 struct get_business_centre_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::business_centre> version;
+
+    friend bool operator==(const get_business_centre_version_response&,
+                           const get_business_centre_version_response&) = default;
 };
 
 /**
@@ -276,9 +352,9 @@ struct get_business_centre_version_response {
  * of them.
  */
 namespace business_centre_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.business_centres_events.created";
-inline constexpr std::string_view updated = "refdata.v1.business_centres_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.business_centres_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.business_centres.created";
+inline constexpr std::string_view updated = "refdata.v1.events.business_centres.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.deleted";
 }
 /**
  * @brief The members of business_centre_key, named as the wire names them and in the order

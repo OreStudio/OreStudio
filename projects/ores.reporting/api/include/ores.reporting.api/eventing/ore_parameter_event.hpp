@@ -28,12 +28,11 @@
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.reporting.api/messaging/ore_parameter_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace ores::eventing::domain {
@@ -48,14 +47,16 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::reporting::messaging::ore_parameter_event> {
-    static constexpr std::string_view subject_prefix = "reporting.v1.ore_parameters_events";
+    static constexpr std::string_view subject_prefix = "reporting.v1.events.ore_parameters";
 
     static ores::reporting::messaging::ore_parameter_event
     from_notification(const entity_event_notification& notification) {
         ores::reporting::messaging::ore_parameter_event event;
         event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
+        // A key this build cannot read leaves the event's own key default.
         if (const auto key =
-                rfl::json::read<ores::reporting::messaging::ore_parameter_key>(notification.key))
+                ores::utility::codec::json::try_read<ores::reporting::messaging::ore_parameter_key>(
+                    notification.key))
             event.key = *key;
         event.action = notification.action;
         event.version = notification.version;

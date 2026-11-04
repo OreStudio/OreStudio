@@ -28,12 +28,11 @@
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace ores::eventing::domain {
@@ -48,13 +47,16 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::compute::messaging::batch_event> {
-    static constexpr std::string_view subject_prefix = "compute.v1.batches_events";
+    static constexpr std::string_view subject_prefix = "compute.v1.events.batches";
 
     static ores::compute::messaging::batch_event
     from_notification(const entity_event_notification& notification) {
         ores::compute::messaging::batch_event event;
         event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
-        if (const auto key = rfl::json::read<ores::compute::messaging::batch_key>(notification.key))
+        // A key this build cannot read leaves the event's own key default.
+        if (const auto key =
+                ores::utility::codec::json::try_read<ores::compute::messaging::batch_key>(
+                    notification.key))
             event.key = *key;
         event.action = notification.action;
         event.version = notification.version;

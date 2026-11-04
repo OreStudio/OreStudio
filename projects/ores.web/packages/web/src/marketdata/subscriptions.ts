@@ -144,10 +144,15 @@ export function useCatalogue() {
     return useQuery({ queryKey: CATALOGUE_KEY, queryFn: api.marketDataCatalogue });
 }
 
-/** The names of the session's tenant parties, by the id a subscription states. */
-export function usePartyNames() {
+/**
+ * The names of the session's tenant parties, by the id a subscription states. A system
+ * session reads no tenant's parties, since the server refuses that read outside the
+ * tenant, so its rows show without the names.
+ */
+export function usePartyNames(system: boolean) {
     return useQuery({
         queryKey: ['marketdata-party-names'],
+        enabled: !system,
         queryFn: async () => {
             const page = await api.parties({ offset: 0, limit: 1000 });
             return new Map(page.parties.map((party) => [party.id, party.name]));

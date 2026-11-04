@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: C255FA1E-15E8-5945-9CA0-8702B775BDB1
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the variance_calibration_input_points commands from the shell?
+#+description: Every command the variance_calibration_input_points submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:variance_calibration_input_points:
+
+This file documents the variance_calibration_input_points resource at the shell, one section per command. Every command is a subcommand of =variance_calibration_input_points=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 98D8F10E-E4FB-519C-ADFF-D680BDD38D88
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points.list=.
+
+#+name: variance_calibration_input_points-list
+#+begin_src ores-shell :tangle variance_calibration_input_points-list.ores :exports none
+variance_calibration_input_points list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 50C95336-3CE4-58A6-8484-DC47B0EF8FD3
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points.get=.
+
+#+name: variance_calibration_input_points-get
+#+begin_src ores-shell :tangle variance_calibration_input_points-get.ores :exports none
+variance_calibration_input_points get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: DA944626-2EE7-5907-A49D-A3CA8778C275
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points.get_many=.
+
+#+name: variance_calibration_input_points-get-many
+#+begin_src ores-shell :tangle variance_calibration_input_points-get-many.ores :exports none
+variance_calibration_input_points get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 307E29F8-B295-5D8B-B28A-3C69890BB62C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points add <input_id> <fixing_date> <fixing_text> <fixing_value> <log_return> <used> <exclusion_reason> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points.put=.
+
+#+name: variance_calibration_input_points-add
+#+begin_src ores-shell :tangle variance_calibration_input_points-add.ores :exports none
+variance_calibration_input_points add 00000000-0000-0000-0000-000000000000 1970-01-01 __none__ - - false __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2A4A1776-EDA1-5993-9174-61A6CF325583
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points set <id> <input_id> <fixing_date> <fixing_text> <fixing_value> <log_return> <used> <exclusion_reason> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points.put=.
+
+#+name: variance_calibration_input_points-set
+#+begin_src ores-shell :tangle variance_calibration_input_points-set.ores :exports none
+variance_calibration_input_points set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01 __none__ - - false __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 3871C9F8-B060-5F99-9CCF-A764F9491F92
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points put-many --count <n> <id> <input_id> <fixing_date> <fixing_text> <fixing_value> <log_return> <used> <exclusion_reason> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points.put_many=.
+
+#+name: variance_calibration_input_points-put-many
+#+begin_src ores-shell :tangle variance_calibration_input_points-put-many.ores :exports none
+variance_calibration_input_points put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01 __none__ - - false __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 32D669C2-24D5-594E-B0E1-DA7E284C0C17
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points.delete=.
+
+#+name: variance_calibration_input_points-delete
+#+begin_src ores-shell :tangle variance_calibration_input_points-delete.ores :exports none
+variance_calibration_input_points delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A6CF9D3A-8E9F-5738-8972-FA3E6BD3196F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points.delete_many=.
+
+#+name: variance_calibration_input_points-delete-many
+#+begin_src ores-shell :tangle variance_calibration_input_points-delete-many.ores :exports none
+variance_calibration_input_points delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 1F27D8F0-A0A5-5947-B21A-3D5E473172E1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points_versions.list=.
+
+#+name: variance_calibration_input_points-versions
+#+begin_src ores-shell :tangle variance_calibration_input_points-versions.ores :exports none
+variance_calibration_input_points versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E9DA07C8-B410-574A-8499-CECB36D45C8B
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+variance_calibration_input_points version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.variance_calibration_input_points_versions.get=.
+
+#+name: variance_calibration_input_points-version
+#+begin_src ores-shell :tangle variance_calibration_input_points-version.ores :exports none
+variance_calibration_input_points version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

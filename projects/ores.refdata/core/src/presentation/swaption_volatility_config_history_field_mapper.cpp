@@ -61,11 +61,6 @@ render_swaption_volatility_config_fields(const domain::swaption_volatility_confi
                       .value = v.short_swap_index_base.value_or(std::string{})});
     fields.push_back(
         {.name = "Swap Index Base", .value = v.swap_index_base.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Smile Option Tenors", .value = v.smile_option_tenors.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Smile Swap Tenors", .value = v.smile_swap_tenors.value_or(std::string{})});
-    fields.push_back({.name = "Smile Spreads", .value = v.smile_spreads.value_or(std::string{})});
     fields.push_back({.name = "Quote Tag", .value = v.quote_tag.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

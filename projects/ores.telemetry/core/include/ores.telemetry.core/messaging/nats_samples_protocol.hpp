@@ -25,10 +25,16 @@
 #ifndef ORES_TELEMETRY_CORE_MESSAGING_NATS_SAMPLES_PROTOCOL_HPP
 #define ORES_TELEMETRY_CORE_MESSAGING_NATS_SAMPLES_PROTOCOL_HPP
 
+#include "ores.telemetry.core/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::telemetry::messaging {
@@ -69,6 +75,8 @@ struct nats_server_sample {
      * @brief Number of slow consumers detected since server start.
      */
     int slow_consumers = 0;
+
+    friend bool operator==(const nats_server_sample&, const nats_server_sample&) = default;
 };
 
 /**
@@ -95,6 +103,8 @@ struct nats_stream_sample {
      * @brief Number of active consumers on this stream.
      */
     int consumer_count = 0;
+
+    friend bool operator==(const nats_stream_sample&, const nats_stream_sample&) = default;
 };
 
 /**
@@ -113,6 +123,9 @@ struct nats_server_samples_query {
      * @brief Maximum number of results to return.
      */
     std::uint32_t limit = 1000;
+
+    friend bool operator==(const nats_server_samples_query&,
+                           const nats_server_samples_query&) = default;
 };
 
 /**
@@ -135,6 +148,9 @@ struct nats_stream_samples_query {
      * @brief Maximum number of results to return.
      */
     std::uint32_t limit = 1000;
+
+    friend bool operator==(const nats_stream_samples_query&,
+                           const nats_stream_samples_query&) = default;
 };
 
 /**
@@ -154,6 +170,9 @@ struct get_nats_server_samples_request {
      * @brief The time range and limit the read applies.
      */
     nats_server_samples_query query;
+
+    friend bool operator==(const get_nats_server_samples_request&,
+                           const get_nats_server_samples_request&) = default;
 };
 
 /**
@@ -172,6 +191,9 @@ struct get_nats_server_samples_response {
      * @brief The server samples the read returned.
      */
     std::vector<nats_server_sample> samples;
+
+    friend bool operator==(const get_nats_server_samples_response&,
+                           const get_nats_server_samples_response&) = default;
 };
 
 /**
@@ -191,6 +213,9 @@ struct get_nats_stream_samples_request {
      * @brief The stream, time range and limit the read applies.
      */
     nats_stream_samples_query query;
+
+    friend bool operator==(const get_nats_stream_samples_request&,
+                           const get_nats_stream_samples_request&) = default;
 };
 
 /**
@@ -209,8 +234,247 @@ struct get_nats_stream_samples_response {
      * @brief The stream samples the read returned.
      */
     std::vector<nats_stream_sample> samples;
+
+    friend bool operator==(const get_nats_stream_samples_response&,
+                           const get_nats_stream_samples_response&) = default;
 };
 
+/**
+ * @brief The members of nats_server_sample, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const nats_server_sample&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"sampled_at", &nats_server_sample::sampled_at},
+        ::ores::utility::codec::field{"in_msgs", &nats_server_sample::in_msgs},
+        ::ores::utility::codec::field{"out_msgs", &nats_server_sample::out_msgs},
+        ::ores::utility::codec::field{"in_bytes", &nats_server_sample::in_bytes},
+        ::ores::utility::codec::field{"out_bytes", &nats_server_sample::out_bytes},
+        ::ores::utility::codec::field{"connections", &nats_server_sample::connections},
+        ::ores::utility::codec::field{"mem_bytes", &nats_server_sample::mem_bytes},
+        ::ores::utility::codec::field{"slow_consumers", &nats_server_sample::slow_consumers},
+    };
 }
+
+/**
+ * @brief The members of nats_stream_sample, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const nats_stream_sample&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"sampled_at", &nats_stream_sample::sampled_at},
+        ::ores::utility::codec::field{"stream_name", &nats_stream_sample::stream_name},
+        ::ores::utility::codec::field{"messages", &nats_stream_sample::messages},
+        ::ores::utility::codec::field{"bytes", &nats_stream_sample::bytes},
+        ::ores::utility::codec::field{"consumer_count", &nats_stream_sample::consumer_count},
+    };
+}
+
+/**
+ * @brief The members of nats_server_samples_query, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const nats_server_samples_query&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"start_time", &nats_server_samples_query::start_time},
+        ::ores::utility::codec::field{"end_time", &nats_server_samples_query::end_time},
+        ::ores::utility::codec::field{"limit", &nats_server_samples_query::limit},
+    };
+}
+
+/**
+ * @brief The members of nats_stream_samples_query, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const nats_stream_samples_query&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"stream_name", &nats_stream_samples_query::stream_name},
+        ::ores::utility::codec::field{"start_time", &nats_stream_samples_query::start_time},
+        ::ores::utility::codec::field{"end_time", &nats_stream_samples_query::end_time},
+        ::ores::utility::codec::field{"limit", &nats_stream_samples_query::limit},
+    };
+}
+
+/**
+ * @brief The members of get_nats_server_samples_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_nats_server_samples_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"query", &get_nats_server_samples_request::query},
+    };
+}
+
+/**
+ * @brief The members of get_nats_server_samples_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_nats_server_samples_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_nats_server_samples_response::success},
+        ::ores::utility::codec::field{"message", &get_nats_server_samples_response::message},
+        ::ores::utility::codec::field{"samples", &get_nats_server_samples_response::samples},
+    };
+}
+
+/**
+ * @brief The members of get_nats_stream_samples_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_nats_stream_samples_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"query", &get_nats_stream_samples_request::query},
+    };
+}
+
+/**
+ * @brief The members of get_nats_stream_samples_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_nats_stream_samples_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_nats_stream_samples_response::success},
+        ::ores::utility::codec::field{"message", &get_nats_stream_samples_response::message},
+        ::ores::utility::codec::field{"samples", &get_nats_stream_samples_response::samples},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT wire_traits<ores::telemetry::messaging::nats_server_sample> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::nats_server_sample& v);
+    static ores::telemetry::messaging::nats_server_sample read_json(std::string_view text);
+    static std::string write_msgpack(const ores::telemetry::messaging::nats_server_sample& v);
+    static ores::telemetry::messaging::nats_server_sample
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT wire_traits<ores::telemetry::messaging::nats_stream_sample> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::nats_stream_sample& v);
+    static ores::telemetry::messaging::nats_stream_sample read_json(std::string_view text);
+    static std::string write_msgpack(const ores::telemetry::messaging::nats_stream_sample& v);
+    static ores::telemetry::messaging::nats_stream_sample
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::nats_server_samples_query> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::nats_server_samples_query& v);
+    static ores::telemetry::messaging::nats_server_samples_query read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::nats_server_samples_query& v);
+    static ores::telemetry::messaging::nats_server_samples_query
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::nats_stream_samples_query> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::nats_stream_samples_query& v);
+    static ores::telemetry::messaging::nats_stream_samples_query read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::nats_stream_samples_query& v);
+    static ores::telemetry::messaging::nats_stream_samples_query
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_nats_server_samples_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::telemetry::messaging::get_nats_server_samples_request& v);
+    static ores::telemetry::messaging::get_nats_server_samples_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_nats_server_samples_request& v);
+    static ores::telemetry::messaging::get_nats_server_samples_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_nats_server_samples_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::telemetry::messaging::get_nats_server_samples_response& v);
+    static ores::telemetry::messaging::get_nats_server_samples_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_nats_server_samples_response& v);
+    static ores::telemetry::messaging::get_nats_server_samples_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_nats_stream_samples_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::telemetry::messaging::get_nats_stream_samples_request& v);
+    static ores::telemetry::messaging::get_nats_stream_samples_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_nats_stream_samples_request& v);
+    static ores::telemetry::messaging::get_nats_stream_samples_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_nats_stream_samples_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::telemetry::messaging::get_nats_stream_samples_response& v);
+    static ores::telemetry::messaging::get_nats_stream_samples_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_nats_stream_samples_response& v);
+    static ores::telemetry::messaging::get_nats_stream_samples_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

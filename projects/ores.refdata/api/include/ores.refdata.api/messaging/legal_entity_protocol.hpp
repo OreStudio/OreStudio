@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct legal_entity_key {
     std::string lei;
+
+    friend bool operator==(const legal_entity_key&, const legal_entity_key&) = default;
 };
 
 struct legal_entity_write {
@@ -52,25 +54,35 @@ struct legal_entity_write {
     std::string entity_status;
     std::string entity_category;
     int display_order;
+
+    friend bool operator==(const legal_entity_write&, const legal_entity_write&) = default;
 };
 
 struct legal_entity_change {
     legal_entity_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const legal_entity_change&, const legal_entity_change&) = default;
 };
 
 struct legal_entity_removal {
     legal_entity_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const legal_entity_removal&, const legal_entity_removal&) = default;
 };
 
 struct legal_entity_lookup {
     legal_entity_key key;
     std::optional<ores::refdata::domain::legal_entity> legal_entity;
+
+    friend bool operator==(const legal_entity_lookup&, const legal_entity_lookup&) = default;
 };
 
 struct legal_entities_filter {
     std::optional<std::vector<std::string>> lei_one_of;
+
+    friend bool operator==(const legal_entities_filter&, const legal_entities_filter&) = default;
 };
 
 struct legal_entity_event {
@@ -80,17 +92,25 @@ struct legal_entity_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const legal_entity_event&, const legal_entity_event&) = default;
 };
 
 struct legal_entity_version_key {
     legal_entity_key legal_entity;
     std::uint32_t version;
+
+    friend bool operator==(const legal_entity_version_key&,
+                           const legal_entity_version_key&) = default;
 };
 
 struct legal_entity_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const legal_entity_versions_filter&,
+                           const legal_entity_versions_filter&) = default;
 };
 
 struct list_legal_entities_request {
@@ -108,12 +128,18 @@ struct list_legal_entities_request {
     ores::utility::domain::order order;
     std::optional<legal_entities_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_legal_entities_request&,
+                           const list_legal_entities_request&) = default;
 };
 
 struct list_legal_entities_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::legal_entity> legal_entities;
     std::uint64_t total;
+
+    friend bool operator==(const list_legal_entities_response&,
+                           const list_legal_entities_response&) = default;
 };
 
 struct get_legal_entity_request {
@@ -127,11 +153,17 @@ struct get_legal_entity_request {
      */
     static constexpr bool requires_session = true;
     legal_entity_key key;
+
+    friend bool operator==(const get_legal_entity_request&,
+                           const get_legal_entity_request&) = default;
 };
 
 struct get_legal_entity_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::legal_entity> legal_entity;
+
+    friend bool operator==(const get_legal_entity_response&,
+                           const get_legal_entity_response&) = default;
 };
 
 struct get_many_legal_entities_request {
@@ -145,11 +177,17 @@ struct get_many_legal_entities_request {
      */
     static constexpr bool requires_session = true;
     std::vector<legal_entity_key> keys;
+
+    friend bool operator==(const get_many_legal_entities_request&,
+                           const get_many_legal_entities_request&) = default;
 };
 
 struct get_many_legal_entities_response {
     ores::utility::domain::result result;
     std::vector<legal_entity_lookup> entries;
+
+    friend bool operator==(const get_many_legal_entities_response&,
+                           const get_many_legal_entities_response&) = default;
 };
 
 struct put_legal_entity_request {
@@ -164,11 +202,17 @@ struct put_legal_entity_request {
     static constexpr bool requires_session = true;
     legal_entity_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_legal_entity_request&,
+                           const put_legal_entity_request&) = default;
 };
 
 struct put_legal_entity_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::legal_entity> legal_entity;
+
+    friend bool operator==(const put_legal_entity_response&,
+                           const put_legal_entity_response&) = default;
 };
 
 struct put_many_legal_entities_request {
@@ -183,11 +227,17 @@ struct put_many_legal_entities_request {
     static constexpr bool requires_session = true;
     std::vector<legal_entity_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_legal_entities_request&,
+                           const put_many_legal_entities_request&) = default;
 };
 
 struct put_many_legal_entities_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::legal_entity> legal_entities;
+
+    friend bool operator==(const put_many_legal_entities_response&,
+                           const put_many_legal_entities_response&) = default;
 };
 
 struct delete_legal_entity_request {
@@ -202,10 +252,16 @@ struct delete_legal_entity_request {
     static constexpr bool requires_session = true;
     legal_entity_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_legal_entity_request&,
+                           const delete_legal_entity_request&) = default;
 };
 
 struct delete_legal_entity_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_legal_entity_response&,
+                           const delete_legal_entity_response&) = default;
 };
 
 struct delete_many_legal_entities_request {
@@ -220,10 +276,16 @@ struct delete_many_legal_entities_request {
     static constexpr bool requires_session = true;
     std::vector<legal_entity_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_legal_entities_request&,
+                           const delete_many_legal_entities_request&) = default;
 };
 
 struct delete_many_legal_entities_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_legal_entities_response&,
+                           const delete_many_legal_entities_response&) = default;
 };
 
 struct list_legal_entity_versions_request {
@@ -241,12 +303,18 @@ struct list_legal_entity_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<legal_entity_versions_filter> filter;
+
+    friend bool operator==(const list_legal_entity_versions_request&,
+                           const list_legal_entity_versions_request&) = default;
 };
 
 struct list_legal_entity_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::legal_entity> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_legal_entity_versions_response&,
+                           const list_legal_entity_versions_response&) = default;
 };
 
 struct get_legal_entity_version_request {
@@ -260,11 +328,17 @@ struct get_legal_entity_version_request {
      */
     static constexpr bool requires_session = true;
     legal_entity_version_key key;
+
+    friend bool operator==(const get_legal_entity_version_request&,
+                           const get_legal_entity_version_request&) = default;
 };
 
 struct get_legal_entity_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::legal_entity> version;
+
+    friend bool operator==(const get_legal_entity_version_response&,
+                           const get_legal_entity_version_response&) = default;
 };
 
 /**
@@ -276,9 +350,9 @@ struct get_legal_entity_version_response {
  * of them.
  */
 namespace legal_entity_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.legal_entities_events.created";
-inline constexpr std::string_view updated = "refdata.v1.legal_entities_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.legal_entities_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.legal_entities.created";
+inline constexpr std::string_view updated = "refdata.v1.events.legal_entities.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.legal_entities.deleted";
 }
 /**
  * @brief The members of legal_entity_key, named as the wire names them and in the order

@@ -15,6 +15,8 @@ import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/tr
 import { subjects as draftReasonSubjects } from '@ores/wire-protocol/generated/trading/protocol/draft_reason_protocol';
 import { subjects as instrumentSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as operationsSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_operations_protocol';
+import type { BookTradeRequest } from '@ores/wire-protocol/generated/trading/protocol/trade_operations_protocol';
+import type { InstrumentBatch } from '@ores/wire-protocol/generated/trading/instrument_batch';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as idTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_id_type_protocol';
 import { subjects as linkSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_protocol';
@@ -68,14 +70,11 @@ const bookingBodySchema = z.object({
  * here is a booking the server answers with "bad_request" and no reason. The
  * list is the one in `ores.trading.api/domain/instrument_batch.hpp`.
  */
-function emptyBatch(): Record<string, readonly unknown[]> {
+function emptyBatch(): InstrumentBatch {
     return {
         balance_guaranteed_swap_instruments: [],
         balance_guaranteed_swap_tranche_notionals: [],
         balance_guaranteed_swap_tranches: [],
-        // Every array the batch declares must be named, even empty: the service
-        // refuses a request that omits one, and a family added to the batch
-        // without a line here breaks every booking with a decode error.
         equity_basket_constituents: [],
         equity_swap_periods: [],
         bond_instruments: [],
@@ -132,6 +131,21 @@ function emptyBatch(): Record<string, readonly unknown[]> {
         swaption_instruments: [],
         synthetic_cdo_instruments: [],
         vanilla_swap_instruments: [],
+        bond_issues: [],
+        bond_issue_call_dates: [],
+        bond_issue_conversion_targets: [],
+        bond_issue_legs: [],
+        bond_issue_leg_amortizations: [],
+        bond_issue_leg_amounts: [],
+        bond_issue_leg_rates: [],
+        bond_issue_leg_schedules: [],
+        bond_issue_leg_schedule_dates: [],
+        ascots: [],
+        bond_forwards: [],
+        bond_futures: [],
+        bond_options: [],
+        bond_repos: [],
+        bond_trs: [],
     };
 } /** The intent every write of a booking carries. */
 function intent(): { readonly reason_code: string; readonly commentary: string } {
@@ -414,9 +428,10 @@ export function registerBookingRoutes(
                     recorded_at: now,
                 },
                 activity_type_code: asDraft ? draftCapture : newBooking,
+                draft_reason_code: body.draftReasonCode ?? '',
                 identifiers: [],
                 instruments: emptyBatch(),
-            },
+            } satisfies BookTradeRequest,
             z.looseObject({
                 result: resultSchema,
                 activity_id: z.uuid().nullable().default(null),

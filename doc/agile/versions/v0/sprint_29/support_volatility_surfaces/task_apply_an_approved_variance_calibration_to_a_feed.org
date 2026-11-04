@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 748305F3-48FD-4551-BD68-D269AF56292D
+:END:
+#+title: Task: Apply an approved variance calibration to a feed
+#+description: An FX spot feed names the approved calibration it runs; the feed no longer fits at start, and its start record names the calibration it used.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The feed's configuration names one approved calibration in place of its own alpha, gamma, beta and window. Choosing a calibration is a new config version, so the feed's history shows when each came into use. At start the feed reads the calibration it names and fits nothing; a feed whose calibration is no longer approved does not start and says why. The run's start record names the calibration and its version.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- fx_spot_generation_config replaces garch_alpha, garch_gamma, garch_beta and garch_window_days with variance_calibration_id; the DQ artefact, publish and seeds follow, the seeds naming authored calibrations.
+- choose_feed_variance and the fit at start are removed; the start record carries the calibration id and version.
+- Tests cover a feed on an approved calibration, a feed whose calibration was superseded, and a feed whose calibration was rejected.
+
+* Plan
+
+Replace the feed's GARCH columns with the calibration it names, install an
+authored approved calibration per pair in the publish, make the feed read its
+calibration at start and refuse one that is not approved, and delete the fit at
+start. Delivered with the review task in one PR.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The FX spot config names =variance_calibration_id= in place of its four GARCH
+columns, which the DQ artefact keeps as the authored shape; a check requires a
+GJR-GARCH feed to name one. The feeds publish installs one approved, authored
+calibration per pair and names it on the pair's feeds. At start the feed reads the
+calibration it names and fits nothing; a missing, unapproved or shapeless
+calibration refuses the start with its reason, and the start record names the
+calibration and its version. =choose_daily_variance= and the fit at start are
+deleted. =apply_calibration= now writes the whole config, so a level change keeps
+the variance model and the calibration. The Variance tab reads the model and the
+calibration and edits nothing.
+
+Measured live: the publish installed 40 authored calibrations named by all 51
+feeds; after the EUR/USD approval, the restarted Bloomberg feed's start record
+named calibration b608b4be version 2, fitted from 279 returns, persistence 0.955;
+a feed pointed at a rejected calibration refused to start with "its variance
+calibration ... is rejected (...), not approved". The audit
+=projects/ores.sql/utility/audit_variance_calibrations.py= checks every input,
+point, calibration and feed and passes; it flagged the two deliberate faults
+before they were undone. The synthetic suites, the seven synthetic pgTAP files and
+the web and BFF suites pass.

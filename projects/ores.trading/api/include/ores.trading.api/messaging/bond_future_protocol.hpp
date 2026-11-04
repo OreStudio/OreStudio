@@ -43,6 +43,8 @@ namespace ores::trading::messaging {
 
 struct bond_future_key {
     boost::uuids::uuid trade_id;
+
+    friend bool operator==(const bond_future_key&, const bond_future_key&) = default;
 };
 
 struct bond_future_write {
@@ -53,25 +55,35 @@ struct bond_future_write {
     std::string long_short;
     std::optional<bool> apply_conversion_factor;
     std::optional<bool> use_future_price;
+
+    friend bool operator==(const bond_future_write&, const bond_future_write&) = default;
 };
 
 struct bond_future_change {
     bond_future_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const bond_future_change&, const bond_future_change&) = default;
 };
 
 struct bond_future_removal {
     bond_future_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const bond_future_removal&, const bond_future_removal&) = default;
 };
 
 struct bond_future_lookup {
     bond_future_key key;
     std::optional<ores::trading::domain::bond_future> bond_future;
+
+    friend bool operator==(const bond_future_lookup&, const bond_future_lookup&) = default;
 };
 
 struct bond_futures_filter {
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const bond_futures_filter&, const bond_futures_filter&) = default;
 };
 
 struct bond_future_event {
@@ -81,17 +93,25 @@ struct bond_future_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const bond_future_event&, const bond_future_event&) = default;
 };
 
 struct bond_future_version_key {
     bond_future_key bond_future;
     std::uint32_t version;
+
+    friend bool operator==(const bond_future_version_key&,
+                           const bond_future_version_key&) = default;
 };
 
 struct bond_future_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const bond_future_versions_filter&,
+                           const bond_future_versions_filter&) = default;
 };
 
 struct list_bond_futures_request {
@@ -109,12 +129,18 @@ struct list_bond_futures_request {
     ores::utility::domain::order order;
     std::optional<bond_futures_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_bond_futures_request&,
+                           const list_bond_futures_request&) = default;
 };
 
 struct list_bond_futures_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_future> futures;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_futures_response&,
+                           const list_bond_futures_response&) = default;
 };
 
 struct get_bond_future_request {
@@ -128,11 +154,17 @@ struct get_bond_future_request {
      */
     static constexpr bool requires_session = true;
     bond_future_key key;
+
+    friend bool operator==(const get_bond_future_request&,
+                           const get_bond_future_request&) = default;
 };
 
 struct get_bond_future_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_future> bond_future;
+
+    friend bool operator==(const get_bond_future_response&,
+                           const get_bond_future_response&) = default;
 };
 
 struct get_many_bond_futures_request {
@@ -146,11 +178,17 @@ struct get_many_bond_futures_request {
      */
     static constexpr bool requires_session = true;
     std::vector<bond_future_key> keys;
+
+    friend bool operator==(const get_many_bond_futures_request&,
+                           const get_many_bond_futures_request&) = default;
 };
 
 struct get_many_bond_futures_response {
     ores::utility::domain::result result;
     std::vector<bond_future_lookup> entries;
+
+    friend bool operator==(const get_many_bond_futures_response&,
+                           const get_many_bond_futures_response&) = default;
 };
 
 struct put_bond_future_request {
@@ -165,11 +203,17 @@ struct put_bond_future_request {
     static constexpr bool requires_session = true;
     bond_future_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_bond_future_request&,
+                           const put_bond_future_request&) = default;
 };
 
 struct put_bond_future_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_future> bond_future;
+
+    friend bool operator==(const put_bond_future_response&,
+                           const put_bond_future_response&) = default;
 };
 
 struct put_many_bond_futures_request {
@@ -184,11 +228,17 @@ struct put_many_bond_futures_request {
     static constexpr bool requires_session = true;
     std::vector<bond_future_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_bond_futures_request&,
+                           const put_many_bond_futures_request&) = default;
 };
 
 struct put_many_bond_futures_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_future> futures;
+
+    friend bool operator==(const put_many_bond_futures_response&,
+                           const put_many_bond_futures_response&) = default;
 };
 
 struct delete_bond_future_request {
@@ -203,10 +253,16 @@ struct delete_bond_future_request {
     static constexpr bool requires_session = true;
     bond_future_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_bond_future_request&,
+                           const delete_bond_future_request&) = default;
 };
 
 struct delete_bond_future_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_bond_future_response&,
+                           const delete_bond_future_response&) = default;
 };
 
 struct delete_many_bond_futures_request {
@@ -221,10 +277,16 @@ struct delete_many_bond_futures_request {
     static constexpr bool requires_session = true;
     std::vector<bond_future_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_bond_futures_request&,
+                           const delete_many_bond_futures_request&) = default;
 };
 
 struct delete_many_bond_futures_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_bond_futures_response&,
+                           const delete_many_bond_futures_response&) = default;
 };
 
 struct list_bond_future_versions_request {
@@ -242,12 +304,18 @@ struct list_bond_future_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<bond_future_versions_filter> filter;
+
+    friend bool operator==(const list_bond_future_versions_request&,
+                           const list_bond_future_versions_request&) = default;
 };
 
 struct list_bond_future_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_future> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_future_versions_response&,
+                           const list_bond_future_versions_response&) = default;
 };
 
 struct get_bond_future_version_request {
@@ -261,11 +329,17 @@ struct get_bond_future_version_request {
      */
     static constexpr bool requires_session = true;
     bond_future_version_key key;
+
+    friend bool operator==(const get_bond_future_version_request&,
+                           const get_bond_future_version_request&) = default;
 };
 
 struct get_bond_future_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_future> version;
+
+    friend bool operator==(const get_bond_future_version_response&,
+                           const get_bond_future_version_response&) = default;
 };
 
 /**
@@ -277,9 +351,9 @@ struct get_bond_future_version_response {
  * of them.
  */
 namespace bond_future_event_subjects {
-inline constexpr std::string_view created = "trading.v1.bond_futures_events.created";
-inline constexpr std::string_view updated = "trading.v1.bond_futures_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.bond_futures_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.bond_futures.created";
+inline constexpr std::string_view updated = "trading.v1.events.bond_futures.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.bond_futures.deleted";
 }
 /**
  * @brief The members of bond_future_key, named as the wire names them and in the order

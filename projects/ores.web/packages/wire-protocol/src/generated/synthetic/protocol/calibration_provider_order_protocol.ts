@@ -214,7 +214,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.calibration_provider_orders_events.created',
-    updated: 'synthetic.v1.calibration_provider_orders_events.updated',
-    deleted: 'synthetic.v1.calibration_provider_orders_events.deleted',
+    created: 'synthetic.v1.events.calibration_provider_orders.created',
+    updated: 'synthetic.v1.events.calibration_provider_orders.updated',
+    deleted: 'synthetic.v1.events.calibration_provider_orders.deleted',
 } as const;

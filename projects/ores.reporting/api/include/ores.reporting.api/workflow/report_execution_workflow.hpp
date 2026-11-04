@@ -21,10 +21,9 @@
 #define ORES_REPORTING_API_WORKFLOW_REPORT_EXECUTION_WORKFLOW_HPP
 
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -118,7 +117,7 @@ template <typename Result>
     if (!json)
         throw std::runtime_error(std::string(consumer) + ": the step '" + std::string(step_name) +
                                  "' has produced no result");
-    auto parsed = rfl::json::read<Result>(*json);
+    auto parsed = ores::utility::codec::json::try_read<Result>(*json);
     if (!parsed)
         throw std::runtime_error(std::string(consumer) + ": cannot read the result of step '" +
                                  std::string(step_name) + "'");
@@ -130,7 +129,9 @@ template <typename Result>
  */
 [[nodiscard]] inline ores::reporting::messaging::report_execution_request
 require_run_request(const std::string& request_json, std::string_view consumer) {
-    auto req = rfl::json::read<ores::reporting::messaging::report_execution_request>(request_json);
+    auto req =
+        ores::utility::codec::json::try_read<ores::reporting::messaging::report_execution_request>(
+            request_json);
     if (!req)
         throw std::runtime_error(std::string(consumer) +
                                  ": cannot read the run's report_execution_request");
@@ -147,13 +148,14 @@ template <typename Command>
 [[nodiscard]] inline std::string fail_report_from(const std::string& cmd_json,
                                                   std::string_view error_message) {
     using namespace ores::reporting::messaging;
-    auto cmd = rfl::json::read<Command>(cmd_json);
+    auto cmd = ores::utility::codec::json::try_read<Command>(cmd_json);
     if (!cmd)
         return "{}";
-    return rfl::json::write(fail_report_request{.report_instance_id = cmd->report_instance_id,
-                                                .tenant_id = cmd->tenant_id,
-                                                .correlation_id = cmd->correlation_id,
-                                                .error_message = std::string(error_message)});
+    return ores::utility::codec::json::write(
+        fail_report_request{.report_instance_id = cmd->report_instance_id,
+                            .tenant_id = cmd->tenant_id,
+                            .correlation_id = cmd->correlation_id,
+                            .error_message = std::string(error_message)});
 }
 
 [[nodiscard]] inline workflow_step_def make_gather_trades() {
@@ -168,10 +170,11 @@ template <typename Command>
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results&) -> std::string {
         const auto req = require_run_request(request_json, "gather_trades");
-        return rfl::json::write(gather_trades_request{.report_instance_id = req.report_instance_id,
-                                                      .definition_id = req.definition_id,
-                                                      .tenant_id = req.tenant_id,
-                                                      .correlation_id = req.correlation_id});
+        return ores::utility::codec::json::write(
+            gather_trades_request{.report_instance_id = req.report_instance_id,
+                                  .definition_id = req.definition_id,
+                                  .tenant_id = req.tenant_id,
+                                  .correlation_id = req.correlation_id});
     };
 
     s.build_compensation = [](const std::string& cmd_json,
@@ -195,7 +198,7 @@ template <typename Command>
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results&) -> std::string {
         const auto req = require_run_request(request_json, "gather_market_data");
-        return rfl::json::write(
+        return ores::utility::codec::json::write(
             gather_market_data_request{.report_instance_id = req.report_instance_id,
                                        .definition_id = req.definition_id,
                                        .tenant_id = req.tenant_id,
@@ -229,7 +232,7 @@ template <typename Command>
         const auto market_data = require_step_result<gather_market_data_result>(
             prev, "gather_market_data", "assemble_bundle");
 
-        return rfl::json::write(
+        return ores::utility::codec::json::write(
             assemble_bundle_request{.report_instance_id = req.report_instance_id,
                                     .definition_id = req.definition_id,
                                     .tenant_id = req.tenant_id,
@@ -263,7 +266,7 @@ template <typename Command>
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results&) -> std::string {
         const auto req = require_run_request(request_json, "resolve_prepared_input");
-        return rfl::json::write(
+        return ores::utility::codec::json::write(
             resolve_prepared_input_request{.report_instance_id = req.report_instance_id,
                                            .tenant_id = req.tenant_id,
                                            .correlation_id = req.correlation_id,
@@ -300,7 +303,7 @@ template <typename Command>
         const auto market_data = require_step_result<gather_market_data_result>(
             prev, "gather_market_data", "prepare_ore_package");
 
-        return rfl::json::write(
+        return ores::utility::codec::json::write(
             prepare_ore_package_request{.report_instance_id = req.report_instance_id,
                                         .definition_id = req.definition_id,
                                         .bundle_id = bundle.bundle_id,
@@ -342,12 +345,13 @@ template <typename Command>
         const auto input =
             require_step_result<prepare_ore_package_result>(prev, input_step, "submit_compute");
 
-        return rfl::json::write(submit_compute_request{.report_instance_id = req.report_instance_id,
-                                                       .tenant_id = req.tenant_id,
-                                                       .party_id = req.party_id,
-                                                       .run_grant_id = req.run_grant_id,
-                                                       .correlation_id = req.correlation_id,
-                                                       .tarball_uris = input.tarball_uris});
+        return ores::utility::codec::json::write(
+            submit_compute_request{.report_instance_id = req.report_instance_id,
+                                   .tenant_id = req.tenant_id,
+                                   .party_id = req.party_id,
+                                   .run_grant_id = req.run_grant_id,
+                                   .correlation_id = req.correlation_id,
+                                   .tarball_uris = input.tarball_uris});
     };
 
     s.build_compensation = [](const std::string& cmd_json,
@@ -375,7 +379,7 @@ template <typename Command>
         const auto submitted = require_step_result<submit_compute_result>(
             prev, "submit_compute", "collect_compute_results");
 
-        return rfl::json::write(
+        return ores::utility::codec::json::write(
             collect_compute_results_request{.report_instance_id = req.report_instance_id,
                                             .tenant_id = req.tenant_id,
                                             .correlation_id = req.correlation_id,
@@ -415,11 +419,12 @@ template <typename Command>
         const auto submitted = require_step_result<submit_compute_result>(
             prev, "submit_compute", "post_process_results");
 
-        return rfl::json::write(
+        return ores::utility::codec::json::write(
             post_process_results_request{.report_instance_id = req.report_instance_id,
                                          .tenant_id = req.tenant_id,
                                          .correlation_id = req.correlation_id,
-                                         .batch_id = submitted.batch_id});
+                                         .batch_id = submitted.batch_id,
+                                         .skipped_families = req.skipped_families.value_or("")});
     };
 
     s.build_compensation = [](const std::string& cmd_json,
@@ -450,7 +455,7 @@ template <typename Command>
         const auto submitted = require_step_result<submit_compute_result>(
             prev, "submit_compute", "ignore_compute_results");
 
-        return rfl::json::write(
+        return ores::utility::codec::json::write(
             ignore_compute_results_request{.report_instance_id = req.report_instance_id,
                                            .tenant_id = req.tenant_id,
                                            .correlation_id = req.correlation_id,
@@ -487,7 +492,7 @@ template <typename Command>
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results&) -> std::string {
         const auto req = require_run_request(request_json, "finalise");
-        return rfl::json::write(
+        return ores::utility::codec::json::write(
             finalise_report_request{.report_instance_id = req.report_instance_id,
                                     .tenant_id = req.tenant_id,
                                     .correlation_id = req.correlation_id});

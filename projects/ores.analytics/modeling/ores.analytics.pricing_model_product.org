@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BDECF3A4-4A7C-4F64-94C1-A106E215F88D
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.analytics.pricing_model_product

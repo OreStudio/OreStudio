@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 49ABC483-18DD-4DE5-9710-6AD4357D148A
+:END:
+#+title: Find every type that still crosses NATS through the reflect-…
+#+description: Find every type that still crosses NATS through the reflect-cpp primary template of wire_traits, and give each a generated codec or wire fields before Remove reflect-cpp deletes the fallback. The component codec moves checked their sources for reflect-cpp includes and calls, but a hand-written protocol header with no wire_fields still travels through default_wire_codec on the fallback without naming reflect-cpp anywhere. Known so far: ores.synthetic.api/messaging/market_regime_protocol.hpp (get_market_regime_request and response, market trace, market history, pin_market_regime, configure_market), which the shell's synthetic commands call. A quick way to list them all: temporarily make the primary template static_assert, build, and read the failures; each is a type to give wire_fields and shaped_wire_traits, or to move into a model.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

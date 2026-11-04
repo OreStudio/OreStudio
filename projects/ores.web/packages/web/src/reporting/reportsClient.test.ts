@@ -28,17 +28,25 @@ import { api } from '../api/client.js';
 
 const PARTY = '77777777-7777-4777-8777-777777777777';
 
-/** Answers one request with a body and remembers the address it was sent to. */
-function answer(body: unknown): { readonly urls: string[] } {
+/** Answers one request with a body and remembers the address and the request. */
+function answer(body: unknown): {
+    readonly urls: string[];
+    readonly requests: readonly { readonly method: string; readonly body: unknown }[];
+} {
     const urls: string[] = [];
+    const requests: { method: string; body: unknown }[] = [];
     vi.stubGlobal(
         'fetch',
-        vi.fn((url: string) => {
+        vi.fn((url: string, init?: RequestInit) => {
             urls.push(url);
+            requests.push({
+                method: init?.method ?? 'GET',
+                body: init?.body === undefined ? undefined : JSON.parse(String(init.body)),
+            });
             return Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
         }),
     );
-    return { urls };
+    return { urls, requests };
 }
 
 afterEach(() => {
@@ -93,5 +101,44 @@ describe('the reads of the reports list', () => {
         expect(url.searchParams.get('party_id')).toBe(PARTY);
         expect(url.searchParams.get('search')).toBe('audit');
         expect(read).toEqual(tally);
+    });
+});
+
+describe('the schedule of a report', () => {
+    const OUTCOME = { changed: 1, failedIds: [], message: '' };
+
+    it('schedules one definition, and states the expression it fires on', async () => {
+        const sent = answer(OUTCOME);
+
+        const outcome = await api.scheduleReport(PARTY, '0 0 9 * * ?');
+
+        const url = new URL(sent.urls[0] ?? '', 'http://localhost');
+        expect(url.pathname).toBe('/api/reporting/reports/schedule');
+        expect(sent.requests[0]?.method).toBe('POST');
+        expect(sent.requests[0]?.body).toEqual({
+            ids: [PARTY],
+            schedule_expression: '0 0 9 * * ?',
+        });
+        expect(outcome).toEqual(OUTCOME);
+    });
+
+    it('schedules a definition on the expression it already holds', async () => {
+        const sent = answer(OUTCOME);
+
+        await api.scheduleReport(PARTY);
+
+        expect(sent.requests[0]?.body).toEqual({ ids: [PARTY] });
+    });
+
+    it('unschedules one definition, and reads the count and refusals the server states', async () => {
+        const refused = { changed: 0, failedIds: [PARTY], message: 'The job was refused.' };
+        const sent = answer(refused);
+
+        const outcome = await api.unscheduleReport(PARTY);
+
+        const url = new URL(sent.urls[0] ?? '', 'http://localhost');
+        expect(url.pathname).toBe('/api/reporting/reports/unschedule');
+        expect(sent.requests[0]?.body).toEqual({ ids: [PARTY] });
+        expect(outcome).toEqual(refused);
     });
 });

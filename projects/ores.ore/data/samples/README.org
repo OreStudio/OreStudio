@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 6C3596D0-104D-43BC-9D18-7E10D5FE3585
+:END:
+#+title: Output samples ORE did not ship
+#+description: Samples of output files the ORE example corpus holds no copy of, so the catalogue and the readers can prove every family.
+
+The output catalogue is generated from the samples ORE ships under
+=external/ore/examples=. A family the corpus holds no sample of is proven from
+here instead.
+
+- =captured/= holds files an ORE run in this repository wrote, unchanged.
+- =synthetic/= holds files we wrote. Each one states the columns its writer adds,
+  in the order it adds them, at ORE v1.8.17.0 (3d75a6908), with two rows of
+  plausible values. The catalogue marks a family whose only sample is synthetic.
+
+When the vendored ORE moves, re-read each writer below and the generator's
+out-of-scope reasons, which cite the version they hold for.
+
+| File | Writer at v1.8.17.0 |
+|------+---------------------|
+| synthetic/crif.csv | =SimmReportWriter::writeCrifReport=, OREAnalytics/orea/app/reportwriters/simmreportwriter.cpp |
+| synthetic/capital_crif.csv | =CapitalReportWriter::writeCapitalCrifReport=, OREAnalytics/orea/app/reportwriters/capitalreportwriter.cpp |
+| synthetic/sacva_sensitivity.csv | =CapitalReportWriter::writeSaCvaSensiReport=, OREAnalytics/orea/app/reportwriters/capitalreportwriter.cpp |
+| synthetic/jacobi.csv | =writeParConversionMatrix=, OREAnalytics/orea/engine/parsensitivityanalysis.cpp |
+| synthetic/jacobi_inverse.csv | =ParSensitivityConverter::writeConversionMatrix=, OREAnalytics/orea/engine/parsensitivityanalysis.cpp |
+| synthetic/calibration.csv | =ReportWriter::writeXmlReport=, OREAnalytics/orea/app/reportwriter.cpp, called by the calibration analytic with the heading CrossAssetModel |
+| captured/pricingstats.csv | =ReportWriter::writePricingStats=, written by a Group Consolidated Exposure run |

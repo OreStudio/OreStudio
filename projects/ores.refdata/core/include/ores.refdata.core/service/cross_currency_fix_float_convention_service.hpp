@@ -27,11 +27,17 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
+#include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_fixed_leg.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_float_leg.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_swap_terms.hpp"
 #include "ores.refdata.api/messaging/cross_currency_fix_float_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
-#include "ores.refdata.core/repository/cross_currency_fix_float_convention_repository.hpp"
-#include <chrono>
+#include "ores.refdata.core/repository/convention_repository.hpp"
+#include "ores.refdata.core/repository/cross_currency_fix_float_fixed_leg_repository.hpp"
+#include "ores.refdata.core/repository/cross_currency_fix_float_float_leg_repository.hpp"
+#include "ores.refdata.core/repository/cross_currency_fix_float_swap_terms_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -40,10 +46,13 @@
 namespace ores::refdata::service {
 
 /**
- * @brief Service for managing cross-currency fix-float conventions.
+ * @brief Service for the composite cross currency fix float convention family.
  *
- * Provides a higher-level interface for cross-currency fix-float convention operations,
- * wrapping the underlying repository.
+ * The family is one central row plus its parts. A read answers the central
+ * row and every part live at the same instant; a write lands the central row
+ * and reconciles each part in one transaction, so no reader sees the parts
+ * disagree with the central version. See the "The atomised entity" and
+ * "Temporal composite entity versioning" architecture documents.
  */
 class ORES_REFDATA_CORE_EXPORT cross_currency_fix_float_convention_service {
 private:
@@ -67,19 +76,13 @@ public:
     explicit cross_currency_fix_float_convention_service(context ctx);
 
     /**
-     * @brief The protocol operations, one method per subject.
+     * @brief The family's protocol operations, one method per subject.
      *
      * A method takes the canonical request and answers its response, so the
      * handler that serves the subject decodes, calls and replies without
-     * deciding anything. The result a caller reads -- missing, conflicting,
-     * denied -- is filled here, where the storage call that decided it is
-     * made, rather than being inferred from an exception.
+     * deciding anything.
      */
     /**@{*/
-    ::ores::refdata::messaging::list_cross_currency_fix_float_conventions_response
-    list_cross_currency_fix_float_conventions(
-        const ::ores::refdata::messaging::list_cross_currency_fix_float_conventions_request&
-            request);
     ::ores::refdata::messaging::get_cross_currency_fix_float_convention_response
     get_cross_currency_fix_float_convention(
         const ::ores::refdata::messaging::get_cross_currency_fix_float_convention_request& request);
@@ -94,128 +97,107 @@ public:
     put_many_cross_currency_fix_float_conventions(
         const ::ores::refdata::messaging::put_many_cross_currency_fix_float_conventions_request&
             request);
-    ::ores::refdata::messaging::delete_cross_currency_fix_float_convention_response
-    delete_cross_currency_fix_float_convention(
-        const ::ores::refdata::messaging::delete_cross_currency_fix_float_convention_request&
-            request);
-    ::ores::refdata::messaging::delete_many_cross_currency_fix_float_conventions_response
-    delete_many_cross_currency_fix_float_conventions(
-        const ::ores::refdata::messaging::delete_many_cross_currency_fix_float_conventions_request&
-            request);
-    ::ores::refdata::messaging::list_cross_currency_fix_float_convention_versions_response
-    list_cross_currency_fix_float_convention_versions(
-        const ::ores::refdata::messaging::list_cross_currency_fix_float_convention_versions_request&
-            request);
-    ::ores::refdata::messaging::get_cross_currency_fix_float_convention_version_response
-    get_cross_currency_fix_float_convention_version(
-        const ::ores::refdata::messaging::get_cross_currency_fix_float_convention_version_request&
-            request);
     /**@}*/
-
-    /**
-     * @brief Lists cross-currency fix-float conventions with pagination support.
-     *
-     * @param offset Number of records to skip.
-     * @param limit Maximum number of records to return.
-     * @return Vector of cross-currency fix-float conventions for the requested page.
-     */
-    std::vector<domain::cross_currency_fix_float_convention>
-    list_cross_currency_fix_float_conventions(std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active cross-currency fix-float conventions.
-     *
-     * @return Total number of active cross-currency fix-float conventions.
-     */
-    std::uint32_t count_cross_currency_fix_float_conventions();
-
-
-    /**
-     * @brief Retrieves a single cross-currency fix-float convention as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     *
-     * @param version The version to fetch.
-     * @return The cross-currency fix-float convention at that version if found, std::nullopt
-     * otherwise.
-     */
-    std::optional<domain::cross_currency_fix_float_convention>
-    get_cross_currency_fix_float_convention_at_version(const std::string& id,
-                                                       std::uint32_t version);
-
-    /**
-     * @brief Retrieves a single cross-currency fix-float convention by its primary key.
-     *
-     * @return The cross-currency fix-float convention if found, std::nullopt otherwise.
-     */
-    std::optional<domain::cross_currency_fix_float_convention>
-    get_cross_currency_fix_float_convention(const std::string& id);
-
-    /**
-     * @brief Retrieves a batch of cross-currency fix-float conventions by primary key.
-     */
-    std::vector<domain::cross_currency_fix_float_convention>
-    get_cross_currency_fix_float_conventions(const std::vector<std::string>& ids);
-
-    /**
-     * @brief Saves a cross-currency fix-float convention (creates or updates).
-     *
-     * @param cross_currency_fix_float_convention The cross-currency fix-float convention to save.
-     * @throws std::exception on failure.
-     */
-    void save_cross_currency_fix_float_convention(
-        const domain::cross_currency_fix_float_convention& cross_currency_fix_float_convention);
-
-    /**
-     * @brief Saves a batch of cross-currency fix-float conventions.
-     *
-     * @param cross_currency_fix_float_conventions The cross-currency fix-float conventions to save.
-     * @throws std::exception on failure.
-     */
-    void save_cross_currency_fix_float_conventions(
-        const std::vector<domain::cross_currency_fix_float_convention>&
-            cross_currency_fix_float_conventions);
-
-    /**
-     * @brief Deletes a cross-currency fix-float convention by its primary key.
-     *
-     * @throws std::exception on failure.
-     */
-    void delete_cross_currency_fix_float_convention(const std::string& id);
-
-    /**
-     * @brief Deletes cross-currency fix-float conventions by their primary keys.
-     */
-    void delete_cross_currency_fix_float_conventions(const std::vector<std::string>& ids);
-
-    /**
-     * @brief Retrieves all historical versions of a cross-currency fix-float convention.
-     *
-     * Addressed by the entity's key, which is its storage key.
-     */
-    std::vector<domain::cross_currency_fix_float_convention>
-    get_cross_currency_fix_float_convention_history(const std::string& id);
 
 private:
     context ctx_;
-    repository::cross_currency_fix_float_convention_repository repo_;
+    repository::convention_repository central_repo_;
+    repository::cross_currency_fix_float_fixed_leg_repository fixed_leg_repo_;
+    repository::cross_currency_fix_float_float_leg_repository float_leg_repo_;
+    repository::cross_currency_fix_float_swap_terms_repository swap_terms_repo_;
 
     /**
-     * @brief Checks one change against the row it names, and stamps it.
-     *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
+     * @brief Assembles the family item: the central row and every part live
+     * at the same instant.
      */
-    ores::utility::domain::result prepare_change(
-        const ::ores::refdata::messaging::cross_currency_fix_float_convention_change& change,
+    ::ores::refdata::messaging::cross_currency_fix_float_convention_item
+    assemble(const context& ctx,
+             const ::ores::refdata::messaging::cross_currency_fix_float_convention_key& key,
+             const std::optional<domain::convention>& central);
+
+    /**
+     * @brief Checks one central change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check and the
+     * stamp are one decision made in one place.
+     */
+    ores::utility::domain::result
+    prepare_convention(const ::ores::refdata::messaging::convention_change& change,
+                       const ores::utility::domain::change_intent& intent,
+                       const context& ctx,
+                       domain::convention& out);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result prepare_fixed_leg(
+        const ::ores::refdata::messaging::cross_currency_fix_float_fixed_leg_change& change,
         const ores::utility::domain::change_intent& intent,
-        domain::cross_currency_fix_float_convention& out);
+        const context& ctx,
+        domain::cross_currency_fix_float_fixed_leg& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_fixed_leg(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<::ores::refdata::messaging::cross_currency_fix_float_fixed_leg_change>&
+            requested,
+        const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result prepare_float_leg(
+        const ::ores::refdata::messaging::cross_currency_fix_float_float_leg_change& change,
+        const ores::utility::domain::change_intent& intent,
+        const context& ctx,
+        domain::cross_currency_fix_float_float_leg& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_float_leg(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<::ores::refdata::messaging::cross_currency_fix_float_float_leg_change>&
+            requested,
+        const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result prepare_swap_terms(
+        const ::ores::refdata::messaging::cross_currency_fix_float_swap_terms_change& change,
+        const ores::utility::domain::change_intent& intent,
+        const context& ctx,
+        domain::cross_currency_fix_float_swap_terms& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_swap_terms(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<::ores::refdata::messaging::cross_currency_fix_float_swap_terms_change>&
+            requested,
+        const ores::utility::domain::change_intent& intent);
 };
 
 }

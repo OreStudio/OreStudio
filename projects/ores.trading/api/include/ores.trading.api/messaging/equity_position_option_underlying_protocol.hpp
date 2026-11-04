@@ -44,6 +44,9 @@ namespace ores::trading::messaging {
 struct equity_position_option_underlying_key {
     boost::uuids::uuid trade_id;
     int sequence_number;
+
+    friend bool operator==(const equity_position_option_underlying_key&,
+                           const equity_position_option_underlying_key&) = default;
 };
 
 struct equity_position_option_underlying_write {
@@ -57,27 +60,42 @@ struct equity_position_option_underlying_write {
     std::string option_type;
     std::string exercise_type;
     std::string settlement_type;
+
+    friend bool operator==(const equity_position_option_underlying_write&,
+                           const equity_position_option_underlying_write&) = default;
 };
 
 struct equity_position_option_underlying_change {
     equity_position_option_underlying_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const equity_position_option_underlying_change&,
+                           const equity_position_option_underlying_change&) = default;
 };
 
 struct equity_position_option_underlying_removal {
     equity_position_option_underlying_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const equity_position_option_underlying_removal&,
+                           const equity_position_option_underlying_removal&) = default;
 };
 
 struct equity_position_option_underlying_lookup {
     equity_position_option_underlying_key key;
     std::optional<ores::trading::domain::equity_position_option_underlying>
         equity_position_option_underlying;
+
+    friend bool operator==(const equity_position_option_underlying_lookup&,
+                           const equity_position_option_underlying_lookup&) = default;
 };
 
 struct equity_position_option_underlyings_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const equity_position_option_underlyings_filter&,
+                           const equity_position_option_underlyings_filter&) = default;
 };
 
 struct equity_position_option_underlying_event {
@@ -87,17 +105,26 @@ struct equity_position_option_underlying_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const equity_position_option_underlying_event&,
+                           const equity_position_option_underlying_event&) = default;
 };
 
 struct equity_position_option_underlying_version_key {
     equity_position_option_underlying_key equity_position_option_underlying;
     std::uint32_t version;
+
+    friend bool operator==(const equity_position_option_underlying_version_key&,
+                           const equity_position_option_underlying_version_key&) = default;
 };
 
 struct equity_position_option_underlying_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const equity_position_option_underlying_versions_filter&,
+                           const equity_position_option_underlying_versions_filter&) = default;
 };
 
 struct list_equity_position_option_underlyings_request {
@@ -116,6 +143,9 @@ struct list_equity_position_option_underlyings_request {
     ores::utility::domain::order order;
     std::optional<equity_position_option_underlyings_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_equity_position_option_underlyings_request&,
+                           const list_equity_position_option_underlyings_request&) = default;
 };
 
 struct list_equity_position_option_underlyings_response {
@@ -123,6 +153,9 @@ struct list_equity_position_option_underlyings_response {
     std::vector<ores::trading::domain::equity_position_option_underlying>
         equity_position_option_underlyings;
     std::uint64_t total;
+
+    friend bool operator==(const list_equity_position_option_underlyings_response&,
+                           const list_equity_position_option_underlyings_response&) = default;
 };
 
 struct get_equity_position_option_underlying_request {
@@ -137,12 +170,18 @@ struct get_equity_position_option_underlying_request {
      */
     static constexpr bool requires_session = true;
     equity_position_option_underlying_key key;
+
+    friend bool operator==(const get_equity_position_option_underlying_request&,
+                           const get_equity_position_option_underlying_request&) = default;
 };
 
 struct get_equity_position_option_underlying_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::equity_position_option_underlying>
         equity_position_option_underlying;
+
+    friend bool operator==(const get_equity_position_option_underlying_response&,
+                           const get_equity_position_option_underlying_response&) = default;
 };
 
 struct get_many_equity_position_option_underlyings_request {
@@ -157,11 +196,17 @@ struct get_many_equity_position_option_underlyings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<equity_position_option_underlying_key> keys;
+
+    friend bool operator==(const get_many_equity_position_option_underlyings_request&,
+                           const get_many_equity_position_option_underlyings_request&) = default;
 };
 
 struct get_many_equity_position_option_underlyings_response {
     ores::utility::domain::result result;
     std::vector<equity_position_option_underlying_lookup> entries;
+
+    friend bool operator==(const get_many_equity_position_option_underlyings_response&,
+                           const get_many_equity_position_option_underlyings_response&) = default;
 };
 
 struct put_equity_position_option_underlying_request {
@@ -177,12 +222,18 @@ struct put_equity_position_option_underlying_request {
     static constexpr bool requires_session = true;
     equity_position_option_underlying_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_equity_position_option_underlying_request&,
+                           const put_equity_position_option_underlying_request&) = default;
 };
 
 struct put_equity_position_option_underlying_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::equity_position_option_underlying>
         equity_position_option_underlying;
+
+    friend bool operator==(const put_equity_position_option_underlying_response&,
+                           const put_equity_position_option_underlying_response&) = default;
 };
 
 struct put_many_equity_position_option_underlyings_request {
@@ -198,12 +249,18 @@ struct put_many_equity_position_option_underlyings_request {
     static constexpr bool requires_session = true;
     std::vector<equity_position_option_underlying_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_equity_position_option_underlyings_request&,
+                           const put_many_equity_position_option_underlyings_request&) = default;
 };
 
 struct put_many_equity_position_option_underlyings_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_position_option_underlying>
         equity_position_option_underlyings;
+
+    friend bool operator==(const put_many_equity_position_option_underlyings_response&,
+                           const put_many_equity_position_option_underlyings_response&) = default;
 };
 
 struct delete_equity_position_option_underlying_request {
@@ -219,10 +276,16 @@ struct delete_equity_position_option_underlying_request {
     static constexpr bool requires_session = true;
     equity_position_option_underlying_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_equity_position_option_underlying_request&,
+                           const delete_equity_position_option_underlying_request&) = default;
 };
 
 struct delete_equity_position_option_underlying_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_equity_position_option_underlying_response&,
+                           const delete_equity_position_option_underlying_response&) = default;
 };
 
 struct delete_many_equity_position_option_underlyings_request {
@@ -238,10 +301,17 @@ struct delete_many_equity_position_option_underlyings_request {
     static constexpr bool requires_session = true;
     std::vector<equity_position_option_underlying_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_equity_position_option_underlyings_request&,
+                           const delete_many_equity_position_option_underlyings_request&) = default;
 };
 
 struct delete_many_equity_position_option_underlyings_response {
     ores::utility::domain::result result;
+
+    friend bool
+    operator==(const delete_many_equity_position_option_underlyings_response&,
+               const delete_many_equity_position_option_underlyings_response&) = default;
 };
 
 struct list_by_trade_id_equity_position_option_underlyings_request {
@@ -261,6 +331,10 @@ struct list_by_trade_id_equity_position_option_underlyings_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<equity_position_option_underlyings_filter> filter;
+
+    friend bool
+    operator==(const list_by_trade_id_equity_position_option_underlyings_request&,
+               const list_by_trade_id_equity_position_option_underlyings_request&) = default;
 };
 
 struct list_by_trade_id_equity_position_option_underlyings_response {
@@ -268,6 +342,10 @@ struct list_by_trade_id_equity_position_option_underlyings_response {
     std::vector<ores::trading::domain::equity_position_option_underlying>
         equity_position_option_underlyings;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_trade_id_equity_position_option_underlyings_response&,
+               const list_by_trade_id_equity_position_option_underlyings_response&) = default;
 };
 
 struct list_equity_position_option_underlying_versions_request {
@@ -286,12 +364,20 @@ struct list_equity_position_option_underlying_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<equity_position_option_underlying_versions_filter> filter;
+
+    friend bool
+    operator==(const list_equity_position_option_underlying_versions_request&,
+               const list_equity_position_option_underlying_versions_request&) = default;
 };
 
 struct list_equity_position_option_underlying_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_position_option_underlying> versions;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_equity_position_option_underlying_versions_response&,
+               const list_equity_position_option_underlying_versions_response&) = default;
 };
 
 struct get_equity_position_option_underlying_version_request {
@@ -306,11 +392,17 @@ struct get_equity_position_option_underlying_version_request {
      */
     static constexpr bool requires_session = true;
     equity_position_option_underlying_version_key key;
+
+    friend bool operator==(const get_equity_position_option_underlying_version_request&,
+                           const get_equity_position_option_underlying_version_request&) = default;
 };
 
 struct get_equity_position_option_underlying_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::equity_position_option_underlying> version;
+
+    friend bool operator==(const get_equity_position_option_underlying_version_response&,
+                           const get_equity_position_option_underlying_version_response&) = default;
 };
 
 /**
@@ -323,11 +415,11 @@ struct get_equity_position_option_underlying_version_response {
  */
 namespace equity_position_option_underlying_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.equity_position_option_underlyings_events.created";
+    "trading.v1.events.equity_position_option_underlyings.created";
 inline constexpr std::string_view updated =
-    "trading.v1.equity_position_option_underlyings_events.updated";
+    "trading.v1.events.equity_position_option_underlyings.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.equity_position_option_underlyings_events.deleted";
+    "trading.v1.events.equity_position_option_underlyings.deleted";
 }
 /**
  * @brief The members of equity_position_option_underlying_key, named as the wire names them and in

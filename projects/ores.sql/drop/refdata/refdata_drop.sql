@@ -69,6 +69,26 @@
 -- sections it references)
 \ir ./refdata_curve_quotes_notify_trigger_drop.sql
 \ir ./refdata_curve_quotes_drop.sql
+\ir ./refdata_curve_segment_conventions_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_conventions_drop.sql
+\ir ./refdata_curve_segment_pillar_rules_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_pillar_rules_drop.sql
+\ir ./refdata_curve_segment_projections_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_projections_drop.sql
+\ir ./refdata_curve_segment_tenor_basis_curves_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_tenor_basis_curves_drop.sql
+\ir ./refdata_curve_segment_cross_currency_terms_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_cross_currency_terms_drop.sql
+\ir ./refdata_curve_segment_references_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_references_drop.sql
+\ir ./refdata_curve_segment_weighted_averages_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_weighted_averages_drop.sql
+\ir ./refdata_curve_segment_discount_ratios_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_discount_ratios_drop.sql
+\ir ./refdata_curve_segment_extrapolations_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_extrapolations_drop.sql
+\ir ./refdata_curve_segment_ibor_fallbacks_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_ibor_fallbacks_drop.sql
 \ir ./refdata_curve_segment_curves_notify_trigger_drop.sql
 \ir ./refdata_curve_segment_curves_drop.sql
 \ir ./refdata_curve_segments_notify_trigger_drop.sql
@@ -86,6 +106,8 @@
 \ir ./refdata_cap_floor_proxy_configs_drop.sql
 \ir ./refdata_cap_floor_volatility_configs_drop.sql
 \ir ./refdata_swaption_volatility_configs_notify_trigger_drop.sql
+\ir ./refdata_swaption_volatility_smiles_notify_trigger_drop.sql
+\ir ./refdata_swaption_volatility_smiles_drop.sql
 \ir ./refdata_swaption_proxy_configs_notify_trigger_drop.sql
 \ir ./refdata_swaption_proxy_configs_drop.sql
 \ir ./refdata_swaption_volatility_configs_drop.sql
@@ -135,14 +157,34 @@
 \ir ./refdata_curve_report_configurations_drop.sql
 \ir ./refdata_commodity_price_segments_notify_trigger_drop.sql
 \ir ./refdata_commodity_price_segments_drop.sql
+\ir ./refdata_commodity_curve_interpolations_notify_trigger_drop.sql
+\ir ./refdata_commodity_curve_interpolations_drop.sql
+\ir ./refdata_commodity_curve_directs_notify_trigger_drop.sql
+\ir ./refdata_commodity_curve_directs_drop.sql
+\ir ./refdata_commodity_curve_cross_currencies_notify_trigger_drop.sql
+\ir ./refdata_commodity_curve_cross_currencies_drop.sql
+\ir ./refdata_commodity_curve_bases_notify_trigger_drop.sql
+\ir ./refdata_commodity_curve_bases_drop.sql
 \ir ./refdata_commodity_curve_configs_notify_trigger_drop.sql
 \ir ./refdata_commodity_curve_configs_drop.sql
+\ir ./refdata_default_curve_market_terms_notify_trigger_drop.sql
+\ir ./refdata_default_curve_market_terms_drop.sql
+\ir ./refdata_default_curve_cds_terms_notify_trigger_drop.sql
+\ir ./refdata_default_curve_cds_terms_drop.sql
+\ir ./refdata_default_curve_benchmarks_notify_trigger_drop.sql
+\ir ./refdata_default_curve_benchmarks_drop.sql
+\ir ./refdata_default_curve_transition_matrices_notify_trigger_drop.sql
+\ir ./refdata_default_curve_transition_matrices_drop.sql
+\ir ./refdata_default_curve_yield_reinterpretations_notify_trigger_drop.sql
+\ir ./refdata_default_curve_yield_reinterpretations_drop.sql
 \ir ./refdata_default_curve_configurations_notify_trigger_drop.sql
 \ir ./refdata_default_curve_configurations_drop.sql
 \ir ./refdata_default_curve_configs_notify_trigger_drop.sql
 \ir ./refdata_default_curve_configs_drop.sql
 \ir ./refdata_inflation_seasonality_factors_notify_trigger_drop.sql
 \ir ./refdata_inflation_seasonality_factors_drop.sql
+\ir ./refdata_inflation_seasonalities_notify_trigger_drop.sql
+\ir ./refdata_inflation_seasonalities_drop.sql
 \ir ./refdata_inflation_curve_configs_notify_trigger_drop.sql
 \ir ./refdata_inflation_curve_configs_drop.sql
 \ir ./refdata_equity_curve_configs_notify_trigger_drop.sql
@@ -163,6 +205,7 @@
 \ir ./refdata_curve_configuration_sections_drop.sql
 \ir ./refdata_curve_configurations_notify_trigger_drop.sql
 \ir ./refdata_curve_configurations_drop.sql
+\ir ./refdata_curve_configuration_parts_validate_fn_drop.sql
 \ir ./refdata_conventions_validate_fn_drop.sql
 \ir ./refdata_calendar_names_validate_fn_drop.sql
 \ir ./refdata_calendar_names_notify_trigger_drop.sql
@@ -187,12 +230,24 @@
 \ir ./refdata_bma_basis_swap_conventions_drop.sql
 \ir ./refdata_inflation_swap_conventions_notify_trigger_drop.sql
 \ir ./refdata_inflation_swap_conventions_drop.sql
-\ir ./refdata_cross_currency_fix_float_conventions_notify_trigger_drop.sql
-\ir ./refdata_cross_currency_fix_float_conventions_drop.sql
+\ir ./refdata_cross_currency_fix_float_fixed_legs_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_fix_float_fixed_legs_drop.sql
+\ir ./refdata_cross_currency_fix_float_float_legs_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_fix_float_float_legs_drop.sql
+\ir ./refdata_cross_currency_fix_float_swap_terms_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_fix_float_swap_terms_drop.sql
 \ir ./refdata_cms_spread_option_conventions_notify_trigger_drop.sql
 \ir ./refdata_cms_spread_option_conventions_drop.sql
-\ir ./refdata_commodity_future_conventions_notify_trigger_drop.sql
-\ir ./refdata_commodity_future_conventions_drop.sql
+\ir ./refdata_commodity_future_averaging_terms_notify_trigger_drop.sql
+\ir ./refdata_commodity_future_averaging_terms_drop.sql
+\ir ./refdata_commodity_future_contract_terms_notify_trigger_drop.sql
+\ir ./refdata_commodity_future_contract_terms_drop.sql
+\ir ./refdata_commodity_future_expiry_anchors_notify_trigger_drop.sql
+\ir ./refdata_commodity_future_expiry_anchors_drop.sql
+\ir ./refdata_commodity_future_off_peak_indexes_notify_trigger_drop.sql
+\ir ./refdata_commodity_future_off_peak_indexes_drop.sql
+\ir ./refdata_commodity_future_option_expiries_notify_trigger_drop.sql
+\ir ./refdata_commodity_future_option_expiries_drop.sql
 \ir ./refdata_commodity_forward_conventions_notify_trigger_drop.sql
 \ir ./refdata_commodity_forward_conventions_drop.sql
 \ir ./refdata_bond_yield_conventions_notify_trigger_drop.sql
@@ -213,8 +268,12 @@
 \ir ./refdata_fx_option_conventions_drop.sql
 \ir ./refdata_average_ois_conventions_notify_trigger_drop.sql
 \ir ./refdata_average_ois_conventions_drop.sql
-\ir ./refdata_cross_currency_basis_conventions_notify_trigger_drop.sql
-\ir ./refdata_cross_currency_basis_conventions_drop.sql
+\ir ./refdata_cross_currency_basis_flat_legs_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_basis_flat_legs_drop.sql
+\ir ./refdata_cross_currency_basis_spread_legs_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_basis_spread_legs_drop.sql
+\ir ./refdata_cross_currency_basis_swap_terms_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_basis_swap_terms_drop.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_notify_trigger_drop.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_drop.sql
 \ir ./refdata_tenor_basis_swap_pay_receives_notify_trigger_drop.sql
@@ -316,6 +375,13 @@
 \ir ./refdata_ledger_feed_types_drop.sql
 \ir ./refdata_sub_periods_coupon_types_notify_trigger_drop.sql
 \ir ./refdata_sub_periods_coupon_types_drop.sql
+-- Product family codes: no dependants, so they drop with the lookup set.
+\ir ./refdata_product_family_codes_notify_trigger_drop.sql
+\ir ./refdata_product_family_codes_drop.sql
+-- A book states the product types it allows, so the junction goes before the book.
+\ir ./refdata_book_product_types_notify_trigger_drop.sql
+\ir ./refdata_book_product_types_drop.sql
+
 
 -- Product catalogue: instrument_codes before the asset_class_codes and
 -- curve_roles it references.
@@ -337,6 +403,14 @@
 \ir ./refdata_source_kinds_notify_trigger_drop.sql
 \ir ./refdata_producer_kinds_drop.sql
 \ir ./refdata_source_kinds_drop.sql
+
+-- FX volatility surface recipe: sources, then pillars, then the blueprint they FK to.
+\ir ./refdata_fx_vol_surface_pillar_sources_notify_trigger_drop.sql
+\ir ./refdata_fx_vol_surface_pillar_sources_drop.sql
+\ir ./refdata_fx_vol_surface_pillars_notify_trigger_drop.sql
+\ir ./refdata_fx_vol_surface_pillars_drop.sql
+\ir ./refdata_fx_vol_surface_blueprints_notify_trigger_drop.sql
+\ir ./refdata_fx_vol_surface_blueprints_drop.sql
 
 -- IR curve bootstrap recipe: pillars before config (which they FK to).
 \ir ./refdata_ir_curve_bootstrap_pillars_notify_trigger_drop.sql

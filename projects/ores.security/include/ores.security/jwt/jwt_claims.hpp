@@ -20,10 +20,13 @@
 #ifndef ORES_SECURITY_JWT_JWT_CLAIMS_HPP
 #define ORES_SECURITY_JWT_JWT_CLAIMS_HPP
 
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::security::jwt {
@@ -61,7 +64,16 @@ struct storage_grant final {
      * @brief The operation allowed: get, put, delete or list.
      */
     std::string op;
+
+    friend bool operator==(const storage_grant&, const storage_grant&) = default;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const storage_grant&) {
+    return std::tuple{utility::codec::field{"bucket", &storage_grant::bucket},
+                      utility::codec::field{"key_prefix", &storage_grant::key_prefix},
+                      utility::codec::field{"op", &storage_grant::op}};
+}
+static_assert(utility::codec::names_every_member<storage_grant>());
 
 /**
  * @brief Represents the claims extracted from a JWT token.

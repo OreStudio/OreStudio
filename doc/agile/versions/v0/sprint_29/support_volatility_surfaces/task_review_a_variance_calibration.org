@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: E7A79AFD-FD48-43F6-9A6F-9E1D522469C6
+:END:
+#+title: Task: Review a variance calibration
+#+description: Approve or reject a proposed calibration with a reason; approving one supersedes the pair's earlier approval.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces:sprint_29:v0:
+#+owner: marco
+#+branch: feature/review-and-apply-variance-calibrations
+#+pr: 4428
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person with the review permission approves or rejects a proposed calibration and states why. Approving supersedes the pair's earlier approved calibration in the same change, so one approval is current. Each decision is a new version of the calibration, so its history shows who decided what, when and why.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- synthetic.v1 operations approve_variance_calibration and reject_variance_calibration, each requiring a reason and a review permission distinct from the write permission.
+- Only a proposed calibration can be approved or rejected; approving supersedes the earlier approval atomically.
+- Tests cover approve, reject, a second approval superseding the first, and a refusal to review a calibration that is not proposed.
+
+* Plan
+
+Add a review verb beside the class calibration run, on the same handler, with a
+permission of its own; approving supersedes first, approves second, then names
+the calibration on the pair's GJR-GARCH feeds. Delivered with the apply task in
+one PR, because the re-pointing is the application.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The partial unique index allows one approved calibration of a pair, so approving
+must supersede the earlier approval first and approve the new one second, both in
+one transaction (review of the records task, PR 4426). A test approves a second
+calibration of a pair and checks both rows' states after the change.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4428][#4428]] | [synthetic] Review a variance calibration and run the approved one on a feed |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A failed re-point cannot be repaired | feed_config_handler.hpp | Accepted | An approval of a calibration already approved only points the feeds that still name another, so a review sent again converges |
+| 2 | A comment is split between two functions | feed_config_handler.hpp | Accepted | Each comment sits above its own function |
+| 3 | Nothing checks the calibration's pair | variance_calibration.cpp | Accepted | The feed refuses another pair's calibration at start; the database trigger is declined, since the generated validations see one column, and the audit checks the pair |
+| 4 | Review writes are not atomic | feed_config_handler.hpp | Declined | Each step reads before it writes, so a review sent again completes it (item 1) |
+| 5 | Authored persistence takes p_minus as one half | synthetic_publish_from_dq_create.sql | Declined | The stored reason states it; the run's start record states the persistence under the feed's own mixture |
+| 6 | Unit-test the start check | feeds_variance_calibration_tests.cpp | Accepted | calibrated_variance is a public function, tested for every refusal and the approved case |
+| 7 | Pin the refused review's code | synthetic.test.ts | Accepted | The stacked screen PR returns a conflict, and its test pins it |
+| 8 | Test write_of field by field | feed_config_handler_tests.cpp | Accepted | Every field, with a count that keeps the write type and the helper in step |
+| 9 | Test that a republish keeps a later approval | synthetic_fx_spot_regimes_publish_test.sql | Accepted | Added; the test also clears stored approvals inside its transaction, so it holds on a provisioned database |
+
+* Result
+
+=synthetic.v1.ops.review_variance_calibration= approves or rejects a proposed
+calibration with the reviewer's reason, for the system tenant and the permission
+=synthetic::variance_calibrations:review=, which Trading holds; the BFF route is
+=POST /api/synthetic/calibration/variance/:id/review=. Each write claims the
+version it read; approving supersedes the pair's approval, then approves, then
+names the calibration on the pair's GJR-GARCH feeds. A calibration that is not
+proposed is refused. The change reason =system.review= records each decision.
+
+Measured live on a recreated database with Acme provisioned: approving the
+EUR/USD fit superseded the authored approval and re-pointed the demo and
+Bloomberg EUR/USD feeds; a second approval was refused; rejecting the GBP/USD fit
+moved no feed. The BFF tests cover the system-tenant gate, the request, the
+refusal and an empty reason.

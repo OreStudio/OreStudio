@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 881A3BB1-4995-47D9-AAAB-7B8CC183A65E
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.dq.publish_datasets
 #+description: Codegen operation model for the dq per-dataset publish verb, rendered to C++ and TypeScript from one source.

@@ -223,7 +223,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.trade_generation_configs_events.created',
-    updated: 'synthetic.v1.trade_generation_configs_events.updated',
-    deleted: 'synthetic.v1.trade_generation_configs_events.deleted',
+    created: 'synthetic.v1.events.trade_generation_configs.created',
+    updated: 'synthetic.v1.events.trade_generation_configs.updated',
+    deleted: 'synthetic.v1.events.trade_generation_configs.deleted',
 } as const;

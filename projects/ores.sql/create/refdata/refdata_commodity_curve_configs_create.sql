@@ -29,11 +29,19 @@
  * from forward quotes, or from a base curve and a yield curve, or as a basis over
  * another commodity curve, or from price segments.
  *
- * The basis form writes a BasisConfiguration element, whose settings are the
- * basis_ columns and whose BasisQuotes are rows of curve_quote with that
- * list name. Price segments are rows of commodity_price_segment. The entry's
- * own quotes are rows of curve_quote on the entry, and its BootstrapConfig a
- * row of curve_bootstrap_config.
+ * The row holds what every construction reads, its currency and whether it
+ * extrapolates. Each construction's settings are a part of the entry, keyed by
+ * its curve_definition_id and present only for the construction that reads
+ * them: commodity_curve_direct for a curve built from forward quotes,
+ * commodity_curve_cross_currency for one built from a base curve and a yield
+ * curve, commodity_curve_basis for the BasisConfiguration element, whose
+ * BasisQuotes are rows of curve_quote with that list name, and
+ * commodity_curve_interpolation for the day counter and interpolation the
+ * direct and piecewise curves state. Price segments are rows of
+ * commodity_price_segment. Which part an entry holds is its construction, so
+ * the row carries no flag for it. The entry's own quotes are rows of
+ * curve_quote on the entry, and its BootstrapConfig a row of
+ * curve_bootstrap_config.
  */
 
 create table if not exists "ores_refdata_commodity_curve_configs_tbl" (
@@ -43,26 +51,7 @@ create table if not exists "ores_refdata_commodity_curve_configs_tbl" (
     "party_id" uuid not null,
     "curve_definition_id" uuid not null,
     "currency" text not null,
-    "base_price_curve" text null,
-    "base_yield_curve" text null,
-    "yield_curve" text null,
-    "spot_quote" text null,
-    "has_quotes" boolean not null,
-    "day_counter" text null,
-    "interpolation_method" text null,
-    "conventions" text null,
     "extrapolation" text null,
-    "has_basis_configuration" boolean not null,
-    "basis_base_price_curve" text null,
-    "basis_base_price_conventions" text null,
-    "basis_conventions" text null,
-    "basis_day_counter" text null,
-    "basis_interpolation_method" text null,
-    "basis_add_basis" text null,
-    "basis_month_offset" integer null,
-    "basis_average_base" text null,
-    "basis_price_as_historical_fixing" text null,
-    "has_price_segments" boolean not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -110,21 +99,6 @@ begin
     ) then
         raise exception 'Invalid curve_definition_id: %. No active curve definition found with this id.', NEW.curve_definition_id
             using errcode = '23503';
-    end if;
-
-    -- Validate conventions (optional field -- skip validation when null)
-    if NEW.conventions is not null then
-        NEW.conventions := ores_refdata_validate_convention_id_fn(NEW.tenant_id, NEW.conventions);
-    end if;
-
-    -- Validate basis_base_price_conventions (optional field -- skip validation when null)
-    if NEW.basis_base_price_conventions is not null then
-        NEW.basis_base_price_conventions := ores_refdata_validate_convention_id_fn(NEW.tenant_id, NEW.basis_base_price_conventions);
-    end if;
-
-    -- Validate basis_conventions (optional field -- skip validation when null)
-    if NEW.basis_conventions is not null then
-        NEW.basis_conventions := ores_refdata_validate_convention_id_fn(NEW.tenant_id, NEW.basis_conventions);
     end if;
 
     -- Validate change_reason_code

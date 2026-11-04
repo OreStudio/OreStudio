@@ -48,6 +48,9 @@ struct instrument_schedule_date_key {
     std::string schedule_role;
     int schedule_sequence_number;
     int sequence_number;
+
+    friend bool operator==(const instrument_schedule_date_key&,
+                           const instrument_schedule_date_key&) = default;
 };
 
 struct instrument_schedule_date_write {
@@ -59,26 +62,41 @@ struct instrument_schedule_date_write {
     int sequence_number;
     boost::uuids::uuid trade_activity_id;
     std::chrono::year_month_day schedule_date;
+
+    friend bool operator==(const instrument_schedule_date_write&,
+                           const instrument_schedule_date_write&) = default;
 };
 
 struct instrument_schedule_date_change {
     instrument_schedule_date_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const instrument_schedule_date_change&,
+                           const instrument_schedule_date_change&) = default;
 };
 
 struct instrument_schedule_date_removal {
     instrument_schedule_date_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const instrument_schedule_date_removal&,
+                           const instrument_schedule_date_removal&) = default;
 };
 
 struct instrument_schedule_date_lookup {
     instrument_schedule_date_key key;
     std::optional<ores::trading::domain::instrument_schedule_date> instrument_schedule_date;
+
+    friend bool operator==(const instrument_schedule_date_lookup&,
+                           const instrument_schedule_date_lookup&) = default;
 };
 
 struct instrument_schedule_dates_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const instrument_schedule_dates_filter&,
+                           const instrument_schedule_dates_filter&) = default;
 };
 
 struct instrument_schedule_date_event {
@@ -88,17 +106,26 @@ struct instrument_schedule_date_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const instrument_schedule_date_event&,
+                           const instrument_schedule_date_event&) = default;
 };
 
 struct instrument_schedule_date_version_key {
     instrument_schedule_date_key instrument_schedule_date;
     std::uint32_t version;
+
+    friend bool operator==(const instrument_schedule_date_version_key&,
+                           const instrument_schedule_date_version_key&) = default;
 };
 
 struct instrument_schedule_date_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const instrument_schedule_date_versions_filter&,
+                           const instrument_schedule_date_versions_filter&) = default;
 };
 
 struct list_instrument_schedule_dates_request {
@@ -116,12 +143,18 @@ struct list_instrument_schedule_dates_request {
     ores::utility::domain::order order;
     std::optional<instrument_schedule_dates_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_instrument_schedule_dates_request&,
+                           const list_instrument_schedule_dates_request&) = default;
 };
 
 struct list_instrument_schedule_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_schedule_date> instrument_schedule_dates;
     std::uint64_t total;
+
+    friend bool operator==(const list_instrument_schedule_dates_response&,
+                           const list_instrument_schedule_dates_response&) = default;
 };
 
 struct get_instrument_schedule_date_request {
@@ -135,11 +168,17 @@ struct get_instrument_schedule_date_request {
      */
     static constexpr bool requires_session = true;
     instrument_schedule_date_key key;
+
+    friend bool operator==(const get_instrument_schedule_date_request&,
+                           const get_instrument_schedule_date_request&) = default;
 };
 
 struct get_instrument_schedule_date_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::instrument_schedule_date> instrument_schedule_date;
+
+    friend bool operator==(const get_instrument_schedule_date_response&,
+                           const get_instrument_schedule_date_response&) = default;
 };
 
 struct get_many_instrument_schedule_dates_request {
@@ -154,11 +193,17 @@ struct get_many_instrument_schedule_dates_request {
      */
     static constexpr bool requires_session = true;
     std::vector<instrument_schedule_date_key> keys;
+
+    friend bool operator==(const get_many_instrument_schedule_dates_request&,
+                           const get_many_instrument_schedule_dates_request&) = default;
 };
 
 struct get_many_instrument_schedule_dates_response {
     ores::utility::domain::result result;
     std::vector<instrument_schedule_date_lookup> entries;
+
+    friend bool operator==(const get_many_instrument_schedule_dates_response&,
+                           const get_many_instrument_schedule_dates_response&) = default;
 };
 
 struct put_instrument_schedule_date_request {
@@ -173,11 +218,17 @@ struct put_instrument_schedule_date_request {
     static constexpr bool requires_session = true;
     instrument_schedule_date_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_instrument_schedule_date_request&,
+                           const put_instrument_schedule_date_request&) = default;
 };
 
 struct put_instrument_schedule_date_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::instrument_schedule_date> instrument_schedule_date;
+
+    friend bool operator==(const put_instrument_schedule_date_response&,
+                           const put_instrument_schedule_date_response&) = default;
 };
 
 struct put_many_instrument_schedule_dates_request {
@@ -193,11 +244,17 @@ struct put_many_instrument_schedule_dates_request {
     static constexpr bool requires_session = true;
     std::vector<instrument_schedule_date_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_instrument_schedule_dates_request&,
+                           const put_many_instrument_schedule_dates_request&) = default;
 };
 
 struct put_many_instrument_schedule_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_schedule_date> instrument_schedule_dates;
+
+    friend bool operator==(const put_many_instrument_schedule_dates_response&,
+                           const put_many_instrument_schedule_dates_response&) = default;
 };
 
 struct delete_instrument_schedule_date_request {
@@ -212,10 +269,16 @@ struct delete_instrument_schedule_date_request {
     static constexpr bool requires_session = true;
     instrument_schedule_date_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_instrument_schedule_date_request&,
+                           const delete_instrument_schedule_date_request&) = default;
 };
 
 struct delete_instrument_schedule_date_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_instrument_schedule_date_response&,
+                           const delete_instrument_schedule_date_response&) = default;
 };
 
 struct delete_many_instrument_schedule_dates_request {
@@ -231,10 +294,16 @@ struct delete_many_instrument_schedule_dates_request {
     static constexpr bool requires_session = true;
     std::vector<instrument_schedule_date_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_instrument_schedule_dates_request&,
+                           const delete_many_instrument_schedule_dates_request&) = default;
 };
 
 struct delete_many_instrument_schedule_dates_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_instrument_schedule_dates_response&,
+                           const delete_many_instrument_schedule_dates_response&) = default;
 };
 
 struct list_by_trade_id_instrument_schedule_dates_request {
@@ -254,12 +323,18 @@ struct list_by_trade_id_instrument_schedule_dates_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<instrument_schedule_dates_filter> filter;
+
+    friend bool operator==(const list_by_trade_id_instrument_schedule_dates_request&,
+                           const list_by_trade_id_instrument_schedule_dates_request&) = default;
 };
 
 struct list_by_trade_id_instrument_schedule_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_schedule_date> instrument_schedule_dates;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_trade_id_instrument_schedule_dates_response&,
+                           const list_by_trade_id_instrument_schedule_dates_response&) = default;
 };
 
 struct list_instrument_schedule_date_versions_request {
@@ -278,12 +353,18 @@ struct list_instrument_schedule_date_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<instrument_schedule_date_versions_filter> filter;
+
+    friend bool operator==(const list_instrument_schedule_date_versions_request&,
+                           const list_instrument_schedule_date_versions_request&) = default;
 };
 
 struct list_instrument_schedule_date_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_schedule_date> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_instrument_schedule_date_versions_response&,
+                           const list_instrument_schedule_date_versions_response&) = default;
 };
 
 struct get_instrument_schedule_date_version_request {
@@ -298,11 +379,17 @@ struct get_instrument_schedule_date_version_request {
      */
     static constexpr bool requires_session = true;
     instrument_schedule_date_version_key key;
+
+    friend bool operator==(const get_instrument_schedule_date_version_request&,
+                           const get_instrument_schedule_date_version_request&) = default;
 };
 
 struct get_instrument_schedule_date_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::instrument_schedule_date> version;
+
+    friend bool operator==(const get_instrument_schedule_date_version_response&,
+                           const get_instrument_schedule_date_version_response&) = default;
 };
 
 /**
@@ -314,9 +401,9 @@ struct get_instrument_schedule_date_version_response {
  * of them.
  */
 namespace instrument_schedule_date_event_subjects {
-inline constexpr std::string_view created = "trading.v1.instrument_schedule_dates_events.created";
-inline constexpr std::string_view updated = "trading.v1.instrument_schedule_dates_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_dates_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.instrument_schedule_dates.created";
+inline constexpr std::string_view updated = "trading.v1.events.instrument_schedule_dates.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedule_dates.deleted";
 }
 /**
  * @brief The members of instrument_schedule_date_key, named as the wire names them and in the order

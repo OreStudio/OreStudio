@@ -89,8 +89,8 @@ public:
     /**
      * @brief add <curve_definition_id> <nominal_term_structure> <inflation_type> <conventions>
      * <has_quotes> <extrapolation> <calendar> <day_counter> <lag> <frequency> <base_rate>
-     * <tolerance> <has_seasonality> <seasonality_base_date> <seasonality_frequency>
-     * <use_last_fixing_date> <interpolation_variable> <interpolation_method> <reason> <commentary>
+     * <tolerance> <use_last_fixing_date> <interpolation_variable> <interpolation_method> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -99,9 +99,8 @@ public:
     /**
      * @brief set <id> <curve_definition_id> <nominal_term_structure> <inflation_type> <conventions>
      * <has_quotes> <extrapolation> <calendar> <day_counter> <lag> <frequency> <base_rate>
-     * <tolerance> <has_seasonality> <seasonality_base_date> <seasonality_frequency>
-     * <use_last_fixing_date> <interpolation_variable> <interpolation_method> <reason> <commentary>
-     * [--version <n>]
+     * <tolerance> <use_last_fixing_date> <interpolation_variable> <interpolation_method> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -110,8 +109,7 @@ public:
     /**
      * @brief put-many --count <n> <id> <curve_definition_id> <nominal_term_structure>
      * <inflation_type> <conventions> <has_quotes> <extrapolation> <calendar> <day_counter> <lag>
-     * <frequency> <base_rate> <tolerance> <has_seasonality> <seasonality_base_date>
-     * <seasonality_frequency> <use_last_fixing_date> <interpolation_variable>
+     * <frequency> <base_rate> <tolerance> <use_last_fixing_date> <interpolation_variable>
      * <interpolation_method> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

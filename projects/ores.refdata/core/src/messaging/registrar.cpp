@@ -32,6 +32,7 @@
 #include "ores.refdata.core/messaging/local_jurisdiction_registrar.hpp"
 #include "ores.refdata.core/messaging/party_relationship_registrar.hpp"
 #include "ores.refdata.core/messaging/person_role_registrar.hpp"
+#include "ores.refdata.core/messaging/product_family_code_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_corporate_sector_registrar.hpp"
 #include "ores.refdata.core/messaging/reporting_regime_registrar.hpp"
 #include "ores.refdata.core/messaging/supervisory_body_registrar.hpp"
@@ -92,6 +93,9 @@
 #include "ores.refdata.core/messaging/diary_entry_type_registrar.hpp"
 #include "ores.refdata.core/messaging/floating_index_type_registrar.hpp"
 #include "ores.refdata.core/messaging/fra_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_blueprint_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_pillar_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_pillar_source_registrar.hpp"
 #include "ores.refdata.core/messaging/ibor_index_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/instrument_code_registrar.hpp"
 #include "ores.refdata.core/messaging/ir_curve_bootstrap_config_registrar.hpp"
@@ -165,6 +169,7 @@
 #include "ores.refdata.core/messaging/bond_yield_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/book_change_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/book_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/book_product_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/book_purpose_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/book_status_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/bundle_import_history_provider_registrar.hpp"
@@ -194,12 +199,25 @@
 #include "ores.refdata.core/messaging/cds_volatility_term_registrar.hpp"
 #include "ores.refdata.core/messaging/cms_spread_option_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/cms_spread_option_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_curve_basis_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_curve_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_curve_config_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_curve_cross_currency_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_curve_direct_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_curve_interpolation_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_forward_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_forward_convention_registrar.hpp"
-#include "ores.refdata.core/messaging/commodity_future_convention_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_averaging_terms_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_averaging_terms_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_contract_terms_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_contract_terms_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_future_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_expiry_anchor_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_expiry_anchor_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_off_peak_index_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_off_peak_index_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_option_expiry_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_option_expiry_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_price_segment_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_price_segment_registrar.hpp"
@@ -220,10 +238,20 @@
 #include "ores.refdata.core/messaging/crm_driver_pair_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_enabled_derived_pair_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_topology_config_history_provider_registrar.hpp"
-#include "ores.refdata.core/messaging/cross_currency_basis_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/cross_currency_basis_convention_registrar.hpp"
-#include "ores.refdata.core/messaging/cross_currency_fix_float_convention_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_basis_flat_leg_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_basis_flat_leg_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_basis_spread_leg_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_basis_spread_leg_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_basis_swap_terms_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_basis_swap_terms_registrar.hpp"
 #include "ores.refdata.core/messaging/cross_currency_fix_float_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_fixed_leg_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_fixed_leg_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_float_leg_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_float_leg_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_swap_terms_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_swap_terms_registrar.hpp"
 #include "ores.refdata.core/messaging/csa_eligible_currency_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/csa_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_calendar_history_provider_registrar.hpp"
@@ -261,12 +289,22 @@
 #include "ores.refdata.core/messaging/curve_section_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_security_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_security_config_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_convention_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_cross_currency_terms_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_curve_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_curve_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_discount_ratio_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_extrapolation_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_ibor_fallback_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_pillar_rule_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_projection_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_reference_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_tenor_basis_curves_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_type_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_weighted_average_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_config_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_constant_history_provider_registrar.hpp"
@@ -280,10 +318,15 @@
 #include "ores.refdata.core/messaging/curve_volatility_strike_surface_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_counter_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/default_curve_benchmark_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/default_curve_cds_terms_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/default_curve_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/default_curve_config_registrar.hpp"
 #include "ores.refdata.core/messaging/default_curve_configuration_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/default_curve_configuration_registrar.hpp"
+#include "ores.refdata.core/messaging/default_curve_market_terms_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/default_curve_transition_matrix_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/default_curve_yield_reinterpretation_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/derivation_kind_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/derivation_kind_registrar.hpp"
@@ -301,6 +344,9 @@
 #include "ores.refdata.core/messaging/future_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/fx_option_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/fx_option_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_blueprint_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_pillar_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_vol_surface_pillar_source_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/fx_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/fx_volatility_config_registrar.hpp"
 #include "ores.refdata.core/messaging/fx_volatility_smile_history_provider_registrar.hpp"
@@ -312,6 +358,7 @@
 #include "ores.refdata.core/messaging/inflation_curve_config_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_seasonality_factor_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_seasonality_factor_registrar.hpp"
+#include "ores.refdata.core/messaging/inflation_seasonality_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_swap_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/instrument_code_history_provider_registrar.hpp"
@@ -347,6 +394,7 @@
 #include "ores.refdata.core/messaging/portfolio_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/portfolio_right_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/producer_kind_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/product_family_code_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/purpose_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_book_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_corporate_sector_history_provider_registrar.hpp"
@@ -364,6 +412,7 @@
 #include "ores.refdata.core/messaging/swaption_proxy_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swaption_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swaption_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/swaption_volatility_smile_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_basis_swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_basis_swap_long_short_history_provider_registrar.hpp"
@@ -488,6 +537,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_ibor_index_convention_handlers(nats, ctx, verifier));
     append(register_ir_curve_bootstrap_config_handlers(nats, ctx, verifier));
     append(register_ir_curve_bootstrap_pillar_handlers(nats, ctx, verifier));
+    append(register_fx_vol_surface_blueprint_handlers(nats, ctx, verifier));
+    append(register_fx_vol_surface_pillar_handlers(nats, ctx, verifier));
+    append(register_fx_vol_surface_pillar_source_handlers(nats, ctx, verifier));
     append(register_ledger_feed_type_handlers(nats, ctx, verifier));
     append(register_leg_type_handlers(nats, ctx, verifier));
     append(register_local_jurisdiction_handlers(nats, ctx, verifier));
@@ -511,6 +563,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_party_status_handlers(nats, ctx, verifier));
     append(register_party_type_handlers(nats, ctx, verifier));
     append(register_person_role_handlers(nats, ctx, verifier));
+    append(register_product_family_code_handlers(nats, ctx, verifier));
     append(register_portfolio_handlers(nats, ctx, verifier));
     append(register_portfolio_right_handlers(nats, ctx, verifier));
     append(register_regulatory_corporate_sector_handlers(nats, ctx, verifier));
@@ -550,10 +603,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_commodity_curve_config_handlers(nats, ctx, verifier));
     append(register_commodity_forward_convention_handlers(nats, ctx, verifier));
     append(register_commodity_future_convention_handlers(nats, ctx, verifier));
+    append(register_commodity_future_averaging_terms_handlers(nats, ctx, verifier));
+    append(register_commodity_future_contract_terms_handlers(nats, ctx, verifier));
+    append(register_commodity_future_expiry_anchor_handlers(nats, ctx, verifier));
+    append(register_commodity_future_off_peak_index_handlers(nats, ctx, verifier));
+    append(register_commodity_future_option_expiry_handlers(nats, ctx, verifier));
     append(register_commodity_price_segment_handlers(nats, ctx, verifier));
     append(register_commodity_volatility_config_handlers(nats, ctx, verifier));
     append(register_cross_currency_basis_convention_handlers(nats, ctx, verifier));
+    append(register_cross_currency_basis_flat_leg_handlers(nats, ctx, verifier));
+    append(register_cross_currency_basis_spread_leg_handlers(nats, ctx, verifier));
+    append(register_cross_currency_basis_swap_terms_handlers(nats, ctx, verifier));
     append(register_cross_currency_fix_float_convention_handlers(nats, ctx, verifier));
+    append(register_cross_currency_fix_float_fixed_leg_handlers(nats, ctx, verifier));
+    append(register_cross_currency_fix_float_float_leg_handlers(nats, ctx, verifier));
+    append(register_cross_currency_fix_float_swap_terms_handlers(nats, ctx, verifier));
     append(register_curve_bootstrap_config_handlers(nats, ctx, verifier));
     append(register_curve_configuration_handlers(nats, ctx, verifier));
     append(register_curve_configuration_section_handlers(nats, ctx, verifier));
@@ -687,6 +751,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_local_jurisdiction_history_provider(hist_registry);
         register_party_relationship_history_provider(hist_registry);
         register_person_role_history_provider(hist_registry);
+        register_product_family_code_history_provider(hist_registry);
         register_regulatory_corporate_sector_history_provider(hist_registry);
         register_reporting_regime_history_provider(hist_registry);
         register_supervisory_body_history_provider(hist_registry);
@@ -771,6 +836,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_instrument_code_history_provider(hist_registry);
         register_ir_curve_bootstrap_config_history_provider(hist_registry);
         register_ir_curve_bootstrap_pillar_history_provider(hist_registry);
+        register_fx_vol_surface_blueprint_history_provider(hist_registry);
+        register_fx_vol_surface_pillar_history_provider(hist_registry);
+        register_fx_vol_surface_pillar_source_history_provider(hist_registry);
         register_party_contact_information_history_provider(hist_registry);
         register_party_country_history_provider(hist_registry);
         register_party_counterparty_history_provider(hist_registry);
@@ -791,13 +859,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_commodity_history_provider(hist_registry);
         register_commodity_curve_config_history_provider(hist_registry);
         register_commodity_forward_convention_history_provider(hist_registry);
-        register_commodity_future_convention_history_provider(hist_registry);
+        register_commodity_future_averaging_terms_history_provider(hist_registry);
+        register_commodity_future_contract_terms_history_provider(hist_registry);
+        register_commodity_future_expiry_anchor_history_provider(hist_registry);
+        register_commodity_future_off_peak_index_history_provider(hist_registry);
+        register_commodity_future_option_expiry_history_provider(hist_registry);
         register_commodity_price_segment_history_provider(hist_registry);
         register_commodity_volatility_config_history_provider(hist_registry);
         register_convention_history_provider(hist_registry);
         register_credit_limit_history_provider(hist_registry);
-        register_cross_currency_basis_convention_history_provider(hist_registry);
-        register_cross_currency_fix_float_convention_history_provider(hist_registry);
+        register_cross_currency_basis_flat_leg_history_provider(hist_registry);
+        register_cross_currency_basis_spread_leg_history_provider(hist_registry);
+        register_cross_currency_basis_swap_terms_history_provider(hist_registry);
+        register_cross_currency_fix_float_fixed_leg_history_provider(hist_registry);
+        register_cross_currency_fix_float_float_leg_history_provider(hist_registry);
+        register_cross_currency_fix_float_swap_terms_history_provider(hist_registry);
         register_curve_bootstrap_config_history_provider(hist_registry);
         register_curve_configuration_history_provider(hist_registry);
         register_curve_configuration_section_history_provider(hist_registry);
@@ -852,6 +928,28 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_curve_volatility_smile_history_provider(hist_registry);
         register_curve_volatility_smile_parameter_history_provider(hist_registry);
         register_curve_volatility_moneyness_surface_history_provider(hist_registry);
+        register_curve_segment_convention_history_provider(hist_registry);
+        register_curve_segment_cross_currency_terms_history_provider(hist_registry);
+        register_curve_segment_discount_ratio_history_provider(hist_registry);
+        register_curve_segment_extrapolation_history_provider(hist_registry);
+        register_curve_segment_ibor_fallback_history_provider(hist_registry);
+        register_curve_segment_pillar_rule_history_provider(hist_registry);
+        register_curve_segment_projection_history_provider(hist_registry);
+        register_curve_segment_reference_history_provider(hist_registry);
+        register_curve_segment_tenor_basis_curves_history_provider(hist_registry);
+        register_curve_segment_weighted_average_history_provider(hist_registry);
+        register_commodity_curve_basis_history_provider(hist_registry);
+        register_commodity_curve_cross_currency_history_provider(hist_registry);
+        register_commodity_curve_direct_history_provider(hist_registry);
+        register_commodity_curve_interpolation_history_provider(hist_registry);
+        register_default_curve_benchmark_history_provider(hist_registry);
+        register_default_curve_cds_terms_history_provider(hist_registry);
+        register_default_curve_market_terms_history_provider(hist_registry);
+        register_default_curve_transition_matrix_history_provider(hist_registry);
+        register_default_curve_yield_reinterpretation_history_provider(hist_registry);
+        register_swaption_volatility_smile_history_provider(hist_registry);
+        register_inflation_seasonality_history_provider(hist_registry);
+        register_book_product_type_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "refdata", registrar_queue_group, ctx, verifier));

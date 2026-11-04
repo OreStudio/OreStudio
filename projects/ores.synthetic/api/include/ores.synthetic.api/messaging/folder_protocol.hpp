@@ -26,17 +26,25 @@
 #define ORES_SYNTHETIC_API_MESSAGING_FOLDER_PROTOCOL_HPP
 
 #include "ores.synthetic.api/domain/folder.hpp"
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
 
 struct folder_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const folder_key&, const folder_key&) = default;
 };
 
 struct folder_write {
@@ -45,25 +53,35 @@ struct folder_write {
     std::string name;
     std::string kind;
     std::optional<boost::uuids::uuid> collection_id;
+
+    friend bool operator==(const folder_write&, const folder_write&) = default;
 };
 
 struct folder_change {
     folder_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const folder_change&, const folder_change&) = default;
 };
 
 struct folder_removal {
     folder_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const folder_removal&, const folder_removal&) = default;
 };
 
 struct folder_lookup {
     folder_key key;
     std::optional<ores::synthetic::domain::folder> folder;
+
+    friend bool operator==(const folder_lookup&, const folder_lookup&) = default;
 };
 
 struct folders_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const folders_filter&, const folders_filter&) = default;
 };
 
 struct folder_event {
@@ -73,17 +91,23 @@ struct folder_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const folder_event&, const folder_event&) = default;
 };
 
 struct folder_version_key {
     folder_key folder;
     std::uint32_t version;
+
+    friend bool operator==(const folder_version_key&, const folder_version_key&) = default;
 };
 
 struct folder_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const folder_versions_filter&, const folder_versions_filter&) = default;
 };
 
 struct list_folders_request {
@@ -101,12 +125,16 @@ struct list_folders_request {
     ores::utility::domain::order order;
     std::optional<folders_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_folders_request&, const list_folders_request&) = default;
 };
 
 struct list_folders_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::folder> folders;
     std::uint64_t total;
+
+    friend bool operator==(const list_folders_response&, const list_folders_response&) = default;
 };
 
 struct get_folder_request {
@@ -120,11 +148,15 @@ struct get_folder_request {
      */
     static constexpr bool requires_session = true;
     folder_key key;
+
+    friend bool operator==(const get_folder_request&, const get_folder_request&) = default;
 };
 
 struct get_folder_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::folder> folder;
+
+    friend bool operator==(const get_folder_response&, const get_folder_response&) = default;
 };
 
 struct get_many_folders_request {
@@ -138,11 +170,17 @@ struct get_many_folders_request {
      */
     static constexpr bool requires_session = true;
     std::vector<folder_key> keys;
+
+    friend bool operator==(const get_many_folders_request&,
+                           const get_many_folders_request&) = default;
 };
 
 struct get_many_folders_response {
     ores::utility::domain::result result;
     std::vector<folder_lookup> entries;
+
+    friend bool operator==(const get_many_folders_response&,
+                           const get_many_folders_response&) = default;
 };
 
 struct put_folder_request {
@@ -157,11 +195,15 @@ struct put_folder_request {
     static constexpr bool requires_session = true;
     folder_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_folder_request&, const put_folder_request&) = default;
 };
 
 struct put_folder_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::folder> folder;
+
+    friend bool operator==(const put_folder_response&, const put_folder_response&) = default;
 };
 
 struct put_many_folders_request {
@@ -176,11 +218,17 @@ struct put_many_folders_request {
     static constexpr bool requires_session = true;
     std::vector<folder_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_folders_request&,
+                           const put_many_folders_request&) = default;
 };
 
 struct put_many_folders_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::folder> folders;
+
+    friend bool operator==(const put_many_folders_response&,
+                           const put_many_folders_response&) = default;
 };
 
 struct delete_folder_request {
@@ -195,10 +243,14 @@ struct delete_folder_request {
     static constexpr bool requires_session = true;
     folder_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_folder_request&, const delete_folder_request&) = default;
 };
 
 struct delete_folder_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_folder_response&, const delete_folder_response&) = default;
 };
 
 struct delete_many_folders_request {
@@ -213,10 +265,16 @@ struct delete_many_folders_request {
     static constexpr bool requires_session = true;
     std::vector<folder_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_folders_request&,
+                           const delete_many_folders_request&) = default;
 };
 
 struct delete_many_folders_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_folders_response&,
+                           const delete_many_folders_response&) = default;
 };
 
 struct list_folder_versions_request {
@@ -234,12 +292,18 @@ struct list_folder_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<folder_versions_filter> filter;
+
+    friend bool operator==(const list_folder_versions_request&,
+                           const list_folder_versions_request&) = default;
 };
 
 struct list_folder_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::folder> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_folder_versions_response&,
+                           const list_folder_versions_response&) = default;
 };
 
 struct get_folder_version_request {
@@ -253,11 +317,17 @@ struct get_folder_version_request {
      */
     static constexpr bool requires_session = true;
     folder_version_key key;
+
+    friend bool operator==(const get_folder_version_request&,
+                           const get_folder_version_request&) = default;
 };
 
 struct get_folder_version_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::folder> version;
+
+    friend bool operator==(const get_folder_version_response&,
+                           const get_folder_version_response&) = default;
 };
 
 /**
@@ -269,11 +339,714 @@ struct get_folder_version_response {
  * of them.
  */
 namespace folder_event_subjects {
-inline constexpr std::string_view created = "synthetic.v1.folders_events.created";
-inline constexpr std::string_view updated = "synthetic.v1.folders_events.updated";
-inline constexpr std::string_view deleted = "synthetic.v1.folders_events.deleted";
+inline constexpr std::string_view created = "synthetic.v1.events.folders.created";
+inline constexpr std::string_view updated = "synthetic.v1.events.folders.updated";
+inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted";
+}
+/**
+ * @brief The members of folder_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folder_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &folder_key::id},
+    };
 }
 
+/**
+ * @brief The members of folder_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folder_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &folder_write::id},
+        utility::codec::field{"parent_id", &folder_write::parent_id},
+        utility::codec::field{"name", &folder_write::name},
+        utility::codec::field{"kind", &folder_write::kind},
+        utility::codec::field{"collection_id", &folder_write::collection_id},
+    };
 }
+
+/**
+ * @brief The members of folder_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folder_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &folder_change::write},
+        utility::codec::field{"precondition", &folder_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of folder_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folder_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &folder_removal::key},
+        utility::codec::field{"precondition", &folder_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of folder_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folder_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &folder_lookup::key},
+        utility::codec::field{"folder", &folder_lookup::folder},
+    };
+}
+
+/**
+ * @brief The members of folders_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folders_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &folders_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of folder_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folder_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &folder_event::event_id},
+        utility::codec::field{"key", &folder_event::key},
+        utility::codec::field{"action", &folder_event::action},
+        utility::codec::field{"version", &folder_event::version},
+        utility::codec::field{"occurred_at", &folder_event::occurred_at},
+        utility::codec::field{"correlation_id", &folder_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of folder_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folder_version_key&) {
+    return std::tuple{
+        utility::codec::field{"folder", &folder_version_key::folder},
+        utility::codec::field{"version", &folder_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of folder_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folder_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &folder_versions_filter::version},
+        utility::codec::field{"from_version", &folder_versions_filter::from_version},
+        utility::codec::field{"to_version", &folder_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_folders_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_folders_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_folders_request::offset},
+        utility::codec::field{"limit", &list_folders_request::limit},
+        utility::codec::field{"order", &list_folders_request::order},
+        utility::codec::field{"filter", &list_folders_request::filter},
+        utility::codec::field{"as_of", &list_folders_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_folders_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_folders_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_folders_response::result},
+        utility::codec::field{"folders", &list_folders_response::folders},
+        utility::codec::field{"total", &list_folders_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_folder_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_folder_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_folder_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_folder_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_folder_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_folder_response::result},
+        utility::codec::field{"folder", &get_folder_response::folder},
+    };
+}
+
+/**
+ * @brief The members of get_many_folders_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_folders_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_folders_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_folders_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_folders_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_folders_response::result},
+        utility::codec::field{"entries", &get_many_folders_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_folder_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_folder_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_folder_request::change},
+        utility::codec::field{"intent", &put_folder_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_folder_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_folder_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_folder_response::result},
+        utility::codec::field{"folder", &put_folder_response::folder},
+    };
+}
+
+/**
+ * @brief The members of put_many_folders_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_folders_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_folders_request::changes},
+        utility::codec::field{"intent", &put_many_folders_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_folders_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_folders_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_folders_response::result},
+        utility::codec::field{"folders", &put_many_folders_response::folders},
+    };
+}
+
+/**
+ * @brief The members of delete_folder_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_folder_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_folder_request::removal},
+        utility::codec::field{"intent", &delete_folder_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_folder_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_folder_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_folder_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_folders_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_folders_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_folders_request::removals},
+        utility::codec::field{"intent", &delete_many_folders_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_folders_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_folders_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_folders_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_folder_versions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_folder_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_folder_versions_request::key},
+        utility::codec::field{"offset", &list_folder_versions_request::offset},
+        utility::codec::field{"limit", &list_folder_versions_request::limit},
+        utility::codec::field{"order", &list_folder_versions_request::order},
+        utility::codec::field{"filter", &list_folder_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_folder_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_folder_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_folder_versions_response::result},
+        utility::codec::field{"versions", &list_folder_versions_response::versions},
+        utility::codec::field{"total", &list_folder_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_folder_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_folder_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_folder_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_folder_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_folder_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_folder_version_response::result},
+        utility::codec::field{"version", &get_folder_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folder_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folder_key& v);
+    static ores::synthetic::messaging::folder_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folder_key& v);
+    static ores::synthetic::messaging::folder_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folder_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folder_write& v);
+    static ores::synthetic::messaging::folder_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folder_write& v);
+    static ores::synthetic::messaging::folder_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folder_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folder_change& v);
+    static ores::synthetic::messaging::folder_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folder_change& v);
+    static ores::synthetic::messaging::folder_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folder_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folder_removal& v);
+    static ores::synthetic::messaging::folder_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folder_removal& v);
+    static ores::synthetic::messaging::folder_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folder_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folder_lookup& v);
+    static ores::synthetic::messaging::folder_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folder_lookup& v);
+    static ores::synthetic::messaging::folder_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folders_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folders_filter& v);
+    static ores::synthetic::messaging::folders_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folders_filter& v);
+    static ores::synthetic::messaging::folders_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folder_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folder_event& v);
+    static ores::synthetic::messaging::folder_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folder_event& v);
+    static ores::synthetic::messaging::folder_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folder_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folder_version_key& v);
+    static ores::synthetic::messaging::folder_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folder_version_key& v);
+    static ores::synthetic::messaging::folder_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folder_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folder_versions_filter& v);
+    static ores::synthetic::messaging::folder_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folder_versions_filter& v);
+    static ores::synthetic::messaging::folder_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::list_folders_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_folders_request& v);
+    static ores::synthetic::messaging::list_folders_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::list_folders_request& v);
+    static ores::synthetic::messaging::list_folders_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::list_folders_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_folders_response& v);
+    static ores::synthetic::messaging::list_folders_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::list_folders_response& v);
+    static ores::synthetic::messaging::list_folders_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::get_folder_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_folder_request& v);
+    static ores::synthetic::messaging::get_folder_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::get_folder_request& v);
+    static ores::synthetic::messaging::get_folder_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::get_folder_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_folder_response& v);
+    static ores::synthetic::messaging::get_folder_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::get_folder_response& v);
+    static ores::synthetic::messaging::get_folder_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::get_many_folders_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_many_folders_request& v);
+    static ores::synthetic::messaging::get_many_folders_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::get_many_folders_request& v);
+    static ores::synthetic::messaging::get_many_folders_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_many_folders_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_many_folders_response& v);
+    static ores::synthetic::messaging::get_many_folders_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_many_folders_response& v);
+    static ores::synthetic::messaging::get_many_folders_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::put_folder_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::put_folder_request& v);
+    static ores::synthetic::messaging::put_folder_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::put_folder_request& v);
+    static ores::synthetic::messaging::put_folder_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::put_folder_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::put_folder_response& v);
+    static ores::synthetic::messaging::put_folder_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::put_folder_response& v);
+    static ores::synthetic::messaging::put_folder_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::put_many_folders_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::put_many_folders_request& v);
+    static ores::synthetic::messaging::put_many_folders_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::put_many_folders_request& v);
+    static ores::synthetic::messaging::put_many_folders_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::put_many_folders_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::put_many_folders_response& v);
+    static ores::synthetic::messaging::put_many_folders_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::put_many_folders_response& v);
+    static ores::synthetic::messaging::put_many_folders_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::delete_folder_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::delete_folder_request& v);
+    static ores::synthetic::messaging::delete_folder_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::delete_folder_request& v);
+    static ores::synthetic::messaging::delete_folder_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::delete_folder_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::delete_folder_response& v);
+    static ores::synthetic::messaging::delete_folder_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::delete_folder_response& v);
+    static ores::synthetic::messaging::delete_folder_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_many_folders_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::delete_many_folders_request& v);
+    static ores::synthetic::messaging::delete_many_folders_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_many_folders_request& v);
+    static ores::synthetic::messaging::delete_many_folders_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_many_folders_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::delete_many_folders_response& v);
+    static ores::synthetic::messaging::delete_many_folders_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_many_folders_response& v);
+    static ores::synthetic::messaging::delete_many_folders_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_folder_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_folder_versions_request& v);
+    static ores::synthetic::messaging::list_folder_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_folder_versions_request& v);
+    static ores::synthetic::messaging::list_folder_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_folder_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_folder_versions_response& v);
+    static ores::synthetic::messaging::list_folder_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_folder_versions_response& v);
+    static ores::synthetic::messaging::list_folder_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_folder_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_folder_version_request& v);
+    static ores::synthetic::messaging::get_folder_version_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_folder_version_request& v);
+    static ores::synthetic::messaging::get_folder_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_folder_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_folder_version_response& v);
+    static ores::synthetic::messaging::get_folder_version_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_folder_version_response& v);
+    static ores::synthetic::messaging::get_folder_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

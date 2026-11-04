@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::dq::messaging::fsm_transition_event> {
-    static constexpr std::string_view subject_prefix = "dq.v1.fsm_transitions_events";
+    static constexpr std::string_view subject_prefix = "dq.v1.events.fsm_transitions";
 
     static ores::dq::messaging::fsm_transition_event
     from_notification(const entity_event_notification& notification) {

@@ -42,12 +42,7 @@ import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
 import { useHeld } from '../access/holds.js';
-import {
-    gridAppVersionPath,
-    gridJobPath,
-    gridNodePath,
-    gridReportRunPath,
-} from '../shell/paths.js';
+import { gridAppVersionPath, gridJobPath, gridNodePath, reportRunPath } from '../shell/paths.js';
 import { formatDateTime } from '../ui/Time.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Detail, Input, LinkButton, Notice, Select, Tag } from '../ui/Primitives.js';
@@ -829,7 +824,7 @@ function BatchDetails({ batch }: { readonly batch: BatchView }): ReactNode {
                 <Detail
                     label={t('operations.grid.jobs.fields.reportRun')}
                     value={
-                        <RouteLink to={gridReportRunPath(batch.external_ref)}>
+                        <RouteLink to={reportRunPath(batch.external_ref)}>
                             {batch.report_run_name}
                         </RouteLink>
                     }

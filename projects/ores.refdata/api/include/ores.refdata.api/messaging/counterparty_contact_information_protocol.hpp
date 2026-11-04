@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct counterparty_contact_information_key {
     std::string contact_type;
+
+    friend bool operator==(const counterparty_contact_information_key&,
+                           const counterparty_contact_information_key&) = default;
 };
 
 struct counterparty_contact_information_write {
@@ -58,28 +61,43 @@ struct counterparty_contact_information_write {
     std::string phone;
     std::string email;
     std::string web_page;
+
+    friend bool operator==(const counterparty_contact_information_write&,
+                           const counterparty_contact_information_write&) = default;
 };
 
 struct counterparty_contact_information_change {
     counterparty_contact_information_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const counterparty_contact_information_change&,
+                           const counterparty_contact_information_change&) = default;
 };
 
 struct counterparty_contact_information_removal {
     counterparty_contact_information_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const counterparty_contact_information_removal&,
+                           const counterparty_contact_information_removal&) = default;
 };
 
 struct counterparty_contact_information_lookup {
     counterparty_contact_information_key key;
     std::optional<ores::refdata::domain::counterparty_contact_information>
         counterparty_contact_information;
+
+    friend bool operator==(const counterparty_contact_information_lookup&,
+                           const counterparty_contact_information_lookup&) = default;
 };
 
 struct counterparty_contact_informations_filter {
     std::optional<boost::uuids::uuid> counterparty_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
+
+    friend bool operator==(const counterparty_contact_informations_filter&,
+                           const counterparty_contact_informations_filter&) = default;
 };
 
 struct counterparty_contact_information_event {
@@ -89,17 +107,26 @@ struct counterparty_contact_information_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const counterparty_contact_information_event&,
+                           const counterparty_contact_information_event&) = default;
 };
 
 struct counterparty_contact_information_version_key {
     counterparty_contact_information_key counterparty_contact_information;
     std::uint32_t version;
+
+    friend bool operator==(const counterparty_contact_information_version_key&,
+                           const counterparty_contact_information_version_key&) = default;
 };
 
 struct counterparty_contact_information_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const counterparty_contact_information_versions_filter&,
+                           const counterparty_contact_information_versions_filter&) = default;
 };
 
 struct list_counterparty_contact_informations_request {
@@ -118,6 +145,9 @@ struct list_counterparty_contact_informations_request {
     ores::utility::domain::order order;
     std::optional<counterparty_contact_informations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_counterparty_contact_informations_request&,
+                           const list_counterparty_contact_informations_request&) = default;
 };
 
 struct list_counterparty_contact_informations_response {
@@ -125,6 +155,9 @@ struct list_counterparty_contact_informations_response {
     std::vector<ores::refdata::domain::counterparty_contact_information>
         counterparty_contact_informations;
     std::uint64_t total;
+
+    friend bool operator==(const list_counterparty_contact_informations_response&,
+                           const list_counterparty_contact_informations_response&) = default;
 };
 
 struct get_counterparty_contact_information_request {
@@ -139,12 +172,18 @@ struct get_counterparty_contact_information_request {
      */
     static constexpr bool requires_session = true;
     counterparty_contact_information_key key;
+
+    friend bool operator==(const get_counterparty_contact_information_request&,
+                           const get_counterparty_contact_information_request&) = default;
 };
 
 struct get_counterparty_contact_information_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::counterparty_contact_information>
         counterparty_contact_information;
+
+    friend bool operator==(const get_counterparty_contact_information_response&,
+                           const get_counterparty_contact_information_response&) = default;
 };
 
 struct get_many_counterparty_contact_informations_request {
@@ -159,11 +198,17 @@ struct get_many_counterparty_contact_informations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<counterparty_contact_information_key> keys;
+
+    friend bool operator==(const get_many_counterparty_contact_informations_request&,
+                           const get_many_counterparty_contact_informations_request&) = default;
 };
 
 struct get_many_counterparty_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<counterparty_contact_information_lookup> entries;
+
+    friend bool operator==(const get_many_counterparty_contact_informations_response&,
+                           const get_many_counterparty_contact_informations_response&) = default;
 };
 
 struct put_counterparty_contact_information_request {
@@ -179,12 +224,18 @@ struct put_counterparty_contact_information_request {
     static constexpr bool requires_session = true;
     counterparty_contact_information_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_counterparty_contact_information_request&,
+                           const put_counterparty_contact_information_request&) = default;
 };
 
 struct put_counterparty_contact_information_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::counterparty_contact_information>
         counterparty_contact_information;
+
+    friend bool operator==(const put_counterparty_contact_information_response&,
+                           const put_counterparty_contact_information_response&) = default;
 };
 
 struct put_many_counterparty_contact_informations_request {
@@ -200,12 +251,18 @@ struct put_many_counterparty_contact_informations_request {
     static constexpr bool requires_session = true;
     std::vector<counterparty_contact_information_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_counterparty_contact_informations_request&,
+                           const put_many_counterparty_contact_informations_request&) = default;
 };
 
 struct put_many_counterparty_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_contact_information>
         counterparty_contact_informations;
+
+    friend bool operator==(const put_many_counterparty_contact_informations_response&,
+                           const put_many_counterparty_contact_informations_response&) = default;
 };
 
 struct delete_counterparty_contact_information_request {
@@ -221,10 +278,16 @@ struct delete_counterparty_contact_information_request {
     static constexpr bool requires_session = true;
     counterparty_contact_information_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_counterparty_contact_information_request&,
+                           const delete_counterparty_contact_information_request&) = default;
 };
 
 struct delete_counterparty_contact_information_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_counterparty_contact_information_response&,
+                           const delete_counterparty_contact_information_response&) = default;
 };
 
 struct delete_many_counterparty_contact_informations_request {
@@ -240,10 +303,16 @@ struct delete_many_counterparty_contact_informations_request {
     static constexpr bool requires_session = true;
     std::vector<counterparty_contact_information_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_counterparty_contact_informations_request&,
+                           const delete_many_counterparty_contact_informations_request&) = default;
 };
 
 struct delete_many_counterparty_contact_informations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_counterparty_contact_informations_response&,
+                           const delete_many_counterparty_contact_informations_response&) = default;
 };
 
 struct list_by_counterparty_id_counterparty_contact_informations_request {
@@ -263,6 +332,10 @@ struct list_by_counterparty_id_counterparty_contact_informations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<counterparty_contact_informations_filter> filter;
+
+    friend bool
+    operator==(const list_by_counterparty_id_counterparty_contact_informations_request&,
+               const list_by_counterparty_id_counterparty_contact_informations_request&) = default;
 };
 
 struct list_by_counterparty_id_counterparty_contact_informations_response {
@@ -270,6 +343,10 @@ struct list_by_counterparty_id_counterparty_contact_informations_response {
     std::vector<ores::refdata::domain::counterparty_contact_information>
         counterparty_contact_informations;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_counterparty_id_counterparty_contact_informations_response&,
+               const list_by_counterparty_id_counterparty_contact_informations_response&) = default;
 };
 
 struct list_counterparty_contact_information_versions_request {
@@ -288,12 +365,19 @@ struct list_counterparty_contact_information_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<counterparty_contact_information_versions_filter> filter;
+
+    friend bool operator==(const list_counterparty_contact_information_versions_request&,
+                           const list_counterparty_contact_information_versions_request&) = default;
 };
 
 struct list_counterparty_contact_information_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_contact_information> versions;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_counterparty_contact_information_versions_response&,
+               const list_counterparty_contact_information_versions_response&) = default;
 };
 
 struct get_counterparty_contact_information_version_request {
@@ -308,11 +392,17 @@ struct get_counterparty_contact_information_version_request {
      */
     static constexpr bool requires_session = true;
     counterparty_contact_information_version_key key;
+
+    friend bool operator==(const get_counterparty_contact_information_version_request&,
+                           const get_counterparty_contact_information_version_request&) = default;
 };
 
 struct get_counterparty_contact_information_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::counterparty_contact_information> version;
+
+    friend bool operator==(const get_counterparty_contact_information_version_response&,
+                           const get_counterparty_contact_information_version_response&) = default;
 };
 
 /**
@@ -325,11 +415,11 @@ struct get_counterparty_contact_information_version_response {
  */
 namespace counterparty_contact_information_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.counterparty_contact_informations_events.created";
+    "refdata.v1.events.counterparty_contact_informations.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.counterparty_contact_informations_events.updated";
+    "refdata.v1.events.counterparty_contact_informations.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.counterparty_contact_informations_events.deleted";
+    "refdata.v1.events.counterparty_contact_informations.deleted";
 }
 /**
  * @brief The members of counterparty_contact_information_key, named as the wire names them and in

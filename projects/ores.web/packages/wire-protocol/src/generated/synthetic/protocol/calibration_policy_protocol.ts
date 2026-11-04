@@ -36,6 +36,13 @@ export interface CalibrationPolicyWrite {
     id: string;
     asset_class_code: string;
     window_days: number;
+    variance_window_days: number;
+    variance_approval_mode: string;
+    variance_min_returns: number;
+    variance_require_starts_agree: boolean;
+    variance_min_persistence: number;
+    variance_max_persistence: number;
+    variance_min_reaction: number;
     allow_inverse: boolean;
     fallback_code: string;
 }
@@ -209,7 +216,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.calibration_policies_events.created',
-    updated: 'synthetic.v1.calibration_policies_events.updated',
-    deleted: 'synthetic.v1.calibration_policies_events.deleted',
+    created: 'synthetic.v1.events.calibration_policies.created',
+    updated: 'synthetic.v1.events.calibration_policies.updated',
+    deleted: 'synthetic.v1.events.calibration_policies.deleted',
 } as const;

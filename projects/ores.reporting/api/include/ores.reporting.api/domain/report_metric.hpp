@@ -67,6 +67,41 @@ struct report_metric final {
     boost::uuids::uuid report_instance_id;
 
     /**
+     * @brief The compute result whose output states the figure. A run fans out into one result for
+     * each workunit, and each result writes its own files.
+     */
+    boost::uuids::uuid result_id;
+
+    /**
+     * @brief The observation date the figure belongs to: the run's priced date when the file states
+     * none, and the row's own date or time step when it does.
+     */
+    std::chrono::system_clock::time_point as_of;
+
+    /**
+     * @brief The engine's name for the figure: a heading such as NPV, and also a curve or a risk
+     * factor, because a configuration-driven family states each figure as a column.
+     */
+    std::string measure;
+
+    /**
+     * @brief The file the reader read, as the engine named it.
+     */
+    std::string source;
+
+    /**
+     * @brief The line of the file that states the figure, counting the heading as line one. A file
+     * such as a sensitivity states many rows with the same trade, date and heading, so only the
+     * file and the line tell one figure from another.
+     */
+    int line = 0;
+
+    /**
+     * @brief The report the run came from, so a definition's runs are one query.
+     */
+    boost::uuids::uuid report_definition_id;
+
+    /**
      * @brief The family the figure came from, as the catalogue names it: npv, curves, xva. It is
      * what tells a reader which reader produced the row.
      */
@@ -83,23 +118,6 @@ struct report_metric final {
      * the engine names its records with strings, not with uuids.
      */
     std::string subject_id;
-
-    /**
-     * @brief The observation date the figure belongs to: the run's priced date when the file states
-     * none, and the row's own date or time step when it does.
-     */
-    std::chrono::system_clock::time_point as_of;
-
-    /**
-     * @brief The engine's name for the figure: a heading such as NPV, and also a curve or a risk
-     * factor, because a configuration-driven family states each figure as a column.
-     */
-    std::string measure;
-
-    /**
-     * @brief The report the run came from, so a definition's runs are one query.
-     */
-    boost::uuids::uuid report_definition_id;
 
     /**
      * @brief The currency the figure is stated in, empty when it states none.
@@ -127,11 +145,6 @@ struct report_metric final {
      * @brief The figure, as the engine stated it and never formatted.
      */
     double value;
-
-    /**
-     * @brief The family and the row the reader read, for provenance.
-     */
-    std::string source;
 
     /**
      * @brief Value equality.

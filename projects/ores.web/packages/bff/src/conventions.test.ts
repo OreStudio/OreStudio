@@ -177,7 +177,16 @@ describe('the family list', () => {
         const extra = CONVENTION_FAMILIES.filter(
             (family) => !registryEntities.has(family.entity),
         ).map((family) => family.key);
-        expect(extra.sort()).toEqual(['currency-pair', 'tenor', 'tenor-basis-swap'].sort());
+        expect(extra.sort()).toEqual(
+            [
+                'commodity-future',
+                'cross-currency-basis',
+                'cross-currency-fix-float',
+                'currency-pair',
+                'tenor',
+                'tenor-basis-swap',
+            ].sort(),
+        );
     });
 
     it('addresses each registry family at the subject stem the registry states', () => {
@@ -575,8 +584,23 @@ describe('convention routes', () => {
         // The composite count is scoped by kind, so a second atomised kind does
         // not inflate the first family's count.
         expect(
-            calls.find((call) => call.subject === 'refdata.v1.conventions.list')?.body,
-        ).toMatchObject({ filter: { kind_code: 'TENOR_BASIS_SWAP' } });
+            calls
+                .filter((call) => call.subject === 'refdata.v1.conventions.list')
+                .map((call) => (call.body as { filter: { kind_code: string } }).filter.kind_code)
+                .sort(),
+        ).toEqual([
+            'COMMODITY_FUTURE',
+            'CROSS_CURRENCY_BASIS',
+            'CROSS_CURRENCY_FIX_FLOAT',
+            'TENOR_BASIS_SWAP',
+        ]);
+        expect(
+            families.find((f: { key: string }) => f.key === 'cross-currency-fix-float').count,
+        ).toBe(4);
+        expect(families.find((f: { key: string }) => f.key === 'cross-currency-basis').count).toBe(
+            4,
+        );
+        expect(families.find((f: { key: string }) => f.key === 'commodity-future').count).toBe(4);
     });
 
     it('lists the rows of one family under its own subject', async () => {

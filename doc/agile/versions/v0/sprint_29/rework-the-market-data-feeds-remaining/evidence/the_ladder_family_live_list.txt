@@ -1,0 +1,133 @@
+ party  | cut  | definitions 
+--------+------+-------------
+ ACCOHK | LIVE |           5
+ ACCOHK | EOD  |          10
+ ACCOUK | LIVE |           5
+ ACCOUK | EOD  |          10
+ ACCOUS | LIVE |           5
+ ACCOUS | EOD  |          10
+ ACMCOR | LIVE |           5
+ ACMCOR | EOD  |          10
+(8 rows)
+
+ party  |                       name                       | cut  |     schedule      |                         run_settings                         | market_data 
+--------+--------------------------------------------------+------+-------------------+--------------------------------------------------------------+-------------
+ ACCOHK | Bump and Reprice ATM Vega Ladder                 | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOHK | Bump and Reprice ATM Vega Ladder (EOD)           | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOHK | Bump and Reprice Butterfly Vega Ladder           | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOHK | Bump and Reprice Butterfly Vega Ladder (EOD)     | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOHK | Bump and Reprice Cross-gamma Ladder              | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOHK | Bump and Reprice Delta Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOHK | Bump and Reprice DV01 Ladder                     | EOD  | 0 18 * * 1-5      | Sensitivities (EOD) - Global Portfolio                       | eod
+ ACCOHK | Bump and Reprice Gamma Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOHK | Bump and Reprice Rho Ladder                      | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOHK | Bump and Reprice Rho Ladder (EOD)                | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOHK | Bump and Reprice Risk-reversal Vega Ladder       | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOHK | Bump and Reprice Risk-reversal Vega Ladder (EOD) | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOHK | Bump and Reprice Surface Vega Ladder             | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOHK | Bump and Reprice Surface Vega Ladder (EOD)       | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOHK | Bump and Reprice Theta Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUK | Bump and Reprice ATM Vega Ladder                 | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUK | Bump and Reprice ATM Vega Ladder (EOD)           | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUK | Bump and Reprice Butterfly Vega Ladder           | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUK | Bump and Reprice Butterfly Vega Ladder (EOD)     | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUK | Bump and Reprice Cross-gamma Ladder              | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUK | Bump and Reprice Delta Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUK | Bump and Reprice DV01 Ladder                     | EOD  | 0 18 * * 1-5      | Sensitivities (EOD) - Global Portfolio                       | eod
+ ACCOUK | Bump and Reprice Gamma Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUK | Bump and Reprice Rho Ladder                      | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUK | Bump and Reprice Rho Ladder (EOD)                | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUK | Bump and Reprice Risk-reversal Vega Ladder       | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUK | Bump and Reprice Risk-reversal Vega Ladder (EOD) | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUK | Bump and Reprice Surface Vega Ladder             | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUK | Bump and Reprice Surface Vega Ladder (EOD)       | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUK | Bump and Reprice Theta Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUS | Bump and Reprice ATM Vega Ladder                 | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUS | Bump and Reprice ATM Vega Ladder (EOD)           | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUS | Bump and Reprice Butterfly Vega Ladder           | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUS | Bump and Reprice Butterfly Vega Ladder (EOD)     | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUS | Bump and Reprice Cross-gamma Ladder              | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUS | Bump and Reprice Delta Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUS | Bump and Reprice DV01 Ladder                     | EOD  | 0 18 * * 1-5      | Sensitivities (EOD) - Global Portfolio                       | eod
+ ACCOUS | Bump and Reprice Gamma Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUS | Bump and Reprice Rho Ladder                      | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUS | Bump and Reprice Rho Ladder (EOD)                | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUS | Bump and Reprice Risk-reversal Vega Ladder       | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUS | Bump and Reprice Risk-reversal Vega Ladder (EOD) | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUS | Bump and Reprice Surface Vega Ladder             | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Global Portfolio               | live
+ ACCOUS | Bump and Reprice Surface Vega Ladder (EOD)       | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACCOUS | Bump and Reprice Theta Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Global Portfolio         | eod
+ ACMCOR | Bump and Reprice ATM Vega Ladder                 | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Group Treasury Portfolio       | live
+ ACMCOR | Bump and Reprice ATM Vega Ladder (EOD)           | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Group Treasury Portfolio | eod
+ ACMCOR | Bump and Reprice Butterfly Vega Ladder           | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Group Treasury Portfolio       | live
+ ACMCOR | Bump and Reprice Butterfly Vega Ladder (EOD)     | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Group Treasury Portfolio | eod
+ ACMCOR | Bump and Reprice Cross-gamma Ladder              | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Group Treasury Portfolio | eod
+ ACMCOR | Bump and Reprice Delta Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Group Treasury Portfolio | eod
+ ACMCOR | Bump and Reprice DV01 Ladder                     | EOD  | 0 18 * * 1-5      | Sensitivities (EOD) - Group Treasury Portfolio               | eod
+ ACMCOR | Bump and Reprice Gamma Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Group Treasury Portfolio | eod
+ ACMCOR | Bump and Reprice Rho Ladder                      | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Group Treasury Portfolio       | live
+ ACMCOR | Bump and Reprice Rho Ladder (EOD)                | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Group Treasury Portfolio | eod
+ ACMCOR | Bump and Reprice Risk-reversal Vega Ladder       | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Group Treasury Portfolio       | live
+ ACMCOR | Bump and Reprice Risk-reversal Vega Ladder (EOD) | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Group Treasury Portfolio | eod
+ ACMCOR | Bump and Reprice Surface Vega Ladder             | LIVE | */30 8-17 * * 1-5 | Valuation and sensitivities - Group Treasury Portfolio       | live
+ ACMCOR | Bump and Reprice Surface Vega Ladder (EOD)       | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Group Treasury Portfolio | eod
+ ACMCOR | Bump and Reprice Theta Ladder                    | EOD  | 0 18 * * 1-5      | Valuation and sensitivities (EOD) - Group Treasury Portfolio | eod
+(60 rows)
+
+        type         | bindings 
+---------------------+----------
+ conventions         |       15
+ curve_configuration |       15
+ engine_settings     |       15
+ pricing_engines     |       15
+ risk_report_config  |       15
+ todays_market       |       15
+(6 rows)
+
+ party  |                         run_settings                         |       parameter       |      value      
+--------+--------------------------------------------------------------+-----------------------+-----------------
+ ACCOHK | Sensitivities (EOD) - Global Portfolio                       | marketConfigFile      | simulation.xml
+ ACCOHK | Sensitivities (EOD) - Global Portfolio                       | sensitivityConfigFile | sensitivity.xml
+ ACCOHK | Valuation and sensitivities (EOD) - Global Portfolio         | marketConfigFile      | simulation.xml
+ ACCOHK | Valuation and sensitivities (EOD) - Global Portfolio         | sensitivityConfigFile | sensitivity.xml
+ ACCOHK | Valuation and sensitivities - Global Portfolio               | marketConfigFile      | simulation.xml
+ ACCOHK | Valuation and sensitivities - Global Portfolio               | sensitivityConfigFile | sensitivity.xml
+ ACCOUK | Sensitivities (EOD) - Global Portfolio                       | marketConfigFile      | simulation.xml
+ ACCOUK | Sensitivities (EOD) - Global Portfolio                       | sensitivityConfigFile | sensitivity.xml
+ ACCOUK | Valuation and sensitivities (EOD) - Global Portfolio         | marketConfigFile      | simulation.xml
+ ACCOUK | Valuation and sensitivities (EOD) - Global Portfolio         | sensitivityConfigFile | sensitivity.xml
+ ACCOUK | Valuation and sensitivities - Global Portfolio               | marketConfigFile      | simulation.xml
+ ACCOUK | Valuation and sensitivities - Global Portfolio               | sensitivityConfigFile | sensitivity.xml
+ ACCOUS | Sensitivities (EOD) - Global Portfolio                       | marketConfigFile      | simulation.xml
+ ACCOUS | Sensitivities (EOD) - Global Portfolio                       | sensitivityConfigFile | sensitivity.xml
+ ACCOUS | Valuation and sensitivities (EOD) - Global Portfolio         | marketConfigFile      | simulation.xml
+ ACCOUS | Valuation and sensitivities (EOD) - Global Portfolio         | sensitivityConfigFile | sensitivity.xml
+ ACCOUS | Valuation and sensitivities - Global Portfolio               | marketConfigFile      | simulation.xml
+ ACCOUS | Valuation and sensitivities - Global Portfolio               | sensitivityConfigFile | sensitivity.xml
+ ACMCOR | Sensitivities (EOD) - Group Treasury Portfolio               | marketConfigFile      | simulation.xml
+ ACMCOR | Sensitivities (EOD) - Group Treasury Portfolio               | sensitivityConfigFile | sensitivity.xml
+ ACMCOR | Valuation and sensitivities (EOD) - Group Treasury Portfolio | marketConfigFile      | simulation.xml
+ ACMCOR | Valuation and sensitivities (EOD) - Group Treasury Portfolio | sensitivityConfigFile | sensitivity.xml
+ ACMCOR | Valuation and sensitivities - Group Treasury Portfolio       | marketConfigFile      | simulation.xml
+ ACMCOR | Valuation and sensitivities - Group Treasury Portfolio       | sensitivityConfigFile | sensitivity.xml
+(24 rows)
+
+           dataset            |                       name                       | cut  |     schedule      
+------------------------------+--------------------------------------------------+------+-------------------
+ northwind.report_definitions | Bump and Reprice ATM Vega Ladder                 | LIVE | */30 8-17 * * 1-5
+ northwind.report_definitions | Bump and Reprice ATM Vega Ladder (EOD)           | EOD  | 0 18 * * 1-5
+ northwind.report_definitions | Bump and Reprice Butterfly Vega Ladder           | LIVE | */30 8-17 * * 1-5
+ northwind.report_definitions | Bump and Reprice Butterfly Vega Ladder (EOD)     | EOD  | 0 18 * * 1-5
+ northwind.report_definitions | Bump and Reprice Cross-gamma Ladder              | EOD  | 0 18 * * 1-5
+ northwind.report_definitions | Bump and Reprice Delta Ladder                    | EOD  | 0 18 * * 1-5
+ northwind.report_definitions | Bump and Reprice DV01 Ladder                     | EOD  | 0 18 * * 1-5
+ northwind.report_definitions | Bump and Reprice Gamma Ladder                    | EOD  | 0 18 * * 1-5
+ northwind.report_definitions | Bump and Reprice Rho Ladder                      | LIVE | */30 8-17 * * 1-5
+ northwind.report_definitions | Bump and Reprice Rho Ladder (EOD)                | EOD  | 0 18 * * 1-5
+ northwind.report_definitions | Bump and Reprice Risk-reversal Vega Ladder       | LIVE | */30 8-17 * * 1-5
+ northwind.report_definitions | Bump and Reprice Risk-reversal Vega Ladder (EOD) | EOD  | 0 18 * * 1-5
+ northwind.report_definitions | Bump and Reprice Surface Vega Ladder             | LIVE | */30 8-17 * * 1-5
+ northwind.report_definitions | Bump and Reprice Surface Vega Ladder (EOD)       | EOD  | 0 18 * * 1-5
+ northwind.report_definitions | Bump and Reprice Theta Ladder                    | EOD  | 0 18 * * 1-5
+(15 rows)
+

@@ -145,7 +145,7 @@ TEST_CASE("each lifecycle state reads as the health word the screen draws", "[se
                                         .subject = "analytic",
                                         .subject_id = "PRICING",
                                         .detail = {}}})
-                .empty());
+                .failure.empty());
     }
 
     ores::reporting::messaging::get_report_instance_health_request request;

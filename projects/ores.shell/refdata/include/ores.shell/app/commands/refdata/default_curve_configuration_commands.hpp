@@ -87,12 +87,8 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <curve_definition_id> <is_inline> <priority> <default_curve_type> <discount_curve>
-     * <day_counter> <recovery_rate> <start_date> <has_quotes> <benchmark_curve>
-     * <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar> <conventions>
-     * <extrapolation> <running_spread> <index_term> <imply_default_from_market>
-     * <allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason>
-     * <commentary>
+     * @brief add <curve_definition_id> <is_inline> <priority> <default_curve_type> <day_counter>
+     * <recovery_rate> <extrapolation> <allow_negative_rates> <position> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -100,10 +96,7 @@ public:
 
     /**
      * @brief set <id> <curve_definition_id> <is_inline> <priority> <default_curve_type>
-     * <discount_curve> <day_counter> <recovery_rate> <start_date> <has_quotes> <benchmark_curve>
-     * <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar> <conventions>
-     * <extrapolation> <running_spread> <index_term> <imply_default_from_market>
-     * <allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason>
+     * <day_counter> <recovery_rate> <extrapolation> <allow_negative_rates> <position> <reason>
      * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -112,11 +105,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <curve_definition_id> <is_inline> <priority>
-     * <default_curve_type> <discount_curve> <day_counter> <recovery_rate> <start_date> <has_quotes>
-     * <benchmark_curve> <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar>
-     * <conventions> <extrapolation> <running_spread> <index_term> <imply_default_from_market>
-     * <allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason>
-     * <commentary>
+     * <default_curve_type> <day_counter> <recovery_rate> <extrapolation> <allow_negative_rates>
+     * <position> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

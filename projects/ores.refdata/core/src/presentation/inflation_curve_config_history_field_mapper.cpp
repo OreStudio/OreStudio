@@ -54,11 +54,6 @@ render_inflation_curve_config_fields(const domain::inflation_curve_config& v) {
     fields.push_back({.name = "Base Rate", .value = v.base_rate.value_or(std::string{})});
     fields.push_back(
         {.name = "Tolerance", .value = v.tolerance ? std::to_string(*v.tolerance) : std::string{}});
-    fields.push_back({.name = "Has Seasonality", .value = v.has_seasonality ? "true" : "false"});
-    fields.push_back({.name = "Seasonality Base Date",
-                      .value = v.seasonality_base_date.value_or(std::string{})});
-    fields.push_back({.name = "Seasonality Frequency",
-                      .value = v.seasonality_frequency.value_or(std::string{})});
     fields.push_back(
         {.name = "Use Last Fixing Date", .value = v.use_last_fixing_date.value_or(std::string{})});
     fields.push_back({.name = "Interpolation Variable",

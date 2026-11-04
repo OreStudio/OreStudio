@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 53445627-803F-5C71-8ADF-406AAD309BD7
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_future_expiry_anchors commands from the shell?
+#+description: Every command the commodity_future_expiry_anchors submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_future_expiry_anchors:
+
+This file documents the commodity_future_expiry_anchors resource at the shell, one section per command. Every command is a subcommand of =commodity_future_expiry_anchors=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 94AD458A-F3D2-53B2-AD38-9C63307187BC
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors.list=.
+
+#+name: commodity_future_expiry_anchors-list
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-list.ores :exports none
+commodity_future_expiry_anchors list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: ADD5DDBC-6CA2-5C2A-AA7C-79B69B51769D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors.get=.
+
+#+name: commodity_future_expiry_anchors-get
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-get.ores :exports none
+commodity_future_expiry_anchors get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 45594D39-5E5C-5CC6-B186-BF9D92C083F1
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors.get_many=.
+
+#+name: commodity_future_expiry_anchors-get-many
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-get-many.ores :exports none
+commodity_future_expiry_anchors get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FF448994-75F5-57DF-ABC1-1B19D2726756
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors add <convention_id> <anchor_day_of_month> <anchor_calendar_days_before> <anchor_business_days_after> <anchor_nth_nth> <anchor_nth_weekday> <anchor_last_weekday> <anchor_weekly_day_of_the_week> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors.put=.
+
+#+name: commodity_future_expiry_anchors-add
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-add.ores :exports none
+commodity_future_expiry_anchors add 00000000-0000-0000-0000-000000000000 - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: BAE5B716-65CD-5BEB-BC6E-11097CCB4EC8
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors set <id> <convention_id> <anchor_day_of_month> <anchor_calendar_days_before> <anchor_business_days_after> <anchor_nth_nth> <anchor_nth_weekday> <anchor_last_weekday> <anchor_weekly_day_of_the_week> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors.put=.
+
+#+name: commodity_future_expiry_anchors-set
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-set.ores :exports none
+commodity_future_expiry_anchors set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 045D3E8E-55D4-57FE-B118-942B8511B78E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors put-many --count <n> <id> <convention_id> <anchor_day_of_month> <anchor_calendar_days_before> <anchor_business_days_after> <anchor_nth_nth> <anchor_nth_weekday> <anchor_last_weekday> <anchor_weekly_day_of_the_week> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors.put_many=.
+
+#+name: commodity_future_expiry_anchors-put-many
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-put-many.ores :exports none
+commodity_future_expiry_anchors put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 78122122-EBDC-5302-A532-69AD04D7FBAA
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors.delete=.
+
+#+name: commodity_future_expiry_anchors-delete
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-delete.ores :exports none
+commodity_future_expiry_anchors delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A59C678A-92A9-5B2E-897F-3F883B4FC1A2
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors.delete_many=.
+
+#+name: commodity_future_expiry_anchors-delete-many
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-delete-many.ores :exports none
+commodity_future_expiry_anchors delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-convention-id=
+:PROPERTIES:
+:ID: B6212EB0-14D5-5BE4-91FB-E488EA0145A7
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors by-convention-id <convention_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors.list_by_convention_id=.
+
+#+name: commodity_future_expiry_anchors-by-convention-id
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-by-convention-id.ores :exports none
+commodity_future_expiry_anchors by-convention-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: BD850752-AF61-588F-98F5-473935FA5A1B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors_versions.list=.
+
+#+name: commodity_future_expiry_anchors-versions
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-versions.ores :exports none
+commodity_future_expiry_anchors versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6416EB46-8A9A-54D2-AC1D-BFF068C17F94
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_expiry_anchors version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_expiry_anchors_versions.get=.
+
+#+name: commodity_future_expiry_anchors-version
+#+begin_src ores-shell :tangle commodity_future_expiry_anchors-version.ores :exports none
+commodity_future_expiry_anchors version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

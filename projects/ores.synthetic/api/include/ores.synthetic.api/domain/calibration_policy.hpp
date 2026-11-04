@@ -74,6 +74,49 @@ struct calibration_policy final {
     int window_days = 90;
 
     /**
+     * @brief The variance window, in days, of fixings a variance calibration's input is captured
+     * over: five years by default, so a GJR-GARCH fit sees several volatility regimes. Between 30
+     * and 3660.
+     */
+    int variance_window_days = 1826;
+
+    /**
+     * @brief Who approves a variance calibration of the class: manual, a person approves every fit;
+     * auto, the policy approves each fit that passes the rules below, and a person sees only the
+     * fits that fail them.
+     */
+    std::string variance_approval_mode = "manual";
+
+    /**
+     * @brief The fewest daily returns a fit may be approved from by the policy. At least 250, the
+     * fewest a fit is made from at all.
+     */
+    int variance_min_returns = 250;
+
+    /**
+     * @brief Whether the policy approves only a fit whose starting points all ended at the same
+     * optimum; a fit whose starts disagree is weakly identified by its history.
+     */
+    bool variance_require_starts_agree = true;
+
+    /**
+     * @brief The lowest persistence, alpha plus gamma times p_minus plus beta, the policy approves.
+     */
+    double variance_min_persistence = 0.80;
+
+    /**
+     * @brief The highest persistence the policy approves: below one, since a persistence near one
+     * keeps every shock for ever.
+     */
+    double variance_max_persistence = 0.995;
+
+    /**
+     * @brief The lowest average reaction, alpha plus half of gamma, the policy approves: a fit
+     * whose variance hardly reacts to a move is not one to run unseen.
+     */
+    double variance_min_reaction = 0.01;
+
+    /**
      * @brief Whether a pair may be read from an item that quotes it the other way round, as 1/x.
      */
     bool allow_inverse = true;

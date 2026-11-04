@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: A0F817F9-CEB5-5662-ACC1-A258F7B3A620
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_curve_interpolations commands from the shell?
+#+description: Every command the commodity_curve_interpolations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_curve_interpolations:
+
+This file documents the commodity_curve_interpolations resource at the shell, one section per command. Every command is a subcommand of =commodity_curve_interpolations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1B577BE6-FBB8-5275-A488-7ACC5AD067CB
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations.list=.
+
+#+name: commodity_curve_interpolations-list
+#+begin_src ores-shell :tangle commodity_curve_interpolations-list.ores :exports none
+commodity_curve_interpolations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 00D962A2-F714-500F-B962-CFAC094481CB
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations.get=.
+
+#+name: commodity_curve_interpolations-get
+#+begin_src ores-shell :tangle commodity_curve_interpolations-get.ores :exports none
+commodity_curve_interpolations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BF915C18-43DA-50BC-B9B3-45D3ED6E8E47
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations.get_many=.
+
+#+name: commodity_curve_interpolations-get-many
+#+begin_src ores-shell :tangle commodity_curve_interpolations-get-many.ores :exports none
+commodity_curve_interpolations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FC1EFF4F-7BD8-5306-925F-EBCA74698399
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations add <curve_definition_id> <day_counter> <interpolation_method> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations.put=.
+
+#+name: commodity_curve_interpolations-add
+#+begin_src ores-shell :tangle commodity_curve_interpolations-add.ores :exports none
+commodity_curve_interpolations add 00000000-0000-0000-0000-000000000000 - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D40F4C98-AAAF-5B3D-A2DE-DA74F0083087
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations set <id> <curve_definition_id> <day_counter> <interpolation_method> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations.put=.
+
+#+name: commodity_curve_interpolations-set
+#+begin_src ores-shell :tangle commodity_curve_interpolations-set.ores :exports none
+commodity_curve_interpolations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 544DB060-BA85-512A-8311-5F28634AF837
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations put-many --count <n> <id> <curve_definition_id> <day_counter> <interpolation_method> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations.put_many=.
+
+#+name: commodity_curve_interpolations-put-many
+#+begin_src ores-shell :tangle commodity_curve_interpolations-put-many.ores :exports none
+commodity_curve_interpolations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 33DD2046-D8B8-5DD4-AB42-73573BF211E8
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations.delete=.
+
+#+name: commodity_curve_interpolations-delete
+#+begin_src ores-shell :tangle commodity_curve_interpolations-delete.ores :exports none
+commodity_curve_interpolations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 01366280-E610-5C90-8A26-A9809365E05F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations.delete_many=.
+
+#+name: commodity_curve_interpolations-delete-many
+#+begin_src ores-shell :tangle commodity_curve_interpolations-delete-many.ores :exports none
+commodity_curve_interpolations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 02FC41EE-4BE5-53F3-8DB8-4E94C8367872
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations_versions.list=.
+
+#+name: commodity_curve_interpolations-versions
+#+begin_src ores-shell :tangle commodity_curve_interpolations-versions.ores :exports none
+commodity_curve_interpolations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 7782C3BA-6ED9-52C4-B018-6449E33706EB
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_interpolations version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_interpolations_versions.get=.
+
+#+name: commodity_curve_interpolations-version
+#+begin_src ores-shell :tangle commodity_curve_interpolations-version.ores :exports none
+commodity_curve_interpolations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

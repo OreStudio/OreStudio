@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-673 tables in 21 groups.
+744 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -44,6 +44,7 @@ entity "iam" as iam {
   ores_iam_role_grant_request_roles_tbl
   ores_iam_role_grant_requests_tbl
   ores_iam_role_permissions_tbl
+  ores_iam_role_product_types_tbl
   ores_iam_roles_tbl
   ores_iam_run_grants_tbl
   ores_iam_run_token_issues_tbl
@@ -58,7 +59,7 @@ entity "iam" as iam {
 }
 note bottom of iam
 Identity & Access Management
-24 tables — ores_schema.iam.puml
+25 tables — ores_schema.iam.puml
 end note
 
 entity "assets" as assets {
@@ -82,6 +83,7 @@ entity "refdata" as refdata {
   ores_refdata_bond_future_volatility_configs_tbl
   ores_refdata_bond_yield_conventions_tbl
   ores_refdata_book_changes_tbl
+  ores_refdata_book_product_types_tbl
   ores_refdata_book_purpose_types_tbl
   ores_refdata_book_statuses_tbl
   ores_refdata_books_tbl
@@ -107,9 +109,17 @@ entity "refdata" as refdata {
   ores_refdata_cds_volatility_terms_tbl
   ores_refdata_cms_spread_option_conventions_tbl
   ores_refdata_commodities_tbl
+  ores_refdata_commodity_curve_bases_tbl
   ores_refdata_commodity_curve_configs_tbl
+  ores_refdata_commodity_curve_cross_currencies_tbl
+  ores_refdata_commodity_curve_directs_tbl
+  ores_refdata_commodity_curve_interpolations_tbl
   ores_refdata_commodity_forward_conventions_tbl
-  ores_refdata_commodity_future_conventions_tbl
+  ores_refdata_commodity_future_averaging_terms_tbl
+  ores_refdata_commodity_future_contract_terms_tbl
+  ores_refdata_commodity_future_expiry_anchors_tbl
+  ores_refdata_commodity_future_off_peak_indexes_tbl
+  ores_refdata_commodity_future_option_expiries_tbl
   ores_refdata_commodity_price_segments_tbl
   ores_refdata_commodity_volatility_configs_tbl
   ores_refdata_contact_types_tbl
@@ -127,8 +137,12 @@ entity "refdata" as refdata {
   ores_refdata_crm_driver_pairs_tbl
   ores_refdata_crm_enabled_derived_pairs_tbl
   ores_refdata_crm_topology_configs_tbl
-  ores_refdata_cross_currency_basis_conventions_tbl
-  ores_refdata_cross_currency_fix_float_conventions_tbl
+  ores_refdata_cross_currency_basis_flat_legs_tbl
+  ores_refdata_cross_currency_basis_spread_legs_tbl
+  ores_refdata_cross_currency_basis_swap_terms_tbl
+  ores_refdata_cross_currency_fix_float_fixed_legs_tbl
+  ores_refdata_cross_currency_fix_float_float_legs_tbl
+  ores_refdata_cross_currency_fix_float_swap_terms_tbl
   ores_refdata_csa_eligible_currencies_tbl
   ores_refdata_csas_tbl
   ores_refdata_currencies_tbl
@@ -155,8 +169,18 @@ entity "refdata" as refdata {
   ores_refdata_curve_roles_tbl
   ores_refdata_curve_sections_tbl
   ores_refdata_curve_security_configs_tbl
+  ores_refdata_curve_segment_conventions_tbl
+  ores_refdata_curve_segment_cross_currency_terms_tbl
   ores_refdata_curve_segment_curves_tbl
+  ores_refdata_curve_segment_discount_ratios_tbl
+  ores_refdata_curve_segment_extrapolations_tbl
+  ores_refdata_curve_segment_ibor_fallbacks_tbl
+  ores_refdata_curve_segment_pillar_rules_tbl
+  ores_refdata_curve_segment_projections_tbl
+  ores_refdata_curve_segment_references_tbl
+  ores_refdata_curve_segment_tenor_basis_curves_tbl
   ores_refdata_curve_segment_types_tbl
+  ores_refdata_curve_segment_weighted_averages_tbl
   ores_refdata_curve_segments_tbl
   ores_refdata_curve_volatility_configs_tbl
   ores_refdata_curve_volatility_constants_tbl
@@ -170,8 +194,13 @@ entity "refdata" as refdata {
   ores_refdata_curve_volatility_strike_surfaces_tbl
   ores_refdata_day_count_fraction_types_tbl
   ores_refdata_day_counters_tbl
+  ores_refdata_default_curve_benchmarks_tbl
+  ores_refdata_default_curve_cds_terms_tbl
   ores_refdata_default_curve_configs_tbl
   ores_refdata_default_curve_configurations_tbl
+  ores_refdata_default_curve_market_terms_tbl
+  ores_refdata_default_curve_transition_matrices_tbl
+  ores_refdata_default_curve_yield_reinterpretations_tbl
   ores_refdata_deposit_conventions_tbl
   ores_refdata_derivation_kinds_tbl
   ores_refdata_diary_entry_types_tbl
@@ -183,12 +212,16 @@ entity "refdata" as refdata {
   ores_refdata_fra_conventions_tbl
   ores_refdata_future_conventions_tbl
   ores_refdata_fx_option_conventions_tbl
+  ores_refdata_fx_vol_surface_blueprints_tbl
+  ores_refdata_fx_vol_surface_pillar_sources_tbl
+  ores_refdata_fx_vol_surface_pillars_tbl
   ores_refdata_fx_volatility_configs_tbl
   ores_refdata_fx_volatility_smiles_tbl
   ores_refdata_ibor_index_conventions_tbl
   ores_refdata_inflation_cap_floor_volatility_configs_tbl
   ores_refdata_inflation_cap_floor_volatility_strikes_tbl
   ores_refdata_inflation_curve_configs_tbl
+  ores_refdata_inflation_seasonalities_tbl
   ores_refdata_inflation_seasonality_factors_tbl
   ores_refdata_inflation_swap_conventions_tbl
   ores_refdata_instrument_codes_tbl
@@ -224,6 +257,7 @@ entity "refdata" as refdata {
   ores_refdata_portfolio_rights_tbl
   ores_refdata_portfolios_tbl
   ores_refdata_producer_kinds_tbl
+  ores_refdata_product_family_codes_tbl
   ores_refdata_purpose_types_tbl
   ores_refdata_regulatory_book_types_tbl
   ores_refdata_regulatory_corporate_sectors_tbl
@@ -239,6 +273,7 @@ entity "refdata" as refdata {
   ores_refdata_swap_index_conventions_tbl
   ores_refdata_swaption_proxy_configs_tbl
   ores_refdata_swaption_volatility_configs_tbl
+  ores_refdata_swaption_volatility_smiles_tbl
   ores_refdata_tenor_anchors_tbl
   ores_refdata_tenor_basis_swap_long_shorts_tbl
   ores_refdata_tenor_basis_swap_pay_receives_tbl
@@ -258,7 +293,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-183 tables — ores_schema.refdata.puml
+217 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -293,7 +328,11 @@ entity "dq_staging" as dq_staging {
   ores_dq_coding_schemes_artefact_tbl
   ores_dq_commodities_artefact_tbl
   ores_dq_commodity_forward_conventions_artefact_tbl
-  ores_dq_commodity_future_conventions_artefact_tbl
+  ores_dq_commodity_future_averaging_terms_artefact_tbl
+  ores_dq_commodity_future_contract_terms_artefact_tbl
+  ores_dq_commodity_future_expiry_anchors_artefact_tbl
+  ores_dq_commodity_future_off_peak_indexes_artefact_tbl
+  ores_dq_commodity_future_option_expiries_artefact_tbl
   ores_dq_commodity_volatility_configs_artefact_tbl
   ores_dq_configuration_analytic_parameters_artefact_tbl
   ores_dq_configuration_analytics_artefact_tbl
@@ -302,8 +341,12 @@ entity "dq_staging" as dq_staging {
   ores_dq_counterparty_identifiers_artefact_tbl
   ores_dq_countries_artefact_tbl
   ores_dq_crm_topology_configs_artefact_tbl
-  ores_dq_cross_currency_basis_conventions_artefact_tbl
-  ores_dq_cross_currency_fix_float_conventions_artefact_tbl
+  ores_dq_cross_currency_basis_flat_legs_artefact_tbl
+  ores_dq_cross_currency_basis_spread_legs_artefact_tbl
+  ores_dq_cross_currency_basis_swap_terms_artefact_tbl
+  ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl
+  ores_dq_cross_currency_fix_float_float_legs_artefact_tbl
+  ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl
   ores_dq_csas_artefact_tbl
   ores_dq_currencies_artefact_tbl
   ores_dq_currency_calendars_artefact_tbl
@@ -324,11 +367,26 @@ entity "dq_staging" as dq_staging {
   ores_dq_curve_quotes_artefact_tbl
   ores_dq_curve_report_configurations_artefact_tbl
   ores_dq_curve_security_configs_artefact_tbl
+  ores_dq_curve_segment_conventions_artefact_tbl
+  ores_dq_curve_segment_cross_currency_terms_artefact_tbl
   ores_dq_curve_segment_curves_artefact_tbl
+  ores_dq_curve_segment_discount_ratios_artefact_tbl
+  ores_dq_curve_segment_extrapolations_artefact_tbl
+  ores_dq_curve_segment_ibor_fallbacks_artefact_tbl
+  ores_dq_curve_segment_pillar_rules_artefact_tbl
+  ores_dq_curve_segment_projections_artefact_tbl
+  ores_dq_curve_segment_references_artefact_tbl
+  ores_dq_curve_segment_tenor_basis_curves_artefact_tbl
+  ores_dq_curve_segment_weighted_averages_artefact_tbl
   ores_dq_curve_segments_artefact_tbl
   ores_dq_curve_volatility_configs_artefact_tbl
+  ores_dq_default_curve_benchmarks_artefact_tbl
+  ores_dq_default_curve_cds_terms_artefact_tbl
   ores_dq_default_curve_configs_artefact_tbl
   ores_dq_default_curve_configurations_artefact_tbl
+  ores_dq_default_curve_market_terms_artefact_tbl
+  ores_dq_default_curve_transition_matrices_artefact_tbl
+  ores_dq_default_curve_yield_reinterpretations_artefact_tbl
   ores_dq_deposit_conventions_artefact_tbl
   ores_dq_engine_settings_artefact_tbl
   ores_dq_engine_settings_building_artefact_tbl
@@ -350,6 +408,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_images_artefact_tbl
   ores_dq_inflation_cap_floor_volatility_configs_artefact_tbl
   ores_dq_inflation_curve_configs_artefact_tbl
+  ores_dq_inflation_seasonalities_artefact_tbl
   ores_dq_inflation_seasonality_factors_artefact_tbl
   ores_dq_inflation_swap_conventions_artefact_tbl
   ores_dq_intraday_power_curve_configs_artefact_tbl
@@ -393,6 +452,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_swap_conventions_artefact_tbl
   ores_dq_swap_index_conventions_artefact_tbl
   ores_dq_swaption_volatility_configs_artefact_tbl
+  ores_dq_swaption_volatility_smiles_artefact_tbl
   ores_dq_tags_artefact_tbl
   ores_dq_tenor_basis_swap_long_shorts_artefact_tbl
   ores_dq_tenor_basis_swap_pay_receives_artefact_tbl
@@ -410,7 +470,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-145 tables — ores_schema.dq_staging.puml
+170 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -580,6 +640,8 @@ entity "trading" as trading {
   ores_trading_party_roles_tbl
   ores_trading_payoff_types_tbl
   ores_trading_price_types_tbl
+  ores_trading_product_type_asset_classes_tbl
+  ores_trading_product_types_tbl
   ores_trading_range_bounds_tbl
   ores_trading_rate_instruments_tbl
   ores_trading_return_types_tbl
@@ -607,13 +669,12 @@ entity "trading" as trading {
   ores_trading_trade_links_tbl
   ores_trading_trade_portfolios_tbl
   ores_trading_trade_states_tbl
-  ores_trading_trade_types_tbl
   ores_trading_trades_tbl
   ores_trading_vanilla_swap_instruments_tbl
 }
 note bottom of trading
 Trading & Lifecycle
-122 tables — ores_schema.trading.puml
+123 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {
@@ -660,6 +721,9 @@ entity "reporting" as reporting {
   ores_reporting_engine_settings_tbl
   ores_reporting_file_types_tbl
   ores_reporting_ore_element_map_columns_tbl
+  ores_reporting_ore_file_categories_tbl
+  ores_reporting_ore_file_versions_tbl
+  ores_reporting_ore_files_tbl
   ores_reporting_ore_parameter_setting_value_sets_tbl
   ores_reporting_ore_parameter_value_domains_tbl
   ores_reporting_ore_parameter_value_set_catalogues_tbl
@@ -676,6 +740,7 @@ entity "reporting" as reporting {
   ores_reporting_report_instance_kinds_tbl
   ores_reporting_report_instances_tbl
   ores_reporting_report_metrics_tbl
+  ores_reporting_report_text_values_tbl
   ores_reporting_report_trigger_events_tbl
   ores_reporting_report_trigger_types_tbl
   ores_reporting_report_type_configuration_types_tbl
@@ -686,7 +751,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-46 tables — ores_schema.reporting.puml
+50 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {
@@ -740,14 +805,16 @@ entity "marketdata" as marketdata {
   ores_marketdata_demand_intervals_tbl
   ores_marketdata_feed_scopes_tbl
   ores_marketdata_feeds_tbl
+  ores_marketdata_market_calibration_values_tbl
   ores_marketdata_market_data_mappings_tbl
   ores_marketdata_market_data_vendor_instruments_tbl
   ores_marketdata_market_fixings_tbl
+  ores_marketdata_market_input_values_tbl
   ores_marketdata_market_observations_tbl
+  ores_marketdata_market_scenario_values_tbl
   ores_marketdata_market_series_asset_classes_tbl
   ores_marketdata_market_series_identity_tbl
   ores_marketdata_market_series_tbl
-  ores_marketdata_market_state_payloads_tbl
   ores_marketdata_observation_lineages_tbl
   ores_marketdata_providers_tbl
   ores_marketdata_rate_card_components_tbl
@@ -764,7 +831,7 @@ entity "marketdata" as marketdata {
 }
 note bottom of marketdata
 Market Data (Quotes, Fixings, Series)
-29 tables — ores_schema.marketdata.puml
+31 tables — ores_schema.marketdata.puml
 end note
 
 entity "analytics" as analytics {
@@ -818,11 +885,15 @@ entity "synthetic" as synthetic {
   ores_synthetic_trade_generation_books_tbl
   ores_synthetic_trade_generation_configs_tbl
   ores_synthetic_trade_generation_counterparties_tbl
+  ores_synthetic_trade_generation_trade_types_tbl
+  ores_synthetic_variance_calibration_input_points_tbl
+  ores_synthetic_variance_calibration_inputs_tbl
+  ores_synthetic_variance_calibrations_tbl
   ores_synthetic_yield_curve_process_types_tbl
 }
 note bottom of synthetic
 Synthetic Data Generation
-17 tables — ores_schema.synthetic.puml
+21 tables — ores_schema.synthetic.puml
 end note
 
 entity "inbox" as inbox {

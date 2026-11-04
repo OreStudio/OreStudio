@@ -1,0 +1,247 @@
+The decide a cut's authorisation, and the apply: live evidence
+================================================================
+
+Every command below ran against the development environment `eager_maxwell` on
+2026-11-01, with the reporting service built from this branch (commit 6d50987ca6
+plus the subject read) and the web service serving the rebuilt BFF. The account
+that takes the close is henry.jones; the Finance second person who decides it is
+rachel.byrd.
+
+
+1. The body cannot be frozen here, and why
+------------------------------------------
+
+The take raises a cut's authorisation only for a whole body, and the market-data
+part of the body is the part this environment cannot fill:
+
+    select count(*) from ores_marketdata_curve_publishes_tbl
+      where valid_to = ores_utility_infinity_timestamp_fn();
+    -- 0
+
+    select s.oresmd_uri, count(*)
+    from ores_marketdata_market_observations_tbl o
+    join ores_marketdata_market_series_tbl s on s.id = o.series_id
+    where o.valid_to = ores_utility_infinity_timestamp_fn()
+    group by 1 order by 2 desc limit 3;
+    -- oresmd://fx/USD?...&instrument=fx_spot&quote=rate&ccy=INR | 25
+    -- oresmd://fx/NZD?...&instrument=fx_spot&quote=rate&ccy=USD | 25
+    -- oresmd://fx/USD?...&instrument=fx_spot&quote=rate&ccy=ZAR | 25
+
+Every observation the store holds is an FX spot, and the one seeded IR curve
+bootstrap config (USD-SOFR-FOMC, d0b1e2f3-4a5b-4c6d-8e7f-9a0b1c2d3e4f) belongs to
+the system party and points at a series with no observations at all, so neither
+`publish_curve` nor `republish_curve` can produce a set. With no published set
+there is no whole body, and a take of an incomplete body raises no request. That
+is the same wall the take task recorded, and it is why the decide below is proven
+against a request the inbox itself raised, and the apply against the rows the
+suite wrote.
+
+
+2. The taker raises a cut's authorisation
+-----------------------------------------
+
+    compass shell -l tmp/evidence/decide_raise.sh
+
+    > login henry.jones@acme_corporation Secure-Password-123
+    ✓ Login successful!
+    > approval_operations raise-approval reporting.eod_cut_authorisation \
+        "The day is closed and the reports wait on the body" __none__
+    {"result":{"outcome":"ok",...},"request":{"version":1,
+      "id":"01a19810-f11f-739b-90f8-19c51e4209ad",
+      "kind_code":"reporting.eod_cut_authorisation",
+      "state_code":"waiting",
+      "requested_by":"98ba8da1-1a45-44ff-bd3c-10dd5d5467ac",
+      "requested_at":"2026-11-01 17:03:29.567481Z",
+      "reason":"The day is closed and the reports wait on the body",
+      "expires_at":"2026-11-15 17:03:29.567481Z",
+      "modified_by":"henry.jones",
+      "performed_by":"ores_eager_maxwell_inbox_service"}}
+
+The request waits on the Finance deciders, and the kind names them: its
+`decide_permission_code` is `inbox::approvals:decide_finance`.
+
+
+3. Four eyes refuses the person who asked
+-----------------------------------------
+
+    compass shell -l tmp/evidence/decide_four_eyes.sh
+
+    > approval_operations decide-approval 01a19810-f11f-739b-90f8-19c51e4209ad \
+        approve "I will sign my own body" __none__ --version 1
+    {"result":{"outcome":"conflict","code":"four_eyes",
+      "message":"You asked for this request, so someone else decides it.",...}}
+
+The refusal is the inbox's rule and the cut adds nothing to it. (A call with no
+`--version` answers `conflict` on the optimistic lock first, which is the other
+rule: a decision states the version it read.)
+
+
+4. A second Finance person signs the close
+------------------------------------------
+
+    compass shell -l tmp/evidence/decide_approve.sh
+
+    > login rachel.byrd@acme_corporation Secure-Password-123
+    ✓ Login successful!
+    > approval_operations decide-approval 01a19810-f11f-739b-90f8-19c51e4209ad \
+        approve "The body is the day's close" __none__ --version 1
+    {"result":{"outcome":"ok",...},"request":{"version":2,
+      "id":"01a19810-f11f-739b-90f8-19c51e4209ad",
+      "state_code":"approved",
+      "modified_by":"rachel.byrd",
+      "change_reason_code":"system.update",
+      "change_commentary":"Decision: approve"}}
+
+A second request was raised and refused, and the refusal is terminal for it:
+
+    # raised as henry.jones, then refused as rachel.byrd
+    > decide-approval 01a19811-30b3-74ae-8bd6-b7bd7b3e43f9 refuse ... --version 1
+    {"request":{"version":2,"state_code":"refused",...}}
+
+    # the same request admits no second answer
+    > decide-approval 01a19811-30b3-74ae-8bd6-b7bd7b3e43f9 approve ... --version 2
+    {"result":{"outcome":"conflict","code":"conflict",
+      "message":"The request is refused and can no longer be decided.",...}}
+
+A third was raised and withdrawn by the person who asked, which is the asker's own
+act:
+
+    > withdraw-approval 01a19811-5ac0-76bb-8db8-e780d007b237 \
+        "The body will be retaken when the sets are published" --version 1
+    {"request":{"state_code":"withdrawn",...}}
+
+
+5. The requests as the store holds them
+---------------------------------------
+
+    select r.id, r.state_code, a.username as asked_by, u.username as decided_by,
+           d.decision_code, d.comment, d.decided_at
+    from ores_inbox_approval_requests_tbl r
+    join ores_iam_accounts_tbl a on a.id = r.requested_by ...
+    left join ores_inbox_approval_decisions_tbl d on d.request_id = r.id ...
+    left join ores_iam_accounts_tbl u on u.id = d.decided_by ...
+
+    01a19810-f11f-739b-90f8-19c51e4209ad | approved  | henry.jones | rachel.byrd
+      | approve  | The body is the day's close   | 2026-11-01 17:03:41.451335+00
+    01a19811-30b3-74ae-8bd6-b7bd7b3e43f9 | refused   | henry.jones | rachel.byrd
+      | refuse   | __none__                      | 2026-11-01 17:03:49.760704+00
+    01a19811-5ac0-76bb-8db8-e780d007b237 | withdrawn | henry.jones | henry.jones
+      | withdraw | The body will be retaken ...  | 2026-11-01 17:04:07.58823+00
+
+The `__none__` is the shell's sentinel for an empty argument, and it is the one
+wart in this evidence: the shell's command grammar drops an empty quoted token, so
+it cannot state a refusal with no comment. The record's rule that a refusal needs
+one is pinned by the suite (`a_refusal_needs_a_comment`, and
+`a_refused_cut_authorisation_keeps_the_reason_and_admits_no_second_answer`).
+
+
+6. The request page, as the decider reads it
+--------------------------------------------
+
+    curl -s -c jar -X POST :21402/api/session -H 'Content-Type: application/json' \
+      -d '{"username":"rachel.byrd@acme_corporation","password":"Secure-Password-123"}'
+    curl -s -b jar :21402/api/requests/01a19810-f11f-739b-90f8-19c51e4209ad
+
+    {"id":"01a19810-f11f-739b-90f8-19c51e4209ad","version":2,
+     "kindCode":"reporting.eod_cut_authorisation","stateCode":"approved",
+     "requestedBy":"98ba8da1-1a45-44ff-bd3c-10dd5d5467ac",
+     "requestedAt":"2026-11-01 17:03:29.567481Z",
+     "reason":"The day is closed and the reports wait on the body",
+     "decision":{"decisionCode":"approve","decidedBy":"rachel.byrd",
+                 "decidedAt":"2026-11-01 17:03:41.451335Z",
+                 "comment":"The body is the day's close"},
+     "parts":[],"subjects":[],
+     "cutSubjectState":"missing"}
+
+`cutSubjectState` is the join's answer and it is the right one: this request names
+no body, because nothing froze one. The subject block draws the kind alone and
+says the component holds no cut for it. The branch that draws a subject is
+exercised by the BFF's own cases.
+
+The read itself, through the shell, answers an empty subject list with an ok
+result, which is the difference the page needs: a refusal is refused and an empty
+answer is a request about nothing.
+
+    compass shell -l tmp/evidence/subjects_read.sh
+
+    > login rachel.byrd@acme_corporation Secure-Password-123
+    ✓ Login successful!
+    > report_operations list-cut-authorisation-subjects \
+        01a19810-f11f-739b-90f8-19c51e4209ad,01a19811-30b3-74ae-8bd6-b7bd7b3e43f9
+    {"result":{"outcome":"ok","code":"","message":"","fields":[]},"subjects":[]}
+
+The story shows the decision beside the ask:
+
+    curl -s -b jar :21402/api/requests/01a19810-f11f-739b-90f8-19c51e4209ad/story
+
+    {"requestId":"01a19810-f11f-739b-90f8-19c51e4209ad","events":[
+      {"entityType":"ores.inbox.approval_request","kind":"changed",
+       "at":"2026-11-01 17:03:41.459558Z","actor":"rachel.byrd","version":2,
+       "reasonCode":"system.update","commentary":"Decision: approve", ...},
+      {"entityType":"ores.inbox.approval_decision","kind":"decided",
+       "at":"2026-11-01 17:03:41.451335Z","actor":"rachel.byrd", ...}]}
+
+
+7. The apply, against the store
+-------------------------------
+
+The reconciliation runs in the service: on every change to an approval request,
+at start, and every sixty seconds.
+
+    journalctl --user -u ores.reporting.service-eager_maxwell | grep reconciler
+
+    [INFO] [ores.reporting.service.app.cut_authorisation_reconciler]
+      Cut authorisation reconciliation started. Sweeping every 60s
+
+For the requests above it answers nothing, which is correct — no request names a
+body:
+
+    select count(*) from ores_reporting_unapplied_cut_authorisations_fn()
+    where tenant_id = '2b146b3a-0317-4711-8f17-275d5ca199fb';
+    -- 0
+
+The stamp itself is visible in the same store, written by the same code when a
+body existed. The apply's cases run against the development database in a tenant
+the suite provisions, so the rows they leave are the apply's own work:
+
+    select c.id, c.approval_request_id, c.approved_by, c.approved_at,
+           c.refused_at, d.applied_by, d.applied_at, d.deal_count
+    from ores_reporting_cuts_tbl c
+    join ores_reporting_cut_approval_details_tbl d on d.cut_id = c.id
+    where c.approved_at is not null or c.refused_at is not null;
+
+    b27bff96-... | 01a19800-918e-7fd8-9a1f-03426488915e | cut-decider-15929128
+      | 2026-11-01 16:45:36.791996+00 | (null)
+      | ores_eager_maxwell_test_dml_user | 2026-11-01 16:45:36.791996+00 | 1284
+    b8fd4d82-... | (a refusal) | (empty) | (null)
+      | 2026-11-01 16:44:29.565752+00
+      | ores_eager_maxwell_test_dml_user | 2026-11-01 16:44:29.565752+00 | 1284
+
+The applied instant is the decision's own, and it equals the cut's stamped
+instant, so a repeated run cannot move it. The cut's own history shows the act:
+
+    select id, approval_request_id, approved_by, approved_at, modified_by,
+           change_commentary, version
+    from ores_reporting_cuts_tbl
+    where id = 'b27bff96-f5bc-410b-9cff-38e57a420a3c' order by valid_from;
+
+    b27bff96-... | 01a19800-918e-... | (empty)            | (null)
+      | cut-taker-15929128  | The day is closed and the reports wait on the body | 1
+    b27bff96-... | 01a19800-918e-... | cut-decider-15929128
+      | 2026-11-01 16:45:36.791996+00 | cut-decider-15929128
+      | The decision on request 01a19800-918e-... applied | 2
+
+Version 1 is the take, version 2 is the apply, and the commentary names the
+request, so the record's History tab shows the decision beside the take.
+
+
+8. What a reader should conclude
+--------------------------------
+
+The decide is proven live, on the cut's own kind, with the inbox's four eyes and
+its lifecycle, and through the screens' own reads. The apply is proven against the
+store by its own rows and by the service's log, and against the same store by the
+suite for the path from a decided request to a stamped cut. What remains unproven
+live is the one step the environment cannot host: a take that freezes a whole body
+in the demo tenant, which needs a published curve set that no component here can
+publish.

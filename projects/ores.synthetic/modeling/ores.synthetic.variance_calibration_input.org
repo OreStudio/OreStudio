@@ -1,0 +1,305 @@
+:PROPERTIES:
+:ID: 97E3E3C7-98D2-4DDC-B062-8F04CA2850E5
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.synthetic.variance_calibration_input
+#+description: Codegen entity model for the synthetic variance_calibration_input table; the stored fixings a GJR-GARCH variance calibration is fitted from.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: variance_calibration_input
+#+entity_plural: variance_calibration_inputs
+#+entity_title: Variance Calibration Input
+#+brief: The stored fixings a GJR-GARCH variance calibration is fitted from.
+#+created: 2026-11-03
+#+updated: 2026-11-03
+
+One capture of the data a variance calibration reads: the item that was read for a
+pair, under which calibration policy, over which window, and whether its value was
+inverted to reach the pair's market convention. Each fixing date of the window is
+a =variance_calibration_input_point=, kept whether it was used or not, so a reader
+can see every number a fit saw. A fit reads only a stored input, never the live
+fixings, so the same input always gives the same fit. See "A calibration is stored
+and reviewed before a feed runs it" in
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]].
+
+Who captured the input and when are the =performed_by= and =valid_from= every row
+carries. A capture over the same window of the same item is a new version of the
+input, not a second input, by the natural key: the party, the fixing URI and the
+window. The item names the pair it is read for, so the pair is not part of the key.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this input.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party this input belongs to: the system party, as for the feeds.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** base_currency_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:sortable:    true
+:filterable:  true
+:END:
+
+The pair's base currency, in the pair's market convention.
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** quote_currency_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:sortable:    true
+:filterable:  true
+:END:
+
+The pair's quote currency.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** fixing_uri
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:END:
+
+The oresmd fixing URI of the item that was read, such as
+=oresmd://fx/USD?type=fixing&index=fx&source=IMF&ccy=AUD=.
+
+#+begin_src cpp :name generator
+std::string("oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD")
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The provider whose fixings of the item were read, chosen by the policy's provider
+order.
+
+#+begin_src cpp :name generator
+std::string("ecb")
+#+end_src
+
+** inverted
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether the item quotes the pair the other way round, so each fixing was read as
+one over its value; the points' returns are in the pair's market convention either
+way.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+** policy_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Soft reference to the =calibration_policy= the item and the window were chosen
+under.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** policy_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The version of that policy, so a later change to the policy does not rewrite what
+this input was read under.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** window_end
+:PROPERTIES:
+:type:        date
+:cpp_type:    std::chrono::year_month_day
+:nullable:    false
+:natural_key: true
+:END:
+
+The last date of the window: the newest fixing date the capture asked for.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())}
+#+end_src
+
+** window_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:nullable:    false
+:natural_key: true
+:END:
+
+The length of the window in calendar days, the policy's variance window at the
+time of the capture.
+
+#+begin_src cpp :name generator
+1826
+#+end_src
+
+** point_count
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 0
+:END:
+
+How many fixing dates the window held, each a point of this input.
+
+#+begin_src cpp :name generator
+faker::number::integer(100, 1300)
+#+end_src
+
+** used_count
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 0
+:END:
+
+How many of those points gave a return the fit may use.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_variance_calibration_inputs_tbl
+:END:
+
+** Checks
+
+| expression                                    |
+|-----------------------------------------------|
+| "base_currency_code" <> "quote_currency_code" |
+| "fixing_uri" <> ''                            |
+| "provider_code" <> ''                         |
+| "window_days" between 30 and 3660             |
+| "point_count" >= 0                            |
+| "used_count" between 0 and "point_count"      |
+
+* Insert trigger
+** Validations
+
+| column              | validation_function               |
+|---------------------+-----------------------------------|
+| base_currency_code  | ores_refdata_validate_currency_fn |
+| quote_currency_code | ores_refdata_validate_currency_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: variance_calibration_input
+:entity_plural_short:   variance_calibration_inputs
+:entity_singular_words: variance calibration input
+:entity_plural_words:   variance calibration inputs
+:system_tenant_visible: true
+:END:
+
+The inputs belong to the system tenant, as the feeds they calibrate do, and every
+tenant reads them.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: v
+:END:
+
+** Table display
+
+| column              | header      |
+|---------------------+-------------|
+| base_currency_code  | Base        |
+| quote_currency_code | Quote       |
+| provider_code       | Provider    |
+| window_end          | Window End  |
+| window_days         | Days        |
+| used_count          | Used        |
+| point_count         | Points      |
+| version             | Version     |
+
+* See also
+
+- [[id:BEEFE7C7-3B6A-4204-A110-A0DE54345194][Variance Calibration Input Point]] -- the fixing dates of an input.
+- [[id:84902B7E-58F4-4127-86CB-129EBEDABE95][Variance Calibration]] -- what a fit made of an input.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] -- the workflow these records hold.

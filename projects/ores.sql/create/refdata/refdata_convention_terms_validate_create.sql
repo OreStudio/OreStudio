@@ -116,25 +116,65 @@ before insert or update of advance_calendar, business_day_convention, delivery_l
 on ores_refdata_commodity_forward_conventions_tbl
 for each row execute function ores_refdata_validate_convention_terms_fn('commodity_forward_convention');
 
-create or replace trigger ores_refdata_commodity_future_conventions_terms_trg
-before insert or update of adjust_before_offset, anchor_business_days_after, anchor_calendar_days_before, anchor_day_of_month, anchor_last_weekday, anchor_nth_nth, anchor_nth_weekday, anchor_weekly_day_of_the_week, averaging_commodity_name, averaging_conventions, averaging_daily_expiry_offset, averaging_delivery_roll_days, averaging_future_month_offset, averaging_period, averaging_pricing_calendar, averaging_use_business_days, balance_of_the_month, balance_of_the_month_pricing_calendar, business_day_convention, calendar, contract_frequency, delivery_location, expiry_calendar, expiry_month_lag, hours_per_day, id, index_name, is_averaging, off_peak_hours, off_peak_index, offset_days, one_contract_month, option_business_day_convention, option_calendar_days_before, option_contract_frequency, option_expiry_day, option_expiry_last_weekday_of_month, option_expiry_month_lag, option_expiry_offset, option_expiry_weekly_day_of_the_week, option_min_business_days_before, option_nth_nth, option_nth_weekday, option_underlying_future_convention, peak_calendar, peak_index, savings_time
-on ores_refdata_commodity_future_conventions_tbl
-for each row execute function ores_refdata_validate_convention_terms_fn('commodity_future_convention');
+create or replace trigger ores_refdata_commodity_future_averaging_terms_terms_trg
+before insert or update of averaging_commodity_name, averaging_conventions, averaging_daily_expiry_offset, averaging_delivery_roll_days, averaging_future_month_offset, averaging_period, averaging_pricing_calendar, averaging_use_business_days
+on ores_refdata_commodity_future_averaging_terms_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('commodity_future_averaging_terms');
+
+create or replace trigger ores_refdata_commodity_future_contract_terms_terms_trg
+before insert or update of adjust_before_offset, balance_of_the_month, balance_of_the_month_pricing_calendar, business_day_convention, calendar, contract_frequency, delivery_location, expiry_calendar, expiry_month_lag, hours_per_day, index_name, is_averaging, offset_days, one_contract_month, savings_time
+on ores_refdata_commodity_future_contract_terms_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('commodity_future_contract_terms');
+
+create or replace trigger ores_refdata_commodity_future_expiry_anchors_terms_trg
+before insert or update of anchor_business_days_after, anchor_calendar_days_before, anchor_day_of_month, anchor_last_weekday, anchor_nth_nth, anchor_nth_weekday, anchor_weekly_day_of_the_week
+on ores_refdata_commodity_future_expiry_anchors_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('commodity_future_expiry_anchor');
+
+create or replace trigger ores_refdata_commodity_future_off_peak_indexes_terms_trg
+before insert or update of off_peak_hours, off_peak_index, peak_calendar, peak_index
+on ores_refdata_commodity_future_off_peak_indexes_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('commodity_future_off_peak_index');
+
+create or replace trigger ores_refdata_commodity_future_option_expiries_terms_trg
+before insert or update of option_business_day_convention, option_calendar_days_before, option_contract_frequency, option_expiry_day, option_expiry_last_weekday_of_month, option_expiry_month_lag, option_expiry_offset, option_expiry_weekly_day_of_the_week, option_min_business_days_before, option_nth_nth, option_nth_weekday, option_underlying_future_convention
+on ores_refdata_commodity_future_option_expiries_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('commodity_future_option_expiry');
 
 create or replace trigger ores_refdata_conventions_terms_trg
 before insert or update of name
 on ores_refdata_conventions_tbl
 for each row execute function ores_refdata_validate_convention_terms_fn('convention');
 
-create or replace trigger ores_refdata_cross_currency_basis_conventions_terms_trg
-before insert or update of eom, flat_fixing_days, flat_include_spread, flat_index, flat_index_is_resettable, flat_is_averaged, flat_lookback, flat_observation_shift, flat_payment_lag, flat_rate_cutoff, flat_tenor, id, is_resettable, roll_convention, settlement_calendar, settlement_days, spread_fixing_days, spread_include_spread, spread_index, spread_is_averaged, spread_lookback, spread_observation_shift, spread_payment_lag, spread_rate_cutoff, spread_tenor
-on ores_refdata_cross_currency_basis_conventions_tbl
-for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_basis_convention');
+create or replace trigger ores_refdata_cross_currency_basis_flat_legs_terms_trg
+before insert or update of flat_fixing_days, flat_include_spread, flat_index, flat_index_is_resettable, flat_is_averaged, flat_lookback, flat_observation_shift, flat_payment_lag, flat_rate_cutoff, flat_tenor
+on ores_refdata_cross_currency_basis_flat_legs_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_basis_flat_leg');
 
-create or replace trigger ores_refdata_cross_currency_fix_float_conventions_terms_trg
-before insert or update of eom, fixed_convention, fixed_currency, fixed_day_count_fraction, fixed_frequency, fixing_days, float_index_is_resettable, id, include_spread, index, is_averaged, is_resettable, lookback, observation_shift, rate_cutoff, settlement_calendar, settlement_convention, settlement_days
-on ores_refdata_cross_currency_fix_float_conventions_tbl
-for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_fix_float_convention');
+create or replace trigger ores_refdata_cross_currency_basis_spread_legs_terms_trg
+before insert or update of spread_fixing_days, spread_include_spread, spread_index, spread_is_averaged, spread_lookback, spread_observation_shift, spread_payment_lag, spread_rate_cutoff, spread_tenor
+on ores_refdata_cross_currency_basis_spread_legs_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_basis_spread_leg');
+
+create or replace trigger ores_refdata_cross_currency_basis_swap_terms_terms_trg
+before insert or update of eom, is_resettable, roll_convention, settlement_calendar, settlement_days
+on ores_refdata_cross_currency_basis_swap_terms_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_basis_swap_terms');
+
+create or replace trigger ores_refdata_cross_currency_fix_float_fixed_legs_terms_trg
+before insert or update of fixed_convention, fixed_currency, fixed_day_count_fraction, fixed_frequency
+on ores_refdata_cross_currency_fix_float_fixed_legs_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_fix_float_fixed_leg');
+
+create or replace trigger ores_refdata_cross_currency_fix_float_float_legs_terms_trg
+before insert or update of fixing_days, float_index_is_resettable, include_spread, index, is_averaged, lookback, observation_shift, rate_cutoff
+on ores_refdata_cross_currency_fix_float_float_legs_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_fix_float_float_leg');
+
+create or replace trigger ores_refdata_cross_currency_fix_float_swap_terms_terms_trg
+before insert or update of eom, is_resettable, settlement_calendar, settlement_convention, settlement_days
+on ores_refdata_cross_currency_fix_float_swap_terms_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_fix_float_swap_terms');
 
 create or replace trigger ores_refdata_currency_pairs_terms_trg
 before insert or update of base_currency, quote_currency

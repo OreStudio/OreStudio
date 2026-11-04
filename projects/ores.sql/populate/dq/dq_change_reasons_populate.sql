@@ -204,6 +204,28 @@ BEGIN
     );
 
     PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.calibration',
+        'A calibration set a feed''s start level, its mixture or its variance from the public fixings',
+        'system',
+        true,   -- applies to new (a variance calibration stores its input and its fit)
+        true,   -- applies to amend (a calibration is a new version of the feed config)
+        false,  -- not for delete
+        false,  -- no commentary required
+        66      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.review',
+        'A reviewer approved, rejected or superseded a variance calibration, or a feed was pointed at the approved one',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (a decision is a new version of the calibration or the feed config)
+        false,  -- not for delete
+        true,   -- commentary required (the reviewer''s reason)
+        67      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.curve_published',
         'A curve publish applied the approved set: the record stamps who published it and when',
         'system',

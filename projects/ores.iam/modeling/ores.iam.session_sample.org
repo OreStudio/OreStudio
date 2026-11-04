@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7EC22FE9-05EB-48B1-8013-BD446B360ADB
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.session_sample
 #+description: Codegen entity model for the iam session_samples hypertable, session telemetry captured at heartbeat frequency.

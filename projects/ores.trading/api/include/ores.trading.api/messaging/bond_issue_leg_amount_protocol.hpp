@@ -46,6 +46,9 @@ struct bond_issue_leg_amount_key {
     int leg_number;
     std::string amount_role;
     int sequence_number;
+
+    friend bool operator==(const bond_issue_leg_amount_key&,
+                           const bond_issue_leg_amount_key&) = default;
 };
 
 struct bond_issue_leg_amount_write {
@@ -55,21 +58,33 @@ struct bond_issue_leg_amount_write {
     int sequence_number;
     ores::utility::decimal::decimal value;
     std::optional<std::string> start_date;
+
+    friend bool operator==(const bond_issue_leg_amount_write&,
+                           const bond_issue_leg_amount_write&) = default;
 };
 
 struct bond_issue_leg_amount_change {
     bond_issue_leg_amount_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const bond_issue_leg_amount_change&,
+                           const bond_issue_leg_amount_change&) = default;
 };
 
 struct bond_issue_leg_amount_removal {
     bond_issue_leg_amount_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const bond_issue_leg_amount_removal&,
+                           const bond_issue_leg_amount_removal&) = default;
 };
 
 struct bond_issue_leg_amount_lookup {
     bond_issue_leg_amount_key key;
     std::optional<ores::trading::domain::bond_issue_leg_amount> bond_issue_leg_amount;
+
+    friend bool operator==(const bond_issue_leg_amount_lookup&,
+                           const bond_issue_leg_amount_lookup&) = default;
 };
 
 struct bond_issue_leg_amount_event {
@@ -79,17 +94,26 @@ struct bond_issue_leg_amount_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const bond_issue_leg_amount_event&,
+                           const bond_issue_leg_amount_event&) = default;
 };
 
 struct bond_issue_leg_amount_version_key {
     bond_issue_leg_amount_key bond_issue_leg_amount;
     std::uint32_t version;
+
+    friend bool operator==(const bond_issue_leg_amount_version_key&,
+                           const bond_issue_leg_amount_version_key&) = default;
 };
 
 struct bond_issue_leg_amount_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const bond_issue_leg_amount_versions_filter&,
+                           const bond_issue_leg_amount_versions_filter&) = default;
 };
 
 struct list_bond_issue_leg_amounts_request {
@@ -106,12 +130,18 @@ struct list_bond_issue_leg_amounts_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_bond_issue_leg_amounts_request&,
+                           const list_bond_issue_leg_amounts_request&) = default;
 };
 
 struct list_bond_issue_leg_amounts_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_leg_amount> bond_issue_leg_amounts;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_issue_leg_amounts_response&,
+                           const list_bond_issue_leg_amounts_response&) = default;
 };
 
 struct get_bond_issue_leg_amount_request {
@@ -125,11 +155,17 @@ struct get_bond_issue_leg_amount_request {
      */
     static constexpr bool requires_session = true;
     bond_issue_leg_amount_key key;
+
+    friend bool operator==(const get_bond_issue_leg_amount_request&,
+                           const get_bond_issue_leg_amount_request&) = default;
 };
 
 struct get_bond_issue_leg_amount_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_issue_leg_amount> bond_issue_leg_amount;
+
+    friend bool operator==(const get_bond_issue_leg_amount_response&,
+                           const get_bond_issue_leg_amount_response&) = default;
 };
 
 struct get_many_bond_issue_leg_amounts_request {
@@ -143,11 +179,17 @@ struct get_many_bond_issue_leg_amounts_request {
      */
     static constexpr bool requires_session = true;
     std::vector<bond_issue_leg_amount_key> keys;
+
+    friend bool operator==(const get_many_bond_issue_leg_amounts_request&,
+                           const get_many_bond_issue_leg_amounts_request&) = default;
 };
 
 struct get_many_bond_issue_leg_amounts_response {
     ores::utility::domain::result result;
     std::vector<bond_issue_leg_amount_lookup> entries;
+
+    friend bool operator==(const get_many_bond_issue_leg_amounts_response&,
+                           const get_many_bond_issue_leg_amounts_response&) = default;
 };
 
 struct put_bond_issue_leg_amount_request {
@@ -162,11 +204,17 @@ struct put_bond_issue_leg_amount_request {
     static constexpr bool requires_session = true;
     bond_issue_leg_amount_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_bond_issue_leg_amount_request&,
+                           const put_bond_issue_leg_amount_request&) = default;
 };
 
 struct put_bond_issue_leg_amount_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_issue_leg_amount> bond_issue_leg_amount;
+
+    friend bool operator==(const put_bond_issue_leg_amount_response&,
+                           const put_bond_issue_leg_amount_response&) = default;
 };
 
 struct put_many_bond_issue_leg_amounts_request {
@@ -181,11 +229,17 @@ struct put_many_bond_issue_leg_amounts_request {
     static constexpr bool requires_session = true;
     std::vector<bond_issue_leg_amount_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_bond_issue_leg_amounts_request&,
+                           const put_many_bond_issue_leg_amounts_request&) = default;
 };
 
 struct put_many_bond_issue_leg_amounts_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_leg_amount> bond_issue_leg_amounts;
+
+    friend bool operator==(const put_many_bond_issue_leg_amounts_response&,
+                           const put_many_bond_issue_leg_amounts_response&) = default;
 };
 
 struct delete_bond_issue_leg_amount_request {
@@ -200,10 +254,16 @@ struct delete_bond_issue_leg_amount_request {
     static constexpr bool requires_session = true;
     bond_issue_leg_amount_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_bond_issue_leg_amount_request&,
+                           const delete_bond_issue_leg_amount_request&) = default;
 };
 
 struct delete_bond_issue_leg_amount_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_bond_issue_leg_amount_response&,
+                           const delete_bond_issue_leg_amount_response&) = default;
 };
 
 struct delete_many_bond_issue_leg_amounts_request {
@@ -219,10 +279,16 @@ struct delete_many_bond_issue_leg_amounts_request {
     static constexpr bool requires_session = true;
     std::vector<bond_issue_leg_amount_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_bond_issue_leg_amounts_request&,
+                           const delete_many_bond_issue_leg_amounts_request&) = default;
 };
 
 struct delete_many_bond_issue_leg_amounts_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_bond_issue_leg_amounts_response&,
+                           const delete_many_bond_issue_leg_amounts_response&) = default;
 };
 
 struct list_bond_issue_leg_amount_versions_request {
@@ -241,12 +307,18 @@ struct list_bond_issue_leg_amount_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<bond_issue_leg_amount_versions_filter> filter;
+
+    friend bool operator==(const list_bond_issue_leg_amount_versions_request&,
+                           const list_bond_issue_leg_amount_versions_request&) = default;
 };
 
 struct list_bond_issue_leg_amount_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_leg_amount> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_issue_leg_amount_versions_response&,
+                           const list_bond_issue_leg_amount_versions_response&) = default;
 };
 
 struct get_bond_issue_leg_amount_version_request {
@@ -261,11 +333,17 @@ struct get_bond_issue_leg_amount_version_request {
      */
     static constexpr bool requires_session = true;
     bond_issue_leg_amount_version_key key;
+
+    friend bool operator==(const get_bond_issue_leg_amount_version_request&,
+                           const get_bond_issue_leg_amount_version_request&) = default;
 };
 
 struct get_bond_issue_leg_amount_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_issue_leg_amount> version;
+
+    friend bool operator==(const get_bond_issue_leg_amount_version_response&,
+                           const get_bond_issue_leg_amount_version_response&) = default;
 };
 
 /**
@@ -277,9 +355,9 @@ struct get_bond_issue_leg_amount_version_response {
  * of them.
  */
 namespace bond_issue_leg_amount_event_subjects {
-inline constexpr std::string_view created = "trading.v1.bond_issue_leg_amounts_events.created";
-inline constexpr std::string_view updated = "trading.v1.bond_issue_leg_amounts_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.bond_issue_leg_amounts_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.bond_issue_leg_amounts.created";
+inline constexpr std::string_view updated = "trading.v1.events.bond_issue_leg_amounts.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.bond_issue_leg_amounts.deleted";
 }
 /**
  * @brief The members of bond_issue_leg_amount_key, named as the wire names them and in the order

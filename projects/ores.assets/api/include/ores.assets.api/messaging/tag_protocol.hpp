@@ -26,42 +26,60 @@
 #define ORES_ASSETS_API_MESSAGING_TAG_PROTOCOL_HPP
 
 #include "ores.assets.api/domain/tag.hpp"
+#include "ores.assets.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::assets::messaging {
 
 struct tag_key {
     std::string name;
+
+    friend bool operator==(const tag_key&, const tag_key&) = default;
 };
 
 struct tag_write {
     boost::uuids::uuid id;
     std::string name;
     std::string description;
+
+    friend bool operator==(const tag_write&, const tag_write&) = default;
 };
 
 struct tag_change {
     tag_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tag_change&, const tag_change&) = default;
 };
 
 struct tag_removal {
     tag_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tag_removal&, const tag_removal&) = default;
 };
 
 struct tag_lookup {
     tag_key key;
     std::optional<ores::assets::domain::tag> tag;
+
+    friend bool operator==(const tag_lookup&, const tag_lookup&) = default;
 };
 
 struct tags_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const tags_filter&, const tags_filter&) = default;
 };
 
 struct tag_event {
@@ -71,17 +89,23 @@ struct tag_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tag_event&, const tag_event&) = default;
 };
 
 struct tag_version_key {
     tag_key tag;
     std::uint32_t version;
+
+    friend bool operator==(const tag_version_key&, const tag_version_key&) = default;
 };
 
 struct tag_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const tag_versions_filter&, const tag_versions_filter&) = default;
 };
 
 struct list_tags_request {
@@ -99,12 +123,16 @@ struct list_tags_request {
     ores::utility::domain::order order;
     std::optional<tags_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_tags_request&, const list_tags_request&) = default;
 };
 
 struct list_tags_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::tag> tags;
     std::uint64_t total;
+
+    friend bool operator==(const list_tags_response&, const list_tags_response&) = default;
 };
 
 struct get_tag_request {
@@ -118,11 +146,15 @@ struct get_tag_request {
      */
     static constexpr bool requires_session = true;
     tag_key key;
+
+    friend bool operator==(const get_tag_request&, const get_tag_request&) = default;
 };
 
 struct get_tag_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::tag> tag;
+
+    friend bool operator==(const get_tag_response&, const get_tag_response&) = default;
 };
 
 struct get_many_tags_request {
@@ -136,11 +168,15 @@ struct get_many_tags_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tag_key> keys;
+
+    friend bool operator==(const get_many_tags_request&, const get_many_tags_request&) = default;
 };
 
 struct get_many_tags_response {
     ores::utility::domain::result result;
     std::vector<tag_lookup> entries;
+
+    friend bool operator==(const get_many_tags_response&, const get_many_tags_response&) = default;
 };
 
 struct put_tag_request {
@@ -155,11 +191,15 @@ struct put_tag_request {
     static constexpr bool requires_session = true;
     tag_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tag_request&, const put_tag_request&) = default;
 };
 
 struct put_tag_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::tag> tag;
+
+    friend bool operator==(const put_tag_response&, const put_tag_response&) = default;
 };
 
 struct put_many_tags_request {
@@ -174,11 +214,15 @@ struct put_many_tags_request {
     static constexpr bool requires_session = true;
     std::vector<tag_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tags_request&, const put_many_tags_request&) = default;
 };
 
 struct put_many_tags_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::tag> tags;
+
+    friend bool operator==(const put_many_tags_response&, const put_many_tags_response&) = default;
 };
 
 struct delete_tag_request {
@@ -193,10 +237,14 @@ struct delete_tag_request {
     static constexpr bool requires_session = true;
     tag_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tag_request&, const delete_tag_request&) = default;
 };
 
 struct delete_tag_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tag_response&, const delete_tag_response&) = default;
 };
 
 struct delete_many_tags_request {
@@ -211,10 +259,16 @@ struct delete_many_tags_request {
     static constexpr bool requires_session = true;
     std::vector<tag_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tags_request&,
+                           const delete_many_tags_request&) = default;
 };
 
 struct delete_many_tags_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tags_response&,
+                           const delete_many_tags_response&) = default;
 };
 
 struct list_tag_versions_request {
@@ -232,12 +286,18 @@ struct list_tag_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tag_versions_filter> filter;
+
+    friend bool operator==(const list_tag_versions_request&,
+                           const list_tag_versions_request&) = default;
 };
 
 struct list_tag_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::tag> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tag_versions_response&,
+                           const list_tag_versions_response&) = default;
 };
 
 struct get_tag_version_request {
@@ -251,11 +311,17 @@ struct get_tag_version_request {
      */
     static constexpr bool requires_session = true;
     tag_version_key key;
+
+    friend bool operator==(const get_tag_version_request&,
+                           const get_tag_version_request&) = default;
 };
 
 struct get_tag_version_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::tag> version;
+
+    friend bool operator==(const get_tag_version_response&,
+                           const get_tag_version_response&) = default;
 };
 
 /**
@@ -267,11 +333,684 @@ struct get_tag_version_response {
  * of them.
  */
 namespace tag_event_subjects {
-inline constexpr std::string_view created = "assets.v1.tags_events.created";
-inline constexpr std::string_view updated = "assets.v1.tags_events.updated";
-inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
+inline constexpr std::string_view created = "assets.v1.events.tags.created";
+inline constexpr std::string_view updated = "assets.v1.events.tags.updated";
+inline constexpr std::string_view deleted = "assets.v1.events.tags.deleted";
+}
+/**
+ * @brief The members of tag_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tag_key&) {
+    return std::tuple{
+        utility::codec::field{"name", &tag_key::name},
+    };
 }
 
+/**
+ * @brief The members of tag_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tag_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &tag_write::id},
+        utility::codec::field{"name", &tag_write::name},
+        utility::codec::field{"description", &tag_write::description},
+    };
 }
+
+/**
+ * @brief The members of tag_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tag_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &tag_change::write},
+        utility::codec::field{"precondition", &tag_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of tag_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tag_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &tag_removal::key},
+        utility::codec::field{"precondition", &tag_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of tag_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tag_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &tag_lookup::key},
+        utility::codec::field{"tag", &tag_lookup::tag},
+    };
+}
+
+/**
+ * @brief The members of tags_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tags_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &tags_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of tag_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tag_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &tag_event::event_id},
+        utility::codec::field{"key", &tag_event::key},
+        utility::codec::field{"action", &tag_event::action},
+        utility::codec::field{"version", &tag_event::version},
+        utility::codec::field{"occurred_at", &tag_event::occurred_at},
+        utility::codec::field{"correlation_id", &tag_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of tag_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tag_version_key&) {
+    return std::tuple{
+        utility::codec::field{"tag", &tag_version_key::tag},
+        utility::codec::field{"version", &tag_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of tag_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tag_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &tag_versions_filter::version},
+        utility::codec::field{"from_version", &tag_versions_filter::from_version},
+        utility::codec::field{"to_version", &tag_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_tags_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_tags_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_tags_request::offset},
+        utility::codec::field{"limit", &list_tags_request::limit},
+        utility::codec::field{"order", &list_tags_request::order},
+        utility::codec::field{"filter", &list_tags_request::filter},
+        utility::codec::field{"as_of", &list_tags_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_tags_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_tags_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_tags_response::result},
+        utility::codec::field{"tags", &list_tags_response::tags},
+        utility::codec::field{"total", &list_tags_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_tag_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_tag_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_tag_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_tag_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_tag_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_tag_response::result},
+        utility::codec::field{"tag", &get_tag_response::tag},
+    };
+}
+
+/**
+ * @brief The members of get_many_tags_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_tags_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_tags_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_tags_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_tags_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_tags_response::result},
+        utility::codec::field{"entries", &get_many_tags_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_tag_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_tag_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_tag_request::change},
+        utility::codec::field{"intent", &put_tag_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_tag_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_tag_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_tag_response::result},
+        utility::codec::field{"tag", &put_tag_response::tag},
+    };
+}
+
+/**
+ * @brief The members of put_many_tags_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_tags_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_tags_request::changes},
+        utility::codec::field{"intent", &put_many_tags_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_tags_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_tags_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_tags_response::result},
+        utility::codec::field{"tags", &put_many_tags_response::tags},
+    };
+}
+
+/**
+ * @brief The members of delete_tag_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_tag_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_tag_request::removal},
+        utility::codec::field{"intent", &delete_tag_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_tag_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_tag_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_tag_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_tags_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_tags_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_tags_request::removals},
+        utility::codec::field{"intent", &delete_many_tags_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_tags_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_tags_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_tags_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_tag_versions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_tag_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_tag_versions_request::key},
+        utility::codec::field{"offset", &list_tag_versions_request::offset},
+        utility::codec::field{"limit", &list_tag_versions_request::limit},
+        utility::codec::field{"order", &list_tag_versions_request::order},
+        utility::codec::field{"filter", &list_tag_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_tag_versions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_tag_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_tag_versions_response::result},
+        utility::codec::field{"versions", &list_tag_versions_response::versions},
+        utility::codec::field{"total", &list_tag_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_tag_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_tag_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_tag_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_tag_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_tag_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_tag_version_response::result},
+        utility::codec::field{"version", &get_tag_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::tag_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::tag_key& v);
+    static ores::assets::messaging::tag_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::tag_key& v);
+    static ores::assets::messaging::tag_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::tag_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::tag_write& v);
+    static ores::assets::messaging::tag_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::tag_write& v);
+    static ores::assets::messaging::tag_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::tag_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::tag_change& v);
+    static ores::assets::messaging::tag_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::tag_change& v);
+    static ores::assets::messaging::tag_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::tag_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::tag_removal& v);
+    static ores::assets::messaging::tag_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::tag_removal& v);
+    static ores::assets::messaging::tag_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::tag_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::tag_lookup& v);
+    static ores::assets::messaging::tag_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::tag_lookup& v);
+    static ores::assets::messaging::tag_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::tags_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::tags_filter& v);
+    static ores::assets::messaging::tags_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::tags_filter& v);
+    static ores::assets::messaging::tags_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::tag_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::tag_event& v);
+    static ores::assets::messaging::tag_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::tag_event& v);
+    static ores::assets::messaging::tag_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::tag_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::tag_version_key& v);
+    static ores::assets::messaging::tag_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::tag_version_key& v);
+    static ores::assets::messaging::tag_version_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::tag_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::tag_versions_filter& v);
+    static ores::assets::messaging::tag_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::tag_versions_filter& v);
+    static ores::assets::messaging::tag_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::list_tags_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::list_tags_request& v);
+    static ores::assets::messaging::list_tags_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::list_tags_request& v);
+    static ores::assets::messaging::list_tags_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::list_tags_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::list_tags_response& v);
+    static ores::assets::messaging::list_tags_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::list_tags_response& v);
+    static ores::assets::messaging::list_tags_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::get_tag_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::get_tag_request& v);
+    static ores::assets::messaging::get_tag_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::get_tag_request& v);
+    static ores::assets::messaging::get_tag_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::get_tag_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::get_tag_response& v);
+    static ores::assets::messaging::get_tag_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::get_tag_response& v);
+    static ores::assets::messaging::get_tag_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::get_many_tags_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::get_many_tags_request& v);
+    static ores::assets::messaging::get_many_tags_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::get_many_tags_request& v);
+    static ores::assets::messaging::get_many_tags_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::get_many_tags_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::get_many_tags_response& v);
+    static ores::assets::messaging::get_many_tags_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::get_many_tags_response& v);
+    static ores::assets::messaging::get_many_tags_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::put_tag_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::put_tag_request& v);
+    static ores::assets::messaging::put_tag_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::put_tag_request& v);
+    static ores::assets::messaging::put_tag_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::put_tag_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::put_tag_response& v);
+    static ores::assets::messaging::put_tag_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::put_tag_response& v);
+    static ores::assets::messaging::put_tag_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::put_many_tags_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::put_many_tags_request& v);
+    static ores::assets::messaging::put_many_tags_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::put_many_tags_request& v);
+    static ores::assets::messaging::put_many_tags_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::put_many_tags_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::put_many_tags_response& v);
+    static ores::assets::messaging::put_many_tags_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::put_many_tags_response& v);
+    static ores::assets::messaging::put_many_tags_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::delete_tag_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::delete_tag_request& v);
+    static ores::assets::messaging::delete_tag_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::delete_tag_request& v);
+    static ores::assets::messaging::delete_tag_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::delete_tag_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::delete_tag_response& v);
+    static ores::assets::messaging::delete_tag_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::delete_tag_response& v);
+    static ores::assets::messaging::delete_tag_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::delete_many_tags_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::delete_many_tags_request& v);
+    static ores::assets::messaging::delete_many_tags_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::delete_many_tags_request& v);
+    static ores::assets::messaging::delete_many_tags_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::delete_many_tags_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::delete_many_tags_response& v);
+    static ores::assets::messaging::delete_many_tags_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::delete_many_tags_response& v);
+    static ores::assets::messaging::delete_many_tags_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::list_tag_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::list_tag_versions_request& v);
+    static ores::assets::messaging::list_tag_versions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::list_tag_versions_request& v);
+    static ores::assets::messaging::list_tag_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::list_tag_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::list_tag_versions_response& v);
+    static ores::assets::messaging::list_tag_versions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::list_tag_versions_response& v);
+    static ores::assets::messaging::list_tag_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::get_tag_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::get_tag_version_request& v);
+    static ores::assets::messaging::get_tag_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::get_tag_version_request& v);
+    static ores::assets::messaging::get_tag_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::get_tag_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::get_tag_version_response& v);
+    static ores::assets::messaging::get_tag_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::get_tag_version_response& v);
+    static ores::assets::messaging::get_tag_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

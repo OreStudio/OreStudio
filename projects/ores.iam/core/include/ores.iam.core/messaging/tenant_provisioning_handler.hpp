@@ -36,6 +36,7 @@
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.core/messaging/population_knobs.hpp"
 #include "ores.iam.core/messaging/provision_step_arguments.hpp"
+#include "ores.iam.core/messaging/report_schedule_selection.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/account_service.hpp"
@@ -63,6 +64,8 @@
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -77,6 +80,7 @@
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
+#include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
@@ -663,12 +667,28 @@ public:
                 return;
             }
 
+            const auto started = std::chrono::steady_clock::now();
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "provision_step " << parsed->kind << " started: step_id=" << wf->step_id
+                << " instance=" << wf->instance_id;
             execute_step(*wf, *parsed, correlation_id);
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "provision_step " << parsed->kind << " returned after "
+                << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count()
+                << "s: step_id=" << wf->step_id;
             ack.accept();
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
-                << "provision_step failed: " << e.what();
+                << "provision_step failed: step_id=" << wf->step_id << ": " << e.what();
             wf->fail(e.what());
+            ack.accept();
+        } catch (...) {
+            // An exception of no standard type would otherwise leave the step with no answer and
+            // no line saying why, so the run would wait out its deadline in silence.
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << "provision_step failed with an exception of no standard type: step_id="
+                << wf->step_id;
+            wf->fail("The step failed with an exception of no standard type.");
             ack.accept();
         }
     }
@@ -739,6 +759,17 @@ private:
 
     /// The result a step reports, so the run's record says what it acted on.
     struct provision_step_result {
+        /// What one party's report definitions came to when the step scheduled
+        /// them. Read together, the entries say how much of the catalogue a
+        /// run put on the scheduler and how much it left for a person.
+        struct party_report_schedule {
+            std::string party;
+            std::uint32_t scheduled = 0;
+            std::uint32_t already_scheduled = 0;
+            std::uint32_t on_demand = 0;
+            std::uint32_t not_a_cron = 0;
+        };
+
         std::string kind;
         std::vector<std::string> bundles;
         std::string root_lei;
@@ -758,6 +789,8 @@ private:
         std::uint32_t trades_planned = 0;
         std::uint32_t trades_written = 0;
         std::uint32_t trades_already_present = 0;
+        /// What a schedule_reports step did for each party it named.
+        std::vector<party_report_schedule> report_schedules;
     };
 
     /**
@@ -879,6 +912,9 @@ private:
                 return;
             case provision_step_action::generate_trades:
                 generate_trades_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::schedule_reports:
+                schedule_reports_step(wf, command, resolve_step_actor(command));
                 return;
             case provision_step_action::refuse:
                 wf.fail("The step kind '" + command.kind +
@@ -1573,6 +1609,43 @@ private:
         return {};
     }
 
+    /// Records the trade types the entry states, each once. A type already
+    /// recorded is left alone, so the step stays re-runnable.
+    void record_trade_types(internal_request_client& client,
+                            const boost::uuids::uuid& config_id,
+                            const trade_generation_assignment& entry) {
+        if (entry.trade_type_codes.empty())
+            return;
+
+        ores::synthetic::messaging::list_trade_generation_trade_types_request list;
+        list.filter =
+            ores::synthetic::messaging::trade_generation_trade_types_filter{.config_id = config_id};
+        list.limit = 1000;
+        const auto listed = client.request(list);
+        require_read(listed.result, "the trade types of '" + entry.name + "'");
+
+        ores::synthetic::messaging::put_many_trade_generation_trade_types_request request;
+        request.intent.reason_code = "system.initial_load";
+        request.intent.commentary = "Trade types of the population.";
+        for (const auto& code : entry.trade_type_codes) {
+            const auto recorded =
+                std::ranges::any_of(listed.trade_generation_trade_types,
+                                    [&](const auto& row) { return row.trade_type_code == code; });
+            if (recorded)
+                continue;
+            ores::synthetic::messaging::trade_generation_trade_type_change change;
+            change.write.id = ores::synthetic::service::trade_type_scope_id_for(config_id, code);
+            change.write.config_id = config_id;
+            change.write.trade_type_code = code;
+            change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                   std::nullopt};
+            request.changes.push_back(std::move(change));
+        }
+        if (!request.changes.empty())
+            require_recorded(client.request(request).result,
+                             "the trade types of '" + entry.name + "'");
+    }
+
     /// Records the scope the entry describes: the party's book of that name,
     /// and every counterparty the party may face. A row that is already there
     /// is left alone, so the step is re-runnable and a scope that grew between
@@ -1600,6 +1673,8 @@ private:
         if (!book_is_scoped(client, config_id, book->id))
             require_recorded(client.request(book_request).result,
                              "the book scope of '" + entry.name + "'");
+
+        record_trade_types(client, config_id, entry);
 
         const auto scoped = scoped_counterparties(client, config_id);
         std::vector<boost::uuids::uuid> missing;
@@ -1663,7 +1738,22 @@ private:
         provision_step_result result;
         result.kind = command.kind;
 
+        const auto seconds_since = [](std::chrono::steady_clock::time_point from) {
+            return std::chrono::duration<double>(std::chrono::steady_clock::now() - from).count();
+        };
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "generate_trades: " << assignments.size() << " entr(y/ies) to write";
+        std::size_t position = 0;
         for (const auto& entry : assignments) {
+            ++position;
+            const auto entry_started = std::chrono::steady_clock::now();
+            const auto phase = [&](std::string_view what) {
+                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                    << "generate_trades: " << entry.name << " (" << position << " of "
+                    << assignments.size() << "): " << what << " after "
+                    << seconds_since(entry_started) << "s";
+            };
+            phase("finding the party " + entry.party);
             const auto party = find_party(discover, entry.party);
             if (!party)
                 throw std::runtime_error("The tenant holds no party named '" + entry.party + "'.");
@@ -1677,15 +1767,19 @@ private:
              * curve configuration the party published is what the resolution
              * reads, so the config names a series the party actually holds.
              */
+            phase("finding the book " + entry.book);
             const auto book = find_party_book(party_client, party->id, entry.book);
             if (!book)
                 throw std::runtime_error("The party holds no book named '" + entry.book +
                                          "', so the population has nowhere to land.");
+            phase("finding the reference curve in " + book->functional_currency);
             const auto reference_curve_id =
                 find_reference_curve_id(party_client, party->id, book->functional_currency);
 
+            phase("recording the trade generation config");
             const auto config_id =
                 record_trade_generation_config(party_client, party->id, entry, reference_curve_id);
+            phase("recording the config's scope");
             record_trade_generation_scope(party_client, config_id, party->id, entry);
 
             auto generation_client = make_generation_client(
@@ -1708,6 +1802,7 @@ private:
                 },
                 ores::synthetic::domain::trade_population_trader{actor.account_id, actor.username});
             ores::synthetic::service::trade_population_service service(writer);
+            phase("writing the population of config " + boost::uuids::to_string(config_id));
             const auto run = service.run(config_id);
 
             result.configs.push_back(boost::uuids::to_string(config_id));
@@ -1719,7 +1814,116 @@ private:
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "generate_trades: " << entry.name << " for party " << entry.party << ": planned "
                 << run.planned << ", wrote " << run.written << ", already present "
-                << run.already_present;
+                << run.already_present << ", in " << seconds_since(entry_started) << "s";
+        }
+
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "generate_trades: every entry is written (" << result.trades_written << " written, "
+            << result.trades_already_present << " already present); completing the step";
+        wf.complete(rfl::json::write(result));
+    }
+
+    /// Every definition a party owns, one page at a time, as the party reads
+    /// them. A single page with a fixed limit would schedule the first hundred
+    /// and leave the rest of the catalogue unscheduled without saying so.
+    static std::vector<ores::reporting::domain::report_definition>
+    list_party_report_definitions(internal_request_client& client,
+                                  const boost::uuids::uuid& party_id) {
+        std::vector<ores::reporting::domain::report_definition> definitions;
+        std::uint32_t offset = 0;
+        constexpr std::uint32_t page_size = 100;
+        while (true) {
+            ores::reporting::messaging::list_report_definitions_request request;
+            request.offset = offset;
+            request.limit = page_size;
+            request.filter =
+                ores::reporting::messaging::report_definitions_filter{.party_id = party_id};
+            const auto page = client.request(request).definitions;
+            for (const auto& definition : page)
+                definitions.push_back(definition);
+            if (page.size() < page_size)
+                return definitions;
+            offset += page_size;
+        }
+    }
+
+    /**
+     * @brief Schedules the report definitions each party the step names
+     * publishes.
+     *
+     * A provisioned tenant ticks nothing on its own: the catalogue states what
+     * each report's schedule is, but a run needs a scheduler job and a run
+     * grant, and only the reporting schedule operation creates the pair. So the
+     * run that builds the tenant also puts its catalogue on the scheduler,
+     * acting as the run's administrator inside each party, which is the
+     * identity the operation makes the grant for.
+     *
+     * Three rules keep that honest. A report the catalogue states as on demand
+     * is left to be asked for by hand, and the step never fails because of it:
+     * asking for a report a person asks for is not a provisioning fault. A
+     * definition that already holds a scheduler job is passed over, so a second
+     * provision creates no second job and no second grant. And a definition
+     * whose schedule is not a cron is passed over with a warning, because the
+     * tenant should still come up.
+     */
+    void schedule_reports_step(const ores::service::messaging::workflow_step_context& wf,
+                               const ores::iam::workflow::provision_tenant_step_command& command,
+                               const step_actor& actor) {
+        const auto arguments = parse_report_schedule_arguments(command.arguments_json);
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        provision_step_result result;
+        result.kind = command.kind;
+
+        for (const auto& party_name : arguments.parties) {
+            const auto party = find_party(discover, party_name);
+            if (!party)
+                throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
+
+            // The operation makes the run grant for the session's party, and
+            // refuses a definition of another one, so the step acts as the
+            // party whose catalogue it schedules.
+            auto party_client =
+                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+
+            std::vector<ores::iam::messaging::report_schedule_candidate> candidates;
+            for (const auto& definition : list_party_report_definitions(party_client, party->id))
+                candidates.push_back(
+                    {.id = boost::uuids::to_string(definition.id),
+                     .schedule_expression = definition.schedule_expression,
+                     .holds_scheduler_job = definition.scheduler_job_id.has_value()});
+
+            const auto selection =
+                ores::iam::messaging::select_report_definitions_to_schedule(candidates);
+
+            provision_step_result::party_report_schedule schedule;
+            schedule.party = party_name;
+            schedule.already_scheduled = selection.already_scheduled;
+            schedule.on_demand = selection.on_demand;
+            schedule.not_a_cron = selection.not_a_cron;
+
+            if (!selection.ids.empty()) {
+                ores::reporting::messaging::schedule_report_definitions_request request;
+                request.ids = selection.ids;
+                // One call carries a party's whole catalogue; each definition
+                // costs a run grant, a scheduler write and a definition save,
+                // so the operation outlives the client's default patience.
+                const auto response = party_client.request(request, std::chrono::seconds{600});
+                if (!response.success)
+                    throw std::runtime_error("The reporting service refused to schedule " +
+                                             std::to_string(response.failed_ids.size()) +
+                                             " report definitions of '" + party_name +
+                                             "': " + response.message);
+                schedule.scheduled = static_cast<std::uint32_t>(response.scheduled_count);
+            }
+
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "schedule_reports: " << party_name << ": scheduled " << schedule.scheduled
+                << ", already scheduled " << schedule.already_scheduled << ", on demand "
+                << schedule.on_demand << ", not a cron " << schedule.not_a_cron;
+            result.parties.push_back(boost::uuids::to_string(party->id));
+            result.report_schedules.push_back(std::move(schedule));
         }
 
         wf.complete(rfl::json::write(result));

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.service/app/application.hpp"
+#include "../derived_fx_vol_adapter.hpp"
 #include "../feed_kind_registry.hpp"
 #include "../generator_fleet.hpp"
 #include "../generator_runner.hpp"
@@ -41,7 +42,6 @@
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -50,7 +50,7 @@
 #include <chrono>
 #include <map>
 #include <memory>
-#include <rfl/json.hpp>
+#include <optional>
 #include <set>
 #include <span>
 #include <thread>
@@ -141,6 +141,8 @@ public:
         worker_.request_stop();
         if (worker_.joinable())
             worker_.join();
+        for (auto& one : derived_)
+            one->stop();
         for (auto& one : adapters_) {
             generators_.detach(*one.runner);
             one.adapter->stop();
@@ -174,6 +176,16 @@ private:
         adapters_ = std::move(built);
         for (auto& one : adapters_)
             generators_.attach(*one.runner);
+        // A derived source serves what the store already holds, so it runs beside the
+        // simulator on the same catalogue: one for each feed of its session.
+        for (const auto& source : sources) {
+            if (source.session_code != "derived-local")
+                continue;
+            auto one = std::make_unique<ores::synthetic::service::derived_fx_vol_adapter>(
+                nats_, svc_nats_, db_ctx_, source.name, source.publisher_code, source.id);
+            one->start();
+            derived_.push_back(std::move(one));
+        }
         if (adapters_.empty())
             BOOST_LOG_SEV(lg(), warn)
                 << "The catalogue holds no simulated source, so the simulator serves no adapter.";
@@ -213,6 +225,7 @@ private:
     ores::nats::service::nats_client& svc_nats_;
     ores::database::context db_ctx_;
     generator_fleet& generators_;
+    std::vector<std::unique_ptr<ores::synthetic::service::derived_fx_vol_adapter>> derived_;
     const feed_kind_registry& registry_;
     const ores::synthetic::feed::feed_build_context& build_;
     std::shared_ptr<ores::synthetic::feed::fault_state> faults_;

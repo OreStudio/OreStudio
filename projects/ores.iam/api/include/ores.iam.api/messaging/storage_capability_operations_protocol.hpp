@@ -25,9 +25,16 @@
 #ifndef ORES_IAM_API_MESSAGING_STORAGE_CAPABILITY_OPERATIONS_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_STORAGE_CAPABILITY_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.iam.api/export.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -57,6 +64,9 @@ struct mint_storage_capability_request {
      * @brief The grants the capability carries, one row per operation.
      */
     std::vector<ores::security::jwt::storage_grant> grants;
+
+    friend bool operator==(const mint_storage_capability_request&,
+                           const mint_storage_capability_request&) = default;
 };
 
 /**
@@ -70,8 +80,69 @@ struct mint_storage_capability_response {
      * @brief When the capability stops working, in seconds since the epoch.
      */
     std::int64_t expires_at = 0;
+
+    friend bool operator==(const mint_storage_capability_response&,
+                           const mint_storage_capability_response&) = default;
 };
 
+/**
+ * @brief The members of mint_storage_capability_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const mint_storage_capability_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"tenant_id", &mint_storage_capability_request::tenant_id},
+        ::ores::utility::codec::field{"grants", &mint_storage_capability_request::grants},
+    };
 }
+
+/**
+ * @brief The members of mint_storage_capability_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const mint_storage_capability_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &mint_storage_capability_response::success},
+        ::ores::utility::codec::field{"message", &mint_storage_capability_response::message},
+        ::ores::utility::codec::field{"token", &mint_storage_capability_response::token},
+        ::ores::utility::codec::field{"expires_at", &mint_storage_capability_response::expires_at},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::mint_storage_capability_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::mint_storage_capability_request& v);
+    static ores::iam::messaging::mint_storage_capability_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::mint_storage_capability_request& v);
+    static ores::iam::messaging::mint_storage_capability_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::mint_storage_capability_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::mint_storage_capability_response& v);
+    static ores::iam::messaging::mint_storage_capability_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::mint_storage_capability_response& v);
+    static ores::iam::messaging::mint_storage_capability_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

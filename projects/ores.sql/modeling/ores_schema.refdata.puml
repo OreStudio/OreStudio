@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 183
+Tables: 217
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -47,6 +47,7 @@ Keys this group states reach into:
 - ores_reporting_cut_approval_details_tbl (reporting)
 - ores_reporting_cuts_tbl (reporting)
 - ores_reporting_report_definitions_tbl (reporting)
+- ores_trading_product_types_tbl (trading)
 - ores_trading_trade_activities_tbl (trading)
 - ores_trading_trade_bookings_tbl (trading)
 - ores_trading_trade_portfolios_tbl (trading)
@@ -406,6 +407,44 @@ package "refdata" #FFF3E0 {
     derive_pending_models.py.
     end note
 
+    entity ores_refdata_book_product_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * book_id : uuid <<PK, FK>>
+        * product_type_code : text <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+          closed_by : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_book_product_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Book Product Type Table
+    The product types a book allows a trade to be booked under.
+    A book either states its allowed set or allows everything, and the two are
+    different facts:
+    - ores_refdata_books_tbl.restricts_product_types is false, which is every
+    book a tenant creates without saying otherwise: the book allows every product
+    type the catalogue states, now and later, and this junction holds no rows for
+    it.
+    - The flag is true: this junction holds the allowed set, and a book with no
+    rows here allows nothing. An empty set is a decision, not a gap.
+    The distinction matters because the same absence of rows means opposite things.
+    The booking path reads the flag first, so an unrestricted book never queries
+    this junction.
+    The product type is named by the code the catalogue states, the same soft
+    reference the instrument tables use, because the catalogue belongs to the
+    trading component and this junction to refdata: a foreign key would point the
+    reference data at the trades.
+    end note
+
     entity ores_refdata_book_purpose_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -485,6 +524,7 @@ package "refdata" #FFF3E0 {
         * book_purpose_type : text
         * ledger_feed_type : text
         * is_sweepable : boolean
+        * restricts_product_types : boolean
         * rates_centre_code : text
           sandbox_id : uuid <<FK>>
         * modified_by : text
@@ -1305,24 +1345,13 @@ package "refdata" #FFF3E0 {
     on are market data, and they are not here.
     end note
 
-    entity ores_refdata_commodity_curve_configs_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_commodity_curve_bases_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
         * version : integer
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
-        * currency : text
-          base_price_curve : text
-          base_yield_curve : text
-          yield_curve : text
-          spot_quote : text
-        * has_quotes : boolean
-          day_counter : text
-          interpolation_method : text
-          conventions : text
-          extrapolation : text
-        * has_basis_configuration : boolean
           basis_base_price_curve : text
           basis_base_price_conventions : text
           basis_conventions : text
@@ -1332,7 +1361,38 @@ package "refdata" #FFF3E0 {
           basis_month_offset : integer
           basis_average_base : text
           basis_price_as_historical_fixing : text
-        * has_price_segments : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_curve_bases_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Curve Basis Table
+    A commodity curve built as a basis to a base price curve, as ORE's
+    BasisConfiguration: the base price curve and its conventions, the basis
+    conventions, the day counter, the interpolation, whether the basis is added, the
+    month offset, whether the base is averaged and whether a price is a historical
+    fixing. Only the basis construction reads them, and its presence is what
+    selects that construction, so the flag the entry row held is gone.
+    A commodity curve holds at most one row of this part, so the generated table
+    adds the unique index on the live rows of (tenant_id, curve_definition_id).
+    end note
+
+    entity ores_refdata_commodity_curve_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+          extrapolation : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1350,11 +1410,110 @@ package "refdata" #FFF3E0 {
     curve_definition in the CommodityCurves section. A commodity curve is built
     from forward quotes, or from a base curve and a yield curve, or as a basis over
     another commodity curve, or from price segments.
-    The basis form writes a BasisConfiguration element, whose settings are the
-    basis_ columns and whose BasisQuotes are rows of curve_quote with that
-    list name. Price segments are rows of commodity_price_segment. The entry's
-    own quotes are rows of curve_quote on the entry, and its BootstrapConfig a
-    row of curve_bootstrap_config.
+    The row holds what every construction reads, its currency and whether it
+    extrapolates. Each construction's settings are a part of the entry, keyed by
+    its curve_definition_id and present only for the construction that reads
+    them: commodity_curve_direct for a curve built from forward quotes,
+    commodity_curve_cross_currency for one built from a base curve and a yield
+    curve, commodity_curve_basis for the BasisConfiguration element, whose
+    BasisQuotes are rows of curve_quote with that list name, and
+    commodity_curve_interpolation for the day counter and interpolation the
+    direct and piecewise curves state. Price segments are rows of
+    commodity_price_segment. Which part an entry holds is its construction, so
+    the row carries no flag for it. The entry's own quotes are rows of
+    curve_quote on the entry, and its BootstrapConfig a row of
+    curve_bootstrap_config.
+    end note
+
+    entity ores_refdata_commodity_curve_cross_currencies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          base_price_curve : text
+          base_yield_curve : text
+          yield_curve : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_curve_cross_currencies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Curve Cross Currency Table
+    How a cross currency commodity curve is built from a price curve in another
+    currency, as ORE's BasePriceCurve, BaseYieldCurve and YieldCurve. Only
+    that construction reads them, and ORE requires all three for it.
+    A commodity curve holds at most one row of this part, so the generated table
+    adds the unique index on the live rows of (tenant_id, curve_definition_id).
+    end note
+
+    entity ores_refdata_commodity_curve_directs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          spot_quote : text
+          conventions : text
+        * has_quotes : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_curve_directs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Curve Direct Table
+    What a commodity curve built directly from forward quotes states, as ORE's
+    SpotQuote, Conventions and Quotes. Only the direct construction reads
+    them.
+    A commodity curve holds at most one row of this part, so the generated table
+    adds the unique index on the live rows of (tenant_id, curve_definition_id).
+    end note
+
+    entity ores_refdata_commodity_curve_interpolations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+          day_counter : text
+          interpolation_method : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_curve_interpolations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Curve Interpolation Table
+    How a commodity curve built from its own quotes or price segments
+    interpolates, as ORE's DayCounter and InterpolationMethod. The direct and
+    piecewise constructions read them; a cross currency curve takes its shape from
+    its base curve, and a basis curve states its own inside its basis
+    configuration.
+    A commodity curve holds at most one row of this part, so the generated table
+    adds the unique index on the live rows of (tenant_id, curve_definition_id).
     end note
 
     entity ores_refdata_commodity_forward_conventions_tbl <<temporal>> #C6F0D8 {
@@ -1394,12 +1553,51 @@ package "refdata" #FFF3E0 {
     location, which none sets.
     end note
 
-    entity ores_refdata_commodity_future_conventions_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_commodity_future_averaging_terms_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : text <<PK>>
+        * id : uuid <<PK>>
         * party_id : uuid <<PK, FK>>
         --
         * version : integer
+        * convention_id : uuid <<FK>>
+        * averaging_commodity_name : text
+        * averaging_period : text
+        * averaging_pricing_calendar : text
+        * averaging_conventions : text
+          averaging_use_business_days : boolean
+          averaging_delivery_roll_days : integer
+          averaging_future_month_offset : integer
+          averaging_daily_expiry_offset : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_averaging_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Averaging Terms Table
+    How an averaging commodity future averages the prices of its underlying, as
+    ORE's AveragingData: the commodity it averages, the period, the pricing
+    calendar, the conventions the averaging follows, whether it counts business
+    days, the delivery roll days, the future month offset and the daily expiry
+    offset. It is a part because its fields hold one invariant: each applies only
+    when the future averages, and ORE requires the commodity, the period, the
+    calendar and the conventions together, so the part makes those four columns
+    required. A convention fills this part at most once.
+    end note
+
+    entity ores_refdata_commodity_future_contract_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
         * contract_frequency : text
         * calendar : text
           expiry_calendar : text
@@ -1410,6 +1608,46 @@ package "refdata" #FFF3E0 {
           adjust_before_offset : boolean
           is_averaging : boolean
           valid_contract_months : text
+          hours_per_day : integer
+          index_name : text
+          savings_time : text
+          delivery_location : text
+          balance_of_the_month : boolean
+          balance_of_the_month_pricing_calendar : text
+          prohibited_expiries : text
+          future_continuation_mappings : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_contract_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Contract Terms Table
+    The terms that state the futures contract itself, as ORE's
+    ContractFrequency, Calendar, the expiry calendar, month lag and offset, the
+    contract months, the business day convention, the averaging flag, the hours
+    per day, the index name, the savings time, the delivery location, the balance
+    of the month fields, the prohibited expiries and the future continuation
+    mappings. It is a part because its fields hold one invariant: each describes
+    the listed contract, and ORE requires the frequency and the calendar of every
+    commodity future. So every convention of the kind fills this part once. The
+    anchor day, the option expiry, the off-peak index and the averaging data beside
+    it are optional, and each is a part of its own.
+    end note
+
+    entity ores_refdata_commodity_future_expiry_anchors_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
           anchor_day_of_month : integer
           anchor_calendar_days_before : integer
           anchor_business_days_after : integer
@@ -1417,6 +1655,66 @@ package "refdata" #FFF3E0 {
           anchor_nth_weekday : text
           anchor_last_weekday : text
           anchor_weekly_day_of_the_week : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_expiry_anchors_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Expiry Anchor Table
+    The day the expiry of a commodity future is anchored to, as ORE's
+    AnchorDay: a day of the month, a number of calendar days before the month
+    end, a number of business days after the month start, the nth weekday, the last
+    weekday, or a weekly day. It is a part because its fields hold one invariant:
+    together they state one anchor, and ORE allows one form of it at a time. The
+    element is optional, so a convention fills this part at most once.
+    end note
+
+    entity ores_refdata_commodity_future_off_peak_indexes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
+        * off_peak_index : text
+        * peak_index : text
+        * off_peak_hours : double
+        * peak_calendar : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_off_peak_indexes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Off Peak Index Table
+    The peak and off-peak indices a power future's price is made of, as ORE's
+    OffPeakPowerIndexData: the off-peak index, the peak index, the hours of the
+    day that count as off-peak, and the calendar the peak hours are read on. It is a
+    part because its fields hold one invariant: ORE requires all four together, so
+    the part makes each column required. Only a power future states it, so a
+    convention fills this part at most once.
+    end note
+
+    entity ores_refdata_commodity_future_option_expiries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
           option_expiry_month_lag : integer
           option_contract_frequency : text
           option_expiry_offset : integer
@@ -1428,29 +1726,8 @@ package "refdata" #FFF3E0 {
           option_expiry_last_weekday_of_month : text
           option_expiry_weekly_day_of_the_week : text
           option_business_day_convention : text
-          hours_per_day : integer
-          off_peak_index : text
-          peak_index : text
-          off_peak_hours : double
-          peak_calendar : text
-          index_name : text
-          savings_time : text
-          delivery_location : text
-          balance_of_the_month : boolean
-          balance_of_the_month_pricing_calendar : text
           option_underlying_future_convention : text
-          averaging_commodity_name : text
-          averaging_period : text
-          averaging_pricing_calendar : text
-          averaging_conventions : text
-          averaging_use_business_days : boolean
-          averaging_delivery_roll_days : integer
-          averaging_future_month_offset : integer
-          averaging_daily_expiry_offset : integer
-          prohibited_expiries : text
-          future_continuation_mappings : text
           option_continuation_mappings : text
-          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1459,30 +1736,19 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_commodity_future_conventions_tbl
+    note right of ores_refdata_commodity_future_option_expiries_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Commodity Future Convention Table
-    Describes how ORE builds a commodity future: when it expires, which contract
-    months it lists, how its expiry anchors to a day of the month or a weekday, and
-    the schedule of the options written on it. Corresponds to the
-    <CommodityFuture> element in ORE conventions.xml. The id field is the natural
-    key (ORE <Id> element).
-    Thirty of the element's thirty-four fields are modelled here, as forty columns,
-    because the element's nested structs are flattened rather than given tables of
-    their own.
-    AnchorDay becomes seven columns, OptionNthWeekday two more, and
-    OffPeakPowerIndexData four. The corpus uses all six of AnchorDay's variants,
-    so flattening it is what lets a commodity future round trip at all.
-    Five files carry the element, in eight hundred and eight elements, and two of
-    them carried nothing else unmodelled when it landed.
-    Four more fields hold lists, and each is written as a text column rather than
-    counted: AveragingData becomes eight columns, and ProhibitedExpiries,
-    FutureContinuationMappings and OptionContinuationMappings become one text
-    column each, holding comma-separated dates and from:to pairs. A column is a
-    weaker home than a table, and it is what keeps the field in the element's
-    round trip rather than excluding the file from it.
+    Commodity Future Option Expiry Table
+    The expiry schedule of the options written on a commodity future, as ORE's
+    Option* fields: the month lag, the contract frequency, the offset, the
+    calendar and business days before, the expiry day, the nth weekday, the last
+    weekday, the weekly day and the business day convention, with the future
+    convention an option names as its underlying and the option continuation
+    mappings. It is a part because its fields hold one invariant: each applies only
+    when the convention states options on the future. A convention with no
+    options fills none of it, so it fills this part at most once.
     end note
 
     entity ores_refdata_commodity_price_segments_tbl <<temporal>> #C6F0D8 {
@@ -2041,37 +2307,23 @@ package "refdata" #FFF3E0 {
     topologies and never share an engine.
     end note
 
-    entity ores_refdata_cross_currency_basis_conventions_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_cross_currency_basis_flat_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : text <<PK>>
+        * id : uuid <<PK>>
         * party_id : uuid <<PK, FK>>
         --
         * version : integer
-        * settlement_days : integer
-          settlement_calendar : text
-        * roll_convention : text
+        * convention_id : uuid <<FK>>
         * flat_index : text
-        * spread_index : text
-          eom : boolean
-          is_resettable : boolean
           flat_index_is_resettable : boolean
           flat_tenor : text
-          spread_tenor : text
-          spread_payment_lag : integer
           flat_payment_lag : integer
-          spread_include_spread : boolean
-          spread_lookback : text
-          spread_fixing_days : integer
-          spread_rate_cutoff : integer
-          spread_is_averaged : boolean
-          spread_observation_shift : boolean
           flat_include_spread : boolean
           flat_lookback : text
           flat_fixing_days : integer
           flat_rate_cutoff : integer
           flat_is_averaged : boolean
           flat_observation_shift : boolean
-          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2080,34 +2332,133 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_cross_currency_basis_conventions_tbl
+    note right of ores_refdata_cross_currency_basis_flat_legs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Cross-Currency Basis Convention Table
-    Describes how ORE builds both legs of a cross-currency basis swap: the two
-    indices, their tenors, their payment lags and their fixing and cutoff rules, and
-    whether the spread is included in a leg's coupons. Corresponds to the
-    <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural
-    key (ORE <Id> element).
+    Cross Currency Basis Flat Leg Table
+    The leg of a cross-currency basis swap that pays its index flat, as ORE's
+    FlatIndex with the Flat* fixing rules: whether the index is resettable,
+    the tenor, the payment lag, whether the spread is included in the coupon, the
+    lookback, the fixing days, the rate cutoff, whether coupons are averaged, and
+    whether the observation is shifted. They are a part because each states how
+    this one leg builds its coupon; the spread leg beside it states its own. Each
+    column keeps the flat_ prefix of ORE's element, because the screen shows
+    both legs of one convention on one row, and the two legs' columns would
+    otherwise share their names.
     end note
 
-    entity ores_refdata_cross_currency_fix_float_conventions_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_cross_currency_basis_spread_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : text <<PK>>
+        * id : uuid <<PK>>
         * party_id : uuid <<PK, FK>>
         --
         * version : integer
+        * convention_id : uuid <<FK>>
+        * spread_index : text
+          spread_tenor : text
+          spread_payment_lag : integer
+          spread_include_spread : boolean
+          spread_lookback : text
+          spread_fixing_days : integer
+          spread_rate_cutoff : integer
+          spread_is_averaged : boolean
+          spread_observation_shift : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_basis_spread_legs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Basis Spread Leg Table
+    The leg of a cross-currency basis swap that pays its index plus the basis
+    spread, as ORE's SpreadIndex with the Spread* fixing rules: the tenor, the
+    payment lag, whether the spread is included in the coupon, the lookback, the
+    fixing days, the rate cutoff, whether coupons are averaged, and whether the
+    observation is shifted. They are a part because each states how this one leg
+    builds its coupon; the flat leg beside it states its own. Each column keeps the
+    spread_ prefix of ORE's element, for the reason the flat leg's columns do.
+    end note
+
+    entity ores_refdata_cross_currency_basis_swap_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
         * settlement_days : integer
-        * settlement_calendar : text
-        * settlement_convention : text
+          settlement_calendar : text
+        * roll_convention : text
+          eom : boolean
+          is_resettable : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_basis_swap_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Basis Swap Terms Table
+    The terms a cross-currency basis swap states once for both legs, as ORE's
+    SettlementDays, SettlementCalendar, RollConvention, EOM and
+    IsResettable. It is a part because its fields hold one invariant: each
+    applies to the whole swap at once, so neither leg can hold it alone. The
+    settlement fields fix the settlement date, the roll convention and the end of
+    month rule roll the schedules of both legs, and the resettable flag resets the
+    notional of the swap. The flat and spread legs beside it hold none of them.
+    end note
+
+    entity ores_refdata_cross_currency_fix_float_fixed_legs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
         * fixed_currency : text
         * fixed_frequency : text
         * fixed_convention : text
         * fixed_day_count_fraction : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_fix_float_fixed_legs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Fix Float Fixed Leg Table
+    The leg a cross-currency fix-float swap pays in the currency it fixes, as
+    ORE's FixedCurrency, FixedFrequency, FixedConvention and
+    FixedDayCounter. It is a part because its four fields hold one invariant: the
+    terms the fixed leg is built from, and a convention either states them or does
+    not. The floating leg beside it holds none of them.
+    end note
+
+    entity ores_refdata_cross_currency_fix_float_float_legs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
         * index : text
-          eom : boolean
-          is_resettable : boolean
           float_index_is_resettable : boolean
           include_spread : boolean
           lookback : text
@@ -2115,7 +2466,6 @@ package "refdata" #FFF3E0 {
           rate_cutoff : integer
           is_averaged : boolean
           observation_shift : boolean
-          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2124,19 +2474,51 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_cross_currency_fix_float_conventions_tbl
+    note right of ores_refdata_cross_currency_fix_float_float_legs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Cross-Currency Fix-Float Convention Table
-    Describes how ORE builds a cross-currency swap whose fixed leg pays one
-    currency and whose floating leg pays an index in another. Corresponds to the
-    <CrossCurrencyFixFloat> element in ORE conventions.xml. The id field is the
-    natural key (ORE <Id> element).
-    Nine fields are required and nine are optional. The corpus sets all nine
-    required in all forty-one elements and sets none of the optional ones, so the
-    optional half of the mapping is proven by a case that builds the element rather
-    than by the corpus walk.
+    Cross Currency Fix Float Float Leg Table
+    The leg a cross-currency fix-float swap pays off an index, as ORE's Index
+    with its fixing rules: whether the index is resettable, whether the spread is
+    included in the coupon, the lookback, the fixing days, the rate cutoff, whether
+    coupons are averaged, and whether the observation is shifted. They are a part
+    because a convention that states the floating leg states that block or none of
+    it; the fixed leg beside it holds none of them.
+    end note
+
+    entity ores_refdata_cross_currency_fix_float_swap_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
+        * settlement_days : integer
+        * settlement_calendar : text
+        * settlement_convention : text
+          eom : boolean
+          is_resettable : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_fix_float_swap_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Fix Float Swap Terms Table
+    The terms a cross-currency fix-float swap states once for both legs, as ORE's
+    SettlementDays, SettlementCalendar, SettlementConvention, EOM and
+    IsResettable. It is a part because its fields hold one invariant: each
+    applies to the whole swap at once, so neither leg can hold it alone. The
+    settlement fields fix the settlement date, the end of month rule rolls the
+    coupons of both legs, and the resettable flag resets the notional of the
+    swap. The fixed and floating legs beside it hold none of them.
     end note
 
     entity ores_refdata_csa_eligible_currencies_tbl <<temporal>> #C6F0D8 {
@@ -3007,6 +3389,69 @@ package "refdata" #FFF3E0 {
     rate, its prepayment rate, its price and its conversion factor.
     end note
 
+    entity ores_refdata_curve_segment_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * conventions : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Convention Table
+    The convention a segment's instruments are priced with, as ORE's
+    Conventions. Eight of the twelve segment elements state it, and two of those
+    may leave it out, so it is a part rather than a column of the segment: a
+    weighted average, a yield plus default, a fitted bond and an ibor fallback
+    segment have no convention to state.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
+    entity ores_refdata_curve_segment_cross_currency_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * discount_curve : text
+        * spot_rate : text
+          projection_curve_domestic : text
+          projection_curve_foreign : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_cross_currency_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Cross Currency Terms Table
+    What a cross currency segment states about its other currency, as ORE's
+    DiscountCurve, SpotRate, ProjectionCurveDomestic and
+    ProjectionCurveForeign. They hold one invariant: each says how the segment
+    reaches the other currency's curve. ORE requires the discount curve and the
+    spot rate, so every cross currency segment has this part.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
     entity ores_refdata_curve_segment_curves_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -3039,6 +3484,226 @@ package "refdata" #FFF3E0 {
     row, and role names the list it came from.
     end note
 
+    entity ores_refdata_curve_segment_discount_ratios_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * base_curve : text
+        * base_curve_currency : text
+        * numerator_curve : text
+        * numerator_curve_currency : text
+        * denominator_curve : text
+        * denominator_curve_currency : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_discount_ratios_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Discount Ratio Table
+    The three curves a discount ratio segment is built from and the currency of
+    each, as ORE's BaseCurve, NumeratorCurve and DenominatorCurve. They hold
+    one invariant: the segment is the base curve times the ratio of the other two.
+    ORE requires all three curves and their currencies, so every discount ratio
+    segment has this part.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
+    entity ores_refdata_curve_segment_extrapolations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * extrapolate_flat : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_extrapolations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Extrapolation Table
+    Whether a fitted bond or a bond yield shifted segment extrapolates flat past
+    its last bond, as ORE's ExtrapolateFlat. Only those two elements state it,
+    and it is optional, so a segment has this part only when its document states
+    the flag.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
+    entity ores_refdata_curve_segment_ibor_fallbacks_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * ibor_index : text <<FK>>
+        * rfr_curve : text
+          rfr_index : text <<FK>>
+          spread : numeric(38, 12)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_ibor_fallbacks_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Ibor Fallback Table
+    What an ibor fallback segment falls back from and to, as ORE's IborIndex,
+    RfrCurve, RfrIndex and Spread. They hold one invariant: the ibor index is
+    the RFR index on the RFR curve plus the spread. ORE requires the ibor index and
+    the RFR curve, so every ibor fallback segment has this part.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
+    entity ores_refdata_curve_segment_pillar_rules_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+          pillar_choice : text
+          priority : integer
+          min_distance : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_pillar_rules_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Pillar Rule Table
+    The rules that place a segment's pillars, as ORE's PillarChoice,
+    Priority and MinDistance. They hold one invariant: together they say where
+    the segment's instruments put the curve's pillars and which segment wins when
+    two put them too close. Nine of the twelve elements state them, and every field
+    is optional, so a segment has this part only when its document states one of
+    them.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
+    entity ores_refdata_curve_segment_projections_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * projection_curve : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_projections_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Projection Table
+    The curve a simple or an average OIS segment projects its floating index on,
+    as ORE's ProjectionCurve. Only those two elements state it, and it is
+    optional, so a segment has this part only when its document names the
+    curve.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
+    entity ores_refdata_curve_segment_references_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * reference_curve : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_references_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Reference Table
+    The curve a segment builds on, as ORE's ReferenceCurve. A zero spread
+    segment adds its spreads to it, a bond yield shifted segment shifts it and a
+    yield plus default segment adds its default curves to it. ORE requires it on
+    all three, so every segment of those elements has this part.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
+    entity ores_refdata_curve_segment_tenor_basis_curves_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+          projection_curve_pay : text
+          projection_curve_receive : text
+          projection_curve_long : text
+          projection_curve_short : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_tenor_basis_curves_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Tenor Basis Curves Table
+    The projection curves of a tenor basis segment's legs, as ORE's
+    ProjectionCurvePay, ProjectionCurveReceive, ProjectionCurveLong and
+    ProjectionCurveShort. They hold one invariant: each names the curve one leg
+    of the basis swap projects on. Only a tenor basis segment states them, and each
+    is optional, so a segment has this part only when its document names one.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
     entity ores_refdata_curve_segment_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -3069,6 +3734,38 @@ package "refdata" #FFF3E0 {
     column of the type, because each type belongs to exactly one element.
     end note
 
+    entity ores_refdata_curve_segment_weighted_averages_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * reference_curve_1 : text
+        * reference_curve_2 : text
+        * weight_1 : double
+        * weight_2 : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_weighted_averages_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Weighted Average Table
+    The two curves a weighted average segment averages and the weight of each,
+    as ORE's ReferenceCurve1, ReferenceCurve2, Weight1 and Weight2. They
+    hold one invariant: the segment is their weighted sum. ORE requires all four,
+    so every weighted average segment has this part.
+    A segment holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, curve_segment_id).
+    end note
+
     entity ores_refdata_curve_segments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -3078,34 +3775,6 @@ package "refdata" #FFF3E0 {
         * curve_definition_id : uuid <<FK>>
         * segment_type : text <<FK>>
         * position : integer
-          conventions : text
-          pillar_choice : text
-          priority : integer
-          min_distance : integer
-          projection_curve : text
-          discount_curve : text
-          spot_rate : text
-          projection_curve_domestic : text
-          projection_curve_foreign : text
-          projection_curve_pay : text
-          projection_curve_receive : text
-          projection_curve_long : text
-          projection_curve_short : text
-          reference_curve : text
-          reference_curve_2 : text
-          weight_1 : double
-          weight_2 : double
-          ibor_index : text <<FK>>
-          rfr_curve : text
-          rfr_index : text <<FK>>
-          spread : numeric(38, 12)
-          base_curve : text
-          base_curve_currency : text
-          numerator_curve : text
-          numerator_curve_currency : text
-          denominator_curve : text
-          denominator_curve_currency : text
-          extrapolate_flat : boolean
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3124,15 +3793,17 @@ package "refdata" #FFF3E0 {
     The type fixes the segment element it is written under, so the row holds only
     the type and refers to curve_segment_type, and a type written under the wrong
     element cannot be stored.
-    The twelve segment elements share a skeleton and differ in a few settings
-    each: projection curves for simple and tenor basis segments, a discount curve
-    and a spot rate for cross currency ones, a reference curve for zero spread
-    ones. Each setting is its own typed column, null where the segment's element
-    has no such setting. The lists a segment holds are child rows: its quotes in
-    curve_quote, and the index curves and default curves of the bond and default
-    based segments in curve_segment_curve.
-    The convention a segment names may be any of ORE's convention kinds, which are
-    one table each, so a function that looks in all of them checks the reference.
+    The twelve segment elements share a skeleton and differ in their settings, so
+    the row holds only what every element has: its definition, its type and its
+    place. Each component of settings an element states is a part of its own,
+    joined to the segment by its id, and present only for the elements that state
+    it: the convention in curve_segment_convention, the pillar rules in
+    curve_segment_pillar_rule, a simple segment's projection curve in
+    curve_segment_projection, a cross currency segment's terms in
+    curve_segment_cross_currency_terms, and six more, one per component. The
+    lists a segment holds are child rows too: its quotes in curve_quote, and the
+    index curves and default curves of the bond and default based segments in
+    curve_segment_curve.
     end note
 
     entity ores_refdata_curve_volatility_configs_tbl <<temporal>> #C6F0D8 {
@@ -3549,6 +4220,72 @@ package "refdata" #FFF3E0 {
     and only one of them can be right.
     end note
 
+    entity ores_refdata_default_curve_benchmarks_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          benchmark_curve : text
+          source_curve : text
+          pillars : text
+          spot_lag : integer
+          calendar : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_default_curve_benchmarks_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Default Curve Benchmark Table
+    How a benchmark default curve is derived, as ORE's BenchmarkCurve,
+    SourceCurve, Pillars, SpotLag and Calendar. Only the benchmark
+    construction reads them, and ORE requires all five for it.
+    A default curve configuration holds at most one row of this part, so the generated table
+    adds the unique index on the live rows of (tenant_id, default_curve_configuration_id).
+    end note
+
+    entity ores_refdata_default_curve_cds_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          start_date : text
+          running_spread : numeric(38, 12)
+          index_term : text
+          imply_default_from_market : text
+          price_is_upfront : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_default_curve_cds_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Default Curve Cds Terms Table
+    The settings of a default curve bootstrapped from CDS instruments, as ORE's
+    StartDate, RunningSpread, IndexTerm, ImplyDefaultFromMarket and
+    PriceIsUpfront. Only the CDS spread, hazard rate, price, conventional spread
+    and null constructions read them, and each is optional, so a configuration has
+    this part only when its document states one of them.
+    A default curve configuration holds at most one row of this part, so the generated table
+    adds the unique index on the live rows of (tenant_id, default_curve_configuration_id).
+    end note
+
     entity ores_refdata_default_curve_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -3586,26 +4323,10 @@ package "refdata" #FFF3E0 {
         * is_inline : boolean
           priority : integer
           default_curve_type : text
-          discount_curve : text
           day_counter : text
           recovery_rate : text
-          start_date : text
-        * has_quotes : boolean
-          benchmark_curve : text
-          reinterpreted_yield_curve : text
-          source_curve : text
-          pillars : text
-          spot_lag : integer
-          calendar : text
-          conventions : text
           extrapolation : text
-          running_spread : numeric(38, 12)
-          index_term : text
-          imply_default_from_market : text
           allow_negative_rates : text
-          price_is_upfront : text
-          initial_state : text
-          states : text
         * position : integer
         * modified_by : text
         * performed_by : text
@@ -3626,12 +4347,110 @@ package "refdata" #FFF3E0 {
     inline and 189 with configurations, nine of them with two, and never both. Each
     inline curve is one row with is_inline set; each listed configuration is one
     row with its priority.
+    The row holds what every type reads: its type, day counter, recovery rate,
+    extrapolation and whether it allows negative rates. Each type's settings are a
+    part of the configuration, keyed by its id and present only for the types that
+    read them: default_curve_market_terms and default_curve_cds_terms for the
+    CDS spread, hazard rate, price, conventional spread and null types,
+    default_curve_benchmark, default_curve_transition_matrix and
+    default_curve_yield_reinterpretation for theirs.
     The quotes a configuration is built from are rows of curve_quote, and its
     BootstrapConfig a row of curve_bootstrap_config, both naming this row.
     Pillars and States are comma separated lists in ORE's own text, held as
-    written. The schema also allows SourceCurves and SwitchDates lists, which
+    written in their parts. The schema also allows SourceCurves and SwitchDates lists, which
     no corpus document writes; the mapper refuses an entry that has them rather
     than lose them.
+    end note
+
+    entity ores_refdata_default_curve_market_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          discount_curve : text
+          conventions : text
+        * has_quotes : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_default_curve_market_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Default Curve Market Terms Table
+    What a default curve built from market quotes states about those quotes, as
+    ORE's DiscountCurve, Conventions and Quotes. The CDS spread, hazard rate,
+    price, conventional spread and null constructions read them. A transition matrix
+    reads only its Quotes, but every transition matrix in the ORE examples also
+    states a discount curve and conventions, so the part holds them for that type
+    too and the document round trips as written.
+    A default curve configuration holds at most one row of this part, so the generated table
+    adds the unique index on the live rows of (tenant_id, default_curve_configuration_id).
+    end note
+
+    entity ores_refdata_default_curve_transition_matrices_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          initial_state : text
+          states : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_default_curve_transition_matrices_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Default Curve Transition Matrix Table
+    The rating states of a default curve read from a transition matrix, as ORE's
+    InitialState and States. Only the transition matrix construction reads them,
+    and each is optional, so a configuration has this part only when its document
+    states one of them.
+    A default curve configuration holds at most one row of this part, so the generated table
+    adds the unique index on the live rows of (tenant_id, default_curve_configuration_id).
+    end note
+
+    entity ores_refdata_default_curve_yield_reinterpretations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          reinterpreted_yield_curve : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_default_curve_yield_reinterpretations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Default Curve Yield Reinterpretation Table
+    The yield curve a default curve of type YieldCurve reads as survival
+    probabilities, as ORE's ReinterpretedYieldCurve. Only that construction reads
+    it, and ORE requires it there.
+    A default curve configuration holds at most one row of this part, so the generated table
+    adds the unique index on the live rows of (tenant_id, default_curve_configuration_id).
     end note
 
     entity ores_refdata_deposit_conventions_tbl <<temporal>> #C6F0D8 {
@@ -4020,6 +4839,124 @@ package "refdata" #FFF3E0 {
     (ORE <Id> element).
     end note
 
+    entity ores_refdata_fx_vol_surface_blueprints_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * output_series_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * name : text
+        * base_currency_code : text
+        * quote_currency_code : text
+        * fx_option_convention_id : text <<FK>>
+        * smile_model : text
+        * expiry_interpolation : text
+        * output_expiries : text
+        * output_strikes : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_vol_surface_blueprints_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Surface Blueprint Table
+    Records *how* one FX volatility surface is built, as a named, inspectable recipe, the
+    surface's counterpart of the IR curve bootstrap config. Its pillars, in
+    fx_vol_surface_pillar, name the quotes the calibration reads; the blueprint states
+    what is done with them: the smile model fitted at each expiry, how the fitted
+    expiries are joined, the grid of expiries and strikes the surface is written on, and
+    the series it is written to. See
+    [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
+    output_series_id is a soft, cross-component reference into ores.marketdata's
+    market_series: the fx_vol_surface series the calibration alone writes. As for the
+    IR config, it is chosen and not minted, and it is the sole natural key, so exactly
+    one active blueprint, tenant-wide, writes any given surface series.
+    fx_option_convention_id names the pair's quoting convention in
+    fx_option_convention, a soft reference: its ATM type, delta type, butterfly style
+    and switch tenor decide what each pillar's quote means. smile_model and
+    expiry_interpolation are small, fixed vocabularies intrinsic to the record, held
+    by check constraints, as the IR config's curve_family_role is.
+    The output grid is two lists, the expiries as tenor codes and the strikes in the
+    oresmd strike grammar (ATM, DEL/Spot/Put/25, an absolute level), each separated
+    by commas: the grid is a property of the recipe, read whole by the calibration and
+    never addressed one point at a time, so it has no table of its own.
+    end note
+
+    entity ores_refdata_fx_vol_surface_pillar_sources_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * pillar_id : uuid <<FK>>
+        * market_series_id : uuid <<FK>>
+        * contributor_code : text
+        * weight : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_vol_surface_pillar_sources_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Surface Pillar Source Table
+    One contributor's quote of a pillar: the market series it is read from, and the
+    weight the contributor carries in the calibration. A pillar reads one series per
+    contributor, so a broker's quotes and the derived source's quotes of the same point
+    are two sources of one pillar, and a missing observation from one of them is not a
+    refusal by itself. See
+    [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]].
+    market_series_id is a soft reference to an fx_option quote series in
+    ores.marketdata, named by the caller from the series the party holds.
+    contributor_code names the provider whose series it is, as the series' own
+    provider_code does, so a reader sees the contributor without a cross-component
+    read.
+    end note
+
+    entity ores_refdata_fx_vol_surface_pillars_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * blueprint_id : uuid <<FK>>
+        * expiry_code : text
+        * strike_label : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_vol_surface_pillars_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Surface Pillar Table
+    One quoted point a surface's calibration reads: an expiry and a strike label, ATM,
+    a risk reversal or butterfly at a delta, or a call or put at a delta, such as 25RR
+    or 10P. Unlike a curve's pillars, a surface's pillars have no order the
+    construction depends on, so a pillar is keyed by its point rather than by a
+    sequence. Its quotes come from its sources in fx_vol_surface_pillar_source, one per
+    contributor, each with the weight it carries in the calibration.
+    expiry_code is a soft tenor reference, as the IR pillar's tenor codes are: the
+    expiry is resolved to a date through the tenor machinery at the application layer.
+    end note
+
     entity ores_refdata_fx_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -4231,9 +5168,6 @@ package "refdata" #FFF3E0 {
         * frequency : text
           base_rate : text
           tolerance : double
-        * has_seasonality : boolean
-          seasonality_base_date : text
-          seasonality_frequency : text
           use_last_fixing_date : text
           interpolation_variable : text
           interpolation_method : text
@@ -4253,11 +5187,46 @@ package "refdata" #FFF3E0 {
     The settings of one InflationCurve entry of a curveconfig.xml, one row per
     curve_definition in the InflationCurves section: the nominal curve it is
     built over, whether it is zero coupon or year on year, its lag and frequency,
-    and its seasonality. The quotes it is built from are rows of curve_quote, and
-    the seasonality factors rows of inflation_seasonality_factor.
+    and its interpolation. The quotes it is built from are rows of curve_quote. Its
+    seasonality is a row of inflation_seasonality, present only when the curve
+    states one, and the seasonality factors are rows of inflation_seasonality_factor.
     The schema also allows a list of segments, each a convention and quotes. No
     corpus document writes one, and the mapper refuses an entry that does rather
     than lose it.
+    end note
+
+    entity ores_refdata_inflation_seasonalities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * base_date : text
+        * frequency : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_inflation_seasonalities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Inflation Seasonality Table
+    ORE's seasonalityType requires BaseDate, Frequency and Factors
+    together. The inflation curve held them as has_seasonality and two nullable
+    columns, which could say a curve has a seasonality with no base date. A row of
+    this part is the seasonality: it exists only where the curve states one, so its
+    presence replaces the flag, and its base date and frequency are required.
+    The factors stay rows of inflation_seasonality_factor, keyed by the same
+    curve entry. The export refuses factors with no seasonality. ORE allows a
+    seasonality whose Factors holds no Factor, so the part does not require one.
+    A curve entry holds at most one row of this part, so the generated table adds
+    the unique index on the live rows of (tenant_id, curve_definition_id).
     end note
 
     entity ores_refdata_inflation_seasonality_factors_tbl <<temporal>> #C6F0D8 {
@@ -5454,6 +6423,37 @@ package "refdata" #FFF3E0 {
     refdata code tables.
     end note
 
+    entity ores_refdata_product_family_codes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_product_family_codes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Product Family Code Table
+    The shape of contract a product type takes, independent of the market it
+    references: an option, a swap, a forward. The list exists so that every option
+    can be seen across markets, which neither the market nor the product type
+    permits on its own.
+    The values are ours rather than a published scheme's, and the analysis behind
+    them is in the Product Family knowledge note. A product type names one family,
+    or none where the corpus states the shape is unsettled.
+    The rows are seeded into the system tenant and read by every tenant.
+    end note
+
     entity ores_refdata_purpose_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -5919,9 +6919,6 @@ package "refdata" #FFF3E0 {
           swap_tenors : text
           short_swap_index_base : text
           swap_index_base : text
-          smile_option_tenors : text
-          smile_swap_tenors : text
-          smile_spreads : text
           quote_tag : text
         * modified_by : text
         * performed_by : text
@@ -5938,12 +6935,51 @@ package "refdata" #FFF3E0 {
     Swaption Volatility Config Table
     The settings of one SwaptionVolatility entry of a curveconfig.xml, one row
     per curve_definition in the SwaptionVolatilities section: the surface's
-    dimension and volatility type, the option and swap tenors of its ATM matrix and
-    smile, and the swap indices it is built on. Its Report is a row of
+    dimension and volatility type, the option and swap tenors of its ATM matrix,
+    and the swap indices it is built on. Its Report is a row of
     curve_report_configuration and its ParametricSmileConfiguration a row of
     curve_parametric_smile.
     A ProxyConfig builds the surface from another one; it is one per entry, so
     it is a row of swaption_proxy_config and the entry holds none of its fields.
+    The smile grid of a Smile surface is a row of swaption_volatility_smile in
+    the same way, so an ATM entry carries no smile columns.
+    end note
+
+    entity ores_refdata_swaption_volatility_smiles_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * swaption_volatility_config_id : uuid <<FK>>
+          smile_option_tenors : text
+          smile_swap_tenors : text
+          smile_spreads : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_swaption_volatility_smiles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swaption Volatility Smile Table
+    ORE's swaptionVolatility is one xs:all with an optional Dimension and
+    every smile element optional. ORE reads the three smile lists only for a Smile
+    surface, and they are one block: in the ORE examples an entry states all three
+    or none. A row of this part is that block, and it exists wherever the entry
+    states one, as the FX smile part does for the FX entry. The examples also keep a
+    grid on three ATM entries whose dimension was switched from Smile, so the
+    part does not depend on the dimension, and the document round trips as written.
+    The part holds SmileOptionTenors, SmileSwapTenors and SmileSpreads, each
+    a comma separated list in ORE's own text. Dimension stays on the entry,
+    because it is the entry's own setting and the smile only depends on it.
+    An entry holds at most one row of this part, so the generated table adds the
+    unique index on the live rows of (tenant_id, swaption_volatility_config_id).
     end note
 
     entity ores_refdata_tenor_anchors_tbl <<temporal>> #C6F0D8 {
@@ -6538,6 +7574,7 @@ ores_refdata_parties_tbl ||--o{ ores_refdata_book_changes_tbl : "has"
 ores_refdata_portfolios_tbl ||--o{ ores_refdata_book_changes_tbl : "has"
 ores_refdata_business_units_tbl ||--o{ ores_refdata_book_changes_tbl : "has"
 ores_refdata_sandboxes_tbl ||--o{ ores_refdata_book_changes_tbl : "has"
+ores_refdata_books_tbl ||--o{ ores_refdata_book_product_types_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_books_tbl : "has"
 ores_refdata_portfolios_tbl ||--o{ ores_refdata_books_tbl : "has"
 ores_refdata_business_units_tbl ||--o{ ores_refdata_books_tbl : "has"
@@ -6552,7 +7589,16 @@ ores_refdata_cap_floor_volatility_configs_tbl ||--o{ ores_refdata_cap_floor_prox
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cds_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cds_volatility_terms_tbl : "has"
+ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_curve_bases_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_curve_configs_tbl : "has"
+ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_curve_cross_currencies_tbl : "has"
+ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_curve_directs_tbl : "has"
+ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_curve_interpolations_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_averaging_terms_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_contract_terms_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_expiry_anchors_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_off_peak_indexes_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_option_expiries_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_price_segments_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_volatility_configs_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_conventions_tbl : "has"
@@ -6563,6 +7609,12 @@ ores_refdata_parties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_driver_pairs_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_enabled_derived_pairs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_basis_flat_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_basis_spread_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_basis_swap_terms_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_fixed_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_float_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_swap_terms_tbl : "has"
 ores_refdata_csas_tbl ||--o{ ores_refdata_csa_eligible_currencies_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_csas_tbl : "has"
 ores_refdata_netting_sets_tbl ||--o{ ores_refdata_csas_tbl : "has"
@@ -6582,10 +7634,20 @@ ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_curve_quotes_t
 ores_refdata_commodity_price_segments_tbl ||--o{ ores_refdata_curve_quotes_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_report_configurations_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_security_configs_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_conventions_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_cross_currency_terms_tbl : "has"
 ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_curves_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_discount_ratios_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_extrapolations_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_ibor_fallbacks_tbl : "has"
+ores_refdata_floating_index_types_tbl ||--o{ ores_refdata_curve_segment_ibor_fallbacks_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_pillar_rules_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_projections_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_references_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_tenor_basis_curves_tbl : "has"
+ores_refdata_curve_segments_tbl ||--o{ ores_refdata_curve_segment_weighted_averages_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_segments_tbl : "has"
 ores_refdata_curve_segment_types_tbl ||--o{ ores_refdata_curve_segments_tbl : "has"
-ores_refdata_floating_index_types_tbl ||--o{ ores_refdata_curve_segments_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_volatility_configs_tbl : "has"
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_constants_tbl : "has"
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_curves_tbl : "has"
@@ -6596,15 +7658,23 @@ ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_pro
 ores_refdata_curve_volatility_smiles_tbl ||--o{ ores_refdata_curve_volatility_smile_parameters_tbl : "has"
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_smiles_tbl : "has"
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_strike_surfaces_tbl : "has"
+ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_benchmarks_tbl : "has"
+ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_cds_terms_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_default_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_default_curve_configurations_tbl : "has"
+ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_market_terms_tbl : "has"
+ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_transition_matrices_tbl : "has"
+ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_yield_reinterpretations_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_volatility_configs_tbl : "has"
+ores_refdata_fx_vol_surface_pillars_tbl ||--o{ ores_refdata_fx_vol_surface_pillar_sources_tbl : "has"
+ores_refdata_fx_vol_surface_blueprints_tbl ||--o{ ores_refdata_fx_vol_surface_pillars_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "has"
 ores_refdata_fx_volatility_configs_tbl ||--o{ ores_refdata_fx_volatility_smiles_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_inflation_cap_floor_volatility_configs_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_strikes_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_curve_configs_tbl : "has"
+ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_seasonalities_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_seasonality_factors_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_intraday_power_curve_configs_tbl : "has"
 ores_refdata_ir_curve_bootstrap_configs_tbl ||--o{ ores_refdata_ir_curve_bootstrap_pillars_tbl : "has"
@@ -6626,6 +7696,7 @@ ores_refdata_sandboxes_tbl ||--o{ ores_refdata_sandbox_members_tbl : "has"
 ores_refdata_portfolios_tbl ||--o{ ores_refdata_sandboxes_tbl : "has"
 ores_refdata_swaption_volatility_configs_tbl ||--o{ ores_refdata_swaption_proxy_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_swaption_volatility_configs_tbl : "has"
+ores_refdata_swaption_volatility_configs_tbl ||--o{ ores_refdata_swaption_volatility_smiles_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_tenor_basis_swap_long_shorts_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_tenor_basis_swap_pay_receives_tbl : "has"
 ores_refdata_tenor_schedules_tbl ||--o{ ores_refdata_tenor_convention_resolutions_tbl : "has"

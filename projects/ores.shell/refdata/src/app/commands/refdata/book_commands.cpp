@@ -30,7 +30,7 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <chrono>
@@ -39,8 +39,6 @@
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -143,8 +141,8 @@ void book_commands::register_commands(cli::Menu& root_menu, nats_client& session
         },
         "add <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id> "
         "<functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> "
-        "<book_purpose_type> <ledger_feed_type> <is_sweepable> <rates_centre_code> <sandbox_id> "
-        "<reason> <commentary>");
+        "<book_purpose_type> <ledger_feed_type> <is_sweepable> <restricts_product_types> "
+        "<rates_centre_code> <sandbox_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,8 +151,8 @@ void book_commands::register_commands(cli::Menu& root_menu, nats_client& session
         },
         "set <id> <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id> "
         "<functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> "
-        "<book_purpose_type> <ledger_feed_type> <is_sweepable> <rates_centre_code> <sandbox_id> "
-        "<reason> <commentary> [--version <n>]");
+        "<book_purpose_type> <ledger_feed_type> <is_sweepable> <restricts_product_types> "
+        "<rates_centre_code> <sandbox_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -164,7 +162,7 @@ void book_commands::register_commands(cli::Menu& root_menu, nats_client& session
         "put-many --count <n> <id> <party_id> <name> <description> <parent_portfolio_id> "
         "<owner_unit_id> <functional_currency> <gl_account_ref> <cost_center> <book_status> "
         "<regulatory_book_type> <book_purpose_type> <ledger_feed_type> <is_sweepable> "
-        "<rates_centre_code> <sandbox_id> <reason> <commentary>");
+        "<restricts_product_types> <rates_centre_code> <sandbox_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -250,7 +248,9 @@ void book_commands::process_list(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_get(std::ostream& out,
@@ -293,7 +293,9 @@ void book_commands::process_get(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_get_many(std::ostream& out,
@@ -340,7 +342,9 @@ void book_commands::process_get_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_add(std::ostream& out,
@@ -367,8 +371,8 @@ void book_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -396,6 +400,9 @@ void book_commands::process_add(std::ostream& out,
         book_read_token(
             req.change.write.ledger_feed_type, parsed->positionals[next++], "ledger_feed_type");
         book_read_token(req.change.write.is_sweepable, parsed->positionals[next++], "is_sweepable");
+        book_read_token(req.change.write.restricts_product_types,
+                        parsed->positionals[next++],
+                        "restricts_product_types");
         book_read_token(
             req.change.write.rates_centre_code, parsed->positionals[next++], "rates_centre_code");
         book_read_token(req.change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
@@ -412,7 +419,9 @@ void book_commands::process_add(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_set(std::ostream& out,
@@ -441,8 +450,8 @@ void book_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -470,6 +479,9 @@ void book_commands::process_set(std::ostream& out,
         book_read_token(
             req.change.write.ledger_feed_type, parsed->positionals[next++], "ledger_feed_type");
         book_read_token(req.change.write.is_sweepable, parsed->positionals[next++], "is_sweepable");
+        book_read_token(req.change.write.restricts_product_types,
+                        parsed->positionals[next++],
+                        "restricts_product_types");
         book_read_token(
             req.change.write.rates_centre_code, parsed->positionals[next++], "rates_centre_code");
         book_read_token(req.change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
@@ -492,7 +504,9 @@ void book_commands::process_set(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_put_many(std::ostream& out,
@@ -527,8 +541,8 @@ void book_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 16 + 2) {
-            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 17 + 2) {
+            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -558,6 +572,9 @@ void book_commands::process_put_many(std::ostream& out,
             book_read_token(
                 change.write.ledger_feed_type, parsed->positionals[next++], "ledger_feed_type");
             book_read_token(change.write.is_sweepable, parsed->positionals[next++], "is_sweepable");
+            book_read_token(change.write.restricts_product_types,
+                            parsed->positionals[next++],
+                            "restricts_product_types");
             book_read_token(
                 change.write.rates_centre_code, parsed->positionals[next++], "rates_centre_code");
             book_read_token(change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
@@ -576,7 +593,9 @@ void book_commands::process_put_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_delete(std::ostream& out,
@@ -629,7 +648,9 @@ void book_commands::process_delete(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_delete_many(std::ostream& out,
@@ -679,7 +700,9 @@ void book_commands::process_delete_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_by_parent_portfolio_id(std::ostream& out,
@@ -734,7 +757,9 @@ void book_commands::process_by_parent_portfolio_id(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_versions(std::ostream& out,
@@ -783,7 +808,9 @@ void book_commands::process_versions(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void book_commands::process_version(std::ostream& out,
@@ -830,7 +857,9 @@ void book_commands::process_version(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

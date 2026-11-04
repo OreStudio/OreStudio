@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct tenor_basis_swap_pay_receive_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const tenor_basis_swap_pay_receive_key&,
+                           const tenor_basis_swap_pay_receive_key&) = default;
 };
 
 struct tenor_basis_swap_pay_receive_write {
@@ -57,27 +60,42 @@ struct tenor_basis_swap_pay_receive_write {
     std::optional<std::string> sub_periods_coupon_type;
     std::optional<bool> pay_is_averaged;
     std::optional<bool> rec_is_averaged;
+
+    friend bool operator==(const tenor_basis_swap_pay_receive_write&,
+                           const tenor_basis_swap_pay_receive_write&) = default;
 };
 
 struct tenor_basis_swap_pay_receive_change {
     tenor_basis_swap_pay_receive_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tenor_basis_swap_pay_receive_change&,
+                           const tenor_basis_swap_pay_receive_change&) = default;
 };
 
 struct tenor_basis_swap_pay_receive_removal {
     tenor_basis_swap_pay_receive_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tenor_basis_swap_pay_receive_removal&,
+                           const tenor_basis_swap_pay_receive_removal&) = default;
 };
 
 struct tenor_basis_swap_pay_receive_lookup {
     tenor_basis_swap_pay_receive_key key;
     std::optional<ores::refdata::domain::tenor_basis_swap_pay_receive> tenor_basis_swap_pay_receive;
+
+    friend bool operator==(const tenor_basis_swap_pay_receive_lookup&,
+                           const tenor_basis_swap_pay_receive_lookup&) = default;
 };
 
 struct tenor_basis_swap_pay_receives_filter {
     std::optional<boost::uuids::uuid> convention_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> convention_id_one_of;
+
+    friend bool operator==(const tenor_basis_swap_pay_receives_filter&,
+                           const tenor_basis_swap_pay_receives_filter&) = default;
 };
 
 struct tenor_basis_swap_pay_receive_event {
@@ -87,17 +105,26 @@ struct tenor_basis_swap_pay_receive_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tenor_basis_swap_pay_receive_event&,
+                           const tenor_basis_swap_pay_receive_event&) = default;
 };
 
 struct tenor_basis_swap_pay_receive_version_key {
     tenor_basis_swap_pay_receive_key tenor_basis_swap_pay_receive;
     std::uint32_t version;
+
+    friend bool operator==(const tenor_basis_swap_pay_receive_version_key&,
+                           const tenor_basis_swap_pay_receive_version_key&) = default;
 };
 
 struct tenor_basis_swap_pay_receive_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const tenor_basis_swap_pay_receive_versions_filter&,
+                           const tenor_basis_swap_pay_receive_versions_filter&) = default;
 };
 
 struct list_tenor_basis_swap_pay_receives_request {
@@ -116,12 +143,18 @@ struct list_tenor_basis_swap_pay_receives_request {
     ores::utility::domain::order order;
     std::optional<tenor_basis_swap_pay_receives_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_tenor_basis_swap_pay_receives_request&,
+                           const list_tenor_basis_swap_pay_receives_request&) = default;
 };
 
 struct list_tenor_basis_swap_pay_receives_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> tenor_basis_swap_pay_receives;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_basis_swap_pay_receives_response&,
+                           const list_tenor_basis_swap_pay_receives_response&) = default;
 };
 
 struct get_tenor_basis_swap_pay_receive_request {
@@ -135,11 +168,17 @@ struct get_tenor_basis_swap_pay_receive_request {
      */
     static constexpr bool requires_session = true;
     tenor_basis_swap_pay_receive_key key;
+
+    friend bool operator==(const get_tenor_basis_swap_pay_receive_request&,
+                           const get_tenor_basis_swap_pay_receive_request&) = default;
 };
 
 struct get_tenor_basis_swap_pay_receive_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_basis_swap_pay_receive> tenor_basis_swap_pay_receive;
+
+    friend bool operator==(const get_tenor_basis_swap_pay_receive_response&,
+                           const get_tenor_basis_swap_pay_receive_response&) = default;
 };
 
 struct get_many_tenor_basis_swap_pay_receives_request {
@@ -154,11 +193,17 @@ struct get_many_tenor_basis_swap_pay_receives_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_swap_pay_receive_key> keys;
+
+    friend bool operator==(const get_many_tenor_basis_swap_pay_receives_request&,
+                           const get_many_tenor_basis_swap_pay_receives_request&) = default;
 };
 
 struct get_many_tenor_basis_swap_pay_receives_response {
     ores::utility::domain::result result;
     std::vector<tenor_basis_swap_pay_receive_lookup> entries;
+
+    friend bool operator==(const get_many_tenor_basis_swap_pay_receives_response&,
+                           const get_many_tenor_basis_swap_pay_receives_response&) = default;
 };
 
 struct put_tenor_basis_swap_pay_receive_request {
@@ -173,11 +218,17 @@ struct put_tenor_basis_swap_pay_receive_request {
     static constexpr bool requires_session = true;
     tenor_basis_swap_pay_receive_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tenor_basis_swap_pay_receive_request&,
+                           const put_tenor_basis_swap_pay_receive_request&) = default;
 };
 
 struct put_tenor_basis_swap_pay_receive_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_basis_swap_pay_receive> tenor_basis_swap_pay_receive;
+
+    friend bool operator==(const put_tenor_basis_swap_pay_receive_response&,
+                           const put_tenor_basis_swap_pay_receive_response&) = default;
 };
 
 struct put_many_tenor_basis_swap_pay_receives_request {
@@ -193,11 +244,17 @@ struct put_many_tenor_basis_swap_pay_receives_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_swap_pay_receive_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tenor_basis_swap_pay_receives_request&,
+                           const put_many_tenor_basis_swap_pay_receives_request&) = default;
 };
 
 struct put_many_tenor_basis_swap_pay_receives_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> tenor_basis_swap_pay_receives;
+
+    friend bool operator==(const put_many_tenor_basis_swap_pay_receives_response&,
+                           const put_many_tenor_basis_swap_pay_receives_response&) = default;
 };
 
 struct delete_tenor_basis_swap_pay_receive_request {
@@ -213,10 +270,16 @@ struct delete_tenor_basis_swap_pay_receive_request {
     static constexpr bool requires_session = true;
     tenor_basis_swap_pay_receive_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tenor_basis_swap_pay_receive_request&,
+                           const delete_tenor_basis_swap_pay_receive_request&) = default;
 };
 
 struct delete_tenor_basis_swap_pay_receive_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tenor_basis_swap_pay_receive_response&,
+                           const delete_tenor_basis_swap_pay_receive_response&) = default;
 };
 
 struct delete_many_tenor_basis_swap_pay_receives_request {
@@ -232,10 +295,16 @@ struct delete_many_tenor_basis_swap_pay_receives_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_swap_pay_receive_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tenor_basis_swap_pay_receives_request&,
+                           const delete_many_tenor_basis_swap_pay_receives_request&) = default;
 };
 
 struct delete_many_tenor_basis_swap_pay_receives_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tenor_basis_swap_pay_receives_response&,
+                           const delete_many_tenor_basis_swap_pay_receives_response&) = default;
 };
 
 struct list_by_convention_id_tenor_basis_swap_pay_receives_request {
@@ -255,12 +324,20 @@ struct list_by_convention_id_tenor_basis_swap_pay_receives_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_basis_swap_pay_receives_filter> filter;
+
+    friend bool
+    operator==(const list_by_convention_id_tenor_basis_swap_pay_receives_request&,
+               const list_by_convention_id_tenor_basis_swap_pay_receives_request&) = default;
 };
 
 struct list_by_convention_id_tenor_basis_swap_pay_receives_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> tenor_basis_swap_pay_receives;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_convention_id_tenor_basis_swap_pay_receives_response&,
+               const list_by_convention_id_tenor_basis_swap_pay_receives_response&) = default;
 };
 
 struct list_tenor_basis_swap_pay_receive_versions_request {
@@ -279,12 +356,18 @@ struct list_tenor_basis_swap_pay_receive_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_basis_swap_pay_receive_versions_filter> filter;
+
+    friend bool operator==(const list_tenor_basis_swap_pay_receive_versions_request&,
+                           const list_tenor_basis_swap_pay_receive_versions_request&) = default;
 };
 
 struct list_tenor_basis_swap_pay_receive_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_basis_swap_pay_receive_versions_response&,
+                           const list_tenor_basis_swap_pay_receive_versions_response&) = default;
 };
 
 struct get_tenor_basis_swap_pay_receive_version_request {
@@ -299,11 +382,17 @@ struct get_tenor_basis_swap_pay_receive_version_request {
      */
     static constexpr bool requires_session = true;
     tenor_basis_swap_pay_receive_version_key key;
+
+    friend bool operator==(const get_tenor_basis_swap_pay_receive_version_request&,
+                           const get_tenor_basis_swap_pay_receive_version_request&) = default;
 };
 
 struct get_tenor_basis_swap_pay_receive_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_basis_swap_pay_receive> version;
+
+    friend bool operator==(const get_tenor_basis_swap_pay_receive_version_response&,
+                           const get_tenor_basis_swap_pay_receive_version_response&) = default;
 };
 
 /**
@@ -316,11 +405,11 @@ struct get_tenor_basis_swap_pay_receive_version_response {
  */
 namespace tenor_basis_swap_pay_receive_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.tenor_basis_swap_pay_receives_events.created";
+    "refdata.v1.events.tenor_basis_swap_pay_receives.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.tenor_basis_swap_pay_receives_events.updated";
+    "refdata.v1.events.tenor_basis_swap_pay_receives.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.tenor_basis_swap_pay_receives_events.deleted";
+    "refdata.v1.events.tenor_basis_swap_pay_receives.deleted";
 }
 /**
  * @brief The members of tenor_basis_swap_pay_receive_key, named as the wire names them and in the

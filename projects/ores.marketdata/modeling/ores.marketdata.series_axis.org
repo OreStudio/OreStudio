@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D8551E84-3E2F-4A12-92A6-03714EBEFCE9
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.series_axis
 #+description: Codegen entity model for the axes a composite market series varies over, one row per coordinate field the series' instrument type declares.

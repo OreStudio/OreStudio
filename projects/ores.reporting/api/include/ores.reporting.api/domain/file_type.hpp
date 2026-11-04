@@ -88,24 +88,17 @@ struct file_type final {
     std::string direction;
 
     /**
-     * @brief The format of the file: xml, csv, csv_gz for a compressed csv, txt, dat for a binary
-     * file, or json. An xml file is validated against the XSD in xsd_file. A csv file has a header
-     * line and its columns are named by the guide or by the report that writes it.
-     */
-    std::string format;
-
-    /**
-     * @brief For an xml file, the XSD of ORE that declares its root element, for example
-     * nettingsetdefinitions.xsd for netting.xml. Nothing for a file that is not xml, or an xml file
-     * that ORE publishes no schema for.
-     */
-    std::optional<std::string> xsd_file;
-
-    /**
      * @brief What the file is: input_document, data_file, output_file or intermediate_file. An
      * intermediate file is one analytic writes and another reads.
      */
     std::string kind;
+
+    /**
+     * @brief The ORE file the parameter names, as the ORE user guide identifies it, for example
+     * npv_cube for the cubeFile of xva. The file says what the file is, its format and its XSD; the
+     * file type says how one parameter of the run reaches it.
+     */
+    std::string ore_file_code;
 
     /**
      * @brief The configuration type whose entities fill the document, or nothing when no

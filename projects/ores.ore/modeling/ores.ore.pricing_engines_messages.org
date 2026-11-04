@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 44fecaa3-95de-464c-925c-30ed9da87a1a
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.ore.pricing_engines_messages
 #+description: Codegen operation model for the ORE pricing engine configuration's document pair: the export that writes pricingengine.xml from one configuration, the preview that says what a file would change, and the import that writes it with the person's choices. Rendered to C++ and TypeScript from one source.

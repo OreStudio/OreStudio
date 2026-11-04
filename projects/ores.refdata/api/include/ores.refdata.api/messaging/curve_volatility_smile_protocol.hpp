@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct curve_volatility_smile_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const curve_volatility_smile_key&,
+                           const curve_volatility_smile_key&) = default;
 };
 
 struct curve_volatility_smile_write {
@@ -52,25 +55,40 @@ struct curve_volatility_smile_write {
     double exit_early_error_threshold;
     double max_acceptable_error;
     std::optional<std::string> residual_correction_dimension;
+
+    friend bool operator==(const curve_volatility_smile_write&,
+                           const curve_volatility_smile_write&) = default;
 };
 
 struct curve_volatility_smile_change {
     curve_volatility_smile_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const curve_volatility_smile_change&,
+                           const curve_volatility_smile_change&) = default;
 };
 
 struct curve_volatility_smile_removal {
     curve_volatility_smile_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const curve_volatility_smile_removal&,
+                           const curve_volatility_smile_removal&) = default;
 };
 
 struct curve_volatility_smile_lookup {
     curve_volatility_smile_key key;
     std::optional<ores::refdata::domain::curve_volatility_smile> curve_volatility_smile;
+
+    friend bool operator==(const curve_volatility_smile_lookup&,
+                           const curve_volatility_smile_lookup&) = default;
 };
 
 struct curve_volatility_smiles_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const curve_volatility_smiles_filter&,
+                           const curve_volatility_smiles_filter&) = default;
 };
 
 struct curve_volatility_smile_event {
@@ -80,17 +98,26 @@ struct curve_volatility_smile_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const curve_volatility_smile_event&,
+                           const curve_volatility_smile_event&) = default;
 };
 
 struct curve_volatility_smile_version_key {
     curve_volatility_smile_key curve_volatility_smile;
     std::uint32_t version;
+
+    friend bool operator==(const curve_volatility_smile_version_key&,
+                           const curve_volatility_smile_version_key&) = default;
 };
 
 struct curve_volatility_smile_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const curve_volatility_smile_versions_filter&,
+                           const curve_volatility_smile_versions_filter&) = default;
 };
 
 struct list_curve_volatility_smiles_request {
@@ -108,12 +135,18 @@ struct list_curve_volatility_smiles_request {
     ores::utility::domain::order order;
     std::optional<curve_volatility_smiles_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_curve_volatility_smiles_request&,
+                           const list_curve_volatility_smiles_request&) = default;
 };
 
 struct list_curve_volatility_smiles_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_volatility_smile> curve_volatility_smiles;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_volatility_smiles_response&,
+                           const list_curve_volatility_smiles_response&) = default;
 };
 
 struct get_curve_volatility_smile_request {
@@ -127,11 +160,17 @@ struct get_curve_volatility_smile_request {
      */
     static constexpr bool requires_session = true;
     curve_volatility_smile_key key;
+
+    friend bool operator==(const get_curve_volatility_smile_request&,
+                           const get_curve_volatility_smile_request&) = default;
 };
 
 struct get_curve_volatility_smile_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_volatility_smile> curve_volatility_smile;
+
+    friend bool operator==(const get_curve_volatility_smile_response&,
+                           const get_curve_volatility_smile_response&) = default;
 };
 
 struct get_many_curve_volatility_smiles_request {
@@ -145,11 +184,17 @@ struct get_many_curve_volatility_smiles_request {
      */
     static constexpr bool requires_session = true;
     std::vector<curve_volatility_smile_key> keys;
+
+    friend bool operator==(const get_many_curve_volatility_smiles_request&,
+                           const get_many_curve_volatility_smiles_request&) = default;
 };
 
 struct get_many_curve_volatility_smiles_response {
     ores::utility::domain::result result;
     std::vector<curve_volatility_smile_lookup> entries;
+
+    friend bool operator==(const get_many_curve_volatility_smiles_response&,
+                           const get_many_curve_volatility_smiles_response&) = default;
 };
 
 struct put_curve_volatility_smile_request {
@@ -164,11 +209,17 @@ struct put_curve_volatility_smile_request {
     static constexpr bool requires_session = true;
     curve_volatility_smile_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_curve_volatility_smile_request&,
+                           const put_curve_volatility_smile_request&) = default;
 };
 
 struct put_curve_volatility_smile_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_volatility_smile> curve_volatility_smile;
+
+    friend bool operator==(const put_curve_volatility_smile_response&,
+                           const put_curve_volatility_smile_response&) = default;
 };
 
 struct put_many_curve_volatility_smiles_request {
@@ -183,11 +234,17 @@ struct put_many_curve_volatility_smiles_request {
     static constexpr bool requires_session = true;
     std::vector<curve_volatility_smile_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_curve_volatility_smiles_request&,
+                           const put_many_curve_volatility_smiles_request&) = default;
 };
 
 struct put_many_curve_volatility_smiles_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_volatility_smile> curve_volatility_smiles;
+
+    friend bool operator==(const put_many_curve_volatility_smiles_response&,
+                           const put_many_curve_volatility_smiles_response&) = default;
 };
 
 struct delete_curve_volatility_smile_request {
@@ -202,10 +259,16 @@ struct delete_curve_volatility_smile_request {
     static constexpr bool requires_session = true;
     curve_volatility_smile_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_curve_volatility_smile_request&,
+                           const delete_curve_volatility_smile_request&) = default;
 };
 
 struct delete_curve_volatility_smile_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_curve_volatility_smile_response&,
+                           const delete_curve_volatility_smile_response&) = default;
 };
 
 struct delete_many_curve_volatility_smiles_request {
@@ -221,10 +284,16 @@ struct delete_many_curve_volatility_smiles_request {
     static constexpr bool requires_session = true;
     std::vector<curve_volatility_smile_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_curve_volatility_smiles_request&,
+                           const delete_many_curve_volatility_smiles_request&) = default;
 };
 
 struct delete_many_curve_volatility_smiles_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_curve_volatility_smiles_response&,
+                           const delete_many_curve_volatility_smiles_response&) = default;
 };
 
 struct list_curve_volatility_smile_versions_request {
@@ -243,12 +312,18 @@ struct list_curve_volatility_smile_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<curve_volatility_smile_versions_filter> filter;
+
+    friend bool operator==(const list_curve_volatility_smile_versions_request&,
+                           const list_curve_volatility_smile_versions_request&) = default;
 };
 
 struct list_curve_volatility_smile_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_volatility_smile> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_volatility_smile_versions_response&,
+                           const list_curve_volatility_smile_versions_response&) = default;
 };
 
 struct get_curve_volatility_smile_version_request {
@@ -263,11 +338,17 @@ struct get_curve_volatility_smile_version_request {
      */
     static constexpr bool requires_session = true;
     curve_volatility_smile_version_key key;
+
+    friend bool operator==(const get_curve_volatility_smile_version_request&,
+                           const get_curve_volatility_smile_version_request&) = default;
 };
 
 struct get_curve_volatility_smile_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_volatility_smile> version;
+
+    friend bool operator==(const get_curve_volatility_smile_version_response&,
+                           const get_curve_volatility_smile_version_response&) = default;
 };
 
 /**
@@ -279,9 +360,9 @@ struct get_curve_volatility_smile_version_response {
  * of them.
  */
 namespace curve_volatility_smile_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.curve_volatility_smiles_events.created";
-inline constexpr std::string_view updated = "refdata.v1.curve_volatility_smiles_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.curve_volatility_smiles_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.curve_volatility_smiles.created";
+inline constexpr std::string_view updated = "refdata.v1.events.curve_volatility_smiles.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.curve_volatility_smiles.deleted";
 }
 /**
  * @brief The members of curve_volatility_smile_key, named as the wire names them and in the order

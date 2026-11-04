@@ -1,0 +1,259 @@
+:PROPERTIES:
+:ID: 9DC65D63-B7A7-4E27-8248-115D41D2D795
+:END:
+#+title: Task: Verify the stored outputs end to end
+#+description: Run reports for Acme and check, through the shell and the web, that every output a run writes lands as rows where the story says, starting with one report and a few families.
+#+type: task
+#+level: s1
+#+filetags: :reporting:ore:marketdata:test:model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch: feature/verify-the-stored-outputs-end-to-end
+#+pr: 4400
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person can follow a report run from trigger to stored rows and confirm each family landed where the story says.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- A run of a report completes for Acme Corporation Plc, which needs the orphan commodity future part defect fixed first.
+- A test scenario covers one report and a small number of families: the figures, the market data the run read, and a family a definition skips.
+- The tester ticks every step, and any failure becomes a capture or a fix.
+
+* Plan
+
+1. Fix the defect that failed every run: a central convention keeps its party
+   inside =identity=, so the run configuration read its party from there too.
+2. Write the first scenario: one report, four families stored, one skipped,
+   one misspelt.
+3. Make the run screens fit to test with, as the tester asked on first sight:
+   - The runs of a report are a standard record table: a state badge, a
+     duration column, and a row that opens the run.
+   - A run has one page, under reporting, with four tabs: Details, Results,
+     Errors and Downloads. The operations page of a run is gone, and its old
+     address sends the reader to the new page.
+   - The errors are one row each, with the columns Severity, Scope, Subject and
+     Message, and a filter by severity.
+   - Downloads lists every file the run read and wrote: the input package and
+     each file inside it, the output archive and each file its manifest names,
+     with size, digest, family and the job. The BFF builds the list from
+     compute's records and serves each file by its id in that list.
+   - A run with no results says so, and points at the Errors tab.
+4. Grant select on views to the service roles. The results view was never
+   granted, so every results read failed with "The results could not be read."
+5. Read the run's figures from the key the service replies with. Commit
+   804a0dad50 moved the read to =reporting.v1.run_results.list= but kept the
+   old reply key =rows=. The reply names them =results=, so every run showed no
+   results while its figures were stored. Run 9f2a5329 has 36 rows in the view.
+6. Give the run screens what a tester asked for on second sight: an overview
+   and a list of the errors, with a trade subject linking to its trade; the
+   results tables as standard record tables; the files in a tree of the run,
+   its batch, each job and its input package and output, on the blotter's rail
+   moved into a shared TreeRail.
+7. Name every file of a run as the ORE user guide names it. A new reporting
+   entity, the ORE file, is keyed by the guide's name: market_data, npv_cube,
+   npv_report. It has a category, a configuration type, a guide section, an
+   origin, a format, a typical name and the regex of every name a run gives it,
+   and a description written by hand. Fourteen categories group the 148 files,
+   following the guide's chapters for what a run is given and its data flow
+   for what ORE writes, with one for ORE Studio's packaging and one for the
+   schemas. File types name their ORE file by code; the output catalogue keys
+   each family by it, so stress.csv is the stress test report's other name.
+8. Store the schemas: each XML schema ORE ships is an ORE file, an xml file
+   names its schema by a self join, and ore_file_version holds the contents of
+   a file at one engine version, seeded from external/ore/xsd after checking
+   its manifest's digest. A file's page offers its schema for the engine that
+   ran the job, as a zip with every schema it includes.
+9. Send every member of a request the generated codec now requires. The run
+   trigger, the booking and its instrument batch were refused with "Missing
+   member"; the bodies are now typed with the generated requests.
+10. Keep the tests to what they mean: the SQL tests read the moved columns
+    through the ORE file, and a test that counted every live feed counts the
+    seeded ones, since the integration tests write into the same database.
+11. Keep the reports of the analytics that ran. Run eb9acf8b wrote npv.csv,
+    then SA-CCR failed, and the run stored nothing. The verdict now succeeds a
+    run when the engine says only some of the analytics it started failed; the
+    failure stays in the log the run records as its errors.
+12. Book what each party prices. The holding company held 73 FX exotics and
+    bonds although the Acme design gives it Swap, FxForward and Bond in GBP,
+    USD, HKD and EUR. A trade generation config now states its trade types in
+    a junction, trade_generation_trade_type, with a soft FK to the product
+    type catalogue; a config with none books every type of its class. The
+    group's configs book Bond and FxForward, and an FX trade's pair is kept to
+    the currencies the party holds a yield curve for.
+13. Leave out a trade whose ORE XML cannot be written. One equity trade with
+    no Underlyings refused London's whole portfolio. The package now writes
+    the rest, and states each trade it left out in a canonical log stored at
+    ore/package_logs/<run>.csv, which the run records with the engine's errors.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| C++ tests | 65 suites, 13,643 test cases, none failed | =./compass.sh build rat= | 949443f621 |
+| SQL tests | 77 files, 725 tests, six full runs passed | =projects/ores.sql/test/run_tests.sh=, six times | 16460d6ef3 |
+| BFF tests | 91 files, 1,244 tests passed | =npx vitest run= in =projects/ores.web/packages/bff= | 949443f621 |
+| Web tests | 195 files, 2,423 tests passed | =npx vitest run= in =projects/ores.web/packages/web= | 949443f621 |
+| BFF requests checked against their generated type | 94 calls, none missing a member; 20 not resolvable | a TypeScript compiler script over =callAuthenticated= calls | a0c66ba4f2 |
+| C++ tests, after the rebase on main | 86 suites, 16,242 test cases, none failed | =./compass.sh build rat= | d4c7a5757b |
+| SQL tests, after the rebase on main | 77 files, 725 tests, three full runs on a fresh database passed | =projects/ores.sql/test/run_tests.sh=, three times | 6cb69dc954 |
+| BFF tests, after the rebase on main | 91 files, 1,244 tests passed | =npm run -w packages/bff test= | dfe54352bb |
+| Web tests, after the rebase on main | 195 files, 2,423 tests passed; typecheck clean | =npm run -w packages/web test= | 6cb69dc954 |
+| ORE files and file types | 148 ORE files in 14 categories; 164 file types, each naming one ORE file | =python3 projects/ores.sql/utility/generate_file_types_populate.py --check= | 949443f621 |
+| Files of a run identified | 25 of 25, run 66a4f745 | =GET /api/reporting/runs/<id>/files= | 949443f621 |
+| C++ tests, after the second rebase on main | 86 suites, 16,367 test cases, none failed | =./compass.sh build rat=, with the services up | 1c6e7482eb |
+| SQL tests, after the second rebase on main | 78 files, 732 tests passed, on a recreated database | =projects/ores.sql/test/run_tests.sh= | c6fd6680c5 |
+| BFF and web tests, after the second rebase on main | BFF 91 files, 1,251 tests, two clean runs; web 195 files, 2,426 tests; both typechecks clean | =npm run -w packages/bff test=, =npm run -w packages/web test= | c6fd6680c5 |
+| Group NPV on a fresh environment, live pricing | 73 of 73 trades valued (63 FxForward, 10 Bond), run 2b8c4e27 | =run_report.sh ACMCOR "Group Consolidated Exposure"=, then the run's npv.csv | 0ab0aff0f2 |
+| Hong Kong NPV | 39 of 63 trades valued, run bfa92bc3 | the same, for ACCOHK NPV | 0ab0aff0f2 |
+| London NPV, trades left out | run completes; 37 trades left out, each a Trade error | the same, for ACCOUK NPV | 0ab0aff0f2 |
+| Every group and Hong Kong report | 34 runs, 25 completed; 9 Hong Kong runs failed | =trigger_all.sh=, then =summary.sql= over the runs | 0ab0aff0f2 |
+| Portfolio against the downloaded schema | validates | =xmllint --noout --schema input.xsd portfolio.xml= | 949443f621 |
+
+* Notes
+
+** Why a file is an entity of its own
+
+A file type is a parameter that names a file: npv.outputFileName,
+simulation.cubeFile. Many parameters name one file, the cube is written by one
+analytic and read by two, and some files no parameter names at all: ore.xml,
+the log, the outputs the engine names itself. So the file is the parent and the
+parameter points at it. Direction and kind stay on the file type, because the
+cube is an output of the simulation and an input of xva: they belong to the
+parameter. The format and the schema belong to the file.
+
+** Why the includes are read from the contents
+
+A schema is complete only with the schemas it includes, and input.xsd includes
+22. The stored contents state the includes, so the download reads them there; a
+table of includes would state the same fact twice and could disagree with it.
+
+** Why the schema check orders paths as sort does
+
+The vendoring script's tree digest orders the paths with sort, which follows the
+locale, so the seed check orders them the same way. A machine whose locale sorts
+differently would compute another digest; the fix belongs in the vendoring
+script.
+
+** Why the errors were all combined at the bottom
+
+The old operations run page grouped errors by curve. It made one card for each
+curve-scoped error and hung the trade errors that named the same curve under it.
+Every other scope, Analytics, Report and Configuration, and every row whose
+scope did not match a curve, fell into one catch-all card, "Analytic and report
+failures". That card dropped the scope and the subject, so a person could not
+tell which trade or analytic each line was about. The new list shows one row per
+error, with its scope and its subject.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:A84F2177-C31C-426A-B81F-BD042E7E6961][Verify a run stores its figures and the market it read]] | PENDING | Steps for the errors overview, the files tree, the file page and the schema download added. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4400][#4400]] | [reporting] Show a run's errors, files and their ORE file entities |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The runs tab was a hand-written table over untyped rows | reporting/ReportPage.tsx | Accepted | Now a RecordTable over the typed run row. |
+| 2 | Two run pages and two run endpoints with different shapes | operations/GridReportRunPage.tsx, bff/src/grid-report-*.ts | Accepted | One page and one endpoint under reporting; the old address redirects. |
+| 3 | The run detail type was declared twice in the client | api/client.ts | Accepted | Replaced by the wire view. |
+| 4 | Error rows were parsed in two places | reporting/resultsModel.ts | Accepted | One wire view, parsed once in the client. |
+| 5 | The screen grouped errors by curve instead of the server naming the subject | bff/src/grid-report-runs.ts | Accepted | The BFF states =about= for each error. |
+| 6 | The results panel read the errors with its own query | reporting/RunResultsPanel.tsx | Accepted | Uses the shared hook. |
+| 7 | The severity filter would be copied into the files table | reporting/RunErrorsTable.tsx | Accepted | One CountFilter in reporting/shared.tsx. |
+| 8 | Two copies of asMiB in the operations screens | operations/GridPage.tsx, operations/BusPage.tsx | Declined | Not touched by this task. |
+| 9 | The error overview texts were placed in the files block, so the tab showed keys | i18n/locales/*.ts | Accepted | Moved; a test renders the tab and fails on any key on screen. |
+| 10 | A typed audit of every BFF request against its generated type | bff/src/*.ts | Accepted | The booking and its batch were missing members; typed with the generated requests. |
+| 11 | Matching run files to ORE files in the BFF rather than the service | bff/src/report-run-files.ts | Accepted as is | One place, on the server side; the regexes come from the catalogue. |
+| 12 | HTTP and CLI layers of the new entities | ores.reporting | Deferred | A codegen gap, raised as a story rather than written by hand. |
+| 13 | misspell-fixer flags "existant" and "sucesso" in the locales | i18n/locales/fr.ts, pt.ts | Declined | Correct French and Portuguese words. |
+| 14 | A bad file name in the address was reported as an id that is not a uuid | bff/src/report-run-files.ts | Accepted | The message names both the run and the file. |
+| 15 | The file page and each download read every package of the run again | bff/src/report-run-files.ts | Declined | A run has a few packages; a cache is not needed yet. |
+| 16 | The ER diagram still showed format and xsd_file on file types | ores.sql/modeling/ores_schema.reporting.puml | Accepted | Regenerated from the SQL; it shows the three new tables. |
+| 17 | The canonical store SQL test failed on main: the element map seed named commodity curve columns that moved to the curve entry parts | populate/reporting/reporting_ore_element_map_columns_populate.sql | Accepted | Regenerated with generate_ore_element_map.py; its --check now passes. |
+| 18 | PR 4400: one bad filename regex emptied the whole catalogue | bff/src/report-run-files.ts | Accepted | Each regex compiles on its own; a bad row is logged and left out; a test covers it. |
+| 19 | PR 4400: identification depends on catalogue order | bff/src/report-run-files.ts | Declined | The seed generator and reporting_ore_files_test.sql already check that no typical name matches a second file. |
+| 20 | PR 4400: no size limit on decompression | bff/src/report-run-files.ts | Accepted | Every gunzip stops at 1 GiB; a download over it is refused with a message. |
+| 21 | PR 4400: test the zip with an independent reader | bff/src/zip.test.ts | Accepted | A test tests and extracts the zip with the unzip tool, skipped where unzip is missing. |
+| 22 | PR 4400: zip-slip through an include path | bff/src/report-run-files.ts | Declined | Entry names are stored typical filenames, checked as [A-Za-z0-9_.-]+; an include path is never a key of the contents, so it is reported missing. |
+| 23 | PR 4400: redundant null check on the schema code | bff/src/report-run-files.ts | Accepted | Tests the ORE file first, then its schema code. |
+| 24 | PR 4400: the xsd glob in local_checks.py may not expand | build/scripts/local_checks.py | Declined | The checker matches paths with fnmatch, so the glob works. |
+| 25 | PR 4400: track the cause of the CSA and conventions flakes | product_backlog/inbox | Accepted | Raised as an inbox capture. |
+| 26 | PR 4400: run compass check before merge | — | Declined | The operator asked not to run it. |
+| 27 | PR 4400 second review: parallel downloads can each hold up to 1 GiB | bff/src/report-run-files.ts | Declined | The files come from the platform's own store and a run's files are downloaded one at a time from its page; a concurrency cap waits for a measured need. |
+| 28 | PR 4400 second review: each request compiles the catalogue's regexes | bff/src/report-run-files.ts | Declined | The request already reads the catalogue over NATS; compiling 148 expressions is small beside that read, and a cache would need invalidation on reseed. |
+| 29 | An engine error's cause was always labelled a curve, so an analytic read "(curve PRICING)" | ores.ore/core/src/log/engine_run_verdict.cpp | Accepted | The label follows the scope: analytic, configuration or curve; a test covers it. |
+| 30 | After the rebase, reporting core failed to build: the cut services' calls to stamp found the cut authorisation applier's own stamp | ores.reporting/core/src/service/cut_authorisation_applier.cpp | Accepted | The new files shifted the unity batches so the two met in one unit; the applier's helper is now stamp_decision. |
+
+* Result
+
+A run of a report completes for Acme Corporation Plc and stores what ORE wrote.
+The run page states the run's details, its results, its problems as an overview
+and a list, and its files in a tree; each file is named as the ORE user guide
+names it, with a page that says what it holds and, for an XML file, offers its
+schema with every schema it includes.
+
+The tester signed off the NPV. On a fresh environment, Group Consolidated
+Exposure values all 73 trades of the group (63 FX forwards, 10 bonds) and Hong
+Kong's NPV values 39 of its 63. Getting there took four changes: a run keeps
+the reports of the analytics that ran when another fails; a trade generation
+config states the trade types it books, so the holding company books what it
+prices; a trade whose XML cannot be written is left out and named as an error
+rather than refusing the portfolio; and the Acme reports price at the run date,
+since a fresh environment has no previous close.
+
+The first pass of the other result types ran every report of the group and of
+Hong Kong: 34 runs, of which 25 completed. They store valuation (npv_report,
+cashflow_report), curves and market (curves_report, market_calibration,
+todays_market_calibration_cashflows, market_data_report), portfolio details
+(counterparties, netting_sets, trade_types, risk_factors, market_objects,
+underlying_indices) and run statistics (pricing_stats, runtimes). No run has yet
+stored sensitivities, exposure or XVA cubes, VaR, stress, FRTB or SA-CCR: nine
+Hong Kong reports fail on the trade XML gaps, a missing pricing engine, missing
+HKD-HONIA fixings, or a null pointer ORE dereferences inside its analytics
+(Boost assertion px != 0), most likely on an object the faulty trade XML names.
+London's and New York's runs complete but value nothing, because their market
+file carries a fraction of the quotes the group's does; that belongs to the
+market data work.
+
+The gaps in the trade XML and the generated trades are the story
+[[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]].

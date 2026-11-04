@@ -19,7 +19,7 @@
  */
 
 -- One view per asset class, so a caller reads the identity columns its class
--- fills without knowing which of the sixty-one fields its instrument type
+-- fills without knowing which of the sixty-two fields its instrument type
 -- declares. Each view names the instrument types of its class, which is the
 -- index the filter uses, and every view is security_invoker: the tenant policy
 -- on the table decides what the reading session sees.
@@ -138,13 +138,15 @@ select
     asset_class,
     identity_kind,
     ccy,
-    unit_ccy
+    unit_ccy,
+    surface_id
 from ores_marketdata_market_series_identity_tbl
 where identity_kind = 'series'
   and instrument_type in (
         'fx_fwd',
         'fx_option',
-        'fx_spot'
+        'fx_spot',
+        'fx_vol_surface'
     );
 
 -- The inflation identity.

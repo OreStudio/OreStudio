@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 4E2A7C95-1B68-4D03-9F27-8A5C1E6B3904
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.credit_simulation_matrix_row_config
 #+description: Codegen entity model for the analytics =credit_simulation_matrix_row_config= table. One row of a credit migration matrix, with the ratings as columns.

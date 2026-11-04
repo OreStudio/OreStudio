@@ -21,17 +21,21 @@
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.compute.api/net/compute_storage.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.ore.api/net/ore_storage.hpp"
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_cashflow_repository.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/report_metric_repository.hpp"
+#include "ores.reporting.core/repository/report_text_value_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/results/canonical_log_reader.hpp"
 #include "ores.reporting.core/results/run_output_reader.hpp"
@@ -45,7 +49,7 @@
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -54,7 +58,7 @@
 #include <format>
 #include <fstream>
 #include <map>
-#include <rfl/json.hpp>
+#include <stdexcept>
 #include <string_view>
 
 namespace ores::reporting::messaging {
@@ -63,6 +67,10 @@ using namespace ores::logging;
 using namespace ores::service::messaging;
 
 namespace {
+
+// The rows of a run are written this many at a time: a block is one insert
+// statement, and the most rows a reader holds at once.
+constexpr std::size_t load_block_size = 10000;
 
 inline auto& nats_call_lg() {
     static auto instance =
@@ -246,7 +254,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<gather_trades_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<gather_trades_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode gather_trades_request");
         ack.accept();
@@ -352,7 +360,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         // holds, so no reader has to rebuild it from the trades blob.
         result.trade_versions = exp_resp->trade_versions.empty() ?
                                     std::string{} :
-                                    rfl::json::write(exp_resp->trade_versions);
+                                    ores::utility::codec::json::write(exp_resp->trade_versions);
         result.message =
             std::format("Gathered {} trades from {} books", exp_resp->trade_count, book_ids.size());
 
@@ -360,7 +368,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
                                   << " trades=" << exp_resp->trade_count
                                   << " books=" << book_ids.size();
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "gather_trades failed: " << e.what();
@@ -380,7 +388,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<gather_market_data_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<gather_market_data_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode gather_market_data_request");
         ack.accept();
@@ -461,7 +469,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "gather_market_data complete | instance="
                                   << req.report_instance_id << " series=" << md_resp->series_count;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "gather_market_data failed: " << e.what();
@@ -481,7 +489,7 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<assemble_bundle_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<assemble_bundle_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode assemble_bundle_request");
         ack.accept();
@@ -542,7 +550,7 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "assemble_bundle complete | instance="
                                   << req.report_instance_id << " bundle=" << bundle_id;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "assemble_bundle failed: " << e.what();
@@ -595,33 +603,68 @@ report_execution_handler::read_run_log_rows(const std::string& tenant_id,
     }
 }
 
-void report_execution_handler::record_run_logs(const std::string& tenant_id,
-                                               const std::string& report_instance_id,
-                                               const std::vector<std::string>& result_ids) {
-    std::vector<service::engine_log_row> rows;
+std::vector<service::engine_log_row>
+report_execution_handler::read_package_log_rows(const std::string& tenant_id,
+                                                const std::string& report_instance_id) {
+    try {
+        std::string err;
+        const auto token = run_token(tenant_id, report_instance_id, err);
+        if (token.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "The package log of report instance " << report_instance_id
+                                      << " was not read: " << err;
+            return {};
+        }
+        ores::storage::net::storage_transfer transfer(http_base_url_, token);
+        const auto body = transfer.download_blob(
+            std::string(ores::storage::api::object_keys::ores_bucket),
+            ores::ore::net::ore_storage::package_log_key(report_instance_id));
+        const auto read =
+            results::read_canonical_log_csv(std::string_view(body.data(), body.size()));
+        if (!read.refusals.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "The package log of report instance " << report_instance_id
+                                      << " was refused: " << read.refusals.front();
+            return {};
+        }
+        return read.rows;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Report instance " << report_instance_id << " stores no package log: " << e.what();
+        return {};
+    }
+}
+
+service::run_problems
+report_execution_handler::record_run_logs(const std::string& tenant_id,
+                                          const std::string& report_instance_id,
+                                          const std::vector<std::string>& result_ids) {
+    auto rows = read_package_log_rows(tenant_id, report_instance_id);
     for (const auto& result_id : result_ids) {
         auto read = read_run_log_rows(tenant_id, report_instance_id, result_id);
         rows.insert(
             rows.end(), std::make_move_iterator(read.begin()), std::make_move_iterator(read.end()));
     }
     if (rows.empty())
-        return;
+        return {};
 
     try {
         // One write for the run, whatever it took to read it: the recorder keeps
         // a run's account once, and a call per result would keep only the first.
         service::report_error_recorder recorder(
             ores::database::service::tenant_context::with_tenant(ctx_, tenant_id));
-        const auto failure = recorder.record_engine_errors(report_instance_id, rows);
-        if (!failure.empty()) {
-            BOOST_LOG_SEV(lg(), error) << failure;
-            return;
+        const auto recorded = recorder.record_engine_errors(report_instance_id, rows);
+        if (!recorded.failure.empty()) {
+            BOOST_LOG_SEV(lg(), error) << recorded.failure;
+            return {};
         }
         BOOST_LOG_SEV(lg(), info) << "Recorded the log of " << result_ids.size()
-                                  << " result(s) for report instance " << report_instance_id;
+                                  << " result(s) for report instance " << report_instance_id
+                                  << ": " << recorded.stored.errors << " error(s), "
+                                  << recorded.stored.warnings << " warning(s)";
+        return recorded.stored;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "The log rows of report instance " << report_instance_id
                                   << " were not recorded: " << e.what();
+        return {};
     }
 }
 
@@ -635,7 +678,7 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<collect_compute_results_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<collect_compute_results_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode collect_compute_results_request");
         ack.accept();
@@ -703,12 +746,9 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
                     // The node uploads the log it wrote even when the engine
                     // failed, so the run's account of the failure is its own rows
                     // rather than one sentence.
-                    record_run_logs(
+                    const auto recorded = record_run_logs(
                         req.tenant_id, req.report_instance_id, {boost::uuids::to_string(one.id)});
-                    refuse(std::format("The run's compute job failed with outcome {}: {}",
-                                       one.outcome,
-                                       one.error_message.empty() ? "(no message)" :
-                                                                   one.error_message));
+                    refuse(service::run_failure_message(one.outcome, one.error_message, recorded));
                     return;
                 }
                 if (output_uri.empty())
@@ -763,7 +803,7 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
                                   << req.report_instance_id << " output=" << key
                                   << " bytes=" << body.size();
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "collect_compute_results failed: " << e.what();
@@ -783,7 +823,7 @@ void report_execution_handler::resolve_prepared_input(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<resolve_prepared_input_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<resolve_prepared_input_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode resolve_prepared_input_request");
         ack.accept();
@@ -806,7 +846,7 @@ void report_execution_handler::resolve_prepared_input(ores::nats::message msg) {
     result.success = true;
     result.message = std::format("Resolved prepared input {}", req.prepared_input_key);
     result.tarball_uris = {req.prepared_input_key};
-    wf->complete(rfl::json::write(result));
+    wf->complete(ores::utility::codec::json::write(result));
     ack.accept();
 }
 
@@ -835,7 +875,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<post_process_results_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<post_process_results_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode post_process_results_request");
         ack.accept();
@@ -900,10 +940,13 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             }
             for (const auto& one : results->results) {
                 if (one.outcome != compute_outcome_success) {
-                    refuse(std::format("The run's compute job failed with outcome {}: {}",
-                                       one.outcome,
-                                       one.error_message.empty() ? "(no message)" :
-                                                                   one.error_message));
+                    // The engine's log is written whatever became of the run, so
+                    // a failure is stated from its rows here too. This step can
+                    // be the first to see the failed result, and it would
+                    // otherwise record the node's transcript in place of them.
+                    const auto recorded = record_run_logs(
+                        req.tenant_id, req.report_instance_id, {boost::uuids::to_string(one.id)});
+                    refuse(service::run_failure_message(one.outcome, one.error_message, recorded));
                     return;
                 }
                 result_ids.push_back(boost::uuids::to_string(one.id));
@@ -930,12 +973,41 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         // know each file's family, so this fetches the result files by name and
         // leaves the rest where they are.
         const auto as_of = instance->priced_at.value_or(std::chrono::system_clock::now());
-        const results::run_stamp run{.party_id = instance->party_id,
-                                     .report_instance_id = sg(req.report_instance_id),
-                                     .report_definition_id = instance->definition_id,
-                                     .priced_at = as_of};
 
-        results::run_output_outcome output;
+        // The definition chose the families the run stores. A skipped family's
+        // files stay in the object store and are not fetched.
+        ores::ore::results::family_selection families;
+        try {
+            families = ores::ore::results::family_selection_of(req.skipped_families);
+        } catch (const std::invalid_argument& e) {
+            refuse(std::string("The run skips a family that does not exist: ") + e.what());
+            return;
+        }
+
+        // One transaction, written a block at a time: a refusal anywhere rolls
+        // back every block, so a partial load is never seen.
+        ores::database::repository::unit_of_work uow(tenant_ctx);
+        const auto& load_ctx = uow.ctx();
+        std::size_t metrics_loaded = 0;
+        std::size_t cashflows_loaded = 0;
+        std::size_t text_values_loaded = 0;
+        const results::run_output_sinks sinks{
+            .metrics =
+                [&](std::vector<domain::report_metric>& block) {
+                    repository::report_metric_repository{}.insert(load_ctx, block);
+                    metrics_loaded += block.size();
+                },
+            .cashflows =
+                [&](std::vector<domain::report_cashflow>& block) {
+                    repository::report_cashflow_repository{}.insert(load_ctx, block);
+                    cashflows_loaded += block.size();
+                },
+            .text_values =
+                [&](std::vector<domain::report_text_value>& block) {
+                    repository::report_text_value_repository{}.insert(load_ctx, block);
+                    text_values_loaded += block.size();
+                }};
+
         std::vector<std::string> manifest_uris;
         ores::storage::net::storage_transfer transfer(http_base_url_, run_token_value);
         const std::string bucket(ores::compute::net::compute_storage::bucket);
@@ -945,79 +1017,60 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             manifest_uris.push_back(
                 ores::storage::net::storage_paths::make_object_path(bucket, manifest_key));
 
-            std::vector<results::output_file> files;
+            const results::run_stamp run{.party_id = instance->party_id,
+                                         .report_instance_id = sg(req.report_instance_id),
+                                         .report_definition_id = instance->definition_id,
+                                         .result_id = sg(result_id),
+                                         .priced_at = as_of,
+                                         .families = families};
+            results::run_output_outcome read;
             try {
                 const auto text = transfer.download_blob(bucket, manifest_key);
                 const auto manifest = ores::ore::results::manifest_from_json(
                     std::string_view(text.data(), text.size()));
                 if (manifest.result_id != result_id)
                     throw std::runtime_error("its manifest states result " + manifest.result_id);
-                for (const auto& file :
-                     ores::ore::results::located_files(manifest, manifest_key)) {
+                for (const auto& file : ores::ore::results::located_files(manifest, manifest_key)) {
                     if (!ores::ore::results::is_result_file(file))
                         continue;
-                    const auto body = transfer.download_blob(bucket, file.key);
-                    std::string text_body(body.begin(), body.end());
-                    ores::ore::results::verify_body(file, text_body);
-                    files.push_back(
-                        results::output_file{.name = file.name, .body = std::move(text_body)});
+                    results::output_file one{.name = file.name};
+                    if (families.stores(file.family)) {
+                        {
+                            const auto body = transfer.download_blob(bucket, file.key);
+                            one.body.assign(body.begin(), body.end());
+                        }
+                        ores::ore::results::verify_body(file, one.body);
+                    }
+                    results::read_run_output(one, run, load_block_size, sinks, read);
+                    if (!read.refusals.empty())
+                        break;
                 }
-            } catch (const std::exception& read) {
+            } catch (const std::exception& failure) {
                 refuse(std::format(
-                    "The output of result {} was not read: {}", result_id, read.what()));
+                    "The output of result {} was not read: {}", result_id, failure.what()));
                 return;
             }
-
-            auto read = results::read_run_outputs(files, run);
             if (!read.refusals.empty()) {
                 refuse("The run's output was refused: " + reasons_of(read.refusals));
                 return;
             }
             BOOST_LOG_SEV(lg(), info)
-                << "Read " << read.files_read.size() << " output file(s) of " << "result "
-                << result_id << ": " << read.metrics.size() << " metric(s), "
-                << read.cashflows.size() << " cashflow figure(s)";
-            output.metrics.insert(output.metrics.end(),
-                                  std::make_move_iterator(read.metrics.begin()),
-                                  std::make_move_iterator(read.metrics.end()));
-            output.cashflows.insert(output.cashflows.end(),
-                                    std::make_move_iterator(read.cashflows.begin()),
-                                    std::make_move_iterator(read.cashflows.end()));
+                << "Read " << read.files_read.size() << " output file(s) of result " << result_id;
+            for (const auto& skipped : read.files_skipped)
+                BOOST_LOG_SEV(lg(), info) << "Skipped " << skipped << " of result " << result_id
+                                          << ": its definition does not store the family";
         }
 
-        if (output.metrics.empty() && output.cashflows.empty()) {
+        const auto loaded = metrics_loaded + cashflows_loaded + text_values_loaded;
+        if (loaded == 0) {
             refuse("The run's output states no figure, so there is nothing to load.");
             return;
         }
-
-        // One write for each family, because that is the shape of the tables and
-        // because a statement per row would cost a round trip per figure.
-        const auto load_metrics = [&] {
-            std::map<std::string, std::vector<domain::report_metric>> by_family;
-            for (auto& metric : output.metrics)
-                by_family[metric.family].push_back(std::move(metric));
-            repository::report_metric_repository repo;
-            for (auto& [family, rows] : by_family) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "Loading " << rows.size() << " " << family << " metric(s)";
-                repo.insert(tenant_ctx, rows);
-            }
-        };
-        const auto load_cashflows = [&] {
-            std::map<std::string, std::vector<domain::report_cashflow>> by_family;
-            for (auto& cashflow : output.cashflows)
-                by_family[cashflow.family].push_back(std::move(cashflow));
-            repository::report_cashflow_repository repo;
-            for (auto& [family, rows] : by_family) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "Loading " << rows.size() << " " << family << " cashflow figure(s)";
-                repo.insert(tenant_ctx, rows);
-            }
-        };
-        load_metrics();
-        load_cashflows();
-
-        const auto loaded = output.metrics.size() + output.cashflows.size();
+        uow.commit();
+        BOOST_LOG_SEV(lg(), info) << "Loaded " << metrics_loaded << " metric(s), "
+                                  << cashflows_loaded << " cashflow figure(s) and "
+                                  << text_values_loaded << " text value(s) in blocks of "
+                                  << load_block_size;
 
         // The market state the run priced against belongs to the market data
         // store, and it is far too large to travel in a message: the manifests
@@ -1033,6 +1086,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             state.as_of = std::format("{:%F}", std::chrono::floor<std::chrono::days>(as_of));
             state.storage_token = run_token_value;
             state.manifest_uris = manifest_uris;
+            state.skipped_families = families.skipped;
 
             std::string state_error;
             auto owner = svc_nats_.with_delegation(run_token_value);
@@ -1043,8 +1097,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 market_state_note = "Its market state was not stored: " + answer->result.message;
             } else {
                 BOOST_LOG_SEV(lg(), info)
-                    << "Stored " << answer->payloads << " market-state payload(s) for "
-                    << req.report_instance_id << " (" << answer->payload_bytes << " bytes)";
+                    << "Stored " << answer->rows << " market-state value(s) from " << answer->files
+                    << " file(s) for " << req.report_instance_id;
             }
         } catch (const std::exception& e) {
             market_state_note = std::string("Its market state was not stored: ") + e.what();
@@ -1057,16 +1111,18 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         post_process_results_result result;
         result.success = true;
         result.rows_loaded = static_cast<int>(loaded);
-        result.message = std::format("Loaded {} metrics and {} cashflow figures for run {}.{}",
-                                     output.metrics.size(),
-                                     output.cashflows.size(),
-                                     req.report_instance_id,
-                                     market_state_note);
+        result.message =
+            std::format("Loaded {} metrics, {} cashflow figures and {} text values for run {}.{}",
+                        metrics_loaded,
+                        cashflows_loaded,
+                        text_values_loaded,
+                        req.report_instance_id,
+                        market_state_note);
 
         BOOST_LOG_SEV(lg(), info) << "post_process_results complete | instance="
                                   << req.report_instance_id << " rows=" << loaded;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "post_process_results failed: " << e.what();
@@ -1086,7 +1142,7 @@ void report_execution_handler::ignore_compute_results(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<ignore_compute_results_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<ignore_compute_results_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode ignore_compute_results_request");
         ack.accept();
@@ -1101,7 +1157,7 @@ void report_execution_handler::ignore_compute_results(ores::nats::message msg) {
     collect_compute_results_result result;
     result.success = true;
     result.message = std::format("Results of batch {} left unread by configuration.", req.batch_id);
-    wf->complete(rfl::json::write(result));
+    wf->complete(ores::utility::codec::json::write(result));
     ack.accept();
 }
 
@@ -1115,7 +1171,7 @@ void report_execution_handler::finalise(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<finalise_report_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<finalise_report_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode finalise_report_request");
         ack.accept();
@@ -1149,7 +1205,7 @@ void report_execution_handler::finalise(ores::nats::message msg) {
         finalise_report_result result;
         result.success = true;
         result.message = "Report instance marked as completed.";
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "finalise failed: " << e.what();
@@ -1168,7 +1224,7 @@ void report_execution_handler::fail(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<fail_report_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<fail_report_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode fail_report_request");
         ack.accept();
@@ -1185,7 +1241,7 @@ void report_execution_handler::fail(ores::nats::message msg) {
         fail_report_result result;
         result.success = true;
         result.message = "Report instance marked as failed.";
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "fail handler error: " << e.what();

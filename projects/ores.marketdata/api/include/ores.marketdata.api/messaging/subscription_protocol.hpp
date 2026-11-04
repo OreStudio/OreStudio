@@ -26,17 +26,25 @@
 #define ORES_MARKETDATA_API_MESSAGING_SUBSCRIPTION_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/subscription.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
 
 struct subscription_key {
     std::string provider_code;
+
+    friend bool operator==(const subscription_key&, const subscription_key&) = default;
 };
 
 struct subscription_write {
@@ -46,21 +54,29 @@ struct subscription_write {
     bool display;
     bool non_display;
     bool derived;
+
+    friend bool operator==(const subscription_write&, const subscription_write&) = default;
 };
 
 struct subscription_change {
     subscription_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const subscription_change&, const subscription_change&) = default;
 };
 
 struct subscription_removal {
     subscription_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const subscription_removal&, const subscription_removal&) = default;
 };
 
 struct subscription_lookup {
     subscription_key key;
     std::optional<ores::marketdata::domain::subscription> subscription;
+
+    friend bool operator==(const subscription_lookup&, const subscription_lookup&) = default;
 };
 
 struct subscriptions_filter {
@@ -69,6 +85,8 @@ struct subscriptions_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
+
+    friend bool operator==(const subscriptions_filter&, const subscriptions_filter&) = default;
 };
 
 struct subscription_event {
@@ -78,17 +96,25 @@ struct subscription_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const subscription_event&, const subscription_event&) = default;
 };
 
 struct subscription_version_key {
     subscription_key subscription;
     std::uint32_t version;
+
+    friend bool operator==(const subscription_version_key&,
+                           const subscription_version_key&) = default;
 };
 
 struct subscription_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const subscription_versions_filter&,
+                           const subscription_versions_filter&) = default;
 };
 
 struct list_subscriptions_request {
@@ -106,12 +132,18 @@ struct list_subscriptions_request {
     ores::utility::domain::order order;
     std::optional<subscriptions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_subscriptions_request&,
+                           const list_subscriptions_request&) = default;
 };
 
 struct list_subscriptions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription> subscriptions;
     std::uint64_t total;
+
+    friend bool operator==(const list_subscriptions_response&,
+                           const list_subscriptions_response&) = default;
 };
 
 struct get_subscription_request {
@@ -125,11 +157,17 @@ struct get_subscription_request {
      */
     static constexpr bool requires_session = true;
     subscription_key key;
+
+    friend bool operator==(const get_subscription_request&,
+                           const get_subscription_request&) = default;
 };
 
 struct get_subscription_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::subscription> subscription;
+
+    friend bool operator==(const get_subscription_response&,
+                           const get_subscription_response&) = default;
 };
 
 struct get_many_subscriptions_request {
@@ -143,11 +181,17 @@ struct get_many_subscriptions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<subscription_key> keys;
+
+    friend bool operator==(const get_many_subscriptions_request&,
+                           const get_many_subscriptions_request&) = default;
 };
 
 struct get_many_subscriptions_response {
     ores::utility::domain::result result;
     std::vector<subscription_lookup> entries;
+
+    friend bool operator==(const get_many_subscriptions_response&,
+                           const get_many_subscriptions_response&) = default;
 };
 
 struct put_subscription_request {
@@ -162,11 +206,17 @@ struct put_subscription_request {
     static constexpr bool requires_session = true;
     subscription_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_subscription_request&,
+                           const put_subscription_request&) = default;
 };
 
 struct put_subscription_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::subscription> subscription;
+
+    friend bool operator==(const put_subscription_response&,
+                           const put_subscription_response&) = default;
 };
 
 struct put_many_subscriptions_request {
@@ -181,11 +231,17 @@ struct put_many_subscriptions_request {
     static constexpr bool requires_session = true;
     std::vector<subscription_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_subscriptions_request&,
+                           const put_many_subscriptions_request&) = default;
 };
 
 struct put_many_subscriptions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription> subscriptions;
+
+    friend bool operator==(const put_many_subscriptions_response&,
+                           const put_many_subscriptions_response&) = default;
 };
 
 struct delete_subscription_request {
@@ -200,10 +256,16 @@ struct delete_subscription_request {
     static constexpr bool requires_session = true;
     subscription_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_subscription_request&,
+                           const delete_subscription_request&) = default;
 };
 
 struct delete_subscription_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_subscription_response&,
+                           const delete_subscription_response&) = default;
 };
 
 struct delete_many_subscriptions_request {
@@ -218,10 +280,16 @@ struct delete_many_subscriptions_request {
     static constexpr bool requires_session = true;
     std::vector<subscription_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_subscriptions_request&,
+                           const delete_many_subscriptions_request&) = default;
 };
 
 struct delete_many_subscriptions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_subscriptions_response&,
+                           const delete_many_subscriptions_response&) = default;
 };
 
 struct list_subscription_versions_request {
@@ -239,12 +307,18 @@ struct list_subscription_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<subscription_versions_filter> filter;
+
+    friend bool operator==(const list_subscription_versions_request&,
+                           const list_subscription_versions_request&) = default;
 };
 
 struct list_subscription_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_subscription_versions_response&,
+                           const list_subscription_versions_response&) = default;
 };
 
 struct get_subscription_version_request {
@@ -258,11 +332,17 @@ struct get_subscription_version_request {
      */
     static constexpr bool requires_session = true;
     subscription_version_key key;
+
+    friend bool operator==(const get_subscription_version_request&,
+                           const get_subscription_version_request&) = default;
 };
 
 struct get_subscription_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::subscription> version;
+
+    friend bool operator==(const get_subscription_version_response&,
+                           const get_subscription_version_response&) = default;
 };
 
 /**
@@ -274,11 +354,772 @@ struct get_subscription_version_response {
  * of them.
  */
 namespace subscription_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.subscriptions_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.subscriptions_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.subscriptions_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.subscriptions.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.subscriptions.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.subscriptions.deleted";
+}
+/**
+ * @brief The members of subscription_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subscription_key&) {
+    return std::tuple{
+        utility::codec::field{"provider_code", &subscription_key::provider_code},
+    };
 }
 
+/**
+ * @brief The members of subscription_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subscription_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &subscription_write::id},
+        utility::codec::field{"party_id", &subscription_write::party_id},
+        utility::codec::field{"provider_code", &subscription_write::provider_code},
+        utility::codec::field{"display", &subscription_write::display},
+        utility::codec::field{"non_display", &subscription_write::non_display},
+        utility::codec::field{"derived", &subscription_write::derived},
+    };
 }
+
+/**
+ * @brief The members of subscription_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subscription_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &subscription_change::write},
+        utility::codec::field{"precondition", &subscription_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of subscription_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subscription_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &subscription_removal::key},
+        utility::codec::field{"precondition", &subscription_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of subscription_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subscription_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &subscription_lookup::key},
+        utility::codec::field{"subscription", &subscription_lookup::subscription},
+    };
+}
+
+/**
+ * @brief The members of subscriptions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subscriptions_filter&) {
+    return std::tuple{
+        utility::codec::field{"party_id", &subscriptions_filter::party_id},
+        utility::codec::field{"provider_code", &subscriptions_filter::provider_code},
+        utility::codec::field{"id_one_of", &subscriptions_filter::id_one_of},
+        utility::codec::field{"party_id_one_of", &subscriptions_filter::party_id_one_of},
+        utility::codec::field{"provider_code_one_of", &subscriptions_filter::provider_code_one_of},
+    };
+}
+
+/**
+ * @brief The members of subscription_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subscription_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &subscription_event::event_id},
+        utility::codec::field{"key", &subscription_event::key},
+        utility::codec::field{"action", &subscription_event::action},
+        utility::codec::field{"version", &subscription_event::version},
+        utility::codec::field{"occurred_at", &subscription_event::occurred_at},
+        utility::codec::field{"correlation_id", &subscription_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of subscription_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subscription_version_key&) {
+    return std::tuple{
+        utility::codec::field{"subscription", &subscription_version_key::subscription},
+        utility::codec::field{"version", &subscription_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of subscription_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subscription_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &subscription_versions_filter::version},
+        utility::codec::field{"from_version", &subscription_versions_filter::from_version},
+        utility::codec::field{"to_version", &subscription_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_subscriptions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_subscriptions_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_subscriptions_request::offset},
+        utility::codec::field{"limit", &list_subscriptions_request::limit},
+        utility::codec::field{"order", &list_subscriptions_request::order},
+        utility::codec::field{"filter", &list_subscriptions_request::filter},
+        utility::codec::field{"as_of", &list_subscriptions_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_subscriptions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_subscriptions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_subscriptions_response::result},
+        utility::codec::field{"subscriptions", &list_subscriptions_response::subscriptions},
+        utility::codec::field{"total", &list_subscriptions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_subscription_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_subscription_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_subscription_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_subscription_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_subscription_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_subscription_response::result},
+        utility::codec::field{"subscription", &get_subscription_response::subscription},
+    };
+}
+
+/**
+ * @brief The members of get_many_subscriptions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_subscriptions_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_subscriptions_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_subscriptions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_subscriptions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_subscriptions_response::result},
+        utility::codec::field{"entries", &get_many_subscriptions_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_subscription_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_subscription_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_subscription_request::change},
+        utility::codec::field{"intent", &put_subscription_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_subscription_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_subscription_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_subscription_response::result},
+        utility::codec::field{"subscription", &put_subscription_response::subscription},
+    };
+}
+
+/**
+ * @brief The members of put_many_subscriptions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_subscriptions_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_subscriptions_request::changes},
+        utility::codec::field{"intent", &put_many_subscriptions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_subscriptions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_subscriptions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_subscriptions_response::result},
+        utility::codec::field{"subscriptions", &put_many_subscriptions_response::subscriptions},
+    };
+}
+
+/**
+ * @brief The members of delete_subscription_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_subscription_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_subscription_request::removal},
+        utility::codec::field{"intent", &delete_subscription_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_subscription_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_subscription_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_subscription_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_subscriptions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_subscriptions_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_subscriptions_request::removals},
+        utility::codec::field{"intent", &delete_many_subscriptions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_subscriptions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_subscriptions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_subscriptions_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_subscription_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_subscription_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_subscription_versions_request::key},
+        utility::codec::field{"offset", &list_subscription_versions_request::offset},
+        utility::codec::field{"limit", &list_subscription_versions_request::limit},
+        utility::codec::field{"order", &list_subscription_versions_request::order},
+        utility::codec::field{"filter", &list_subscription_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_subscription_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_subscription_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_subscription_versions_response::result},
+        utility::codec::field{"versions", &list_subscription_versions_response::versions},
+        utility::codec::field{"total", &list_subscription_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_subscription_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_subscription_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_subscription_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_subscription_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_subscription_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_subscription_version_response::result},
+        utility::codec::field{"version", &get_subscription_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::subscription_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::subscription_key& v);
+    static ores::marketdata::messaging::subscription_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::subscription_key& v);
+    static ores::marketdata::messaging::subscription_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::subscription_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::subscription_write& v);
+    static ores::marketdata::messaging::subscription_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::subscription_write& v);
+    static ores::marketdata::messaging::subscription_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::subscription_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::subscription_change& v);
+    static ores::marketdata::messaging::subscription_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::subscription_change& v);
+    static ores::marketdata::messaging::subscription_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::subscription_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::subscription_removal& v);
+    static ores::marketdata::messaging::subscription_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::subscription_removal& v);
+    static ores::marketdata::messaging::subscription_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::subscription_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::subscription_lookup& v);
+    static ores::marketdata::messaging::subscription_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::subscription_lookup& v);
+    static ores::marketdata::messaging::subscription_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::subscriptions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::subscriptions_filter& v);
+    static ores::marketdata::messaging::subscriptions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::subscriptions_filter& v);
+    static ores::marketdata::messaging::subscriptions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::subscription_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::subscription_event& v);
+    static ores::marketdata::messaging::subscription_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::subscription_event& v);
+    static ores::marketdata::messaging::subscription_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::subscription_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::subscription_version_key& v);
+    static ores::marketdata::messaging::subscription_version_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::subscription_version_key& v);
+    static ores::marketdata::messaging::subscription_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::subscription_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::subscription_versions_filter& v);
+    static ores::marketdata::messaging::subscription_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::subscription_versions_filter& v);
+    static ores::marketdata::messaging::subscription_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_subscriptions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::list_subscriptions_request& v);
+    static ores::marketdata::messaging::list_subscriptions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_subscriptions_request& v);
+    static ores::marketdata::messaging::list_subscriptions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_subscriptions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_subscriptions_response& v);
+    static ores::marketdata::messaging::list_subscriptions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_subscriptions_response& v);
+    static ores::marketdata::messaging::list_subscriptions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_subscription_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_subscription_request& v);
+    static ores::marketdata::messaging::get_subscription_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_subscription_request& v);
+    static ores::marketdata::messaging::get_subscription_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_subscription_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_subscription_response& v);
+    static ores::marketdata::messaging::get_subscription_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_subscription_response& v);
+    static ores::marketdata::messaging::get_subscription_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_subscriptions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_subscriptions_request& v);
+    static ores::marketdata::messaging::get_many_subscriptions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_subscriptions_request& v);
+    static ores::marketdata::messaging::get_many_subscriptions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_subscriptions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_subscriptions_response& v);
+    static ores::marketdata::messaging::get_many_subscriptions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_subscriptions_response& v);
+    static ores::marketdata::messaging::get_many_subscriptions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_subscription_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::put_subscription_request& v);
+    static ores::marketdata::messaging::put_subscription_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_subscription_request& v);
+    static ores::marketdata::messaging::put_subscription_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_subscription_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::put_subscription_response& v);
+    static ores::marketdata::messaging::put_subscription_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_subscription_response& v);
+    static ores::marketdata::messaging::put_subscription_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_many_subscriptions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_many_subscriptions_request& v);
+    static ores::marketdata::messaging::put_many_subscriptions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_many_subscriptions_request& v);
+    static ores::marketdata::messaging::put_many_subscriptions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_many_subscriptions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_many_subscriptions_response& v);
+    static ores::marketdata::messaging::put_many_subscriptions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_many_subscriptions_response& v);
+    static ores::marketdata::messaging::put_many_subscriptions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_subscription_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_subscription_request& v);
+    static ores::marketdata::messaging::delete_subscription_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_subscription_request& v);
+    static ores::marketdata::messaging::delete_subscription_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_subscription_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_subscription_response& v);
+    static ores::marketdata::messaging::delete_subscription_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_subscription_response& v);
+    static ores::marketdata::messaging::delete_subscription_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_many_subscriptions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_many_subscriptions_request& v);
+    static ores::marketdata::messaging::delete_many_subscriptions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_many_subscriptions_request& v);
+    static ores::marketdata::messaging::delete_many_subscriptions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_many_subscriptions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_many_subscriptions_response& v);
+    static ores::marketdata::messaging::delete_many_subscriptions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_many_subscriptions_response& v);
+    static ores::marketdata::messaging::delete_many_subscriptions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_subscription_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_subscription_versions_request& v);
+    static ores::marketdata::messaging::list_subscription_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_subscription_versions_request& v);
+    static ores::marketdata::messaging::list_subscription_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_subscription_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_subscription_versions_response& v);
+    static ores::marketdata::messaging::list_subscription_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_subscription_versions_response& v);
+    static ores::marketdata::messaging::list_subscription_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_subscription_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_subscription_version_request& v);
+    static ores::marketdata::messaging::get_subscription_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_subscription_version_request& v);
+    static ores::marketdata::messaging::get_subscription_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_subscription_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_subscription_version_response& v);
+    static ores::marketdata::messaging::get_subscription_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_subscription_version_response& v);
+    static ores::marketdata::messaging::get_subscription_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

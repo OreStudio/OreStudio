@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: CFD21751-6EC7-4BBC-94CC-E3E7CE30097C
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.reporting.ore_file_category
+#+description: Codegen entity model for the reporting ore_file_category table. The groups the files of an ORE run fall in.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A group of the files of an ORE run.
+#+entity_singular: ore_file_category
+#+entity_plural: ore_file_categories
+#+entity_title: ORE File Category
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+Reference data grouping the files of an ORE run, so a screen can show the market
+data apart from the configuration and the risk reports apart from the XVA
+reports. Each ORE file belongs to one category.
+
+The categories a run is given follow the chapters of the ORE user guide: the
+master input, the configuration documents, the trade data and the market data.
+The categories ORE writes follow the three steps of the guide's ORE Data Flow
+chapter, with the reports a person reads kept apart from the data files one
+analytic writes for another. One category is ORE Studio's own: the archives a run
+travels in to the engine and back.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_reporting_ore_file_categories_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The stable code of the category, in lower case with underscores: configuration,
+market_data, valuation_report.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The name of the category as a screen shows it, for example Market Data.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** origin
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Where the files of the category come from: supplied when a run is given them,
+produced when ORE writes them, packaged when ORE Studio makes them.
+
+#+begin_src cpp :name generator
+std::string("supplied")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the files of the category have in common and what a person uses them for.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the category appears in a list.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_ore_file_categories_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "name" <> '' |
+| "origin" in ('supplied', 'produced', 'packaged') |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: category
+:entity_plural_short:   categories
+:entity_singular_words: ORE file category
+:entity_plural_words:   ORE file categories
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: at
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| origin        | Origin      |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/ore_file_category.hpp
+:domain_class:           reporting::domain::ore_file_category
+:protocol_include:       ores.reporting.api/messaging/ore_file_category_protocol.hpp
+:collection_name:        ore_file_categories
+:key_field:              code
+:get_request_class:      reporting::messaging::get_ore_file_categories_request
+:get_response_class:     reporting::messaging::get_ore_file_categories_response
+:get_message_type:       get_ore_file_categories_request
+:save_request_class:     reporting::messaging::save_ore_file_category_request
+:save_response_class:    reporting::messaging::save_ore_file_category_response
+:save_message_type:      save_ore_file_category_request
+:delete_request_class:   reporting::messaging::delete_ore_file_category_request
+:delete_response_class:  reporting::messaging::delete_ore_file_category_response
+:delete_message_type:    delete_ore_file_category_request
+:END:
+
+*** Detail fields
+
+| field         | label       | type      | is_key | is_required | placeholder |
+|---------------+-------------+-----------+--------+-------------+-------------|
+| code          | Code        | line_edit | true   | true        | e.g. market_data |
+| name          | Name        | line_edit |        | true        | e.g. Market Data |
+| origin        | Origin      | line_edit |        | true        | supplied, produced or packaged |
+| description   | Description | line_edit |        | true        | Enter description |
+| display_order | Order       | spin_edit |        | true        | Enter order |
+
+*** Columns
+
+| enum_name  | field       | header      | type   | width |
+|------------+-------------+-------------+--------+-------|
+| Code       | code        | Code        | string | 180   |
+| Name       | name        | Name        | string | 220   |
+| Origin     | origin      | Origin      | string | 100   |
+| Version    | version     | Version     | int    | 80    |
+| ModifiedBy | modified_by | Modified By | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+- [[id:8C08A192-DAA3-461A-8240-181C04CAE46E][ores.reporting.ore_file]] — the files, each in one category.

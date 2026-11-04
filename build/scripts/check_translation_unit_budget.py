@@ -59,6 +59,18 @@ KNOWN: dict[str, tuple[int, str]] = {
     "projects/ores.ore/core/src/domain/conventions_family_tenor_basis_swap.cpp": (
         3,
         "the three tenor basis swap families are one document element, mapped together"),
+    "projects/ores.ore/core/src/domain/conventions_family_commodity_future.cpp": (
+        6,
+        "the central row, the contract terms and the four optional part families of the "
+        "commodity future are one document element, mapped and compared together"),
+    "projects/ores.ore/core/src/domain/conventions_family_cross_currency_basis.cpp": (
+        4,
+        "the central row and three part families of the cross-currency basis swap are one "
+        "document element, mapped and compared together"),
+    "projects/ores.ore/core/src/domain/conventions_family_cross_currency_fix_float.cpp": (
+        4,
+        "the central row and three part families of the cross-currency fix-float swap are "
+        "one document element, mapped and compared together"),
     "projects/ores.ore/core/src/domain/conventions_diff.cpp": (
         3,
         "the three tenor basis swap families are one document element, compared together"),

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 1B2C3D4E-5F60-4718-9A2B-3C4D5E6F7A80
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.cut_kind
 #+description: Codegen entity model for the reporting =cut_kind= table. The declarations a cut of an occasion carries: its family, the inbox kind that authorises it, whether its values are indicative, how a report resolves it, and how long it is kept.

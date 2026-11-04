@@ -44,6 +44,8 @@ namespace ores::refdata::messaging {
 struct person_role_key {
     std::string code;
     std::string coding_scheme_code;
+
+    friend bool operator==(const person_role_key&, const person_role_key&) = default;
 };
 
 struct person_role_write {
@@ -51,21 +53,29 @@ struct person_role_write {
     std::string coding_scheme_code;
     std::string source;
     std::string description;
+
+    friend bool operator==(const person_role_write&, const person_role_write&) = default;
 };
 
 struct person_role_change {
     person_role_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const person_role_change&, const person_role_change&) = default;
 };
 
 struct person_role_removal {
     person_role_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const person_role_removal&, const person_role_removal&) = default;
 };
 
 struct person_role_lookup {
     person_role_key key;
     std::optional<ores::refdata::domain::person_role> person_role;
+
+    friend bool operator==(const person_role_lookup&, const person_role_lookup&) = default;
 };
 
 struct person_role_event {
@@ -75,17 +85,25 @@ struct person_role_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const person_role_event&, const person_role_event&) = default;
 };
 
 struct person_role_version_key {
     person_role_key person_role;
     std::uint32_t version;
+
+    friend bool operator==(const person_role_version_key&,
+                           const person_role_version_key&) = default;
 };
 
 struct person_role_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const person_role_versions_filter&,
+                           const person_role_versions_filter&) = default;
 };
 
 struct list_person_roles_request {
@@ -102,12 +120,18 @@ struct list_person_roles_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_person_roles_request&,
+                           const list_person_roles_request&) = default;
 };
 
 struct list_person_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::person_role> roles;
     std::uint64_t total;
+
+    friend bool operator==(const list_person_roles_response&,
+                           const list_person_roles_response&) = default;
 };
 
 struct get_person_role_request {
@@ -121,11 +145,17 @@ struct get_person_role_request {
      */
     static constexpr bool requires_session = true;
     person_role_key key;
+
+    friend bool operator==(const get_person_role_request&,
+                           const get_person_role_request&) = default;
 };
 
 struct get_person_role_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::person_role> person_role;
+
+    friend bool operator==(const get_person_role_response&,
+                           const get_person_role_response&) = default;
 };
 
 struct get_many_person_roles_request {
@@ -139,11 +169,17 @@ struct get_many_person_roles_request {
      */
     static constexpr bool requires_session = true;
     std::vector<person_role_key> keys;
+
+    friend bool operator==(const get_many_person_roles_request&,
+                           const get_many_person_roles_request&) = default;
 };
 
 struct get_many_person_roles_response {
     ores::utility::domain::result result;
     std::vector<person_role_lookup> entries;
+
+    friend bool operator==(const get_many_person_roles_response&,
+                           const get_many_person_roles_response&) = default;
 };
 
 struct put_person_role_request {
@@ -158,11 +194,17 @@ struct put_person_role_request {
     static constexpr bool requires_session = true;
     person_role_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_person_role_request&,
+                           const put_person_role_request&) = default;
 };
 
 struct put_person_role_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::person_role> person_role;
+
+    friend bool operator==(const put_person_role_response&,
+                           const put_person_role_response&) = default;
 };
 
 struct put_many_person_roles_request {
@@ -177,11 +219,17 @@ struct put_many_person_roles_request {
     static constexpr bool requires_session = true;
     std::vector<person_role_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_person_roles_request&,
+                           const put_many_person_roles_request&) = default;
 };
 
 struct put_many_person_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::person_role> roles;
+
+    friend bool operator==(const put_many_person_roles_response&,
+                           const put_many_person_roles_response&) = default;
 };
 
 struct delete_person_role_request {
@@ -196,10 +244,16 @@ struct delete_person_role_request {
     static constexpr bool requires_session = true;
     person_role_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_person_role_request&,
+                           const delete_person_role_request&) = default;
 };
 
 struct delete_person_role_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_person_role_response&,
+                           const delete_person_role_response&) = default;
 };
 
 struct delete_many_person_roles_request {
@@ -214,10 +268,16 @@ struct delete_many_person_roles_request {
     static constexpr bool requires_session = true;
     std::vector<person_role_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_person_roles_request&,
+                           const delete_many_person_roles_request&) = default;
 };
 
 struct delete_many_person_roles_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_person_roles_response&,
+                           const delete_many_person_roles_response&) = default;
 };
 
 struct list_person_role_versions_request {
@@ -235,12 +295,18 @@ struct list_person_role_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<person_role_versions_filter> filter;
+
+    friend bool operator==(const list_person_role_versions_request&,
+                           const list_person_role_versions_request&) = default;
 };
 
 struct list_person_role_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::person_role> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_person_role_versions_response&,
+                           const list_person_role_versions_response&) = default;
 };
 
 struct get_person_role_version_request {
@@ -254,11 +320,17 @@ struct get_person_role_version_request {
      */
     static constexpr bool requires_session = true;
     person_role_version_key key;
+
+    friend bool operator==(const get_person_role_version_request&,
+                           const get_person_role_version_request&) = default;
 };
 
 struct get_person_role_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::person_role> version;
+
+    friend bool operator==(const get_person_role_version_response&,
+                           const get_person_role_version_response&) = default;
 };
 
 /**
@@ -270,9 +342,9 @@ struct get_person_role_version_response {
  * of them.
  */
 namespace person_role_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.person_roles_events.created";
-inline constexpr std::string_view updated = "refdata.v1.person_roles_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.person_roles.created";
+inline constexpr std::string_view updated = "refdata.v1.events.person_roles.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.person_roles.deleted";
 }
 /**
  * @brief The members of person_role_key, named as the wire names them and in the order

@@ -147,6 +147,7 @@ public:
 
     /**
      * @brief post-process-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
+     * <skipped_families>
      */
     static void process_post_process_results(std::ostream& out,
                                              ores::nats::service::nats_client& session,
@@ -219,6 +220,13 @@ public:
     static void process_take_cut(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
+
+    /**
+     * @brief list-cut-authorisation-subjects <request_ids>
+     */
+    static void process_list_cut_authorisation_subjects(std::ostream& out,
+                                                        ores::nats::service::nats_client& session,
+                                                        const std::vector<std::string>& args);
 };
 
 }

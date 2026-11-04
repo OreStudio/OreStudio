@@ -28,7 +28,6 @@ import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/ref
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { NO_ORDER, readAll, refusal, resultSchema, row, text } from './refdata-calls.js';
-import { fetchStored } from './grid-downloads.js';
 import { readRun, readRunStates as readStates } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';
 
@@ -667,7 +666,7 @@ function figureOf(row: AggregateRow): number {
  * post-processor existed has no rows, and answers the reason the screen states
  * rather than reading the archive it left behind.
  */
-async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswer> {
+export async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswer> {
     const reply = await session.client.callAuthenticated(
         runResultSubjects.list_run_results_request,
         {
@@ -697,13 +696,13 @@ async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswe
         },
         z.looseObject({
             result: resultSchema,
-            rows: z.array(row).default([]),
+            results: z.array(row).default([]),
         }),
     );
     if (reply.result.outcome !== 'ok') {
         throw refusal(reply.result);
     }
-    if (reply.rows.length === 0) {
+    if (reply.results.length === 0) {
         return {
             rows: [],
             reason: 'no-rows',
@@ -718,7 +717,7 @@ async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswe
     const figureText = (value: unknown): string =>
         typeof value === 'number' ? String(value) : text(value);
     const measures = new Map<string, Record<string, string>>();
-    for (const entry of reply.rows) {
+    for (const entry of reply.results) {
         const tradeId = text(entry['subject_id']);
         const measure = text(entry['measure']);
         if (tradeId === '' || !KNOWN_MEASURES.has(measure)) {
@@ -877,34 +876,6 @@ export function registerGridReportResultsRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
-    /** One reporting run, with the state it reached. */
-    server.get('/api/reporting/runs/:id', async (request) => {
-        const session = requireSession(request);
-        const parsed = runParamsSchema.safeParse(request.params);
-        if (!parsed.success) {
-            throw invalidRequest('The address names an id that is not a uuid.');
-        }
-        const run = await readRun(session, parsed.data.id);
-        if (run === null) {
-            throw notFound('No report run has this id.');
-        }
-        const states = await readStates(session, [parsed.data.id]);
-        return {
-            id: text(run['id']),
-            name: text(run['name']),
-            party_id: text(run['party_id']),
-            definition_id: text(run['definition_id']),
-            kind: text(run['kind']),
-            state_name: states.get(parsed.data.id) ?? '',
-            started_at: text(run['started_at']),
-            completed_at: text(run['completed_at']),
-            priced_at: text(run['priced_at']),
-            price_note: text(run['price_note']),
-            output_message: text(run['output_message']),
-            output_storage_key: text(run['output_storage_key']),
-        };
-    });
-
     /** The results of one run, at the level the reader asked for. */
     server.get('/api/reporting/runs/:id/results', async (request): Promise<ResultsAnswer> => {
         const session = requireSession(request);
@@ -965,28 +936,5 @@ export function registerGridReportResultsRoutes(
             );
         }
         return answer;
-    });
-
-    /** The output archive of one run, as the run stored it. */
-    server.get('/api/reporting/runs/:id/output', async (request, reply) => {
-        const session = requireSession(request);
-        const parsed = runParamsSchema.safeParse(request.params);
-        if (!parsed.success) {
-            throw invalidRequest('The address names an id that is not a uuid.');
-        }
-        const run = await readRun(session, parsed.data.id);
-        if (run === null) {
-            throw notFound('No report run has this id.');
-        }
-        const key = text(run['output_storage_key']);
-        if (key === '') {
-            throw notFound('This run produced no output.');
-        }
-        const archive = await fetchStored(session, key);
-        return reply
-            .header('Content-Type', 'application/gzip')
-            .header('Content-Disposition', 'attachment; filename="output.tar.gz"')
-            .header('Cache-Control', 'private, no-store')
-            .send(archive);
     });
 }

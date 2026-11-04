@@ -51,6 +51,8 @@ struct book_line_outcome {
      * request needs the union over its lines.
      */
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const book_line_outcome&, const book_line_outcome&) = default;
 };
 
 /**
@@ -75,6 +77,9 @@ struct preview_book_changes_request {
      * not read: the server numbers the lines and the policy names the parts.
      */
     std::vector<ores::refdata::domain::book_change> lines;
+
+    friend bool operator==(const preview_book_changes_request&,
+                           const preview_book_changes_request&) = default;
 };
 
 struct preview_book_changes_response {
@@ -85,6 +90,9 @@ struct preview_book_changes_response {
      * policy row gates them.
      */
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const preview_book_changes_response&,
+                           const preview_book_changes_response&) = default;
 };
 
 /**
@@ -107,6 +115,9 @@ struct raise_book_changes_request {
      */
     std::string reason;
     std::vector<ores::refdata::domain::book_change> lines;
+
+    friend bool operator==(const raise_book_changes_request&,
+                           const raise_book_changes_request&) = default;
 };
 
 struct raise_book_changes_response {
@@ -118,6 +129,9 @@ struct raise_book_changes_response {
     std::optional<boost::uuids::uuid> request_id;
     std::vector<book_line_outcome> lines;
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const raise_book_changes_response&,
+                           const raise_book_changes_response&) = default;
 };
 
 /**
@@ -132,6 +146,8 @@ struct book_field_delta {
     std::string before;
     std::string after;
     bool changed = false;
+
+    friend bool operator==(const book_field_delta&, const book_field_delta&) = default;
 };
 
 /**
@@ -145,6 +161,8 @@ struct book_change_delta {
     int base_version = 0;
     bool applied = false;
     std::vector<book_field_delta> fields;
+
+    friend bool operator==(const book_change_delta&, const book_change_delta&) = default;
 };
 
 /**
@@ -165,6 +183,9 @@ struct get_book_changes_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const get_book_changes_request&,
+                           const get_book_changes_request&) = default;
 };
 
 struct get_book_changes_response {
@@ -173,6 +194,9 @@ struct get_book_changes_response {
      * @brief The lines in line order.
      */
     std::vector<book_change_delta> changes;
+
+    friend bool operator==(const get_book_changes_response&,
+                           const get_book_changes_response&) = default;
 };
 
 /**
@@ -193,12 +217,18 @@ struct recheck_book_changes_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const recheck_book_changes_request&,
+                           const recheck_book_changes_request&) = default;
 };
 
 struct recheck_book_changes_response {
     ores::utility::domain::result result;
     std::vector<book_line_outcome> lines;
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const recheck_book_changes_response&,
+                           const recheck_book_changes_response&) = default;
 };
 
 }

@@ -334,7 +334,7 @@ the output of a run from last week.
 | Read the errors | Read one error | =reporting.v1.report_error_events.get= | exists |
 | Read the errors | Read the scope vocabulary | =reporting.v1.report_error_scopes.list= | exists |
 | Read the package | Prepare the ORE package the engine reads | =ore.v1.ops.prepare_ore_package= | exists |
-| Watch for output | Learn that the run completed and its output landed | =reporting.v1.report_instances_events.updated= | exists |
+| Watch for output | Learn that the run completed and its output landed | =reporting.v1.events.report_instances.updated= | exists |
 | Take the archive | List the files inside the run's archive | (no operation lists an archive's contents) | missing |
 | Take the archive | Read or stream the archive's bytes | (no reporting operation serves the archive) | missing |
 | Take the package | Read the exported ORE package, or list its files | (no operation in the set returns it) | missing |
@@ -465,6 +465,7 @@ caller's token and checks the read codes above.
 - [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
 - [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — retrieval and post-processing, the phases that produce and record the output
 - [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] — what reading the archive will become
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] — what each file of the output holds, column by column
 - [[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] — the phase that produces the input package
 - [[id:3594348F-6679-4D8B-858F-38B073FDFAFE][Report compute handoff]] — the result the archive arrives through
 - [[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]] — why a run may resolve a prepared input instead of preparing one

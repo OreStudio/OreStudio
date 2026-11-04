@@ -20,8 +20,18 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec_wire_bytes_tests.cpp"
     "codec_workflow_vocabulary_tests.cpp"
     "identity_workflow_tests.cpp"
     "main.cpp"
     "messaging_workflow_protocol_tests.cpp"
+    "workflow_instance_codec_roundtrip_tests.cpp"
+    "workflow_instance_protocol_codec_roundtrip_tests.cpp"
+    "workflow_plan_dependency_codec_roundtrip_tests.cpp"
+    "workflow_plan_dependency_protocol_codec_roundtrip_tests.cpp"
+    "workflow_plan_step_codec_roundtrip_tests.cpp"
+    "workflow_plan_step_protocol_codec_roundtrip_tests.cpp"
+    "workflow_protocol_codec_roundtrip_tests.cpp"
+    "workflow_step_codec_roundtrip_tests.cpp"
+    "workflow_step_protocol_codec_roundtrip_tests.cpp"
 )

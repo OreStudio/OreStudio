@@ -19,7 +19,7 @@
  *
  */
 
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
     askForRoles,
@@ -44,10 +44,11 @@ import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/tr
 import { subjects as publishedCurveSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/published_curves_operations_protocol';
 import { subjects as tradeSummarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
-import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
+import { subjects as productTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { invalidRequest, notFound } from './errors.js';
+import { withCutSubjects } from './cut-subject.js';
 import { readAll, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
@@ -305,6 +306,21 @@ async function withPublishedSubjects<
     });
 }
 
+/**
+ * A page of requests, each carrying what its kind is about.
+ *
+ * The joins are one per kind, because a kind's subject lives in the component
+ * that owns it: the market data component answers a publish, and reporting
+ * answers a cut. A reader who may not see one keeps the others.
+ */
+async function withSubjects<Request extends { readonly id: string; readonly kindCode: string }>(
+    session: LiveSession,
+    requests: readonly Request[],
+    log: FastifyBaseLogger,
+): Promise<readonly Request[]> {
+    return withCutSubjects(session, await withPublishedSubjects(session, requests), log);
+}
+
 /** The kind of request the Operations queue works. */
 const AUTHORISATION_KIND = 'trading.operational_authorisation';
 
@@ -374,7 +390,7 @@ async function dealtWithByRequests(
             filter: null,
             as_of: null,
         }),
-        readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+        readAll(session, productTypeSubjects.list_product_types_request, 'types', {
             filter: { code_one_of: null },
         }),
     ]);
@@ -385,7 +401,9 @@ async function dealtWithByRequests(
     );
     const summaryOf = new Map(summaries.map((row) => [text(row['id']), row]));
     const typeNameOf = new Map(
-        types.map((row) => [text(row['code']), text(row['description'])] as const),
+        types.map(
+            (row) => [text(row['code']), text(row['name']) || text(row['description'])] as const,
+        ),
     );
 
     for (const trade of trades) {
@@ -586,8 +604,8 @@ export function registerInboxRoutes(
         const queue = await readRequestQueue(session.client, page, viewerOf(session));
         return {
             ...queue,
-            items: await withPublishedSubjects(session, queue.items),
-            answered: await withPublishedSubjects(session, queue.answered),
+            items: await withSubjects(session, queue.items, request.log),
+            answered: await withSubjects(session, queue.answered, request.log),
         };
     });
 
@@ -625,7 +643,7 @@ export function registerInboxRoutes(
         const id = requestIdOf(request);
         const detail = await readRequest(session.client, id, viewerOf(session));
         if (detail === null) throw notFound('No such request.');
-        const [withSubject] = await withPublishedSubjects(session, [detail]);
+        const [withSubject] = await withSubjects(session, [detail], request.log);
         return { ...(withSubject ?? detail), subjects: await subjectsOf(session, id) };
     });
 

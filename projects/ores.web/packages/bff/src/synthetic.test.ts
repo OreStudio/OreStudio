@@ -169,6 +169,9 @@ describe('synthetic resource routes', () => {
             'ir-curve-feeds',
             'ir-parameter-values',
             'ir-template-entries',
+            'variance-calibrations',
+            'variance-calibration-inputs',
+            'variance-calibration-input-points',
             'process-types',
             'parameter-definitions',
             'tenors',
@@ -186,6 +189,9 @@ describe('synthetic resource routes', () => {
         const providers = resources.find((resource) => resource.key === 'providers');
         expect(providers?.writable).toBe(false);
         expect(providers?.readOnlyBecause).toContain('catalogue');
+        const calibrations = resources.find((r) => r.key === 'variance-calibrations');
+        expect(calibrations?.writable).toBe(false);
+        expect(calibrations?.readOnlyBecause).toContain('decided by a review');
     });
 
     it('reads every row of a resource, as of now and unfiltered', async () => {
@@ -487,6 +493,13 @@ describe('synthetic calibration', () => {
     const policy = {
         from_policy_row: true,
         window_days: 60,
+        variance_window_days: 730,
+        variance_approval_mode: 'auto',
+        variance_min_returns: 300,
+        variance_require_starts_agree: false,
+        variance_min_persistence: 0.85,
+        variance_max_persistence: 0.99,
+        variance_min_reaction: 0.02,
         allow_inverse: false,
         fallback_code: 'refuse',
         provider_order: ['ecb', 'boe'],
@@ -494,7 +507,20 @@ describe('synthetic calibration', () => {
     const policyRows = {
         'synthetic.v1.calibration_policies.list': {
             result: ok,
-            policies: [{ id: POLICY_ID, version: 3, asset_class_code: 'fx' }],
+            policies: [
+                {
+                    id: POLICY_ID,
+                    version: 3,
+                    asset_class_code: 'fx',
+                    variance_window_days: 730,
+                    variance_approval_mode: 'auto',
+                    variance_min_returns: 300,
+                    variance_require_starts_agree: false,
+                    variance_min_persistence: 0.85,
+                    variance_max_persistence: 0.99,
+                    variance_min_reaction: 0.02,
+                },
+            ],
         },
     };
 
@@ -539,7 +565,7 @@ describe('synthetic calibration', () => {
         expect(response.statusCode).toBe(200);
         expect(calls[0]).toEqual({
             subject: 'synthetic.v1.ops.calibrate_feeds',
-            body: { asset_class_code: 'fx' },
+            body: { asset_class_code: 'fx', config_id: '', apply: false },
         });
         const body = response.json();
         expect(body.policy).toEqual({ ...policy, version: 3 });
@@ -557,10 +583,64 @@ describe('synthetic calibration', () => {
         });
     });
 
+    it("passes a feed's variance calibration through to the browser", async () => {
+        const variance = {
+            input_id: '11111111-1111-4111-8111-111111111111',
+            calibration_id: '22222222-2222-4222-8222-222222222222',
+            state: 'proposed',
+            state_reason: '',
+            item: 'oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD',
+            provider_code: 'ecb',
+            inverted: false,
+            window_days: 1826,
+            window_end: '2026-11-02',
+            point_count: 280,
+            used_count: 279,
+            alpha: 0.011,
+            gamma: 0.023,
+            beta: 0.932,
+            persistence: 0.955,
+            starting_variance_ratio: 0.8,
+            starts: 4,
+            starts_agreed: true,
+        };
+        const { server, sessionId } = buildTestServer({
+            ...policyRows,
+            'synthetic.v1.ops.calibrate_feeds': {
+                success: true,
+                policy,
+                feeds: [
+                    {
+                        config_id: '33333333-3333-4333-8333-333333333333',
+                        source_name: 'synthetic.bloomberg.eurusd',
+                        start: { from_fixing: true, note: '' },
+                        variance,
+                        current_variance: { ...variance, method: 'authored', state: 'approved' },
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
+        expect(response.statusCode).toBe(200);
+        expect(response.json().feeds[0].variance).toMatchObject(variance);
+        expect(response.json().feeds[0].current_variance).toMatchObject({
+            calibration_id: variance.calibration_id,
+            method: 'authored',
+            state: 'approved',
+        });
+    });
+
     it('states the defaults, with no version, when the class has no policy row', async () => {
         const defaults = {
             from_policy_row: false,
             window_days: 90,
+            variance_window_days: 1826,
+            variance_approval_mode: 'manual',
+            variance_min_returns: 250,
+            variance_require_starts_agree: true,
+            variance_min_persistence: 0.8,
+            variance_max_persistence: 0.995,
+            variance_min_reaction: 0.01,
             allow_inverse: true,
             fallback_code: 'keep_fixed',
             provider_order: [],
@@ -573,6 +653,46 @@ describe('synthetic calibration', () => {
         expect(response.json().policy).toEqual({ ...defaults, version: null });
         expect(response.json().coverage.total).toBe(0);
         expect(calls.map((c) => c.subject)).toEqual(['synthetic.v1.ops.calibrate_feeds']);
+    });
+
+    it('resolves only the feed a read names', async () => {
+        const defaults = {
+            from_policy_row: false,
+            window_days: 90,
+            variance_window_days: 1826,
+            variance_approval_mode: 'manual',
+            variance_min_returns: 250,
+            variance_require_starts_agree: true,
+            variance_min_persistence: 0.8,
+            variance_max_persistence: 0.995,
+            variance_min_reaction: 0.01,
+            allow_inverse: true,
+            fallback_code: 'keep_fixed',
+            provider_order: [],
+        };
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.calibrate_feeds': { success: true, policy: defaults, feeds: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/calibration/fx?configId=${ID}`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({ asset_class_code: 'fx', config_id: ID, apply: false });
+    });
+
+    it('refuses a read that names a feed by anything but its id', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/calibration/fx?configId=eurusd',
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
     });
 
     it('refuses an asset class that is not a code, before any call', async () => {
@@ -600,6 +720,76 @@ describe('synthetic calibration', () => {
         expect(response.body).toContain('A calibration names its asset class.');
     });
 
+    it('calibrates and stores the one feed named, and answers what it wrote', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.calibrate_feeds': {
+                success: true,
+                feeds: [
+                    {
+                        config_id: ID,
+                        source_name: 'synthetic.eurusd',
+                        start: { from_fixing: true, item: 'oresmd://fx/EUR?type=fixing&ccy=USD' },
+                        running: true,
+                        outcome: 'updated',
+                        outcome_message: 'Calibrated from the ecb fixing of 2026-10-30.',
+                    },
+                ],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/calibration/fx/run',
+            {
+                configId: ID,
+            },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls).toEqual([
+            {
+                subject: 'synthetic.v1.ops.calibrate_feeds',
+                body: { asset_class_code: 'fx', config_id: ID, apply: true },
+            },
+        ]);
+        expect(response.json().feeds[0]).toMatchObject({
+            running: true,
+            outcome: 'updated',
+            outcome_message: 'Calibrated from the ecb fixing of 2026-10-30.',
+        });
+    });
+
+    it('answers not found when the named feed is not in the class', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.ops.calibrate_feeds': { success: true, feeds: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/calibration/fx/run',
+            {
+                configId: ID,
+            },
+        );
+        expect(response.statusCode).toBe(404);
+    });
+
+    it('refuses a run that names a feed by something other than its id, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/calibration/fx/run',
+            {
+                configId: 'eurusd',
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     const statedPolicy = {
         intent: INTENT,
         version: 3,
@@ -608,6 +798,124 @@ describe('synthetic calibration', () => {
         fallback_code: 'keep_fixed',
         provider_order: ['boe', 'imf'],
     };
+
+    const CALIBRATION = '84902b7e-58f4-4127-86cb-129ebedabe95';
+    const reviewPath = `/api/synthetic/calibration/variance/${CALIBRATION}/review`;
+
+    it('refuses a variance review outside the system tenant, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'reviewed',
+        });
+        expect(response.statusCode).toBe(403);
+        expect(calls).toEqual([]);
+    });
+
+    it("sends the reviewer's decision and reason, and reports the feeds it re-pointed", async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: true,
+                    message: 'Approved; 2 feed(s) now run it.',
+                    state: 'approved',
+                    superseded_id: '6a184aa7-58d1-477a-8687-769a27c006de',
+                    repointed_feeds: ['synthetic.bloomberg.eurusd', 'synthetic.demo.eurusd'],
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'Stable across starts; persistence 0.955.',
+        });
+        expect(response.statusCode).toBe(200);
+        expect(calls).toEqual([
+            {
+                subject: 'synthetic.v1.ops.review_variance_calibration',
+                body: {
+                    calibration_id: CALIBRATION,
+                    decision: 'approve',
+                    reason: 'Stable across starts; persistence 0.955.',
+                },
+            },
+        ]);
+        expect(response.json()).toMatchObject({
+            state: 'approved',
+            supersededId: '6a184aa7-58d1-477a-8687-769a27c006de',
+            repointedFeeds: ['synthetic.bloomberg.eurusd', 'synthetic.demo.eurusd'],
+        });
+    });
+
+    it("passes the service's refusal of a review on to the reviewer", async () => {
+        const { server, sessionId } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: false,
+                    refusal: 'decided',
+                    message: 'Only a proposed calibration is reviewed; it is approved.',
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'reject',
+            reason: 'unstable',
+        });
+        expect(response.statusCode).toBe(409);
+        expect(response.json()).toMatchObject({
+            code: 'conflict',
+            message: 'Only a proposed calibration is reviewed; it is approved.',
+        });
+    });
+
+    it('answers a review of a calibration that does not exist with not found', async () => {
+        const { server, sessionId } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: false,
+                    refusal: 'not_found',
+                    message: `No variance calibration ${CALIBRATION} exists.`,
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'reviewed',
+        });
+        expect(response.statusCode).toBe(404);
+        expect(response.json()).toMatchObject({ code: 'not-found' });
+    });
+
+    it("keeps a failure the service states no refusal for as the service's own", async () => {
+        const { server, sessionId } = buildTestServer(
+            {
+                'synthetic.v1.ops.review_variance_calibration': {
+                    success: false,
+                    message: 'The request failed. The service log says why.',
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: 'reviewed',
+        });
+        expect(response.statusCode).not.toBe(409);
+        expect(response.statusCode).not.toBe(404);
+        expect(response.statusCode).toBeGreaterThanOrEqual(500);
+    });
+
+    it('refuses a review that states no reason', async () => {
+        const { server, sessionId, calls } = buildTestServer({}, SYSTEM_TENANT);
+        const response = await send(server, sessionId, 'POST', reviewPath, {
+            decision: 'approve',
+            reason: '  ',
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
 
     it('refuses a policy change outside the system tenant, before any call', async () => {
         const { server, sessionId, calls } = buildTestServer({});
@@ -642,7 +950,7 @@ describe('synthetic calibration', () => {
     const changesOf = (calls: { subject: string; body: unknown }[], subject: string): Change[] =>
         (calls.find((c) => c.subject === subject)?.body as { changes: Change[] }).changes;
 
-    it('writes the policy against its version and the order from rank 1', async () => {
+    it('writes the policy against its version, keeping the fields the screen does not edit, and the order from rank 1', async () => {
         const { server, sessionId, calls } = buildTestServer(
             ordered([
                 [ID, 'ecb', 1, 1],
@@ -665,6 +973,13 @@ describe('synthetic calibration', () => {
                     id: POLICY_ID,
                     asset_class_code: 'fx',
                     window_days: 120,
+                    variance_window_days: 730,
+                    variance_approval_mode: 'auto',
+                    variance_min_returns: 300,
+                    variance_require_starts_agree: false,
+                    variance_min_persistence: 0.85,
+                    variance_max_persistence: 0.99,
+                    variance_min_reaction: 0.02,
                     allow_inverse: true,
                     fallback_code: 'keep_fixed',
                 },

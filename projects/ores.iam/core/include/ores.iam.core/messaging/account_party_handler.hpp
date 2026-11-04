@@ -31,6 +31,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <cstddef>
 #include <stdexcept>
@@ -536,12 +537,14 @@ private:
             }
             BOOST_LOG_SEV(account_party_handler_lg(), debug)
                 << "Workflow step completed: " << msg.subject;
-            publish_step_completion(nats_,
-                                    step_id,
-                                    inst_id,
-                                    ores::workflow::messaging::step_outcome::completed,
-                                    rfl::json::write(put_many_account_parties_response{}),
-                                    "");
+            publish_step_completion(
+                nats_,
+                step_id,
+                inst_id,
+                ores::workflow::messaging::step_outcome::completed,
+                ores::utility::codec::wire_traits<put_many_account_parties_response>::write_json(
+                    {}),
+                "");
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << "Workflow step failed: " << msg.subject << " - " << e.what();

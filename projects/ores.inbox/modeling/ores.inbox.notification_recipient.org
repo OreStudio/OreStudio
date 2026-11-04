@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2451E78F-269A-4C48-819F-F7F24E03B4D8
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.notification_recipient
 #+description: Codegen junction model for notification_recipients: who receives a notification, and when they read or cleared it.

@@ -122,6 +122,8 @@ fx_spot_generation_config_to_domain(const messaging::fx_spot_generation_config_w
     v.branching_ratio = write.branching_ratio;
     v.decay = write.decay;
     v.sensitivity = write.sensitivity;
+    v.variance_model = write.variance_model;
+    v.variance_calibration_id = write.variance_calibration_id;
     return v;
 }
 

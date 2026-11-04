@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: A4822F9C-4D8C-41B1-8E70-CE7EBC1C71F9
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.convert_fx_simple
 #+description: Codegen operation model for converting an FX feed's mixture between the simple and the advanced view.

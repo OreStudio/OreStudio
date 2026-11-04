@@ -1,0 +1,495 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: E961150D-6643-4DD0-B71D-A41B5D7C90C2
+:ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.convention-family.enabled: true
+:END:
+#+title: ores.refdata.commodity_future_contract_terms
+#+description: Codegen entity model for the refdata =commodity_future_contract_terms= part: the terms of the futures contract itself: how it is listed, when it expires and what it delivers.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: commodity_future_contract_terms
+#+entity_plural: commodity_future_contract_terms
+#+entity_title: Commodity Future Contract Terms
+#+convention_family: commodity_future_contract_terms
+#+convention_write: by_id
+#+brief: The terms of the futures contract itself: how it is listed, when it expires and what it delivers.
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+The terms that state the futures contract itself, as ORE's
+=ContractFrequency=, =Calendar=, the expiry calendar, month lag and offset, the
+contract months, the business day convention, the averaging flag, the hours
+per day, the index name, the savings time, the delivery location, the balance
+of the month fields, the prohibited expiries and the future continuation
+mappings. It is a part because its fields hold one invariant: each describes
+the listed contract, and ORE requires the frequency and the calendar of every
+commodity future. So every convention of the kind fills this part once. The
+anchor day, the option expiry, the off-peak index and the averaging data beside
+it are optional, and each is a part of its own.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** convention_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The central convention row this part belongs to. One row per convention, so
+the generated table adds the unique index on the live rows of
+=(tenant_id, convention_id)=: a convention fills this form or it does not,
+and never two of it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the convention this part belongs to. Carried so row level
+security can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** contract_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Frequency at which contracts are listed, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("Monthly")
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Calendar the contract's expiry rolls on.
+
+#+begin_src cpp :name generator
+std::string("ICE_FuturesUS")
+#+end_src
+
+** expiry_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Calendar the expiry date rolls on, when it differs from the contract calendar.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** expiry_month_lag
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Months between the contract month and its expiry.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** one_contract_month
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+The single contract month, for a future that lists only one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** offset_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Days between the expiry and the contract's start.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** business_day_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Business day convention the expiry rolls on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** adjust_before_offset
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the offset is applied before the business day adjustment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** is_averaging
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the contract settles on an average of prices.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** valid_contract_months
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Contract months the future lists, comma separated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** hours_per_day
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Hours in a delivery day, for a power future.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** index_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Name of the index the future references.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** savings_time
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Daylight savings time zone the contract follows.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** delivery_location
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Location the contract delivers to.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** balance_of_the_month
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the contract includes the balance of the current month.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** balance_of_the_month_pricing_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Calendar the balance of the month prices on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** prohibited_expiries
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Expiry dates the future may not use, comma separated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** future_continuation_mappings
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Mappings from one future contract to the next, as =from:to= pairs, comma separated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: convention_name
+:END:
+
+The part stages the convention it belongs to by name and kind, never by
+=convention_id=: the central row's uuid is made when the publish inserts it.
+The part's own fields follow the link, because the live table and the staging
+table must carry the same payload.
+
+** convention_name
+:PROPERTIES:
+:type: text
+:END:
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** contract_frequency
+:PROPERTIES:
+:type: text
+:nullable: false
+:END:
+
+** calendar
+:PROPERTIES:
+:type: text
+:nullable: false
+:END:
+
+** expiry_calendar
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** expiry_month_lag
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** one_contract_month
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** offset_days
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** business_day_convention
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** adjust_before_offset
+:PROPERTIES:
+:type: boolean
+:nullable: true
+:END:
+
+** is_averaging
+:PROPERTIES:
+:type: boolean
+:nullable: true
+:END:
+
+** valid_contract_months
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** hours_per_day
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** index_name
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** savings_time
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** delivery_location
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** balance_of_the_month
+:PROPERTIES:
+:type: boolean
+:nullable: true
+:END:
+
+** balance_of_the_month_pricing_calendar
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** prohibited_expiries
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** future_continuation_mappings
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_future_contract_terms_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** convention_id
+:PROPERTIES:
+:table:                ores_refdata_conventions_tbl
+:parent_entity:        convention
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid convention_id: %. No active convention found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: commodity_future_contract_terms
+:entity_plural_short:   commodity_future_contract_terms
+:entity_singular_words: commodity future contract terms
+:entity_plural_words:   commodity future contract terms
+:END:
+
+* See also
+
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this part hangs off.
+- [[id:5B1B2D2B-6B2A-4C6B-9C25-9E1D1F4A7C31][ores.refdata.commodity_future_convention]] — the family this part belongs to.
+- [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] — the task that introduced it.

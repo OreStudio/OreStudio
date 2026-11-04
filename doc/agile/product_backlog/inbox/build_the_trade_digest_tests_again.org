@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: D2C0C3A4-DACE-4DD1-8C3D-382418CC4CF5
+:END:
+#+title: Build the trade digest tests again
+#+description: A CMake regeneration dropped add_subdirectory(digest_tests) from ores.trading.core, so the trade economic digest tests have not been built or run since 2026-10-16.
+#+type: capture
+#+level: cross
+#+filetags: :trading:tests:cmake:correctness:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Commit 41346d023c, "Model the parts' link libraries and lift the CMake guard",
+regenerated =projects/ores.trading/core/CMakeLists.txt= and removed
+=add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/digest_tests)=. The folder
+=projects/ores.trading/core/digest_tests/= still holds =main.cpp=,
+=trade_economic_digest_write_tests.cpp= and its =CMakeLists.txt=, but no target
+builds them. The trading core model must state the extra test directory, so
+regeneration keeps it, and the suite must build and pass again.
+
+* Why
+
+Found on 2026-11-02 in brave_hopper. =publish/bin= still held a binary from
+2026-10-17, which crashed with SIGSEGV in a copy of =database::context=
+because it loaded today's libraries. =build.ninja= has no
+=ores.trading.core.digest.tests= target. The tests from 7998cd1956, "test the
+digest for every family", have not run since the regeneration, so a digest
+regression would pass CI. The stale binary also misleads anyone who runs every
+binary in =publish/bin=.
+
+* References
+
+- 41346d023c, the regeneration that dropped the directory
+- =projects/ores.trading/core/digest_tests/=
+
+* See also
+
+- [[id:99B5C1BC-70D3-4566-AFE2-69399D39BFE3][Task: Give every generated protocol message a defaulted equality]]

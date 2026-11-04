@@ -26,9 +26,16 @@
 #define ORES_INBOX_API_MESSAGING_APPROVAL_OPERATIONS_PROTOCOL_HPP
 
 #include "ores.inbox.api/domain/approval_request.hpp"
+#include "ores.inbox.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::inbox::messaging {
@@ -66,6 +73,9 @@ struct raise_approval_request_request {
      * answer order the parts give.
      */
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const raise_approval_request_request&,
+                           const raise_approval_request_request&) = default;
 };
 
 struct raise_approval_request_response {
@@ -74,6 +84,9 @@ struct raise_approval_request_response {
      * @brief The request as raised, when the outcome is ok.
      */
     ores::inbox::domain::approval_request request;
+
+    friend bool operator==(const raise_approval_request_response&,
+                           const raise_approval_request_response&) = default;
 };
 
 /**
@@ -97,11 +110,17 @@ struct withdraw_approval_request_request {
      */
     int version = 0;
     std::string comment;
+
+    friend bool operator==(const withdraw_approval_request_request&,
+                           const withdraw_approval_request_request&) = default;
 };
 
 struct withdraw_approval_request_response {
     ores::utility::domain::result result;
     ores::inbox::domain::approval_request request;
+
+    friend bool operator==(const withdraw_approval_request_response&,
+                           const withdraw_approval_request_response&) = default;
 };
 
 /**
@@ -148,6 +167,9 @@ struct decide_approval_request_request {
      * Empty on every decision that is not a hold.
      */
     std::string hold_reason_code = "";
+
+    friend bool operator==(const decide_approval_request_request&,
+                           const decide_approval_request_request&) = default;
 };
 
 struct decide_approval_request_response {
@@ -156,6 +178,9 @@ struct decide_approval_request_response {
      * @brief The request after the decision, when the outcome is ok.
      */
     ores::inbox::domain::approval_request request;
+
+    friend bool operator==(const decide_approval_request_response&,
+                           const decide_approval_request_response&) = default;
 };
 
 /**
@@ -186,6 +211,9 @@ struct list_approval_queue_request {
     static constexpr bool requires_session = true;
     int offset = 0;
     int limit = 100;
+
+    friend bool operator==(const list_approval_queue_request&,
+                           const list_approval_queue_request&) = default;
 };
 
 struct list_approval_queue_response {
@@ -201,6 +229,9 @@ struct list_approval_queue_response {
      * and not paged: nobody acts on them.
      */
     std::vector<ores::inbox::domain::approval_request> answered;
+
+    friend bool operator==(const list_approval_queue_response&,
+                           const list_approval_queue_response&) = default;
 };
 
 /**
@@ -218,12 +249,18 @@ struct list_my_approval_requests_request {
     static constexpr bool requires_session = true;
     int offset = 0;
     int limit = 100;
+
+    friend bool operator==(const list_my_approval_requests_request&,
+                           const list_my_approval_requests_request&) = default;
 };
 
 struct list_my_approval_requests_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request> requests;
     int total = 0;
+
+    friend bool operator==(const list_my_approval_requests_response&,
+                           const list_my_approval_requests_response&) = default;
 };
 
 /**
@@ -251,6 +288,8 @@ struct get_approval_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const get_approval_request&, const get_approval_request&) = default;
 };
 
 struct get_approval_response {
@@ -263,6 +302,8 @@ struct get_approval_response {
      * tell a stranger that a request exists.
      */
     std::optional<ores::inbox::domain::approval_request> request;
+
+    friend bool operator==(const get_approval_response&, const get_approval_response&) = default;
 };
 
 /**
@@ -289,6 +330,9 @@ struct expire_overdue_approvals_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const expire_overdue_approvals_request&,
+                           const expire_overdue_approvals_request&) = default;
 };
 
 struct expire_overdue_approvals_response {
@@ -297,6 +341,9 @@ struct expire_overdue_approvals_response {
      * @brief The requests that closed, as UUID strings, oldest deadline first.
      */
     std::vector<std::string> expired;
+
+    friend bool operator==(const expire_overdue_approvals_response&,
+                           const expire_overdue_approvals_response&) = default;
 };
 
 /**
@@ -330,6 +377,9 @@ struct remind_expiring_approvals_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const remind_expiring_approvals_request&,
+                           const remind_expiring_approvals_request&) = default;
 };
 
 struct remind_expiring_approvals_response {
@@ -339,6 +389,9 @@ struct remind_expiring_approvals_response {
      * first.
      */
     std::vector<std::string> reminded;
+
+    friend bool operator==(const remind_expiring_approvals_response&,
+                           const remind_expiring_approvals_response&) = default;
 };
 
 /**
@@ -371,6 +424,9 @@ struct retry_stalled_applies_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const retry_stalled_applies_request&,
+                           const retry_stalled_applies_request&) = default;
 };
 
 struct retry_stalled_applies_response {
@@ -384,6 +440,9 @@ struct retry_stalled_applies_response {
      * UUID strings.
      */
     std::vector<std::string> gave_up;
+
+    friend bool operator==(const retry_stalled_applies_response&,
+                           const retry_stalled_applies_response&) = default;
 };
 
 /**
@@ -396,6 +455,8 @@ struct retry_stalled_applies_response {
 struct approval_request_field {
     std::string name;
     std::string value;
+
+    friend bool operator==(const approval_request_field&, const approval_request_field&) = default;
 };
 
 /**
@@ -421,6 +482,9 @@ struct approval_request_version {
     std::string change_reason_code;
     std::string change_commentary;
     std::vector<approval_request_field> fields;
+
+    friend bool operator==(const approval_request_version&,
+                           const approval_request_version&) = default;
 };
 
 /**
@@ -447,11 +511,17 @@ struct get_approval_history_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const get_approval_history_request&,
+                           const get_approval_history_request&) = default;
 };
 
 struct get_approval_history_response {
     ores::utility::domain::result result;
     std::vector<approval_request_version> versions;
+
+    friend bool operator==(const get_approval_history_response&,
+                           const get_approval_history_response&) = default;
 };
 
 /**
@@ -477,6 +547,8 @@ struct approval_part_progress {
     std::string decided_by;
     std::optional<std::chrono::system_clock::time_point> decided_at;
     std::string comment;
+
+    friend bool operator==(const approval_part_progress&, const approval_part_progress&) = default;
 };
 
 /**
@@ -499,6 +571,9 @@ struct get_approval_parts_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const get_approval_parts_request&,
+                           const get_approval_parts_request&) = default;
 };
 
 struct get_approval_parts_response {
@@ -508,8 +583,692 @@ struct get_approval_parts_response {
      * no parts.
      */
     std::vector<approval_part_progress> parts;
+
+    friend bool operator==(const get_approval_parts_response&,
+                           const get_approval_parts_response&) = default;
 };
 
+/**
+ * @brief The members of raise_approval_request_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const raise_approval_request_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"kind_code", &raise_approval_request_request::kind_code},
+        ::ores::utility::codec::field{"reason", &raise_approval_request_request::reason},
+        ::ores::utility::codec::field{"part_codes", &raise_approval_request_request::part_codes},
+    };
 }
+
+/**
+ * @brief The members of raise_approval_request_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const raise_approval_request_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &raise_approval_request_response::result},
+        ::ores::utility::codec::field{"request", &raise_approval_request_response::request},
+    };
+}
+
+/**
+ * @brief The members of withdraw_approval_request_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const withdraw_approval_request_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &withdraw_approval_request_request::request_id},
+        ::ores::utility::codec::field{"version", &withdraw_approval_request_request::version},
+        ::ores::utility::codec::field{"comment", &withdraw_approval_request_request::comment},
+    };
+}
+
+/**
+ * @brief The members of withdraw_approval_request_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const withdraw_approval_request_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &withdraw_approval_request_response::result},
+        ::ores::utility::codec::field{"request", &withdraw_approval_request_response::request},
+    };
+}
+
+/**
+ * @brief The members of decide_approval_request_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const decide_approval_request_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &decide_approval_request_request::request_id},
+        ::ores::utility::codec::field{"version", &decide_approval_request_request::version},
+        ::ores::utility::codec::field{"decision_code",
+                                      &decide_approval_request_request::decision_code},
+        ::ores::utility::codec::field{"comment", &decide_approval_request_request::comment},
+        ::ores::utility::codec::field{"part_code", &decide_approval_request_request::part_code},
+        ::ores::utility::codec::field{"hold_reason_code",
+                                      &decide_approval_request_request::hold_reason_code},
+    };
+}
+
+/**
+ * @brief The members of decide_approval_request_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const decide_approval_request_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &decide_approval_request_response::result},
+        ::ores::utility::codec::field{"request", &decide_approval_request_response::request},
+    };
+}
+
+/**
+ * @brief The members of list_approval_queue_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_approval_queue_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"offset", &list_approval_queue_request::offset},
+        ::ores::utility::codec::field{"limit", &list_approval_queue_request::limit},
+    };
+}
+
+/**
+ * @brief The members of list_approval_queue_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_approval_queue_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &list_approval_queue_response::result},
+        ::ores::utility::codec::field{"requests", &list_approval_queue_response::requests},
+        ::ores::utility::codec::field{"total", &list_approval_queue_response::total},
+        ::ores::utility::codec::field{"answered", &list_approval_queue_response::answered},
+    };
+}
+
+/**
+ * @brief The members of list_my_approval_requests_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_my_approval_requests_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"offset", &list_my_approval_requests_request::offset},
+        ::ores::utility::codec::field{"limit", &list_my_approval_requests_request::limit},
+    };
+}
+
+/**
+ * @brief The members of list_my_approval_requests_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_my_approval_requests_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &list_my_approval_requests_response::result},
+        ::ores::utility::codec::field{"requests", &list_my_approval_requests_response::requests},
+        ::ores::utility::codec::field{"total", &list_my_approval_requests_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_approval_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_approval_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &get_approval_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of get_approval_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_approval_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_approval_response::result},
+        ::ores::utility::codec::field{"request", &get_approval_response::request},
+    };
+}
+
+/**
+ * @brief The members of expire_overdue_approvals_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const expire_overdue_approvals_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of expire_overdue_approvals_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const expire_overdue_approvals_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &expire_overdue_approvals_response::result},
+        ::ores::utility::codec::field{"expired", &expire_overdue_approvals_response::expired},
+    };
+}
+
+/**
+ * @brief The members of remind_expiring_approvals_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const remind_expiring_approvals_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of remind_expiring_approvals_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const remind_expiring_approvals_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &remind_expiring_approvals_response::result},
+        ::ores::utility::codec::field{"reminded", &remind_expiring_approvals_response::reminded},
+    };
+}
+
+/**
+ * @brief The members of retry_stalled_applies_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const retry_stalled_applies_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of retry_stalled_applies_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const retry_stalled_applies_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &retry_stalled_applies_response::result},
+        ::ores::utility::codec::field{"resumed", &retry_stalled_applies_response::resumed},
+        ::ores::utility::codec::field{"gave_up", &retry_stalled_applies_response::gave_up},
+    };
+}
+
+/**
+ * @brief The members of approval_request_field, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const approval_request_field&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"name", &approval_request_field::name},
+        ::ores::utility::codec::field{"value", &approval_request_field::value},
+    };
+}
+
+/**
+ * @brief The members of approval_request_version, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const approval_request_version&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"version", &approval_request_version::version},
+        ::ores::utility::codec::field{"modified_by", &approval_request_version::modified_by},
+        ::ores::utility::codec::field{"performed_by", &approval_request_version::performed_by},
+        ::ores::utility::codec::field{"recorded_at", &approval_request_version::recorded_at},
+        ::ores::utility::codec::field{"change_reason_code",
+                                      &approval_request_version::change_reason_code},
+        ::ores::utility::codec::field{"change_commentary",
+                                      &approval_request_version::change_commentary},
+        ::ores::utility::codec::field{"fields", &approval_request_version::fields},
+    };
+}
+
+/**
+ * @brief The members of get_approval_history_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_approval_history_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &get_approval_history_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of get_approval_history_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_approval_history_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_approval_history_response::result},
+        ::ores::utility::codec::field{"versions", &get_approval_history_response::versions},
+    };
+}
+
+/**
+ * @brief The members of approval_part_progress, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const approval_part_progress&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"code", &approval_part_progress::code},
+        ::ores::utility::codec::field{"name", &approval_part_progress::name},
+        ::ores::utility::codec::field{"answer_order", &approval_part_progress::answer_order},
+        ::ores::utility::codec::field{"state", &approval_part_progress::state},
+        ::ores::utility::codec::field{"decided_by", &approval_part_progress::decided_by},
+        ::ores::utility::codec::field{"decided_at", &approval_part_progress::decided_at},
+        ::ores::utility::codec::field{"comment", &approval_part_progress::comment},
+    };
+}
+
+/**
+ * @brief The members of get_approval_parts_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_approval_parts_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &get_approval_parts_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of get_approval_parts_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_approval_parts_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_approval_parts_response::result},
+        ::ores::utility::codec::field{"parts", &get_approval_parts_response::parts},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::raise_approval_request_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::raise_approval_request_request& v);
+    static ores::inbox::messaging::raise_approval_request_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::raise_approval_request_request& v);
+    static ores::inbox::messaging::raise_approval_request_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::raise_approval_request_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::raise_approval_request_response& v);
+    static ores::inbox::messaging::raise_approval_request_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::raise_approval_request_response& v);
+    static ores::inbox::messaging::raise_approval_request_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::withdraw_approval_request_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::withdraw_approval_request_request& v);
+    static ores::inbox::messaging::withdraw_approval_request_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::withdraw_approval_request_request& v);
+    static ores::inbox::messaging::withdraw_approval_request_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::withdraw_approval_request_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::withdraw_approval_request_response& v);
+    static ores::inbox::messaging::withdraw_approval_request_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::withdraw_approval_request_response& v);
+    static ores::inbox::messaging::withdraw_approval_request_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::decide_approval_request_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::decide_approval_request_request& v);
+    static ores::inbox::messaging::decide_approval_request_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::decide_approval_request_request& v);
+    static ores::inbox::messaging::decide_approval_request_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::decide_approval_request_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::decide_approval_request_response& v);
+    static ores::inbox::messaging::decide_approval_request_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::decide_approval_request_response& v);
+    static ores::inbox::messaging::decide_approval_request_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::list_approval_queue_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::list_approval_queue_request& v);
+    static ores::inbox::messaging::list_approval_queue_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::list_approval_queue_request& v);
+    static ores::inbox::messaging::list_approval_queue_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::list_approval_queue_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::list_approval_queue_response& v);
+    static ores::inbox::messaging::list_approval_queue_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::list_approval_queue_response& v);
+    static ores::inbox::messaging::list_approval_queue_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_my_approval_requests_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_my_approval_requests_request& v);
+    static ores::inbox::messaging::list_my_approval_requests_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_my_approval_requests_request& v);
+    static ores::inbox::messaging::list_my_approval_requests_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_my_approval_requests_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_my_approval_requests_response& v);
+    static ores::inbox::messaging::list_my_approval_requests_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_my_approval_requests_response& v);
+    static ores::inbox::messaging::list_my_approval_requests_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approval_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approval_request& v);
+    static ores::inbox::messaging::get_approval_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::get_approval_request& v);
+    static ores::inbox::messaging::get_approval_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approval_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approval_response& v);
+    static ores::inbox::messaging::get_approval_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::get_approval_response& v);
+    static ores::inbox::messaging::get_approval_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::expire_overdue_approvals_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::expire_overdue_approvals_request& v);
+    static ores::inbox::messaging::expire_overdue_approvals_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::expire_overdue_approvals_request& v);
+    static ores::inbox::messaging::expire_overdue_approvals_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::expire_overdue_approvals_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::expire_overdue_approvals_response& v);
+    static ores::inbox::messaging::expire_overdue_approvals_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::expire_overdue_approvals_response& v);
+    static ores::inbox::messaging::expire_overdue_approvals_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::remind_expiring_approvals_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::remind_expiring_approvals_request& v);
+    static ores::inbox::messaging::remind_expiring_approvals_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::remind_expiring_approvals_request& v);
+    static ores::inbox::messaging::remind_expiring_approvals_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::remind_expiring_approvals_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::remind_expiring_approvals_response& v);
+    static ores::inbox::messaging::remind_expiring_approvals_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::remind_expiring_approvals_response& v);
+    static ores::inbox::messaging::remind_expiring_approvals_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::retry_stalled_applies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::retry_stalled_applies_request& v);
+    static ores::inbox::messaging::retry_stalled_applies_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::retry_stalled_applies_request& v);
+    static ores::inbox::messaging::retry_stalled_applies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::retry_stalled_applies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::retry_stalled_applies_response& v);
+    static ores::inbox::messaging::retry_stalled_applies_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::retry_stalled_applies_response& v);
+    static ores::inbox::messaging::retry_stalled_applies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::approval_request_field> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::approval_request_field& v);
+    static ores::inbox::messaging::approval_request_field read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::approval_request_field& v);
+    static ores::inbox::messaging::approval_request_field
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::approval_request_version> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::approval_request_version& v);
+    static ores::inbox::messaging::approval_request_version read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::approval_request_version& v);
+    static ores::inbox::messaging::approval_request_version
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approval_history_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approval_history_request& v);
+    static ores::inbox::messaging::get_approval_history_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::get_approval_history_request& v);
+    static ores::inbox::messaging::get_approval_history_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approval_history_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approval_history_response& v);
+    static ores::inbox::messaging::get_approval_history_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_approval_history_response& v);
+    static ores::inbox::messaging::get_approval_history_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::approval_part_progress> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::approval_part_progress& v);
+    static ores::inbox::messaging::approval_part_progress read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::approval_part_progress& v);
+    static ores::inbox::messaging::approval_part_progress
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approval_parts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approval_parts_request& v);
+    static ores::inbox::messaging::get_approval_parts_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::get_approval_parts_request& v);
+    static ores::inbox::messaging::get_approval_parts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approval_parts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approval_parts_response& v);
+    static ores::inbox::messaging::get_approval_parts_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::get_approval_parts_response& v);
+    static ores::inbox::messaging::get_approval_parts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

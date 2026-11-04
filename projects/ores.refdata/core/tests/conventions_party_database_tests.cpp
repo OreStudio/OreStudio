@@ -27,11 +27,13 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/two_parties.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <string>
 
+using namespace ores::logging;
 using ores::testing::rows_of;
 
 namespace {

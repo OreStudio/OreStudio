@@ -46,7 +46,9 @@ returns table (
 declare
     v_root_party_id uuid;
     v_inserted bigint := 0;
+    v_updated bigint := 0;
     v_bound bigint := 0;
+    v_rebound bigint := 0;
     v_staged_bindings bigint := 0;
 begin
     perform ores_utility_allow_version_replace_fn();
@@ -66,8 +68,11 @@ begin
         return;
     end if;
 
-    -- Idempotency: skip if this party already has report definitions for this dataset
-    if exists (
+    -- Idempotency: skip if this party already has report definitions, so a
+    -- provision that runs again through a migrated dataset adds nothing. The
+    -- upsert mode is the exception, because it exists to carry a catalogue's
+    -- later statement of a definition onto the rows an earlier publish made.
+    if p_mode <> 'upsert' and exists (
         select 1 from ores_reporting_report_definitions_tbl
         where tenant_id = p_target_tenant_id
           and party_id = v_root_party_id
@@ -84,11 +89,14 @@ begin
     --   party_id:    optional explicit root party override
     -- A definition published from a DQ dataset executes every phase: the
     -- dataset describes what to report, not how much of the pipeline to run.
+    -- The definition carries the cut selection the catalogue states, and states
+    -- none where the catalogue states none.
     insert into ores_reporting_report_definitions_tbl (
         tenant_id, id, version, party_id, name,
         description, report_type, schedule_expression, concurrency_policy,
         fsm_state_id, scheduler_job_id,
         pre_processing, prepared_input_key, post_processing, regulatory_book_type,
+        cut_kind_code,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
@@ -97,6 +105,7 @@ begin
         coalesce(a.description, ''), a.report_type, a.schedule_expression, a.concurrency_policy,
         null, null,
         'execute', null, 'execute', a.regulatory_book_type,
+        a.cut_kind_code,
         coalesce(ores_iam_current_service_fn(), current_user), current_user,
         'system.external_data_import', 'Published from DQ dataset'
     from ores_dq_report_definitions_artefact_tbl a
@@ -106,9 +115,64 @@ begin
       and (p_params->>'jurisdiction' is null
            or a.applicable_jurisdiction is null
            or a.applicable_jurisdiction = p_params->>'jurisdiction')
+      and not exists (
+          select 1 from ores_reporting_report_definitions_tbl d
+          where d.tenant_id = p_target_tenant_id
+            and d.party_id = v_root_party_id
+            and d.name = a.name
+            and d.valid_to = ores_utility_infinity_timestamp_fn())
     order by a.display_order, a.name;
 
     get diagnostics v_inserted = row_count;
+
+    -- The catalogue is a statement of what each report is, and a later
+    -- catalogue moves that statement: a report that now selects a kind of cut,
+    -- a schedule that moved, a text that was rewritten. The upsert writes the
+    -- statement onto the definition the party already holds, as a new version
+    -- of it, and leaves the identity, the party and the pipeline phases the
+    -- party chose alone. A report the party does not hold is the insert above,
+    -- so the two paths never both make a definition of one name.
+    if p_mode = 'upsert' then
+        insert into ores_reporting_report_definitions_tbl (
+            tenant_id, id, version, party_id, name,
+            description, report_type, schedule_expression, concurrency_policy,
+            fsm_state_id, scheduler_job_id,
+            pre_processing, prepared_input_key, post_processing, is_official,
+            regulatory_book_type, cut_kind_code, cut_id,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select
+            p_target_tenant_id,
+            d.id, d.version, v_root_party_id, d.name,
+            coalesce(a.description, d.description), a.report_type, a.schedule_expression,
+            a.concurrency_policy,
+            d.fsm_state_id, d.scheduler_job_id,
+            d.pre_processing, d.prepared_input_key, d.post_processing, d.is_official,
+            a.regulatory_book_type, a.cut_kind_code, d.cut_id,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Republished from DQ dataset'
+        from ores_dq_report_definitions_artefact_tbl a
+        join ores_reporting_report_definitions_tbl d
+          on d.tenant_id = p_target_tenant_id
+         and d.party_id = v_root_party_id
+         and d.name = a.name
+         and d.valid_to = ores_utility_infinity_timestamp_fn()
+        where a.dataset_id = p_dataset_id
+          and a.tier = any(string_to_array(
+              coalesce(nullif(p_params->>'tiers', ''), 'common,regulatory,strategic,trading'), ','))
+          and (p_params->>'jurisdiction' is null
+               or a.applicable_jurisdiction is null
+               or a.applicable_jurisdiction = p_params->>'jurisdiction')
+          and (d.cut_kind_code is distinct from a.cut_kind_code
+               or d.schedule_expression is distinct from a.schedule_expression
+               or d.concurrency_policy is distinct from a.concurrency_policy
+               or d.regulatory_book_type is distinct from a.regulatory_book_type
+               or d.report_type is distinct from a.report_type
+               or d.description is distinct from coalesce(a.description, d.description))
+        order by a.display_order, a.name;
+
+        get diagnostics v_updated = row_count;
+    end if;
 
     -- The configuration documents each definition binds. A dataset that stages
     -- bindings names the definition and the configuration, and both resolve for
@@ -153,9 +217,54 @@ begin
       on c.tenant_id = p_target_tenant_id and c.party_id = v_root_party_id
      and c.configuration_type_code = b.configuration_type_code
      and c.name = b.configuration_name and c.valid_to = ores_utility_infinity_timestamp_fn()
-    where b.dataset_id = p_dataset_id;
+    where b.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_reporting_report_configurations_tbl r
+        where r.tenant_id = p_target_tenant_id
+          and r.party_id = v_root_party_id
+          and r.report_definition_id = d.id
+          and r.configuration_type_code = b.configuration_type_code
+          and r.valid_to = ores_utility_infinity_timestamp_fn());
 
     get diagnostics v_bound = row_count;
+
+    -- A catalogue also moves which document a definition binds: a report that
+    -- gains a run settings row of its own, a report that moves to another pricing
+    -- engine. The insert above never touches a binding the party already holds, so
+    -- a moved binding needs the path below, which writes the staged binding over
+    -- the row in place as a new version of it. The identity of the binding stays, so
+    -- anything that named it still does.
+    if p_mode = 'upsert' then
+        perform ores_utility_allow_version_replace_fn();
+
+        insert into ores_reporting_report_configurations_tbl (
+            tenant_id, id, version, party_id, report_definition_id, configuration_type_code,
+            configuration_id, modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select
+            p_target_tenant_id, r.id, r.version, v_root_party_id, d.id,
+            b.configuration_type_code, c.id,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Rebound from DQ dataset'
+        from ores_dq_report_configurations_artefact_tbl b
+        join ores_reporting_report_definitions_tbl d
+          on d.tenant_id = p_target_tenant_id and d.party_id = v_root_party_id
+         and d.name = b.report_name and d.valid_to = ores_utility_infinity_timestamp_fn()
+        join ores_reporting_configurations_tbl c
+          on c.tenant_id = p_target_tenant_id and c.party_id = v_root_party_id
+         and c.configuration_type_code = b.configuration_type_code
+         and c.name = b.configuration_name and c.valid_to = ores_utility_infinity_timestamp_fn()
+        join ores_reporting_report_configurations_tbl r
+          on r.tenant_id = p_target_tenant_id
+         and r.party_id = v_root_party_id
+         and r.report_definition_id = d.id
+         and r.configuration_type_code = b.configuration_type_code
+         and r.valid_to = ores_utility_infinity_timestamp_fn()
+        where b.dataset_id = p_dataset_id
+          and r.configuration_id is distinct from c.id;
+
+        get diagnostics v_rebound = row_count;
+    end if;
 
     select count(*) into v_staged_bindings
     from ores_dq_report_configurations_artefact_tbl
@@ -165,10 +274,14 @@ begin
     return query
     select 'inserted'::text, v_inserted
     where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
     union all select 'bound'::text, v_bound
     where v_bound > 0
-    union all select 'skipped'::text, v_staged_bindings - v_bound
-    where v_staged_bindings - v_bound > 0;
+    union all select 'rebound'::text, v_rebound
+    where v_rebound > 0
+    union all select 'skipped'::text, v_staged_bindings - v_bound - v_rebound
+    where v_staged_bindings - v_bound - v_rebound > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
@@ -307,13 +420,59 @@ begin
         record_count := v_scoped;
         return next;
     end if;
+
+    -- A publish writes a configuration once, and a later dataset states what the
+    -- configuration became: a report that moved to the live market data, a base
+    -- currency that follows the entity, a scope or a text that changed. The
+    -- upsert writes that statement as a new version of the configuration the
+    -- party holds, so a run reaches the settings the dataset states without the
+    -- database being built again. The identity and the analytics are the
+    -- document publisher's, and this pass reads them rather than copying them.
+    if p_mode = 'upsert' then
+        insert into ores_reporting_risk_report_configs_tbl (
+            tenant_id, id, version, party_id, name, description, configuration_id,
+            base_currency, market_data_type, market_data_date,
+            input_path, input_path_market, input_path_portfolio, output_path, log_file,
+            portfolio_recurse_into_sub_directories,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select
+            p_target_tenant_id, c.id, c.version, v_party_id, c.name,
+            coalesce(a.description, c.description), c.configuration_id,
+            coalesce(a.base_currency, c.base_currency), a.market_data_type, a.market_data_date,
+            c.input_path, c.input_path_market, c.input_path_portfolio, c.output_path, c.log_file,
+            c.portfolio_recurse_into_sub_directories,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Republished from DQ dataset'
+        from ores_dq_risk_report_configs_artefact_tbl a
+        join ores_reporting_risk_report_configs_tbl c
+          on c.tenant_id = p_target_tenant_id
+         and c.party_id = v_party_id
+         and c.id = ores_dq_party_uuid_fn(v_party_id, a.id)
+         and c.valid_to = ores_utility_infinity_timestamp_fn()
+        where a.dataset_id = p_dataset_id
+          and (c.market_data_type is distinct from a.market_data_type
+               or c.market_data_date is distinct from a.market_data_date
+               or (a.base_currency is not null and c.base_currency is distinct from a.base_currency)
+               or (a.description is not null and c.description is distinct from a.description));
+
+        get diagnostics v_scoped = row_count;
+        if v_scoped > 0 then
+            action := 'updated';
+            record_count := v_scoped;
+            return next;
+        end if;
+    end if;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 comment on function ores_reporting_publish_risk_report_configs_from_dq_fn(uuid, uuid, text, jsonb) is
 'Publishes the risk report configurations a dataset stages for the target party,
  each registered as a reporting configuration, with the portfolio scope a staged
- row names. A publish only inserts, so the mode has no effect.';
+ row names. The upsert mode writes a staged statement of the market data a
+ configuration reads onto the row the party already holds, as a new version of
+ it, because a dataset states that statement for one database and a later
+ dataset moves it.';
 
 -- Engine Settings: reporting.v1.ops.publish_engine_settings_from_dq
 --

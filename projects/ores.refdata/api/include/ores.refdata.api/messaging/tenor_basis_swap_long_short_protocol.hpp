@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct tenor_basis_swap_long_short_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const tenor_basis_swap_long_short_key&,
+                           const tenor_basis_swap_long_short_key&) = default;
 };
 
 struct tenor_basis_swap_long_short_write {
@@ -55,27 +58,42 @@ struct tenor_basis_swap_long_short_write {
     std::optional<bool> spread_on_short;
     std::optional<bool> include_spread;
     std::optional<std::string> sub_periods_coupon_type;
+
+    friend bool operator==(const tenor_basis_swap_long_short_write&,
+                           const tenor_basis_swap_long_short_write&) = default;
 };
 
 struct tenor_basis_swap_long_short_change {
     tenor_basis_swap_long_short_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tenor_basis_swap_long_short_change&,
+                           const tenor_basis_swap_long_short_change&) = default;
 };
 
 struct tenor_basis_swap_long_short_removal {
     tenor_basis_swap_long_short_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tenor_basis_swap_long_short_removal&,
+                           const tenor_basis_swap_long_short_removal&) = default;
 };
 
 struct tenor_basis_swap_long_short_lookup {
     tenor_basis_swap_long_short_key key;
     std::optional<ores::refdata::domain::tenor_basis_swap_long_short> tenor_basis_swap_long_short;
+
+    friend bool operator==(const tenor_basis_swap_long_short_lookup&,
+                           const tenor_basis_swap_long_short_lookup&) = default;
 };
 
 struct tenor_basis_swap_long_shorts_filter {
     std::optional<boost::uuids::uuid> convention_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> convention_id_one_of;
+
+    friend bool operator==(const tenor_basis_swap_long_shorts_filter&,
+                           const tenor_basis_swap_long_shorts_filter&) = default;
 };
 
 struct tenor_basis_swap_long_short_event {
@@ -85,17 +103,26 @@ struct tenor_basis_swap_long_short_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tenor_basis_swap_long_short_event&,
+                           const tenor_basis_swap_long_short_event&) = default;
 };
 
 struct tenor_basis_swap_long_short_version_key {
     tenor_basis_swap_long_short_key tenor_basis_swap_long_short;
     std::uint32_t version;
+
+    friend bool operator==(const tenor_basis_swap_long_short_version_key&,
+                           const tenor_basis_swap_long_short_version_key&) = default;
 };
 
 struct tenor_basis_swap_long_short_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const tenor_basis_swap_long_short_versions_filter&,
+                           const tenor_basis_swap_long_short_versions_filter&) = default;
 };
 
 struct list_tenor_basis_swap_long_shorts_request {
@@ -113,12 +140,18 @@ struct list_tenor_basis_swap_long_shorts_request {
     ores::utility::domain::order order;
     std::optional<tenor_basis_swap_long_shorts_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_tenor_basis_swap_long_shorts_request&,
+                           const list_tenor_basis_swap_long_shorts_request&) = default;
 };
 
 struct list_tenor_basis_swap_long_shorts_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_long_short> tenor_basis_swap_long_shorts;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_basis_swap_long_shorts_response&,
+                           const list_tenor_basis_swap_long_shorts_response&) = default;
 };
 
 struct get_tenor_basis_swap_long_short_request {
@@ -132,11 +165,17 @@ struct get_tenor_basis_swap_long_short_request {
      */
     static constexpr bool requires_session = true;
     tenor_basis_swap_long_short_key key;
+
+    friend bool operator==(const get_tenor_basis_swap_long_short_request&,
+                           const get_tenor_basis_swap_long_short_request&) = default;
 };
 
 struct get_tenor_basis_swap_long_short_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_basis_swap_long_short> tenor_basis_swap_long_short;
+
+    friend bool operator==(const get_tenor_basis_swap_long_short_response&,
+                           const get_tenor_basis_swap_long_short_response&) = default;
 };
 
 struct get_many_tenor_basis_swap_long_shorts_request {
@@ -151,11 +190,17 @@ struct get_many_tenor_basis_swap_long_shorts_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_swap_long_short_key> keys;
+
+    friend bool operator==(const get_many_tenor_basis_swap_long_shorts_request&,
+                           const get_many_tenor_basis_swap_long_shorts_request&) = default;
 };
 
 struct get_many_tenor_basis_swap_long_shorts_response {
     ores::utility::domain::result result;
     std::vector<tenor_basis_swap_long_short_lookup> entries;
+
+    friend bool operator==(const get_many_tenor_basis_swap_long_shorts_response&,
+                           const get_many_tenor_basis_swap_long_shorts_response&) = default;
 };
 
 struct put_tenor_basis_swap_long_short_request {
@@ -170,11 +215,17 @@ struct put_tenor_basis_swap_long_short_request {
     static constexpr bool requires_session = true;
     tenor_basis_swap_long_short_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tenor_basis_swap_long_short_request&,
+                           const put_tenor_basis_swap_long_short_request&) = default;
 };
 
 struct put_tenor_basis_swap_long_short_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_basis_swap_long_short> tenor_basis_swap_long_short;
+
+    friend bool operator==(const put_tenor_basis_swap_long_short_response&,
+                           const put_tenor_basis_swap_long_short_response&) = default;
 };
 
 struct put_many_tenor_basis_swap_long_shorts_request {
@@ -190,11 +241,17 @@ struct put_many_tenor_basis_swap_long_shorts_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_swap_long_short_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tenor_basis_swap_long_shorts_request&,
+                           const put_many_tenor_basis_swap_long_shorts_request&) = default;
 };
 
 struct put_many_tenor_basis_swap_long_shorts_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_long_short> tenor_basis_swap_long_shorts;
+
+    friend bool operator==(const put_many_tenor_basis_swap_long_shorts_response&,
+                           const put_many_tenor_basis_swap_long_shorts_response&) = default;
 };
 
 struct delete_tenor_basis_swap_long_short_request {
@@ -210,10 +267,16 @@ struct delete_tenor_basis_swap_long_short_request {
     static constexpr bool requires_session = true;
     tenor_basis_swap_long_short_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tenor_basis_swap_long_short_request&,
+                           const delete_tenor_basis_swap_long_short_request&) = default;
 };
 
 struct delete_tenor_basis_swap_long_short_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tenor_basis_swap_long_short_response&,
+                           const delete_tenor_basis_swap_long_short_response&) = default;
 };
 
 struct delete_many_tenor_basis_swap_long_shorts_request {
@@ -229,10 +292,16 @@ struct delete_many_tenor_basis_swap_long_shorts_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_basis_swap_long_short_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tenor_basis_swap_long_shorts_request&,
+                           const delete_many_tenor_basis_swap_long_shorts_request&) = default;
 };
 
 struct delete_many_tenor_basis_swap_long_shorts_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tenor_basis_swap_long_shorts_response&,
+                           const delete_many_tenor_basis_swap_long_shorts_response&) = default;
 };
 
 struct list_by_convention_id_tenor_basis_swap_long_shorts_request {
@@ -252,12 +321,20 @@ struct list_by_convention_id_tenor_basis_swap_long_shorts_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_basis_swap_long_shorts_filter> filter;
+
+    friend bool
+    operator==(const list_by_convention_id_tenor_basis_swap_long_shorts_request&,
+               const list_by_convention_id_tenor_basis_swap_long_shorts_request&) = default;
 };
 
 struct list_by_convention_id_tenor_basis_swap_long_shorts_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_long_short> tenor_basis_swap_long_shorts;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_convention_id_tenor_basis_swap_long_shorts_response&,
+               const list_by_convention_id_tenor_basis_swap_long_shorts_response&) = default;
 };
 
 struct list_tenor_basis_swap_long_short_versions_request {
@@ -276,12 +353,18 @@ struct list_tenor_basis_swap_long_short_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_basis_swap_long_short_versions_filter> filter;
+
+    friend bool operator==(const list_tenor_basis_swap_long_short_versions_request&,
+                           const list_tenor_basis_swap_long_short_versions_request&) = default;
 };
 
 struct list_tenor_basis_swap_long_short_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_long_short> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_basis_swap_long_short_versions_response&,
+                           const list_tenor_basis_swap_long_short_versions_response&) = default;
 };
 
 struct get_tenor_basis_swap_long_short_version_request {
@@ -296,11 +379,17 @@ struct get_tenor_basis_swap_long_short_version_request {
      */
     static constexpr bool requires_session = true;
     tenor_basis_swap_long_short_version_key key;
+
+    friend bool operator==(const get_tenor_basis_swap_long_short_version_request&,
+                           const get_tenor_basis_swap_long_short_version_request&) = default;
 };
 
 struct get_tenor_basis_swap_long_short_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_basis_swap_long_short> version;
+
+    friend bool operator==(const get_tenor_basis_swap_long_short_version_response&,
+                           const get_tenor_basis_swap_long_short_version_response&) = default;
 };
 
 /**
@@ -313,11 +402,11 @@ struct get_tenor_basis_swap_long_short_version_response {
  */
 namespace tenor_basis_swap_long_short_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.tenor_basis_swap_long_shorts_events.created";
+    "refdata.v1.events.tenor_basis_swap_long_shorts.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.tenor_basis_swap_long_shorts_events.updated";
+    "refdata.v1.events.tenor_basis_swap_long_shorts.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.tenor_basis_swap_long_shorts_events.deleted";
+    "refdata.v1.events.tenor_basis_swap_long_shorts.deleted";
 }
 /**
  * @brief The members of tenor_basis_swap_long_short_key, named as the wire names them and in the

@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec_wire_bytes_tests.cpp"
     "configuration_type_seed_tests.cpp"
     "conventions_package_tests.cpp"
     "hierarchy_hierarchy_builder_tests.cpp"
@@ -32,12 +33,14 @@ set(files
     "party_scope_tests.cpp"
     "planner_import_planner_tests.cpp"
     "pricing_engines_import_tests.cpp"
+    "results_calibration_reader_tests.cpp"
     "results_cashflow_reader_tests.cpp"
     "results_corpus_gate_tests.cpp"
+    "results_market_input_reader_tests.cpp"
     "results_metric_reader_tests.cpp"
     "results_output_catalogue_tests.cpp"
     "results_output_manifest_tests.cpp"
-    "results_payload_index_tests.cpp"
+    "results_text_value_reader_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
     "xml_binding_tests.cpp"
     "xml_calendaradjustment_roundtrip_tests.cpp"

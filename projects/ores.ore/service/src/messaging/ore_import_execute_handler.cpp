@@ -116,8 +116,8 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.api/messaging/trade_portfolio_protocol.hpp"
 #include "ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/decimal/decimal.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -125,7 +125,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <format>
-#include <rfl/json.hpp>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -1960,7 +1959,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         extract_workflow_header(msg, ores::workflow::messaging::instance_id_header);
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<ore_import_execute_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<ore_import_execute_request>(sv);
     if (!parsed) {
         BOOST_LOG_SEV(lg(), error)
             << "ore.import.execute: failed to decode request | step=" << step_id;
@@ -2069,11 +2068,14 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // -------------------------------------------------------------------------
     ores::ore::planner::import_choices choices;
     if (!req.import_choices_json.empty()) {
-        auto parsed_choices =
-            rfl::json::read<ores::ore::planner::import_choices>(req.import_choices_json);
-        if (!parsed_choices) {
-            const auto failure = std::format("Failed to parse import_choices_json: {}",
-                                             parsed_choices.error().what());
+        std::string failure;
+        try {
+            choices = ores::utility::codec::json::read<ores::ore::planner::import_choices>(
+                req.import_choices_json);
+        } catch (const std::exception& e) {
+            failure = std::format("Failed to parse import_choices_json: {}", e.what());
+        }
+        if (!failure.empty()) {
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.execute step 3 failed | corr=" << req.correlation_id
                 << " error=" << failure;
@@ -2086,7 +2088,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             ack.accept();
             return;
         }
-        choices = std::move(*parsed_choices);
     }
 
     const bool names_official_target = choices.official.value_or(false) ||
@@ -3693,13 +3694,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             step_id,
             inst_id,
             wf_outcome::failed,
-            rfl::json::write(result),
+            ores::utility::codec::json::write(result),
             std::format("All {} trade save(s) failed.", result.item_errors.size()),
             step_log);
         ack.accept();
     } else {
-        publish_step_completion(
-            nats_, step_id, inst_id, outcome, rfl::json::write(result), "", step_log);
+        publish_step_completion(nats_,
+                                step_id,
+                                inst_id,
+                                outcome,
+                                ores::utility::codec::json::write(result),
+                                "",
+                                step_log);
         ack.accept();
     }
 }
@@ -3714,7 +3720,7 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
         extract_workflow_header(msg, ores::workflow::messaging::instance_id_header);
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<ore_import_rollback_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<ore_import_rollback_request>(sv);
     if (!parsed) {
         BOOST_LOG_SEV(lg(), error)
             << "ore.import.rollback: failed to decode request | step=" << step_id;

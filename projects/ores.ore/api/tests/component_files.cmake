@@ -20,5 +20,10 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "currency_config_protocol_codec_roundtrip_tests.cpp"
     "main.cpp"
+    "ore_document_protocol_codec_roundtrip_tests.cpp"
+    "ore_import_protocol_codec_roundtrip_tests.cpp"
+    "pricing_engines_protocol_codec_roundtrip_tests.cpp"
+    "run_configuration_protocol_codec_roundtrip_tests.cpp"
 )

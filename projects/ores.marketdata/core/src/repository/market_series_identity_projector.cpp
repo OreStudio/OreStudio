@@ -79,6 +79,9 @@ void assign(domain::market_series_identity& row, field f, const std::string& tex
         case field::curve_id:
             row.curve_id = text;
             break;
+        case field::surface_id:
+            row.surface_id = text;
+            break;
         case field::day_counter:
             row.day_counter = text;
             break;

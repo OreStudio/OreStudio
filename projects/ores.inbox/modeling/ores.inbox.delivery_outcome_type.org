@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: DE939606-47FE-458E-B009-EC34DE815DBA
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.delivery_outcome_type
 #+description: Codegen entity model for the inbox delivery_outcome_type table: the closed set of outcome codes a notification delivery carries.

@@ -43,33 +43,51 @@ namespace ores::trading::messaging {
 
 struct trade_authorisation_request_key {
     boost::uuids::uuid request_id;
+
+    friend bool operator==(const trade_authorisation_request_key&,
+                           const trade_authorisation_request_key&) = default;
 };
 
 struct trade_authorisation_request_write {
     boost::uuids::uuid request_id;
     boost::uuids::uuid trade_id;
     int trade_version;
+
+    friend bool operator==(const trade_authorisation_request_write&,
+                           const trade_authorisation_request_write&) = default;
 };
 
 struct trade_authorisation_request_change {
     trade_authorisation_request_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const trade_authorisation_request_change&,
+                           const trade_authorisation_request_change&) = default;
 };
 
 struct trade_authorisation_request_removal {
     trade_authorisation_request_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const trade_authorisation_request_removal&,
+                           const trade_authorisation_request_removal&) = default;
 };
 
 struct trade_authorisation_request_lookup {
     trade_authorisation_request_key key;
     std::optional<ores::trading::domain::trade_authorisation_request> trade_authorisation_request;
+
+    friend bool operator==(const trade_authorisation_request_lookup&,
+                           const trade_authorisation_request_lookup&) = default;
 };
 
 struct trade_authorisation_requests_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const trade_authorisation_requests_filter&,
+                           const trade_authorisation_requests_filter&) = default;
 };
 
 struct trade_authorisation_request_event {
@@ -79,17 +97,26 @@ struct trade_authorisation_request_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const trade_authorisation_request_event&,
+                           const trade_authorisation_request_event&) = default;
 };
 
 struct trade_authorisation_request_version_key {
     trade_authorisation_request_key trade_authorisation_request;
     std::uint32_t version;
+
+    friend bool operator==(const trade_authorisation_request_version_key&,
+                           const trade_authorisation_request_version_key&) = default;
 };
 
 struct trade_authorisation_request_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const trade_authorisation_request_versions_filter&,
+                           const trade_authorisation_request_versions_filter&) = default;
 };
 
 struct list_trade_authorisation_requests_request {
@@ -107,12 +134,18 @@ struct list_trade_authorisation_requests_request {
     ores::utility::domain::order order;
     std::optional<trade_authorisation_requests_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_trade_authorisation_requests_request&,
+                           const list_trade_authorisation_requests_request&) = default;
 };
 
 struct list_trade_authorisation_requests_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_authorisation_request> trade_authorisation_requests;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_authorisation_requests_response&,
+                           const list_trade_authorisation_requests_response&) = default;
 };
 
 struct get_trade_authorisation_request_request {
@@ -126,11 +159,17 @@ struct get_trade_authorisation_request_request {
      */
     static constexpr bool requires_session = true;
     trade_authorisation_request_key key;
+
+    friend bool operator==(const get_trade_authorisation_request_request&,
+                           const get_trade_authorisation_request_request&) = default;
 };
 
 struct get_trade_authorisation_request_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_authorisation_request> trade_authorisation_request;
+
+    friend bool operator==(const get_trade_authorisation_request_response&,
+                           const get_trade_authorisation_request_response&) = default;
 };
 
 struct get_many_trade_authorisation_requests_request {
@@ -145,11 +184,17 @@ struct get_many_trade_authorisation_requests_request {
      */
     static constexpr bool requires_session = true;
     std::vector<trade_authorisation_request_key> keys;
+
+    friend bool operator==(const get_many_trade_authorisation_requests_request&,
+                           const get_many_trade_authorisation_requests_request&) = default;
 };
 
 struct get_many_trade_authorisation_requests_response {
     ores::utility::domain::result result;
     std::vector<trade_authorisation_request_lookup> entries;
+
+    friend bool operator==(const get_many_trade_authorisation_requests_response&,
+                           const get_many_trade_authorisation_requests_response&) = default;
 };
 
 struct put_trade_authorisation_request_request {
@@ -164,11 +209,17 @@ struct put_trade_authorisation_request_request {
     static constexpr bool requires_session = true;
     trade_authorisation_request_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_trade_authorisation_request_request&,
+                           const put_trade_authorisation_request_request&) = default;
 };
 
 struct put_trade_authorisation_request_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_authorisation_request> trade_authorisation_request;
+
+    friend bool operator==(const put_trade_authorisation_request_response&,
+                           const put_trade_authorisation_request_response&) = default;
 };
 
 struct put_many_trade_authorisation_requests_request {
@@ -184,11 +235,17 @@ struct put_many_trade_authorisation_requests_request {
     static constexpr bool requires_session = true;
     std::vector<trade_authorisation_request_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_trade_authorisation_requests_request&,
+                           const put_many_trade_authorisation_requests_request&) = default;
 };
 
 struct put_many_trade_authorisation_requests_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_authorisation_request> trade_authorisation_requests;
+
+    friend bool operator==(const put_many_trade_authorisation_requests_response&,
+                           const put_many_trade_authorisation_requests_response&) = default;
 };
 
 struct delete_trade_authorisation_request_request {
@@ -204,10 +261,16 @@ struct delete_trade_authorisation_request_request {
     static constexpr bool requires_session = true;
     trade_authorisation_request_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_trade_authorisation_request_request&,
+                           const delete_trade_authorisation_request_request&) = default;
 };
 
 struct delete_trade_authorisation_request_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_trade_authorisation_request_response&,
+                           const delete_trade_authorisation_request_response&) = default;
 };
 
 struct delete_many_trade_authorisation_requests_request {
@@ -223,10 +286,16 @@ struct delete_many_trade_authorisation_requests_request {
     static constexpr bool requires_session = true;
     std::vector<trade_authorisation_request_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_trade_authorisation_requests_request&,
+                           const delete_many_trade_authorisation_requests_request&) = default;
 };
 
 struct delete_many_trade_authorisation_requests_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_trade_authorisation_requests_response&,
+                           const delete_many_trade_authorisation_requests_response&) = default;
 };
 
 struct list_by_trade_id_trade_authorisation_requests_request {
@@ -246,12 +315,18 @@ struct list_by_trade_id_trade_authorisation_requests_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<trade_authorisation_requests_filter> filter;
+
+    friend bool operator==(const list_by_trade_id_trade_authorisation_requests_request&,
+                           const list_by_trade_id_trade_authorisation_requests_request&) = default;
 };
 
 struct list_by_trade_id_trade_authorisation_requests_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_authorisation_request> trade_authorisation_requests;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_trade_id_trade_authorisation_requests_response&,
+                           const list_by_trade_id_trade_authorisation_requests_response&) = default;
 };
 
 struct list_trade_authorisation_request_versions_request {
@@ -270,12 +345,18 @@ struct list_trade_authorisation_request_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<trade_authorisation_request_versions_filter> filter;
+
+    friend bool operator==(const list_trade_authorisation_request_versions_request&,
+                           const list_trade_authorisation_request_versions_request&) = default;
 };
 
 struct list_trade_authorisation_request_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_authorisation_request> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_authorisation_request_versions_response&,
+                           const list_trade_authorisation_request_versions_response&) = default;
 };
 
 struct get_trade_authorisation_request_version_request {
@@ -290,11 +371,17 @@ struct get_trade_authorisation_request_version_request {
      */
     static constexpr bool requires_session = true;
     trade_authorisation_request_version_key key;
+
+    friend bool operator==(const get_trade_authorisation_request_version_request&,
+                           const get_trade_authorisation_request_version_request&) = default;
 };
 
 struct get_trade_authorisation_request_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::trade_authorisation_request> version;
+
+    friend bool operator==(const get_trade_authorisation_request_version_response&,
+                           const get_trade_authorisation_request_version_response&) = default;
 };
 
 /**
@@ -307,11 +394,11 @@ struct get_trade_authorisation_request_version_response {
  */
 namespace trade_authorisation_request_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.trade_authorisation_requests_events.created";
+    "trading.v1.events.trade_authorisation_requests.created";
 inline constexpr std::string_view updated =
-    "trading.v1.trade_authorisation_requests_events.updated";
+    "trading.v1.events.trade_authorisation_requests.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.trade_authorisation_requests_events.deleted";
+    "trading.v1.events.trade_authorisation_requests.deleted";
 }
 /**
  * @brief The members of trade_authorisation_request_key, named as the wire names them and in the

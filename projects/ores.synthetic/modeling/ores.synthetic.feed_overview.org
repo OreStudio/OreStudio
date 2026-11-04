@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: C894AE85-AB9B-4FF4-A4DE-829F6F902C56
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.feed_overview
 #+description: Codegen operation model for reading a folder's children with the feed counts and the run state under each.

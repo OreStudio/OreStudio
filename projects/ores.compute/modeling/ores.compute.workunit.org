@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.workunit
 #+description: Codegen entity model for the compute =workunit= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

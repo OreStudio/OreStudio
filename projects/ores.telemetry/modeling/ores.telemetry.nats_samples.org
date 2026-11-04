@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 5B7269B0-E9F1-4985-A3A0-1B7AF9F727BE
 :END:
 #+title: ores.telemetry.nats_samples

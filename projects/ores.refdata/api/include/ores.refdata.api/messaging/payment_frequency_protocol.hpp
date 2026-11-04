@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct payment_frequency_key {
     std::string code;
+
+    friend bool operator==(const payment_frequency_key&, const payment_frequency_key&) = default;
 };
 
 struct payment_frequency_write {
@@ -52,25 +54,40 @@ struct payment_frequency_write {
     std::string period_unit;
     std::optional<int> period_multiplier;
     int display_order;
+
+    friend bool operator==(const payment_frequency_write&,
+                           const payment_frequency_write&) = default;
 };
 
 struct payment_frequency_change {
     payment_frequency_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const payment_frequency_change&,
+                           const payment_frequency_change&) = default;
 };
 
 struct payment_frequency_removal {
     payment_frequency_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const payment_frequency_removal&,
+                           const payment_frequency_removal&) = default;
 };
 
 struct payment_frequency_lookup {
     payment_frequency_key key;
     std::optional<ores::refdata::domain::payment_frequency> payment_frequency;
+
+    friend bool operator==(const payment_frequency_lookup&,
+                           const payment_frequency_lookup&) = default;
 };
 
 struct payment_frequencies_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const payment_frequencies_filter&,
+                           const payment_frequencies_filter&) = default;
 };
 
 struct payment_frequency_event {
@@ -80,17 +97,26 @@ struct payment_frequency_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const payment_frequency_event&,
+                           const payment_frequency_event&) = default;
 };
 
 struct payment_frequency_version_key {
     payment_frequency_key payment_frequency;
     std::uint32_t version;
+
+    friend bool operator==(const payment_frequency_version_key&,
+                           const payment_frequency_version_key&) = default;
 };
 
 struct payment_frequency_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const payment_frequency_versions_filter&,
+                           const payment_frequency_versions_filter&) = default;
 };
 
 struct list_payment_frequencies_request {
@@ -108,12 +134,18 @@ struct list_payment_frequencies_request {
     ores::utility::domain::order order;
     std::optional<payment_frequencies_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_payment_frequencies_request&,
+                           const list_payment_frequencies_request&) = default;
 };
 
 struct list_payment_frequencies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::payment_frequency> payment_frequencies;
     std::uint64_t total;
+
+    friend bool operator==(const list_payment_frequencies_response&,
+                           const list_payment_frequencies_response&) = default;
 };
 
 struct get_payment_frequency_request {
@@ -127,11 +159,17 @@ struct get_payment_frequency_request {
      */
     static constexpr bool requires_session = true;
     payment_frequency_key key;
+
+    friend bool operator==(const get_payment_frequency_request&,
+                           const get_payment_frequency_request&) = default;
 };
 
 struct get_payment_frequency_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::payment_frequency> payment_frequency;
+
+    friend bool operator==(const get_payment_frequency_response&,
+                           const get_payment_frequency_response&) = default;
 };
 
 struct get_many_payment_frequencies_request {
@@ -145,11 +183,17 @@ struct get_many_payment_frequencies_request {
      */
     static constexpr bool requires_session = true;
     std::vector<payment_frequency_key> keys;
+
+    friend bool operator==(const get_many_payment_frequencies_request&,
+                           const get_many_payment_frequencies_request&) = default;
 };
 
 struct get_many_payment_frequencies_response {
     ores::utility::domain::result result;
     std::vector<payment_frequency_lookup> entries;
+
+    friend bool operator==(const get_many_payment_frequencies_response&,
+                           const get_many_payment_frequencies_response&) = default;
 };
 
 struct put_payment_frequency_request {
@@ -164,11 +208,17 @@ struct put_payment_frequency_request {
     static constexpr bool requires_session = true;
     payment_frequency_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_payment_frequency_request&,
+                           const put_payment_frequency_request&) = default;
 };
 
 struct put_payment_frequency_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::payment_frequency> payment_frequency;
+
+    friend bool operator==(const put_payment_frequency_response&,
+                           const put_payment_frequency_response&) = default;
 };
 
 struct put_many_payment_frequencies_request {
@@ -183,11 +233,17 @@ struct put_many_payment_frequencies_request {
     static constexpr bool requires_session = true;
     std::vector<payment_frequency_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_payment_frequencies_request&,
+                           const put_many_payment_frequencies_request&) = default;
 };
 
 struct put_many_payment_frequencies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::payment_frequency> payment_frequencies;
+
+    friend bool operator==(const put_many_payment_frequencies_response&,
+                           const put_many_payment_frequencies_response&) = default;
 };
 
 struct delete_payment_frequency_request {
@@ -202,10 +258,16 @@ struct delete_payment_frequency_request {
     static constexpr bool requires_session = true;
     payment_frequency_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_payment_frequency_request&,
+                           const delete_payment_frequency_request&) = default;
 };
 
 struct delete_payment_frequency_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_payment_frequency_response&,
+                           const delete_payment_frequency_response&) = default;
 };
 
 struct delete_many_payment_frequencies_request {
@@ -220,10 +282,16 @@ struct delete_many_payment_frequencies_request {
     static constexpr bool requires_session = true;
     std::vector<payment_frequency_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_payment_frequencies_request&,
+                           const delete_many_payment_frequencies_request&) = default;
 };
 
 struct delete_many_payment_frequencies_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_payment_frequencies_response&,
+                           const delete_many_payment_frequencies_response&) = default;
 };
 
 struct list_payment_frequency_versions_request {
@@ -241,12 +309,18 @@ struct list_payment_frequency_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<payment_frequency_versions_filter> filter;
+
+    friend bool operator==(const list_payment_frequency_versions_request&,
+                           const list_payment_frequency_versions_request&) = default;
 };
 
 struct list_payment_frequency_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::payment_frequency> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_payment_frequency_versions_response&,
+                           const list_payment_frequency_versions_response&) = default;
 };
 
 struct get_payment_frequency_version_request {
@@ -260,11 +334,17 @@ struct get_payment_frequency_version_request {
      */
     static constexpr bool requires_session = true;
     payment_frequency_version_key key;
+
+    friend bool operator==(const get_payment_frequency_version_request&,
+                           const get_payment_frequency_version_request&) = default;
 };
 
 struct get_payment_frequency_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::payment_frequency> version;
+
+    friend bool operator==(const get_payment_frequency_version_response&,
+                           const get_payment_frequency_version_response&) = default;
 };
 
 /**
@@ -276,9 +356,9 @@ struct get_payment_frequency_version_response {
  * of them.
  */
 namespace payment_frequency_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.payment_frequencies_events.created";
-inline constexpr std::string_view updated = "refdata.v1.payment_frequencies_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.payment_frequencies_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.payment_frequencies.created";
+inline constexpr std::string_view updated = "refdata.v1.events.payment_frequencies.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.payment_frequencies.deleted";
 }
 /**
  * @brief The members of payment_frequency_key, named as the wire names them and in the order

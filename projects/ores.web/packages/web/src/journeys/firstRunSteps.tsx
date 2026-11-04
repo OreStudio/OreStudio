@@ -87,8 +87,8 @@ export interface FirstRunStepsInput {
     readonly administratorSignIn: ReactNode;
     /** The public sources step: each publisher's terms, accepted or declined. */
     readonly publicSources: ReactNode;
-    /** Whether every publisher with terms has been accepted or declined. */
-    readonly sourcesDecided: boolean;
+    /** Sends the public sources' decisions, or nothing while a publisher is undecided. */
+    readonly sendSources: (() => Promise<void>) | undefined;
     /** Creates the administrator and enters the deployment as it. */
     readonly onCreateAdministrator: () => Promise<void>;
     /** Signs in as the administrator the deployment already has. */
@@ -178,7 +178,11 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
             title: t('journey.sources.title'),
             lead: t('journey.sources.lead'),
             body: input.publicSources,
-            next: { label: t('journey.sources.next'), enabled: input.sourcesDecided },
+            next: {
+                label: t('journey.sources.next'),
+                enabled: input.sendSources !== undefined,
+                ...(input.sendSources !== undefined && { run: input.sendSources }),
+            },
         },
         ...tenantSteps,
         {

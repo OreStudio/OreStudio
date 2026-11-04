@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct calendar_rule_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const calendar_rule_key&, const calendar_rule_key&) = default;
 };
 
 struct calendar_rule_write {
@@ -57,27 +59,37 @@ struct calendar_rule_write {
     std::string shift;
     std::optional<int> effective_from;
     std::optional<int> effective_to;
+
+    friend bool operator==(const calendar_rule_write&, const calendar_rule_write&) = default;
 };
 
 struct calendar_rule_change {
     calendar_rule_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const calendar_rule_change&, const calendar_rule_change&) = default;
 };
 
 struct calendar_rule_removal {
     calendar_rule_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const calendar_rule_removal&, const calendar_rule_removal&) = default;
 };
 
 struct calendar_rule_lookup {
     calendar_rule_key key;
     std::optional<ores::refdata::domain::calendar_rule> calendar_rule;
+
+    friend bool operator==(const calendar_rule_lookup&, const calendar_rule_lookup&) = default;
 };
 
 struct calendar_rules_filter {
     std::optional<std::string> calendar_code;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> calendar_code_one_of;
+
+    friend bool operator==(const calendar_rules_filter&, const calendar_rules_filter&) = default;
 };
 
 struct calendar_rule_event {
@@ -87,17 +99,25 @@ struct calendar_rule_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const calendar_rule_event&, const calendar_rule_event&) = default;
 };
 
 struct calendar_rule_version_key {
     calendar_rule_key calendar_rule;
     std::uint32_t version;
+
+    friend bool operator==(const calendar_rule_version_key&,
+                           const calendar_rule_version_key&) = default;
 };
 
 struct calendar_rule_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const calendar_rule_versions_filter&,
+                           const calendar_rule_versions_filter&) = default;
 };
 
 struct list_calendar_rules_request {
@@ -115,12 +135,18 @@ struct list_calendar_rules_request {
     ores::utility::domain::order order;
     std::optional<calendar_rules_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_calendar_rules_request&,
+                           const list_calendar_rules_request&) = default;
 };
 
 struct list_calendar_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_rule> calendar_rules;
     std::uint64_t total;
+
+    friend bool operator==(const list_calendar_rules_response&,
+                           const list_calendar_rules_response&) = default;
 };
 
 struct get_calendar_rule_request {
@@ -134,11 +160,17 @@ struct get_calendar_rule_request {
      */
     static constexpr bool requires_session = true;
     calendar_rule_key key;
+
+    friend bool operator==(const get_calendar_rule_request&,
+                           const get_calendar_rule_request&) = default;
 };
 
 struct get_calendar_rule_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::calendar_rule> calendar_rule;
+
+    friend bool operator==(const get_calendar_rule_response&,
+                           const get_calendar_rule_response&) = default;
 };
 
 struct get_many_calendar_rules_request {
@@ -152,11 +184,17 @@ struct get_many_calendar_rules_request {
      */
     static constexpr bool requires_session = true;
     std::vector<calendar_rule_key> keys;
+
+    friend bool operator==(const get_many_calendar_rules_request&,
+                           const get_many_calendar_rules_request&) = default;
 };
 
 struct get_many_calendar_rules_response {
     ores::utility::domain::result result;
     std::vector<calendar_rule_lookup> entries;
+
+    friend bool operator==(const get_many_calendar_rules_response&,
+                           const get_many_calendar_rules_response&) = default;
 };
 
 struct put_calendar_rule_request {
@@ -171,11 +209,17 @@ struct put_calendar_rule_request {
     static constexpr bool requires_session = true;
     calendar_rule_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_calendar_rule_request&,
+                           const put_calendar_rule_request&) = default;
 };
 
 struct put_calendar_rule_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::calendar_rule> calendar_rule;
+
+    friend bool operator==(const put_calendar_rule_response&,
+                           const put_calendar_rule_response&) = default;
 };
 
 struct put_many_calendar_rules_request {
@@ -190,11 +234,17 @@ struct put_many_calendar_rules_request {
     static constexpr bool requires_session = true;
     std::vector<calendar_rule_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_calendar_rules_request&,
+                           const put_many_calendar_rules_request&) = default;
 };
 
 struct put_many_calendar_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_rule> calendar_rules;
+
+    friend bool operator==(const put_many_calendar_rules_response&,
+                           const put_many_calendar_rules_response&) = default;
 };
 
 struct delete_calendar_rule_request {
@@ -209,10 +259,16 @@ struct delete_calendar_rule_request {
     static constexpr bool requires_session = true;
     calendar_rule_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_calendar_rule_request&,
+                           const delete_calendar_rule_request&) = default;
 };
 
 struct delete_calendar_rule_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_calendar_rule_response&,
+                           const delete_calendar_rule_response&) = default;
 };
 
 struct delete_many_calendar_rules_request {
@@ -227,10 +283,16 @@ struct delete_many_calendar_rules_request {
     static constexpr bool requires_session = true;
     std::vector<calendar_rule_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_calendar_rules_request&,
+                           const delete_many_calendar_rules_request&) = default;
 };
 
 struct delete_many_calendar_rules_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_calendar_rules_response&,
+                           const delete_many_calendar_rules_response&) = default;
 };
 
 struct list_by_calendar_code_calendar_rules_request {
@@ -250,12 +312,18 @@ struct list_by_calendar_code_calendar_rules_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<calendar_rules_filter> filter;
+
+    friend bool operator==(const list_by_calendar_code_calendar_rules_request&,
+                           const list_by_calendar_code_calendar_rules_request&) = default;
 };
 
 struct list_by_calendar_code_calendar_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_rule> calendar_rules;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_calendar_code_calendar_rules_response&,
+                           const list_by_calendar_code_calendar_rules_response&) = default;
 };
 
 struct list_calendar_rule_versions_request {
@@ -273,12 +341,18 @@ struct list_calendar_rule_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<calendar_rule_versions_filter> filter;
+
+    friend bool operator==(const list_calendar_rule_versions_request&,
+                           const list_calendar_rule_versions_request&) = default;
 };
 
 struct list_calendar_rule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_rule> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_calendar_rule_versions_response&,
+                           const list_calendar_rule_versions_response&) = default;
 };
 
 struct get_calendar_rule_version_request {
@@ -292,11 +366,17 @@ struct get_calendar_rule_version_request {
      */
     static constexpr bool requires_session = true;
     calendar_rule_version_key key;
+
+    friend bool operator==(const get_calendar_rule_version_request&,
+                           const get_calendar_rule_version_request&) = default;
 };
 
 struct get_calendar_rule_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::calendar_rule> version;
+
+    friend bool operator==(const get_calendar_rule_version_response&,
+                           const get_calendar_rule_version_response&) = default;
 };
 
 /**
@@ -308,9 +388,9 @@ struct get_calendar_rule_version_response {
  * of them.
  */
 namespace calendar_rule_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.calendar_rules_events.created";
-inline constexpr std::string_view updated = "refdata.v1.calendar_rules_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.calendar_rules_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.calendar_rules.created";
+inline constexpr std::string_view updated = "refdata.v1.events.calendar_rules.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.deleted";
 }
 /**
  * @brief The members of calendar_rule_key, named as the wire names them and in the order

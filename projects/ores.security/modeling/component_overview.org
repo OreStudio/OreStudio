@@ -93,7 +93,9 @@ by convention.
   JWTs are signed with.
 - =jwt-cpp=, over the =boost-json= traits — token creation, decoding and the
   claim checks.
-- =ores.utility= — the Base64 codec the hash string and the tokens use.
+- =ores.utility= — the Base64 codec the hash string and the tokens use, and
+  the wire fields the claims' storage grant states. Linked publicly, because
+  that header names the codec.
 - =ores.platform= — the environment the fast-hash test flag is read from.
 - =ores.logging= — the logger each facet writes to.
 
@@ -146,8 +148,8 @@ target_link_libraries(${lib_target_name}
         OpenSSL::Crypto
         Boost::json
         ores.logging.lib
-    PRIVATE
         ores.utility.lib
+    PRIVATE
         ores.platform.lib
         Boost::boost
         jwt-cpp::jwt-cpp)

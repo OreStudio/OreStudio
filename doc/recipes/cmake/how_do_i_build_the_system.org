@@ -29,7 +29,20 @@ How do I build ORE Studio?
 ./compass.sh build site                     # friendly alias (deploy_site)
 ./compass.sh build --preset linux-clang-release-make   # preset override
 ./compass.sh build -j 4 --dry-run           # jobs override / print-only
+./compass.sh build -k                       # keep going past a failed target
 #+end_src
+
+=-k= (=--keep-going=) passes the native tool's own option after cmake's =--=:
+=-k 0= for ninja and =-k= for make. One build then reports every failing
+target, not only the first one. =-k N= stops ninja after N failures, as ninja's
+own =-k= does; make takes no count.
+
+With ninja 1.13, a build first runs =ninja -t recompact= on the build
+directory. Ninja 1.13 cannot remove a damaged record from its deps log
+([[https://github.com/ninja-build/ninja/issues/2703][ninja#2703]]): each
+load stops at that record and drops all later records, so every build is a
+full one. The recompact writes the log again without the damaged record, in
+less than a second. Other ninja versions build directly.
 
 Friendly aliases: =site= → =deploy_site=, =manual= → =deploy_manual=,
 =org-roam-db-sync= → =org_roam_db_sync=; any raw cmake target is also

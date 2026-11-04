@@ -25,9 +25,16 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_PROVIDER_TERMS_OPERATIONS_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_PROVIDER_TERMS_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::marketdata::messaging {
 
@@ -62,6 +69,9 @@ struct accept_provider_terms_request {
      * what a person at the shell does after reading the provider.
      */
     int provider_version = 0;
+
+    friend bool operator==(const accept_provider_terms_request&,
+                           const accept_provider_terms_request&) = default;
 };
 
 struct accept_provider_terms_response {
@@ -81,6 +91,9 @@ struct accept_provider_terms_response {
      * @brief When the acceptance was recorded.
      */
     std::optional<std::chrono::system_clock::time_point> accepted_at;
+
+    friend bool operator==(const accept_provider_terms_response&,
+                           const accept_provider_terms_response&) = default;
 };
 
 /**
@@ -104,6 +117,9 @@ struct withdraw_provider_terms_request {
      * @brief The provider whose acceptance is withdrawn.
      */
     std::string provider_code;
+
+    friend bool operator==(const withdraw_provider_terms_request&,
+                           const withdraw_provider_terms_request&) = default;
 };
 
 struct withdraw_provider_terms_response {
@@ -115,8 +131,135 @@ struct withdraw_provider_terms_response {
      * @brief Why it was not, or what was recorded.
      */
     std::string message;
+
+    friend bool operator==(const withdraw_provider_terms_response&,
+                           const withdraw_provider_terms_response&) = default;
 };
 
+/**
+ * @brief The members of accept_provider_terms_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const accept_provider_terms_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"provider_code",
+                                      &accept_provider_terms_request::provider_code},
+        ::ores::utility::codec::field{"provider_version",
+                                      &accept_provider_terms_request::provider_version},
+    };
 }
+
+/**
+ * @brief The members of accept_provider_terms_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const accept_provider_terms_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &accept_provider_terms_response::success},
+        ::ores::utility::codec::field{"message", &accept_provider_terms_response::message},
+        ::ores::utility::codec::field{"accepted_by", &accept_provider_terms_response::accepted_by},
+        ::ores::utility::codec::field{"accepted_at", &accept_provider_terms_response::accepted_at},
+    };
+}
+
+/**
+ * @brief The members of withdraw_provider_terms_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const withdraw_provider_terms_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"provider_code",
+                                      &withdraw_provider_terms_request::provider_code},
+    };
+}
+
+/**
+ * @brief The members of withdraw_provider_terms_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const withdraw_provider_terms_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &withdraw_provider_terms_response::success},
+        ::ores::utility::codec::field{"message", &withdraw_provider_terms_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::accept_provider_terms_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::accept_provider_terms_request& v);
+    static ores::marketdata::messaging::accept_provider_terms_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::accept_provider_terms_request& v);
+    static ores::marketdata::messaging::accept_provider_terms_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::accept_provider_terms_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::accept_provider_terms_response& v);
+    static ores::marketdata::messaging::accept_provider_terms_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::accept_provider_terms_response& v);
+    static ores::marketdata::messaging::accept_provider_terms_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::withdraw_provider_terms_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::withdraw_provider_terms_request& v);
+    static ores::marketdata::messaging::withdraw_provider_terms_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::withdraw_provider_terms_request& v);
+    static ores::marketdata::messaging::withdraw_provider_terms_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::withdraw_provider_terms_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::withdraw_provider_terms_response& v);
+    static ores::marketdata::messaging::withdraw_provider_terms_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::withdraw_provider_terms_response& v);
+    static ores::marketdata::messaging::withdraw_provider_terms_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

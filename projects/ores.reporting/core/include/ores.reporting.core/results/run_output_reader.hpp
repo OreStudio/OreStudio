@@ -20,11 +20,15 @@
 #ifndef ORES_REPORTING_CORE_RESULTS_RUN_OUTPUT_READER_HPP
 #define ORES_REPORTING_CORE_RESULTS_RUN_OUTPUT_READER_HPP
 
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.reporting.api/domain/report_cashflow.hpp"
 #include "ores.reporting.api/domain/report_metric.hpp"
+#include "ores.reporting.api/domain/report_text_value.hpp"
 #include "ores.reporting.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstddef>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -47,9 +51,17 @@ struct run_stamp {
      */
     boost::uuids::uuid report_definition_id;
     /**
+     * @brief The compute result whose output the files are.
+     */
+    boost::uuids::uuid result_id;
+    /**
      * @brief The date the run priced at, used where the file states no date.
      */
     std::chrono::system_clock::time_point priced_at;
+    /**
+     * @brief The families the run stores as rows, as its definition chose them.
+     */
+    ores::ore::results::family_selection families;
 };
 
 /**
@@ -87,6 +99,10 @@ struct run_output_outcome {
      */
     std::vector<domain::report_cashflow> cashflows;
     /**
+     * @brief The values the families that state text rather than figures stated.
+     */
+    std::vector<domain::report_text_value> text_values;
+    /**
      * @brief The reasons the output could not be read whole.
      */
     std::vector<std::string> refusals;
@@ -98,7 +114,48 @@ struct run_output_outcome {
      * @brief The files no family covers, so nothing was read from them.
      */
     std::vector<std::string> files_not_modelled;
+    /**
+     * @brief The files whose family the run's definition skips, so nothing was read from them.
+     */
+    std::vector<std::string> files_skipped;
 };
+
+/**
+ * @brief Where the rows a run's output states go, a block at a time.
+ *
+ * Each sink takes what it keeps from the block; the block is cleared after.
+ */
+struct run_output_sinks {
+    /**
+     * @brief Takes a block of metrics.
+     */
+    std::function<void(std::vector<domain::report_metric>&)> metrics;
+    /**
+     * @brief Takes a block of cashflow figures.
+     */
+    std::function<void(std::vector<domain::report_cashflow>&)> cashflows;
+    /**
+     * @brief Takes a block of text values.
+     */
+    std::function<void(std::vector<domain::report_text_value>&)> text_values;
+};
+
+/**
+ * @brief Reads one file of a run's output, handing its rows to the sinks a
+ * block at a time.
+ *
+ * The rows of a file are never all held at once: a block of at most
+ * @p block_size rows is built, handed over and cleared. What the read refused,
+ * and which files it read, skipped or could not place, is recorded on
+ * @p outcome; its row lists are left as they are. The caller writes the blocks
+ * in one transaction and rolls it back when the outcome holds a refusal, so a
+ * refused run leaves nothing behind.
+ */
+ORES_REPORTING_CORE_EXPORT void read_run_output(const output_file& file,
+                                                const run_stamp& run,
+                                                std::size_t block_size,
+                                                const run_output_sinks& sinks,
+                                                run_output_outcome& outcome);
 
 /**
  * @brief Reads every file of a run's output, one family at a time.

@@ -8,7 +8,8 @@
     "display_order": 5,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "System Health",
@@ -19,7 +20,8 @@
     "display_order": 10,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Audit Trail Summary",
@@ -30,7 +32,8 @@
     "display_order": 15,
     "tier": "common",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "SA-CCR Exposure",
@@ -41,7 +44,8 @@
     "display_order": 20,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Leverage Ratio",
@@ -52,7 +56,8 @@
     "display_order": 25,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "FRTB SA Capital",
@@ -63,7 +68,8 @@
     "display_order": 30,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "name": "Liquidity Coverage",
@@ -74,7 +80,8 @@
     "display_order": 35,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Large Exposures",
@@ -85,7 +92,8 @@
     "display_order": 40,
     "tier": "regulatory",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "MIFID II Transaction Reporting",
@@ -96,7 +104,8 @@
     "display_order": 45,
     "tier": "regulatory",
     "applicable_jurisdiction": "GB",
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "CFTC Swap Data Reporting",
@@ -107,7 +116,8 @@
     "display_order": 50,
     "tier": "regulatory",
     "applicable_jurisdiction": "US",
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "HKMA Trade Repository",
@@ -118,7 +128,8 @@
     "display_order": 55,
     "tier": "regulatory",
     "applicable_jurisdiction": "HK",
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Group Consolidated Exposure",
@@ -129,7 +140,8 @@
     "display_order": 60,
     "tier": "strategic",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Board Risk Dashboard",
@@ -140,7 +152,8 @@
     "display_order": 65,
     "tier": "strategic",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Cross-Entity Counterparty Concentration",
@@ -151,7 +164,8 @@
     "display_order": 70,
     "tier": "strategic",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Intercompany Exposure Matrix",
@@ -162,7 +176,8 @@
     "display_order": 75,
     "tier": "strategic",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Model Calibration",
@@ -173,7 +188,8 @@
     "display_order": 80,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Yield Curves",
@@ -184,7 +200,8 @@
     "display_order": 85,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "FX Spot Rates",
@@ -195,7 +212,8 @@
     "display_order": 90,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Volatility Surfaces",
@@ -206,7 +224,8 @@
     "display_order": 95,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Credit Curves",
@@ -217,7 +236,8 @@
     "display_order": 100,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "NPV",
@@ -228,7 +248,8 @@
     "display_order": 105,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Cashflows",
@@ -239,7 +260,8 @@
     "display_order": 110,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Delta and Gamma",
@@ -250,7 +272,8 @@
     "display_order": 115,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Vega",
@@ -261,7 +284,8 @@
     "display_order": 120,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Bucketed DV01",
@@ -272,7 +296,8 @@
     "display_order": 125,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Exposure",
@@ -283,7 +308,8 @@
     "display_order": 130,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "CVA/DVA/FVA",
@@ -294,7 +320,8 @@
     "display_order": 135,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": null
   },
   {
     "name": "Stressed VaR",
@@ -305,7 +332,8 @@
     "display_order": 140,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "name": "P&L Attribution",
@@ -316,7 +344,8 @@
     "display_order": 145,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": "Trading"
+    "regulatory_book_type": "Trading",
+    "cut_kind_code": null
   },
   {
     "name": "Intraday Risk Monitor",
@@ -327,7 +356,8 @@
     "display_order": 150,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
   },
   {
     "name": "Headline Position",
@@ -338,6 +368,319 @@
     "display_order": 155,
     "tier": "trading",
     "applicable_jurisdiction": null,
-    "regulatory_book_type": null
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Headline Position (EOD)",
+    "description": "The headline Greeks at the close: the same set the intraday definition carries, priced from the day's authorised end of day cut so the figures are authoritative and reproducible. The market risk function signs off on this one, and a later run of the intraday definition never replaces it.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 156,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Spot Greeks",
+    "description": "P&L and Delta at a grid of spot shift levels, answering what happens to the book if spot moves by a given percentage. The intraday definition reads the live cut, so a desk questions its directional risk while the day is still moving.",
+    "report_type": "risk",
+    "schedule_expression": "*/15 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 160,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Spot Greeks (EOD)",
+    "description": "The spot shift grid at the close, priced from the day's authorised end of day cut. Market risk reads it as the authoritative statement of directional risk where the intraday definition states an indicative one.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 161,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Triple Vol Spot Ladder",
+    "description": "Vega, Rega and Sega across every curve tenor at each spot shift level, so a desk reads vol and skew risk against a moving spot in one table. The intraday definition reads the live cut.",
+    "report_type": "risk",
+    "schedule_expression": "*/15 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 165,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Triple Vol Spot Ladder (EOD)",
+    "description": "The triple vol spot ladder at the close, priced from the day's authorised end of day cut. It is the vol risk statement of record; the intraday definition is the view taken between closes.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 166,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Spot Ladder",
+    "description": "The full forward curve of a currency pair, every tenor's outright rate, read from the live cut rather than from a valuation. A desk asks for it while quoting and hedging at a named tenor, so it holds a schedule and fires only when the definition is activated.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 170,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Spike Map",
+    "description": "Per currency pair, the concentration of option notional or theoretical value against expiry date and spot level, so a desk sees where barrier and digital risk piles up across time and spot. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 175,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Strike Map",
+    "description": "The same concentration view as the spike map, bucketed by option strike rather than expiry, so a desk reads notional across strike space at each tenor. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 180,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Option Map",
+    "description": "The traditional option map, bucketed by delta, shown beside the strike view, so one table states where notional sits across both delta and strike. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 185,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Intraday Change",
+    "description": "How the market data and the risk of a book or portfolio have moved since a configurable reference time, so a desk reads intraday P&L attribution without waiting for the end of day explain run. Priced from the live cut.",
+    "report_type": "risk",
+    "schedule_expression": "*/30 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 190,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Trades Since Last In",
+    "description": "Every trade booked since a stated date and time, so a desk reviews its morning activity and sees what a colleague added to a shared book. Read from the live cut, on demand.",
+    "report_type": "risk",
+    "schedule_expression": "0 0 31 2 *",
+    "concurrency_policy": "skip",
+    "display_order": 195,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Bump and Reprice Rho Ladder",
+    "description": "The rate value change at each bucket when the curve moves by one shift, discount and projection effects kept apart. It reads the live cut, so a reader questions the shape of the rate risk while the day is still moving. The shift is a setting of the sensitivity document, so the definition states the scope and the cut and never the size.",
+    "report_type": "risk",
+    "schedule_expression": "*/30 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 200,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Bump and Reprice Rho Ladder (EOD)",
+    "description": "The rate value change at each bucket at the close, discount and projection effects kept apart, priced from the day's authorised end of day cut. It is the rate risk statement of record, and a later run of the intraday definition never replaces it.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 201,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Bump and Reprice Gamma Ladder",
+    "description": "The second-order value change in one rate factor at each bucket, taken from the gamma column the engine writes when the sensitivity document switches the second order on. The figure is money and not a curvature per unit, so a reader compares closes and does not rescale it.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 205,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Bump and Reprice Theta Ladder",
+    "description": "The value change from moving the clock rather than a market, read from the period the sensitivity document states. Its buckets are periods and not curve tenors or volatilities, so it is a ladder of its own.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 210,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Bump and Reprice Cross-gamma Ladder",
+    "description": "The curvature between two rate factors of one risk class, read from the rows that carry a second factor. The engine writes those rows inside its sensitivity file rather than in a file of their own, so the report reads the pairs where they land.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 215,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Bump and Reprice ATM Vega Ladder",
+    "description": "The value change at the at-the-money point of each expiry when volatility moves by the shift the document states. It reads the live cut, so a desk sees the shape of its volatility risk between the closes.",
+    "report_type": "risk",
+    "schedule_expression": "*/30 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 220,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Bump and Reprice ATM Vega Ladder (EOD)",
+    "description": "The at-the-money volatility value change at each expiry at the close, priced from the day's authorised end of day cut. It is the volatility statement of record.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 221,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Bump and Reprice Surface Vega Ladder",
+    "description": "The value change at every configured strike of every expiry, which is the surface shifted with its shape held. The catalogue calls the same computation the .1 Triple. It reads the live cut, so a desk sees the smile between the closes.",
+    "report_type": "risk",
+    "schedule_expression": "*/30 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 225,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Bump and Reprice Surface Vega Ladder (EOD)",
+    "description": "The value change at every configured strike of every expiry at the close, priced from the day's authorised end of day cut. It is the full-surface statement of record.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 226,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Bump and Reprice Risk-reversal Vega Ladder",
+    "description": "The call change minus the put change at each expiry, derived from the surface points of a full-surface run rather than asked of the engine. The catalogue calls it the .1 risk reversal. It reads the live cut.",
+    "report_type": "risk",
+    "schedule_expression": "*/30 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 230,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Bump and Reprice Risk-reversal Vega Ladder (EOD)",
+    "description": "The call change minus the put change at each expiry at the close, derived from the surface points of a full-surface run. It is the skew statement of record.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 231,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Bump and Reprice Butterfly Vega Ladder",
+    "description": "The wing curvature at each expiry, being half the call change plus half the put change less the at-the-money point. The catalogue calls it the .1 strangle, and the reader takes the butterfly style the pair is stored with rather than a plain average. It reads the live cut.",
+    "report_type": "risk",
+    "schedule_expression": "*/30 8-17 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 235,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "LIVE"
+  },
+  {
+    "name": "Bump and Reprice Butterfly Vega Ladder (EOD)",
+    "description": "The wing curvature at each expiry at the close, from the same run as the risk reversal. It is the wing statement of record.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 236,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Bump and Reprice DV01 Ladder",
+    "description": "The money value of one basis point at each curve bucket, converted to par instruments so a reader compares one instrument's risk against another's. It reads the par sensitivity column the engine writes.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 240,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
+  },
+  {
+    "name": "Bump and Reprice Delta Ladder",
+    "description": "The first-order value change for one factor at a time, bucketed by the factor key, and the general reader of the ladder family. Seeded, it states the currency pair spots the sensitivity document bumps; every other ladder here is this reader applied to a different block of that document.",
+    "report_type": "risk",
+    "schedule_expression": "0 18 * * 1-5",
+    "concurrency_policy": "skip",
+    "display_order": 245,
+    "tier": "trading",
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null,
+    "cut_kind_code": "EOD"
   }
 ]

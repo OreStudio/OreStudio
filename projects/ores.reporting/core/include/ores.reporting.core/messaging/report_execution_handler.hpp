@@ -27,6 +27,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/service/engine_log_row.hpp"
+#include "ores.reporting.core/service/run_failure_message.hpp"
 #include "ores.service/service/cache/run_token_cache.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <cstddef>
@@ -109,15 +110,28 @@ private:
                       const std::string& result_id);
 
     /**
+     * @brief Reads the log rows of the trades the run's package left out.
+     *
+     * The package leaves out a trade whose ORE XML it cannot write and states
+     * why beside itself. Most runs leave nothing out and store no such log, so
+     * an absent one is not a failure.
+     */
+    [[nodiscard]] std::vector<service::engine_log_row>
+    read_package_log_rows(const std::string& tenant_id, const std::string& report_instance_id);
+
+    /**
      * @brief Records the log of every result of one run, in one write.
      *
      * A run is stored against its errors once, so the rows of all its results
      * are gathered here and written together. A call per result would keep only
      * the first, because the recorder knows when a run already holds its errors.
+     *
+     * @return What the run holds after the write, which is what a reader finds
+     * in its Errors, and nothing when the write did not happen.
      */
-    void record_run_logs(const std::string& tenant_id,
-                         const std::string& report_instance_id,
-                         const std::vector<std::string>& result_ids);
+    service::run_problems record_run_logs(const std::string& tenant_id,
+                                          const std::string& report_instance_id,
+                                          const std::vector<std::string>& result_ids);
 
     /**
      * @brief A client that carries the run's token, for calls to an owner.

@@ -58,7 +58,8 @@ namespace {
  * The loop owns this subject; it is not part of the generated entity
  * protocol, because the entity it reports on has no model of its own yet.
  */
-constexpr std::string_view job_instance_events_subject = "scheduler.v1.job_instance_events.updated";
+constexpr std::string_view job_instance_events_subject =
+    "scheduler.v1.events.job_instances.updated";
 
 constexpr unsigned default_watch_seconds = 60;
 constexpr unsigned max_watch_seconds = 3600;

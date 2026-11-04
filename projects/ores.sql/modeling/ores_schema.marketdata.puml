@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 29
+Tables: 31
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -341,6 +341,45 @@ package "marketdata" #E3F2FD {
     only the system tenant writes them.
     end note
 
+    entity ores_marketdata_market_calibration_values_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
+        * source : text
+        * line : integer
+        * report_definition_id : uuid <<FK>>
+        * market_object_type : text
+        * market_object_id : text <<FK>>
+        * result_name : text
+        * result_key_1 : text
+        * result_key_2 : text
+        * result_key_3 : text
+        * result_type : text
+        * value : text
+          figure : double
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_calibration_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Calibration Value Table
+    What the market a run built came out as, one value at a time. The calibration
+    file states a row for each value of each curve, surface or model the engine
+    built: a pillar's rate and time, a day counter, a currency. The value is a number
+    as often as it is text, and the row says which, so the text is kept as stated and
+    the number beside it when there is one.
+    This is market state and not a run result: it is the market the engine priced
+    against, and it belongs beside the series and the fixings the market data store
+    already keeps.
+    end note
+
     entity ores_marketdata_market_data_mappings_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -434,6 +473,38 @@ package "marketdata" #E3F2FD {
     No audit trail columns — volume makes them impractical.
     end note
 
+    entity ores_marketdata_market_input_values_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
+        * source : text
+        * line : integer
+        * report_definition_id : uuid <<FK>>
+        * family : text
+        * datum_id : text <<FK>>
+        * value : double
+          payment_date : timestamptz
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_input_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Input Value Table
+    The market a run read, one value at a time. The engine writes back the quotes,
+    the fixings and the dividends it loaded, so a run states what it priced against.
+    Each of those values is a row here, scoped to the run.
+    These are not observations: the observations a run reads come from this store,
+    so writing the run's copy back as an observation would duplicate it and replace
+    its provenance with the run's. A row here says what one run saw.
+    end note
+
     entity ores_marketdata_market_observations_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         * observation_datetime : timestamptz <<PK>>
@@ -464,6 +535,39 @@ package "marketdata" #E3F2FD {
     is enforced via partial unique index and the soft-update/soft-delete trigger pair.
     No audit trail columns (version, modified_by, performed_by, change_reason_code,
     change_commentary) — tick-level data volumes make these impractical.
+    end note
+
+    entity ores_marketdata_market_scenario_values_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
+        * source : text
+        * line : integer
+        * factor : text
+        * report_definition_id : uuid <<FK>>
+        * family : text
+        * scenario : text
+        * value : double
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_scenario_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Scenario Value Table
+    The market a run generated scenarios over, one value at a time. A stress scenario
+    file and a scenario statistics file state one row for each date and scenario, and
+    one column for each risk factor the run simulated: a discount factor at a tenor, an
+    index curve point, a volatility, a spot. Each of those values is a row here.
+    This is market state and not a run result: it says what the world looked like
+    under each scenario, it is what the engine priced against, and it belongs beside
+    the series and the fixings the market data store already keeps.
     end note
 
     entity ores_marketdata_market_series_asset_classes_tbl <<temporal>> #C6F0D8 {
@@ -549,6 +653,7 @@ package "marketdata" #E3F2FD {
           seniority : text
           side : text
           source : text
+          surface_id : text <<FK>>
           tenor : text
           term : text
           time_unit : text
@@ -637,48 +742,6 @@ package "marketdata" #E3F2FD {
     keep two series, and a party that switches the source of a provider keeps one
     series and one history. The observations beneath it record the source that
     produced each one, for information; the source is never part of the key.
-    end note
-
-    entity ores_marketdata_market_state_payloads_tbl <<temporal>> #C6F0D8 {
-        * id : uuid <<PK>>
-        * as_of : timestamptz <<PK>>
-        --
-        * tenant_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
-        * report_instance_id : uuid <<FK>>
-        * result_id : uuid <<FK>>
-        * family : text
-        * file_name : text
-        * report_definition_id : uuid <<FK>>
-        * row_count : integer
-        * column_count : integer
-        * column_names : text
-        * key_values : text
-        * keys_truncated : boolean
-        * payload : text
-        * payload_bytes : integer
-        * content_sha256 : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_marketdata_market_state_payloads_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Market State Payload Table
-    The market state an engine run priced against, kept as the file the engine
-    wrote. A cube states a column for every curve and tenor the run built — the
-    widest checked-in sample states 789 — so a row for each value would be millions
-    of rows per run, and a read that needs one factor would unpack all of them.
-    The payload is therefore stored once, compressed, with an index beside it: the
-    headings, the number of rows, and the distinct values of each key the catalogue
-    names, which are the dates, the scenarios, the factors or the market objects the
-    file covers. A reader that wants one slice asks the index first and unpacks only
-    what it must.
-    This is market state and not a run result: it says what the world looked like,
-    it is what the engine read, and it belongs beside the series and the fixings the
-    market data store already keeps.
     end note
 
     entity ores_marketdata_observation_lineages_tbl <<temporal>> #C6F0D8 {

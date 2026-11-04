@@ -82,6 +82,34 @@ export interface ProviderDispersion {
 }
 
 /**
+ * @brief How a feed's daily variance started: the model, and whether history fitted it.
+ */
+export interface VarianceStart {
+    /** @brief "constant" or "gjr_garch". */
+    model: string;
+    /** @brief The approved variance calibration the run took its shape from. */
+    calibration_id: string;
+    /** @brief The version of that calibration the run read. */
+    calibration_version: number;
+    /** @brief True when the calibration was fitted from fixings; false when it is an authored shape. */
+    fitted: boolean;
+    /** @brief The reaction to a day's move. */
+    alpha: number;
+    /** @brief The extra reaction to a fall of the pair. */
+    gamma: number;
+    /** @brief The carry-over of a day's variance. */
+    beta: number;
+    /** @brief alpha + beta + gamma times the mixture's p_minus, below one. */
+    persistence: number;
+    /** @brief The first day's variance over the long-run level: above one when history ended turbulent. */
+    initial_ratio: number;
+    /** @brief How many daily returns the fit read; zero when nothing was fitted. */
+    returns: number;
+    /** @brief Why the authored shape was kept, when it was. */
+    note: string;
+}
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * The record belongs to the run, not to the config: a feed that stops and
@@ -126,6 +154,8 @@ export interface FeedStart {
     jumps: number | null;
     /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
     dispersion: ProviderDispersion[];
+    /** @brief How the daily variance started, for a feed whose variance is modelled. */
+    variance: VarianceStart | null;
 }
 
 /**
@@ -164,6 +194,20 @@ export interface CalibrationPolicySummary {
     from_policy_row: boolean;
     /** @brief How many calendar days of fixings measure the spread. */
     window_days: number;
+    /** @brief How many calendar days of fixings a variance calibration's input covers. */
+    variance_window_days: number;
+    /** @brief manual, a person approves every variance fit; auto, the policy approves each fit that passes its rules. */
+    variance_approval_mode: string;
+    /** @brief The fewest returns the policy approves a fit from. */
+    variance_min_returns: number;
+    /** @brief Whether the policy approves only a fit whose starts agree. */
+    variance_require_starts_agree: boolean;
+    /** @brief The lowest persistence the policy approves. */
+    variance_min_persistence: number;
+    /** @brief The highest persistence the policy approves. */
+    variance_max_persistence: number;
+    /** @brief The lowest average reaction, alpha plus half of gamma, the policy approves. */
+    variance_min_reaction: number;
     /** @brief True when an item that quotes the pair the other way round is read as one over it. */
     allow_inverse: boolean;
     /** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
@@ -191,6 +235,51 @@ export interface CandidateOutcome {
 }
 
 /**
+ * @brief What a calibration run made of a feed's daily variance: the input it captured and the
+ * calibration it fitted from it, stored when the run is applied.
+ */
+export interface VarianceCalibrationSummary {
+    /** @brief The stored input; empty when the run was not applied. */
+    input_id: string;
+    /** @brief The stored calibration; empty when the run was not applied. */
+    calibration_id: string;
+    /** @brief "gjr_garch_qmle" for a fit, "authored" for an authored shape. */
+    method: string;
+    /** @brief "proposed" when the fit was made, "rejected" when it could not be. */
+    state: string;
+    /** @brief Why the fit was rejected; empty for a proposed one. */
+    state_reason: string;
+    /** @brief The fixing item the input was read from. */
+    item: string;
+    /** @brief The provider of that item. */
+    provider_code: string;
+    /** @brief True when the item quotes the pair the other way round. */
+    inverted: boolean;
+    /** @brief The window the input covers, in calendar days, from the policy. */
+    window_days: number;
+    /** @brief The last date of the window, as YYYY-MM-DD. */
+    window_end: string;
+    /** @brief The fixing dates the window held. */
+    point_count: number;
+    /** @brief The points whose return the fit used. */
+    used_count: number;
+    /** @brief The fitted reaction to a day's move; absent when rejected. */
+    alpha: number | null;
+    /** @brief The fitted extra reaction to a fall; absent when rejected. */
+    gamma: number | null;
+    /** @brief The fitted weight of yesterday's variance; absent when rejected. */
+    beta: number | null;
+    /** @brief alpha + gamma p_minus + beta; absent when rejected. */
+    persistence: number | null;
+    /** @brief The first day's variance over the long-run level; absent when rejected. */
+    starting_variance_ratio: number | null;
+    /** @brief How many starts the fit ran from. */
+    starts: number;
+    /** @brief True when every start reached the same optimum. */
+    starts_agreed: boolean;
+}
+
+/**
  * @brief How one feed of the class resolved: the item it starts from, or its fallback or
  * refusal, and the exceptions it states against the policy.
  */
@@ -213,16 +302,35 @@ export interface CalibratedFeed {
     start: FeedStart;
     /** @brief Every candidate the feed read, in rank order, with its outcome. */
     candidates: CandidateOutcome[];
+    /** @brief True when the feed runs now, so a stored calibration applies at its next start. */
+    running: boolean;
+    /**
+     * @brief What an applied calibration did to the feed: updated, unchanged, kept, refused or
+     * failed. Empty when the calibration was not applied.
+     */
+    outcome: string;
+    /** @brief The words of the outcome: the change written, or why nothing was written. */
+    outcome_message: string;
+    /** @brief The variance calibration of a GJR-GARCH feed that starts from a fixing; absent otherwise. */
+    variance: VarianceCalibrationSummary | null;
+    /** @brief The calibration the feed's config names and runs, as stored; absent when it names none. */
+    current_variance: VarianceCalibrationSummary | null;
 }
 
 /**
- * @brief Resolve every feed of one asset class under its policy, without starting any.
+ * @brief Resolve the feeds of one asset class under its policy, without starting any.
  *
- * Every feed of the class is resolved; no subset is selected.
+ * Every feed of the class is resolved, or the one feed the request names. An applied
+ * calibration writes the resolved level and deviations as a new version of each feed config
+ * they change, under the reason system.calibration.
  */
 export interface CalibrateRequest {
     /** @brief The asset class to calibrate, as its refdata code. */
     asset_class_code: string;
+    /** @brief The one feed config to calibrate; empty calibrates every feed of the class. */
+    config_id: string;
+    /** @brief True to write the calibration; false only reports what it would be. */
+    apply: boolean;
 }
 
 /**
@@ -237,11 +345,47 @@ export interface CalibrateResponse {
     feeds: CalibratedFeed[];
 }
 
+/**
+ * @brief Approve or reject one proposed variance calibration, with the reviewer's reason.
+ *
+ * Approving supersedes the pair's earlier approval and points every feed of the pair that named
+ * it at the new one, each a new version of its config; rejecting leaves the feeds alone. Only a
+ * proposed calibration can be reviewed, and each decision is a new version of the calibration.
+ */
+export interface ReviewVarianceCalibrationRequest {
+    /** @brief The proposed calibration to decide. */
+    calibration_id: string;
+    /** @brief "approve" or "reject". */
+    decision: string;
+    /** @brief Why: kept as the calibration's state reason. Required. */
+    reason: string;
+}
+
+/**
+ * @brief What the review did: the calibration's new state, the approval it superseded, and the
+ * feeds it pointed at the new calibration.
+ */
+export interface ReviewVarianceCalibrationResponse {
+    /** @brief True when the decision was written. */
+    success: boolean;
+    /** @brief Why the decision was refused, or what it did. */
+    message: string;
+    /** @brief Why the review was refused: "invalid", "not_found" or "decided"; empty when it was not. */
+    refusal: string;
+    /** @brief The calibration's state after the review. */
+    state: string;
+    /** @brief The approval the new one superseded; empty when there was none. */
+    superseded_id: string;
+    /** @brief The source names of the feeds now pointed at the approved calibration. */
+    repointed_feeds: string[];
+}
+
 export const subjects = {
     start_feed_request: 'synthetic.v1.ops.start_feed',
     stop_feed_request: 'synthetic.v1.ops.stop_feed',
     list_feeds_request: 'synthetic.v1.feed_configs.list',
     calibrate_request: 'synthetic.v1.ops.calibrate_feeds',
+    review_variance_calibration_request: 'synthetic.v1.ops.review_variance_calibration',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -253,4 +397,5 @@ export const requiresSession = {
     stop_feed_request: true,
     list_feeds_request: true,
     calibrate_request: true,
+    review_variance_calibration_request: true,
 } as const;

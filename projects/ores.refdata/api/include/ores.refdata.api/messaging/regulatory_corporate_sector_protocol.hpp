@@ -44,6 +44,9 @@ namespace ores::refdata::messaging {
 struct regulatory_corporate_sector_key {
     std::string code;
     std::string coding_scheme_code;
+
+    friend bool operator==(const regulatory_corporate_sector_key&,
+                           const regulatory_corporate_sector_key&) = default;
 };
 
 struct regulatory_corporate_sector_write {
@@ -51,21 +54,33 @@ struct regulatory_corporate_sector_write {
     std::string coding_scheme_code;
     std::string source;
     std::string description;
+
+    friend bool operator==(const regulatory_corporate_sector_write&,
+                           const regulatory_corporate_sector_write&) = default;
 };
 
 struct regulatory_corporate_sector_change {
     regulatory_corporate_sector_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const regulatory_corporate_sector_change&,
+                           const regulatory_corporate_sector_change&) = default;
 };
 
 struct regulatory_corporate_sector_removal {
     regulatory_corporate_sector_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const regulatory_corporate_sector_removal&,
+                           const regulatory_corporate_sector_removal&) = default;
 };
 
 struct regulatory_corporate_sector_lookup {
     regulatory_corporate_sector_key key;
     std::optional<ores::refdata::domain::regulatory_corporate_sector> regulatory_corporate_sector;
+
+    friend bool operator==(const regulatory_corporate_sector_lookup&,
+                           const regulatory_corporate_sector_lookup&) = default;
 };
 
 struct regulatory_corporate_sector_event {
@@ -75,17 +90,26 @@ struct regulatory_corporate_sector_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const regulatory_corporate_sector_event&,
+                           const regulatory_corporate_sector_event&) = default;
 };
 
 struct regulatory_corporate_sector_version_key {
     regulatory_corporate_sector_key regulatory_corporate_sector;
     std::uint32_t version;
+
+    friend bool operator==(const regulatory_corporate_sector_version_key&,
+                           const regulatory_corporate_sector_version_key&) = default;
 };
 
 struct regulatory_corporate_sector_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const regulatory_corporate_sector_versions_filter&,
+                           const regulatory_corporate_sector_versions_filter&) = default;
 };
 
 struct list_regulatory_corporate_sectors_request {
@@ -102,12 +126,18 @@ struct list_regulatory_corporate_sectors_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_regulatory_corporate_sectors_request&,
+                           const list_regulatory_corporate_sectors_request&) = default;
 };
 
 struct list_regulatory_corporate_sectors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::regulatory_corporate_sector> sectors;
     std::uint64_t total;
+
+    friend bool operator==(const list_regulatory_corporate_sectors_response&,
+                           const list_regulatory_corporate_sectors_response&) = default;
 };
 
 struct get_regulatory_corporate_sector_request {
@@ -121,11 +151,17 @@ struct get_regulatory_corporate_sector_request {
      */
     static constexpr bool requires_session = true;
     regulatory_corporate_sector_key key;
+
+    friend bool operator==(const get_regulatory_corporate_sector_request&,
+                           const get_regulatory_corporate_sector_request&) = default;
 };
 
 struct get_regulatory_corporate_sector_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::regulatory_corporate_sector> regulatory_corporate_sector;
+
+    friend bool operator==(const get_regulatory_corporate_sector_response&,
+                           const get_regulatory_corporate_sector_response&) = default;
 };
 
 struct get_many_regulatory_corporate_sectors_request {
@@ -140,11 +176,17 @@ struct get_many_regulatory_corporate_sectors_request {
      */
     static constexpr bool requires_session = true;
     std::vector<regulatory_corporate_sector_key> keys;
+
+    friend bool operator==(const get_many_regulatory_corporate_sectors_request&,
+                           const get_many_regulatory_corporate_sectors_request&) = default;
 };
 
 struct get_many_regulatory_corporate_sectors_response {
     ores::utility::domain::result result;
     std::vector<regulatory_corporate_sector_lookup> entries;
+
+    friend bool operator==(const get_many_regulatory_corporate_sectors_response&,
+                           const get_many_regulatory_corporate_sectors_response&) = default;
 };
 
 struct put_regulatory_corporate_sector_request {
@@ -159,11 +201,17 @@ struct put_regulatory_corporate_sector_request {
     static constexpr bool requires_session = true;
     regulatory_corporate_sector_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_regulatory_corporate_sector_request&,
+                           const put_regulatory_corporate_sector_request&) = default;
 };
 
 struct put_regulatory_corporate_sector_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::regulatory_corporate_sector> regulatory_corporate_sector;
+
+    friend bool operator==(const put_regulatory_corporate_sector_response&,
+                           const put_regulatory_corporate_sector_response&) = default;
 };
 
 struct put_many_regulatory_corporate_sectors_request {
@@ -179,11 +227,17 @@ struct put_many_regulatory_corporate_sectors_request {
     static constexpr bool requires_session = true;
     std::vector<regulatory_corporate_sector_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_regulatory_corporate_sectors_request&,
+                           const put_many_regulatory_corporate_sectors_request&) = default;
 };
 
 struct put_many_regulatory_corporate_sectors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::regulatory_corporate_sector> sectors;
+
+    friend bool operator==(const put_many_regulatory_corporate_sectors_response&,
+                           const put_many_regulatory_corporate_sectors_response&) = default;
 };
 
 struct delete_regulatory_corporate_sector_request {
@@ -199,10 +253,16 @@ struct delete_regulatory_corporate_sector_request {
     static constexpr bool requires_session = true;
     regulatory_corporate_sector_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_regulatory_corporate_sector_request&,
+                           const delete_regulatory_corporate_sector_request&) = default;
 };
 
 struct delete_regulatory_corporate_sector_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_regulatory_corporate_sector_response&,
+                           const delete_regulatory_corporate_sector_response&) = default;
 };
 
 struct delete_many_regulatory_corporate_sectors_request {
@@ -218,10 +278,16 @@ struct delete_many_regulatory_corporate_sectors_request {
     static constexpr bool requires_session = true;
     std::vector<regulatory_corporate_sector_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_regulatory_corporate_sectors_request&,
+                           const delete_many_regulatory_corporate_sectors_request&) = default;
 };
 
 struct delete_many_regulatory_corporate_sectors_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_regulatory_corporate_sectors_response&,
+                           const delete_many_regulatory_corporate_sectors_response&) = default;
 };
 
 struct list_regulatory_corporate_sector_versions_request {
@@ -240,12 +306,18 @@ struct list_regulatory_corporate_sector_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<regulatory_corporate_sector_versions_filter> filter;
+
+    friend bool operator==(const list_regulatory_corporate_sector_versions_request&,
+                           const list_regulatory_corporate_sector_versions_request&) = default;
 };
 
 struct list_regulatory_corporate_sector_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::regulatory_corporate_sector> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_regulatory_corporate_sector_versions_response&,
+                           const list_regulatory_corporate_sector_versions_response&) = default;
 };
 
 struct get_regulatory_corporate_sector_version_request {
@@ -260,11 +332,17 @@ struct get_regulatory_corporate_sector_version_request {
      */
     static constexpr bool requires_session = true;
     regulatory_corporate_sector_version_key key;
+
+    friend bool operator==(const get_regulatory_corporate_sector_version_request&,
+                           const get_regulatory_corporate_sector_version_request&) = default;
 };
 
 struct get_regulatory_corporate_sector_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::regulatory_corporate_sector> version;
+
+    friend bool operator==(const get_regulatory_corporate_sector_version_response&,
+                           const get_regulatory_corporate_sector_version_response&) = default;
 };
 
 /**
@@ -277,11 +355,11 @@ struct get_regulatory_corporate_sector_version_response {
  */
 namespace regulatory_corporate_sector_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.regulatory_corporate_sectors_events.created";
+    "refdata.v1.events.regulatory_corporate_sectors.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.regulatory_corporate_sectors_events.updated";
+    "refdata.v1.events.regulatory_corporate_sectors.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.regulatory_corporate_sectors_events.deleted";
+    "refdata.v1.events.regulatory_corporate_sectors.deleted";
 }
 /**
  * @brief The members of regulatory_corporate_sector_key, named as the wire names them and in the

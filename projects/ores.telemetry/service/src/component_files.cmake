@@ -34,6 +34,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.service/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.service/app/application_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.service/app/host.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.service/app/nats_monitoring_replies.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.service/app/nats_poller.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.service/config/options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.service/config/parser.hpp"

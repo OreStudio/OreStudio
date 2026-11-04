@@ -41,19 +41,21 @@
 #include "ores.marketdata.core/messaging/fixing_read_handler.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/manual_point_handler.hpp"
+#include "ores.marketdata.core/messaging/market_calibration_value_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_data_mapping_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_data_mapping_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_data_vendor_instrument_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_data_vendor_instrument_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_fixing_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_input_value_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_observation_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_scenario_value_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_asset_class_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_asset_class_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
 #include "ores.marketdata.core/messaging/market_series_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_state_handler.hpp"
-#include "ores.marketdata.core/messaging/market_state_payload_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_registrar.hpp"
 #include "ores.marketdata.core/messaging/ore_export_handler.hpp"
@@ -121,7 +123,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_series_handlers(nats, ctx, verifier));
     fold(register_market_fixing_handlers(nats, ctx, verifier));
     fold(register_market_observation_handlers(nats, ctx, verifier));
-    fold(register_market_state_payload_handlers(nats, ctx, verifier));
+    fold(register_market_scenario_value_handlers(nats, ctx, verifier));
+    fold(register_market_calibration_value_handlers(nats, ctx, verifier));
+    fold(register_market_input_value_handlers(nats, ctx, verifier));
     fold(register_provider_handlers(nats, ctx, verifier));
     fold(register_adapter_handlers(nats, ctx, verifier));
     fold(register_supplier_handlers(nats, ctx, verifier));
@@ -156,6 +160,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             provider_terms_handler h(nats, ctx, verifier);
                                             h.withdraw(std::move(msg));
                                         }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(accept_many_provider_terms_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 provider_terms_handler h(nats, ctx, verifier);
+                                 h.accept_many(std::move(msg));
+                             }));
 
     // The durable fixings of an item: the latest on or before a date, and a window of days.
     subs.push_back(nats.queue_subscribe(std::string(get_fixing_request::nats_subject),
@@ -169,6 +180,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             fixing_read_handler h(nats, ctx, verifier);
                                             h.get_fixing_window(std::move(msg));
+                                        }));
+    // The durable observations of a series over a window of days, every point each day.
+    subs.push_back(nats.queue_subscribe(std::string(get_observation_window_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            fixing_read_handler h(nats, ctx, verifier);
+                                            h.get_observation_window(std::move(msg));
                                         }));
 
     // Market series export: the one market-series verb with no generated

@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 145
+Tables: 170
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -654,13 +654,32 @@ package "dq_staging" #F3E5F5 {
     Describes how ORE builds a commodity forward: how many days after the trade it starts, how its points are scaled, the calendar it advances on, and whether it is quoted outright or as a spread to spot. Corresponds to the <CommodityForward> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). One field is required and seven are optional. Two files carry five elements between them, and every one sets all seven optional fields except the delivery location, which none sets. - Artefact Table
     end note
 
-    entity ores_dq_commodity_future_conventions_artefact_tbl  #F7E5FF {
+    entity ores_dq_commodity_future_averaging_terms_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
-        * id : text
-        * version : integer
-        * party_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
+        * averaging_commodity_name : text
+        * averaging_period : text
+        * averaging_pricing_calendar : text
+        * averaging_conventions : text
+          averaging_use_business_days : boolean
+          averaging_delivery_roll_days : integer
+          averaging_future_month_offset : integer
+          averaging_daily_expiry_offset : integer
+    }
+
+    note right of ores_dq_commodity_future_averaging_terms_artefact_tbl
+    How an averaging commodity future averages the prices of its underlying, as ORE's AveragingData: the commodity it averages, the period, the pricing calendar, the conventions the averaging follows, whether it counts business days, the delivery roll days, the future month offset and the daily expiry offset. It is a part because its fields hold one invariant: each applies only when the future averages, and ORE requires the commodity, the period, the calendar and the conventions together, so the part makes those four columns required. A convention fills this part at most once. - Artefact Table
+    end note
+
+    entity ores_dq_commodity_future_contract_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
         * contract_frequency : text
         * calendar : text
           expiry_calendar : text
@@ -671,6 +690,26 @@ package "dq_staging" #F3E5F5 {
           adjust_before_offset : boolean
           is_averaging : boolean
           valid_contract_months : text
+          hours_per_day : integer
+          index_name : text
+          savings_time : text
+          delivery_location : text
+          balance_of_the_month : boolean
+          balance_of_the_month_pricing_calendar : text
+          prohibited_expiries : text
+          future_continuation_mappings : text
+    }
+
+    note right of ores_dq_commodity_future_contract_terms_artefact_tbl
+    The terms that state the futures contract itself, as ORE's ContractFrequency, Calendar, the expiry calendar, month lag and offset, the contract months, the business day convention, the averaging flag, the hours per day, the index name, the savings time, the delivery location, the balance of the month fields, the prohibited expiries and the future continuation mappings. It is a part because its fields hold one invariant: each describes the listed contract, and ORE requires the frequency and the calendar of every commodity future. So every convention of the kind fills this part once. The anchor day, the option expiry, the off-peak index and the averaging data beside it are optional, and each is a part of its own. - Artefact Table
+    end note
+
+    entity ores_dq_commodity_future_expiry_anchors_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
           anchor_day_of_month : integer
           anchor_calendar_days_before : integer
           anchor_business_days_after : integer
@@ -678,6 +717,34 @@ package "dq_staging" #F3E5F5 {
           anchor_nth_weekday : text
           anchor_last_weekday : text
           anchor_weekly_day_of_the_week : text
+    }
+
+    note right of ores_dq_commodity_future_expiry_anchors_artefact_tbl
+    The day the expiry of a commodity future is anchored to, as ORE's AnchorDay: a day of the month, a number of calendar days before the month end, a number of business days after the month start, the nth weekday, the last weekday, or a weekly day. It is a part because its fields hold one invariant: together they state one anchor, and ORE allows one form of it at a time. The element is optional, so a convention fills this part at most once. - Artefact Table
+    end note
+
+    entity ores_dq_commodity_future_off_peak_indexes_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
+        * off_peak_index : text
+        * peak_index : text
+        * off_peak_hours : double
+        * peak_calendar : text
+    }
+
+    note right of ores_dq_commodity_future_off_peak_indexes_artefact_tbl
+    The peak and off-peak indices a power future's price is made of, as ORE's OffPeakPowerIndexData: the off-peak index, the peak index, the hours of the day that count as off-peak, and the calendar the peak hours are read on. It is a part because its fields hold one invariant: ORE requires all four together, so the part makes each column required. Only a power future states it, so a convention fills this part at most once. - Artefact Table
+    end note
+
+    entity ores_dq_commodity_future_option_expiries_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
           option_expiry_month_lag : integer
           option_contract_frequency : text
           option_expiry_offset : integer
@@ -689,33 +756,12 @@ package "dq_staging" #F3E5F5 {
           option_expiry_last_weekday_of_month : text
           option_expiry_weekly_day_of_the_week : text
           option_business_day_convention : text
-          hours_per_day : integer
-          off_peak_index : text
-          peak_index : text
-          off_peak_hours : double
-          peak_calendar : text
-          index_name : text
-          savings_time : text
-          delivery_location : text
-          balance_of_the_month : boolean
-          balance_of_the_month_pricing_calendar : text
           option_underlying_future_convention : text
-          averaging_commodity_name : text
-          averaging_period : text
-          averaging_pricing_calendar : text
-          averaging_conventions : text
-          averaging_use_business_days : boolean
-          averaging_delivery_roll_days : integer
-          averaging_future_month_offset : integer
-          averaging_daily_expiry_offset : integer
-          prohibited_expiries : text
-          future_continuation_mappings : text
           option_continuation_mappings : text
-          oresmd_uri : text
     }
 
-    note right of ores_dq_commodity_future_conventions_artefact_tbl
-    Describes how ORE builds a commodity future: when it expires, which contract months it lists, how its expiry anchors to a day of the month or a weekday, and the schedule of the options written on it. Corresponds to the <CommodityFuture> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Thirty of the element's thirty-four fields are modelled here, as forty columns, because the element's nested structs are flattened rather than given tables of their own. AnchorDay becomes seven columns, OptionNthWeekday two more, and OffPeakPowerIndexData four. The corpus uses all six of AnchorDay's variants, so flattening it is what lets a commodity future round trip at all. Five files carry the element, in eight hundred and eight elements, and two of them carried nothing else unmodelled when it landed. Four more fields hold lists, and each is written as a text column rather than counted: AveragingData becomes eight columns, and ProhibitedExpiries, FutureContinuationMappings and OptionContinuationMappings become one text column each, holding comma-separated dates and from:to pairs. A column is a weaker home than a table, and it is what keeps the field in the element's round trip rather than excluding the file from it. - Artefact Table
+    note right of ores_dq_commodity_future_option_expiries_artefact_tbl
+    The expiry schedule of the options written on a commodity future, as ORE's Option* fields: the month lag, the contract frequency, the offset, the calendar and business days before, the expiry day, the nth weekday, the last weekday, the weekly day and the business day convention, with the future convention an option names as its underlying and the option continuation mappings. It is a part because its fields hold one invariant: each applies only when the convention states options on the future. A convention with no options fills none of it, so it fills this part at most once. - Artefact Table
     end note
 
     entity ores_dq_commodity_volatility_configs_artefact_tbl  #F7E5FF {
@@ -856,61 +902,89 @@ package "dq_staging" #F3E5F5 {
     A top-level container that owns the [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree topology]]'s pivot currency and the set of [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][CRM]] driver pairs (crm_driver_pair, a separate, config_id-referencing entity) that hang off it. ores.marketdata.service reads the enabled config per (tenant, party) and its enabled driver pairs, feeds them through ores.analytics.quant::topology_builder::build, and keeps one service::rate_engine per (tenant, party) up to date -- see [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. UI metadata is deferred to a later task, as it is for market_series. Scoped to a tenant and a party so each party runs its own, independent CRM -- two parties in the same tenant may have entirely different topologies and never share an engine. - Artefact Table
     end note
 
-    entity ores_dq_cross_currency_basis_conventions_artefact_tbl  #F7E5FF {
+    entity ores_dq_cross_currency_basis_flat_legs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
-        * id : text
-        * version : integer
-        * party_id : uuid <<FK>>
-        * settlement_days : integer
-          settlement_calendar : text
-        * roll_convention : text
+        * convention_name : text
+        * kind_code : text
         * flat_index : text
-        * spread_index : text
-          eom : boolean
-          is_resettable : boolean
           flat_index_is_resettable : boolean
           flat_tenor : text
-          spread_tenor : text
-          spread_payment_lag : integer
           flat_payment_lag : integer
-          spread_include_spread : boolean
-          spread_lookback : text
-          spread_fixing_days : integer
-          spread_rate_cutoff : integer
-          spread_is_averaged : boolean
-          spread_observation_shift : boolean
           flat_include_spread : boolean
           flat_lookback : text
           flat_fixing_days : integer
           flat_rate_cutoff : integer
           flat_is_averaged : boolean
           flat_observation_shift : boolean
-          oresmd_uri : text
     }
 
-    note right of ores_dq_cross_currency_basis_conventions_artefact_tbl
-    Describes how ORE builds both legs of a cross-currency basis swap: the two indices, their tenors, their payment lags and their fixing and cutoff rules, and whether the spread is included in a leg's coupons. Corresponds to the <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    note right of ores_dq_cross_currency_basis_flat_legs_artefact_tbl
+    The leg of a cross-currency basis swap that pays its index flat, as ORE's FlatIndex with the Flat* fixing rules: whether the index is resettable, the tenor, the payment lag, whether the spread is included in the coupon, the lookback, the fixing days, the rate cutoff, whether coupons are averaged, and whether the observation is shifted. They are a part because each states how this one leg builds its coupon; the spread leg beside it states its own. Each column keeps the flat_ prefix of ORE's element, because the screen shows both legs of one convention on one row, and the two legs' columns would otherwise share their names. - Artefact Table
     end note
 
-    entity ores_dq_cross_currency_fix_float_conventions_artefact_tbl  #F7E5FF {
+    entity ores_dq_cross_currency_basis_spread_legs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
-        * id : text
-        * version : integer
-        * party_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
+        * spread_index : text
+          spread_tenor : text
+          spread_payment_lag : integer
+          spread_include_spread : boolean
+          spread_lookback : text
+          spread_fixing_days : integer
+          spread_rate_cutoff : integer
+          spread_is_averaged : boolean
+          spread_observation_shift : boolean
+    }
+
+    note right of ores_dq_cross_currency_basis_spread_legs_artefact_tbl
+    The leg of a cross-currency basis swap that pays its index plus the basis spread, as ORE's SpreadIndex with the Spread* fixing rules: the tenor, the payment lag, whether the spread is included in the coupon, the lookback, the fixing days, the rate cutoff, whether coupons are averaged, and whether the observation is shifted. They are a part because each states how this one leg builds its coupon; the flat leg beside it states its own. Each column keeps the spread_ prefix of ORE's element, for the reason the flat leg's columns do. - Artefact Table
+    end note
+
+    entity ores_dq_cross_currency_basis_swap_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
         * settlement_days : integer
-        * settlement_calendar : text
-        * settlement_convention : text
+          settlement_calendar : text
+        * roll_convention : text
+          eom : boolean
+          is_resettable : boolean
+    }
+
+    note right of ores_dq_cross_currency_basis_swap_terms_artefact_tbl
+    The terms a cross-currency basis swap states once for both legs, as ORE's SettlementDays, SettlementCalendar, RollConvention, EOM and IsResettable. It is a part because its fields hold one invariant: each applies to the whole swap at once, so neither leg can hold it alone. The settlement fields fix the settlement date, the roll convention and the end of month rule roll the schedules of both legs, and the resettable flag resets the notional of the swap. The flat and spread legs beside it hold none of them. - Artefact Table
+    end note
+
+    entity ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
         * fixed_currency : text
         * fixed_frequency : text
         * fixed_convention : text
         * fixed_day_count_fraction : text
+    }
+
+    note right of ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl
+    The leg a cross-currency fix-float swap pays in the currency it fixes, as ORE's FixedCurrency, FixedFrequency, FixedConvention and FixedDayCounter. It is a part because its four fields hold one invariant: the terms the fixed leg is built from, and a convention either states them or does not. The floating leg beside it holds none of them. - Artefact Table
+    end note
+
+    entity ores_dq_cross_currency_fix_float_float_legs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
         * index : text
-          eom : boolean
-          is_resettable : boolean
           float_index_is_resettable : boolean
           include_spread : boolean
           lookback : text
@@ -918,11 +992,27 @@ package "dq_staging" #F3E5F5 {
           rate_cutoff : integer
           is_averaged : boolean
           observation_shift : boolean
-          oresmd_uri : text
     }
 
-    note right of ores_dq_cross_currency_fix_float_conventions_artefact_tbl
-    Describes how ORE builds a cross-currency swap whose fixed leg pays one currency and whose floating leg pays an index in another. Corresponds to the <CrossCurrencyFixFloat> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Nine fields are required and nine are optional. The corpus sets all nine required in all forty-one elements and sets none of the optional ones, so the optional half of the mapping is proven by a case that builds the element rather than by the corpus walk. - Artefact Table
+    note right of ores_dq_cross_currency_fix_float_float_legs_artefact_tbl
+    The leg a cross-currency fix-float swap pays off an index, as ORE's Index with its fixing rules: whether the index is resettable, whether the spread is included in the coupon, the lookback, the fixing days, the rate cutoff, whether coupons are averaged, and whether the observation is shifted. They are a part because a convention that states the floating leg states that block or none of it; the fixed leg beside it holds none of them. - Artefact Table
+    end note
+
+    entity ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
+        * settlement_days : integer
+        * settlement_calendar : text
+        * settlement_convention : text
+          eom : boolean
+          is_resettable : boolean
+    }
+
+    note right of ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl
+    The terms a cross-currency fix-float swap states once for both legs, as ORE's SettlementDays, SettlementCalendar, SettlementConvention, EOM and IsResettable. It is a part because its fields hold one invariant: each applies to the whole swap at once, so neither leg can hold it alone. The settlement fields fix the settlement date, the end of month rule rolls the coupons of both legs, and the resettable flag resets the notional of the swap. The fixed and floating legs beside it hold none of them. - Artefact Table
     end note
 
     entity ores_dq_csas_artefact_tbl  #F7E5FF {
@@ -1321,6 +1411,39 @@ package "dq_staging" #F3E5F5 {
     The settings of one Security entry of a curveconfig.xml, one row per curve_definition in the Securities section. A security entry names the market quotes a bond is priced from, each optional: its spread, its recovery rate, its prepayment rate, its price and its conversion factor. - Artefact Table
     end note
 
+    entity ores_dq_curve_segment_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * conventions : text
+    }
+
+    note right of ores_dq_curve_segment_conventions_artefact_tbl
+    The convention a segment's instruments are priced with, as ORE's Conventions. Eight of the twelve segment elements state it, and two of those may leave it out, so it is a part rather than a column of the segment: a weighted average, a yield plus default, a fitted bond and an ibor fallback segment have no convention to state. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_cross_currency_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * discount_curve : text
+        * spot_rate : text
+          projection_curve_domestic : text
+          projection_curve_foreign : text
+    }
+
+    note right of ores_dq_curve_segment_cross_currency_terms_artefact_tbl
+    What a cross currency segment states about its other currency, as ORE's DiscountCurve, SpotRate, ProjectionCurveDomestic and ProjectionCurveForeign. They hold one invariant: each says how the segment reaches the other currency's curve. ORE requires the discount curve and the spot rate, so every cross currency segment has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
     entity ores_dq_curve_segment_curves_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1340,6 +1463,142 @@ package "dq_staging" #F3E5F5 {
     The lists of curves some segments hold. A fitted bond and a bond yield shifted segment list the curves their bonds' indices are projected on, as IndexCurves, IborIndexCurves and InflationIndexCurves; a yield plus default segment lists its default curves, each with a weight. Each entry is one row, and role names the list it came from. - Artefact Table
     end note
 
+    entity ores_dq_curve_segment_discount_ratios_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * base_curve : text
+        * base_curve_currency : text
+        * numerator_curve : text
+        * numerator_curve_currency : text
+        * denominator_curve : text
+        * denominator_curve_currency : text
+    }
+
+    note right of ores_dq_curve_segment_discount_ratios_artefact_tbl
+    The three curves a discount ratio segment is built from and the currency of each, as ORE's BaseCurve, NumeratorCurve and DenominatorCurve. They hold one invariant: the segment is the base curve times the ratio of the other two. ORE requires all three curves and their currencies, so every discount ratio segment has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_extrapolations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * extrapolate_flat : boolean
+    }
+
+    note right of ores_dq_curve_segment_extrapolations_artefact_tbl
+    Whether a fitted bond or a bond yield shifted segment extrapolates flat past its last bond, as ORE's ExtrapolateFlat. Only those two elements state it, and it is optional, so a segment has this part only when its document states the flag. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_ibor_fallbacks_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * ibor_index : text
+        * rfr_curve : text
+          rfr_index : text
+          spread : numeric(38, 12)
+    }
+
+    note right of ores_dq_curve_segment_ibor_fallbacks_artefact_tbl
+    What an ibor fallback segment falls back from and to, as ORE's IborIndex, RfrCurve, RfrIndex and Spread. They hold one invariant: the ibor index is the RFR index on the RFR curve plus the spread. ORE requires the ibor index and the RFR curve, so every ibor fallback segment has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_pillar_rules_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+          pillar_choice : text
+          priority : integer
+          min_distance : integer
+    }
+
+    note right of ores_dq_curve_segment_pillar_rules_artefact_tbl
+    The rules that place a segment's pillars, as ORE's PillarChoice, Priority and MinDistance. They hold one invariant: together they say where the segment's instruments put the curve's pillars and which segment wins when two put them too close. Nine of the twelve elements state them, and every field is optional, so a segment has this part only when its document states one of them. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_projections_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * projection_curve : text
+    }
+
+    note right of ores_dq_curve_segment_projections_artefact_tbl
+    The curve a simple or an average OIS segment projects its floating index on, as ORE's ProjectionCurve. Only those two elements state it, and it is optional, so a segment has this part only when its document names the curve. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_references_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * reference_curve : text
+    }
+
+    note right of ores_dq_curve_segment_references_artefact_tbl
+    The curve a segment builds on, as ORE's ReferenceCurve. A zero spread segment adds its spreads to it, a bond yield shifted segment shifts it and a yield plus default segment adds its default curves to it. ORE requires it on all three, so every segment of those elements has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_tenor_basis_curves_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+          projection_curve_pay : text
+          projection_curve_receive : text
+          projection_curve_long : text
+          projection_curve_short : text
+    }
+
+    note right of ores_dq_curve_segment_tenor_basis_curves_artefact_tbl
+    The projection curves of a tenor basis segment's legs, as ORE's ProjectionCurvePay, ProjectionCurveReceive, ProjectionCurveLong and ProjectionCurveShort. They hold one invariant: each names the curve one leg of the basis swap projects on. Only a tenor basis segment states them, and each is optional, so a segment has this part only when its document names one. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
+    entity ores_dq_curve_segment_weighted_averages_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_segment_id : uuid <<FK>>
+        * reference_curve_1 : text
+        * reference_curve_2 : text
+        * weight_1 : double
+        * weight_2 : double
+    }
+
+    note right of ores_dq_curve_segment_weighted_averages_artefact_tbl
+    The two curves a weighted average segment averages and the weight of each, as ORE's ReferenceCurve1, ReferenceCurve2, Weight1 and Weight2. They hold one invariant: the segment is their weighted sum. ORE requires all four, so every weighted average segment has this part. A segment holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_segment_id). - Artefact Table
+    end note
+
     entity ores_dq_curve_segments_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1350,38 +1609,10 @@ package "dq_staging" #F3E5F5 {
         * curve_definition_id : uuid <<FK>>
         * segment_type : text
         * position : integer
-          conventions : text
-          pillar_choice : text
-          priority : integer
-          min_distance : integer
-          projection_curve : text
-          discount_curve : text
-          spot_rate : text
-          projection_curve_domestic : text
-          projection_curve_foreign : text
-          projection_curve_pay : text
-          projection_curve_receive : text
-          projection_curve_long : text
-          projection_curve_short : text
-          reference_curve : text
-          reference_curve_2 : text
-          weight_1 : double
-          weight_2 : double
-          ibor_index : text
-          rfr_curve : text
-          rfr_index : text
-          spread : numeric(38, 12)
-          base_curve : text
-          base_curve_currency : text
-          numerator_curve : text
-          numerator_curve_currency : text
-          denominator_curve : text
-          denominator_curve_currency : text
-          extrapolate_flat : boolean
     }
 
     note right of ores_dq_curve_segments_artefact_tbl
-    A yield curve is bootstrapped from one or more segments, and each states its Type: Deposit, Cross Currency Basis Swap, Average OIS and eighteen more. The type fixes the segment element it is written under, so the row holds only the type and refers to curve_segment_type, and a type written under the wrong element cannot be stored. The twelve segment elements share a skeleton and differ in a few settings each: projection curves for simple and tenor basis segments, a discount curve and a spot rate for cross currency ones, a reference curve for zero spread ones. Each setting is its own typed column, null where the segment's element has no such setting. The lists a segment holds are child rows: its quotes in curve_quote, and the index curves and default curves of the bond and default based segments in curve_segment_curve. The convention a segment names may be any of ORE's convention kinds, which are one table each, so a function that looks in all of them checks the reference. - Artefact Table
+    A yield curve is bootstrapped from one or more segments, and each states its Type: Deposit, Cross Currency Basis Swap, Average OIS and eighteen more. The type fixes the segment element it is written under, so the row holds only the type and refers to curve_segment_type, and a type written under the wrong element cannot be stored. The twelve segment elements share a skeleton and differ in their settings, so the row holds only what every element has: its definition, its type and its place. Each component of settings an element states is a part of its own, joined to the segment by its id, and present only for the elements that state it: the convention in curve_segment_convention, the pillar rules in curve_segment_pillar_rule, a simple segment's projection curve in curve_segment_projection, a cross currency segment's terms in curve_segment_cross_currency_terms, and six more, one per component. The lists a segment holds are child rows too: its quotes in curve_quote, and the index curves and default curves of the bond and default based segments in curve_segment_curve. - Artefact Table
     end note
 
     entity ores_dq_curve_volatility_configs_artefact_tbl  #F7E5FF {
@@ -1397,6 +1628,44 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_curve_volatility_configs_artefact_tbl
     The volatility block of one ORE curve entry: the holder its kinds are listed in. ORE writes either one bare kind element on the entry, or a VolatilityConfig element holding up to one of each kind in an xs:all; is_wrapped says which form this block was written in. The kinds themselves are rows of curve_volatility_kind, and each kind's own fields are the row of that kind's part. The row carries no kind and no field of any kind. Every one of those facts belongs to a kind or to a kind's part, and a row that carried them as well would state each one twice. - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_benchmarks_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          benchmark_curve : text
+          source_curve : text
+          pillars : text
+          spot_lag : integer
+          calendar : text
+    }
+
+    note right of ores_dq_default_curve_benchmarks_artefact_tbl
+    How a benchmark default curve is derived, as ORE's BenchmarkCurve, SourceCurve, Pillars, SpotLag and Calendar. Only the benchmark construction reads them, and ORE requires all five for it. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_cds_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          start_date : text
+          running_spread : numeric(38, 12)
+          index_term : text
+          imply_default_from_market : text
+          price_is_upfront : text
+    }
+
+    note right of ores_dq_default_curve_cds_terms_artefact_tbl
+    The settings of a default curve bootstrapped from CDS instruments, as ORE's StartDate, RunningSpread, IndexTerm, ImplyDefaultFromMarket and PriceIsUpfront. Only the CDS spread, hazard rate, price, conventional spread and null constructions read them, and each is optional, so a configuration has this part only when its document states one of them. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
     end note
 
     entity ores_dq_default_curve_configs_artefact_tbl  #F7E5FF {
@@ -1425,31 +1694,63 @@ package "dq_staging" #F3E5F5 {
         * is_inline : boolean
           priority : integer
           default_curve_type : text
-          discount_curve : text
           day_counter : text
           recovery_rate : text
-          start_date : text
-        * has_quotes : boolean
-          benchmark_curve : text
-          reinterpreted_yield_curve : text
-          source_curve : text
-          pillars : text
-          spot_lag : integer
-          calendar : text
-          conventions : text
           extrapolation : text
-          running_spread : numeric(38, 12)
-          index_term : text
-          imply_default_from_market : text
           allow_negative_rates : text
-          price_is_upfront : text
-          initial_state : text
-          states : text
         * position : integer
     }
 
     note right of ores_dq_default_curve_configurations_artefact_tbl
-    One way a default curve may be built. A DefaultCurve either writes its settings inline, or lists them as Configurations, each with a priority; ORE builds the first configuration that succeeds. The corpus writes 144 curves inline and 189 with configurations, nine of them with two, and never both. Each inline curve is one row with is_inline set; each listed configuration is one row with its priority. The quotes a configuration is built from are rows of curve_quote, and its BootstrapConfig a row of curve_bootstrap_config, both naming this row. Pillars and States are comma separated lists in ORE's own text, held as written. The schema also allows SourceCurves and SwitchDates lists, which no corpus document writes; the mapper refuses an entry that has them rather than lose them. - Artefact Table
+    One way a default curve may be built. A DefaultCurve either writes its settings inline, or lists them as Configurations, each with a priority; ORE builds the first configuration that succeeds. The corpus writes 144 curves inline and 189 with configurations, nine of them with two, and never both. Each inline curve is one row with is_inline set; each listed configuration is one row with its priority. The row holds what every type reads: its type, day counter, recovery rate, extrapolation and whether it allows negative rates. Each type's settings are a part of the configuration, keyed by its id and present only for the types that read them: default_curve_market_terms and default_curve_cds_terms for the CDS spread, hazard rate, price, conventional spread and null types, default_curve_benchmark, default_curve_transition_matrix and default_curve_yield_reinterpretation for theirs. The quotes a configuration is built from are rows of curve_quote, and its BootstrapConfig a row of curve_bootstrap_config, both naming this row. Pillars and States are comma separated lists in ORE's own text, held as written in their parts. The schema also allows SourceCurves and SwitchDates lists, which no corpus document writes; the mapper refuses an entry that has them rather than lose them. - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_market_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          discount_curve : text
+          conventions : text
+        * has_quotes : boolean
+    }
+
+    note right of ores_dq_default_curve_market_terms_artefact_tbl
+    What a default curve built from market quotes states about those quotes, as ORE's DiscountCurve, Conventions and Quotes. The CDS spread, hazard rate, price, conventional spread and null constructions read them. A transition matrix reads only its Quotes, but every transition matrix in the ORE examples also states a discount curve and conventions, so the part holds them for that type too and the document round trips as written. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_transition_matrices_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          initial_state : text
+          states : text
+    }
+
+    note right of ores_dq_default_curve_transition_matrices_artefact_tbl
+    The rating states of a default curve read from a transition matrix, as ORE's InitialState and States. Only the transition matrix construction reads them, and each is optional, so a configuration has this part only when its document states one of them. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_yield_reinterpretations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          reinterpreted_yield_curve : text
+    }
+
+    note right of ores_dq_default_curve_yield_reinterpretations_artefact_tbl
+    The yield curve a default curve of type YieldCurve reads as survival probabilities, as ORE's ReinterpretedYieldCurve. Only that construction reads it, and ORE requires it there. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
     end note
 
     entity ores_dq_deposit_conventions_artefact_tbl  #F7E5FF {
@@ -1725,6 +2026,11 @@ package "dq_staging" #F3E5F5 {
         * branching_ratio : double
         * decay : double
         * sensitivity : double
+        * variance_model : text
+        * garch_alpha : double
+        * garch_gamma : double
+        * garch_beta : double
+        * garch_window_days : integer
     }
 
     note right of ores_dq_fx_spot_generation_configs_artefact_tbl
@@ -1869,16 +2175,29 @@ package "dq_staging" #F3E5F5 {
         * frequency : text
           base_rate : text
           tolerance : double
-        * has_seasonality : boolean
-          seasonality_base_date : text
-          seasonality_frequency : text
           use_last_fixing_date : text
           interpolation_variable : text
           interpolation_method : text
     }
 
     note right of ores_dq_inflation_curve_configs_artefact_tbl
-    The settings of one InflationCurve entry of a curveconfig.xml, one row per curve_definition in the InflationCurves section: the nominal curve it is built over, whether it is zero coupon or year on year, its lag and frequency, and its seasonality. The quotes it is built from are rows of curve_quote, and the seasonality factors rows of inflation_seasonality_factor. The schema also allows a list of segments, each a convention and quotes. No corpus document writes one, and the mapper refuses an entry that does rather than lose it. - Artefact Table
+    The settings of one InflationCurve entry of a curveconfig.xml, one row per curve_definition in the InflationCurves section: the nominal curve it is built over, whether it is zero coupon or year on year, its lag and frequency, and its interpolation. The quotes it is built from are rows of curve_quote. Its seasonality is a row of inflation_seasonality, present only when the curve states one, and the seasonality factors are rows of inflation_seasonality_factor. The schema also allows a list of segments, each a convention and quotes. No corpus document writes one, and the mapper refuses an entry that does rather than lose it. - Artefact Table
+    end note
+
+    entity ores_dq_inflation_seasonalities_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * curve_definition_id : uuid <<FK>>
+        * base_date : text
+        * frequency : text
+    }
+
+    note right of ores_dq_inflation_seasonalities_artefact_tbl
+    ORE's seasonalityType requires BaseDate, Frequency and Factors together. The inflation curve held them as has_seasonality and two nullable columns, which could say a curve has a seasonality with no base date. A row of this part is the seasonality: it exists only where the curve states one, so its presence replaces the flag, and its base date and frequency are required. The factors stay rows of inflation_seasonality_factor, keyed by the same curve entry. The export refuses factors with no seasonality. ORE allows a seasonality whose Factors holds no Factor, so the part does not require one. A curve entry holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, curve_definition_id). - Artefact Table
     end note
 
     entity ores_dq_inflation_seasonality_factors_artefact_tbl  #F7E5FF {
@@ -2531,6 +2850,7 @@ package "dq_staging" #F3E5F5 {
         * tier : text
           applicable_jurisdiction : text
           regulatory_book_type : text
+          cut_kind_code : text
     }
 
     note right of ores_dq_report_definitions_artefact_tbl
@@ -2670,14 +2990,28 @@ package "dq_staging" #F3E5F5 {
           swap_tenors : text
           short_swap_index_base : text
           swap_index_base : text
-          smile_option_tenors : text
-          smile_swap_tenors : text
-          smile_spreads : text
           quote_tag : text
     }
 
     note right of ores_dq_swaption_volatility_configs_artefact_tbl
-    The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix and smile, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so it is a row of swaption_proxy_config and the entry holds none of its fields. - Artefact Table
+    The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so it is a row of swaption_proxy_config and the entry holds none of its fields. The smile grid of a Smile surface is a row of swaption_volatility_smile in the same way, so an ATM entry carries no smile columns. - Artefact Table
+    end note
+
+    entity ores_dq_swaption_volatility_smiles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * swaption_volatility_config_id : uuid <<FK>>
+          smile_option_tenors : text
+          smile_swap_tenors : text
+          smile_spreads : text
+    }
+
+    note right of ores_dq_swaption_volatility_smiles_artefact_tbl
+    ORE's swaptionVolatility is one xs:all with an optional Dimension and every smile element optional. ORE reads the three smile lists only for a Smile surface, and they are one block: in the ORE examples an entry states all three or none. A row of this part is that block, and it exists wherever the entry states one, as the FX smile part does for the FX entry. The examples also keep a grid on three ATM entries whose dimension was switched from Smile, so the part does not depend on the dimension, and the document round trips as written. The part holds SmileOptionTenors, SmileSwapTenors and SmileSpreads, each a comma separated list in ORE's own text. Dimension stays on the entry, because it is the entry's own setting and the smile only depends on it. An entry holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, swaption_volatility_config_id). - Artefact Table
     end note
 
     entity ores_dq_tags_artefact_tbl  #F7E5FF {

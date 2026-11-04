@@ -26,6 +26,7 @@
 #define ORES_TRADING_API_DOMAIN_BOND_OPTION_EXERCISE_HPP
 
 #include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #include <tuple>

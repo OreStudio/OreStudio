@@ -43,11 +43,15 @@
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/variance_calibration_repository.hpp"
 #include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <expected>
+#include <map>
+#include <memory>
+#include <mutex>
 #include <ranges>
 #include <stdexcept>
 #include <utility>
@@ -65,9 +69,18 @@ read_calibration_policy(const ores::database::context& ctx, const std::string& a
         return std::nullopt;
 
     feed::calibration_policy out;
+    out.id = boost::uuids::to_string(found->id);
+    out.version = found->version;
     out.window_days = found->window_days;
+    out.variance_window_days = found->variance_window_days;
     out.allow_inverse = found->allow_inverse;
     out.fallback_code = found->fallback_code;
+    out.variance_approval = {.by_policy = found->variance_approval_mode == "auto",
+                             .min_returns = found->variance_min_returns,
+                             .require_starts_agree = found->variance_require_starts_agree,
+                             .min_persistence = found->variance_min_persistence,
+                             .max_persistence = found->variance_max_persistence,
+                             .min_reaction = found->variance_min_reaction};
     auto orders = repo::calibration_provider_order_repository{}.read_latest(sys_ctx);
     std::erase_if(orders, [&](const auto& o) { return o.policy_id != found->id; });
     std::ranges::sort(orders, {}, &ores::synthetic::domain::calibration_provider_order::rank);
@@ -124,6 +137,38 @@ fx_target_for(const feed::feed_adapter& adapter,
                           fx.base_currency_code, fx.quote_currency_code, notation->primary_side()});
 }
 
+/**
+ * The rows every FX feed of one candidates() call builds from, read once at the first build. A
+ * feed's build reads whole tables and keeps its own rows, so without this a class of feeds read
+ * each table once per feed.
+ */
+struct fx_build_rows final {
+    std::mutex guard;
+    bool read = false;
+    std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::gmm_component>> components;
+    std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::fx_spot_fixing_item>> items;
+    std::map<std::string, std::optional<feed::calibration_policy>> policies;
+
+    void read_once(const ores::database::context& ctx) {
+        if (read)
+            return;
+        for (auto& g : repository::gmm_component_repository{}.read_latest(ctx))
+            components[g.fx_spot_config_id].push_back(std::move(g));
+        for (auto& i : repository::fx_spot_fixing_item_repository{}.read_latest(ctx))
+            items[i.fx_spot_config_id].push_back(std::move(i));
+        read = true;
+    }
+
+    std::optional<feed::calibration_policy> policy_of(const ores::database::context& ctx,
+                                                      const std::string& asset_class_code) {
+        const auto found = policies.find(asset_class_code);
+        if (found != policies.end())
+            return found->second;
+        return policies.emplace(asset_class_code, read_calibration_policy(ctx, asset_class_code))
+            .first->second;
+    }
+};
+
 feed_kind make_fx_spot_kind() {
     using ores::synthetic::feed::fx_spot_feed_build_input;
     using ores::synthetic::feed::fx_spot_feed_kind;
@@ -140,6 +185,7 @@ feed_kind make_fx_spot_kind() {
         const auto rows = id.empty() ? fx_repo.read_latest(ctx) : fx_repo.read_latest(ctx, id);
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());
+        const auto shared = std::make_shared<fx_build_rows>();
         for (const auto& fx : rows) {
             feed_kind_candidate c;
             c.feed_config_id = boost::uuids::to_string(fx.id);
@@ -151,29 +197,39 @@ feed_kind make_fx_spot_kind() {
             c.folder_id = fx.folder_id;
             c.asset_class_code = fx.asset_class_code;
             c.fx_pair = std::make_pair(fx.base_currency_code, fx.quote_currency_code);
-            c.build_input = [ctx, fx](const feed::feed_adapter& adapter) -> feed_build_outcome {
-                repo::gmm_component_repository comp_repo;
-                std::vector<ores::synthetic::domain::gmm_component> components;
-                for (auto& g : comp_repo.read_latest(ctx))
-                    if (g.fx_spot_config_id == fx.id)
-                        components.push_back(std::move(g));
+            c.build_input =
+                [ctx, fx, shared](const feed::feed_adapter& adapter) -> feed_build_outcome {
+                std::unique_lock lock(shared->guard);
+                shared->read_once(ctx);
+                auto components = shared->components[fx.id];
                 if (components.empty())
                     return {.input = std::nullopt,
                             .skip_reason = "Feed config has no GMM components: " +
                                            boost::uuids::to_string(fx.id)};
                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> fixing_items;
                 if (fx.price_source == "fixing")
-                    for (auto& i : repo::fx_spot_fixing_item_repository{}.read_latest(ctx))
-                        if (i.fx_spot_config_id == fx.id)
-                            fixing_items.push_back(std::move(i));
+                    fixing_items = shared->items[fx.id];
 
                 // A config that names no items calibrates under its class policy, or the
                 // defaults when the class has none. The feed's own window overrides the
                 // policy's for the items it derives; explicit items keep their own windows.
-                auto policy = read_calibration_policy(ctx, fx.asset_class_code)
+                auto policy = shared->policy_of(ctx, fx.asset_class_code)
                                   .value_or(feed::calibration_policy{});
+                lock.unlock();
                 if (fx.calibration_window_days)
                     policy.window_days = *fx.calibration_window_days;
+
+                // The calibration a GJR-GARCH feed names is a system row, read as stored; the
+                // feed decides at start whether it is approved.
+                std::optional<ores::synthetic::domain::variance_calibration> calibration;
+                if (fx.variance_calibration_id) {
+                    const auto found =
+                        ores::synthetic::repository::variance_calibration_repository{}.read_latest(
+                            ores::database::service::tenant_context::with_system_tenant(ctx),
+                            boost::uuids::to_string(*fx.variance_calibration_id));
+                    if (!found.empty())
+                        calibration = found.front();
+                }
 
                 // The feed quotes the pair in the notation of the adapter's provider, so a feed
                 // started by hand publishes the same ids the demand set names.
@@ -184,12 +240,13 @@ feed_kind make_fx_spot_kind() {
                         return {.input = std::nullopt, .skip_reason = written.error()};
                     target = std::move(*written);
                 }
-                return {.input =
-                            feed::feed_build_input{fx_spot_feed_build_input{fx,
-                                                                            std::move(components),
-                                                                            std::move(target),
-                                                                            std::move(fixing_items),
-                                                                            std::move(policy)}},
+                return {.input = feed::feed_build_input{fx_spot_feed_build_input{
+                            fx,
+                            std::move(components),
+                            std::move(target),
+                            std::move(fixing_items),
+                            std::move(policy),
+                            std::move(calibration)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));

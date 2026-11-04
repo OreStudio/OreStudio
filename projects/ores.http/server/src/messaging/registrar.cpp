@@ -58,9 +58,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // and a change recorded on one replica must reach a client of another. One
     // subscription covers every component, so a component added later is heard
     // without this code changing.
-    subs.push_back(
-        nats.subscribe(std::string(stream::all_entity_events),
-                       [feed](ores::nats::message msg) { feed->notify(msg); }));
+    subs.push_back(nats.subscribe(std::string(stream::all_entity_events),
+                                  [feed](ores::nats::message msg) { feed->notify(msg); }));
 
     BOOST_LOG_SEV(registrar_lg(), info)
         << "Hearing entity events on " << stream::all_entity_events << " for the change stream";

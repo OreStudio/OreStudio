@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 4A441171-D5FB-4942-B406-F0B9F7D32B87
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.result
 #+description: Codegen entity model for the compute =result= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

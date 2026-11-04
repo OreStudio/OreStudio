@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: EF749B45-B7B0-45A2-8339-633E4267F86B
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.notification_operations
 #+description: Codegen operation model for raising notifications and for a person's own notifications -- the list, the unread count, marking read and clearing -- rendered to C++ and TypeScript from one source.

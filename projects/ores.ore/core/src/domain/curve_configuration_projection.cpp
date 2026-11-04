@@ -25,7 +25,11 @@
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
+#include "ores.refdata.api/domain/commodity_curve_basis.hpp"
 #include "ores.refdata.api/domain/commodity_curve_config.hpp"
+#include "ores.refdata.api/domain/commodity_curve_cross_currency.hpp"
+#include "ores.refdata.api/domain/commodity_curve_direct.hpp"
+#include "ores.refdata.api/domain/commodity_curve_interpolation.hpp"
 #include "ores.refdata.api/domain/commodity_price_segment.hpp"
 #include "ores.refdata.api/domain/commodity_volatility_config.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
@@ -40,18 +44,35 @@
 #include "ores.refdata.api/domain/curve_report_configuration.hpp"
 #include "ores.refdata.api/domain/curve_security_config.hpp"
 #include "ores.refdata.api/domain/curve_segment.hpp"
+#include "ores.refdata.api/domain/curve_segment_convention.hpp"
+#include "ores.refdata.api/domain/curve_segment_cross_currency_terms.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
+#include "ores.refdata.api/domain/curve_segment_discount_ratio.hpp"
+#include "ores.refdata.api/domain/curve_segment_extrapolation.hpp"
+#include "ores.refdata.api/domain/curve_segment_ibor_fallback.hpp"
+#include "ores.refdata.api/domain/curve_segment_pillar_rule.hpp"
+#include "ores.refdata.api/domain/curve_segment_projection.hpp"
+#include "ores.refdata.api/domain/curve_segment_reference.hpp"
+#include "ores.refdata.api/domain/curve_segment_tenor_basis_curves.hpp"
+#include "ores.refdata.api/domain/curve_segment_weighted_average.hpp"
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
+#include "ores.refdata.api/domain/default_curve_benchmark.hpp"
+#include "ores.refdata.api/domain/default_curve_cds_terms.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
+#include "ores.refdata.api/domain/default_curve_market_terms.hpp"
+#include "ores.refdata.api/domain/default_curve_transition_matrix.hpp"
+#include "ores.refdata.api/domain/default_curve_yield_reinterpretation.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_volatility_config.hpp"
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
+#include "ores.refdata.api/domain/inflation_seasonality.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
+#include "ores.refdata.api/domain/swaption_volatility_smile.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -64,6 +85,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -340,11 +362,206 @@ void import_quotes(ores::refdata::messaging::curve_configuration_document& out,
                    const boost::uuids::uuid& configuration_id = boost::uuids::uuid{},
                    std::optional<std::string_view> list = std::nullopt);
 
+using curve_configuration_document = ores::refdata::messaging::curve_configuration_document;
+
+// Each part of a segment or an entry: the document vector that holds its rows,
+// the key that names the row it belongs to, and the names a refusal uses. The
+// section generator reads this table to find a part's vector and key.
+template <class Part>
+struct document_part;
+
+template <>
+struct document_part<refdata::domain::curve_segment_convention> {
+    static constexpr auto vector = &curve_configuration_document::segment_conventions;
+    static constexpr auto key = &refdata::domain::curve_segment_convention::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "convention";
+};
+
+template <>
+struct document_part<refdata::domain::curve_segment_pillar_rule> {
+    static constexpr auto vector = &curve_configuration_document::segment_pillar_rules;
+    static constexpr auto key = &refdata::domain::curve_segment_pillar_rule::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "pillar rule";
+};
+
+template <>
+struct document_part<refdata::domain::curve_segment_projection> {
+    static constexpr auto vector = &curve_configuration_document::segment_projections;
+    static constexpr auto key = &refdata::domain::curve_segment_projection::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "projection curve";
+};
+
+template <>
+struct document_part<refdata::domain::curve_segment_tenor_basis_curves> {
+    static constexpr auto vector = &curve_configuration_document::segment_tenor_basis_curves;
+    static constexpr auto key =
+        &refdata::domain::curve_segment_tenor_basis_curves::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "tenor basis curves";
+};
+
+template <>
+struct document_part<refdata::domain::curve_segment_cross_currency_terms> {
+    static constexpr auto vector = &curve_configuration_document::segment_cross_currency_terms;
+    static constexpr auto key =
+        &refdata::domain::curve_segment_cross_currency_terms::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "cross currency terms";
+};
+
+template <>
+struct document_part<refdata::domain::curve_segment_reference> {
+    static constexpr auto vector = &curve_configuration_document::segment_references;
+    static constexpr auto key = &refdata::domain::curve_segment_reference::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "reference curve";
+};
+
+template <>
+struct document_part<refdata::domain::curve_segment_weighted_average> {
+    static constexpr auto vector = &curve_configuration_document::segment_weighted_averages;
+    static constexpr auto key = &refdata::domain::curve_segment_weighted_average::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "weighted average";
+};
+
+template <>
+struct document_part<refdata::domain::curve_segment_discount_ratio> {
+    static constexpr auto vector = &curve_configuration_document::segment_discount_ratios;
+    static constexpr auto key = &refdata::domain::curve_segment_discount_ratio::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "discount ratio";
+};
+
+template <>
+struct document_part<refdata::domain::curve_segment_extrapolation> {
+    static constexpr auto vector = &curve_configuration_document::segment_extrapolations;
+    static constexpr auto key = &refdata::domain::curve_segment_extrapolation::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "extrapolation";
+};
+
+template <>
+struct document_part<refdata::domain::curve_segment_ibor_fallback> {
+    static constexpr auto vector = &curve_configuration_document::segment_ibor_fallbacks;
+    static constexpr auto key = &refdata::domain::curve_segment_ibor_fallback::curve_segment_id;
+    static constexpr std::string_view owner = "segment";
+    static constexpr std::string_view name = "ibor fallback";
+};
+
+template <>
+struct document_part<refdata::domain::default_curve_market_terms> {
+    static constexpr auto vector = &curve_configuration_document::default_curve_market_terms;
+    static constexpr auto key =
+        &refdata::domain::default_curve_market_terms::default_curve_configuration_id;
+    static constexpr std::string_view owner = "default curve configuration";
+    static constexpr std::string_view name = "market terms";
+};
+
+template <>
+struct document_part<refdata::domain::default_curve_cds_terms> {
+    static constexpr auto vector = &curve_configuration_document::default_curve_cds_terms;
+    static constexpr auto key =
+        &refdata::domain::default_curve_cds_terms::default_curve_configuration_id;
+    static constexpr std::string_view owner = "default curve configuration";
+    static constexpr std::string_view name = "CDS terms";
+};
+
+template <>
+struct document_part<refdata::domain::default_curve_benchmark> {
+    static constexpr auto vector = &curve_configuration_document::default_curve_benchmarks;
+    static constexpr auto key =
+        &refdata::domain::default_curve_benchmark::default_curve_configuration_id;
+    static constexpr std::string_view owner = "default curve configuration";
+    static constexpr std::string_view name = "benchmark";
+};
+
+template <>
+struct document_part<refdata::domain::default_curve_transition_matrix> {
+    static constexpr auto vector = &curve_configuration_document::default_curve_transition_matrices;
+    static constexpr auto key =
+        &refdata::domain::default_curve_transition_matrix::default_curve_configuration_id;
+    static constexpr std::string_view owner = "default curve configuration";
+    static constexpr std::string_view name = "transition matrix";
+};
+
+template <>
+struct document_part<refdata::domain::default_curve_yield_reinterpretation> {
+    static constexpr auto vector =
+        &curve_configuration_document::default_curve_yield_reinterpretations;
+    static constexpr auto key =
+        &refdata::domain::default_curve_yield_reinterpretation::default_curve_configuration_id;
+    static constexpr std::string_view owner = "default curve configuration";
+    static constexpr std::string_view name = "yield reinterpretation";
+};
+
+template <>
+struct document_part<refdata::domain::commodity_curve_interpolation> {
+    static constexpr auto vector = &curve_configuration_document::commodity_curve_interpolations;
+    static constexpr auto key =
+        &refdata::domain::commodity_curve_interpolation::curve_definition_id;
+    static constexpr std::string_view owner = "commodity curve";
+    static constexpr std::string_view name = "interpolation";
+};
+
+template <>
+struct document_part<refdata::domain::commodity_curve_direct> {
+    static constexpr auto vector = &curve_configuration_document::commodity_curve_directs;
+    static constexpr auto key = &refdata::domain::commodity_curve_direct::curve_definition_id;
+    static constexpr std::string_view owner = "commodity curve";
+    static constexpr std::string_view name = "direct quotes";
+};
+
+template <>
+struct document_part<refdata::domain::commodity_curve_cross_currency> {
+    static constexpr auto vector = &curve_configuration_document::commodity_curve_cross_currencies;
+    static constexpr auto key =
+        &refdata::domain::commodity_curve_cross_currency::curve_definition_id;
+    static constexpr std::string_view owner = "commodity curve";
+    static constexpr std::string_view name = "cross currency curves";
+};
+
+template <>
+struct document_part<refdata::domain::commodity_curve_basis> {
+    static constexpr auto vector = &curve_configuration_document::commodity_curve_bases;
+    static constexpr auto key = &refdata::domain::commodity_curve_basis::curve_definition_id;
+    static constexpr std::string_view owner = "commodity curve";
+    static constexpr std::string_view name = "basis configuration";
+};
+
+template <>
+struct document_part<refdata::domain::swaption_volatility_smile> {
+    static constexpr auto vector = &curve_configuration_document::swaption_volatility_smiles;
+    static constexpr auto key =
+        &refdata::domain::swaption_volatility_smile::swaption_volatility_config_id;
+    static constexpr std::string_view owner = "swaption volatility entry";
+    static constexpr std::string_view name = "smile grid";
+};
+
+template <>
+struct document_part<refdata::domain::inflation_seasonality> {
+    static constexpr auto vector = &curve_configuration_document::inflation_seasonalities;
+    static constexpr auto key = &refdata::domain::inflation_seasonality::curve_definition_id;
+    static constexpr std::string_view owner = "inflation curve";
+    static constexpr std::string_view name = "seasonality";
+};
+
 // The state one document's projection accumulates, so each segment element's
 // reader adds its rows without threading the vectors through every call.
 struct import_context {
     ores::refdata::messaging::curve_configuration_document& out;
     boost::uuids::uuid definition_id;
+
+    template <class Part>
+    void keep(const boost::uuids::uuid& owner_id, Part p) {
+        p.id = curve_configuration_projection_new_uuid();
+        p.*document_part<Part>::key = owner_id;
+        curve_configuration_projection_set_audit(p);
+        (out.*document_part<Part>::vector).push_back(std::move(p));
+    }
 
     refdata::domain::curve_segment& segment(const std::string& type, int position) {
         refdata::domain::curve_segment s;
@@ -420,167 +637,237 @@ void import_quotes(ores::refdata::messaging::curve_configuration_document& out,
     }
 }
 
-void common_settings(refdata::domain::curve_segment& s, const record_reader& v) {
-    s.pillar_choice = v.text("PillarChoice");
-    s.priority = optional_int(v, "Priority");
-    s.min_distance = optional_int(v, "MinDistance");
+// Each reader below fills one part of a segment from the segment's element. A
+// part whose fields are all optional is kept only when the element states one
+// of them, so no part row is empty. The section generator follows these calls
+// to tell each segment kind's leaves, and the part each leaf is in.
+void import_convention(import_context& ctx, const boost::uuids::uuid& id, const record_reader& v) {
+    refdata::domain::curve_segment_convention p;
+    p.conventions = required_text(v, "Conventions");
+    ctx.keep(id, std::move(p));
 }
 
-void restore_common_settings(record_writer r, const refdata::domain::curve_segment& s) {
-    r.set_optional_text("PillarChoice", s.pillar_choice);
-    r.set_optional_integer("Priority", s.priority);
-    r.set_optional_integer("MinDistance", s.min_distance);
+void import_optional_convention(import_context& ctx,
+                                const boost::uuids::uuid& id,
+                                const record_reader& v) {
+    if (v.has("Conventions"))
+        import_convention(ctx, id, v);
+}
+
+void import_pillar_rule(import_context& ctx, const boost::uuids::uuid& id, const record_reader& v) {
+    refdata::domain::curve_segment_pillar_rule p;
+    p.pillar_choice = v.text("PillarChoice");
+    p.priority = optional_int(v, "Priority");
+    p.min_distance = optional_int(v, "MinDistance");
+    if (p.pillar_choice || p.priority || p.min_distance)
+        ctx.keep(id, std::move(p));
+}
+
+void import_projection(import_context& ctx, const boost::uuids::uuid& id, const record_reader& v) {
+    if (!v.has("ProjectionCurve"))
+        return;
+    refdata::domain::curve_segment_projection p;
+    p.projection_curve = required_text(v, "ProjectionCurve");
+    ctx.keep(id, std::move(p));
+}
+
+void import_tenor_basis_curves(import_context& ctx,
+                               const boost::uuids::uuid& id,
+                               const record_reader& v) {
+    refdata::domain::curve_segment_tenor_basis_curves p;
+    p.projection_curve_pay = v.text("ProjectionCurvePay");
+    p.projection_curve_receive = v.text("ProjectionCurveReceive");
+    p.projection_curve_long = v.text("ProjectionCurveLong");
+    p.projection_curve_short = v.text("ProjectionCurveShort");
+    if (p.projection_curve_pay || p.projection_curve_receive || p.projection_curve_long ||
+        p.projection_curve_short)
+        ctx.keep(id, std::move(p));
+}
+
+void import_cross_currency_terms(import_context& ctx,
+                                 const boost::uuids::uuid& id,
+                                 const record_reader& v) {
+    refdata::domain::curve_segment_cross_currency_terms p;
+    p.discount_curve = required_text(v, "DiscountCurve");
+    p.spot_rate = required_text(v, "SpotRate");
+    p.projection_curve_domestic = v.text("ProjectionCurveDomestic");
+    p.projection_curve_foreign = v.text("ProjectionCurveForeign");
+    ctx.keep(id, std::move(p));
+}
+
+void import_reference(import_context& ctx, const boost::uuids::uuid& id, const record_reader& v) {
+    refdata::domain::curve_segment_reference p;
+    p.reference_curve = required_text(v, "ReferenceCurve");
+    ctx.keep(id, std::move(p));
+}
+
+void import_weighted_average(import_context& ctx,
+                             const boost::uuids::uuid& id,
+                             const record_reader& v) {
+    refdata::domain::curve_segment_weighted_average p;
+    p.reference_curve_1 = required_text(v, "ReferenceCurve1");
+    p.reference_curve_2 = required_text(v, "ReferenceCurve2");
+    p.weight_1 = required_real(v, "Weight1");
+    p.weight_2 = required_real(v, "Weight2");
+    ctx.keep(id, std::move(p));
+}
+
+void import_discount_ratio(import_context& ctx,
+                           const boost::uuids::uuid& id,
+                           const record_reader& v) {
+    refdata::domain::curve_segment_discount_ratio p;
+    if (const auto base = v.child("BaseCurve"); base) {
+        p.base_curve = base->own_text().value_or("");
+        p.base_curve_currency = required_text(*base, "currency");
+    }
+    if (const auto numerator = v.child("NumeratorCurve"); numerator) {
+        p.numerator_curve = numerator->own_text().value_or("");
+        p.numerator_curve_currency = required_text(*numerator, "currency");
+    }
+    if (const auto denominator = v.child("DenominatorCurve"); denominator) {
+        p.denominator_curve = denominator->own_text().value_or("");
+        p.denominator_curve_currency = required_text(*denominator, "currency");
+    }
+    ctx.keep(id, std::move(p));
+}
+
+void import_extrapolation(import_context& ctx,
+                          const boost::uuids::uuid& id,
+                          const record_reader& v) {
+    if (!v.has("ExtrapolateFlat"))
+        return;
+    refdata::domain::curve_segment_extrapolation p;
+    p.extrapolate_flat = boolean_text(v, "ExtrapolateFlat").value_or(false);
+    ctx.keep(id, std::move(p));
+}
+
+void import_ibor_fallback(import_context& ctx,
+                          const boost::uuids::uuid& id,
+                          const record_reader& v) {
+    refdata::domain::curve_segment_ibor_fallback p;
+    p.ibor_index = required_text(v, "IborIndex");
+    p.rfr_curve = required_text(v, "RfrCurve");
+    p.rfr_index = v.text("RfrIndex");
+    p.spread = v.decimal("Spread");
+    ctx.keep(id, std::move(p));
+}
+
+// The index, ibor index and inflation index curves a bond segment lists.
+void import_bond_curves(import_context& ctx,
+                        const boost::uuids::uuid& id,
+                        const record_reader& g,
+                        bool with_inflation) {
+    int item = 0;
+    if (const auto curves = g.child("IndexCurves"); curves)
+        for (const auto& c : curves->children("IndexCurve"))
+            ctx.curve(
+                id, "IndexCurve", c.own_text().value_or(""), c.text("Index"), std::nullopt, item++);
+    item = 0;
+    if (const auto curves = g.child("IborIndexCurves"); curves)
+        for (const auto& c : curves->children("IborIndexCurve"))
+            ctx.curve(id,
+                      "IborIndexCurve",
+                      c.own_text().value_or(""),
+                      c.text("iborIndex"),
+                      std::nullopt,
+                      item++);
+    if (!with_inflation)
+        return;
+    item = 0;
+    if (const auto curves = g.child("InflationIndexCurves"); curves)
+        for (const auto& c : curves->children("InflationIndexCurve"))
+            ctx.curve(id,
+                      "InflationIndexCurve",
+                      c.own_text().value_or(""),
+                      c.text("inflationIndex"),
+                      std::nullopt,
+                      item++);
 }
 
 void import_segments(import_context& ctx, const record_reader& v) {
     int position = 0;
     for (const auto& g : v.children("Direct")) {
-        auto& s = ctx.segment(required_spelling(g, "Type"), position++);
-        s.conventions = g.text("Conventions");
-        common_settings(s, g);
-        ctx.quotes(s.id, g.child("Quotes"));
+        const auto id = ctx.segment(required_spelling(g, "Type"), position++).id;
+        import_optional_convention(ctx, id, g);
+        import_pillar_rule(ctx, id, g);
+        ctx.quotes(id, g.child("Quotes"));
     }
     position = 0;
     for (const auto& g : v.children("Simple")) {
-        auto& s = ctx.segment(required_spelling(g, "Type"), position++);
-        s.conventions = required_text(g, "Conventions");
-        common_settings(s, g);
-        s.projection_curve = g.text("ProjectionCurve");
-        ctx.quotes(s.id, g.child("Quotes"));
+        const auto id = ctx.segment(required_spelling(g, "Type"), position++).id;
+        import_convention(ctx, id, g);
+        import_pillar_rule(ctx, id, g);
+        import_projection(ctx, id, g);
+        ctx.quotes(id, g.child("Quotes"));
     }
     position = 0;
     for (const auto& g : v.children("AverageOIS")) {
-        auto& s = ctx.segment(required_text(g, "Type"), position++);
-        s.conventions = required_text(g, "Conventions");
-        common_settings(s, g);
-        s.projection_curve = g.text("ProjectionCurve");
+        const auto id = ctx.segment(required_text(g, "Type"), position++).id;
+        import_convention(ctx, id, g);
+        import_pillar_rule(ctx, id, g);
+        import_projection(ctx, id, g);
         if (const auto quotes = g.child("Quotes"); quotes)
-            ctx.composite_quotes(s.id, *quotes);
+            ctx.composite_quotes(id, *quotes);
     }
     position = 0;
     for (const auto& g : v.children("TenorBasis")) {
-        auto& s = ctx.segment(required_spelling(g, "Type"), position++);
-        s.conventions = required_text(g, "Conventions");
-        common_settings(s, g);
-        s.projection_curve_pay = g.text("ProjectionCurvePay");
-        s.projection_curve_receive = g.text("ProjectionCurveReceive");
-        s.projection_curve_long = g.text("ProjectionCurveLong");
-        s.projection_curve_short = g.text("ProjectionCurveShort");
-        ctx.quotes(s.id, g.child("Quotes"));
+        const auto id = ctx.segment(required_spelling(g, "Type"), position++).id;
+        import_convention(ctx, id, g);
+        import_pillar_rule(ctx, id, g);
+        import_tenor_basis_curves(ctx, id, g);
+        ctx.quotes(id, g.child("Quotes"));
     }
     position = 0;
     for (const auto& g : v.children("CrossCurrency")) {
-        auto& s = ctx.segment(required_spelling(g, "Type"), position++);
-        s.conventions = required_text(g, "Conventions");
-        common_settings(s, g);
-        s.discount_curve = required_text(g, "DiscountCurve");
-        s.spot_rate = required_text(g, "SpotRate");
-        s.projection_curve_domestic = g.text("ProjectionCurveDomestic");
-        s.projection_curve_foreign = g.text("ProjectionCurveForeign");
-        ctx.quotes(s.id, g.child("Quotes"));
+        const auto id = ctx.segment(required_spelling(g, "Type"), position++).id;
+        import_convention(ctx, id, g);
+        import_pillar_rule(ctx, id, g);
+        import_cross_currency_terms(ctx, id, g);
+        ctx.quotes(id, g.child("Quotes"));
     }
     position = 0;
     for (const auto& g : v.children("ZeroSpread")) {
-        auto& s = ctx.segment(required_spelling(g, "Type"), position++);
-        s.conventions = required_text(g, "Conventions");
-        common_settings(s, g);
-        s.reference_curve = required_text(g, "ReferenceCurve");
-        ctx.quotes(s.id, g.child("Quotes"));
+        const auto id = ctx.segment(required_spelling(g, "Type"), position++).id;
+        import_convention(ctx, id, g);
+        import_pillar_rule(ctx, id, g);
+        import_reference(ctx, id, g);
+        ctx.quotes(id, g.child("Quotes"));
     }
     position = 0;
     for (const auto& g : v.children("DiscountRatio")) {
-        auto& s = ctx.segment(required_spelling(g, "Type"), position++);
-        s.conventions = g.text("Conventions");
-        common_settings(s, g);
-        if (const auto base = g.child("BaseCurve"); base) {
-            s.base_curve = base->own_text();
-            s.base_curve_currency = base->text("currency");
-        }
-        if (const auto numerator = g.child("NumeratorCurve"); numerator) {
-            s.numerator_curve = numerator->own_text();
-            s.numerator_curve_currency = numerator->text("currency");
-        }
-        if (const auto denominator = g.child("DenominatorCurve"); denominator) {
-            s.denominator_curve = denominator->own_text();
-            s.denominator_curve_currency = denominator->text("currency");
-        }
+        const auto id = ctx.segment(required_spelling(g, "Type"), position++).id;
+        import_optional_convention(ctx, id, g);
+        import_pillar_rule(ctx, id, g);
+        import_discount_ratio(ctx, id, g);
     }
     position = 0;
     for (const auto& g : v.children("FittedBond")) {
-        auto& s = ctx.segment(required_text(g, "Type"), position++);
-        common_settings(s, g);
-        s.extrapolate_flat = boolean_text(g, "ExtrapolateFlat");
-        ctx.quotes(s.id, g.child("Quotes"));
-        const auto id = s.id;
-        int item = 0;
-        if (const auto curves = g.child("IndexCurves"); curves)
-            for (const auto& c : curves->children("IndexCurve"))
-                ctx.curve(id,
-                          "IndexCurve",
-                          c.own_text().value_or(""),
-                          c.text("Index"),
-                          std::nullopt,
-                          item++);
-        item = 0;
-        if (const auto curves = g.child("IborIndexCurves"); curves)
-            for (const auto& c : curves->children("IborIndexCurve"))
-                ctx.curve(id,
-                          "IborIndexCurve",
-                          c.own_text().value_or(""),
-                          c.text("iborIndex"),
-                          std::nullopt,
-                          item++);
-        item = 0;
-        if (const auto curves = g.child("InflationIndexCurves"); curves)
-            for (const auto& c : curves->children("InflationIndexCurve"))
-                ctx.curve(id,
-                          "InflationIndexCurve",
-                          c.own_text().value_or(""),
-                          c.text("inflationIndex"),
-                          std::nullopt,
-                          item++);
+        const auto id = ctx.segment(required_text(g, "Type"), position++).id;
+        import_pillar_rule(ctx, id, g);
+        import_extrapolation(ctx, id, g);
+        ctx.quotes(id, g.child("Quotes"));
+        import_bond_curves(ctx, id, g, true);
     }
     position = 0;
     for (const auto& g : v.children("BondYieldShifted")) {
-        auto& s = ctx.segment(required_text(g, "Type"), position++);
-        s.conventions = required_text(g, "Conventions");
-        s.reference_curve = required_text(g, "ReferenceCurve");
-        s.extrapolate_flat = boolean_text(g, "ExtrapolateFlat");
-        ctx.quotes(s.id, g.child("Quotes"));
-        const auto id = s.id;
-        int item = 0;
-        if (const auto curves = g.child("IndexCurves"); curves)
-            for (const auto& c : curves->children("IndexCurve"))
-                ctx.curve(id,
-                          "IndexCurve",
-                          c.own_text().value_or(""),
-                          c.text("Index"),
-                          std::nullopt,
-                          item++);
-        item = 0;
-        if (const auto curves = g.child("IborIndexCurves"); curves)
-            for (const auto& c : curves->children("IborIndexCurve"))
-                ctx.curve(id,
-                          "IborIndexCurve",
-                          c.own_text().value_or(""),
-                          c.text("iborIndex"),
-                          std::nullopt,
-                          item++);
+        const auto id = ctx.segment(required_text(g, "Type"), position++).id;
+        import_convention(ctx, id, g);
+        import_reference(ctx, id, g);
+        import_extrapolation(ctx, id, g);
+        ctx.quotes(id, g.child("Quotes"));
+        import_bond_curves(ctx, id, g, false);
     }
     position = 0;
     for (const auto& g : v.children("WeightedAverage")) {
-        auto& s = ctx.segment(required_text(g, "Type"), position++);
-        s.reference_curve = required_text(g, "ReferenceCurve1");
-        s.reference_curve_2 = required_text(g, "ReferenceCurve2");
-        s.weight_1 = required_real(g, "Weight1");
-        s.weight_2 = required_real(g, "Weight2");
+        const auto id = ctx.segment(required_text(g, "Type"), position++).id;
+        import_weighted_average(ctx, id, g);
     }
     position = 0;
     for (const auto& g : v.children("YieldPlusDefault")) {
-        auto& s = ctx.segment(required_text(g, "Type"), position++);
-        s.reference_curve = required_text(g, "ReferenceCurve");
+        const auto id = ctx.segment(required_text(g, "Type"), position++).id;
+        import_reference(ctx, id, g);
         if (const auto defaults = g.child("DefaultCurves"); defaults)
-            ctx.curve(s.id,
+            ctx.curve(id,
                       "DefaultCurve",
                       required_text(*defaults, "DefaultCurve"),
                       std::nullopt,
@@ -591,12 +878,9 @@ void import_segments(import_context& ctx, const record_reader& v) {
     }
     position = 0;
     for (const auto& g : v.children("IborFallback")) {
-        auto& s = ctx.segment(required_text(g, "Type"), position++);
-        common_settings(s, g);
-        s.ibor_index = required_text(g, "IborIndex");
-        s.rfr_curve = required_text(g, "RfrCurve");
-        s.rfr_index = g.text("RfrIndex");
-        s.spread = g.decimal("Spread");
+        const auto id = ctx.segment(required_text(g, "Type"), position++).id;
+        import_pillar_rule(ctx, id, g);
+        import_ibor_fallback(ctx, id, g);
     }
 }
 
@@ -741,12 +1025,17 @@ void import_inflation_curve(ores::refdata::messaging::curve_configuration_docume
     r.frequency = required_spelling(v, "Frequency");
     r.base_rate = v.text("BaseRate");
     r.tolerance = v.real("Tolerance");
-    r.has_seasonality = v.has("Seasonality");
     if (const auto seasonality = v.child("Seasonality"); seasonality) {
-        r.seasonality_base_date = seasonality->text("BaseDate");
-        r.seasonality_frequency = seasonality->spelling("Frequency");
+        const auto factors = seasonality->child("Factors");
+        refdata::domain::inflation_seasonality s;
+        s.id = curve_configuration_projection_new_uuid();
+        s.curve_definition_id = d.id;
+        s.base_date = required_text(*seasonality, "BaseDate");
+        s.frequency = required_spelling(*seasonality, "Frequency");
+        curve_configuration_projection_set_audit(s);
+        out.inflation_seasonalities.push_back(std::move(s));
         int factor_position = 0;
-        if (const auto factors = seasonality->child("Factors"); factors)
+        if (factors)
             for (const auto& f : factors->values("Factor")) {
                 refdata::domain::inflation_seasonality_factor sf;
                 sf.id = curve_configuration_projection_new_uuid();
@@ -769,28 +1058,119 @@ void import_inflation_curve(ores::refdata::messaging::curve_configuration_docume
     }
 }
 
-// The settings a default curve writes both inline and in a listed
-// configuration, under the same element names.
+// The settings every default curve type reads, written both inline and in a
+// listed configuration under the same element names.
 void import_configuration_settings(refdata::domain::default_curve_configuration& r,
                                    const record_reader& v) {
-    r.discount_curve = v.text("DiscountCurve");
     r.recovery_rate = v.text("RecoveryRate");
-    r.start_date = v.text("StartDate");
-    r.has_quotes = v.has("Quotes");
-    r.benchmark_curve = v.text("BenchmarkCurve");
-    r.source_curve = v.text("SourceCurve");
-    r.pillars = v.text("Pillars");
-    r.spot_lag = optional_int(v, "SpotLag");
-    r.calendar = v.text("Calendar");
-    r.conventions = v.text("Conventions");
     r.extrapolation = v.spelling("Extrapolation");
-    r.running_spread = v.decimal("RunningSpread");
-    r.index_term = v.text("IndexTerm");
-    r.imply_default_from_market = v.spelling("ImplyDefaultFromMarket");
     r.allow_negative_rates = v.spelling("AllowNegativeRates");
-    r.price_is_upfront = v.spelling("PriceIsUpfront");
-    r.initial_state = v.text("InitialState");
-    r.states = v.text("States");
+}
+
+// Each reader below fills one part of a default curve configuration. A part of
+// optional fields is kept only when the configuration states one of them.
+void import_default_curve_market_terms(import_context& ctx,
+                                       const boost::uuids::uuid& id,
+                                       const record_reader& v) {
+    refdata::domain::default_curve_market_terms p;
+    p.discount_curve = v.text("DiscountCurve");
+    p.conventions = v.text("Conventions");
+    p.has_quotes = v.has("Quotes");
+    if (p.discount_curve || p.conventions || p.has_quotes)
+        ctx.keep(id, std::move(p));
+}
+
+void import_default_curve_cds_terms(import_context& ctx,
+                                    const boost::uuids::uuid& id,
+                                    const record_reader& v) {
+    refdata::domain::default_curve_cds_terms p;
+    p.start_date = v.text("StartDate");
+    p.running_spread = v.decimal("RunningSpread");
+    p.index_term = v.text("IndexTerm");
+    p.imply_default_from_market = v.spelling("ImplyDefaultFromMarket");
+    p.price_is_upfront = v.spelling("PriceIsUpfront");
+    if (p.start_date || p.running_spread || p.index_term || p.imply_default_from_market ||
+        p.price_is_upfront)
+        ctx.keep(id, std::move(p));
+}
+
+void import_default_curve_benchmark(import_context& ctx,
+                                    const boost::uuids::uuid& id,
+                                    const record_reader& v) {
+    refdata::domain::default_curve_benchmark p;
+    p.benchmark_curve = v.text("BenchmarkCurve");
+    p.source_curve = v.text("SourceCurve");
+    p.pillars = v.text("Pillars");
+    p.spot_lag = optional_int(v, "SpotLag");
+    p.calendar = v.text("Calendar");
+    if (p.benchmark_curve || p.source_curve || p.pillars || p.spot_lag || p.calendar)
+        ctx.keep(id, std::move(p));
+}
+
+void import_default_curve_transition_matrix(import_context& ctx,
+                                            const boost::uuids::uuid& id,
+                                            const record_reader& v) {
+    refdata::domain::default_curve_transition_matrix p;
+    p.initial_state = v.text("InitialState");
+    p.states = v.text("States");
+    if (p.initial_state || p.states)
+        ctx.keep(id, std::move(p));
+}
+
+void import_default_curve_yield_reinterpretation(import_context& ctx,
+                                                 const boost::uuids::uuid& id,
+                                                 const record_reader& v) {
+    refdata::domain::default_curve_yield_reinterpretation p;
+    p.reinterpreted_yield_curve = v.text("ReinterpretedYieldCurve");
+    if (p.reinterpreted_yield_curve)
+        ctx.keep(id, std::move(p));
+}
+
+// The parts a default curve configuration of one type may hold, each named for
+// its entity without the default_curve_ prefix.
+struct default_curve_parts {
+    bool market_terms = false;
+    bool cds_terms = false;
+    bool benchmark = false;
+    bool transition_matrix = false;
+    bool yield_reinterpretation = false;
+};
+
+// The parts each default curve type has, as ORE's reader dispatches on the
+// type. The import fills only these and the export writes only these, and the
+// section generator reads these branches to write the database's check. A
+// transition matrix has the market terms too: ORE reads only its quotes, but
+// every corpus transition matrix also states a discount curve and conventions,
+// and the document round trips as written.
+default_curve_parts parts_of_default_curve_type(const std::string& type) {
+    if (type == "SpreadCDS" || type == "HazardRate" || type == "Price" || type == "ConvSpreadCDS" ||
+        type == "Null") {
+        return {.market_terms = true, .cds_terms = true};
+    } else if (type == "TransitionMatrix") {
+        return {.market_terms = true, .transition_matrix = true};
+    } else if (type == "Benchmark") {
+        return {.benchmark = true};
+    } else if (type == "YieldCurve") {
+        return {.yield_reinterpretation = true};
+    }
+    throw refusal("default curve type '" + type + "' is not modelled yet");
+}
+
+void import_default_curve_parts(import_context& ctx,
+                                const boost::uuids::uuid& id,
+                                const std::string& type,
+                                const record_reader& v) {
+    const auto has = parts_of_default_curve_type(type);
+    if (has.market_terms)
+        import_default_curve_market_terms(ctx, id, v);
+    if (has.cds_terms)
+        import_default_curve_cds_terms(ctx, id, v);
+    if (has.benchmark)
+        import_default_curve_benchmark(ctx, id, v);
+    if (has.transition_matrix)
+        import_default_curve_transition_matrix(ctx, id, v);
+    if (has.yield_reinterpretation)
+        import_default_curve_yield_reinterpretation(ctx, id, v);
 }
 
 void import_configuration_lists(ores::refdata::messaging::curve_configuration_document& out,
@@ -821,6 +1201,7 @@ void import_default_curve(ores::refdata::messaging::curve_configuration_document
     curve_configuration_projection_set_audit(c);
     out.default_curves.push_back(std::move(c));
 
+    import_context ctx{out, d.id};
     const auto add = [&](int at) -> refdata::domain::default_curve_configuration {
         refdata::domain::default_curve_configuration r;
         r.id = curve_configuration_projection_new_uuid();
@@ -838,9 +1219,9 @@ void import_default_curve(ores::refdata::messaging::curve_configuration_document
             r.priority = integer_text(k, "priority");
             r.default_curve_type = required_spelling(k, "Type");
             r.day_counter = required_spelling(k, "DayCounter");
-            r.reinterpreted_yield_curve = k.text("ReinterpretedYieldCurve");
             import_configuration_settings(r, k);
             import_configuration_lists(out, d, r, k);
+            import_default_curve_parts(ctx, r.id, *r.default_curve_type, k);
             out.default_curve_configurations.push_back(std::move(r));
         }
         return;
@@ -848,10 +1229,15 @@ void import_default_curve(ores::refdata::messaging::curve_configuration_document
 
     auto r = add(0);
     r.is_inline = true;
+    // The schema leaves an inline Type optional only because the Configurations
+    // list may state the types instead; a curve with neither has no construction.
     r.default_curve_type = v.spelling("Type");
+    if (!r.default_curve_type)
+        throw refusal("default curve " + d.curve_id + " states neither a Type nor Configurations");
     r.day_counter = v.spelling("DayCounter");
     import_configuration_settings(r, v);
     import_configuration_lists(out, d, r, v);
+    import_default_curve_parts(ctx, r.id, *r.default_curve_type, v);
     out.default_curve_configurations.push_back(std::move(r));
 }
 
@@ -982,6 +1368,56 @@ void export_parametric_smile(
     }
 }
 
+// Each reader below fills one part of a commodity curve. A part of optional
+// fields is kept only when the curve states one of them; the basis and cross
+// currency parts are what select their construction, so they are always kept.
+void import_commodity_curve_basis(import_context& ctx,
+                                  const boost::uuids::uuid& id,
+                                  const record_reader& v) {
+    refdata::domain::commodity_curve_basis p;
+    p.basis_base_price_curve = required_text(v, "BasePriceCurve");
+    p.basis_base_price_conventions = required_text(v, "BasePriceConventions");
+    p.basis_conventions = required_text(v, "BasisConventions");
+    p.basis_day_counter = v.spelling("DayCounter");
+    p.basis_interpolation_method = v.spelling("InterpolationMethod");
+    p.basis_add_basis = v.spelling("AddBasis");
+    p.basis_month_offset = optional_int(v, "MonthOffset");
+    p.basis_average_base = v.spelling("AverageBase");
+    p.basis_price_as_historical_fixing = v.spelling("PriceAsHistoricalFixing");
+    ctx.keep(id, std::move(p));
+}
+
+void import_commodity_curve_cross_currency(import_context& ctx,
+                                           const boost::uuids::uuid& id,
+                                           const record_reader& v) {
+    refdata::domain::commodity_curve_cross_currency p;
+    p.base_price_curve = v.text("BasePriceCurve");
+    p.base_yield_curve = v.text("BaseYieldCurve");
+    p.yield_curve = v.text("YieldCurve");
+    ctx.keep(id, std::move(p));
+}
+
+void import_commodity_curve_interpolation(import_context& ctx,
+                                          const boost::uuids::uuid& id,
+                                          const record_reader& v) {
+    refdata::domain::commodity_curve_interpolation p;
+    p.day_counter = v.spelling("DayCounter");
+    p.interpolation_method = v.spelling("InterpolationMethod");
+    if (p.day_counter || p.interpolation_method)
+        ctx.keep(id, std::move(p));
+}
+
+void import_commodity_curve_direct(import_context& ctx,
+                                   const boost::uuids::uuid& id,
+                                   const record_reader& v) {
+    refdata::domain::commodity_curve_direct p;
+    p.spot_quote = v.text("SpotQuote");
+    p.conventions = v.text("Conventions");
+    p.has_quotes = v.has("Quotes");
+    if (p.spot_quote || p.conventions || p.has_quotes)
+        ctx.keep(id, std::move(p));
+}
+
 void import_commodity_curve(ores::refdata::messaging::curve_configuration_document& out,
                             const record_reader& v,
                             int position) {
@@ -996,31 +1432,19 @@ void import_commodity_curve(ores::refdata::messaging::curve_configuration_docume
     r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.currency = required_spelling(v, "Currency");
-    r.base_price_curve = v.text("BasePriceCurve");
-    r.base_yield_curve = v.text("BaseYieldCurve");
-    r.yield_curve = v.text("YieldCurve");
-    r.spot_quote = v.text("SpotQuote");
-    r.has_quotes = v.has("Quotes");
-    r.day_counter = v.spelling("DayCounter");
-    r.interpolation_method = v.spelling("InterpolationMethod");
-    r.conventions = v.text("Conventions");
     r.extrapolation = v.spelling("Extrapolation");
-    r.has_basis_configuration = v.has("BasisConfiguration");
+
+    // The construction is the one ORE's reader selects: a basis configuration,
+    // a base price curve, price segments, or otherwise direct quotes.
+    import_context ctx{out, d.id};
     if (const auto basis = v.child("BasisConfiguration"); basis) {
-        r.basis_base_price_curve = required_text(*basis, "BasePriceCurve");
-        r.basis_base_price_conventions = required_text(*basis, "BasePriceConventions");
-        r.basis_conventions = required_text(*basis, "BasisConventions");
-        r.basis_day_counter = basis->spelling("DayCounter");
-        r.basis_interpolation_method = basis->spelling("InterpolationMethod");
-        r.basis_add_basis = basis->spelling("AddBasis");
-        r.basis_month_offset = optional_int(*basis, "MonthOffset");
-        r.basis_average_base = basis->spelling("AverageBase");
-        r.basis_price_as_historical_fixing = basis->spelling("PriceAsHistoricalFixing");
+        import_commodity_curve_basis(ctx, d.id, *basis);
         if (const auto quotes = basis->child("BasisQuotes"); quotes)
             import_commodity_quotes(out, d.id, none, basis_quotes_list, *quotes);
-    }
-    r.has_price_segments = v.has("PriceSegments");
-    if (const auto segments = v.child("PriceSegments"); segments) {
+    } else if (v.has("BasePriceCurve")) {
+        import_commodity_curve_cross_currency(ctx, d.id, v);
+    } else if (const auto segments = v.child("PriceSegments"); segments) {
+        import_commodity_curve_interpolation(ctx, d.id, v);
         int at = 0;
         for (const auto& g : segments->children("PriceSegment")) {
             refdata::domain::commodity_price_segment p;
@@ -1045,6 +1469,9 @@ void import_commodity_curve(ores::refdata::messaging::curve_configuration_docume
             }
             out.commodity_price_segments.push_back(std::move(p));
         }
+    } else {
+        import_commodity_curve_interpolation(ctx, d.id, v);
+        import_commodity_curve_direct(ctx, d.id, v);
     }
     curve_configuration_projection_set_audit(r);
     out.commodity_curves.push_back(std::move(r));
@@ -1956,10 +2383,17 @@ void import_swaption_volatility(ores::refdata::messaging::curve_configuration_do
     r.swap_tenors = v.text("SwapTenors");
     r.short_swap_index_base = v.text("ShortSwapIndexBase");
     r.swap_index_base = v.text("SwapIndexBase");
-    r.smile_option_tenors = v.text("SmileOptionTenors");
-    r.smile_swap_tenors = v.text("SmileSwapTenors");
-    r.smile_spreads = v.text("SmileSpreads");
     r.quote_tag = v.text("QuoteTag");
+    if (v.has("SmileOptionTenors") || v.has("SmileSwapTenors") || v.has("SmileSpreads")) {
+        refdata::domain::swaption_volatility_smile smile;
+        smile.id = curve_configuration_projection_new_uuid();
+        smile.swaption_volatility_config_id = r.id;
+        smile.smile_option_tenors = v.text("SmileOptionTenors");
+        smile.smile_swap_tenors = v.text("SmileSwapTenors");
+        smile.smile_spreads = v.text("SmileSpreads");
+        curve_configuration_projection_set_audit(smile);
+        out.swaption_volatility_smiles.push_back(std::move(smile));
+    }
     if (const auto proxy = v.child("ProxyConfig"); proxy) {
         refdata::domain::swaption_proxy_config p;
         p.id = curve_configuration_projection_new_uuid();
@@ -2311,15 +2745,6 @@ struct export_context {
     }
 };
 
-std::string require(const std::optional<std::string>& v,
-                    const refdata::domain::curve_segment& s,
-                    std::string_view field) {
-    if (!v)
-        throw refusal("segment " + boost::uuids::to_string(s.id) + " of type '" + s.segment_type +
-                      "' has no " + std::string(field));
-    return *v;
-}
-
 // One segment's list of curves in one role: the container element holds one
 // element per curve, named after the curve's role.
 void export_index_curves(record_writer out,
@@ -2337,9 +2762,142 @@ void export_index_curves(record_writer out,
     }
 }
 
+// The parts of one document's segments and entries, by the row each belongs to.
+// Exporting a row takes the parts its construction writes, so a part still here
+// when the export ends belongs to a construction that has no such part, or to
+// no row of the document at all.
+template <class... Parts>
+class part_index {
+public:
+    explicit part_index(const curve_configuration_document& d) {
+        (index<Parts>(d), ...);
+    }
+
+    template <class Part>
+    const Part* take(const boost::uuids::uuid& owner_id) {
+        auto& by_owner = std::get<rows<Part>>(rows_);
+        const auto it = by_owner.find(owner_id);
+        if (it == by_owner.end())
+            return nullptr;
+        const auto* p = it->second;
+        by_owner.erase(it);
+        return p;
+    }
+
+    template <class Part>
+    const Part& require(const boost::uuids::uuid& owner_id, const std::string& owner) {
+        const auto* p = take<Part>(owner_id);
+        if (p == nullptr)
+            throw refusal(owner + " has no " + std::string(document_part<Part>::name));
+        return *p;
+    }
+
+    template <class Part>
+    const Part& require(const refdata::domain::curve_segment& s) {
+        const auto* p = take<Part>(s.id);
+        if (p == nullptr)
+            throw refusal("segment " + boost::uuids::to_string(s.id) + " of type '" +
+                          s.segment_type + "' has no " + std::string(document_part<Part>::name));
+        return *p;
+    }
+
+    void refuse_leftovers() const {
+        (refuse_leftover<Parts>(), ...);
+    }
+
+private:
+    template <class Part>
+    using rows = std::map<boost::uuids::uuid, const Part*>;
+
+    template <class Part>
+    void index(const curve_configuration_document& d) {
+        for (const auto& p : d.*document_part<Part>::vector) {
+            const auto& owner_id = p.*document_part<Part>::key;
+            if (!std::get<rows<Part>>(rows_).emplace(owner_id, &p).second)
+                throw refusal(std::string(document_part<Part>::owner) + " " +
+                              boost::uuids::to_string(owner_id) + " has two " +
+                              std::string(document_part<Part>::name) + " rows");
+        }
+    }
+
+    template <class Part>
+    void refuse_leftover() const {
+        const auto& left = std::get<rows<Part>>(rows_);
+        if (!left.empty())
+            throw refusal(std::string(document_part<Part>::owner) + " " +
+                          boost::uuids::to_string(left.begin()->first) + " has a " +
+                          std::string(document_part<Part>::name) +
+                          " row that its construction does not have, or is not in the document");
+    }
+
+    std::tuple<rows<Parts>...> rows_;
+};
+
+using document_part_index = part_index<refdata::domain::curve_segment_convention,
+                                       refdata::domain::curve_segment_pillar_rule,
+                                       refdata::domain::curve_segment_projection,
+                                       refdata::domain::curve_segment_tenor_basis_curves,
+                                       refdata::domain::curve_segment_cross_currency_terms,
+                                       refdata::domain::curve_segment_reference,
+                                       refdata::domain::curve_segment_weighted_average,
+                                       refdata::domain::curve_segment_discount_ratio,
+                                       refdata::domain::curve_segment_extrapolation,
+                                       refdata::domain::curve_segment_ibor_fallback,
+                                       refdata::domain::default_curve_market_terms,
+                                       refdata::domain::default_curve_cds_terms,
+                                       refdata::domain::default_curve_benchmark,
+                                       refdata::domain::default_curve_transition_matrix,
+                                       refdata::domain::default_curve_yield_reinterpretation,
+                                       refdata::domain::commodity_curve_interpolation,
+                                       refdata::domain::commodity_curve_direct,
+                                       refdata::domain::commodity_curve_cross_currency,
+                                       refdata::domain::commodity_curve_basis,
+                                       refdata::domain::swaption_volatility_smile,
+                                       refdata::domain::inflation_seasonality>;
+
+void restore_convention(record_writer r,
+                        const refdata::domain::curve_segment& s,
+                        document_part_index& parts) {
+    r.set_text("Conventions",
+               parts.require<refdata::domain::curve_segment_convention>(s).conventions);
+}
+
+void restore_optional_convention(record_writer r,
+                                 const refdata::domain::curve_segment& s,
+                                 document_part_index& parts) {
+    if (const auto* p = parts.take<refdata::domain::curve_segment_convention>(s.id); p)
+        r.set_text("Conventions", p->conventions);
+}
+
+void restore_pillar_rule(record_writer r,
+                         const refdata::domain::curve_segment& s,
+                         document_part_index& parts) {
+    const auto* p = parts.take<refdata::domain::curve_segment_pillar_rule>(s.id);
+    if (p == nullptr)
+        return;
+    r.set_optional_text("PillarChoice", p->pillar_choice);
+    r.set_optional_integer("Priority", p->priority);
+    r.set_optional_integer("MinDistance", p->min_distance);
+}
+
+void restore_projection(record_writer r,
+                        const refdata::domain::curve_segment& s,
+                        document_part_index& parts) {
+    if (const auto* p = parts.take<refdata::domain::curve_segment_projection>(s.id); p)
+        r.set_text("ProjectionCurve", p->projection_curve);
+}
+
+void restore_extrapolation(record_writer r,
+                           const refdata::domain::curve_segment& s,
+                           document_part_index& parts) {
+    if (const auto* p = parts.take<refdata::domain::curve_segment_extrapolation>(s.id); p)
+        set_boolean_text(r, "ExtrapolateFlat", p->extrapolate_flat);
+}
+
 void export_segment(record_writer out,
                     const refdata::domain::curve_segment& s,
-                    const export_context& ctx) {
+                    const export_context& ctx,
+                    document_part_index& parts) {
     const auto kind = segment_kinds().find(s.segment_type);
     if (kind == segment_kinds().end())
         throw refusal("segment " + boost::uuids::to_string(s.id) + " has unknown type '" +
@@ -2349,71 +2907,75 @@ void export_segment(record_writer out,
     if (k == "Direct") {
         auto r = out.append("Direct");
         r.set_spelling("Type", s.segment_type, "direct segment type");
-        r.set_optional_text("Conventions", s.conventions);
-        restore_common_settings(r, s);
+        restore_optional_convention(r, s, parts);
+        restore_pillar_rule(r, s, parts);
         ctx.plain_quotes(r.child("Quotes"), s);
     } else if (k == "Simple") {
         auto r = out.append("Simple");
         r.set_spelling("Type", s.segment_type, "simple segment type");
-        r.set_text("Conventions", require(s.conventions, s, "conventions"));
-        restore_common_settings(r, s);
-        r.set_optional_text("ProjectionCurve", s.projection_curve);
+        restore_convention(r, s, parts);
+        restore_pillar_rule(r, s, parts);
+        restore_projection(r, s, parts);
         ctx.plain_quotes(r.child("Quotes"), s);
     } else if (k == "AverageOIS") {
         auto r = out.append("AverageOIS");
         r.set_text("Type", s.segment_type);
-        r.set_text("Conventions", require(s.conventions, s, "conventions"));
-        restore_common_settings(r, s);
-        r.set_optional_text("ProjectionCurve", s.projection_curve);
+        restore_convention(r, s, parts);
+        restore_pillar_rule(r, s, parts);
+        restore_projection(r, s, parts);
         ctx.composite_quotes(r.child("Quotes"), s);
     } else if (k == "TenorBasis") {
         auto r = out.append("TenorBasis");
         r.set_spelling("Type", s.segment_type, "tenor basis segment type");
-        r.set_text("Conventions", require(s.conventions, s, "conventions"));
-        restore_common_settings(r, s);
-        r.set_optional_text("ProjectionCurvePay", s.projection_curve_pay);
-        r.set_optional_text("ProjectionCurveReceive", s.projection_curve_receive);
-        r.set_optional_text("ProjectionCurveLong", s.projection_curve_long);
-        r.set_optional_text("ProjectionCurveShort", s.projection_curve_short);
+        restore_convention(r, s, parts);
+        restore_pillar_rule(r, s, parts);
+        if (const auto* p = parts.take<refdata::domain::curve_segment_tenor_basis_curves>(s.id);
+            p) {
+            r.set_optional_text("ProjectionCurvePay", p->projection_curve_pay);
+            r.set_optional_text("ProjectionCurveReceive", p->projection_curve_receive);
+            r.set_optional_text("ProjectionCurveLong", p->projection_curve_long);
+            r.set_optional_text("ProjectionCurveShort", p->projection_curve_short);
+        }
         ctx.plain_quotes(r.child("Quotes"), s);
     } else if (k == "CrossCurrency") {
         auto r = out.append("CrossCurrency");
         r.set_spelling("Type", s.segment_type, "cross currency segment type");
-        r.set_text("Conventions", require(s.conventions, s, "conventions"));
-        restore_common_settings(r, s);
-        r.set_text("DiscountCurve", require(s.discount_curve, s, "discount curve"));
-        r.set_text("SpotRate", require(s.spot_rate, s, "spot rate"));
-        r.set_optional_text("ProjectionCurveDomestic", s.projection_curve_domestic);
-        r.set_optional_text("ProjectionCurveForeign", s.projection_curve_foreign);
+        restore_convention(r, s, parts);
+        restore_pillar_rule(r, s, parts);
+        const auto& p = parts.require<refdata::domain::curve_segment_cross_currency_terms>(s);
+        r.set_text("DiscountCurve", p.discount_curve);
+        r.set_text("SpotRate", p.spot_rate);
+        r.set_optional_text("ProjectionCurveDomestic", p.projection_curve_domestic);
+        r.set_optional_text("ProjectionCurveForeign", p.projection_curve_foreign);
         ctx.plain_quotes(r.child("Quotes"), s);
     } else if (k == "ZeroSpread") {
         auto r = out.append("ZeroSpread");
         r.set_spelling("Type", s.segment_type, "zero spread segment type");
-        r.set_text("Conventions", require(s.conventions, s, "conventions"));
-        restore_common_settings(r, s);
-        r.set_text("ReferenceCurve", require(s.reference_curve, s, "reference curve"));
+        restore_convention(r, s, parts);
+        restore_pillar_rule(r, s, parts);
+        r.set_text("ReferenceCurve",
+                   parts.require<refdata::domain::curve_segment_reference>(s).reference_curve);
         ctx.plain_quotes(r.child("Quotes"), s);
     } else if (k == "DiscountRatio") {
         auto r = out.append("DiscountRatio");
         r.set_spelling("Type", s.segment_type, "discount ratio type");
-        r.set_optional_text("Conventions", s.conventions);
-        restore_common_settings(r, s);
+        restore_optional_convention(r, s, parts);
+        restore_pillar_rule(r, s, parts);
+        const auto& p = parts.require<refdata::domain::curve_segment_discount_ratio>(s);
         auto base = r.child("BaseCurve");
-        base.set_own_text(require(s.base_curve, s, "base curve"));
-        base.set_text("currency", require(s.base_curve_currency, s, "base curve currency"));
+        base.set_own_text(p.base_curve);
+        base.set_text("currency", p.base_curve_currency);
         auto numerator = r.child("NumeratorCurve");
-        numerator.set_own_text(require(s.numerator_curve, s, "numerator curve"));
-        numerator.set_text("currency",
-                           require(s.numerator_curve_currency, s, "numerator currency"));
+        numerator.set_own_text(p.numerator_curve);
+        numerator.set_text("currency", p.numerator_curve_currency);
         auto denominator = r.child("DenominatorCurve");
-        denominator.set_own_text(require(s.denominator_curve, s, "denominator curve"));
-        denominator.set_text("currency",
-                             require(s.denominator_curve_currency, s, "denominator currency"));
+        denominator.set_own_text(p.denominator_curve);
+        denominator.set_text("currency", p.denominator_curve_currency);
     } else if (k == "FittedBond") {
         auto r = out.append("FittedBond");
         r.set_text("Type", s.segment_type);
-        restore_common_settings(r, s);
-        set_boolean_text(r, "ExtrapolateFlat", s.extrapolate_flat);
+        restore_pillar_rule(r, s, parts);
+        restore_extrapolation(r, s, parts);
         ctx.plain_quotes(r.child("Quotes"), s);
         export_index_curves(
             r, ctx.curves_in_role(s, "IndexCurve"), "IndexCurves", "IndexCurve", "Index");
@@ -2430,9 +2992,10 @@ void export_segment(record_writer out,
     } else if (k == "BondYieldShifted") {
         auto r = out.append("BondYieldShifted");
         r.set_text("Type", s.segment_type);
-        r.set_text("Conventions", require(s.conventions, s, "conventions"));
-        r.set_text("ReferenceCurve", require(s.reference_curve, s, "reference curve"));
-        set_boolean_text(r, "ExtrapolateFlat", s.extrapolate_flat);
+        restore_convention(r, s, parts);
+        r.set_text("ReferenceCurve",
+                   parts.require<refdata::domain::curve_segment_reference>(s).reference_curve);
+        restore_extrapolation(r, s, parts);
         ctx.plain_quotes(r.child("Quotes"), s);
         export_index_curves(
             r, ctx.curves_in_role(s, "IndexCurve"), "IndexCurves", "IndexCurve", "Index");
@@ -2444,14 +3007,16 @@ void export_segment(record_writer out,
     } else if (k == "WeightedAverage") {
         auto r = out.append("WeightedAverage");
         r.set_text("Type", s.segment_type);
-        r.set_text("ReferenceCurve1", require(s.reference_curve, s, "first reference curve"));
-        r.set_text("ReferenceCurve2", require(s.reference_curve_2, s, "second reference curve"));
-        r.set_real("Weight1", s.weight_1.value_or(0.0));
-        r.set_real("Weight2", s.weight_2.value_or(0.0));
+        const auto& p = parts.require<refdata::domain::curve_segment_weighted_average>(s);
+        r.set_text("ReferenceCurve1", p.reference_curve_1);
+        r.set_text("ReferenceCurve2", p.reference_curve_2);
+        r.set_real("Weight1", p.weight_1);
+        r.set_real("Weight2", p.weight_2);
     } else if (k == "YieldPlusDefault") {
         auto r = out.append("YieldPlusDefault");
         r.set_text("Type", s.segment_type);
-        r.set_text("ReferenceCurve", require(s.reference_curve, s, "reference curve"));
+        r.set_text("ReferenceCurve",
+                   parts.require<refdata::domain::curve_segment_reference>(s).reference_curve);
         const auto cs = ctx.curves_in_role(s, "DefaultCurve");
         if (cs.size() != 1)
             throw refusal("yield plus default segment " + boost::uuids::to_string(s.id) +
@@ -2461,11 +3026,12 @@ void export_segment(record_writer out,
     } else {
         auto r = out.append("IborFallback");
         r.set_text("Type", s.segment_type);
-        restore_common_settings(r, s);
-        r.set_text("IborIndex", require(s.ibor_index, s, "Ibor index"));
-        r.set_text("RfrCurve", require(s.rfr_curve, s, "risk free curve"));
-        r.set_optional_text("RfrIndex", s.rfr_index);
-        r.set_optional_decimal("Spread", s.spread);
+        restore_pillar_rule(r, s, parts);
+        const auto& p = parts.require<refdata::domain::curve_segment_ibor_fallback>(s);
+        r.set_text("IborIndex", p.ibor_index);
+        r.set_text("RfrCurve", p.rfr_curve);
+        r.set_optional_text("RfrIndex", p.rfr_index);
+        r.set_optional_decimal("Spread", p.spread);
     }
 }
 
@@ -2499,7 +3065,8 @@ void export_yield_curve(record_writer r,
                         const refdata::domain::yield_curve_config& y,
                         const refdata::domain::curve_bootstrap_config* bootstrap,
                         const std::vector<const refdata::domain::curve_segment*>& segments,
-                        const export_context& ctx) {
+                        const export_context& ctx,
+                        document_part_index& parts) {
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     r.set_spelling("Currency", y.currency, "currency code");
@@ -2523,7 +3090,7 @@ void export_yield_curve(record_writer r,
     if (!segments.empty()) {
         auto out = r.child("Segments");
         for (const auto* s : segments)
-            export_segment(out, *s, ctx);
+            export_segment(out, *s, ctx, parts);
     }
 }
 
@@ -2563,8 +3130,12 @@ void export_inflation_curve(
     record_writer r,
     const refdata::domain::curve_definition& d,
     const refdata::domain::inflation_curve_config& v,
+    const refdata::domain::inflation_seasonality* seasonality,
     const std::vector<const refdata::domain::inflation_seasonality_factor*>& factors,
     const export_context& ctx) {
+    if (!seasonality && !factors.empty())
+        throw refusal("inflation curve " + d.curve_id +
+                      " has seasonality factors but no seasonality");
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     r.set_text("NominalTermStructure", v.nominal_term_structure);
@@ -2585,10 +3156,10 @@ void export_inflation_curve(
     r.set_spelling("Frequency", v.frequency, "frequency");
     r.set_optional_text("BaseRate", v.base_rate);
     r.set_optional_real("Tolerance", v.tolerance);
-    if (v.has_seasonality) {
+    if (seasonality) {
         auto season = r.child("Seasonality");
-        season.set_text("BaseDate", v.seasonality_base_date.value_or(""));
-        season.set_spelling("Frequency", v.seasonality_frequency.value_or(""), "frequency");
+        season.set_text("BaseDate", seasonality->base_date);
+        season.set_spelling("Frequency", seasonality->frequency, "frequency");
         auto list = season.child("Factors");
         for (const auto* f : factors)
             list.append_value("Factor", f->factor);
@@ -2598,36 +3169,59 @@ void export_inflation_curve(
     r.set_optional_text("InterpolationMethod", v.interpolation_method);
 }
 
+// A configuration's settings: the ones every type writes on the row, and each
+// part its type has. A part of another type stays in the index, and the export
+// refuses it. The writer orders the elements as the schema does.
 void export_configuration_settings(record_writer r,
                                    const refdata::domain::default_curve_configuration& c,
-                                   const export_context& ctx) {
-    r.set_optional_text("DiscountCurve", c.discount_curve);
+                                   const export_context& ctx,
+                                   document_part_index& parts) {
+    using namespace refdata::domain;
+    const auto has = parts_of_default_curve_type(c.default_curve_type.value_or(""));
     r.set_optional_text("RecoveryRate", c.recovery_rate);
-    r.set_optional_text("StartDate", c.start_date);
-    if (c.has_quotes) {
-        auto quotes = r.child("Quotes");
-        const auto it = ctx.configuration_quotes.find(c.id);
-        if (it != ctx.configuration_quotes.end())
-            for (const auto* q : it->second) {
-                auto item = quotes.append("Quote");
-                item.set_own_text(q->quote_text.value_or(""));
-                item.set_optional_text("optional", q->optional_flag);
-            }
-    }
-    r.set_optional_text("BenchmarkCurve", c.benchmark_curve);
-    r.set_optional_text("SourceCurve", c.source_curve);
-    r.set_optional_text("Pillars", c.pillars);
-    r.set_optional_integer("SpotLag", c.spot_lag);
-    r.set_optional_text("Calendar", c.calendar);
-    r.set_optional_text("Conventions", c.conventions);
     r.set_optional_spelling("Extrapolation", c.extrapolation, "ORE boolean");
-    r.set_optional_decimal("RunningSpread", c.running_spread);
-    r.set_optional_text("IndexTerm", c.index_term);
-    r.set_optional_spelling("ImplyDefaultFromMarket", c.imply_default_from_market, "ORE boolean");
     r.set_optional_spelling("AllowNegativeRates", c.allow_negative_rates, "ORE boolean");
-    r.set_optional_spelling("PriceIsUpfront", c.price_is_upfront, "ORE boolean");
-    r.set_optional_text("InitialState", c.initial_state);
-    r.set_optional_text("States", c.states);
+    if (const auto* p = has.market_terms ? parts.take<default_curve_market_terms>(c.id) : nullptr;
+        p) {
+        r.set_optional_text("DiscountCurve", p->discount_curve);
+        r.set_optional_text("Conventions", p->conventions);
+        if (p->has_quotes) {
+            auto quotes = r.child("Quotes");
+            const auto it = ctx.configuration_quotes.find(c.id);
+            if (it != ctx.configuration_quotes.end())
+                for (const auto* q : it->second) {
+                    auto item = quotes.append("Quote");
+                    item.set_own_text(q->quote_text.value_or(""));
+                    item.set_optional_text("optional", q->optional_flag);
+                }
+        }
+    }
+    if (const auto* p = has.cds_terms ? parts.take<default_curve_cds_terms>(c.id) : nullptr; p) {
+        r.set_optional_text("StartDate", p->start_date);
+        r.set_optional_decimal("RunningSpread", p->running_spread);
+        r.set_optional_text("IndexTerm", p->index_term);
+        r.set_optional_spelling(
+            "ImplyDefaultFromMarket", p->imply_default_from_market, "ORE boolean");
+        r.set_optional_spelling("PriceIsUpfront", p->price_is_upfront, "ORE boolean");
+    }
+    if (const auto* p = has.benchmark ? parts.take<default_curve_benchmark>(c.id) : nullptr; p) {
+        r.set_optional_text("BenchmarkCurve", p->benchmark_curve);
+        r.set_optional_text("SourceCurve", p->source_curve);
+        r.set_optional_text("Pillars", p->pillars);
+        r.set_optional_integer("SpotLag", p->spot_lag);
+        r.set_optional_text("Calendar", p->calendar);
+    }
+    if (const auto* p =
+            has.transition_matrix ? parts.take<default_curve_transition_matrix>(c.id) : nullptr;
+        p) {
+        r.set_optional_text("InitialState", p->initial_state);
+        r.set_optional_text("States", p->states);
+    }
+    if (const auto* p = has.yield_reinterpretation ?
+                            parts.take<default_curve_yield_reinterpretation>(c.id) :
+                            nullptr;
+        p)
+        r.set_optional_text("ReinterpretedYieldCurve", p->reinterpreted_yield_curve);
     const auto b = ctx.configuration_bootstraps.find(c.id);
     if (b != ctx.configuration_bootstraps.end())
         export_bootstrap(r.child("BootstrapConfig"), *b->second);
@@ -2638,7 +3232,8 @@ void export_default_curve(
     const refdata::domain::curve_definition& d,
     const refdata::domain::default_curve_config& v,
     const std::vector<const refdata::domain::default_curve_configuration*>& configurations,
-    const export_context& ctx) {
+    const export_context& ctx,
+    document_part_index& parts) {
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     r.set_spelling("Currency", v.currency, "currency code");
@@ -2647,7 +3242,7 @@ void export_default_curve(
         const auto& c = *configurations.front();
         r.set_optional_spelling("Type", c.default_curve_type, "default curve type");
         r.set_optional_spelling("DayCounter", c.day_counter, "day counter");
-        export_configuration_settings(r, c, ctx);
+        export_configuration_settings(r, c, ctx, parts);
         return;
     }
 
@@ -2660,8 +3255,7 @@ void export_default_curve(
         set_integer_text(k, "priority", c->priority);
         k.set_spelling("Type", c->default_curve_type.value_or(""), "default curve type");
         k.set_spelling("DayCounter", c->day_counter.value_or(""), "day counter");
-        k.set_optional_text("ReinterpretedYieldCurve", c->reinterpreted_yield_curve);
-        export_configuration_settings(k, *c, ctx);
+        export_configuration_settings(k, *c, ctx, parts);
     }
 }
 
@@ -2670,7 +3264,8 @@ void export_commodity_curve(
     const refdata::domain::curve_definition& d,
     const refdata::domain::commodity_curve_config& v,
     const std::vector<const refdata::domain::commodity_price_segment*>& segments,
-    const export_context& ctx) {
+    const export_context& ctx,
+    document_part_index& parts) {
     static const std::vector<const refdata::domain::curve_quote*> none;
     const auto quotes_of = [&](const auto& map, const boost::uuids::uuid& id)
         -> const std::vector<const refdata::domain::curve_quote*>& {
@@ -2681,32 +3276,48 @@ void export_commodity_curve(
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     r.set_spelling("Currency", v.currency, "currency code");
-    r.set_optional_text("BasePriceCurve", v.base_price_curve);
-    r.set_optional_text("BaseYieldCurve", v.base_yield_curve);
-    r.set_optional_text("YieldCurve", v.yield_curve);
-    r.set_optional_text("SpotQuote", v.spot_quote);
-    if (v.has_quotes)
-        export_quote_list(r.child("Quotes"), ctx.quotes_of_entry(d.id), std::nullopt);
-    r.set_optional_spelling("DayCounter", v.day_counter, "day counter");
-    r.set_optional_spelling("InterpolationMethod", v.interpolation_method, "interpolation method");
-    r.set_optional_text("Conventions", v.conventions);
-    if (v.has_basis_configuration) {
+    // The construction is whichever part the entry holds, in the order ORE's
+    // reader selects one; a part of another construction stays in the index and
+    // the export refuses it.
+    const auto* basis = parts.take<refdata::domain::commodity_curve_basis>(d.id);
+    const auto* cross =
+        basis ? nullptr : parts.take<refdata::domain::commodity_curve_cross_currency>(d.id);
+    const bool piecewise = !basis && !cross && !segments.empty();
+    if (basis) {
         auto b = r.child("BasisConfiguration");
-        b.set_text("BasePriceCurve", v.basis_base_price_curve.value_or(""));
-        b.set_text("BasePriceConventions", v.basis_base_price_conventions.value_or(""));
+        b.set_text("BasePriceCurve", basis->basis_base_price_curve.value_or(""));
+        b.set_text("BasePriceConventions", basis->basis_base_price_conventions.value_or(""));
         export_quote_list(
             b.child("BasisQuotes"), quotes_of(ctx.basis_quotes, d.id), basis_quotes_list);
-        b.set_text("BasisConventions", v.basis_conventions.value_or(""));
-        b.set_optional_spelling("DayCounter", v.basis_day_counter, "day counter");
+        b.set_text("BasisConventions", basis->basis_conventions.value_or(""));
+        b.set_optional_spelling("DayCounter", basis->basis_day_counter, "day counter");
         b.set_optional_spelling(
-            "InterpolationMethod", v.basis_interpolation_method, "interpolation method");
-        b.set_optional_spelling("AddBasis", v.basis_add_basis, "ORE boolean");
-        b.set_optional_integer("MonthOffset", v.basis_month_offset);
-        b.set_optional_spelling("AverageBase", v.basis_average_base, "ORE boolean");
+            "InterpolationMethod", basis->basis_interpolation_method, "interpolation method");
+        b.set_optional_spelling("AddBasis", basis->basis_add_basis, "ORE boolean");
+        b.set_optional_integer("MonthOffset", basis->basis_month_offset);
+        b.set_optional_spelling("AverageBase", basis->basis_average_base, "ORE boolean");
         b.set_optional_spelling(
-            "PriceAsHistoricalFixing", v.basis_price_as_historical_fixing, "ORE boolean");
+            "PriceAsHistoricalFixing", basis->basis_price_as_historical_fixing, "ORE boolean");
+    } else if (cross) {
+        r.set_optional_text("BasePriceCurve", cross->base_price_curve);
+        r.set_optional_text("BaseYieldCurve", cross->base_yield_curve);
+        r.set_optional_text("YieldCurve", cross->yield_curve);
+    } else {
+        if (const auto* p = parts.take<refdata::domain::commodity_curve_interpolation>(d.id); p) {
+            r.set_optional_spelling("DayCounter", p->day_counter, "day counter");
+            r.set_optional_spelling(
+                "InterpolationMethod", p->interpolation_method, "interpolation method");
+        }
+        if (const auto* p =
+                piecewise ? nullptr : parts.take<refdata::domain::commodity_curve_direct>(d.id);
+            p) {
+            r.set_optional_text("SpotQuote", p->spot_quote);
+            if (p->has_quotes)
+                export_quote_list(r.child("Quotes"), ctx.quotes_of_entry(d.id), std::nullopt);
+            r.set_optional_text("Conventions", p->conventions);
+        }
     }
-    if (v.has_price_segments) {
+    if (piecewise) {
         auto list = r.child("PriceSegments");
         for (const auto* p : segments) {
             auto g = list.append("PriceSegment");
@@ -2885,6 +3496,7 @@ void export_swaption_volatility(record_writer r,
                                 const refdata::domain::curve_definition& d,
                                 const refdata::domain::swaption_volatility_config& v,
                                 const refdata::domain::swaption_proxy_config* proxy_config,
+                                const refdata::domain::swaption_volatility_smile* smile_grid,
                                 const refdata::domain::curve_report_configuration* report,
                                 const smile_export& smile) {
     r.set_text("CurveId", d.curve_id);
@@ -2919,9 +3531,11 @@ void export_swaption_volatility(record_writer r,
     r.set_optional_text("SwapTenors", v.swap_tenors);
     r.set_optional_text("ShortSwapIndexBase", v.short_swap_index_base);
     r.set_optional_text("SwapIndexBase", v.swap_index_base);
-    r.set_optional_text("SmileOptionTenors", v.smile_option_tenors);
-    r.set_optional_text("SmileSwapTenors", v.smile_swap_tenors);
-    r.set_optional_text("SmileSpreads", v.smile_spreads);
+    if (smile_grid) {
+        r.set_optional_text("SmileOptionTenors", smile_grid->smile_option_tenors);
+        r.set_optional_text("SmileSwapTenors", smile_grid->smile_swap_tenors);
+        r.set_optional_text("SmileSpreads", smile_grid->smile_spreads);
+    }
     r.set_optional_text("QuoteTag", v.quote_tag);
     if (report)
         export_report(r.child("Report"), *report);
@@ -3379,6 +3993,7 @@ curve_configuration_projection::document curve_configuration_projection::reverse
     const auto default_by_definition = by_definition(v.default_curves);
     const auto configurations = group_by(v.default_curve_configurations, &configuration_definition);
     ctx.curves = group_by(v.segment_curves, &parent_segment);
+    document_part_index parts(v);
     const auto segments = group_by(v.segments, &definition_of);
     const auto equity_by_definition = by_definition(v.equity_curves);
     const auto inflation_by_definition = by_definition(v.inflation_curves);
@@ -3487,6 +4102,7 @@ curve_configuration_projection::document curve_configuration_projection::reverse
                 *d,
                 settings,
                 proxy,
+                parts.take<refdata::domain::swaption_volatility_smile>(settings.id),
                 report_of(*d),
                 smile_of(*d));
             continue;
@@ -3531,7 +4147,8 @@ curve_configuration_projection::document curve_configuration_projection::reverse
                                    *d,
                                    settings_of(commodity_by_definition, *d),
                                    g == price_segments.end() ? no_segments : g->second,
-                                   ctx);
+                                   ctx,
+                                   parts);
             continue;
         }
         if (d->section_code == default_curves_section) {
@@ -3542,7 +4159,8 @@ curve_configuration_projection::document curve_configuration_projection::reverse
                                  *d,
                                  settings_of(default_by_definition, *d),
                                  k->second,
-                                 ctx);
+                                 ctx,
+                                 parts);
             continue;
         }
         if (d->section_code == inflation_curves_section) {
@@ -3551,6 +4169,7 @@ curve_configuration_projection::document curve_configuration_projection::reverse
             export_inflation_curve(written.child("InflationCurves").append("InflationCurve"),
                                    *d,
                                    settings_of(inflation_by_definition, *d),
+                                   parts.take<refdata::domain::inflation_seasonality>(d->id),
                                    f == factors.end() ? none : f->second,
                                    ctx);
             continue;
@@ -3586,8 +4205,10 @@ curve_configuration_projection::document curve_configuration_projection::reverse
                            *y->second,
                            b == bootstrap_by_definition.end() ? nullptr : b->second,
                            g == segments.end() ? none : g->second,
-                           ctx);
+                           ctx,
+                           parts);
     }
+    parts.refuse_leftovers();
 
     return out;
 }

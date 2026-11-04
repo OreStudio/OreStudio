@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: B31AE4FD-B1AE-4A06-91C4-8EA6CF1395DC
+:END:
+#+title: Task: Skip the fleet checks for a test-only change
+#+description: When every changed compiled file reaches only test binaries, the db, ticks-smoke and step-consumers checks prove nothing new; skip them.
+#+type: task
+#+level: s1
+#+filetags: :tooling:ci:local_checks:run_only_the_checks_a_change_needs:sprint_29:v0:
+#+owner: marco
+#+branch: feature/skip-the-fleet-checks-for-a-test-only-change
+#+pr: 4457
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-03
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A change that reaches only test binaries runs build and ctest but not the database rebuild, the tick smoke or the step-consumer check.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- A change to a header only test code includes skips db, ticks-smoke and step-consumers, and the report names why
+- A change that reaches a library or a service still runs them
+
+* Plan
+
+Decide the skip after =build= passes, from =ninja -t deps=, because only a log
+from after the build describes the tree under test. Map each changed compiled
+path to the targets whose objects read it. Skip the three fleet checks when
+every target is a =.tests= binary. Keep =db= when the database schema does not
+match the checkout, because main moves under a branch.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Gate on one test source | 17 run, 17 passed, 3 skipped; ctest 657s | =compass check --paths projects/ores.trading/api/tests/blotter_protocol_codec_roundtrip_tests.cpp= | ee09fb695a |
+| Build-script suite | 181 passed | =python3 -m pytest -q build/scripts/tests= | 7dc07f4782 + --only fix |
+| Dependency log read | about 3.7s | =ninja -t deps= with the basename filter | ee09fb695a |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4457][#4457]] | [build] Skip the fleet checks for a change that compiles only into tests |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =--only db= could skip the check it names | build/scripts/local_checks.py | accept | =--only= now skips nothing, as =--all= |
+| 2 | =--plan= printed the skip note with no fleet paths | build/scripts/local_checks.py | accept | the note needs at least one fleet path |
+
+* Result
+
+The runner skips =db=, =ticks-smoke= and =step-consumers= when a change
+compiles only into test binaries. It reads the reach from the ninja
+dependency log after the build. A new file, a build description, a SQL script
+or an unclassified path keeps the checks. =db= also runs when the database
+schema fingerprint does not match the checkout. =--all= and =--only= skip
+nothing. The report names each skipped check and the test binaries behind the
+skip. Both acceptance items are met: the gate on a test source skipped the
+three checks and ctest passed, and the tests prove that a library reach keeps
+them.

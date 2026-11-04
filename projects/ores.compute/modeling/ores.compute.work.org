@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 91711BF9-DF21-424B-9EF0-B955A6F8A7DD
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.work
 #+description: Codegen operation model for the compute work protocol, rendered to C++ and TypeScript from one source.

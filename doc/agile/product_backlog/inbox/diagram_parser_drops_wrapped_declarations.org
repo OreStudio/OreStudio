@@ -49,7 +49,7 @@ until this lands.
 
 - =build/scripts/generate_component_puml.py= — the parser, its `_SKIP_LINE_RE`
   and the declaration patterns.
-- =projects/ores.codegen/tests/test_plantuml_component_parse_class_attribute.py=
+- =build/scripts/tests/test_plantuml_component_parse_class_attribute.py=
   — the shape a regression case takes; the nats clean-up fixed the same
   parser's attribute handling and left its cases there.
 - =projects/ores.telemetry/core/modeling/ores.telemetry.core.puml= — the

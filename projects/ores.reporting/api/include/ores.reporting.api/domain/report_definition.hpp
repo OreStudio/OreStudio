@@ -140,6 +140,14 @@ struct report_definition final {
     std::string post_processing;
 
     /**
+     * @brief The output families a run of this definition does not store as rows, as the catalogue
+     * names them, separated by commas. Empty stores every family, so a new definition, and a family
+     * the catalogue gains later, is stored by default. The engine's files stay in the object store
+     * whatever this says, so a family skipped here can be read later.
+     */
+    std::string skipped_families;
+
+    /**
      * @brief Whether the report is an official one.
      *
      * An official report never reads a [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandbox]]: its

@@ -145,300 +145,318 @@ struct instrument_batch {
     /**
      * @brief The bond_instrument_data rows, keyed by trade id.
      */
-    std::vector<bond_instrument_data> bond_instruments;
+    std::vector<ores::trading::domain::bond_instrument_data> bond_instruments;
     /**
      * @brief The commodity_instrument rows, keyed by trade id.
      */
-    std::vector<commodity_instrument> commodity_instruments;
+    std::vector<ores::trading::domain::commodity_instrument> commodity_instruments;
     /**
      * @brief The composite_instrument rows, keyed by trade id.
      */
-    std::vector<composite_instrument> composite_instruments;
+    std::vector<ores::trading::domain::composite_instrument> composite_instruments;
     /**
      * @brief The credit_instrument rows, keyed by trade id.
      */
-    std::vector<credit_instrument> credit_instruments;
+    std::vector<ores::trading::domain::credit_instrument> credit_instruments;
     /**
      * @brief The equity_accumulator_instrument rows, keyed by trade id.
      */
-    std::vector<equity_accumulator_instrument> equity_accumulator_instruments;
+    std::vector<ores::trading::domain::equity_accumulator_instrument>
+        equity_accumulator_instruments;
     /**
      * @brief The equity_asian_option_instrument rows, keyed by trade id.
      */
-    std::vector<equity_asian_option_instrument> equity_asian_option_instruments;
+    std::vector<ores::trading::domain::equity_asian_option_instrument>
+        equity_asian_option_instruments;
     /**
      * @brief The equity_barrier_option_instrument rows, keyed by trade id.
      */
-    std::vector<equity_barrier_option_instrument> equity_barrier_option_instruments;
+    std::vector<ores::trading::domain::equity_barrier_option_instrument>
+        equity_barrier_option_instruments;
     /**
      * @brief The equity_digital_option_instrument rows, keyed by trade id.
      */
-    std::vector<equity_digital_option_instrument> equity_digital_option_instruments;
+    std::vector<ores::trading::domain::equity_digital_option_instrument>
+        equity_digital_option_instruments;
     /**
      * @brief The equity_forward_instrument rows, keyed by trade id.
      */
-    std::vector<equity_forward_instrument> equity_forward_instruments;
+    std::vector<ores::trading::domain::equity_forward_instrument> equity_forward_instruments;
     /**
      * @brief The equity_option_instrument rows, keyed by trade id.
      */
-    std::vector<equity_option_instrument> equity_option_instruments;
+    std::vector<ores::trading::domain::equity_option_instrument> equity_option_instruments;
     /**
      * @brief The equity_position_instrument rows, keyed by trade id.
      */
-    std::vector<equity_position_instrument> equity_position_instruments;
+    std::vector<ores::trading::domain::equity_position_instrument> equity_position_instruments;
     /**
      * @brief The equity_swap_instrument rows, keyed by trade id.
      */
-    std::vector<equity_swap_instrument> equity_swap_instruments;
+    std::vector<ores::trading::domain::equity_swap_instrument> equity_swap_instruments;
     /**
      * @brief The equity_variance_swap_instrument rows, keyed by trade id.
      */
-    std::vector<equity_variance_swap_instrument> equity_variance_swap_instruments;
+    std::vector<ores::trading::domain::equity_variance_swap_instrument>
+        equity_variance_swap_instruments;
     /**
      * @brief The fx_accumulator_instrument rows, keyed by trade id.
      */
-    std::vector<fx_accumulator_instrument> fx_accumulator_instruments;
+    std::vector<ores::trading::domain::fx_accumulator_instrument> fx_accumulator_instruments;
     /**
      * @brief The fx_asian_forward_instrument rows, keyed by trade id.
      */
-    std::vector<fx_asian_forward_instrument> fx_asian_forward_instruments;
+    std::vector<ores::trading::domain::fx_asian_forward_instrument> fx_asian_forward_instruments;
     /**
      * @brief The fx_barrier_option_instrument rows, keyed by trade id.
      */
-    std::vector<fx_barrier_option_instrument> fx_barrier_option_instruments;
+    std::vector<ores::trading::domain::fx_barrier_option_instrument> fx_barrier_option_instruments;
     /**
      * @brief The fx_digital_option_instrument rows, keyed by trade id.
      */
-    std::vector<fx_digital_option_instrument> fx_digital_option_instruments;
+    std::vector<ores::trading::domain::fx_digital_option_instrument> fx_digital_option_instruments;
     /**
      * @brief The fx_forward_instrument rows, keyed by trade id.
      */
-    std::vector<fx_forward_instrument> fx_forward_instruments;
+    std::vector<ores::trading::domain::fx_forward_instrument> fx_forward_instruments;
     /**
      * @brief The fx_vanilla_option_instrument rows, keyed by trade id.
      */
-    std::vector<fx_vanilla_option_instrument> fx_vanilla_option_instruments;
+    std::vector<ores::trading::domain::fx_vanilla_option_instrument> fx_vanilla_option_instruments;
     /**
      * @brief The fx_variance_swap_instrument rows, keyed by trade id.
      */
-    std::vector<fx_variance_swap_instrument> fx_variance_swap_instruments;
+    std::vector<ores::trading::domain::fx_variance_swap_instrument> fx_variance_swap_instruments;
     /**
      * @brief The rate_instrument rows, keyed by trade id.
      */
-    std::vector<rate_instrument> rate_instruments;
+    std::vector<ores::trading::domain::rate_instrument> rate_instruments;
     /**
      * @brief The scripted_instrument rows, keyed by trade id.
      */
-    std::vector<scripted_instrument> scripted_instruments;
+    std::vector<ores::trading::domain::scripted_instrument> scripted_instruments;
     /**
      * @brief The bond_issue rows, keyed by trade id.
      */
-    std::vector<bond_issue> bond_issues;
+    std::vector<ores::trading::domain::bond_issue> bond_issues;
     /**
      * @brief The bond_issue_call_date rows, keyed by trade id.
      */
-    std::vector<bond_issue_call_date> bond_issue_call_dates;
+    std::vector<ores::trading::domain::bond_issue_call_date> bond_issue_call_dates;
     /**
      * @brief The bond_issue_conversion_target rows, keyed by trade id.
      */
-    std::vector<bond_issue_conversion_target> bond_issue_conversion_targets;
+    std::vector<ores::trading::domain::bond_issue_conversion_target> bond_issue_conversion_targets;
     /**
      * @brief The bond_issue_leg rows, keyed by trade id.
      */
-    std::vector<bond_issue_leg> bond_issue_legs;
+    std::vector<ores::trading::domain::bond_issue_leg> bond_issue_legs;
     /**
      * @brief The bond_issue_leg_amortization rows, keyed by trade id.
      */
-    std::vector<bond_issue_leg_amortization> bond_issue_leg_amortizations;
+    std::vector<ores::trading::domain::bond_issue_leg_amortization> bond_issue_leg_amortizations;
     /**
      * @brief The bond_issue_leg_amount rows, keyed by trade id.
      */
-    std::vector<bond_issue_leg_amount> bond_issue_leg_amounts;
+    std::vector<ores::trading::domain::bond_issue_leg_amount> bond_issue_leg_amounts;
     /**
      * @brief The bond_issue_leg_rate rows, keyed by trade id.
      */
-    std::vector<bond_issue_leg_rate> bond_issue_leg_rates;
+    std::vector<ores::trading::domain::bond_issue_leg_rate> bond_issue_leg_rates;
     /**
      * @brief The bond_issue_leg_schedule rows, keyed by trade id.
      */
-    std::vector<bond_issue_leg_schedule> bond_issue_leg_schedules;
+    std::vector<ores::trading::domain::bond_issue_leg_schedule> bond_issue_leg_schedules;
     /**
      * @brief The bond_issue_leg_schedule_date rows, keyed by trade id.
      */
-    std::vector<bond_issue_leg_schedule_date> bond_issue_leg_schedule_dates;
+    std::vector<ores::trading::domain::bond_issue_leg_schedule_date> bond_issue_leg_schedule_dates;
     /**
      * @brief The ascot rows, keyed by trade id.
      */
-    std::vector<ascot> ascots;
+    std::vector<ores::trading::domain::ascot> ascots;
     /**
      * @brief The bond_forward rows, keyed by trade id.
      */
-    std::vector<bond_forward> bond_forwards;
+    std::vector<ores::trading::domain::bond_forward> bond_forwards;
     /**
      * @brief The bond_future rows, keyed by trade id.
      */
-    std::vector<bond_future> bond_futures;
+    std::vector<ores::trading::domain::bond_future> bond_futures;
     /**
      * @brief The bond_option rows, keyed by trade id.
      */
-    std::vector<bond_option> bond_options;
+    std::vector<ores::trading::domain::bond_option> bond_options;
     /**
      * @brief The bond_repo rows, keyed by trade id.
      */
-    std::vector<bond_repo> bond_repos;
+    std::vector<ores::trading::domain::bond_repo> bond_repos;
     /**
      * @brief The bond_trs rows, keyed by trade id.
      */
-    std::vector<bond_trs> bond_trs;
+    std::vector<ores::trading::domain::bond_trs> bond_trs;
     /**
      * @brief The balance_guaranteed_swap_instrument rows, keyed by trade id.
      */
-    std::vector<balance_guaranteed_swap_instrument> balance_guaranteed_swap_instruments;
+    std::vector<ores::trading::domain::balance_guaranteed_swap_instrument>
+        balance_guaranteed_swap_instruments;
     /**
      * @brief The balance_guaranteed_swap_tranche rows, keyed by trade id.
      */
-    std::vector<balance_guaranteed_swap_tranche> balance_guaranteed_swap_tranches;
+    std::vector<ores::trading::domain::balance_guaranteed_swap_tranche>
+        balance_guaranteed_swap_tranches;
     /**
      * @brief The balance_guaranteed_swap_tranche_notional rows, keyed by trade id.
      */
-    std::vector<balance_guaranteed_swap_tranche_notional> balance_guaranteed_swap_tranche_notionals;
+    std::vector<ores::trading::domain::balance_guaranteed_swap_tranche_notional>
+        balance_guaranteed_swap_tranche_notionals;
     /**
      * @brief The callable_swap_call_date rows, keyed by trade id.
      */
-    std::vector<callable_swap_call_date> callable_swap_call_dates;
+    std::vector<ores::trading::domain::callable_swap_call_date> callable_swap_call_dates;
     /**
      * @brief The callable_swap_instrument rows, keyed by trade id.
      */
-    std::vector<callable_swap_instrument> callable_swap_instruments;
+    std::vector<ores::trading::domain::callable_swap_instrument> callable_swap_instruments;
     /**
      * @brief The cap_floor_instrument rows, keyed by trade id.
      */
-    std::vector<cap_floor_instrument> cap_floor_instruments;
+    std::vector<ores::trading::domain::cap_floor_instrument> cap_floor_instruments;
     /**
      * @brief The commodity_basket_constituent rows, keyed by trade id.
      */
-    std::vector<commodity_basket_constituent> commodity_basket_constituents;
+    std::vector<ores::trading::domain::commodity_basket_constituent> commodity_basket_constituents;
     /**
      * @brief The composite_leg rows, keyed by trade id.
      */
-    std::vector<composite_leg> composite_legs;
+    std::vector<ores::trading::domain::composite_leg> composite_legs;
     /**
      * @brief The credit_basket_constituent rows, keyed by trade id.
      */
-    std::vector<credit_basket_constituent> credit_basket_constituents;
+    std::vector<ores::trading::domain::credit_basket_constituent> credit_basket_constituents;
     /**
      * @brief The credit_default_swap_instrument rows, keyed by trade id.
      */
-    std::vector<credit_default_swap_instrument> credit_default_swap_instruments;
+    std::vector<ores::trading::domain::credit_default_swap_instrument>
+        credit_default_swap_instruments;
     /**
      * @brief The credit_linked_swap_instrument rows, keyed by trade id.
      */
-    std::vector<credit_linked_swap_instrument> credit_linked_swap_instruments;
+    std::vector<ores::trading::domain::credit_linked_swap_instrument>
+        credit_linked_swap_instruments;
     /**
      * @brief The equity_basket_constituent rows, keyed by trade id.
      */
-    std::vector<equity_basket_constituent> equity_basket_constituents;
+    std::vector<ores::trading::domain::equity_basket_constituent> equity_basket_constituents;
     /**
      * @brief The equity_swap_period rows, keyed by trade id.
      */
-    std::vector<equity_swap_period> equity_swap_periods;
+    std::vector<ores::trading::domain::equity_swap_period> equity_swap_periods;
     /**
      * @brief The equity_position_option_underlying rows, keyed by trade id.
      */
-    std::vector<equity_position_option_underlying> equity_position_option_underlyings;
+    std::vector<ores::trading::domain::equity_position_option_underlying>
+        equity_position_option_underlyings;
     /**
      * @brief The flexi_swap_instrument rows, keyed by trade id.
      */
-    std::vector<flexi_swap_instrument> flexi_swap_instruments;
+    std::vector<ores::trading::domain::flexi_swap_instrument> flexi_swap_instruments;
     /**
      * @brief The flexi_swap_lower_notional rows, keyed by trade id.
      */
-    std::vector<flexi_swap_lower_notional> flexi_swap_lower_notionals;
+    std::vector<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notionals;
     /**
      * @brief The fra_instrument rows, keyed by trade id.
      */
-    std::vector<fra_instrument> fra_instruments;
+    std::vector<ores::trading::domain::fra_instrument> fra_instruments;
     /**
      * @brief The index_credit_default_swap_instrument rows, keyed by trade id.
      */
-    std::vector<index_credit_default_swap_instrument> index_credit_default_swap_instruments;
+    std::vector<ores::trading::domain::index_credit_default_swap_instrument>
+        index_credit_default_swap_instruments;
     /**
      * @brief The index_credit_default_swap_option_instrument rows, keyed by trade id.
      */
-    std::vector<index_credit_default_swap_option_instrument>
+    std::vector<ores::trading::domain::index_credit_default_swap_option_instrument>
         index_credit_default_swap_option_instruments;
     /**
      * @brief The inflation_swap_instrument rows, keyed by trade id.
      */
-    std::vector<inflation_swap_instrument> inflation_swap_instruments;
+    std::vector<ores::trading::domain::inflation_swap_instrument> inflation_swap_instruments;
     /**
      * @brief The instrument_option rows, keyed by trade id.
      */
-    std::vector<instrument_option> instrument_options;
+    std::vector<ores::trading::domain::instrument_option> instrument_options;
     /**
      * @brief The instrument_option_exercise_fee rows, keyed by trade id.
      */
-    std::vector<instrument_option_exercise_fee> instrument_option_exercise_fees;
+    std::vector<ores::trading::domain::instrument_option_exercise_fee>
+        instrument_option_exercise_fees;
     /**
      * @brief The instrument_option_exercise_price rows, keyed by trade id.
      */
-    std::vector<instrument_option_exercise_price> instrument_option_exercise_prices;
+    std::vector<ores::trading::domain::instrument_option_exercise_price>
+        instrument_option_exercise_prices;
     /**
      * @brief The instrument_option_payment_date rows, keyed by trade id.
      */
-    std::vector<instrument_option_payment_date> instrument_option_payment_dates;
+    std::vector<ores::trading::domain::instrument_option_payment_date>
+        instrument_option_payment_dates;
     /**
      * @brief The instrument_option_premium rows, keyed by trade id.
      */
-    std::vector<instrument_option_premium> instrument_option_premiums;
+    std::vector<ores::trading::domain::instrument_option_premium> instrument_option_premiums;
     /**
      * @brief The instrument_schedule rows, keyed by trade id.
      */
-    std::vector<instrument_schedule> instrument_schedules;
+    std::vector<ores::trading::domain::instrument_schedule> instrument_schedules;
     /**
      * @brief The instrument_schedule_date rows, keyed by trade id.
      */
-    std::vector<instrument_schedule_date> instrument_schedule_dates;
+    std::vector<ores::trading::domain::instrument_schedule_date> instrument_schedule_dates;
     /**
      * @brief The instrument_strike rows, keyed by trade id.
      */
-    std::vector<instrument_strike> instrument_strikes;
+    std::vector<ores::trading::domain::instrument_strike> instrument_strikes;
     /**
      * @brief The knock_out_swap_instrument rows, keyed by trade id.
      */
-    std::vector<knock_out_swap_instrument> knock_out_swap_instruments;
+    std::vector<ores::trading::domain::knock_out_swap_instrument> knock_out_swap_instruments;
     /**
      * @brief The range_bound rows, keyed by trade id.
      */
-    std::vector<range_bound> range_bounds;
+    std::vector<ores::trading::domain::range_bound> range_bounds;
     /**
      * @brief The risk_participation_agreement_instrument rows, keyed by trade id.
      */
-    std::vector<risk_participation_agreement_instrument> risk_participation_agreement_instruments;
+    std::vector<ores::trading::domain::risk_participation_agreement_instrument>
+        risk_participation_agreement_instruments;
     /**
      * @brief The swap_leg rows, keyed by trade id.
      */
-    std::vector<swap_leg> swap_legs;
+    std::vector<ores::trading::domain::swap_leg> swap_legs;
     /**
      * @brief The swap_leg_amount rows, keyed by trade id.
      */
-    std::vector<swap_leg_amount> swap_leg_amounts;
+    std::vector<ores::trading::domain::swap_leg_amount> swap_leg_amounts;
     /**
      * @brief The swap_leg_rate rows, keyed by trade id.
      */
-    std::vector<swap_leg_rate> swap_leg_rates;
+    std::vector<ores::trading::domain::swap_leg_rate> swap_leg_rates;
     /**
      * @brief The swaption_instrument rows, keyed by trade id.
      */
-    std::vector<swaption_instrument> swaption_instruments;
+    std::vector<ores::trading::domain::swaption_instrument> swaption_instruments;
     /**
      * @brief The synthetic_cdo_instrument rows, keyed by trade id.
      */
-    std::vector<synthetic_cdo_instrument> synthetic_cdo_instruments;
+    std::vector<ores::trading::domain::synthetic_cdo_instrument> synthetic_cdo_instruments;
     /**
      * @brief The vanilla_swap_instrument rows, keyed by trade id.
      */
-    std::vector<vanilla_swap_instrument> vanilla_swap_instruments;
+    std::vector<ores::trading::domain::vanilla_swap_instrument> vanilla_swap_instruments;
+
+    friend bool operator==(const instrument_batch&, const instrument_batch&) = default;
 };
 
 /**

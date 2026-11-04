@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 34CDC835-C72C-44F1-A0E2-B163014E0D74
 :END:
 #+title: ores.telemetry.service_samples

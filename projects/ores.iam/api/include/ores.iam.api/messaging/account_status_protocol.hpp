@@ -26,17 +26,25 @@
 #define ORES_IAM_API_MESSAGING_ACCOUNT_STATUS_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/account_status.hpp"
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
 
 struct account_status_key {
     std::string status;
+
+    friend bool operator==(const account_status_key&, const account_status_key&) = default;
 };
 
 struct account_status_write {
@@ -44,25 +52,36 @@ struct account_status_write {
     std::string name;
     std::string description;
     int display_order;
+
+    friend bool operator==(const account_status_write&, const account_status_write&) = default;
 };
 
 struct account_status_change {
     account_status_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const account_status_change&, const account_status_change&) = default;
 };
 
 struct account_status_removal {
     account_status_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const account_status_removal&, const account_status_removal&) = default;
 };
 
 struct account_status_lookup {
     account_status_key key;
     std::optional<ores::iam::domain::account_status> account_status;
+
+    friend bool operator==(const account_status_lookup&, const account_status_lookup&) = default;
 };
 
 struct account_statuses_filter {
     std::optional<std::vector<std::string>> status_one_of;
+
+    friend bool operator==(const account_statuses_filter&,
+                           const account_statuses_filter&) = default;
 };
 
 struct account_status_event {
@@ -72,17 +91,25 @@ struct account_status_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const account_status_event&, const account_status_event&) = default;
 };
 
 struct account_status_version_key {
     account_status_key account_status;
     std::uint32_t version;
+
+    friend bool operator==(const account_status_version_key&,
+                           const account_status_version_key&) = default;
 };
 
 struct account_status_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const account_status_versions_filter&,
+                           const account_status_versions_filter&) = default;
 };
 
 struct list_account_statuses_request {
@@ -100,12 +127,18 @@ struct list_account_statuses_request {
     ores::utility::domain::order order;
     std::optional<account_statuses_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_account_statuses_request&,
+                           const list_account_statuses_request&) = default;
 };
 
 struct list_account_statuses_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_status> statuses;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_statuses_response&,
+                           const list_account_statuses_response&) = default;
 };
 
 struct get_account_status_request {
@@ -119,11 +152,17 @@ struct get_account_status_request {
      */
     static constexpr bool requires_session = true;
     account_status_key key;
+
+    friend bool operator==(const get_account_status_request&,
+                           const get_account_status_request&) = default;
 };
 
 struct get_account_status_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_status> account_status;
+
+    friend bool operator==(const get_account_status_response&,
+                           const get_account_status_response&) = default;
 };
 
 struct get_many_account_statuses_request {
@@ -137,11 +176,17 @@ struct get_many_account_statuses_request {
      */
     static constexpr bool requires_session = true;
     std::vector<account_status_key> keys;
+
+    friend bool operator==(const get_many_account_statuses_request&,
+                           const get_many_account_statuses_request&) = default;
 };
 
 struct get_many_account_statuses_response {
     ores::utility::domain::result result;
     std::vector<account_status_lookup> entries;
+
+    friend bool operator==(const get_many_account_statuses_response&,
+                           const get_many_account_statuses_response&) = default;
 };
 
 struct put_account_status_request {
@@ -156,11 +201,17 @@ struct put_account_status_request {
     static constexpr bool requires_session = true;
     account_status_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_account_status_request&,
+                           const put_account_status_request&) = default;
 };
 
 struct put_account_status_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_status> account_status;
+
+    friend bool operator==(const put_account_status_response&,
+                           const put_account_status_response&) = default;
 };
 
 struct put_many_account_statuses_request {
@@ -175,11 +226,17 @@ struct put_many_account_statuses_request {
     static constexpr bool requires_session = true;
     std::vector<account_status_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_account_statuses_request&,
+                           const put_many_account_statuses_request&) = default;
 };
 
 struct put_many_account_statuses_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_status> statuses;
+
+    friend bool operator==(const put_many_account_statuses_response&,
+                           const put_many_account_statuses_response&) = default;
 };
 
 struct delete_account_status_request {
@@ -194,10 +251,16 @@ struct delete_account_status_request {
     static constexpr bool requires_session = true;
     account_status_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_account_status_request&,
+                           const delete_account_status_request&) = default;
 };
 
 struct delete_account_status_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_account_status_response&,
+                           const delete_account_status_response&) = default;
 };
 
 struct delete_many_account_statuses_request {
@@ -212,10 +275,16 @@ struct delete_many_account_statuses_request {
     static constexpr bool requires_session = true;
     std::vector<account_status_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_account_statuses_request&,
+                           const delete_many_account_statuses_request&) = default;
 };
 
 struct delete_many_account_statuses_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_account_statuses_response&,
+                           const delete_many_account_statuses_response&) = default;
 };
 
 struct list_account_status_versions_request {
@@ -233,12 +302,18 @@ struct list_account_status_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_status_versions_filter> filter;
+
+    friend bool operator==(const list_account_status_versions_request&,
+                           const list_account_status_versions_request&) = default;
 };
 
 struct list_account_status_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_status> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_status_versions_response&,
+                           const list_account_status_versions_response&) = default;
 };
 
 struct get_account_status_version_request {
@@ -252,11 +327,17 @@ struct get_account_status_version_request {
      */
     static constexpr bool requires_session = true;
     account_status_version_key key;
+
+    friend bool operator==(const get_account_status_version_request&,
+                           const get_account_status_version_request&) = default;
 };
 
 struct get_account_status_version_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_status> version;
+
+    friend bool operator==(const get_account_status_version_response&,
+                           const get_account_status_version_response&) = default;
 };
 
 /**
@@ -268,11 +349,723 @@ struct get_account_status_version_response {
  * of them.
  */
 namespace account_status_event_subjects {
-inline constexpr std::string_view created = "iam.v1.account_statuses_events.created";
-inline constexpr std::string_view updated = "iam.v1.account_statuses_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.account_statuses_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.account_statuses.created";
+inline constexpr std::string_view updated = "iam.v1.events.account_statuses.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.deleted";
+}
+/**
+ * @brief The members of account_status_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_status_key&) {
+    return std::tuple{
+        utility::codec::field{"status", &account_status_key::status},
+    };
 }
 
+/**
+ * @brief The members of account_status_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_status_write&) {
+    return std::tuple{
+        utility::codec::field{"status", &account_status_write::status},
+        utility::codec::field{"name", &account_status_write::name},
+        utility::codec::field{"description", &account_status_write::description},
+        utility::codec::field{"display_order", &account_status_write::display_order},
+    };
 }
+
+/**
+ * @brief The members of account_status_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_status_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &account_status_change::write},
+        utility::codec::field{"precondition", &account_status_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of account_status_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_status_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &account_status_removal::key},
+        utility::codec::field{"precondition", &account_status_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of account_status_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_status_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &account_status_lookup::key},
+        utility::codec::field{"account_status", &account_status_lookup::account_status},
+    };
+}
+
+/**
+ * @brief The members of account_statuses_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_statuses_filter&) {
+    return std::tuple{
+        utility::codec::field{"status_one_of", &account_statuses_filter::status_one_of},
+    };
+}
+
+/**
+ * @brief The members of account_status_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_status_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &account_status_event::event_id},
+        utility::codec::field{"key", &account_status_event::key},
+        utility::codec::field{"action", &account_status_event::action},
+        utility::codec::field{"version", &account_status_event::version},
+        utility::codec::field{"occurred_at", &account_status_event::occurred_at},
+        utility::codec::field{"correlation_id", &account_status_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of account_status_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_status_version_key&) {
+    return std::tuple{
+        utility::codec::field{"account_status", &account_status_version_key::account_status},
+        utility::codec::field{"version", &account_status_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of account_status_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_status_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &account_status_versions_filter::version},
+        utility::codec::field{"from_version", &account_status_versions_filter::from_version},
+        utility::codec::field{"to_version", &account_status_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_account_statuses_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_statuses_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_account_statuses_request::offset},
+        utility::codec::field{"limit", &list_account_statuses_request::limit},
+        utility::codec::field{"order", &list_account_statuses_request::order},
+        utility::codec::field{"filter", &list_account_statuses_request::filter},
+        utility::codec::field{"as_of", &list_account_statuses_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_account_statuses_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_statuses_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_account_statuses_response::result},
+        utility::codec::field{"statuses", &list_account_statuses_response::statuses},
+        utility::codec::field{"total", &list_account_statuses_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_account_status_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_status_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_account_status_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_account_status_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_status_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_account_status_response::result},
+        utility::codec::field{"account_status", &get_account_status_response::account_status},
+    };
+}
+
+/**
+ * @brief The members of get_many_account_statuses_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_account_statuses_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_account_statuses_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_account_statuses_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_account_statuses_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_account_statuses_response::result},
+        utility::codec::field{"entries", &get_many_account_statuses_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_account_status_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_account_status_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_account_status_request::change},
+        utility::codec::field{"intent", &put_account_status_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_account_status_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_account_status_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_account_status_response::result},
+        utility::codec::field{"account_status", &put_account_status_response::account_status},
+    };
+}
+
+/**
+ * @brief The members of put_many_account_statuses_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_account_statuses_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_account_statuses_request::changes},
+        utility::codec::field{"intent", &put_many_account_statuses_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_account_statuses_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_account_statuses_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_account_statuses_response::result},
+        utility::codec::field{"statuses", &put_many_account_statuses_response::statuses},
+    };
+}
+
+/**
+ * @brief The members of delete_account_status_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_account_status_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_account_status_request::removal},
+        utility::codec::field{"intent", &delete_account_status_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_account_status_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_account_status_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_account_status_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_account_statuses_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_account_statuses_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_account_statuses_request::removals},
+        utility::codec::field{"intent", &delete_many_account_statuses_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_account_statuses_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_account_statuses_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_account_statuses_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_account_status_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_status_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_account_status_versions_request::key},
+        utility::codec::field{"offset", &list_account_status_versions_request::offset},
+        utility::codec::field{"limit", &list_account_status_versions_request::limit},
+        utility::codec::field{"order", &list_account_status_versions_request::order},
+        utility::codec::field{"filter", &list_account_status_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_account_status_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_status_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_account_status_versions_response::result},
+        utility::codec::field{"versions", &list_account_status_versions_response::versions},
+        utility::codec::field{"total", &list_account_status_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_account_status_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_status_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_account_status_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_account_status_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_status_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_account_status_version_response::result},
+        utility::codec::field{"version", &get_account_status_version_response::version},
+    };
+}
+
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_status_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_status_key& v);
+    static ores::iam::messaging::account_status_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_status_key& v);
+    static ores::iam::messaging::account_status_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_status_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_status_write& v);
+    static ores::iam::messaging::account_status_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_status_write& v);
+    static ores::iam::messaging::account_status_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_status_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_status_change& v);
+    static ores::iam::messaging::account_status_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_status_change& v);
+    static ores::iam::messaging::account_status_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_status_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_status_removal& v);
+    static ores::iam::messaging::account_status_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_status_removal& v);
+    static ores::iam::messaging::account_status_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_status_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_status_lookup& v);
+    static ores::iam::messaging::account_status_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_status_lookup& v);
+    static ores::iam::messaging::account_status_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_statuses_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_statuses_filter& v);
+    static ores::iam::messaging::account_statuses_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_statuses_filter& v);
+    static ores::iam::messaging::account_statuses_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_status_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_status_event& v);
+    static ores::iam::messaging::account_status_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_status_event& v);
+    static ores::iam::messaging::account_status_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_status_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_status_version_key& v);
+    static ores::iam::messaging::account_status_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_status_version_key& v);
+    static ores::iam::messaging::account_status_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_status_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_status_versions_filter& v);
+    static ores::iam::messaging::account_status_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_status_versions_filter& v);
+    static ores::iam::messaging::account_status_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_account_statuses_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_account_statuses_request& v);
+    static ores::iam::messaging::list_account_statuses_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_account_statuses_request& v);
+    static ores::iam::messaging::list_account_statuses_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_account_statuses_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_account_statuses_response& v);
+    static ores::iam::messaging::list_account_statuses_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_account_statuses_response& v);
+    static ores::iam::messaging::list_account_statuses_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_status_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_account_status_request& v);
+    static ores::iam::messaging::get_account_status_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_account_status_request& v);
+    static ores::iam::messaging::get_account_status_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_status_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_account_status_response& v);
+    static ores::iam::messaging::get_account_status_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_account_status_response& v);
+    static ores::iam::messaging::get_account_status_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_account_statuses_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_many_account_statuses_request& v);
+    static ores::iam::messaging::get_many_account_statuses_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::get_many_account_statuses_request& v);
+    static ores::iam::messaging::get_many_account_statuses_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_account_statuses_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::get_many_account_statuses_response& v);
+    static ores::iam::messaging::get_many_account_statuses_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::get_many_account_statuses_response& v);
+    static ores::iam::messaging::get_many_account_statuses_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_account_status_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_account_status_request& v);
+    static ores::iam::messaging::put_account_status_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_account_status_request& v);
+    static ores::iam::messaging::put_account_status_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_account_status_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_account_status_response& v);
+    static ores::iam::messaging::put_account_status_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_account_status_response& v);
+    static ores::iam::messaging::put_account_status_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_many_account_statuses_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_many_account_statuses_request& v);
+    static ores::iam::messaging::put_many_account_statuses_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::put_many_account_statuses_request& v);
+    static ores::iam::messaging::put_many_account_statuses_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_many_account_statuses_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::put_many_account_statuses_response& v);
+    static ores::iam::messaging::put_many_account_statuses_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::put_many_account_statuses_response& v);
+    static ores::iam::messaging::put_many_account_statuses_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_account_status_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_account_status_request& v);
+    static ores::iam::messaging::delete_account_status_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::delete_account_status_request& v);
+    static ores::iam::messaging::delete_account_status_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_account_status_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_account_status_response& v);
+    static ores::iam::messaging::delete_account_status_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::delete_account_status_response& v);
+    static ores::iam::messaging::delete_account_status_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_many_account_statuses_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::delete_many_account_statuses_request& v);
+    static ores::iam::messaging::delete_many_account_statuses_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::delete_many_account_statuses_request& v);
+    static ores::iam::messaging::delete_many_account_statuses_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::delete_many_account_statuses_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::delete_many_account_statuses_response& v);
+    static ores::iam::messaging::delete_many_account_statuses_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::delete_many_account_statuses_response& v);
+    static ores::iam::messaging::delete_many_account_statuses_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_account_status_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::list_account_status_versions_request& v);
+    static ores::iam::messaging::list_account_status_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_account_status_versions_request& v);
+    static ores::iam::messaging::list_account_status_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::list_account_status_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::list_account_status_versions_response& v);
+    static ores::iam::messaging::list_account_status_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_account_status_versions_response& v);
+    static ores::iam::messaging::list_account_status_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_status_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::get_account_status_version_request& v);
+    static ores::iam::messaging::get_account_status_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::get_account_status_version_request& v);
+    static ores::iam::messaging::get_account_status_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_status_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::get_account_status_version_response& v);
+    static ores::iam::messaging::get_account_status_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::get_account_status_version_response& v);
+    static ores::iam::messaging::get_account_status_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

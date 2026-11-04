@@ -345,6 +345,9 @@ select ores_utility_allow_version_replace_fn();
 
 \echo ''
 \echo '--- Trading Layer ---'
+-- The catalogue used to live in every tenant. Remove the copies before the seed
+-- states the one copy in the system tenant.
+\ir trading/trading_product_type_copies_cleanup.sql
 \ir trading/populate_trading.sql
 
 -- =============================================================================

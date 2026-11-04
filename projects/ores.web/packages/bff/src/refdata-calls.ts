@@ -97,11 +97,14 @@ export function refusal(result: z.infer<typeof resultSchema>): HttpFailure {
     }
 }
 
-/** Every row of a list, read a page at a time until a page comes back short. */
-export async function readAll(
+/**
+ * Every row of a list, read a page at a time until a page comes back short. Name the list's
+ * generated response type to have the compiler check the field the rows are read from.
+ */
+export async function readAll<Response = Record<string, unknown>>(
     session: LiveSession,
     subject: string,
-    rows: string,
+    rows: keyof Response & string,
     request: Readonly<Record<string, unknown>>,
 ): Promise<readonly Record<string, unknown>[]> {
     const all: Record<string, unknown>[] = [];

@@ -108,26 +108,10 @@ default_curve_configuration_to_domain(const messaging::default_curve_configurati
     v.is_inline = write.is_inline;
     v.priority = write.priority;
     v.default_curve_type = write.default_curve_type;
-    v.discount_curve = write.discount_curve;
     v.day_counter = write.day_counter;
     v.recovery_rate = write.recovery_rate;
-    v.start_date = write.start_date;
-    v.has_quotes = write.has_quotes;
-    v.benchmark_curve = write.benchmark_curve;
-    v.reinterpreted_yield_curve = write.reinterpreted_yield_curve;
-    v.source_curve = write.source_curve;
-    v.pillars = write.pillars;
-    v.spot_lag = write.spot_lag;
-    v.calendar = write.calendar;
-    v.conventions = write.conventions;
     v.extrapolation = write.extrapolation;
-    v.running_spread = write.running_spread;
-    v.index_term = write.index_term;
-    v.imply_default_from_market = write.imply_default_from_market;
     v.allow_negative_rates = write.allow_negative_rates;
-    v.price_is_upfront = write.price_is_upfront;
-    v.initial_state = write.initial_state;
-    v.states = write.states;
     v.position = write.position;
     return v;
 }

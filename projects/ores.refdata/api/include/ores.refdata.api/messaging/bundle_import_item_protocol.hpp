@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct bundle_import_item_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const bundle_import_item_key&, const bundle_import_item_key&) = default;
 };
 
 struct bundle_import_item_write {
@@ -52,27 +54,42 @@ struct bundle_import_item_write {
     int sequence;
     std::string payload;
     std::optional<std::string> checksum;
+
+    friend bool operator==(const bundle_import_item_write&,
+                           const bundle_import_item_write&) = default;
 };
 
 struct bundle_import_item_change {
     bundle_import_item_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const bundle_import_item_change&,
+                           const bundle_import_item_change&) = default;
 };
 
 struct bundle_import_item_removal {
     bundle_import_item_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const bundle_import_item_removal&,
+                           const bundle_import_item_removal&) = default;
 };
 
 struct bundle_import_item_lookup {
     bundle_import_item_key key;
     std::optional<ores::refdata::domain::bundle_import_item> bundle_import_item;
+
+    friend bool operator==(const bundle_import_item_lookup&,
+                           const bundle_import_item_lookup&) = default;
 };
 
 struct bundle_import_items_filter {
     std::optional<boost::uuids::uuid> import_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> import_id_one_of;
+
+    friend bool operator==(const bundle_import_items_filter&,
+                           const bundle_import_items_filter&) = default;
 };
 
 struct bundle_import_item_event {
@@ -82,17 +99,26 @@ struct bundle_import_item_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const bundle_import_item_event&,
+                           const bundle_import_item_event&) = default;
 };
 
 struct bundle_import_item_version_key {
     bundle_import_item_key bundle_import_item;
     std::uint32_t version;
+
+    friend bool operator==(const bundle_import_item_version_key&,
+                           const bundle_import_item_version_key&) = default;
 };
 
 struct bundle_import_item_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const bundle_import_item_versions_filter&,
+                           const bundle_import_item_versions_filter&) = default;
 };
 
 struct list_bundle_import_items_request {
@@ -110,12 +136,18 @@ struct list_bundle_import_items_request {
     ores::utility::domain::order order;
     std::optional<bundle_import_items_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_bundle_import_items_request&,
+                           const list_bundle_import_items_request&) = default;
 };
 
 struct list_bundle_import_items_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bundle_import_item> bundle_import_items;
     std::uint64_t total;
+
+    friend bool operator==(const list_bundle_import_items_response&,
+                           const list_bundle_import_items_response&) = default;
 };
 
 struct get_bundle_import_item_request {
@@ -129,11 +161,17 @@ struct get_bundle_import_item_request {
      */
     static constexpr bool requires_session = true;
     bundle_import_item_key key;
+
+    friend bool operator==(const get_bundle_import_item_request&,
+                           const get_bundle_import_item_request&) = default;
 };
 
 struct get_bundle_import_item_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::bundle_import_item> bundle_import_item;
+
+    friend bool operator==(const get_bundle_import_item_response&,
+                           const get_bundle_import_item_response&) = default;
 };
 
 struct get_many_bundle_import_items_request {
@@ -147,11 +185,17 @@ struct get_many_bundle_import_items_request {
      */
     static constexpr bool requires_session = true;
     std::vector<bundle_import_item_key> keys;
+
+    friend bool operator==(const get_many_bundle_import_items_request&,
+                           const get_many_bundle_import_items_request&) = default;
 };
 
 struct get_many_bundle_import_items_response {
     ores::utility::domain::result result;
     std::vector<bundle_import_item_lookup> entries;
+
+    friend bool operator==(const get_many_bundle_import_items_response&,
+                           const get_many_bundle_import_items_response&) = default;
 };
 
 struct put_bundle_import_item_request {
@@ -166,11 +210,17 @@ struct put_bundle_import_item_request {
     static constexpr bool requires_session = true;
     bundle_import_item_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_bundle_import_item_request&,
+                           const put_bundle_import_item_request&) = default;
 };
 
 struct put_bundle_import_item_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::bundle_import_item> bundle_import_item;
+
+    friend bool operator==(const put_bundle_import_item_response&,
+                           const put_bundle_import_item_response&) = default;
 };
 
 struct put_many_bundle_import_items_request {
@@ -185,11 +235,17 @@ struct put_many_bundle_import_items_request {
     static constexpr bool requires_session = true;
     std::vector<bundle_import_item_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_bundle_import_items_request&,
+                           const put_many_bundle_import_items_request&) = default;
 };
 
 struct put_many_bundle_import_items_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bundle_import_item> bundle_import_items;
+
+    friend bool operator==(const put_many_bundle_import_items_response&,
+                           const put_many_bundle_import_items_response&) = default;
 };
 
 struct delete_bundle_import_item_request {
@@ -204,10 +260,16 @@ struct delete_bundle_import_item_request {
     static constexpr bool requires_session = true;
     bundle_import_item_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_bundle_import_item_request&,
+                           const delete_bundle_import_item_request&) = default;
 };
 
 struct delete_bundle_import_item_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_bundle_import_item_response&,
+                           const delete_bundle_import_item_response&) = default;
 };
 
 struct delete_many_bundle_import_items_request {
@@ -222,10 +284,16 @@ struct delete_many_bundle_import_items_request {
     static constexpr bool requires_session = true;
     std::vector<bundle_import_item_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_bundle_import_items_request&,
+                           const delete_many_bundle_import_items_request&) = default;
 };
 
 struct delete_many_bundle_import_items_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_bundle_import_items_response&,
+                           const delete_many_bundle_import_items_response&) = default;
 };
 
 struct list_by_import_id_bundle_import_items_request {
@@ -245,12 +313,18 @@ struct list_by_import_id_bundle_import_items_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<bundle_import_items_filter> filter;
+
+    friend bool operator==(const list_by_import_id_bundle_import_items_request&,
+                           const list_by_import_id_bundle_import_items_request&) = default;
 };
 
 struct list_by_import_id_bundle_import_items_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bundle_import_item> bundle_import_items;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_import_id_bundle_import_items_response&,
+                           const list_by_import_id_bundle_import_items_response&) = default;
 };
 
 struct list_bundle_import_item_versions_request {
@@ -268,12 +342,18 @@ struct list_bundle_import_item_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<bundle_import_item_versions_filter> filter;
+
+    friend bool operator==(const list_bundle_import_item_versions_request&,
+                           const list_bundle_import_item_versions_request&) = default;
 };
 
 struct list_bundle_import_item_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bundle_import_item> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_bundle_import_item_versions_response&,
+                           const list_bundle_import_item_versions_response&) = default;
 };
 
 struct get_bundle_import_item_version_request {
@@ -287,11 +367,17 @@ struct get_bundle_import_item_version_request {
      */
     static constexpr bool requires_session = true;
     bundle_import_item_version_key key;
+
+    friend bool operator==(const get_bundle_import_item_version_request&,
+                           const get_bundle_import_item_version_request&) = default;
 };
 
 struct get_bundle_import_item_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::bundle_import_item> version;
+
+    friend bool operator==(const get_bundle_import_item_version_response&,
+                           const get_bundle_import_item_version_response&) = default;
 };
 
 /**
@@ -303,9 +389,9 @@ struct get_bundle_import_item_version_response {
  * of them.
  */
 namespace bundle_import_item_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.bundle_import_items_events.created";
-inline constexpr std::string_view updated = "refdata.v1.bundle_import_items_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.bundle_import_items.created";
+inline constexpr std::string_view updated = "refdata.v1.events.bundle_import_items.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.bundle_import_items.deleted";
 }
 /**
  * @brief The members of bundle_import_item_key, named as the wire names them and in the order

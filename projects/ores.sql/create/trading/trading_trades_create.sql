@@ -213,9 +213,9 @@ begin
         end if;
     end if;
 
-    -- Validate trade_type (soft FK to ores_trading_trade_types_tbl)
+    -- Validate trade_type (soft FK to ores_trading_product_types_tbl)
     if not exists (
-        select 1 from ores_trading_trade_types_tbl
+        select 1 from ores_trading_product_types_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and code = NEW.trade_type
           and valid_to = ores_utility_infinity_timestamp_fn()

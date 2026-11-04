@@ -29,13 +29,17 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
+#include "ores.reporting.core/repository/cut_kind_repository.hpp"
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_type_configuration_type_repository.hpp"
+#include "ores.reporting.core/service/cut_assembly.hpp"
 #include "ores.reporting.core/service/cut_resolution_service.hpp"
+#include "ores.reporting.core/service/nats_cut_body_reader.hpp"
 #include "ores.reporting.core/service/report_configuration_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_run_admission_service.hpp"
@@ -45,6 +49,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
@@ -55,7 +60,6 @@
 #include <format>
 #include <limits>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -236,6 +240,18 @@ private:
             BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
+        try {
+            (void)ores::ore::results::family_selection_of(def->skipped_families);
+        } catch (const std::invalid_argument& e) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "unknown_skipped_family";
+            response.result.message =
+                std::format("Report definition {} skips a family that does not exist: {}",
+                            definition_id,
+                            e.what());
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
 
         // Report types and their requirements are system-wide lookups seeded
         // for the system tenant only, so they are read there whatever tenant
@@ -359,7 +375,7 @@ private:
                     << *def->cut_kind_code << ", and this trigger states no covered date, "
                     << "scope or rates centre, so the run records no resolved cut.";
             } else {
-                const auto resolution = resolve_cut(tenant_ctx, *def, req, req_ctx);
+                const auto resolution = resolve_cut(tenant_ctx, *def, req, req_ctx, msg);
                 if (!resolution.ok()) {
                     response.result.outcome = ores::utility::domain::outcome::invalid;
                     response.result.code = "cut_not_resolved";
@@ -476,7 +492,8 @@ private:
     service::cut_resolution resolve_cut(const ores::database::context& tenant_ctx,
                                         const ores::reporting::domain::report_definition& def,
                                         const trigger_report_instance_request& req,
-                                        const ores::database::context& req_ctx) {
+                                        const ores::database::context& req_ctx,
+                                        const ores::nats::message& msg) {
         service::cut_selection selection;
         selection.kind_code = *def.cut_kind_code;
         selection.cut_id = def.cut_id;
@@ -489,9 +506,51 @@ private:
         cut_ctx.party_id = def.party_id;
         cut_ctx.run_instant = std::chrono::system_clock::now();
         cut_ctx.taken_by = req_ctx.service_account();
+        // A kind whose rule fixes the body at the instant the run starts has no
+        // candidate cut to read: the run states the body, so the run assembles
+        // it. The reads are the components' own, made as the person who asked
+        // for the run, and a part they cannot answer is stated in the body's
+        // note rather than invented.
+        if (mints_at_the_run_instant(tenant_ctx, selection.kind_code)) {
+            service::nats_cut_body_reader reader(tenant_ctx, nats_, bearer_of(msg));
+            service::cut_body_query query;
+            query.party_id = def.party_id;
+            query.business_centre_code = req.business_centre_code;
+            query.timepoint = cut_ctx.run_instant;
+            cut_ctx.body = service::body_of_facts(reader.read(query));
+        }
 
         service::cut_resolution_service cuts(tenant_ctx);
         return cuts.resolve(selection, cut_ctx);
+    }
+
+    /**
+     * @brief Whether the kind fixes its body at the instant the run starts.
+     *
+     * The rule is the kind's and is read from the store, so a firm that seeds its
+     * own live kind is answered without a change here. A kind the store does not
+     * hold answers no, and the resolution refuses it by name.
+     */
+    bool mints_at_the_run_instant(const ores::database::context& tenant_ctx,
+                                  const std::string& kind_code) {
+        repository::cut_kind_repository kinds;
+        for (const auto& kind : kinds.read_latest(tenant_ctx)) {
+            if (kind.code != kind_code)
+                continue;
+            return kind.resolution_rule_code == service::resolution_rules::run_instant;
+        }
+        return false;
+    }
+
+    /**
+     * @brief The caller's Authorization header, as the message carries it.
+     *
+     * The body's parts belong to other components, and their reads answer as the
+     * person the run acts for rather than as this service's own grant.
+     */
+    static std::string bearer_of(const ores::nats::message& msg) {
+        const auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
+        return it == msg.headers.end() ? std::string{} : it->second;
     }
 
     /**
@@ -614,11 +673,12 @@ private:
                                           .pre_processing = def.pre_processing,
                                           .prepared_input_key = def.prepared_input_key,
                                           .post_processing = def.post_processing,
+                                          .skipped_families = def.skipped_families,
                                           .kind = kind};
         ores::workflow::messaging::start_workflow_message swm{
             .type = workflow_type,
             .tenant_id = boost::uuids::to_string(req.tenant_id),
-            .request_json = rfl::json::write(exec_req),
+            .request_json = ores::utility::codec::json::write(exec_req),
             .correlation_id = instance_id,
             .instance_id = boost::uuids::to_string(rg())};
         nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,

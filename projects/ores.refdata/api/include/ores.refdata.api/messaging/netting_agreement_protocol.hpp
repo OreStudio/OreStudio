@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct netting_agreement_key {
     std::string agreement_number;
+
+    friend bool operator==(const netting_agreement_key&, const netting_agreement_key&) = default;
 };
 
 struct netting_agreement_write {
@@ -53,27 +55,42 @@ struct netting_agreement_write {
     std::string agreement_type;
     std::optional<std::string> governing_law;
     std::optional<std::string> description;
+
+    friend bool operator==(const netting_agreement_write&,
+                           const netting_agreement_write&) = default;
 };
 
 struct netting_agreement_change {
     netting_agreement_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const netting_agreement_change&,
+                           const netting_agreement_change&) = default;
 };
 
 struct netting_agreement_removal {
     netting_agreement_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const netting_agreement_removal&,
+                           const netting_agreement_removal&) = default;
 };
 
 struct netting_agreement_lookup {
     netting_agreement_key key;
     std::optional<ores::refdata::domain::netting_agreement> netting_agreement;
+
+    friend bool operator==(const netting_agreement_lookup&,
+                           const netting_agreement_lookup&) = default;
 };
 
 struct netting_agreements_filter {
     std::optional<boost::uuids::uuid> counterparty_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
+
+    friend bool operator==(const netting_agreements_filter&,
+                           const netting_agreements_filter&) = default;
 };
 
 struct netting_agreement_event {
@@ -83,17 +100,26 @@ struct netting_agreement_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const netting_agreement_event&,
+                           const netting_agreement_event&) = default;
 };
 
 struct netting_agreement_version_key {
     netting_agreement_key netting_agreement;
     std::uint32_t version;
+
+    friend bool operator==(const netting_agreement_version_key&,
+                           const netting_agreement_version_key&) = default;
 };
 
 struct netting_agreement_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const netting_agreement_versions_filter&,
+                           const netting_agreement_versions_filter&) = default;
 };
 
 struct list_netting_agreements_request {
@@ -111,12 +137,18 @@ struct list_netting_agreements_request {
     ores::utility::domain::order order;
     std::optional<netting_agreements_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_netting_agreements_request&,
+                           const list_netting_agreements_request&) = default;
 };
 
 struct list_netting_agreements_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_agreement> netting_agreements;
     std::uint64_t total;
+
+    friend bool operator==(const list_netting_agreements_response&,
+                           const list_netting_agreements_response&) = default;
 };
 
 struct get_netting_agreement_request {
@@ -130,11 +162,17 @@ struct get_netting_agreement_request {
      */
     static constexpr bool requires_session = true;
     netting_agreement_key key;
+
+    friend bool operator==(const get_netting_agreement_request&,
+                           const get_netting_agreement_request&) = default;
 };
 
 struct get_netting_agreement_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::netting_agreement> netting_agreement;
+
+    friend bool operator==(const get_netting_agreement_response&,
+                           const get_netting_agreement_response&) = default;
 };
 
 struct get_many_netting_agreements_request {
@@ -148,11 +186,17 @@ struct get_many_netting_agreements_request {
      */
     static constexpr bool requires_session = true;
     std::vector<netting_agreement_key> keys;
+
+    friend bool operator==(const get_many_netting_agreements_request&,
+                           const get_many_netting_agreements_request&) = default;
 };
 
 struct get_many_netting_agreements_response {
     ores::utility::domain::result result;
     std::vector<netting_agreement_lookup> entries;
+
+    friend bool operator==(const get_many_netting_agreements_response&,
+                           const get_many_netting_agreements_response&) = default;
 };
 
 struct put_netting_agreement_request {
@@ -167,11 +211,17 @@ struct put_netting_agreement_request {
     static constexpr bool requires_session = true;
     netting_agreement_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_netting_agreement_request&,
+                           const put_netting_agreement_request&) = default;
 };
 
 struct put_netting_agreement_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::netting_agreement> netting_agreement;
+
+    friend bool operator==(const put_netting_agreement_response&,
+                           const put_netting_agreement_response&) = default;
 };
 
 struct put_many_netting_agreements_request {
@@ -186,11 +236,17 @@ struct put_many_netting_agreements_request {
     static constexpr bool requires_session = true;
     std::vector<netting_agreement_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_netting_agreements_request&,
+                           const put_many_netting_agreements_request&) = default;
 };
 
 struct put_many_netting_agreements_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_agreement> netting_agreements;
+
+    friend bool operator==(const put_many_netting_agreements_response&,
+                           const put_many_netting_agreements_response&) = default;
 };
 
 struct delete_netting_agreement_request {
@@ -205,10 +261,16 @@ struct delete_netting_agreement_request {
     static constexpr bool requires_session = true;
     netting_agreement_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_netting_agreement_request&,
+                           const delete_netting_agreement_request&) = default;
 };
 
 struct delete_netting_agreement_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_netting_agreement_response&,
+                           const delete_netting_agreement_response&) = default;
 };
 
 struct delete_many_netting_agreements_request {
@@ -223,10 +285,16 @@ struct delete_many_netting_agreements_request {
     static constexpr bool requires_session = true;
     std::vector<netting_agreement_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_netting_agreements_request&,
+                           const delete_many_netting_agreements_request&) = default;
 };
 
 struct delete_many_netting_agreements_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_netting_agreements_response&,
+                           const delete_many_netting_agreements_response&) = default;
 };
 
 struct list_by_counterparty_id_netting_agreements_request {
@@ -246,12 +314,18 @@ struct list_by_counterparty_id_netting_agreements_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<netting_agreements_filter> filter;
+
+    friend bool operator==(const list_by_counterparty_id_netting_agreements_request&,
+                           const list_by_counterparty_id_netting_agreements_request&) = default;
 };
 
 struct list_by_counterparty_id_netting_agreements_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_agreement> netting_agreements;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_counterparty_id_netting_agreements_response&,
+                           const list_by_counterparty_id_netting_agreements_response&) = default;
 };
 
 struct list_netting_agreement_versions_request {
@@ -269,12 +343,18 @@ struct list_netting_agreement_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<netting_agreement_versions_filter> filter;
+
+    friend bool operator==(const list_netting_agreement_versions_request&,
+                           const list_netting_agreement_versions_request&) = default;
 };
 
 struct list_netting_agreement_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_agreement> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_netting_agreement_versions_response&,
+                           const list_netting_agreement_versions_response&) = default;
 };
 
 struct get_netting_agreement_version_request {
@@ -288,11 +368,17 @@ struct get_netting_agreement_version_request {
      */
     static constexpr bool requires_session = true;
     netting_agreement_version_key key;
+
+    friend bool operator==(const get_netting_agreement_version_request&,
+                           const get_netting_agreement_version_request&) = default;
 };
 
 struct get_netting_agreement_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::netting_agreement> version;
+
+    friend bool operator==(const get_netting_agreement_version_response&,
+                           const get_netting_agreement_version_response&) = default;
 };
 
 /**
@@ -304,9 +390,9 @@ struct get_netting_agreement_version_response {
  * of them.
  */
 namespace netting_agreement_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.netting_agreements_events.created";
-inline constexpr std::string_view updated = "refdata.v1.netting_agreements_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.netting_agreements_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.netting_agreements.created";
+inline constexpr std::string_view updated = "refdata.v1.events.netting_agreements.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.netting_agreements.deleted";
 }
 /**
  * @brief The members of netting_agreement_key, named as the wire names them and in the order

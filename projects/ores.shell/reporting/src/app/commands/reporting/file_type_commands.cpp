@@ -30,7 +30,7 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <chrono>
@@ -39,8 +39,6 @@
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -141,7 +139,7 @@ void file_type_commands::register_commands(cli::Menu& root_menu, nats_client& se
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <analytic_type_code> <ore_parameter> <direction> <format> <xsd_file> <kind> "
+        "add <code> <analytic_type_code> <ore_parameter> <direction> <kind> <ore_file_code> "
         "<configuration_type_code> <name_pattern> <is_default> <produced_by_file_type_code> "
         "<sample_count> <sample_total> <description> <display_order> <reason> <commentary>");
 
@@ -150,7 +148,7 @@ void file_type_commands::register_commands(cli::Menu& root_menu, nats_client& se
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <analytic_type_code> <ore_parameter> <direction> <format> <xsd_file> <kind> "
+        "set <code> <analytic_type_code> <ore_parameter> <direction> <kind> <ore_file_code> "
         "<configuration_type_code> <name_pattern> <is_default> <produced_by_file_type_code> "
         "<sample_count> <sample_total> <description> <display_order> <reason> <commentary> "
         "[--version <n>]");
@@ -160,8 +158,8 @@ void file_type_commands::register_commands(cli::Menu& root_menu, nats_client& se
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <analytic_type_code> <ore_parameter> <direction> <format> "
-        "<xsd_file> <kind> <configuration_type_code> <name_pattern> <is_default> "
+        "put-many --count <n> <code> <analytic_type_code> <ore_parameter> <direction> <kind> "
+        "<ore_file_code> <configuration_type_code> <name_pattern> <is_default> "
         "<produced_by_file_type_code> <sample_count> <sample_total> <description> <display_order> "
         "<reason> <commentary>");
 
@@ -178,6 +176,13 @@ void file_type_commands::register_commands(cli::Menu& root_menu, nats_client& se
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
         "delete-many <code> <reason> <commentary>");
+
+    menu->Insert(
+        "by-ore-file-code",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_by_ore_file_code(std::ref(out), std::ref(session), std::move(args));
+        },
+        "by-ore-file-code <ore_file_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "by-analytic-type-code",
@@ -266,7 +271,9 @@ void file_type_commands::process_list(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_get(std::ostream& out,
@@ -309,7 +316,9 @@ void file_type_commands::process_get(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_get_many(std::ostream& out,
@@ -356,7 +365,9 @@ void file_type_commands::process_get_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_add(std::ostream& out,
@@ -383,8 +394,8 @@ void file_type_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -394,9 +405,9 @@ void file_type_commands::process_add(std::ostream& out,
         file_type_read_token(
             req.change.write.ore_parameter, parsed->positionals[next++], "ore_parameter");
         file_type_read_token(req.change.write.direction, parsed->positionals[next++], "direction");
-        file_type_read_token(req.change.write.format, parsed->positionals[next++], "format");
-        file_type_read_token(req.change.write.xsd_file, parsed->positionals[next++], "xsd_file");
         file_type_read_token(req.change.write.kind, parsed->positionals[next++], "kind");
+        file_type_read_token(
+            req.change.write.ore_file_code, parsed->positionals[next++], "ore_file_code");
         file_type_read_token(req.change.write.configuration_type_code,
                              parsed->positionals[next++],
                              "configuration_type_code");
@@ -428,7 +439,9 @@ void file_type_commands::process_add(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_set(std::ostream& out,
@@ -457,8 +470,8 @@ void file_type_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -468,9 +481,9 @@ void file_type_commands::process_set(std::ostream& out,
         file_type_read_token(
             req.change.write.ore_parameter, parsed->positionals[next++], "ore_parameter");
         file_type_read_token(req.change.write.direction, parsed->positionals[next++], "direction");
-        file_type_read_token(req.change.write.format, parsed->positionals[next++], "format");
-        file_type_read_token(req.change.write.xsd_file, parsed->positionals[next++], "xsd_file");
         file_type_read_token(req.change.write.kind, parsed->positionals[next++], "kind");
+        file_type_read_token(
+            req.change.write.ore_file_code, parsed->positionals[next++], "ore_file_code");
         file_type_read_token(req.change.write.configuration_type_code,
                              parsed->positionals[next++],
                              "configuration_type_code");
@@ -508,7 +521,9 @@ void file_type_commands::process_set(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_put_many(std::ostream& out,
@@ -543,8 +558,8 @@ void file_type_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 15 + 2) {
-            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -556,9 +571,9 @@ void file_type_commands::process_put_many(std::ostream& out,
             file_type_read_token(
                 change.write.ore_parameter, parsed->positionals[next++], "ore_parameter");
             file_type_read_token(change.write.direction, parsed->positionals[next++], "direction");
-            file_type_read_token(change.write.format, parsed->positionals[next++], "format");
-            file_type_read_token(change.write.xsd_file, parsed->positionals[next++], "xsd_file");
             file_type_read_token(change.write.kind, parsed->positionals[next++], "kind");
+            file_type_read_token(
+                change.write.ore_file_code, parsed->positionals[next++], "ore_file_code");
             file_type_read_token(change.write.configuration_type_code,
                                  parsed->positionals[next++],
                                  "configuration_type_code");
@@ -592,7 +607,9 @@ void file_type_commands::process_put_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_delete(std::ostream& out,
@@ -645,7 +662,9 @@ void file_type_commands::process_delete(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_delete_many(std::ostream& out,
@@ -695,7 +714,66 @@ void file_type_commands::process_delete_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void file_type_commands::process_by_ore_file_code(std::ostream& out,
+                                                  nats_client& session,
+                                                  const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-ore-file-code request.";
+
+    using request_type = messaging::list_by_ore_file_code_file_types_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run by-ore-file-code." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "scope", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.ore_file_code =
+            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "ore_file_code");
+        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
+                                           ores::utility::domain::scope::direct;
+        }
+        file_type_apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::list_by_ore_file_code_file_types_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_by_analytic_type_code(std::ostream& out,
@@ -750,7 +828,9 @@ void file_type_commands::process_by_analytic_type_code(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_by_configuration_type_code(std::ostream& out,
@@ -805,7 +885,9 @@ void file_type_commands::process_by_configuration_type_code(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_by_produced_by_file_type_code(
@@ -860,7 +942,9 @@ void file_type_commands::process_by_produced_by_file_type_code(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_versions(std::ostream& out,
@@ -909,7 +993,9 @@ void file_type_commands::process_versions(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void file_type_commands::process_version(std::ostream& out,
@@ -956,7 +1042,9 @@ void file_type_commands::process_version(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

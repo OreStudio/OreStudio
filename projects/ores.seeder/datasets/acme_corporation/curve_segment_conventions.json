@@ -1,0 +1,282 @@
+[
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "a70d00e2-5547-5795-be26-2cb1fccc6535",
+    "curve_segment_id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
+    "conventions": "GBP-OIS-CONVENTIONS"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6e09bfe1-3e54-54c0-ba56-32824533c8b3",
+    "curve_segment_id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
+    "conventions": "USD-SOFR-OIS"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6a8c0828-2228-5b6d-809e-14074f48590a",
+    "curve_segment_id": "826dc027-43ae-585e-89de-06634b65247d",
+    "conventions": "HKD-OIS"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c4642adf-fb13-5d84-b1e1-f04db701b0f9",
+    "curve_segment_id": "57287b30-7942-59ae-a03a-3bf882020c4a",
+    "conventions": "EUR-ESTER-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6c7ab928-b2ff-54e6-80f4-eb899f87a82e",
+    "curve_segment_id": "74043045-16a5-5a5b-b1d9-10779106197a",
+    "conventions": "GBP-OIS-CONVENTIONS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "4694e297-9eab-5333-bb8b-407548d0d906",
+    "curve_segment_id": "49cd0562-72bc-5184-805c-de32add5d72e",
+    "conventions": "EUR-ESTER-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3218b65d-39f8-5752-8f05-c3bf485471c4",
+    "curve_segment_id": "43a9c899-e25c-5136-9883-2e40ac218cde",
+    "conventions": "USD-SOFR-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "db5f453f-6cf9-5233-b780-b7f276cf3cea",
+    "curve_segment_id": "97af060a-3515-5964-827b-896d9ebda0d2",
+    "conventions": "CHF-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "39ff2c94-d7ae-57ba-96ab-d87795f7c8bd",
+    "curve_segment_id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
+    "conventions": "JPY-OIS-CONVENTIONS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "80582d82-5a25-5efa-8dd6-aa5d716e18f6",
+    "curve_segment_id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
+    "conventions": "CAD-OIS-CONVENTIONS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e531bfa1-3479-5c22-8918-7304b0c9312c",
+    "curve_segment_id": "83f63436-e382-59b2-8d4b-39faf6051914",
+    "conventions": "AUD-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c4ab5409-2c85-5140-81df-2c685e66ab55",
+    "curve_segment_id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
+    "conventions": "NZD-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "0a3bf786-8d9c-5aa3-a8d3-cc06a0e3fbc6",
+    "curve_segment_id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
+    "conventions": "SEK-OIS-CONVENTIONS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1c2b4120-aed0-5dc5-b960-3e01e91af2e2",
+    "curve_segment_id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
+    "conventions": "NOK-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c20fc84b-e0cc-59b6-acde-6969bb770168",
+    "curve_segment_id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
+    "conventions": "DKK-DESTR-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1c5a612d-e745-5458-b6ea-d6315dbeac51",
+    "curve_segment_id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
+    "conventions": "ZAR-ZARONIA-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "57a948da-192c-5770-80e6-94b2e700cd84",
+    "curve_segment_id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
+    "conventions": "TRY-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "bf031d6b-f744-5601-a965-dee0ff5051a3",
+    "curve_segment_id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
+    "conventions": "PLN-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6f1b44d2-a014-5191-b8ac-54da9ca75a1b",
+    "curve_segment_id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
+    "conventions": "CZK-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "df7ebc2b-b3c6-5993-8acc-220b49857e1d",
+    "curve_segment_id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
+    "conventions": "HUF-OIS"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fd9baf01-122b-512c-9eb3-994321171a68",
+    "curve_segment_id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
+    "conventions": "ILS-OIS"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "213ec00b-6935-5522-8bfe-03ad062b66a2",
+    "curve_segment_id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
+    "conventions": "USD-SOFR-OIS"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9f677840-df99-58bf-8c84-a17f7025cd15",
+    "curve_segment_id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
+    "conventions": "CAD-OIS-CONVENTIONS"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2423420d-e645-523f-bf4b-241b5e5d2b7c",
+    "curve_segment_id": "afb14727-076d-5a09-9b73-589b43cfd015",
+    "conventions": "EUR-ESTER-OIS"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8c68bd17-efa0-58cf-8777-8d1267979cc7",
+    "curve_segment_id": "bf02717a-1674-515e-9146-693831e53ccb",
+    "conventions": "GBP-OIS-CONVENTIONS"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "875b5fa0-3748-50ab-a5d8-a8a81e85a990",
+    "curve_segment_id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
+    "conventions": "JPY-OIS-CONVENTIONS"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3eae4f7e-e82c-5700-ab85-152ce71083ce",
+    "curve_segment_id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
+    "conventions": "MXN-OIS"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "95bd886f-d8c7-596f-bfe9-d04f04a7ca6a",
+    "curve_segment_id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
+    "conventions": "BRL-OIS"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "01bf59ee-2daa-5eea-ae2c-d44fa6b15ca9",
+    "curve_segment_id": "c352e89b-df70-5b94-b98b-14e595da98a2",
+    "conventions": "HKD-OIS"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d1135ceb-36dd-5c77-9d7c-685abd663a0e",
+    "curve_segment_id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
+    "conventions": "USD-SOFR-OIS"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fbdf5e97-c15a-576d-acfe-9e2e5081d5bc",
+    "curve_segment_id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
+    "conventions": "JPY-OIS-CONVENTIONS"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9847f219-5a8f-5b5d-bc55-b696c1f6832b",
+    "curve_segment_id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
+    "conventions": "AUD-OIS"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "90f80158-7b95-55e7-a350-1d5a74ad4de6",
+    "curve_segment_id": "b607a216-41e9-5d66-b751-702a1c6b892f",
+    "conventions": "NZD-OIS"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "32af6bd9-5629-55d3-b364-dc43e8daec67",
+    "curve_segment_id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
+    "conventions": "SGD-OIS"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "404010d6-5072-5302-b9ee-31bdac818a6d",
+    "curve_segment_id": "6006c831-598a-5108-ae18-3a9520a2dc55",
+    "conventions": "INR-OIS"
+  }
+]

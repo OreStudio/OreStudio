@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
 :ID: 353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.approval_operations
 #+description: Codegen operation model for the approval request lifecycle -- raising, withdrawing and deciding a request, and the two reads a person works from, answered and recently answered -- rendered to C++ and TypeScript from one source.

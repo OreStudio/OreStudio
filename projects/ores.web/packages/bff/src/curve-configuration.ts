@@ -318,9 +318,11 @@ type KindOf = (segmentType: string) => string;
  * reaches here through the generated wiring: a =Simple= segment reads
  * =Conventions= and =ProjectionCurve=, a =Direct= one reads =Conventions= alone.
  * The leaves are the kind's, in the order the projection reads them, and not the
- * row's columns.
+ * row's columns. Each leaf is in one of the row's parts, the part row whose key
+ * names the row; a part the row does not have leaves its leaves empty.
  */
 function collectionLeaves(
+    document: Readonly<Record<string, unknown>>,
     row: Readonly<Record<string, unknown>>,
     section: string,
     entryElement: string,
@@ -337,14 +339,19 @@ function collectionLeaves(
         return [];
     }
     const path = `${rule.element}/${kind}`;
+    const rowId = text(row['id']);
     return declared.leaves.map((leaf) =>
         leafView(
             {
-                entity: rule.entity,
+                entity: leaf.entity,
                 column: leaf.column,
                 ore: leaf.ore,
                 xpath: `/${ROOT_ELEMENT}/${section}/${entryElement}/${path}/${leaf.ore}`,
-                value: valueText(row[leaf.column]),
+                value: valueText(
+                    vectorOf(document, leaf.vector).find(
+                        (part) => text(part[rule.partParent]) === rowId,
+                    )?.[leaf.column],
+                ),
             },
             contract,
             valueSetOf,
@@ -406,6 +413,7 @@ function collectionsOf(
                         id: text(candidate['id']),
                         kind,
                         leaves: collectionLeaves(
+                            document,
                             candidate,
                             wiring.section,
                             wiring.entryElement,
@@ -517,6 +525,9 @@ function blocksOf(
     wiring: CurveSectionWiring,
 ): readonly CurveBlockView[] {
     return wiring.blocks.map((block) => {
+        if (block.presenceEntity !== '') {
+            return { element: block.element, present: rows.has(block.presenceEntity) };
+        }
         const stated = [...rows.values()].find(
             (row) => block.presence !== '' && row[block.presence] !== undefined,
         );
@@ -604,6 +615,16 @@ const DOCUMENT_FAMILIES = [
     'bootstrap_configs',
     'segments',
     'segment_curves',
+    'segment_conventions',
+    'segment_pillar_rules',
+    'segment_projections',
+    'segment_tenor_basis_curves',
+    'segment_cross_currency_terms',
+    'segment_references',
+    'segment_weighted_averages',
+    'segment_discount_ratios',
+    'segment_extrapolations',
+    'segment_ibor_fallbacks',
     'quotes',
 ] as const;
 

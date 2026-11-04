@@ -341,7 +341,33 @@ TEST_CASE("a run mints no body from parts the assembly could not fix",
     const auto resolution = resolve_cut_selection(select("LIVE"), the_seven_kinds(), {}, ctx);
 
     CHECK_FALSE(resolution.ok());
-    CHECK(resolution.refusal.contains("market data snapshot"));
+    CHECK(resolution.refusal.contains("the reference data version"));
+}
+
+TEST_CASE("a run mints a body from the parts the store answers and records the rest",
+          "[service][cut][resolution]") {
+
+    // The store keeps no copy of the trade population and fixes no snapshot of
+    // the market data, so a body names the versions it does answer and says the
+    // rest as its note. The note reaches the cut's record, so what the run
+    // priced from is a sentence and not a set of empty columns.
+    auto lg(make_logger(test_suite));
+    auto ctx = context_of();
+    ctx.preview = false;
+    cut_body body;
+    body.reference_data_version = "17 report configuration(s) in force";
+    body.engine_version = "0.0.29";
+    body.note = "the trade store held 41 deal(s) at the instant; no published set was in use";
+    ctx.body = body;
+
+    const auto resolution = resolve_cut_selection(select("LIVE"), the_seven_kinds(), {}, ctx);
+
+    REQUIRE(resolution.mint.has_value());
+    CHECK_FALSE(resolution.mint->market_data_snapshot_id.has_value());
+    CHECK_FALSE(resolution.mint->deal_population_id.has_value());
+    CHECK(resolution.mint->reference_data_version == "17 report configuration(s) in force");
+    CHECK(resolution.mint->engine_version == "0.0.29");
+    CHECK(resolution.mint->change_commentary.contains("the trade store held 41 deal(s)"));
 }
 
 TEST_CASE("a run mints a body once every part is assembled", "[service][cut][resolution]") {
@@ -696,13 +722,13 @@ TEST_CASE("a body the assembly could not fix refuses the run and mints nothing",
     const auto occasion = seed_occasion(h, gen);
 
     auto ctx = run_context(occasion, occasion.business_centre_code, h.db_user());
-    ctx.body->market_data_snapshot_id.reset();
+    ctx.body->reference_data_version.reset();
 
     cut_resolution_service service(h.context());
     const auto resolution = service.resolve(select(occasion.kind_code), ctx);
 
     CHECK_FALSE(resolution.ok());
-    CHECK(resolution.refusal.contains("market data snapshot"));
+    CHECK(resolution.refusal.contains("the reference data version"));
 
     const auto held = repository::cut_repository{}.read_for_occasion_in_window(
         h.context(),

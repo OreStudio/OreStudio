@@ -136,6 +136,10 @@
 \ir ./refdata_ledger_feed_types_notify_trigger_create.sql
 \ir ./refdata_sub_periods_coupon_types_create.sql
 \ir ./refdata_sub_periods_coupon_types_notify_trigger_create.sql
+-- Product family codes: the shapes a product type carries.
+\ir ./refdata_product_family_codes_create.sql
+\ir ./refdata_product_family_codes_notify_trigger_create.sql
+
 
 -- Product catalogue: asset_class_codes and curve_roles before instrument_codes (FK).
 \ir ./refdata_asset_class_codes_create.sql
@@ -161,6 +165,15 @@
 \ir ./refdata_ir_curve_bootstrap_configs_notify_trigger_create.sql
 \ir ./refdata_ir_curve_bootstrap_pillars_create.sql
 \ir ./refdata_ir_curve_bootstrap_pillars_notify_trigger_create.sql
+
+-- FX volatility surface recipe: blueprint, then pillars, then their sources (FK);
+-- depends on currencies (validation function).
+\ir ./refdata_fx_vol_surface_blueprints_create.sql
+\ir ./refdata_fx_vol_surface_blueprints_notify_trigger_create.sql
+\ir ./refdata_fx_vol_surface_pillars_create.sql
+\ir ./refdata_fx_vol_surface_pillars_notify_trigger_create.sql
+\ir ./refdata_fx_vol_surface_pillar_sources_create.sql
+\ir ./refdata_fx_vol_surface_pillar_sources_notify_trigger_create.sql
 \ir ./refdata_derivation_kinds_notify_trigger_create.sql
 
 -- Party and counterparty tables
@@ -237,6 +250,9 @@
 \ir ./refdata_sandbox_members_notify_trigger_create.sql
 \ir ./refdata_books_create.sql
 \ir ./refdata_books_notify_trigger_create.sql
+-- The product types a book allows, when it states them at all.
+\ir ./refdata_book_product_type_create.sql
+\ir ./refdata_book_product_types_notify_trigger_create.sql
 \ir ./refdata_book_changes_create.sql
 \ir ./refdata_book_changes_notify_trigger_create.sql
 \ir ./refdata_counterparty_changes_create.sql
@@ -272,8 +288,12 @@
 \ir ./refdata_fx_option_conventions_notify_trigger_create.sql
 \ir ./refdata_average_ois_conventions_create.sql
 \ir ./refdata_average_ois_conventions_notify_trigger_create.sql
-\ir ./refdata_cross_currency_basis_conventions_create.sql
-\ir ./refdata_cross_currency_basis_conventions_notify_trigger_create.sql
+\ir ./refdata_cross_currency_basis_flat_legs_create.sql
+\ir ./refdata_cross_currency_basis_flat_legs_notify_trigger_create.sql
+\ir ./refdata_cross_currency_basis_spread_legs_create.sql
+\ir ./refdata_cross_currency_basis_spread_legs_notify_trigger_create.sql
+\ir ./refdata_cross_currency_basis_swap_terms_create.sql
+\ir ./refdata_cross_currency_basis_swap_terms_notify_trigger_create.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_create.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_notify_trigger_create.sql
 \ir ./refdata_tenor_basis_swap_pay_receives_create.sql
@@ -292,12 +312,24 @@
 \ir ./refdata_bma_basis_swap_conventions_notify_trigger_create.sql
 \ir ./refdata_inflation_swap_conventions_create.sql
 \ir ./refdata_inflation_swap_conventions_notify_trigger_create.sql
-\ir ./refdata_cross_currency_fix_float_conventions_create.sql
-\ir ./refdata_cross_currency_fix_float_conventions_notify_trigger_create.sql
+\ir ./refdata_cross_currency_fix_float_fixed_legs_create.sql
+\ir ./refdata_cross_currency_fix_float_fixed_legs_notify_trigger_create.sql
+\ir ./refdata_cross_currency_fix_float_float_legs_create.sql
+\ir ./refdata_cross_currency_fix_float_float_legs_notify_trigger_create.sql
+\ir ./refdata_cross_currency_fix_float_swap_terms_create.sql
+\ir ./refdata_cross_currency_fix_float_swap_terms_notify_trigger_create.sql
 \ir ./refdata_cms_spread_option_conventions_create.sql
 \ir ./refdata_cms_spread_option_conventions_notify_trigger_create.sql
-\ir ./refdata_commodity_future_conventions_create.sql
-\ir ./refdata_commodity_future_conventions_notify_trigger_create.sql
+\ir ./refdata_commodity_future_averaging_terms_create.sql
+\ir ./refdata_commodity_future_averaging_terms_notify_trigger_create.sql
+\ir ./refdata_commodity_future_contract_terms_create.sql
+\ir ./refdata_commodity_future_contract_terms_notify_trigger_create.sql
+\ir ./refdata_commodity_future_expiry_anchors_create.sql
+\ir ./refdata_commodity_future_expiry_anchors_notify_trigger_create.sql
+\ir ./refdata_commodity_future_off_peak_indexes_create.sql
+\ir ./refdata_commodity_future_off_peak_indexes_notify_trigger_create.sql
+\ir ./refdata_commodity_future_option_expiries_create.sql
+\ir ./refdata_commodity_future_option_expiries_notify_trigger_create.sql
 \ir ./refdata_commodity_forward_conventions_create.sql
 \ir ./refdata_commodity_forward_conventions_notify_trigger_create.sql
 \ir ./refdata_bond_yield_conventions_create.sql
@@ -366,6 +398,7 @@
 \ir ./refdata_calendar_names_notify_trigger_create.sql
 \ir ./refdata_calendar_names_validate_fn_create.sql
 \ir ./refdata_conventions_validate_fn_create.sql
+\ir ./refdata_curve_configuration_parts_validate_fn_create.sql
 \ir ./refdata_curve_configurations_create.sql
 \ir ./refdata_curve_configurations_notify_trigger_create.sql
 \ir ./refdata_curve_configuration_sections_create.sql
@@ -386,14 +419,34 @@
 \ir ./refdata_equity_curve_configs_notify_trigger_create.sql
 \ir ./refdata_inflation_curve_configs_create.sql
 \ir ./refdata_inflation_curve_configs_notify_trigger_create.sql
+\ir ./refdata_inflation_seasonalities_create.sql
+\ir ./refdata_inflation_seasonalities_notify_trigger_create.sql
 \ir ./refdata_inflation_seasonality_factors_create.sql
 \ir ./refdata_inflation_seasonality_factors_notify_trigger_create.sql
 \ir ./refdata_default_curve_configs_create.sql
 \ir ./refdata_default_curve_configs_notify_trigger_create.sql
 \ir ./refdata_default_curve_configurations_create.sql
 \ir ./refdata_default_curve_configurations_notify_trigger_create.sql
+\ir ./refdata_default_curve_market_terms_create.sql
+\ir ./refdata_default_curve_market_terms_notify_trigger_create.sql
+\ir ./refdata_default_curve_cds_terms_create.sql
+\ir ./refdata_default_curve_cds_terms_notify_trigger_create.sql
+\ir ./refdata_default_curve_benchmarks_create.sql
+\ir ./refdata_default_curve_benchmarks_notify_trigger_create.sql
+\ir ./refdata_default_curve_transition_matrices_create.sql
+\ir ./refdata_default_curve_transition_matrices_notify_trigger_create.sql
+\ir ./refdata_default_curve_yield_reinterpretations_create.sql
+\ir ./refdata_default_curve_yield_reinterpretations_notify_trigger_create.sql
 \ir ./refdata_commodity_curve_configs_create.sql
 \ir ./refdata_commodity_curve_configs_notify_trigger_create.sql
+\ir ./refdata_commodity_curve_interpolations_create.sql
+\ir ./refdata_commodity_curve_interpolations_notify_trigger_create.sql
+\ir ./refdata_commodity_curve_directs_create.sql
+\ir ./refdata_commodity_curve_directs_notify_trigger_create.sql
+\ir ./refdata_commodity_curve_cross_currencies_create.sql
+\ir ./refdata_commodity_curve_cross_currencies_notify_trigger_create.sql
+\ir ./refdata_commodity_curve_bases_create.sql
+\ir ./refdata_commodity_curve_bases_notify_trigger_create.sql
 \ir ./refdata_commodity_price_segments_create.sql
 \ir ./refdata_commodity_price_segments_notify_trigger_create.sql
 \ir ./refdata_curve_report_configurations_create.sql
@@ -442,6 +495,8 @@
 \ir ./refdata_curve_parametric_smile_parameters_notify_trigger_create.sql
 \ir ./refdata_swaption_proxy_configs_create.sql
 \ir ./refdata_swaption_proxy_configs_notify_trigger_create.sql
+\ir ./refdata_swaption_volatility_smiles_create.sql
+\ir ./refdata_swaption_volatility_smiles_notify_trigger_create.sql
 \ir ./refdata_swaption_volatility_configs_create.sql
 \ir ./refdata_swaption_volatility_configs_notify_trigger_create.sql
 \ir ./refdata_cap_floor_proxy_configs_create.sql
@@ -460,6 +515,26 @@
 \ir ./refdata_curve_segments_notify_trigger_create.sql
 \ir ./refdata_curve_segment_curves_create.sql
 \ir ./refdata_curve_segment_curves_notify_trigger_create.sql
+\ir ./refdata_curve_segment_conventions_create.sql
+\ir ./refdata_curve_segment_conventions_notify_trigger_create.sql
+\ir ./refdata_curve_segment_pillar_rules_create.sql
+\ir ./refdata_curve_segment_pillar_rules_notify_trigger_create.sql
+\ir ./refdata_curve_segment_projections_create.sql
+\ir ./refdata_curve_segment_projections_notify_trigger_create.sql
+\ir ./refdata_curve_segment_tenor_basis_curves_create.sql
+\ir ./refdata_curve_segment_tenor_basis_curves_notify_trigger_create.sql
+\ir ./refdata_curve_segment_cross_currency_terms_create.sql
+\ir ./refdata_curve_segment_cross_currency_terms_notify_trigger_create.sql
+\ir ./refdata_curve_segment_references_create.sql
+\ir ./refdata_curve_segment_references_notify_trigger_create.sql
+\ir ./refdata_curve_segment_weighted_averages_create.sql
+\ir ./refdata_curve_segment_weighted_averages_notify_trigger_create.sql
+\ir ./refdata_curve_segment_discount_ratios_create.sql
+\ir ./refdata_curve_segment_discount_ratios_notify_trigger_create.sql
+\ir ./refdata_curve_segment_extrapolations_create.sql
+\ir ./refdata_curve_segment_extrapolations_notify_trigger_create.sql
+\ir ./refdata_curve_segment_ibor_fallbacks_create.sql
+\ir ./refdata_curve_segment_ibor_fallbacks_notify_trigger_create.sql
 \ir ./refdata_curve_quotes_create.sql
 \ir ./refdata_curve_quotes_notify_trigger_create.sql
 

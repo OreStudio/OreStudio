@@ -12,18 +12,26 @@
 #+entity_plural: commodity_curve_configs
 #+entity_title: Commodity Curve Config
 #+created: 2026-10-03
-#+updated: 2026-10-03
+#+updated: 2026-11-02
 
 The settings of one =CommodityCurve= entry of a =curveconfig.xml=, one row per
 =curve_definition= in the =CommodityCurves= section. A commodity curve is built
 from forward quotes, or from a base curve and a yield curve, or as a basis over
 another commodity curve, or from price segments.
 
-The basis form writes a =BasisConfiguration= element, whose settings are the
-=basis_= columns and whose =BasisQuotes= are rows of =curve_quote= with that
-list name. Price segments are rows of =commodity_price_segment=. The entry's
-own quotes are rows of =curve_quote= on the entry, and its =BootstrapConfig= a
-row of =curve_bootstrap_config=.
+The row holds what every construction reads, its currency and whether it
+extrapolates. Each construction's settings are a part of the entry, keyed by
+its =curve_definition_id= and present only for the construction that reads
+them: =commodity_curve_direct= for a curve built from forward quotes,
+=commodity_curve_cross_currency= for one built from a base curve and a yield
+curve, =commodity_curve_basis= for the =BasisConfiguration= element, whose
+=BasisQuotes= are rows of =curve_quote= with that list name, and
+=commodity_curve_interpolation= for the day counter and interpolation the
+direct and piecewise curves state. Price segments are rows of
+=commodity_price_segment=. Which part an entry holds is its construction, so
+the row carries no flag for it. The entry's own quotes are rows of
+=curve_quote= on the entry, and its =BootstrapConfig= a row of
+=curve_bootstrap_config=.
 
 * Flags
 :PROPERTIES:
@@ -90,110 +98,6 @@ The curve's currency, as the document writes it.
 std::string("USD")
 #+end_src
 
-** base_price_curve
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The commodity curve a curve built from a base and a yield curve starts from.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** base_yield_curve
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The yield curve of the base curve's currency.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** yield_curve
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The yield curve of the curve's own currency.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** spot_quote
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The quote of the commodity's spot price.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** has_quotes
-:PROPERTIES:
-:type:     boolean
-:cpp_type: bool
-:nullable: false
-:END:
-
-Whether the entry writes a =Quotes= element.
-
-#+begin_src cpp :name generator
-false
-#+end_src
-
-** day_counter
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The day counter the curve is built on, as the document spells it.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** interpolation_method
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the curve interpolates between its pillars.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** conventions
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The convention the curve's instruments are priced with, by its id.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
 ** extrapolation
 :PROPERTIES:
 :type:     text
@@ -207,151 +111,6 @@ Whether the curve extrapolates, as the ORE boolean the document wrote.
 std::nullopt
 #+end_src
 
-** has_basis_configuration
-:PROPERTIES:
-:type:     boolean
-:cpp_type: bool
-:nullable: false
-:END:
-
-Whether the entry writes a =BasisConfiguration= element.
-
-#+begin_src cpp :name generator
-false
-#+end_src
-
-** basis_base_price_curve
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The commodity curve a basis curve is built over.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** basis_base_price_conventions
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The convention of the base curve's prices, by its id.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** basis_conventions
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The convention of the basis quotes, by its id.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** basis_day_counter
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The day counter of the basis, as the document spells it.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** basis_interpolation_method
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the basis interpolates.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** basis_add_basis
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether the basis is added to the base price, as the ORE boolean the document
-wrote.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** basis_month_offset
-:PROPERTIES:
-:type:     integer
-:cpp_type: std::optional<int>
-:nullable: true
-:END:
-
-The number of months the base curve is offset by.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** basis_average_base
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether the base price is averaged, as the ORE boolean the document wrote.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** basis_price_as_historical_fixing
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether a base price is taken as a historical fixing, as the ORE boolean the
-document wrote.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** has_price_segments
-:PROPERTIES:
-:type:     boolean
-:cpp_type: bool
-:nullable: false
-:END:
-
-Whether the entry writes a =PriceSegments= element.
-
-#+begin_src cpp :name generator
-false
-#+end_src
-
 * Foreign keys
 
 ** curve_definition_id
@@ -362,15 +121,6 @@ false
 :nullable:      false
 :error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
 :END:
-
-* Insert trigger
-** Validations
-
-| column               | validation_function                           |
-|----------------------+-----------------------------------------------|
-| conventions          | ores_refdata_validate_convention_id_fn        |
-| basis_base_price_conventions | ores_refdata_validate_convention_id_fn        |
-| basis_conventions    | ores_refdata_validate_convention_id_fn        |
 
 * SQL
 

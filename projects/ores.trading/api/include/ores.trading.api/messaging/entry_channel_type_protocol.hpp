@@ -43,30 +43,47 @@ namespace ores::trading::messaging {
 
 struct entry_channel_type_key {
     std::string code;
+
+    friend bool operator==(const entry_channel_type_key&, const entry_channel_type_key&) = default;
 };
 
 struct entry_channel_type_write {
     std::string code;
     std::string description;
+
+    friend bool operator==(const entry_channel_type_write&,
+                           const entry_channel_type_write&) = default;
 };
 
 struct entry_channel_type_change {
     entry_channel_type_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const entry_channel_type_change&,
+                           const entry_channel_type_change&) = default;
 };
 
 struct entry_channel_type_removal {
     entry_channel_type_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const entry_channel_type_removal&,
+                           const entry_channel_type_removal&) = default;
 };
 
 struct entry_channel_type_lookup {
     entry_channel_type_key key;
     std::optional<ores::trading::domain::entry_channel_type> entry_channel_type;
+
+    friend bool operator==(const entry_channel_type_lookup&,
+                           const entry_channel_type_lookup&) = default;
 };
 
 struct entry_channel_types_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const entry_channel_types_filter&,
+                           const entry_channel_types_filter&) = default;
 };
 
 struct entry_channel_type_event {
@@ -76,17 +93,26 @@ struct entry_channel_type_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const entry_channel_type_event&,
+                           const entry_channel_type_event&) = default;
 };
 
 struct entry_channel_type_version_key {
     entry_channel_type_key entry_channel_type;
     std::uint32_t version;
+
+    friend bool operator==(const entry_channel_type_version_key&,
+                           const entry_channel_type_version_key&) = default;
 };
 
 struct entry_channel_type_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const entry_channel_type_versions_filter&,
+                           const entry_channel_type_versions_filter&) = default;
 };
 
 struct list_entry_channel_types_request {
@@ -104,12 +130,18 @@ struct list_entry_channel_types_request {
     ores::utility::domain::order order;
     std::optional<entry_channel_types_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_entry_channel_types_request&,
+                           const list_entry_channel_types_request&) = default;
 };
 
 struct list_entry_channel_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::entry_channel_type> entry_channel_types;
     std::uint64_t total;
+
+    friend bool operator==(const list_entry_channel_types_response&,
+                           const list_entry_channel_types_response&) = default;
 };
 
 struct get_entry_channel_type_request {
@@ -123,11 +155,17 @@ struct get_entry_channel_type_request {
      */
     static constexpr bool requires_session = true;
     entry_channel_type_key key;
+
+    friend bool operator==(const get_entry_channel_type_request&,
+                           const get_entry_channel_type_request&) = default;
 };
 
 struct get_entry_channel_type_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::entry_channel_type> entry_channel_type;
+
+    friend bool operator==(const get_entry_channel_type_response&,
+                           const get_entry_channel_type_response&) = default;
 };
 
 struct get_many_entry_channel_types_request {
@@ -141,11 +179,17 @@ struct get_many_entry_channel_types_request {
      */
     static constexpr bool requires_session = true;
     std::vector<entry_channel_type_key> keys;
+
+    friend bool operator==(const get_many_entry_channel_types_request&,
+                           const get_many_entry_channel_types_request&) = default;
 };
 
 struct get_many_entry_channel_types_response {
     ores::utility::domain::result result;
     std::vector<entry_channel_type_lookup> entries;
+
+    friend bool operator==(const get_many_entry_channel_types_response&,
+                           const get_many_entry_channel_types_response&) = default;
 };
 
 struct put_entry_channel_type_request {
@@ -160,11 +204,17 @@ struct put_entry_channel_type_request {
     static constexpr bool requires_session = true;
     entry_channel_type_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_entry_channel_type_request&,
+                           const put_entry_channel_type_request&) = default;
 };
 
 struct put_entry_channel_type_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::entry_channel_type> entry_channel_type;
+
+    friend bool operator==(const put_entry_channel_type_response&,
+                           const put_entry_channel_type_response&) = default;
 };
 
 struct put_many_entry_channel_types_request {
@@ -179,11 +229,17 @@ struct put_many_entry_channel_types_request {
     static constexpr bool requires_session = true;
     std::vector<entry_channel_type_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_entry_channel_types_request&,
+                           const put_many_entry_channel_types_request&) = default;
 };
 
 struct put_many_entry_channel_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::entry_channel_type> entry_channel_types;
+
+    friend bool operator==(const put_many_entry_channel_types_response&,
+                           const put_many_entry_channel_types_response&) = default;
 };
 
 struct delete_entry_channel_type_request {
@@ -198,10 +254,16 @@ struct delete_entry_channel_type_request {
     static constexpr bool requires_session = true;
     entry_channel_type_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_entry_channel_type_request&,
+                           const delete_entry_channel_type_request&) = default;
 };
 
 struct delete_entry_channel_type_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_entry_channel_type_response&,
+                           const delete_entry_channel_type_response&) = default;
 };
 
 struct delete_many_entry_channel_types_request {
@@ -216,10 +278,16 @@ struct delete_many_entry_channel_types_request {
     static constexpr bool requires_session = true;
     std::vector<entry_channel_type_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_entry_channel_types_request&,
+                           const delete_many_entry_channel_types_request&) = default;
 };
 
 struct delete_many_entry_channel_types_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_entry_channel_types_response&,
+                           const delete_many_entry_channel_types_response&) = default;
 };
 
 struct list_entry_channel_type_versions_request {
@@ -237,12 +305,18 @@ struct list_entry_channel_type_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<entry_channel_type_versions_filter> filter;
+
+    friend bool operator==(const list_entry_channel_type_versions_request&,
+                           const list_entry_channel_type_versions_request&) = default;
 };
 
 struct list_entry_channel_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::entry_channel_type> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_entry_channel_type_versions_response&,
+                           const list_entry_channel_type_versions_response&) = default;
 };
 
 struct get_entry_channel_type_version_request {
@@ -256,11 +330,17 @@ struct get_entry_channel_type_version_request {
      */
     static constexpr bool requires_session = true;
     entry_channel_type_version_key key;
+
+    friend bool operator==(const get_entry_channel_type_version_request&,
+                           const get_entry_channel_type_version_request&) = default;
 };
 
 struct get_entry_channel_type_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::entry_channel_type> version;
+
+    friend bool operator==(const get_entry_channel_type_version_response&,
+                           const get_entry_channel_type_version_response&) = default;
 };
 
 /**
@@ -272,9 +352,9 @@ struct get_entry_channel_type_version_response {
  * of them.
  */
 namespace entry_channel_type_event_subjects {
-inline constexpr std::string_view created = "trading.v1.entry_channel_types_events.created";
-inline constexpr std::string_view updated = "trading.v1.entry_channel_types_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.entry_channel_types_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.entry_channel_types.created";
+inline constexpr std::string_view updated = "trading.v1.events.entry_channel_types.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_types.deleted";
 }
 /**
  * @brief The members of entry_channel_type_key, named as the wire names them and in the order

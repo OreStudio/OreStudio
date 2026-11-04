@@ -43,31 +43,43 @@ namespace ores::trading::messaging {
 
 struct structure_kind_key {
     std::string code;
+
+    friend bool operator==(const structure_kind_key&, const structure_kind_key&) = default;
 };
 
 struct structure_kind_write {
     std::string code;
     std::string description;
     bool confirms_as_whole;
+
+    friend bool operator==(const structure_kind_write&, const structure_kind_write&) = default;
 };
 
 struct structure_kind_change {
     structure_kind_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const structure_kind_change&, const structure_kind_change&) = default;
 };
 
 struct structure_kind_removal {
     structure_kind_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const structure_kind_removal&, const structure_kind_removal&) = default;
 };
 
 struct structure_kind_lookup {
     structure_kind_key key;
     std::optional<ores::trading::domain::structure_kind> structure_kind;
+
+    friend bool operator==(const structure_kind_lookup&, const structure_kind_lookup&) = default;
 };
 
 struct structure_kinds_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const structure_kinds_filter&, const structure_kinds_filter&) = default;
 };
 
 struct structure_kind_event {
@@ -77,17 +89,25 @@ struct structure_kind_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const structure_kind_event&, const structure_kind_event&) = default;
 };
 
 struct structure_kind_version_key {
     structure_kind_key structure_kind;
     std::uint32_t version;
+
+    friend bool operator==(const structure_kind_version_key&,
+                           const structure_kind_version_key&) = default;
 };
 
 struct structure_kind_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const structure_kind_versions_filter&,
+                           const structure_kind_versions_filter&) = default;
 };
 
 struct list_structure_kinds_request {
@@ -105,12 +125,18 @@ struct list_structure_kinds_request {
     ores::utility::domain::order order;
     std::optional<structure_kinds_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_structure_kinds_request&,
+                           const list_structure_kinds_request&) = default;
 };
 
 struct list_structure_kinds_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_kind> structure_kinds;
     std::uint64_t total;
+
+    friend bool operator==(const list_structure_kinds_response&,
+                           const list_structure_kinds_response&) = default;
 };
 
 struct get_structure_kind_request {
@@ -124,11 +150,17 @@ struct get_structure_kind_request {
      */
     static constexpr bool requires_session = true;
     structure_kind_key key;
+
+    friend bool operator==(const get_structure_kind_request&,
+                           const get_structure_kind_request&) = default;
 };
 
 struct get_structure_kind_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::structure_kind> structure_kind;
+
+    friend bool operator==(const get_structure_kind_response&,
+                           const get_structure_kind_response&) = default;
 };
 
 struct get_many_structure_kinds_request {
@@ -142,11 +174,17 @@ struct get_many_structure_kinds_request {
      */
     static constexpr bool requires_session = true;
     std::vector<structure_kind_key> keys;
+
+    friend bool operator==(const get_many_structure_kinds_request&,
+                           const get_many_structure_kinds_request&) = default;
 };
 
 struct get_many_structure_kinds_response {
     ores::utility::domain::result result;
     std::vector<structure_kind_lookup> entries;
+
+    friend bool operator==(const get_many_structure_kinds_response&,
+                           const get_many_structure_kinds_response&) = default;
 };
 
 struct put_structure_kind_request {
@@ -161,11 +199,17 @@ struct put_structure_kind_request {
     static constexpr bool requires_session = true;
     structure_kind_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_structure_kind_request&,
+                           const put_structure_kind_request&) = default;
 };
 
 struct put_structure_kind_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::structure_kind> structure_kind;
+
+    friend bool operator==(const put_structure_kind_response&,
+                           const put_structure_kind_response&) = default;
 };
 
 struct put_many_structure_kinds_request {
@@ -180,11 +224,17 @@ struct put_many_structure_kinds_request {
     static constexpr bool requires_session = true;
     std::vector<structure_kind_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_structure_kinds_request&,
+                           const put_many_structure_kinds_request&) = default;
 };
 
 struct put_many_structure_kinds_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_kind> structure_kinds;
+
+    friend bool operator==(const put_many_structure_kinds_response&,
+                           const put_many_structure_kinds_response&) = default;
 };
 
 struct delete_structure_kind_request {
@@ -199,10 +249,16 @@ struct delete_structure_kind_request {
     static constexpr bool requires_session = true;
     structure_kind_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_structure_kind_request&,
+                           const delete_structure_kind_request&) = default;
 };
 
 struct delete_structure_kind_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_structure_kind_response&,
+                           const delete_structure_kind_response&) = default;
 };
 
 struct delete_many_structure_kinds_request {
@@ -217,10 +273,16 @@ struct delete_many_structure_kinds_request {
     static constexpr bool requires_session = true;
     std::vector<structure_kind_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_structure_kinds_request&,
+                           const delete_many_structure_kinds_request&) = default;
 };
 
 struct delete_many_structure_kinds_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_structure_kinds_response&,
+                           const delete_many_structure_kinds_response&) = default;
 };
 
 struct list_structure_kind_versions_request {
@@ -238,12 +300,18 @@ struct list_structure_kind_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<structure_kind_versions_filter> filter;
+
+    friend bool operator==(const list_structure_kind_versions_request&,
+                           const list_structure_kind_versions_request&) = default;
 };
 
 struct list_structure_kind_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_kind> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_structure_kind_versions_response&,
+                           const list_structure_kind_versions_response&) = default;
 };
 
 struct get_structure_kind_version_request {
@@ -257,11 +325,17 @@ struct get_structure_kind_version_request {
      */
     static constexpr bool requires_session = true;
     structure_kind_version_key key;
+
+    friend bool operator==(const get_structure_kind_version_request&,
+                           const get_structure_kind_version_request&) = default;
 };
 
 struct get_structure_kind_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::structure_kind> version;
+
+    friend bool operator==(const get_structure_kind_version_response&,
+                           const get_structure_kind_version_response&) = default;
 };
 
 /**
@@ -273,9 +347,9 @@ struct get_structure_kind_version_response {
  * of them.
  */
 namespace structure_kind_event_subjects {
-inline constexpr std::string_view created = "trading.v1.structure_kinds_events.created";
-inline constexpr std::string_view updated = "trading.v1.structure_kinds_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.structure_kinds.created";
+inline constexpr std::string_view updated = "trading.v1.events.structure_kinds.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.deleted";
 }
 /**
  * @brief The members of structure_kind_key, named as the wire names them and in the order

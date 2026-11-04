@@ -288,13 +288,21 @@ public:
         answer([this] { natsMsg_Term(msg_.get(), nullptr); });
     }
 
+    void working() override {
+        const std::lock_guard<std::mutex> lock(mutex_);
+        if (!answered_)
+            natsMsg_InProgress(msg_.get(), nullptr);
+    }
+
     /// @return true once the handler, or the transport's backstop, answered.
     [[nodiscard]] bool answered() const noexcept {
+        const std::lock_guard<std::mutex> lock(mutex_);
         return answered_;
     }
 
 private:
     void answer(const std::function<void()>& verb) {
+        const std::lock_guard<std::mutex> lock(mutex_);
         if (answered_)
             return;
         answered_ = true;
@@ -302,6 +310,9 @@ private:
     }
 
     msg_handle msg_;
+    // A renewer reports progress from its own thread while the handler may answer, so the
+    // answer and the progress report never touch the message at once.
+    mutable std::mutex mutex_;
     bool answered_ = false;
 };
 

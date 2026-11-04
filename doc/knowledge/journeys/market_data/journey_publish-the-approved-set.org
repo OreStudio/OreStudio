@@ -304,7 +304,7 @@ subject and links to it cannot drift.
 
 *** The alternative
 
-A change event alone, =marketdata.v1.market_series_events.updated=, and no
+A change event alone, =marketdata.v1.events.market_series.updated=, and no
 notification. It is rejected because an event says a row changed, and a person
 cannot read it; and because a consumer that misses the event has no place to
 look.

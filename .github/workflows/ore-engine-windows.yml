@@ -2,15 +2,6 @@ name: ORE Windows engine package
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - 'external/ore/tools/build_ore_windows.ps1'
-      - 'external/ore/tools/package_ore_windows*'
-      - 'external/ore/tools/windows/**'
-      - 'external/ore/tools/compare_csv.py'
-      - 'external/ore/packages/TA002_IR_Swap.tar.gz'
-      - 'external/ore/examples/Academy/TA002_IR_Swap/**'
-      - '.github/workflows/ore-engine-windows.yml'
 
 permissions:
   contents: read

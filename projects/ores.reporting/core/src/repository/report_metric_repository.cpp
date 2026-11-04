@@ -92,14 +92,14 @@ report_metric_filter_condition(const std::optional<messaging::report_metrics_fil
     if (filter->report_instance_id)
         r.push_back(query_builder::equals(
             "report_instance_id", query_builder::filter_value(*filter->report_instance_id)));
+    if (filter->measure)
+        r.push_back(
+            query_builder::equals("measure", query_builder::filter_value(*filter->measure)));
     if (filter->family)
         r.push_back(query_builder::equals("family", query_builder::filter_value(*filter->family)));
     if (filter->subject_id)
         r.push_back(
             query_builder::equals("subject_id", query_builder::filter_value(*filter->subject_id)));
-    if (filter->measure)
-        r.push_back(
-            query_builder::equals("measure", query_builder::filter_value(*filter->measure)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
@@ -112,6 +112,12 @@ report_metric_filter_condition(const std::optional<messaging::report_metrics_fil
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("report_instance_id", std::move(values)));
     }
+    if (filter->measure_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->measure_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("measure", std::move(values)));
+    }
     if (filter->family_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->family_one_of)
@@ -123,12 +129,6 @@ report_metric_filter_condition(const std::optional<messaging::report_metrics_fil
         for (const auto& v : *filter->subject_id_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("subject_id", std::move(values)));
-    }
-    if (filter->measure_one_of) {
-        std::vector<query_builder::value> values;
-        for (const auto& v : *filter->measure_one_of)
-            values.push_back(query_builder::filter_value(v));
-        r.push_back(query_builder::one_of("measure", std::move(values)));
     }
     return query_builder::all_of(std::move(r));
 }

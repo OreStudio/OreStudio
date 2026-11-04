@@ -30,7 +30,9 @@ namespace ores::testing {
  * A test that measures time or resident memory cannot hold under valgrind,
  * which runs the code many times slower and owns the process's memory. Such a
  * test skips there rather than fail or hang the nightly memcheck. Valgrind
- * preloads its core into every process it runs, so the preload names it.
+ * preloads its core into every process it runs, so the preload names it. The
+ * check is a heuristic: a test that clears its environment is not detected,
+ * which only costs that test its skip.
  */
 inline bool running_under_valgrind() {
     const char* preload = std::getenv("LD_PRELOAD");

@@ -88,6 +88,8 @@ public:
      * The caller stays suspended on its own executor, so the connection is not
      * pinned to a worker while the handler blocks. The slot is released when the
      * awaitable finishes, cancellation included.
+     *
+     * @p invoke must be copyable, because it is held as a std::function.
      */
     template <typename Invoke>
     boost::asio::awaitable<typename std::invoke_result_t<Invoke>::value_type> run(Invoke invoke) {

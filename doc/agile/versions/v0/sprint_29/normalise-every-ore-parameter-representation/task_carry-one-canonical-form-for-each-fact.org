@@ -259,6 +259,8 @@ via its "Verifies task" field.
 | #4252 | [sql] Name every row that holds a rendering |
 | #4431 | [refdata] Let the guard be the only converter |
 | #4444 | [ore] Generate the reader's rendering tables from the renderings file |
+| #4446 | [codegen] Remove the store transform no model states |
+| #4450 | [docs] Restate the boundary that converts a stored value |
 
 * Review
 
@@ -516,3 +518,40 @@ The plan above said "delete the compiled tables". They are still compiled,
 because the reader must convert and a reader cannot read a JSON file at run time.
 What changed is that they are no longer a second authority: nothing reads them to
 learn what the mapping is, and the file wins wherever the two differ.
+
+** The two copies the story left behind
+
+Two pieces of the old design outlived the slices above: a codegen hook whose only
+user the story had deleted, and a knowledge cluster that still stated the design
+the hook belonged to.
+
+The hook, =store_transform=, let a column name a function the mapper calls on the
+way into the row, plus the header that declares it. #4431 removed its one user,
+=stored_business_day_convention=, so no model set the property, and
+=template_variables.org= still named the deleted header as its example. The three
+template branches, the include gate in =core.py=, its test and both doc mentions
+are gone. Generated output does not change, because a branch only emits when a
+column sets the property.
+
+The knowledge cluster was the record of the old design. Three pages put the
+conversion in the entity mapper, and the order page gave the codec as the reason
+it could not be anywhere else. The codec converts a conventions document on read,
+from the generated tables, and the guard converts every write the codec did not.
+The pages now state the two call chains with the lines that do each step, the two
+figures say the same, and the inbox capture the cluster was filed against records
+that both defects it names are fixed.
+
+#+begin_src text
+$ python3 build/scripts/local_checks.py --exclude-heavy   (docs branch)
+✅  local checks: 9/9 passed
+$ select count(*) from ores_reporting_canonical_value_violations_fn();
+0
+#+end_src
+
+Three checks fail on this story's branches and all three fail in a clean worktree
+of =origin/main= too: =codegen-tests= expects a =subject_prefix= the events
+template no longer emits; =component-drift= names the =msgpack-c= lines
+a337e95529 added by hand to =projects/ores.storage/service/src/CMakeLists.txt=;
+and =er-diagram= wants =cut_kind_code= drawn on =ores_schema.dq_staging.puml=.
+All three are recorded, with the command that reproduces each, in
+[[id:266E1110-C980-4693-B0DE-E2D023D8C2C0][The local check gate is red on main three ways]].

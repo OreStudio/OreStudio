@@ -438,3 +438,20 @@ TEST_CASE("an_id_that_is_not_a_frame_id_is_refused", "[change_stream]") {
     REQUIRE(point->epoch == "123");
     REQUIRE(point->last_seen == 45);
 }
+
+TEST_CASE("a_replay_the_stream_cannot_hold_is_answered_with_a_resync", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that half a replay is not given as a replay";
+
+    // A stream that holds two frames cannot be caught up on three, and losing the
+    // oldest silently is the gap a resync exists to prevent.
+    change_hub hub(stream_system_tenant, 2);
+    hub.publish("acme", "", "iam.book", "data: one\n\n");
+    hub.publish("acme", "", "iam.trade", "data: two\n\n");
+    hub.publish("acme", "", "iam.account", "data: three\n\n");
+
+    auto resumed = hub.subscribe({.tenant = "acme"}, resumed_at(hub, 0));
+
+    REQUIRE(resumed->size() == 1);
+    REQUIRE(resumed->try_pop() == std::optional<std::string>("event: resync\ndata: {}\n\n"));
+}

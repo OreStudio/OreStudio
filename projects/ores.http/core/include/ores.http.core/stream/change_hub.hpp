@@ -295,8 +295,16 @@ public:
             };
             const auto oldest = retained_.empty() ? 0 : retained_.front().id;
             const auto newest = retained_.empty() ? 0 : retained_.back().id;
+            const auto missed = static_cast<std::size_t>(
+                std::count_if(retained_.begin(), retained_.end(), eligible));
+            /*
+             * A replay the stream cannot hold whole would lose its oldest
+             * collections without saying so, which is the gap a resync exists to
+             * prevent, so half a replay is answered as no replay at all.
+             */
             const auto inside = resumed->epoch == epoch_ && resumed->last_seen <= newest &&
-                                (oldest == 0 || resumed->last_seen + 1 >= oldest);
+                                (oldest == 0 || resumed->last_seen + 1 >= oldest) &&
+                                missed <= capacity_;
             if (inside) {
                 for (const auto& frame : retained_) {
                     if (eligible(frame))

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:reporting:risk:greeks:sensitivity:ore:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-04
 
 * Summary
 
@@ -21,10 +21,11 @@ for — the risk reversal and the strangle — are not ORE factors at all: ORE
 shifts an ATM-only grid or a strike-by-strike surface, so =RR= and =STR= must
 be derived from the surface points by the smile identity that
 [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] already states. The store names the sensitivity
-document and switches the analytic on for nine seeded risk configurations, but
-no configuration binds one, so today a sensitivity run shifts nothing. What
-follows fixes the vocabulary, the family, what each ladder needs, and what the
-store must grow before a single .1 report can be seeded.
+document, names it in the run settings of every sensitivity report, and states
+ten of the family as report definitions a party runs. A run of one still shifts
+nothing, because no table holds the document and no table states a shift size.
+What follows fixes the vocabulary, the family, what each ladder needs, what the
+store holds, and which rows are seeded.
 
 * What a .1 report is in ORE terms
 
@@ -354,17 +355,19 @@ not arrive in the file its name suggests.
 | The outputs | =sensitivity.csv=, =scenario.csv=, =parsensitivity.csv=, =jacobi.csv=, =jacobi_inverse.csv= | Catalogued and read by the store |
 | The FX vol surface identity | [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] | Written, with the ATM/RR/BF algebra |
 | The classification axes and the report catalogue | [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] | Written, prose only for the .1 family |
-| Greek report definitions | =reporting_report_definitions_populate.sql= and the ACME seeds: "Delta and Gamma", "Vega", "Bucketed DV01", "Intraday Risk Monitor", "Headline Position" | Seeded, none of them a .1 report |
+| Greek report definitions | =reporting_report_definitions_populate.sql= and the ACME seeds: "Delta and Gamma", "Vega", "Bucketed DV01", "Intraday Risk Monitor", "Headline Position" | Seeded, and none of them a .1 report |
+| The ladder family as definitions | The ACME and Northwind report catalogues | Seeded for rows 1 to 10 of the list below, on the cycles the list states |
 
 * What the store lacks
 
 Each of these blocks at least one ladder.
 
-1. *No configuration binds a sensitivity document.* The ACME seeds switch the
-   =sensitivity= analytic on in nine risk report configurations and set three
-   parameters — =outputSensitivityThreshold=, =parSensitivity=,
-   =recalibrateModels= — and set =sensitivityConfigFile= in none of them. A run
-   today asks the engine for sensitivities with no factors to shift.
+1. *No table holds the sensitivity document.* The ACME seeds switch the
+   =sensitivity= analytic on in every sensitivity risk report configuration and
+   name both files the analytic reads: =sensitivityConfigFile= = sensitivity.xml
+   and =marketConfigFile= = simulation.xml=. What the store does not hold is the
+   document those names point at, and nothing reads it. A run asks the engine for
+   sensitivities over a document that no owner exports.
 2. *No mapper for the document.* =grep -rln SensitivityAnalysis projects/=
    finds only seed rows and a description file; no C++ mapper reads or writes
    =SensitivityAnalysis=. The document is a name in a lookup and a row in the
@@ -395,7 +398,7 @@ Each of these blocks at least one ladder.
    1 per cent as a choice. The risk report configuration holds the analytics and
    their parameters and a book and portfolio scope, and nothing that says how
    far to move a factor. This is the one gap the store cannot close without the
-   product owner's answer.
+   product owner's answer, and it is why a seeded ladder states no size.
 
 * Reports to build
 
@@ -425,6 +428,50 @@ Rows 1–10 are the .1 family and the greek ladders the product owner asked for,
 restated across every risk class the store's data reaches. Rows 11–14 name the
 wider ladder for completeness; they are backlog until their market data exists,
 and each is the same report over a different block.
+
+** Which rows are seeded, and which are not
+
+The product owner overruled this page's decision to hold the family back on
+2026-11-04: the catalogue states the ladders and lets them fail at the engine like
+every other report whose inputs have not arrived. A definition that produces no
+figure costs nothing to hold, and a party that sees the report in its list learns
+what the platform runs rather than what its data reaches.
+
+Rows 1 to 10 are seeded, and rows 11 to 14 are stated and not seeded. Each row is
+a definition named for the ladder page this folder already carries, so a reader of
+one reaches the other:
+
+#+ATTR_HTML: :class hug-leading
+| #  | Row                      | Definition it is seeded as                 | Definitions    |
+|----+--------------------------+--------------------------------------------+----------------|
+| 1  | Rates delta ladder       | Bump and Reprice Rho Ladder                | LIVE and (EOD) |
+| 2  | Rates gamma ladder       | Bump and Reprice Gamma Ladder              | EOD            |
+| 3  | Theta ladder             | Bump and Reprice Theta Ladder              | EOD            |
+| 4  | Rates cross-gamma ladder | Bump and Reprice Cross-gamma Ladder        | EOD            |
+| 5  | .1 ATM vol ladder        | Bump and Reprice ATM Vega Ladder           | LIVE and (EOD) |
+| 6  | .1 surface vol ladder    | Bump and Reprice Surface Vega Ladder       | LIVE and (EOD) |
+| 7  | .1 risk-reversal ladder  | Bump and Reprice Risk-reversal Vega Ladder | LIVE and (EOD) |
+| 8  | .1 strangle ladder       | Bump and Reprice Butterfly Vega Ladder     | LIVE and (EOD) |
+| 9  | Par-rate DV01 ladder     | Bump and Reprice DV01 Ladder               | EOD            |
+| 10 | FX spot delta ladder     | Bump and Reprice Delta Ladder              | EOD            |
+
+A row the design marks =eod and intraday= is two definitions, because a definition
+states one cut selection. The plain name selects the live cut and its "(EOD)" twin
+selects the close, so the ten rows are fifteen definitions at each of the four Acme
+parties and at Northwind.
+
+Every seeded row binds the party's sensitivity run settings, which name
+=sensitivity.xml= and =simulation.xml=, and the =Risk Sensitivities= engines. The
+bump is not part of a definition, so the ten rows share one document and differ in
+their name and their cut. That is D2 holding: one document per risk class, and the
+report's identity in its name.
+
+What still stops a figure is stated under *What the store lacks*, and it is the
+same list for all ten: no table holds the =SensitivityAnalysis= document and no
+mapper reads one, no table states a shift size, and the dataset holds no
+volatility quote and no spot for the volatility and currency pair ladders to
+shift. Rows 11 to 14 wait on their market data as well, which is why they are not
+seeded at all.
 
 Three reports from the existing EOD set in
 [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] are not ladders and

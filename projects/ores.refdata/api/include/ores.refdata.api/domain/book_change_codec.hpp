@@ -69,6 +69,7 @@ namespace ores::refdata::domain {
         utility::codec::field{"book_purpose_type", &book_change::book_purpose_type},
         utility::codec::field{"ledger_feed_type", &book_change::ledger_feed_type},
         utility::codec::field{"is_sweepable", &book_change::is_sweepable},
+        utility::codec::field{"restricts_product_types", &book_change::restricts_product_types},
         utility::codec::field{"rates_centre_code", &book_change::rates_centre_code},
         utility::codec::field{"sandbox_id", &book_change::sandbox_id},
         utility::codec::field{"modified_by", &book_change::modified_by},

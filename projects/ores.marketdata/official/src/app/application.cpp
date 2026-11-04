@@ -26,6 +26,7 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <utility>
 
 namespace ores::marketdata::official::app {
 
@@ -57,7 +58,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     official_adapter adapter(
         nats, cfg.sources, fetcher, static_cast<int>(cfg.backfill_days), timing);
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         service_name,
@@ -69,6 +71,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             adapter.start();
         },
         [&]() { adapter.stop(); });
+    co_await std::move(service_run);
     co_return;
 }
 

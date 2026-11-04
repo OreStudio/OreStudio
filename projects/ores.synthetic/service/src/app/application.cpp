@@ -54,6 +54,7 @@
 #include <set>
 #include <span>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace ores::synthetic::service::app {
@@ -359,7 +360,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     generator_fleet generators;
     adapter_fleet fleet(nats, svc_nats, db_ctx, generators, registry, adapter_build, faults);
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         std::move(db_ctx),
@@ -378,6 +380,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+    co_await std::move(service_run);
 
     scheduler.stop();
     generators.stop_all();

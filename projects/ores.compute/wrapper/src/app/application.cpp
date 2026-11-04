@@ -68,6 +68,7 @@
 #include <sstream>
 #include <thread>
 #include <tuple>
+#include <utility>
 
 namespace ores::compute::wrapper::app {
 
@@ -78,6 +79,15 @@ namespace {
 
 constexpr std::string_view service_name = "ores.compute.wrapper";
 constexpr std::string_view service_version = ORES_VERSION;
+
+}
+
+/*
+ * The reporter and the heartbeat are named, and outside the anonymous
+ * namespace, because run() is a coroutine whose frame holds one of each: a type
+ * of the anonymous namespace there is what gcc refuses under
+ * -Wsubobject-linkage once a unity build includes this file.
+ */
 
 /**
  * @brief Accumulates per-node execution metrics and publishes them to NATS
@@ -339,6 +349,8 @@ private:
     std::atomic<bool> stop_{false};
     std::thread thread_;
 };
+
+namespace {
 
 /**
  * @brief Submit a finished job back to the compute service.
@@ -1007,7 +1019,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             process_assignment(nats, job, cfg, raw_reporter, lg());
         });
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         service_name,
@@ -1043,6 +1056,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter stopped.";
             }
         });
+    co_await std::move(service_run);
     co_return;
 }
 

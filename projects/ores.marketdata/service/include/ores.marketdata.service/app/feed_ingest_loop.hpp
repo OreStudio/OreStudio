@@ -393,9 +393,13 @@ private:
     std::atomic<bool> stop_flag_{false};
     /// The prepared batches that wait for the copy. One waits at most, so the first stage is at
     /// most one batch ahead of the second.
-    batch_handoff<std::unique_ptr<prepared_batch>> handoff_{1};
+    ///
+    /// The two handoffs are sized in the constructor and not here. A default member initializer
+    /// is compiled wherever this header is, and the handoff's constructor needs the destructor of
+    /// its queue, which a translation unit that does not see prepared_batch cannot compile.
+    batch_handoff<std::unique_ptr<prepared_batch>> handoff_;
     /// The copied batches that wait for their republish, one at most.
-    batch_handoff<std::unique_ptr<prepared_batch>> announce_handoff_{1};
+    batch_handoff<std::unique_ptr<prepared_batch>> announce_handoff_;
     /// The batches that the worker handed to the stages and the third stage has not finished.
     /// Only the worker adds to it, so a zero that the worker reads stays zero until it adds.
     std::atomic<std::size_t> in_flight_{0};

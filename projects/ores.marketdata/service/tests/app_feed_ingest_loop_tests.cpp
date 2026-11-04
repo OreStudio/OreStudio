@@ -44,6 +44,7 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
+#include "ores.testing/running_under_valgrind.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
@@ -1232,6 +1233,8 @@ TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages",
     const auto options = writer_options();
     if (!options)
         SKIP("The tick writer role is not configured");
+    if (ores::testing::running_under_valgrind())
+        SKIP("a burst under valgrind is too slow to make a large batch");
     auto writer = std::make_shared<gated_writer>(*options);
 
     app_feed_ingest_loop_fixture f;
@@ -1275,6 +1278,14 @@ TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages",
     // the batch stays in the copy stage. Whether a burst makes a large batch depends on how fast
     // the worker takes the ticks as they arrive, so the burst is repeated until a copy is held.
     writer->close_gate();
+    // Declared after the loop, so the gate opens before the loop stops: a held copy
+    // would otherwise keep the loop's stage waiting when a check fails.
+    struct reopen_gate final {
+        gated_writer& writer;
+        ~reopen_gate() {
+            writer.open_gate();
+        }
+    } reopen{*writer};
     for (int attempt = 0; attempt < 20 && writer->held() == 0; ++attempt) {
         send(400, std::chrono::milliseconds(0));
         const auto give_up = burst_clock::now() + std::chrono::milliseconds(500);

@@ -21,6 +21,7 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.testing/running_under_valgrind.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -909,6 +910,8 @@ TEST_CASE("a_256_mib_upload_does_not_grow_the_process", "[http_streamed_body][me
 #if !defined(__linux__)
     SKIP("resident memory is read from /proc, which this platform does not have");
 #endif
+    if (ores::testing::running_under_valgrind())
+        SKIP("valgrind owns the resident set and is too slow for a 256 MiB upload");
 
     http_server_options options;
     options.address = "127.0.0.1";

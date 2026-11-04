@@ -57,7 +57,7 @@ namespace ores::service::service {
  * @param on_shutdown Optional: called after signal, before nats.drain().
  */
 template <typename RegisterFn>
-boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
+[[nodiscard]] boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
                                  ores::nats::service::client& nats,
                                  ores::database::context ctx,
                                  std::string_view name,
@@ -80,7 +80,7 @@ boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
  * @param on_shutdown Optional: called after signal, before nats.drain().
  */
 template <typename RegisterFn>
-boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
+[[nodiscard]] boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
                                  ores::nats::service::client& nats,
                                  std::string_view name,
                                  RegisterFn&& register_fn,
